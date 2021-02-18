@@ -153,11 +153,13 @@ export const getTableParams = (
     filters,
     apiParams,
     defaultSorted = [{ id: 'name', desc: false }],
+    defaultPageSize = 10,
 ) => {
     const newParams = {
         ...apiParams,
         limit:
-            parseInt(params[getParamsKey(paramsPrefix, 'pageSize')], 10) || 10,
+            parseInt(params[getParamsKey(paramsPrefix, 'pageSize')], 10) ||
+            defaultPageSize,
         page: parseInt(params[getParamsKey(paramsPrefix, 'page')], 10) || 0,
         order: getSort(
             params[getParamsKey(paramsPrefix, 'order')]

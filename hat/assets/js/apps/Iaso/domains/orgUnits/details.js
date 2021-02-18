@@ -7,7 +7,6 @@ import { bindActionCreators } from 'redux';
 import { withStyles, Box, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import CustomTableComponent from '../../components/CustomTableComponent';
 
 import {
     setCurrentOrgUnit,
@@ -105,7 +104,6 @@ class OrgUnitDetail extends Component {
             currentOrgUnit: undefined,
             orgUnitModified: false,
             orgUnitLocationModified: false,
-            fetchingFilters: true,
             tableColumns: formsTableColumns(
                 props.intl.formatMessage,
                 this,
@@ -176,9 +174,6 @@ class OrgUnitDetail extends Component {
         }
 
         Promise.all(promisesArray).then(() => {
-            this.setState({
-                fetchingFilters: false,
-            });
             this.fetchDetail().then(async currentOrgUnit => {
                 if (this.state.tab !== 'map') {
                     dispatch(setFetching(false));
@@ -441,7 +436,6 @@ class OrgUnitDetail extends Component {
             currentOrgUnit,
             orgUnitModified,
             orgUnitLocationModified,
-            fetchingFilters,
         } = this.state;
         const isNewOrgunit = params.orgUnitId === '0';
         let title = '';
@@ -553,55 +547,36 @@ class OrgUnitDetail extends Component {
                             </Box>
                         </div>
                         {tab === 'history' && (
-                            <Box className={classes.containerFullHeightPadded}>
-                                <Logs
-                                    params={params}
-                                    logObjectId={currentOrgUnit.id}
-                                    goToRevision={orgUnitRevision =>
-                                        this.goToRevision(orgUnitRevision)
-                                    }
-                                />
-                            </Box>
+                            <Logs
+                                params={params}
+                                logObjectId={currentOrgUnit.id}
+                                goToRevision={orgUnitRevision =>
+                                    this.goToRevision(orgUnitRevision)
+                                }
+                            />
                         )}
                         {tab === 'forms' && (
-                            <Box className={classes.containerFullHeightPadded}>
-                                <div className={classes.reactTable}>
-                                    <CustomTableComponent
-                                        isSortable
-                                        pageSize={50}
-                                        showPagination
-                                        endPointUrl={`/api/forms/?orgUnitId=${currentOrgUnit.id}`}
-                                        columns={this.state.tableColumns}
-                                        defaultSorted={[
-                                            {
-                                                id: 'instance_updated_at',
-                                                desc: false,
-                                            },
-                                        ]}
-                                        params={params}
-                                        defaultPath={baseUrl}
-                                        dataKey="forms"
-                                        canSelect={false}
-                                        multiSort
-                                        onDataLoaded={(
-                                            newFormsList,
-                                            count,
-                                            pages,
-                                        ) => {
-                                            this.props.setForms(
-                                                newFormsList,
-                                                true,
-                                                params,
-                                                count,
-                                                pages,
-                                            );
-                                            this.setState({ isUpdated: false });
-                                        }}
-                                        reduxPage={reduxPage}
-                                        isUpdated={this.state.isUpdated}
-                                    />
-                                </div>
-                            </Box>
+                            <SingleTable
+                                paramsPrefix="formsParams"
+                                apiParams={{
+                                    orgUnitId: currentOrgUnit.id,
+                                }}
+                                exportButton={false}
+                                baseUrl={baseUrl}
+                                endPointPath="forms"
+                                fetchItems={fetchForms}
+                                columns={this.state.tableColumns}
+                                results={reduxPage}
+                                onDataLoaded={({ list, count, pages }) => {
+                                    this.props.setForms(
+                                        list,
+                                        true,
+                                        params,
+                                        count,
+                                        pages,
+                                    );
+                                }}
+                            />
                         )}
                         <div
                             className={

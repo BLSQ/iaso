@@ -239,6 +239,8 @@ export const orgUnitsDetailsPath = {
         ...paginationPathParamsWithPrefix('childrenParams'),
         ...linksFiltersPathParamsWithPrefix('linksParams'),
         ...paginationPathParamsWithPrefix('linksParams'),
+        ...paginationPathParamsWithPrefix('formsParams'),
+        ...paginationPathParamsWithPrefix('logsParams'),
     ],
 };
 

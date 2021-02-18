@@ -1,34 +1,36 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
+import { FormattedMessage } from 'react-intl';
 import { push } from 'react-router-redux';
 import { bindActionCreators } from 'redux';
 
-import { withStyles, Box, Grid } from '@material-ui/core';
+import { withStyles, Button } from '@material-ui/core';
+import Autorenew from '@material-ui/icons/Autorenew';
 
 import PropTypes from 'prop-types';
 
 import {
     fetchAlgorithms,
+    fetchAlgorithmRuns,
     deleteAlgorithmRun,
     runAlgorithm,
     fetchSources,
 } from '../../utils/requests';
 
-import { setRuns, setIsFetching, setAlgorithms } from './actions';
+import { setAlgorithms } from './actions';
 
 import { setSources } from '../orgUnits/actions';
 
 import { runsTableColumns } from './config';
 
 import { createUrl } from '../../utils/fetchData';
-import getTableUrl from '../../utils/tableUtils';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import CustomTableComponent from '../../components/CustomTableComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
-import RunsFiltersComponent from './components/RunsFiltersComponent';
+import SingleTable from '../../components/tables/SingleTable';
 import AddRunDialogComponent from './components/AddRunDialogComponent';
 import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
+
+import { runsFilters } from '../../constants/filters';
 
 import commonStyles from '../../styles/common';
 
@@ -53,31 +55,18 @@ class Runs extends Component {
         super(props);
         this.state = {
             tableColumns: runsTableColumns(props.intl.formatMessage, this),
-            tableUrl: null,
-            isUpdated: false,
+            forceRefresh: false,
+            refreshEnable: false,
         };
     }
 
     componentWillMount() {
         const { dispatch, fetchUsersProfiles } = this.props;
         fetchUsersProfiles();
-        if (this.props.params.searchActive) {
-            this.onSearch();
-        }
         fetchSources(dispatch).then(sources => this.props.setSources(sources));
         fetchAlgorithms(dispatch).then(algoList =>
             this.props.setAlgorithms(algoList),
         );
-    }
-
-    componentDidUpdate() {
-        if (!this.props.params.searchActive && this.props.reduxPage.list) {
-            this.resetData();
-        }
-    }
-
-    componentWillUnmount() {
-        this.props.setRuns(null, this.props.params, 0, 1);
     }
 
     onSelectRunLinks(runItem) {
@@ -88,45 +77,14 @@ class Runs extends Component {
         this.props.redirectTo(baseUrls.links, params);
     }
 
-    onSearch() {
-        const { redirectTo, params } = this.props;
-        const newParams = {
-            ...params,
-        };
-        if (!params.searchActive) {
-            newParams.searchActive = true;
-        }
-        redirectTo(baseUrl, newParams);
-        const url = getTableUrl('algorithmsruns', this.props.params);
-        this.setState({
-            tableUrl: url,
-        });
-    }
-
     onRefresh() {
         this.setState({
-            isUpdated: true,
+            forceRefresh: true,
         });
-    }
-
-    onDataStartLoaded() {
-        const { dispatch } = this.props;
-        this.setState({
-            isUpdated: false,
-        });
-        dispatch(this.props.setIsFetching(true));
-    }
-
-    resetData() {
-        this.setState({
-            tableUrl: null,
-        });
-        this.props.setRuns(null, this.props.params, 0, 1);
     }
 
     deleteRuns(run) {
         const { dispatch } = this.props;
-        dispatch(this.props.setIsFetching(true));
         return deleteAlgorithmRun(dispatch, run.id).then(() => {
             this.onRefresh();
         });
@@ -144,73 +102,84 @@ class Runs extends Component {
         const {
             classes,
             params,
-            reduxPage,
             intl: { formatMessage },
-            dispatch,
-            fetching,
+            algorithms,
+            profiles,
+            sources,
         } = this.props;
-        const { tableUrl, tableColumns, isUpdated } = this.state;
-
+        const { tableColumns, forceRefresh, refreshEnable } = this.state;
+        let currentOrigin;
+        if (params.origin && sources) {
+            currentOrigin = sources.find(
+                s => s.id === parseInt(params.origin, 10),
+            );
+        }
+        let currentDestination;
+        if (params.destination && sources) {
+            currentDestination = sources.find(
+                s => s.id === parseInt(params.destination, 10),
+            );
+        }
         return (
-            <Fragment>
-                {fetching && <LoadingSpinner />}
+            <>
                 <TopBar title={formatMessage(MESSAGES.runsTitle)} />
-                <Box className={classes.containerFullHeightNoTabPadded}>
-                    <RunsFiltersComponent
-                        baseUrl={baseUrl}
-                        params={params}
-                        onSearch={() => this.onSearch()}
-                        onRefresh={() => this.onRefresh()}
-                    />
-                    {tableUrl && (
-                        <div className={classes.reactTable}>
-                            <CustomTableComponent
-                                isSortable
-                                pageSize={10}
-                                showPagination
-                                endPointUrl={tableUrl}
-                                columns={tableColumns}
-                                defaultSorted={[{ id: 'ended_at', desc: true }]}
-                                params={params}
-                                defaultPath={baseUrl}
-                                dataKey="runs"
-                                canSelect={false}
-                                multiSort
-                                onDataStartLoaded={() =>
-                                    this.onDataStartLoaded()
-                                }
-                                onDataLoaded={(list, count, pages) => {
-                                    dispatch(this.props.setIsFetching(false));
-                                    this.props.setRuns(
-                                        list,
-                                        this.props.params,
-                                        count,
-                                        pages,
-                                    );
-                                }}
-                                reduxPage={reduxPage}
-                                isUpdated={isUpdated}
-                            />
-                        </div>
+                <SingleTable
+                    baseUrl={baseUrl}
+                    endPointPath="algorithmsruns"
+                    exportButtons={false}
+                    dataKey="runs"
+                    forceRefresh={forceRefresh}
+                    onForceRefreshDone={() => {
+                        this.setState({
+                            forceRefresh: false,
+                        });
+                    }}
+                    apiParams={{
+                        ...params,
+                    }}
+                    searchActive={params.searchActive === 'true'}
+                    fetchItems={fetchAlgorithmRuns}
+                    defaultSorted={[{ id: 'ended_at', desc: true }]}
+                    toggleActiveSearch
+                    columns={tableColumns}
+                    filters={runsFilters(
+                        formatMessage,
+                        algorithms,
+                        profiles,
+                        sources,
+                        currentOrigin,
+                        currentDestination,
                     )}
-                    <Grid
-                        container
-                        spacing={0}
-                        justify="flex-end"
-                        alignItems="center"
-                        className={classes.marginTop}
-                    >
+                    onDataLoaded={() => {
+                        this.setState({
+                            refreshEnable: true,
+                        });
+                    }}
+                    searchExtraComponent={
+                        <Button
+                            disabled={!refreshEnable}
+                            variant="contained"
+                            color="primary"
+                            onClick={() => this.onRefresh()}
+                            className={classes.marginRight}
+                        >
+                            <Autorenew className={classes.buttonIcon} />
+                            <FormattedMessage {...MESSAGES.refresh} />
+                        </Button>
+                    }
+                    extraComponent={
                         <AddRunDialogComponent
                             executeRun={runItem => this.executeRun(runItem)}
                         />
-                    </Grid>
-                </Box>
-            </Fragment>
+                    }
+                />
+            </>
         );
     }
 }
 Runs.defaultProps = {
     reduxPage: undefined,
+    sources: [],
 };
 
 Runs.propTypes = {
@@ -218,28 +187,27 @@ Runs.propTypes = {
     intl: PropTypes.object.isRequired,
     reduxPage: PropTypes.object,
     params: PropTypes.object.isRequired,
-    setRuns: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
-    setIsFetching: PropTypes.func.isRequired,
-    fetching: PropTypes.bool.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
     setSources: PropTypes.func.isRequired,
     fetchUsersProfiles: PropTypes.func.isRequired,
+    sources: PropTypes.array,
+    profiles: PropTypes.array.isRequired,
+    algorithms: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     reduxPage: state.links.runsPage,
-    fetching: state.links.fetching,
+    sources: state.orgUnits.sources,
+    algorithms: state.links.algorithmsList,
+    profiles: state.users.list,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setRuns: (linksList, params, count, pages) =>
-        dispatch(setRuns(linksList, true, params, count, pages)),
     redirectTo: (key, params) =>
         dispatch(push(`${key}${createUrl(params, '')}`)),
-    setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setSources: sources => dispatch(setSources(sources)),
     ...bindActionCreators(

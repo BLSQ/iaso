@@ -8,7 +8,7 @@ import { renderWithStore } from '../../../../test/utils/redux';
 
 const requests = [
     {
-        url: '/api/datasources/?order=name&limit=20&page=1',
+        url: '/api/datasources/?&limit=10&page=1&order=-created_at',
         body: {
             sources: [],
         },

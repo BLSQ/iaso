@@ -68,6 +68,9 @@ const commonStyles = theme => ({
     marginLeft: {
         marginLeft: theme.spacing(2),
     },
+    marginRight: {
+        marginRight: theme.spacing(2),
+    },
     marginTop: {
         marginTop: theme.spacing(2),
     },

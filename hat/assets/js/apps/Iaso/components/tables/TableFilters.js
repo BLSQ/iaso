@@ -1,10 +1,10 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { Grid, Button, withStyles } from '@material-ui/core';
+import { Grid, Button, withStyles, Box } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
 import commonStyles from '../../styles/common';
@@ -30,8 +30,13 @@ const Filters = ({
     redirectTo,
     onSearch,
     filters,
+    defaultFiltersUpdated,
+    toggleActiveSearch,
+    extraComponent,
 }) => {
-    const [filtersUpdated, setFiltersUpdated] = React.useState(false);
+    const [filtersUpdated, setFiltersUpdated] = React.useState(
+        !defaultFiltersUpdated,
+    );
     const handleSearch = () => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
@@ -39,12 +44,15 @@ const Filters = ({
                 ...params,
             };
             tempParams.page = 1;
+            if (!tempParams.searchActive && toggleActiveSearch) {
+                tempParams.searchActive = true;
+            }
             redirectTo(baseUrl, tempParams);
         }
         onSearch();
     };
     return (
-        <Fragment>
+        <>
             <Grid container spacing={4}>
                 {Array(3)
                     .fill()
@@ -70,33 +78,29 @@ const Filters = ({
                         </Grid>
                     ))}
             </Grid>
-            <Grid container spacing={4} justify="flex-end" alignItems="center">
-                <Grid
-                    item
-                    xs={2}
-                    container
-                    justify="flex-end"
-                    alignItems="center"
+            <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
+                {extraComponent}
+                <Button
+                    disabled={!filtersUpdated}
+                    variant="contained"
+                    className={classes.button}
+                    color="primary"
+                    onClick={() => handleSearch()}
                 >
-                    <Button
-                        disabled={!filtersUpdated}
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        onClick={() => handleSearch()}
-                    >
-                        <SearchIcon className={classes.buttonIcon} />
-                        <FormattedMessage {...MESSAGES.search} />
-                    </Button>
-                </Grid>
-            </Grid>
-        </Fragment>
+                    <SearchIcon className={classes.buttonIcon} />
+                    <FormattedMessage {...MESSAGES.search} />
+                </Button>
+            </Box>
+        </>
     );
 };
 
 Filters.defaultProps = {
     baseUrl: '',
     filters: [],
+    defaultFiltersUpdated: false,
+    toggleActiveSearch: false,
+    extraComponent: <></>,
 };
 
 Filters.propTypes = {
@@ -106,6 +110,9 @@ Filters.propTypes = {
     onSearch: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     filters: PropTypes.array,
+    defaultFiltersUpdated: PropTypes.bool,
+    toggleActiveSearch: PropTypes.bool,
+    extraComponent: PropTypes.node,
 };
 
 const MapDispatchToProps = dispatch => ({

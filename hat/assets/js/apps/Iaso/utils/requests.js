@@ -161,6 +161,30 @@ export const fetchOrgUnitsList = (dispatch, url) =>
             throw error;
         });
 
+export const fetchLogs = (dispatch, url) =>
+    getRequest(url)
+        .then(data => data)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(errorSnackBar('fetchLogsError', null, error)),
+            );
+            console.error('Error while fetching logs list:', error);
+            throw error;
+        });
+
+export const fetchAllDataSources = (dispatch, url) =>
+    getRequest(url)
+        .then(data => data)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('fetchDataSourcesError', null, error),
+                ),
+            );
+            console.error('Error while fetching data sources list:', error);
+            throw error;
+        });
+
 export const fetchInstancesAsLocationsByForm = (
     dispatch,
     form,
@@ -361,7 +385,7 @@ export const fetchLinkDetail = (dispatch, linkId) =>
             throw error;
         });
 
-export const fetchLinks = (dispatch, url) =>
+export const fetchLinks = (dispatch, url = '/api/links/') =>
     getRequest(url)
         .then(links => links)
         .catch(error => {
@@ -372,8 +396,8 @@ export const fetchLinks = (dispatch, url) =>
             throw error;
         });
 
-export const fetchAlgorithmRuns = dispatch =>
-    getRequest('/api/algorithmsruns/')
+export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') =>
+    getRequest(url)
         .then(algorithms => algorithms)
         .catch(error => {
             dispatch(
@@ -483,5 +507,16 @@ export const fetchCompleteness = (dispatch, url) =>
                 'Error while fetching  while fetching completness:',
                 error,
             );
+            throw error;
+        });
+
+export const fetchTasks = (dispatch, url) =>
+    getRequest(url)
+        .then(data => data)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(errorSnackBar('fetchTasksError', null, error)),
+            );
+            console.error('Error while fetching tasks list:', error);
             throw error;
         });

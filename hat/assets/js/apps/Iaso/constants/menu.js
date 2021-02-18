@@ -11,6 +11,7 @@ import Settings from '@material-ui/icons/Settings';
 import GroupWork from '@material-ui/icons/GroupWork';
 import CategoryIcon from '@material-ui/icons/Category';
 import AssignmentRoundedIcon from '@material-ui/icons/AssignmentRounded';
+import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRounded';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
@@ -114,6 +115,12 @@ const menuItems = [
                 key: 'tasks',
                 permission: paths.tasksPath.permission,
                 icon: props => <AssignmentRoundedIcon {...props} />,
+            },
+            {
+                label: MESSAGES.monitoring,
+                key: 'devices',
+                permission: paths.devicesPath.permission,
+                icon: props => <ImportantDevicesRoundedIcon {...props} />,
             },
             {
                 label: MESSAGES.projects,

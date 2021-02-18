@@ -481,5 +481,12 @@
     "uploadFile.labels.no-file": "No file choosen",
     "value_vis.value": "Value:",
     "vegavis.dayofmonth": "Day of the month",
-    "vegavis.numparticipants": "Number of participants"
+    "vegavis.numparticipants": "Number of participants",
+    "iaso.devices.imei": "IMEI",
+    "iaso.devices.test_device": "Test device",
+    "iaso.devices.last_owner": "Last owner",
+    "iaso.devices.timeSynched": "Time synchronised",
+    "iaso.devices.timeCreated": "Date created",
+    "iaso.devices.timeUpdated": "Date modified",
+    "iaso.label.devices": "Devices"
 }

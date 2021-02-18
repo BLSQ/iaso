@@ -16,7 +16,8 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_synched_at(obj: Device):
-        instance = Instance.objects.filter(device__id=obj.id).order_by("-created_at").first()
+        # updated_at field is better compared to created_at
+        instance = Instance.objects.filter(device__id=obj.id).order_by("-updated_at").first()
         return instance.created_at.timestamp() if instance else None
 
     @staticmethod

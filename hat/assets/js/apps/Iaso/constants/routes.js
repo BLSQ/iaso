@@ -13,6 +13,7 @@ import Users from '../domains/users';
 import Projects from '../domains/projects';
 import DataSources from '../domains/dataSources';
 import Tasks from '../domains/tasks';
+import Devices from '../domains/devices';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
@@ -384,6 +385,13 @@ export const tasksPath = {
     params: [...paginationPathParams],
 };
 
+export const devicesPath = {
+    baseUrl: baseUrls.devices,
+    permission: 'iaso_data_devices',
+    component: props => <Devices {...props} />,
+    params: [...paginationPathParams],
+};
+
 export const groupsPath = {
     baseUrl: baseUrls.groups,
     permission: 'iaso_org_units',
@@ -448,6 +456,7 @@ export const routeConfigs = [
     projectsPath,
     dataSourcesPath,
     tasksPath,
+    devicesPath,
     groupsPath,
     orgUnitTypesPath,
     page401,

@@ -9,7 +9,7 @@ import { renderWithMuiTheme } from '../../../../test/utils/muiTheme';
 
 const requests = [
     {
-        url: '/api/devices/?&limit=10&page=1&order=-synched_at',
+        url: '/api/devices/?&limit=10&page=1&order=-created_at',
         body: {
             devices: [],
         },
@@ -25,7 +25,11 @@ describe('Devices component', () => {
 
     it('mounts properly', () => {
         const connectedWrapper = mount(
-            renderWithMuiTheme(renderWithStore(<DevicesList params={{}} />)),
+            renderWithMuiTheme(
+                renderWithStore(
+                    <DevicesList params={{ order: '-created_at' }} />,
+                ),
+            ),
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });

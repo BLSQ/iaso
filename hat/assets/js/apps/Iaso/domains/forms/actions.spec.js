@@ -11,8 +11,6 @@ describe('Forms actions', () => {
     it('should create an action to set forms', () => {
         const payload = {
             list: [],
-            showPagination: true,
-            params: {},
             count: 0,
             pages: 1,
         };
@@ -20,8 +18,8 @@ describe('Forms actions', () => {
             type: SET_FORMS,
             payload,
         };
-        const { list, showPagination, params, count, pages } = payload;
-        const action = setForms(list, showPagination, params, count, pages);
+        const { list, count, pages } = payload;
+        const action = setForms(list, count, pages);
         expect(action).to.eql(expectedAction);
     });
 

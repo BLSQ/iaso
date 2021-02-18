@@ -16,8 +16,10 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 import PropTypes from 'prop-types';
 import commonStyles from '../../../styles/common';
 import muiTheme from '../../../utils/theme';
-import { userHasPermission } from '../../users/utils';
+
 import injectIntl from '../../../libs/intl/injectIntl';
+
+import { listMenuPermission, userHasOneOfPermissions, userHasPermission } from '../../users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -79,9 +81,10 @@ function MenuItem(props) {
                 <Collapse in={open} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
                         {menuItem.subMenu.map(subMenu => {
+                            const permissionsList = listMenuPermission(subMenu);
                             if (
-                                userHasPermission(
-                                    subMenu.permission,
+                                userHasOneOfPermissions(
+                                    permissionsList,
                                     currentUser,
                                 )
                             ) {

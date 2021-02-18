@@ -9,7 +9,7 @@ import { renderWithMuiTheme } from '../../../../test/utils/muiTheme';
 
 const requests = [
     {
-        url: '/api/tasks/?order=created_at&limit=20&page=1',
+        url: '/api/tasks/?&limit=10&page=1&order=-created_at',
         body: {
             tasks: [],
         },

@@ -240,6 +240,8 @@ export const orgUnitsDetailsPath = {
         ...paginationPathParamsWithPrefix('childrenParams'),
         ...linksFiltersPathParamsWithPrefix('linksParams'),
         ...paginationPathParamsWithPrefix('linksParams'),
+        ...paginationPathParamsWithPrefix('formsParams'),
+        ...paginationPathParamsWithPrefix('logsParams'),
     ],
 };
 
@@ -373,7 +375,7 @@ export const projectsPath = {
 
 export const dataSourcesPath = {
     baseUrl: baseUrls.sources,
-    permission: 'iaso_data_sources',
+    permission: 'iaso_sources',
     component: props => <DataSources {...props} />,
     params: [...paginationPathParams],
 };

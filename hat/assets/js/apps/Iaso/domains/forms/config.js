@@ -133,7 +133,11 @@ const formsTableColumns = (
         width: 150,
         Cell: settings => {
             let urlToInstances = `${baseUrls.instances}/formId/${settings.original.id}`;
-            if (component.state.currentOrgUnit !== undefined) {
+            if (
+                component &&
+                component.state &&
+                component.state.currentOrgUnit !== undefined
+            ) {
                 const parentIds = getOrgUnitParentsIds(
                     component.state.currentOrgUnit,
                 );

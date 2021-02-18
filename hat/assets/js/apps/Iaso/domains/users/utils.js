@@ -29,11 +29,38 @@ export const userHasOneOfPermissions = (permissions, user) => {
     }
     let isAuthorised = false;
     permissions.forEach(p => {
-        if (userHasPermission(p, user)) {
+        if (!!p && userHasPermission(p, user)) {
             isAuthorised = true;
         }
     });
     return isAuthorised;
+};
+
+/**
+ * list all submenu permission
+ *
+ * @param {Object} menuItem
+ * @return {Boolean}
+ */
+export const listMenuPermission = (menuItem, permissions = []) => {
+    let permissionsTemp = [...permissions];
+    if (menuItem) {
+        if (
+            menuItem.permission &&
+            !permissionsTemp.find(p => p === menuItem.permission) // Avoid duplicate permission
+        ) {
+            permissionsTemp.push(menuItem.permission);
+        }
+        menuItem.subMenu &&
+            menuItem.subMenu.forEach(subMenuItem => {
+                const subPerms = listMenuPermission(
+                    subMenuItem,
+                    permissionsTemp,
+                ).filter(sp => !permissionsTemp.includes(sp)); // Avoid duplicate permission
+                permissionsTemp = permissionsTemp.concat(subPerms);
+            });
+    }
+    return permissionsTemp;
 };
 
 /**

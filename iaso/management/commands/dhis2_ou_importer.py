@@ -23,7 +23,7 @@ Example
 ./manage.py dhis2_ou_importer \
     --dhis2_user admin \
     --dhis2_password district \
-    --dhis2_url https://play.dhis2.org/2.32.3 \
+    --dhis2_url https://play.dhis2.org/2.32.7 \
     --source_name play \
     --version_number 1 \
     --org_unit_type_csv_file ./data/play_unit_types.csv

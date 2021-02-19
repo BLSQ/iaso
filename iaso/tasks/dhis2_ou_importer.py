@@ -230,7 +230,7 @@ def dhis2_ou_importer(
             the_task.status = ERRORED
             the_task.result = {"message": res_string}
             return
-
+    the_task.report_progress_and_stop_if_killed(progress_message="fetching org units")
     orgunits = fetch_orgunits(connection_config)
 
     version, _created = SourceVersion.objects.get_or_create(number=source_version_number, data_source=source)
@@ -250,13 +250,15 @@ def dhis2_ou_importer(
         logger.debug(("%d org units records deleted" % version_count).upper())
 
     type_dict = {}
-    # TO-DO:  Import org unit type
-    unknown_unit_type, _created = OrgUnitType.objects.get_or_create(name="%s-%s" % (source.name, "Unknown"))
+    unknown_unit_type, _created = OrgUnitType.objects.get_or_create(name="%s-%s-%d" % (source.name, "Unknown", source.id))
+    for project in source.projects.all():
+        unknown_unit_type.projects.add(project)
     group_dict = {}
 
     index = 0
     unit_dict = dict()
     logger.debug("about to create orgunits", len(orgunits))
+    the_task.report_progress_and_stop_if_killed(progress_value=0, end_value=len(orgunits), progress_message="Importing org units")
     for row in orgunits:
         try:
             org_unit = OrgUnit()
@@ -275,7 +277,8 @@ def dhis2_ou_importer(
             org_unit.save()
 
             res_string = "%s sec, processed %i org units" % (time.time() - start, index)
-            the_task.report_progress_and_stop_if_killed(progress_message=res_string)
+            the_task.report_progress_and_stop_if_killed(progress_message=res_string, progress_value=index)
+
             # log progress
             if index % 100 == 0:
                 logger.debug(res_string)

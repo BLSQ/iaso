@@ -269,6 +269,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Task patched successfully',
         id: 'iaso.snackBar.patchTaskSuccess',
     },
+    createDataSourceError: {
+        defaultMessage: 'Error creating the data source',
+        id: 'iaso.snackBar.createDataSourceError',
+    },
+    updateDataSourceError: {
+        defaultMessage: 'Error updating the data source',
+        id: 'iaso.snackBar.updateDataSourceError',
+    },
 });
 
 export default MESSAGES;

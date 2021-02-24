@@ -30,10 +30,33 @@ class DataSourceSerializer(serializers.ModelSerializer):
         ds = DataSource(**validated_data)
         ds.save()
         account = self.context["request"].user.iaso_profile.account
-        project = account.project_set.first()  # not wonderful, there should maybe be a default project rather than this
-        ds.projects.add(project)
+        projects = account.project_set.filter(id__in=self.context['request'].data['project_ids'])
+        if projects is not None:
+            for project in projects:
+                ds.projects.add(project)
         return ds
 
+    def update(self, data_source, validated_data):
+        name = validated_data.pop("name", None)
+        read_only = validated_data.pop("read_only", None)
+        description = validated_data.pop("description", None)
+        account = self.context["request"].user.iaso_profile.account
+        projects = account.project_set.filter(id__in=self.context['request'].data['project_ids'])
+
+        if name is not None:
+            data_source.name = name
+        if read_only is not None:
+            data_source.read_only = read_only
+        if description is not None:
+            data_source.description = description
+
+        data_source.save()
+
+        if projects is not None:
+            data_source.projects.clear()
+            for project in projects:
+                data_source.projects.add(project)
+        return data_source
 
 class DataSourceViewSet(ModelViewSet):
     """ Data source API

@@ -53,7 +53,7 @@ class Project(models.Model):
         return "%s " % (self.name,)
 
     def as_dict(self):
-        return {"name": self.name, "app_id": self.app_id}
+        return {"id":self.id, "name": self.name, "app_id": self.app_id}
 
     def has_feature(self, feature_code):
         return self.feature_flags.filter(code=feature_code).exists()

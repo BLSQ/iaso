@@ -182,6 +182,7 @@ class InputComponent extends Component {
             options,
             intl: { formatMessage },
             disabled,
+            multiline,
             clearable,
             label,
             labelString,
@@ -226,6 +227,7 @@ class InputComponent extends Component {
                     />
                     <OutlinedInput
                         size="small"
+                        multiline={multiline}
                         disabled={disabled}
                         id={`input-text-${keyValue}`}
                         value={inputValue}
@@ -413,6 +415,7 @@ InputComponent.defaultProps = {
     errors: [],
     options: [],
     disabled: false,
+    multiline: false,
     clearable: true,
     label: undefined,
     labelString: '',
@@ -434,6 +437,7 @@ InputComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     options: PropTypes.array,
     disabled: PropTypes.bool,
+    multiline: PropTypes.bool,
     clearable: PropTypes.bool,
     label: PropTypes.object,
     labelString: PropTypes.string,

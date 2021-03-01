@@ -513,6 +513,6 @@
     "iaso.devices.timeSynched": "Time synchronised",
     "iaso.devices.timeCreated": "Date created",
     "iaso.devices.timeUpdated": "Date modified",
-    "iaso.label.devices": "Devices"
+    "iaso.label.devices": "Devices",
     "vegavis.numparticipants": "Number of participants"
 }

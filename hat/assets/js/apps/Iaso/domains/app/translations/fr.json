@@ -528,7 +528,7 @@
     "iaso.devices.timeSynched": "Temp de synchronisation",
     "iaso.devices.timeCreated": "Date de création",
     "iaso.devices.timeUpdated": "Dernière modification",
-    "iaso.label.devices": "Appareils"
+    "iaso.label.devices": "Appareils",
     "iaso.tasks.killSignalSent": "Signal d'arrêt envoyé"
 }
 

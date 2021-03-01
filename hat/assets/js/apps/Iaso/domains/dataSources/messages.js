@@ -25,6 +25,30 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Read Only',
         id: 'iaso.dataSources.dataSourceReadOnly',
     },
+    projects: {
+        id: 'iaso.label.projects',
+        defaultMessage: 'Projects',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    edit: {
+        id: 'iaso.label.edit',
+        defaultMessage: 'Edit',
+    },
+    createDataSource: {
+        defaultMessage: 'Create data sources',
+        id: 'iaso.dataSources.create',
+    },
+    updateDataSource: {
+        defaultMessage: 'Update data sources',
+        id: 'iaso.dataSources.update',
+    },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
 });
 
 export default MESSAGES;

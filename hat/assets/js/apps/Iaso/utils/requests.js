@@ -533,3 +533,24 @@ export const fetchDevicesAsDict = (dispatch, url) =>
             console.error('Error while fetching devices list:', error);
             throw error;
         });
+
+export const createDataSource = (dispatch, dataSource) =>
+    postRequest('/api/datasources/', dataSource).catch(error => {
+        dispatch(
+            enqueueSnackbar(
+                errorSnackBar('createDataSourceError', null, error),
+            ),
+        );
+        throw error;
+    });
+
+export const updateDataSource = (dispatch, dataSourceId, dataSource) =>
+    putRequest(`/api/datasources/${dataSourceId}/`, dataSource).catch(error => {
+        dispatch(
+            enqueueSnackbar(
+                errorSnackBar('updateDataSourceError', null, error),
+            ),
+        );
+        throw error;
+    });
+

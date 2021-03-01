@@ -56,7 +56,17 @@ export const getPath = path => {
 export const formsPath = {
     baseUrl: baseUrls.forms,
     permission: 'iaso_forms',
-    params: [...paginationPathParams],
+    params: [
+        ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'searchActive',
+        },
+    ],
     component: props => <Forms {...props} />,
     isRootUrl: true,
 };

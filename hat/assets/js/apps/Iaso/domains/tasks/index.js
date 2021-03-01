@@ -18,7 +18,6 @@ import { useSafeIntl } from '../../hooks/intl';
 import { fetchTasks } from '../../utils/requests';
 
 const baseUrl = baseUrls.tasks;
-const defaultOrder = 'created_at';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -52,7 +51,6 @@ const Tasks = () => {
                 exportButtons={false}
                 dataKey="tasks"
                 fetchItems={fetchTasks}
-                defaultSorted={[{ id: defaultOrder, desc: true }]}
                 columns={tasksTableColumns(intl.formatMessage, killTaskAction)}
                 extraComponent={
                     <Button

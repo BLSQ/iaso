@@ -7,6 +7,7 @@ import MESSAGES from './messages';
 const tasksTableColumns = (formatMessage, killTaskAction) => [
     {
         Header: formatMessage(MESSAGES.status),
+        sortable: false,
         accessor: 'status',
         Cell: settings => {
             const statusCode =
@@ -32,6 +33,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
     },
     {
         Header: formatMessage(MESSAGES.progress),
+        sortable: false,
         accessor: 'progress',
         Cell: settings => (
             <span>
@@ -50,6 +52,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
     },
     {
         Header: formatMessage(MESSAGES.message),
+        sortable: false,
         accessor: 'message',
         Cell: settings => (
             <span>
@@ -61,6 +64,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
     },
     {
         Header: formatMessage(MESSAGES.timeCreated),
+        sortable: false,
         accessor: 'created_at',
         Cell: settings => (
             <span>
@@ -70,6 +74,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
     },
     {
         Header: formatMessage(MESSAGES.timeStart),
+        sortable: false,
         accessor: 'started_at',
         Cell: settings => (
             <span>
@@ -82,6 +87,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
     },
     {
         Header: formatMessage(MESSAGES.timeEnd),
+        sortable: false,
         accessor: 'ended_at',
         Cell: settings => (
             <span>

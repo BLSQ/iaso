@@ -520,3 +520,16 @@ export const fetchTasks = (dispatch, url) =>
             console.error('Error while fetching tasks list:', error);
             throw error;
         });
+
+export const fetchDevicesAsDict = (dispatch, url) =>
+    getRequest(url)
+        .then(data => data)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('fetchDevicesError', null, error),
+                ),
+            );
+            console.error('Error while fetching devices list:', error);
+            throw error;
+        });

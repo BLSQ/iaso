@@ -24,7 +24,6 @@ class Device(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
 
-
 class DeviceOwnership(models.Model):
     device = models.ForeignKey("Device", on_delete=models.CASCADE)
     project = models.ForeignKey("Project", blank=True, null=True, on_delete=models.DO_NOTHING)

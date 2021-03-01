@@ -57,6 +57,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Tasks',
         id: 'iaso.label.tasks',
     },
+    monitoring: {
+        defaultMessage: 'Monitoring',
+        id: 'iaso.label.monitoring',
+    },
 });
 
 export default MESSAGES;

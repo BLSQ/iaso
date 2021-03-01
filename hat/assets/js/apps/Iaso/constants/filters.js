@@ -671,3 +671,13 @@ export const linksFilters = (
     ];
     return filters;
 };
+
+export const formsFilters = () => {
+    const filters = [
+        {
+            ...search(),
+            column: 1,
+        },
+    ];
+    return filters;
+};

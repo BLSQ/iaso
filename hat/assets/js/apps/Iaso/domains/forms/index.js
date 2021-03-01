@@ -17,10 +17,11 @@ import MESSAGES from './messages';
 import { useSafeIntl } from '../../hooks/intl';
 
 import { baseUrls } from '../../constants/urls';
+import { formsFilters } from '../../constants/filters';
 
 const baseUrl = baseUrls.forms;
 
-const Forms = () => {
+const Forms = props => {
     const [forceRefresh, setForceRefresh] = useState(false);
     const reduxPage = useSelector(state => state.forms.formsPage);
     const dispatch = useDispatch();
@@ -29,6 +30,7 @@ const Forms = () => {
         dispatch(fetchAllProjects());
         dispatch(fetchAllOrgUnitTypes());
     }, []);
+
     return (
         <>
             <TopBar title={intl.formatMessage(MESSAGES.title)} />
@@ -37,6 +39,7 @@ const Forms = () => {
                 endPointPath="forms"
                 dataKey="forms"
                 apiParams={{
+                    ...props.params,
                     all: true,
                 }}
                 fetchItems={fetchForms}
@@ -59,6 +62,9 @@ const Forms = () => {
                         onSuccess={() => setForceRefresh(true)}
                     />
                 }
+                toggleActiveSearch
+                searchActive
+                filters={formsFilters()}
             />
         </>
     );

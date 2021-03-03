@@ -136,11 +136,10 @@ class Instances extends Component {
             fetchFormDetail,
         } = this.props;
         fetchFormDetail(formId);
-        this.fetchInstances().then(() => {
-            if (tab === 'map') {
-                this.fetchSmallInstances();
-            }
-        });
+        this.fetchInstances(false);
+        if (tab === 'map') {
+            this.fetchSmallInstances();
+        }
     }
 
     componentDidUpdate(prevProps) {
@@ -268,14 +267,17 @@ class Instances extends Component {
         );
     }
 
-    fetchInstances() {
+    fetchInstances(changeLoad = true) {
         const { params, dispatch } = this.props;
 
         const url = this.getEndpointUrl();
-
-        dispatch(this.props.setInstancesFetching(true));
+        if (changeLoad) {
+            dispatch(this.props.setInstancesFetching(true));
+        }
         return fetchInstancesAsDict(dispatch, url).then(instancesData => {
-            dispatch(this.props.setInstancesFetching(false));
+            if (changeLoad) {
+                dispatch(this.props.setInstancesFetching(false));
+            }
             this.props.setInstances(
                 instancesData.instances,
                 params,

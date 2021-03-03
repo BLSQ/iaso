@@ -55,19 +55,20 @@ const requests = [
     },
 ];
 
+let connectedWrapper;
+
 describe('Instances connected component', () => {
     before(() => {
         nock.cleanAll();
         nock.abortPendingRequests();
         mockGetRequestsList(requests);
     });
-
     it('mount properly', () => {
-        const connectedWrapper = mount(
+        connectedWrapper = mount(
             renderWithMuiTheme(
                 renderWithStore(
                     <ConnectedInstances
-                        params={{ formId }}
+                        params={{ formId, tab: 'map' }}
                         router={{ goBack: () => null }}
                     />,
                 ),
@@ -75,10 +76,7 @@ describe('Instances connected component', () => {
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });
-
-    describe('should connect to api', () => {
-        it('and call completeness api', () => {
-            expect(nock.activeMocks()).to.have.lengthOf(0);
-        });
+    it('should connect and call the api', () => {
+        expect(nock.activeMocks()).to.have.lengthOf(0);
     });
 });

@@ -107,6 +107,12 @@ const SingleTable = ({
     ]);
 
     useEffect(() => {
+        if (results && results.list) {
+            setTableResults(results);
+        }
+    }, [results]);
+
+    useEffect(() => {
         if (forceRefresh) {
             handleFetch();
             onForceRefreshDone();

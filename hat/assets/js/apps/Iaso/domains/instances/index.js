@@ -182,6 +182,16 @@ class Instances extends Component {
         }
     }
 
+    onSearch() {
+        const { params } = this.props;
+        this.fetchInstances();
+        if (params.tab === 'map') {
+            this.fetchSmallInstances();
+        } else {
+            this.props.setInstancesSmallDict(null);
+        }
+    }
+
     getFilters() {
         const { params } = this.props;
         return {
@@ -266,7 +276,6 @@ class Instances extends Component {
         dispatch(this.props.setInstancesFetching(true));
         return fetchInstancesAsDict(dispatch, url).then(instancesData => {
             dispatch(this.props.setInstancesFetching(false));
-            console.log('fetchInstancesAsDict done');
             this.props.setInstances(
                 instancesData.instances,
                 params,
@@ -399,12 +408,7 @@ class Instances extends Component {
                     <InstancesFiltersComponent
                         baseUrl={baseUrl}
                         params={params}
-                        onSearch={() => {
-                            this.fetchInstances();
-                            if (params.tab === 'map') {
-                                this.fetchSmallInstances();
-                            }
-                        }}
+                        onSearch={() => this.onSearch()}
                     />
                     {tab === 'list' && (
                         <Grid

@@ -257,6 +257,7 @@ class Table extends Component {
                     selection={selection}
                     hidden={!multiSelect}
                     actions={actions}
+                    reset={() => setTableSelection('reset')}
                 />
                 <div
                     className={classNames(classes.reactTable, {

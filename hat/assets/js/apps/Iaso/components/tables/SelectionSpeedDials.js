@@ -29,6 +29,7 @@ const SelectionSpeedDials = ({
     intl: { formatMessage },
     actions,
     selection,
+    reset,
 }) => {
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
@@ -40,12 +41,7 @@ const SelectionSpeedDials = ({
     const handleOpen = () => {
         setOpen(true);
     };
-    const activeAction = actions.filter(a => {
-        if (typeof a.disabled === 'function') {
-            return !a.disabled(selection);
-        }
-        return !a.disabled;
-    });
+    const activeAction = actions.filter(a => !a.disabled);
     return (
         <ClickAwayListener onClickAway={() => handleClose()}>
             <SpeedDial
@@ -60,9 +56,17 @@ const SelectionSpeedDials = ({
                 {activeAction.map(action => (
                     <SpeedDialAction
                         key={action.label}
-                        icon={action.icon}
+                        icon={
+                            typeof action.icon === 'function'
+                                ? action.icon(selection, reset)
+                                : action.icon
+                        }
                         tooltipTitle={action.label}
-                        onClick={() => action.onClick(selection)}
+                        onClick={() =>
+                            action.onClick
+                                ? action.onClick(selection)
+                                : () => null
+                        }
                     />
                 ))}
             </SpeedDial>
@@ -73,6 +77,7 @@ const SelectionSpeedDials = ({
 SelectionSpeedDials.defaultProps = {
     hidden: false,
     actions: [],
+    reset: () => null,
 };
 
 SelectionSpeedDials.propTypes = {
@@ -80,6 +85,7 @@ SelectionSpeedDials.propTypes = {
     intl: PropTypes.object.isRequired,
     actions: PropTypes.array,
     selection: PropTypes.object.isRequired,
+    reset: PropTypes.func,
 };
 
 export default injectIntl(SelectionSpeedDials);

@@ -1,7 +1,8 @@
 from django.contrib.gis.geos import Point
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from hat.common.utils import queryset_iterator
 from iaso.models import Instance, OrgUnit, Form, Project
@@ -16,7 +17,7 @@ from iaso.utils import timestamp_to_datetime
 from .common import safe_api_import
 from .instance_filters import parse_instance_filters
 from hat.audit.models import log_modification, INSTANCE_API
-from rest_framework import serializers
+from rest_framework import serializers, status
 import iaso.periods as periods
 
 
@@ -256,6 +257,33 @@ class InstancesViewSet(viewsets.ViewSet):
         log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
+    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasInstancePermission])
+    def bulkdelete(self, request):
+        select_all = request.data.get("select_all", None)
+        selected_ids = request.data.get("selected_ids", None)
+        unselected_ids = request.data.get("unselected_ids", None)
+        filters = parse_instance_filters(request.data)
+        instances_query = Instance.objects.order_by("-id")
+        profile = request.user.iaso_profile
+        instances_query = instances_query.filter(project__account=profile.account)
+        instances_query = instances_query.prefetch_related("form")
+        instances_query = instances_query.exclude(file="").exclude(device__test_device=True)
+        instances_query = instances_query.for_filters(**filters)
+        if not select_all:
+            instances_query = instances_query.filter(pk__in=selected_ids)
+        else:
+            instances_query = instances_query.exclude(pk__in=unselected_ids)
+
+        try:
+            instances_query.update(deleted=True)
+        except Exception as e:
+            return Response({
+                "result": "A problem happened while deleting instances"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "result": "success",
+        }, status=201)
 
 def import_data(instances, user, app_id):
     project = Project.objects.get_for_user_and_app_id(user, app_id)

@@ -553,4 +553,3 @@ export const updateDataSource = (dispatch, dataSourceId, dataSource) =>
         );
         throw error;
     });
-

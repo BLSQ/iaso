@@ -44,7 +44,7 @@ import {
 } from './utils';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
-import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import DeleteDialog from './components/DeleteInstanceDialog';
 import TopBar from '../../components/nav/TopBarComponent';
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
@@ -99,7 +99,7 @@ class Instances extends Component {
             tableColumns: [],
             tab: props.params.tab ? props.params.tab : 'list',
             visibleColumns: [],
-            selection: { selectCount: 0 },
+            forceRefresh: false,
         };
     }
 
@@ -195,8 +195,8 @@ class Instances extends Component {
 
     getFilters() {
         const { params } = this.props;
-        return {
-            form_id: params.formId,
+        const allFilters = {
+            form_id: parseInt(params.formId, 10),
             withLocation: params.withLocation,
             orgUnitTypeId: params.orgUnitTypeId,
             deviceId: params.deviceId,
@@ -215,6 +215,13 @@ class Instances extends Component {
                 : null,
             showDeleted: params.showDeleted,
         };
+        const filters = {};
+        Object.keys(allFilters).forEach(k => {
+            if (allFilters[k]) {
+                filters[k] = allFilters[k];
+            }
+        });
+        return filters;
     }
 
     getEndpointUrl(toExport, exportType = 'csv', asSmallDict = false) {
@@ -234,6 +241,10 @@ class Instances extends Component {
             false,
             asSmallDict,
         );
+    }
+
+    setForceRefresh(forceRefresh) {
+        this.setState({ forceRefresh });
     }
 
     handleChangeTab(tab, redirect = true) {
@@ -346,28 +357,20 @@ class Instances extends Component {
             redirectTo,
         } = this.props;
 
-        const { tab, tableColumns, visibleColumns, selection } = this.state;
+        const { tab, tableColumns, visibleColumns, forceRefresh } = this.state;
 
         const selectionActions = [
             {
-                icon: (
+                icon: (newSelection, resetSelection) => (
                     <DeleteDialog
-                        titleMessage={{
-                            ...MESSAGES.deleteInstanceCount,
-                            values: {
-                                count: selection.selectCount,
-                            },
-                        }}
-                        message={MESSAGES.deleteWarning}
-                        onConfirm={() => console.log('CONFIRM')}
-                        onlyIcon
+                        selection={newSelection}
+                        filters={this.getFilters()}
+                        setForceRefresh={() => this.setForceRefresh(true)}
+                        resetSelection={resetSelection}
                     />
                 ),
                 label: formatMessage(MESSAGES.deleteInstance),
-                onClick: newSelection => {
-                    this.setState({ selection: newSelection });
-                },
-                disabled: newSelection => newSelection.selectCount === 0,
+                disabled: false,
             },
         ];
 
@@ -488,6 +491,10 @@ class Instances extends Component {
                     )}
                     {tab === 'list' && tableColumns.length > 0 && (
                         <SingleTable
+                            forceRefresh={forceRefresh}
+                            onForceRefreshDone={() =>
+                                this.setForceRefresh(false)
+                            }
                             apiParams={{
                                 ...params,
                             }}

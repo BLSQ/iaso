@@ -85,7 +85,6 @@ export const customMarkerOptions = {
     className: 'marker-custom primary',
     html: `<span class="marker_bg"></span><span>
         ${L.Util.template(svgString)}
-        <img src="${STATIC_URL}images/marker-shadow.png"/>
     </span>`,
     iconSize: new L.Point(24, 34),
     popupAnchor: [-1, -28],
@@ -99,7 +98,7 @@ export const customColorMarkerOptions = (color, iconName) => ({
         iconName
             ? `<img class="svg-icon" style="background-color:${color}" src="${STATIC_URL}images/${iconName}" />`
             : '<span class="marker_bg"></span>'
-    }<img class="marker_shadow" src="${STATIC_URL}images/marker-shadow.png"/>`,
+    }`,
     iconSize: new L.Point(24, 34),
     popupAnchor: [-1, -28],
     iconAnchor: [12, 32],

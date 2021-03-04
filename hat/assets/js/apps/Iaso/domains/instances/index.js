@@ -132,11 +132,14 @@ class Instances extends Component {
 
     componentDidMount() {
         const {
-            params: { formId },
+            params: { formId, tab },
             fetchFormDetail,
         } = this.props;
         fetchFormDetail(formId);
-        this.fetchInstances();
+        this.fetchInstances(tab !== 'map');
+        if (tab === 'map') {
+            this.fetchSmallInstances();
+        }
     }
 
     componentDidUpdate(prevProps) {
@@ -144,6 +147,7 @@ class Instances extends Component {
             params,
             reduxPage,
             intl: { formatMessage },
+            instancesSmall,
         } = this.props;
         const { tableColumns } = this.state;
         if (
@@ -157,6 +161,9 @@ class Instances extends Component {
 
         if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
+            if (params.tab === 'map' && !instancesSmall) {
+                this.fetchSmallInstances();
+            }
         }
         if (
             reduxPage.list &&
@@ -171,6 +178,16 @@ class Instances extends Component {
                     defaultOrder,
                 ),
             );
+        }
+    }
+
+    onSearch() {
+        const { params } = this.props;
+        this.fetchInstances();
+        if (params.tab === 'map') {
+            this.fetchSmallInstances();
+        } else {
+            this.props.setInstancesSmallDict(null);
         }
     }
 
@@ -238,25 +255,35 @@ class Instances extends Component {
         router.goBack();
     }
 
-    fetchInstances() {
+    fetchSmallInstances() {
+        const { dispatch } = this.props;
+        const urlSmall = this.getEndpointUrl(false, '', true);
+        dispatch(this.props.setInstancesFetching(true));
+        return fetchInstancesAsSmallDict(dispatch, urlSmall).then(
+            smallInstancesData => {
+                this.props.setInstancesSmallDict(smallInstancesData);
+                dispatch(this.props.setInstancesFetching(false));
+            },
+        );
+    }
+
+    fetchInstances(changeLoad = true) {
         const { params, dispatch } = this.props;
 
         const url = this.getEndpointUrl();
-        const urlSmall = this.getEndpointUrl(false, '', true);
-
-        dispatch(this.props.setInstancesFetching(true));
-        return Promise.all([
-            fetchInstancesAsDict(dispatch, url),
-            fetchInstancesAsSmallDict(dispatch, urlSmall),
-        ]).then(([instancesData, smallInstancesData]) => {
+        if (changeLoad) {
+            dispatch(this.props.setInstancesFetching(true));
+        }
+        return fetchInstancesAsDict(dispatch, url).then(instancesData => {
+            if (changeLoad) {
+                dispatch(this.props.setInstancesFetching(false));
+            }
             this.props.setInstances(
                 instancesData.instances,
                 params,
                 instancesData.count,
                 instancesData.pages,
             );
-            this.props.setInstancesSmallDict(smallInstancesData);
-            dispatch(this.props.setInstancesFetching(false));
             return {
                 list: instancesData.instances,
                 count: instancesData.count,
@@ -378,12 +405,12 @@ class Instances extends Component {
                     </Grid>
                 </TopBar>
 
-                {(fetching || !instancesSmall) && <LoadingSpinner />}
+                {fetching && <LoadingSpinner />}
                 <Box className={classes.containerFullHeightPadded}>
                     <InstancesFiltersComponent
                         baseUrl={baseUrl}
                         params={params}
-                        onSearch={() => this.fetchInstances()}
+                        onSearch={() => this.onSearch()}
                     />
                     {tab === 'list' && (
                         <Grid
@@ -456,7 +483,7 @@ class Instances extends Component {
                             isFullHeight={false}
                         />
                     )}
-                    {!fetching && tab === 'map' && (
+                    {!fetching && instancesSmall && tab === 'map' && (
                         <div className={classes.containerMarginNeg}>
                             <InstancesMap instances={instancesSmall} />
                         </div>

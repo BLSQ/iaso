@@ -16,6 +16,8 @@ import getTableUrl, {
     getParamsKey,
     getTableParams,
     tableInitialResult,
+    setTableSelection,
+    selectionInitialState,
 } from '../../utils/tableUtils';
 
 const useStyles = makeStyles(theme => ({
@@ -47,8 +49,11 @@ const SingleTable = ({
     toggleActiveSearch,
     isFullHeight,
     setIsLoading,
+    multiSelect,
+    selectionActions,
 }) => {
     const [loading, setLoading] = useState(false);
+    const [selection, setSelection] = useState(selectionInitialState);
     const [didFetchData, setDidFetchData] = useState(false);
     const [firstLoad, setfFrstLoad] = useState(true);
     const [tableResults, setTableResults] = useState(tableInitialResult);
@@ -127,6 +132,16 @@ const SingleTable = ({
             onExpandedChange: newExpanded => setExpanded(newExpanded),
         };
     }
+
+    const handleTableSelection = (
+        selectionType,
+        items = [],
+        totalCount = 0,
+    ) => {
+        setSelection(
+            setTableSelection(selection, selectionType, items, totalCount),
+        );
+    };
     return (
         <Box
             className={
@@ -163,6 +178,12 @@ const SingleTable = ({
                     count={count}
                     data={list || []}
                     pages={pages}
+                    multiSelect={multiSelect}
+                    selectionActions={selectionActions}
+                    selection={selection}
+                    setTableSelection={(selectionType, items, totalCount) =>
+                        handleTableSelection(selectionType, items, totalCount)
+                    }
                     defaultSorted={defaultSorted}
                     columns={
                         Array.isArray(columns) ? columns : columns(handleFetch)
@@ -212,6 +233,8 @@ SingleTable.defaultProps = {
     fetchItems: null,
     isFullHeight: true,
     setIsLoading: true,
+    multiSelect: false,
+    selectionActions: [],
 };
 
 SingleTable.propTypes = {
@@ -239,6 +262,8 @@ SingleTable.propTypes = {
     toggleActiveSearch: PropTypes.bool,
     isFullHeight: PropTypes.bool,
     setIsLoading: PropTypes.bool,
+    multiSelect: PropTypes.bool,
+    selectionActions: PropTypes.array,
 };
 
 export default withRouter(SingleTable);

@@ -44,6 +44,7 @@ import {
 } from './utils';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
+import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
@@ -98,6 +99,7 @@ class Instances extends Component {
             tableColumns: [],
             tab: props.params.tab ? props.params.tab : 'list',
             visibleColumns: [],
+            selection: { selectCount: 0 },
         };
     }
 
@@ -317,7 +319,30 @@ class Instances extends Component {
             redirectTo,
         } = this.props;
 
-        const { tab, tableColumns, visibleColumns } = this.state;
+        const { tab, tableColumns, visibleColumns, selection } = this.state;
+
+        const selectionActions = [
+            {
+                icon: (
+                    <DeleteDialog
+                        titleMessage={{
+                            ...MESSAGES.deleteInstanceCount,
+                            values: {
+                                count: selection.selectCount,
+                            },
+                        }}
+                        message={MESSAGES.deleteWarning}
+                        onConfirm={() => console.log('CONFIRM')}
+                        onlyIcon
+                    />
+                ),
+                label: formatMessage(MESSAGES.deleteInstance),
+                onClick: newSelection => {
+                    this.setState({ selection: newSelection });
+                },
+                disabled: newSelection => newSelection.selectCount === 0,
+            },
+        ];
 
         return (
             <section className={classes.relativeContainer}>
@@ -454,6 +479,8 @@ class Instances extends Component {
                             hideGpkg
                             exportButtons={false}
                             isFullHeight={false}
+                            multiSelect
+                            selectionActions={selectionActions}
                         />
                     )}
                     {!fetching && tab === 'map' && (

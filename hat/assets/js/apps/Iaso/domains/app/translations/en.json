@@ -514,5 +514,7 @@
     "iaso.devices.timeCreated": "Date created",
     "iaso.devices.timeUpdated": "Date modified",
     "iaso.label.devices": "Devices",
-    "vegavis.numparticipants": "Number of participants"
+    "vegavis.numparticipants": "Number of participants",
+    "iaso.instance.delete": "Delete instance(s)",
+    "iaso.instance.deleteCount": "Delete {count} instance(s)"
 }

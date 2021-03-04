@@ -136,7 +136,7 @@ class Instances extends Component {
             fetchFormDetail,
         } = this.props;
         fetchFormDetail(formId);
-        this.fetchInstances(false);
+        this.fetchInstances(tab !== 'map');
         if (tab === 'map') {
             this.fetchSmallInstances();
         }

@@ -31,9 +31,11 @@ const getTableUrl = (
 
     delete clonedParams.locationLimit;
 
+    const usedParams = [];
     Object.keys(clonedParams).forEach(key => {
         const value = clonedParams[key];
-        if (value && !url.includes(key)) {
+        if (value && !usedParams.includes(key)) {
+            usedParams.push(key);
             url += `&${key}=${value}`;
         }
     });

@@ -217,6 +217,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.status',
         defaultMessage: 'Status',
     },
+    instances_count: {
+        id: 'iaso.orgUnits.instances_count',
+        defaultMessage: "Nombre d'instances",
+    },
     parent: {
         id: 'iaso.label.parent',
         defaultMessage: 'Parent',

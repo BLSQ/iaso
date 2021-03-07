@@ -86,6 +86,10 @@ export const hasInstances = (formatMessage, urlKey = 'hasInstances') => ({
             label: formatMessage(MESSAGES.without),
             value: 'false',
         },
+        {
+            label: formatMessage(MESSAGES.duplicates),
+            value: 'duplicates',
+        },
     ],
     label: MESSAGES.hasInstances,
     type: 'select',

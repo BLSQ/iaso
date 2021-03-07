@@ -66,6 +66,11 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             ),
         },
         {
+            Header: formatMessage(MESSAGES.instances_count),
+            accessor: 'instances_count',
+            Cell: settings => <span>{settings.original.instances_count}</span>,
+        },
+        {
             Header: formatMessage(MESSAGES.updated_at),
             accessor: 'updated_at',
             Cell: settings => (

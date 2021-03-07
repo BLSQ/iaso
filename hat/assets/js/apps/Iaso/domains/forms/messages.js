@@ -201,6 +201,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.without',
         defaultMessage: 'Without',
     },
+    duplicates: {
+        id: 'iaso.label.duplicates',
+        defaultMessage: 'Duplicates',
+    },
     shape: {
         id: 'iaso.forms.shape',
         defaultMessage: 'Shape',

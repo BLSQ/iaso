@@ -341,6 +341,10 @@ class OrgUnit(models.Model):
             res["version"] = self.version.number if self.version else None
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
+
+        if hasattr(self, "instances_count"):
+            res["instances_count"] = self.instances_count
+
         return res
 
     def as_small_dict(self):

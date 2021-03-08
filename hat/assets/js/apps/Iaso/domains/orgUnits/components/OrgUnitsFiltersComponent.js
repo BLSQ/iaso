@@ -79,23 +79,6 @@ class OrgUnitsFiltersComponent extends Component {
         onSearch();
     }
 
-    // onDateChange(value, urlKey) {
-    //     const {
-    //         params,
-    //         setInstancesFilterUpdated,
-    //         redirectToReplace,
-    //         baseUrl,
-    //     } = this.props;
-    //     setInstancesFilterUpdated(true);
-    //
-    //     const tempParams = {
-    //         ...params,
-    //         [urlKey]: value,
-    //     };
-    //
-    //     redirectToReplace(baseUrl, tempParams);
-    // }
-
     onChange(value, urlKey) {
         const {
             searchIndex,
@@ -119,23 +102,11 @@ class OrgUnitsFiltersComponent extends Component {
         }
         const searches = [...decodeSearch(params.searches)];
 
-        // searches[searchIndex].dateFrom =
-        //     searches[searchIndex].dateFrom !== null ||
-        //     searches[searchIndex].dateFrom !== undefined
-        //         ? moment(searches[searchIndex].dateFrom)
-        //         : null;
-        //
-        // searches[searchIndex].dateTo =
-        //     searches[searchIndex].dateTo !== null ||
-        //     searches[searchIndex].dateTo !== undefined
-        //         ? moment(searches[searchIndex].dateTo)
-        //         : null;
-
         searches[searchIndex] = {
             ...searches[searchIndex],
             [urlKey]: value,
         };
-        console.log(searches);
+
         const tempParams = {
             ...params,
             searches: encodeUriSearches(searches),

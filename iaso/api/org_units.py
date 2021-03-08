@@ -67,6 +67,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = self.get_queryset()
 
+        forms = Form.objects.all()
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "name").split(",")
@@ -97,7 +98,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             search_index = 0
             base_queryset = queryset
             for search in json.loads(searches):
-                additional_queryset = build_org_units_queryset(base_queryset, search, profile).annotate(
+                additional_queryset = build_org_units_queryset(base_queryset, search, profile, is_export, forms).annotate(
                     search_index=Value(search_index, IntegerField())
                 )
                 if search_index == 0:
@@ -107,19 +108,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 counts.append({"index": search_index, "count": additional_queryset.count()})
                 search_index += 1
         else:
-            queryset = build_org_units_queryset(queryset, request.GET, profile)
+            queryset = build_org_units_queryset(queryset, request.GET, profile, is_export, forms)
 
-        queryset = queryset.annotate(
-            instances_count=Count(
-                "instance",
-                filter=(~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True)),
-            )
-        )
-
-        if is_export:
-            forms = Form.objects.all()
-            annotations = {"form_" + str(frm.id) + "_instances":Sum(Case(When(Q(instance__form_id=frm.id) & ~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True), then=1), default=0, output_field=IntegerField())) for frm in forms}
-            queryset = queryset.annotate(**annotations)
         queryset = queryset.order_by(*order)
 
         if not is_export:
@@ -512,6 +502,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
         unselected_ids = request.data.get("unselected_ids", [])
         searches = request.data.get("searches", [])
 
+        csv_format = bool(request.query_params.get("csv"))
+        xlsx_format = bool(request.query_params.get("xlsx"))
+        gpkg_format = bool(request.query_params.get("gpkg"))
+        is_export = any([csv_format, xlsx_format, gpkg_format])
+        forms = Form.objects.all()
+
         # Restrict qs to org units accessible to the authenticated user
         queryset = self.get_queryset()
         if not select_all:
@@ -522,7 +518,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             base_queryset = queryset
             profile = request.user.iaso_profile
             for search in searches:
-                additional_queryset = build_org_units_queryset(base_queryset, search, profile)
+                additional_queryset = build_org_units_queryset(base_queryset, search, profile, is_export, forms)
                 if search_index == 0:
                     queryset = additional_queryset
                 else:
@@ -622,7 +618,7 @@ def import_data(org_units, user, app_id):
     return new_org_units
 
 
-def build_org_units_queryset(queryset, params, profile):  # TODO: move in viewset.get_queryset()
+def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TODO: move in viewset.get_queryset()
     validation_status = params.get("validation_status", OrgUnit.VALIDATION_VALID)
     has_instances = params.get("hasInstances", None)
     date_from = params.get("dateFrom", None)
@@ -689,7 +685,6 @@ def build_org_units_queryset(queryset, params, profile):  # TODO: move in viewse
 
     if date_from is not None and date_to is not None:
         queryset = queryset.filter(instance__created_at__range=[date_from, date_to])
-        print(queryset.query)
 
     if has_instances is not None:
         if has_instances == "true":
@@ -754,6 +749,18 @@ def build_org_units_queryset(queryset, params, profile):  # TODO: move in viewse
 
     if source_id:
         queryset = queryset.filter(sub_source=source_id)
+
+    queryset = queryset.annotate(
+        instances_count=Count(
+            "instance",
+            filter=(~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True)),
+        )
+    )
+
+    if is_export:
+        annotations = {"form_" + str(frm.id) + "_instances":Sum(Case(When(Q(instance__form_id=frm.id) & ~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True), then=1), default=0, output_field=IntegerField())) for frm in forms}
+        queryset = queryset.annotate(**annotations)
+
     queryset = queryset.select_related("version__data_source")
     queryset = queryset.select_related("org_unit_type")
     return queryset.distinct()

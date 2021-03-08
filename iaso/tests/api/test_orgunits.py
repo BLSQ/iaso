@@ -2,6 +2,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.test import tag
 import typing
+import datetime
 
 from iaso import models as m
 from hat.audit import models as am
@@ -99,6 +100,20 @@ class OrgUnitAPITestCase(APITestCase):
             username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[cls.jedi_council_endor]
         )
         cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_org_units"])
+
+        cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
+
+        cls.create_form_instance(
+            form=cls.form_1, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project
+        )
+
+        cls.create_form_instance(
+            form=cls.form_1, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project
+        )
+
+        cls.create_form_instance(
+            form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
+        )
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_not_authenticated(self):
@@ -289,6 +304,34 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["count"], 1)
         ou_id = response.json()["orgunits"][0]["id"]
         self.assertEqual(ou_id, self.jedi_council_corruscant.id)
+
+    @tag("iaso_only")
+    def test_org_unit_instance_duplicate_search(self):
+        """GET /orgunits/ with a search based on duplicates """
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","hasInstances":"duplicates","orgUnitParentId":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 1)
+        ou_id = response.json()["orgunits"][0]["id"]
+        self.assertEqual(ou_id, self.jedi_council_corruscant.id)
+
+    @tag("iaso_only")
+    def test_org_unit_instance_dates_search(self):
+        """GET /orgunits/ with a search based on dates """
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","dateFrom":"2021-02-10 00:00:00","dateTo":"2050-06-26 23:00:00","orgUnitParentId":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 1)
+        instances_count = response.json()["orgunits"][0]["instances_count"]
+        self.assertEqual(instances_count, m.Instance.objects.count())
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_with_multiple_searches(self):

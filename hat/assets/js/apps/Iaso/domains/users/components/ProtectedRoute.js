@@ -36,7 +36,7 @@ class ProtectedRoute extends Component {
     }
 
     render() {
-        const { component, currentUser, permission } = this.props;
+        const { component, currentUser, permission, activeLocale } = this.props;
         const clonedProps = {
             ...this.props,
         };
@@ -48,7 +48,10 @@ class ProtectedRoute extends Component {
             return null;
         }
         return (
-            <MuiPickersUtilsProvider utils={MomentUtils}>
+            <MuiPickersUtilsProvider
+                utils={MomentUtils}
+                locale={activeLocale.code}
+            >
                 <>
                     <SidebarMenu {...clonedProps} />
                     {isAuthorized && component}
@@ -71,10 +74,12 @@ ProtectedRoute.propTypes = {
     permission: PropTypes.any,
     currentUser: PropTypes.object,
     isRootUrl: PropTypes.bool,
+    activeLocale: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentUser: state.users.current,
+    activeLocale: state.app.locale,
 });
 
 const MapDispatchToProps = dispatch => ({

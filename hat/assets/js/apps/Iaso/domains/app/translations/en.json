@@ -310,7 +310,7 @@
     "iaso.orgUnits.title": "Org units",
     "iaso.orgUnits.titleMulti": "org units",
     "iaso.orgUnits.titleSingle": "org unit",
-    "iaso.orgUnits.instances_count": "Number of instances",
+    "iaso.orgUnits.instances_count": "Number of records",
     "iaso.orgUnits.type": "Type",
     "iaso.orgUnitsTypes.create": "Create org unit type",
     "iaso.orgUnitsTypes.dialog.delete": "Are you sure you want to delete this org unit type?",

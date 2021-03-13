@@ -46,7 +46,7 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"code": type(e).__name__, "message": str(e)})
 
     def update(self, export_request, validated_data):
-        DataValueExporter().export_instances(export_request, True)
+        DataValueExporter().export_instances(export_request)
         # this has a highly probable chance to timeout but the export will continue to be processed
         # still return the export request
         return export_request

@@ -343,7 +343,7 @@ class DataValueExporterTests(TestCase):
         # excercice
         instances_qs = Instance.objects.order_by("id").all()
 
-        DataValueExporter().export_instances(export_request, True)
+        DataValueExporter().export_instances(export_request)
         self.expect_logs(EXPORTED)
 
         instance.refresh_from_db()
@@ -393,7 +393,7 @@ class DataValueExporterTests(TestCase):
 
         # excercice
 
-        DataValueExporter().export_instances(export_request, True)
+        DataValueExporter().export_instances(export_request)
 
         self.expect_logs(EXPORTED)
 
@@ -428,7 +428,7 @@ class DataValueExporterTests(TestCase):
                 },
                 launcher=self.user,
             )
-            DataValueExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request)
 
         self.expect_logs(ERRORED)
 
@@ -438,6 +438,65 @@ class DataValueExporterTests(TestCase):
         )
         instance.refresh_from_db()
         self.assertIsNone(instance.last_export_success_at)
+
+    @responses.activate
+    def test_aggregate_export_continue_on_dhis2_errors(self):
+        self.setUpFormQuality()
+        # setup
+        # persist an instance
+        mapping_version = MappingVersion(
+            name="aggregate", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
+        )
+        mapping_version.save()
+
+        instance = self.build_instance(self.form)
+
+        mapping_quality_version = MappingVersion(
+            name="aggregate",
+            json=build_form_mapping_quality(),
+            form_version=self.form_quality_version,
+            mapping=self.mapping_quality,
+        )
+        mapping_quality_version.save()
+
+        instance_quality = self.build_instance(self.form_quality)
+
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={
+                "period_ids": ",".join(["201801", "2018Q1"]),
+                "form_ids": ",".join([str(self.form.id), str(self.form_quality.id)]),
+                "org_unit_id": instance.org_unit.id,
+            },
+            launcher=self.user,
+        )
+
+        # mock expected calls
+
+        responses.add(
+            responses.POST,
+            "https://dhis2.com/api/dataValueSets",
+            json=load_dhis2_fixture("datavalues-ok.json"),
+            status=200,
+        )
+
+        responses.add(responses.POST, "https://dhis2.com/api/completeDataSetRegistrations", json={}, status=200)
+        responses.add(
+            responses.POST,
+            "https://dhis2.com/api/dataValueSets",
+            json=load_dhis2_fixture("datavalues-error-assigned.json")["response"],
+            status=200,
+        )
+
+        DataValueExporter().export_instances(export_request, continue_on_error=True, page_size=1)
+
+        self.assertTrue(responses.assert_call_count("https://dhis2.com/api/dataValueSets", 2))
+
+        instance.refresh_from_db()
+        self.assertIsNotNone(instance.last_export_success_at)
+
+        instance_quality.refresh_from_db()
+        self.assertIsNone(instance_quality.last_export_success_at)
+
 
     @responses.activate
     def test_aggregate_export_handle_mapping_errors(self):
@@ -464,7 +523,7 @@ class DataValueExporterTests(TestCase):
                 launcher=self.user,
             )
 
-            DataValueExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request)
 
         self.expect_logs(ERRORED)
 
@@ -500,7 +559,7 @@ class DataValueExporterTests(TestCase):
                 },
                 launcher=self.user,
             )
-            DataValueExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request)
 
         self.expect_logs(ERRORED)
 

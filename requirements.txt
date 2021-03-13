@@ -49,7 +49,7 @@ flake8==3.7.9
 flake8-mypy==17.8.0
 mock==4.0.1
 redgreenunittest==0.1.1
-responses==0.10.9
+responses==0.12.1
 
 black==18.6b2
 pre-commit==1.14.4

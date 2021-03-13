@@ -17,10 +17,12 @@ from django.utils import timezone
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--user", type=str, help="username", required=True)
+
+        parser.add_argument("--continue_on_error", type=bool, help="continue on error")
         parser.add_argument("--formids", type=str, help="db id comma seperated of the forms", required=True)
 
     def handle(self, *args, **options):
-
+        continue_on_error = options.get("continue_on_error")
         user = m.User.objects.filter(username=options["user"]).first()
 
         form_ids = [
@@ -40,7 +42,7 @@ class Command(BaseCommand):
             print("export_request => ", export_request.id, export_request.status, export_request.params)
 
             self.log("Exporting", export_request.exportstatus_set.count(), "instances", timezone.now())
-            DataValueExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request, continue_on_error=continue_on_error)
             self.log("Exported", export_request.exportstatus_set.count(), "instances", timezone.now())
         except NothingToExportError as error:
             self.log("nothing to export : ", error)

@@ -265,7 +265,7 @@ class Command(BaseCommand):
             )
 
             print("exporting", export_request.exportstatus_set.count(), timezone.now())
-            DataValueExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request)
 
         if mode == "stats":
             for c in Instance.objects.with_status().counts_by_status():

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-
+import moment from 'moment';
 import { withStyles, Grid, Box, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -193,11 +193,25 @@ class OrgUnits extends Component {
     getEndpointUrl(toExport, exportType = 'csv', asLocation = false) {
         const { params } = this.props;
         const searches = decodeSearch(params.searches);
+
         searches.forEach((s, i) => {
             searches[i].orgUnitParentId = searches[i].levels
                 ? fetchLatestOrgUnitLevelId(searches[i].levels)
                 : null;
+
+            searches[i].dateFrom = searches[i].dateFrom
+                ? moment(searches[i].dateFrom)
+                      .startOf('day')
+                      .format('YYYY-MM-DD HH:MM')
+                : null;
+
+            searches[i].dateTo = searches[i].dateTo
+                ? moment(searches[i].dateTo)
+                      .endOf('day')
+                      .format('YYYY-MM-DD HH:MM')
+                : null;
         });
+
         const urlParams = {
             ...params,
             limit: params.pageSize ? params.pageSize : 50,

@@ -4,6 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
+import moment from 'moment';
 import { CirclePicker } from 'react-color';
 
 import { withStyles, FormLabel } from '@material-ui/core';
@@ -12,7 +13,6 @@ import Button from '@material-ui/core/Button';
 import Add from '@material-ui/icons/Add';
 import Search from '@material-ui/icons/Search';
 import classNames from 'classnames';
-
 import commonStyles from '../../../styles/common';
 import { getChipColors, chipColors } from '../../../constants/chipColors';
 
@@ -29,6 +29,7 @@ import {
 import { setFiltersUpdated, setOrgUnitsLocations } from '../actions';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
+import DatesRange from '../../../components/filters/DatesRange';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import { createUrl } from '../../../utils/fetchData';
@@ -100,10 +101,12 @@ class OrgUnitsFiltersComponent extends Component {
             }, 100);
         }
         const searches = [...decodeSearch(params.searches)];
+
         searches[searchIndex] = {
             ...searches[searchIndex],
             [urlKey]: value,
         };
+
         const tempParams = {
             ...params,
             searches: encodeUriSearches(searches),
@@ -164,9 +167,8 @@ class OrgUnitsFiltersComponent extends Component {
                         />
                         <div className={classes.colorContainer}>
                             <FormLabel className={classes.marginBottom}>
-                                <FormattedMessage {...MESSAGES.color} />
-:
-</FormLabel>
+                                <FormattedMessage {...MESSAGES.color} />:
+                            </FormLabel>
                             <CirclePicker
                                 width="100%"
                                 colors={chipColors}
@@ -180,66 +182,81 @@ class OrgUnitsFiltersComponent extends Component {
                             />
                         </div>
                     </Grid>
-                    <Grid item xs={4}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            filters={[
-                                extendFilter(
-                                    searchParams,
-                                    location(formatMessage),
-                                    (value, urlKey) =>
-                                        this.onChange(value, urlKey),
-                                    searchIndex,
-                                ),
-                                extendFilter(
-                                    searchParams,
-                                    shape(formatMessage),
-                                    (value, urlKey) =>
-                                        this.onChange(value, urlKey),
-                                    searchIndex,
-                                ),
-                                extendFilter(
-                                    searchParams,
-                                    hasInstances(formatMessage),
-                                    (value, urlKey) =>
-                                        this.onChange(value, urlKey),
-                                    searchIndex,
-                                ),
-                            ]}
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            filters={[
-                                extendFilter(
-                                    searchParams,
-                                    status(formatMessage),
-                                    (value, urlKey) =>
-                                        this.onChange(value, urlKey),
-                                    searchIndex,
-                                ),
-                                extendFilter(
-                                    searchParams,
-                                    source(sources || [], false),
-                                    (value, urlKey) =>
-                                        this.onChange(value, urlKey),
-                                    searchIndex,
-                                ),
-                            ]}
-                        />
-                        <OrgUnitsLevelsFiltersComponent
-                            onLevelsChange={levels =>
-                                this.onChange(levels, 'levels')
-                            }
-                            params={params}
-                            baseUrl={baseUrl}
-                            searchIndex={searchIndex}
-                        />
+                    <Grid item xs={8}>
+                        <Grid container spacing={4}>
+                            <Grid item xs={12}>
+                                <DatesRange
+                                    onChangeDate={(key, value) => {
+                                        this.onChange(value, key);
+                                    }}
+                                    dateFrom={searchParams.dateFrom}
+                                    dateTo={searchParams.dateTo}
+                                />
+                            </Grid>
+
+                            <Grid item xs={6}>
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    filters={[
+                                        extendFilter(
+                                            searchParams,
+                                            location(formatMessage),
+                                            (value, urlKey) =>
+                                                this.onChange(value, urlKey),
+                                            searchIndex,
+                                        ),
+                                        extendFilter(
+                                            searchParams,
+                                            shape(formatMessage),
+                                            (value, urlKey) =>
+                                                this.onChange(value, urlKey),
+                                            searchIndex,
+                                        ),
+                                        extendFilter(
+                                            searchParams,
+                                            hasInstances(formatMessage),
+                                            (value, urlKey) =>
+                                                this.onChange(value, urlKey),
+                                            searchIndex,
+                                        ),
+                                    ]}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    filters={[
+                                        extendFilter(
+                                            searchParams,
+                                            status(formatMessage),
+                                            (value, urlKey) =>
+                                                this.onChange(value, urlKey),
+                                            searchIndex,
+                                        ),
+                                        extendFilter(
+                                            searchParams,
+                                            source(sources || [], false),
+                                            (value, urlKey) =>
+                                                this.onChange(value, urlKey),
+                                            searchIndex,
+                                        ),
+                                    ]}
+                                />
+                                <OrgUnitsLevelsFiltersComponent
+                                    onLevelsChange={levels =>
+                                        this.onChange(levels, 'levels')
+                                    }
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    searchIndex={searchIndex}
+                                />
+                            </Grid>
+                        </Grid>
                     </Grid>
                 </Grid>
+
                 <Grid
                     container
                     spacing={4}

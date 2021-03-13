@@ -746,7 +746,7 @@ class Instance(models.Model):
                 filters={"instance_id": self.id}, launcher=launcher, force_export=force_export
             )
 
-            DataValueExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request)
             self.refresh_from_db()
         except NothingToExportError as error:
             print("Export failed for instance", self)
@@ -928,7 +928,7 @@ class ExportRequest(models.Model):
     errored_count = models.IntegerField()
 
     last_error_message = models.TextField()
-
+    continue_on_error = models.BooleanField(default=False)
     # user requested the export
     queued_at = models.DateTimeField(auto_now_add=True)
     # backend started processing the export

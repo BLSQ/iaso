@@ -605,7 +605,7 @@ class DataValueExporterTests(TestCase):
         # excercice
         instances_qs = Instance.objects.order_by("id").all()
 
-        DataValueExporter().export_instances(export_request, True)
+        DataValueExporter().export_instances(export_request)
 
         self.expect_logs(EXPORTED)
 
@@ -728,7 +728,7 @@ class DataValueExporterTests(TestCase):
         # excercice
         instances_qs = Instance.objects.order_by("id").all()
 
-        DataValueExporter().export_instances(export_request, True)
+        DataValueExporter().export_instances(export_request)
 
         self.expect_logs(EXPORTED)
 
@@ -934,7 +934,7 @@ class DataValueExporterTests(TestCase):
         # excercice
         instances_qs = Instance.objects.order_by("id").all()
 
-        DataValueExporter().export_instances(export_request, True)
+        DataValueExporter().export_instances(export_request)
 
         self.expect_logs(ERRORED)
 

@@ -769,9 +769,10 @@ class DataValueExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.save()
 
-    def export_instances(self, export_request, export, page_size=25):
+    def export_instances(self, export_request, page_size=25, continue_on_error=False):
         export_request.status = RUNNING
         export_request.started_at = timezone.now()
+        export_request.continue_on_error = continue_on_error
         export_request.save()
 
         paginator = Paginator(
@@ -819,7 +820,8 @@ class DataValueExporter:
 
             except InstanceExportError as exception:
                 self.flag_as_errored(export_request, export_statuses, exception.message, stats)
-                raise exception
+                if not export_request.continue_on_error:
+                    raise exception
 
             # it's ok to catch BaseException, we want to be able to mark it as errored if cancelled or worst
             except BaseException as exception:

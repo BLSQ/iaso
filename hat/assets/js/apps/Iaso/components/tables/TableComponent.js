@@ -201,6 +201,7 @@ class Table extends Component {
             selectionActions,
             setTableSelection,
             selection: { selectCount },
+            selection,
             extraProps,
             paramsPrefix,
         } = this.props;
@@ -230,7 +231,7 @@ class Table extends Component {
         const order = params[getParamsKey(paramsPrefix, 'order')]
             ? getOrderArray(params[getParamsKey(paramsPrefix, 'order')])
             : defaultSorted;
-        if (multiSelect) {
+        if (multiSelect && !columns.find(c => c.accessor === 'selected')) {
             columns.push({
                 Header: formatMessage(MESSAGES.selection),
                 accessor: 'selected',
@@ -252,7 +253,12 @@ class Table extends Component {
         }
         return (
             <>
-                <SelectionSpeedDials hidden={!multiSelect} actions={actions} />
+                <SelectionSpeedDials
+                    selection={selection}
+                    hidden={!multiSelect}
+                    actions={actions}
+                    reset={() => setTableSelection('reset')}
+                />
                 <div
                     className={classNames(classes.reactTable, {
                         [classes.reactTableNoPaginationCountBottom]:

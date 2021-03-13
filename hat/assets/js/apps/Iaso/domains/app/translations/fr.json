@@ -66,6 +66,8 @@
     "iaso.hospital": "Hôpital",
     "iaso.instance.coordinate": "Coordonées",
     "iaso.instance.created_at": "Création",
+    "iaso.instance.delete": "Effacer une(des) soumission(s)",
+    "iaso.instance.deleteCount": "Effacer {count} soumission(s)",
     "iaso.instance.device": "IMEI appareil",
     "iaso.instance.file": "Fichier",
     "iaso.instance.files": "Fichiers",

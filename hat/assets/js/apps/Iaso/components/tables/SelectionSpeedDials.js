@@ -24,7 +24,13 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const SelectionSpeedDials = ({ hidden, intl: { formatMessage }, actions }) => {
+const SelectionSpeedDials = ({
+    hidden,
+    intl: { formatMessage },
+    actions,
+    selection,
+    reset,
+}) => {
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
 
@@ -50,9 +56,17 @@ const SelectionSpeedDials = ({ hidden, intl: { formatMessage }, actions }) => {
                 {activeAction.map(action => (
                     <SpeedDialAction
                         key={action.label}
-                        icon={action.icon}
+                        icon={
+                            typeof action.icon === 'function'
+                                ? action.icon(selection, reset)
+                                : action.icon
+                        }
                         tooltipTitle={action.label}
-                        onClick={() => action.onClick()}
+                        onClick={() =>
+                            action.onClick
+                                ? action.onClick(selection)
+                                : () => null
+                        }
                     />
                 ))}
             </SpeedDial>
@@ -63,12 +77,15 @@ const SelectionSpeedDials = ({ hidden, intl: { formatMessage }, actions }) => {
 SelectionSpeedDials.defaultProps = {
     hidden: false,
     actions: [],
+    reset: () => null,
 };
 
 SelectionSpeedDials.propTypes = {
     hidden: PropTypes.bool,
     intl: PropTypes.object.isRequired,
     actions: PropTypes.array,
+    selection: PropTypes.object.isRequired,
+    reset: PropTypes.func,
 };
 
 export default injectIntl(SelectionSpeedDials);

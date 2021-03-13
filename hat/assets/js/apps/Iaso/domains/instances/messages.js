@@ -281,6 +281,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Create instance',
         id: 'iaso.instance.instanceCreationDialogTitle',
     },
+    deleteInstance: {
+        defaultMessage: 'Delete isntance(s)',
+        id: 'iaso.instance.delete',
+    },
+    deleteInstanceCount: {
+        defaultMessage: 'Delete {count} isntance(s)',
+        id: 'iaso.instance.deleteCount',
+    },
+    deleteWarning: {
+        id: 'iaso.users.dialog.deleteUserTitle',
+        defaultMessage: 'This operation cannot be undone.',
+    },
 });
 
 export default MESSAGES;

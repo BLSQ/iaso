@@ -128,6 +128,7 @@ export const setTableSelection = (
             newSelection = {
                 ...selection,
                 selectAll: true,
+                selectedItems: [],
                 unSelectedItems: [],
                 selectCount: totalCount,
             };

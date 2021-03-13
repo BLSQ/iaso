@@ -185,3 +185,32 @@ export const createExportRequest = filterParams => dispatch => {
         })
         .then(() => dispatch(setInstancesFetching(false)));
 };
+
+export const bulkDelete = (selection, filters, successFn) => dispatch => {
+    dispatch(setInstancesFetching(true));
+    return postRequest('/api/instances/bulkdelete/', {
+        select_all: selection.selectAll,
+        selected_ids: selection.selectedItems.map(i => i.id),
+        unselected_ids: selection.unSelectedItems.map(i => i.id),
+        ...filters,
+    })
+        .then(res => {
+            dispatch(
+                enqueueSnackbar(
+                    succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull'),
+                ),
+            );
+            successFn();
+            dispatch(setInstancesFetching(false));
+            return res;
+        })
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('saveMultiEditOrgUnitsError', null, error),
+                ),
+            );
+            dispatch(setInstancesFetching(false));
+            throw error;
+        });
+};

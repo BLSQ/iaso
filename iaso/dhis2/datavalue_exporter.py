@@ -772,7 +772,7 @@ class DataValueExporter:
     def export_instances(self, export_request, page_size=25, continue_on_error=False):
         export_request.status = RUNNING
         export_request.started_at = timezone.now()
-        export_request.continue_on_error= continue_on_error
+        export_request.continue_on_error = continue_on_error
         export_request.save()
 
         paginator = Paginator(

@@ -18,7 +18,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--user", type=str, help="username", required=True)
 
-        parser.add_argument("--continue_on_error", type=bool, help="continue on error")
+        parser.add_argument("--continue_on_error",  action="store_true", help="continue on error")
         parser.add_argument("--formids", type=str, help="db id comma seperated of the forms", required=True)
 
     def handle(self, *args, **options):

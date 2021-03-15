@@ -262,6 +262,7 @@ class InstancesViewSet(viewsets.ViewSet):
         select_all = request.data.get("select_all", None)
         selected_ids = request.data.get("selected_ids", None)
         unselected_ids = request.data.get("unselected_ids", None)
+        is_deletion = request.data.get("is_deletion", True)
         filters = parse_instance_filters(request.data)
         instances_query = Instance.objects.order_by("-id")
         profile = request.user.iaso_profile
@@ -275,7 +276,7 @@ class InstancesViewSet(viewsets.ViewSet):
             instances_query = instances_query.exclude(pk__in=unselected_ids)
 
         try:
-            instances_query.update(deleted=True)
+            instances_query.update(deleted=is_deletion)
         except Exception as e:
             return Response({
                 "result": "A problem happened while deleting instances"

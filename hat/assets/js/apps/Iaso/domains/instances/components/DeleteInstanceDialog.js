@@ -4,6 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import { DialogContentText, makeStyles } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
+import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import { bulkDelete } from '../actions';
 
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -22,43 +23,48 @@ const DeleteInstanceDialog = ({
     filters,
     setForceRefresh,
     resetSelection,
+    isUnDeleteAction,
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
     const onConfirm = closeDialog => {
         dispatch(
-            bulkDelete(selection, filters, () => {
+            bulkDelete(selection, filters, isUnDeleteAction, () => {
                 closeDialog();
                 resetSelection();
                 setForceRefresh();
             }),
         );
     };
+
+    const renderTrigger = ({ openDialog }) => {
+        const iconProps = {
+            className:
+                selection.selectCount === 0 ? classes.iconDisabled : null,
+            onClick: selection.selectCount > 0 ? openDialog : () => null,
+            disabled: selection.selectCount === 0,
+        };
+        if (isUnDeleteAction) {
+            return <RestoreFromTrashIcon {...iconProps} />;
+        }
+        return <DeleteIcon {...iconProps} />;
+    };
+    const titleMessage = isUnDeleteAction
+        ? MESSAGES.unDeleteInstanceCount
+        : MESSAGES.deleteInstanceCount;
     return (
         <ConfirmCancelDialogComponent
             titleMessage={{
-                ...MESSAGES.deleteInstanceCount,
+                ...titleMessage,
                 values: {
                     count: selection.selectCount,
                 },
             }}
             onConfirm={onConfirm}
-            renderTrigger={({ openDialog }) => (
-                <DeleteIcon
-                    className={
-                        selection.selectCount === 0
-                            ? classes.iconDisabled
-                            : null
-                    }
-                    onClick={
-                        selection.selectCount > 0 ? openDialog : () => null
-                    }
-                    disabled={selection.selectCount === 0}
-                />
-            )}
+            renderTrigger={renderTrigger}
         >
             <DialogContentText id="alert-dialog-description">
-                <FormattedMessage {...MESSAGES.deleteWarning} />
+                <FormattedMessage {...MESSAGES.deleteInstanceWarning} />
             </DialogContentText>
         </ConfirmCancelDialogComponent>
     );
@@ -75,6 +81,7 @@ DeleteInstanceDialog.propTypes = {
     filters: PropTypes.object.isRequired,
     setForceRefresh: PropTypes.func.isRequired,
     resetSelection: PropTypes.func.isRequired,
+    isUnDeleteAction: PropTypes.bool.isRequired,
 };
 
 export default DeleteInstanceDialog;

@@ -41,6 +41,7 @@ import {
     getInstancesVisibleColumns,
     getInstancesColumns,
     getMetasColumns,
+    getSelectedActions,
 } from './utils';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
@@ -330,6 +331,7 @@ class Instances extends Component {
             tableColumns: getInstancesColumns(
                 formatMessage,
                 tempVisibleColumns,
+                params.showDeleted === 'true',
             ),
         });
 
@@ -358,22 +360,6 @@ class Instances extends Component {
         } = this.props;
 
         const { tab, tableColumns, visibleColumns, forceRefresh } = this.state;
-
-        const selectionActions = [
-            {
-                icon: (newSelection, resetSelection) => (
-                    <DeleteDialog
-                        selection={newSelection}
-                        filters={this.getFilters()}
-                        setForceRefresh={() => this.setForceRefresh(true)}
-                        resetSelection={resetSelection}
-                    />
-                ),
-                label: formatMessage(MESSAGES.deleteInstance),
-                disabled: false,
-            },
-        ];
-
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
@@ -514,7 +500,12 @@ class Instances extends Component {
                             exportButtons={false}
                             isFullHeight={false}
                             multiSelect
-                            selectionActions={selectionActions}
+                            selectionActions={getSelectedActions(
+                                formatMessage,
+                                this.getFilters(),
+                                () => this.setForceRefresh(true),
+                                params.showDeleted === 'true',
+                            )}
                         />
                     )}
                     {!fetching && instancesSmall && tab === 'map' && (

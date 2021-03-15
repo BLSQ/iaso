@@ -285,12 +285,20 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Delete isntance(s)',
         id: 'iaso.instance.delete',
     },
+    unDeleteInstance: {
+        defaultMessage: 'Mark isntance(s) as not deleted',
+        id: 'iaso.instance.undelete',
+    },
     deleteInstanceCount: {
         defaultMessage: 'Delete {count} isntance(s)',
         id: 'iaso.instance.deleteCount',
     },
-    deleteWarning: {
-        id: 'iaso.users.dialog.deleteUserTitle',
+    unDeleteInstanceCount: {
+        defaultMessage: 'Mark {count} isntance(s) as not deleted',
+        id: 'iaso.instance.unDeleteCount',
+    },
+    deleteInstanceWarning: {
+        id: 'iaso.instance.deleteInstanceWarning',
         defaultMessage: 'This operation cannot be undone.',
     },
 });

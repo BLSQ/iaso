@@ -1,9 +1,27 @@
 import React from 'react';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import { Tooltip } from '@material-ui/core';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import MESSAGES from './messages';
 
-const dataSourcesTableColumns = (formatMessage, setForceRefresh) => [
+const dataSourcesTableColumns = (
+    formatMessage,
+    setForceRefresh,
+    defaultSourceVersion,
+) => [
+    {
+        Header: formatMessage(MESSAGES.defaultSource),
+        accessor: 'defaultSource',
+        sortable: false,
+        Cell: settings =>
+            defaultSourceVersion &&
+            defaultSourceVersion.source.id === settings.original.id && (
+                <Tooltip title={formatMessage(MESSAGES.defaultSource)}>
+                    <CheckCircleIcon color="primary" />
+                </Tooltip>
+            ),
+    },
     {
         Header: formatMessage(MESSAGES.dataSourceName),
         accessor: 'name',
@@ -45,6 +63,7 @@ const dataSourcesTableColumns = (formatMessage, setForceRefresh) => [
                         ...settings.original,
                         projects: settings.original.projects.flat(),
                     }}
+                    defaultSourceVersion={defaultSourceVersion}
                     titleMessage={MESSAGES.updateDataSource}
                     key={settings.original.updated_at}
                     onSuccess={() => setForceRefresh(true)}

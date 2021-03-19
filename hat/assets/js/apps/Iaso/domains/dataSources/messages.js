@@ -49,6 +49,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',
     },
+    defaultSource: {
+        id: 'iaso.dataSources.default',
+        defaultMessage: 'Default source',
+    },
+    defaultVersion: {
+        id: 'iaso.dataSources.defaultVersion',
+        defaultMessage: 'Default version',
+    },
 });
 
 export default MESSAGES;

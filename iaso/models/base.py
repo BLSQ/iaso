@@ -85,6 +85,7 @@ class Account(models.Model):
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "default_version": self.default_version.as_dict(),
         }
 
     def __str__(self):

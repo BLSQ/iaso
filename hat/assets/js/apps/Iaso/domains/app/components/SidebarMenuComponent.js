@@ -12,6 +12,7 @@ import {
     List,
     Divider,
     Typography,
+    Tooltip,
 } from '@material-ui/core';
 
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
@@ -28,9 +29,12 @@ import commonStyles from '../../../styles/common';
 
 import menuItems from '../../../constants/menu';
 
+import injectIntl from '../../../libs/intl/injectIntl';
+
 import MESSAGES from './messages';
 
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
+import { getDefaultSourceVersion } from '../../dataSources/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -77,7 +81,9 @@ class SidebarMenu extends PureComponent {
             toggleSidebar,
             location,
             currentUser,
+            intl,
         } = this.props;
+        const defaultSourceVersion = getDefaultSourceVersion(currentUser);
         return (
             <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
                 <div className={classes.toolbar}>
@@ -123,6 +129,39 @@ class SidebarMenu extends PureComponent {
                     >
                         {currentUser.user_name}
                     </Typography>
+                    {currentUser.account && (
+                        <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            className={classes.userName}
+                        >
+                            {defaultSourceVersion && (
+                                <Tooltip
+                                    classes={{ popper: classes.popperFixed }}
+                                    placement="bottom"
+                                    title={`${intl.formatMessage(
+                                        MESSAGES.source,
+                                    )}: ${
+                                        (defaultSourceVersion.source &&
+                                            defaultSourceVersion.source.name) ||
+                                        '-'
+                                    }, ${intl.formatMessage(
+                                        MESSAGES.version,
+                                    )} ${
+                                        (defaultSourceVersion.version &&
+                                            defaultSourceVersion.version
+                                                .number) ||
+                                        '-'
+                                    }`}
+                                >
+                                    <span>{currentUser.account.name}</span>
+                                </Tooltip>
+                            )}
+                            {!defaultSourceVersion && (
+                                <span>{currentUser.account.name}</span>
+                            )}
+                        </Typography>
+                    )}
                     <Button
                         size="small"
                         color="inherit"
@@ -144,6 +183,7 @@ SidebarMenu.propTypes = {
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
     currentUser: PropTypes.object.isRequired,
+    intl: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -156,5 +196,5 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(SidebarMenu),
+    connect(MapStateToProps, MapDispatchToProps)(injectIntl(SidebarMenu)),
 );

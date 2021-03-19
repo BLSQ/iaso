@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllDataSources } from '../../utils/requests';
+import { getDefaultSourceVersion } from './utils';
 
 import SingleTable from '../../components/tables/SingleTable';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -16,14 +17,15 @@ import MESSAGES from './messages';
 
 const baseUrl = baseUrls.sources;
 const defaultOrder = 'name';
-
 const DataSources = () => {
     const [forceRefresh, setForceRefresh] = useState(false);
+    const currentUser = useSelector(state => state.users.current);
     const dispatch = useDispatch();
     const intl = useSafeIntl();
     useEffect(() => {
         dispatch(fetchAllProjects());
     }, []);
+    const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     return (
         <>
             <TopBar
@@ -35,16 +37,19 @@ const DataSources = () => {
                 endPointPath="datasources"
                 exportButtons={false}
                 dataKey="sources"
+                defaultPageSize={20}
                 fetchItems={fetchAllDataSources}
                 defaultSorted={[{ id: defaultOrder, desc: true }]}
                 columns={dataSourcesTableColumns(
                     intl.formatMessage,
                     setForceRefresh,
+                    defaultSourceVersion,
                 )}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
                 extraComponent={
                     <DataSourceDialogComponent
+                        defaultSourceVersion={defaultSourceVersion}
                         titleMessage={MESSAGES.createDataSource}
                         renderTrigger={({ openDialog }) => (
                             <AddButtonComponent onClick={openDialog} />

@@ -1,4 +1,4 @@
-from .common import ModelViewSet, HasPermission
+from .common import ModelViewSet
 from iaso.models import DataSource, OrgUnit
 from rest_framework import serializers, permissions
 
@@ -82,12 +82,7 @@ class DataSourceViewSet(ModelViewSet):
     GET /api/datasources/<id>
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_org_units")
-        or HasPermission("menupermissions.iaso_links")
-        or HasPermission("menupermissions.iaso_mappings"),
-    ]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = DataSourceSerializer
     results_key = "sources"
     queryset = DataSource.objects.all()

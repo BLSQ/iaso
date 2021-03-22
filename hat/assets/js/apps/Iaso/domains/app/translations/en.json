@@ -405,6 +405,7 @@
     "iaso.snackBar.saveUserSuccessful": "User saved",
     "iaso.snackBar.successful": "Saved successfully",
     "iaso.snackBar.updateDataSourceError": "Update ignored",
+    "iaso.snackBar.updateDefaultSourceError": "An error occurred while updating default source",
     "iaso.snackBar.updateFormError": "An error occurred while updating a form",
     "iaso.table.columnSelect.tooltip": "Select visible columns",
     "iaso.tasks.errored": "Errored",

@@ -5,31 +5,53 @@ import { Grid, Box } from '@material-ui/core';
 import { connect } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 
-import { createDataSource, updateDataSource } from '../../../utils/requests';
+import {
+    createDataSource,
+    updateDataSource,
+    updateDefaultSource,
+} from '../../../utils/requests';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../../constants/snackBars';
 
 import { setIsLoading } from '../actions';
+import { fetchCurrentUser } from '../../users/actions';
 import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 export class DataSourceDialogComponent extends Component {
     constructor(props) {
         super(props);
-        this.state = this.initialState(); // TODO: defer - this will be called for each item in the list
+        this.state = {
+            isDataTouched: false,
+            form: this.inititalForm(),
+        };
+    }
+
+    componentDidUpdate(prevProps) {
+        if (
+            !isEqual(prevProps.initialData, this.props.initialData) ||
+            !isEqual(
+                prevProps.defaultSourceVersion,
+                this.props.defaultSourceVersion,
+            )
+        ) {
+            this.setInitialState();
+        }
     }
 
     onConfirm(closeDialog) {
-        const { dispatch, initialData, onSuccess } = this.props;
+        const { dispatch, initialData, onSuccess, currentUser } = this.props;
+        const { form } = this.state;
 
         let saveCurrentDataSource;
         const currentDataSource = {};
-        Object.keys(this.state.form).forEach(key => {
-            currentDataSource[key] = this.state.form[key].value;
+        Object.keys(form).forEach(key => {
+            if (key !== 'is_default_source' && key !== 'default_version_id') {
+                currentDataSource[key] = form[key].value;
+            }
         });
-
         if (initialData === null) {
             saveCurrentDataSource = createDataSource(
                 dispatch,
@@ -38,19 +60,40 @@ export class DataSourceDialogComponent extends Component {
         } else {
             saveCurrentDataSource = updateDataSource(
                 dispatch,
-                this.state.form.id.value,
+                form.id.value,
                 currentDataSource,
             );
         }
         dispatch(setIsLoading(true));
 
+        const onSuccesfullUpdate = () => {
+            closeDialog();
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            onSuccess();
+        };
+
         return saveCurrentDataSource
             .then(() => {
-                closeDialog();
-                dispatch(enqueueSnackbar(succesfullSnackBar()));
-                onSuccess();
+                if (
+                    form.is_default_source.value &&
+                    currentUser &&
+                    form.default_version_id.value
+                ) {
+                    updateDefaultSource(
+                        dispatch,
+                        currentUser.account.id,
+                        form.default_version_id.value,
+                    ).then(() => {
+                        dispatch(fetchCurrentUser()).then(() => {
+                            onSuccesfullUpdate();
+                        });
+                    });
+                } else {
+                    onSuccesfullUpdate();
+                }
             })
             .catch(error => {
+                dispatch(setIsLoading(false));
                 if (error.status === 400) {
                     Object.entries(error.details).forEach(
                         ([errorKey, errorMessages]) => {
@@ -58,9 +101,6 @@ export class DataSourceDialogComponent extends Component {
                         },
                     );
                 }
-            })
-            .then(() => {
-                dispatch(setIsLoading(false));
             });
     }
 
@@ -71,11 +111,10 @@ export class DataSourceDialogComponent extends Component {
             [fieldName]: { value: fieldValue, errors: [] },
         };
         if (fieldName === 'is_default_source' && fieldValue === false) {
-            newForm.default_version_number = {
+            newForm.default_version_id = {
                 value: null,
                 errors: [],
             };
-            console.log('ICI', newForm);
         }
         const isDataTouched = !isEqual(this.inititalForm(), newForm);
         this.setState({
@@ -136,18 +175,18 @@ export class DataSourceDialogComponent extends Component {
                 value: isDefaultSource,
                 errors: [],
             },
-            default_version_number: {
+            default_version_id: {
                 value: defaultVersionId,
                 errors: [],
             },
         };
     }
 
-    initialState() {
-        return {
+    setInitialState() {
+        this.setState({
             isDataTouched: false,
             form: this.inititalForm(),
-        };
+        });
     }
 
     render() {
@@ -159,10 +198,7 @@ export class DataSourceDialogComponent extends Component {
         } = this.props;
         const { form, isDataTouched } = this.state;
         let allowConfirm = isDataTouched;
-        if (
-            form.is_default_source.value &&
-            !form.default_version_number.value
-        ) {
+        if (form.is_default_source.value && !form.default_version_id.value) {
             allowConfirm = false;
         }
         return (
@@ -170,7 +206,7 @@ export class DataSourceDialogComponent extends Component {
                 renderTrigger={renderTrigger}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => this.onConfirm(closeDialog)}
-                onClosed={() => this.setState(this.initialState())}
+                onClosed={() => this.setInitialState()}
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
                 maxWidth="sm"
@@ -232,45 +268,48 @@ export class DataSourceDialogComponent extends Component {
                                 label={MESSAGES.dataSourceReadOnly}
                             />
                         </Box>
-                        <Box>
-                            <InputComponent
-                                keyValue="is_default_source"
-                                disabled={
-                                    form.is_default_source.value &&
-                                    !isDataTouched
-                                }
-                                onChange={(key, value) =>
-                                    this.setFieldValue(key, value)
-                                }
-                                value={form.is_default_source.value}
-                                errors={form.is_default_source.errors}
-                                type="checkbox"
-                                label={MESSAGES.defaultSource}
-                            />
-                            {form.is_default_source.value && (
+                        {form.id.value && (
+                            <Box>
                                 <InputComponent
-                                    multi={false}
-                                    clearable
-                                    keyValue="default_version_number"
+                                    keyValue="is_default_source"
+                                    disabled={
+                                        form.is_default_source.value &&
+                                        !isDataTouched
+                                    }
                                     onChange={(key, value) =>
                                         this.setFieldValue(key, value)
                                     }
-                                    value={form.default_version_number.value}
-                                    // value={defaultSourceVersion.version.id}
-                                    errors={form.default_version_number.errors}
-                                    type="select"
-                                    options={
-                                        initialData
-                                            ? initialData.versions.map(v => ({
-                                                  label: v.number,
-                                                  value: v.id,
-                                              }))
-                                            : []
-                                    }
-                                    label={MESSAGES.defaultVersion}
+                                    value={form.is_default_source.value}
+                                    errors={form.is_default_source.errors}
+                                    type="checkbox"
+                                    label={MESSAGES.defaultSource}
                                 />
-                            )}
-                        </Box>
+                                {form.is_default_source.value && (
+                                    <InputComponent
+                                        multi={false}
+                                        clearable
+                                        keyValue="default_version_id"
+                                        onChange={(key, value) =>
+                                            this.setFieldValue(key, value)
+                                        }
+                                        value={form.default_version_id.value}
+                                        errors={form.default_version_id.errors}
+                                        type="select"
+                                        options={
+                                            initialData
+                                                ? initialData.versions.map(
+                                                      v => ({
+                                                          label: v.number,
+                                                          value: v.id,
+                                                      }),
+                                                  )
+                                                : []
+                                        }
+                                        label={MESSAGES.defaultVersion}
+                                    />
+                                )}
+                            </Box>
+                        )}
                     </Grid>
                 </Grid>
             </ConfirmCancelDialogComponent>
@@ -280,6 +319,7 @@ export class DataSourceDialogComponent extends Component {
 DataSourceDialogComponent.defaultProps = {
     initialData: null,
     defaultSourceVersion: null,
+    currentUser: null,
 };
 DataSourceDialogComponent.propTypes = {
     dispatch: PropTypes.func.isRequired,
@@ -288,10 +328,12 @@ DataSourceDialogComponent.propTypes = {
     initialData: PropTypes.object,
     renderTrigger: PropTypes.func.isRequired,
     titleMessage: PropTypes.object.isRequired,
+    currentUser: PropTypes.object,
     defaultSourceVersion: PropTypes.object,
 };
 const mapStateToProps = state => ({
     projects: state.projects.allProjects,
+    currentUser: state.users.current,
 });
 const mapDispatchToProps = dispatch => ({ dispatch });
 export default connect(

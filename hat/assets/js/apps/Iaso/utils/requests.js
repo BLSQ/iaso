@@ -553,3 +553,15 @@ export const updateDataSource = (dispatch, dataSourceId, dataSource) =>
         );
         throw error;
     });
+
+export const updateDefaultSource = (dispatch, accountId, sourceVersion) =>
+    putRequest(`/api/accounts/${accountId}/`, {
+        default_version: sourceVersion,
+    }).catch(error => {
+        dispatch(
+            enqueueSnackbar(
+                errorSnackBar('updateDefaultSourceError', null, error),
+            ),
+        );
+        throw error;
+    });

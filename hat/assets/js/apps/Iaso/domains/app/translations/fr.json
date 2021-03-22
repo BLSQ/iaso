@@ -406,6 +406,7 @@
     "iaso.snackBar.saveUserSuccessful": "Profil sauvé avec succès",
     "iaso.snackBar.successful": "Sauvegarde effectuée avec succès",
     "iaso.snackBar.updateDataSourceError": "Mise à jour ignoré",
+    "iaso.snackBar.updateDefaultSourceError": "Une erreur est survenue en sauvant la source par défaut",
     "iaso.snackBar.updateFormError": "Une erreur est survenue en sauvant le formulaire",
     "iaso.table.columnSelect.tooltip": "Colonnes visibles",
     "iaso.tasks.errored": "En erreur",

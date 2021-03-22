@@ -5,7 +5,11 @@ export const patchIntl = intl => {
         if (message && message.id && message.defaultMessage) {
             return intlOriginal.formatMessage(message);
         }
-        console.warn('Warning: Message object is not defined properly!');
+        console.warn(
+            'Warning: Message object is not defined properly!',
+            message,
+        );
+
         return null;
     };
     intlCopy.formatMessage = formatMessage;

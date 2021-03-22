@@ -28,6 +28,7 @@ from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.tasks import TaskSourceViewSet
+from .api.accounts import AccountViewSet
 from .api.enketo import (
     enketo_edit_url,
     enketo_create_url,
@@ -63,6 +64,7 @@ router.register(r"devices", DevicesViewSet, basename="devices")
 router.register(r"devicesownership", DevicesOwnershipViewSet, basename="devicesownership")
 router.register(r"devicesposition", DevicesPositionViewSet, basename="devicesposition")
 router.register(r"datasources", DataSourceViewSet, basename="datasources")
+router.register(r"accounts", AccountViewSet, basename="accounts")
 router.register(r"sourceversions", SourceVersionViewSet, basename="sourceversion")
 router.register(r"links", LinkViewSet, basename="links")
 router.register(r"logs", LogsViewSet, basename="logs")

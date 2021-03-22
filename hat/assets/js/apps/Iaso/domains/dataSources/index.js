@@ -39,7 +39,7 @@ const DataSources = () => {
                 dataKey="sources"
                 defaultPageSize={20}
                 fetchItems={fetchAllDataSources}
-                defaultSorted={[{ id: defaultOrder, desc: true }]}
+                defaultSorted={[{ id: defaultOrder, desc: false }]}
                 columns={dataSourcesTableColumns(
                     intl.formatMessage,
                     setForceRefresh,

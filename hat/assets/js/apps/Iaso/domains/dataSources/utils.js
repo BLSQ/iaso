@@ -10,12 +10,11 @@ export const getDefaultSourceVersion = user => {
         source: undefined,
         version: undefined,
     };
-    if (user.account) {
-        if (user.account && user.account.default_version) {
+    if (user && user.account) {
+        if (user.account.default_version) {
             sourceVersion.version = user.account.default_version;
         }
         if (
-            user.account &&
             user.account.default_version &&
             user.account.default_version.data_source
         ) {

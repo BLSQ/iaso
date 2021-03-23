@@ -13,6 +13,12 @@ const requests = [
             sources: [],
         },
     },
+    {
+        url: '/api/projects/',
+        body: {
+            projects: [],
+        },
+    },
 ];
 
 describe('Data sources component', () => {

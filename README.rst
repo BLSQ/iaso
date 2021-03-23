@@ -99,7 +99,7 @@ The following are some examples:
 +-------------------------------------+----------------------------------------------------------+
 | Action                              | Command                                                  |
 +=====================================+==========================================================+
-| Run tests                           | ``docker-compose run iaso test``                          |
+| Run tests                           | ``docker-compose run iaso manage test``                          |
 +-------------------------------------+----------------------------------------------------------+
 | Create a shell inside the container | ``docker-compose run iaso bash``                          |
 +-------------------------------------+----------------------------------------------------------+
@@ -202,7 +202,7 @@ Tests can be executed with
 
 .. code:: bash
 
-    docker-compose run iaso test
+    docker-compose run iaso manage test
 
 
 Code reloading

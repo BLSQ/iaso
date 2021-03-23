@@ -277,6 +277,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Error updating the data source',
         id: 'iaso.snackBar.updateDataSourceError',
     },
+    updateDefaultSourceError: {
+        defaultMessage: 'Error updating the default source',
+        id: 'iaso.snackBar.updateDefaultSourceError',
+    },
 });
 
 export default MESSAGES;

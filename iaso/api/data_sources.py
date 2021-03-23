@@ -1,4 +1,3 @@
-import typing
 from .common import ModelViewSet
 from iaso.models import DataSource, OrgUnit
 from rest_framework import serializers, permissions
@@ -8,7 +7,17 @@ class DataSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = DataSource
 
-        fields = ["id", "name", "read_only", "description", "created_at", "updated_at", "versions", "url", "projects"]
+        fields = [
+            "id",
+            "name",
+            "read_only",
+            "description",
+            "created_at",
+            "updated_at",
+            "versions",
+            "url",
+            "projects",
+        ]
 
     url = serializers.SerializerMethodField()
     versions = serializers.SerializerMethodField()
@@ -30,7 +39,9 @@ class DataSourceSerializer(serializers.ModelSerializer):
         ds = DataSource(**validated_data)
         ds.save()
         account = self.context["request"].user.iaso_profile.account
-        projects = account.project_set.filter(id__in=self.context['request'].data['project_ids'])
+        projects = account.project_set.filter(
+            id__in=self.context["request"].data["project_ids"]
+        )
         if projects is not None:
             for project in projects:
                 ds.projects.add(project)
@@ -41,7 +52,9 @@ class DataSourceSerializer(serializers.ModelSerializer):
         read_only = validated_data.pop("read_only", None)
         description = validated_data.pop("description", None)
         account = self.context["request"].user.iaso_profile.account
-        projects = account.project_set.filter(id__in=self.context['request'].data['project_ids'])
+        projects = account.project_set.filter(
+            id__in=self.context["request"].data["project_ids"]
+        )
 
         if name is not None:
             data_source.name = name
@@ -58,8 +71,9 @@ class DataSourceSerializer(serializers.ModelSerializer):
                 data_source.projects.add(project)
         return data_source
 
+
 class DataSourceViewSet(ModelViewSet):
-    """ Data source API
+    """Data source API
 
     This API is restricted to authenticated users having at least one of the "menupermissions.iaso_mappings",
     "menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
@@ -77,9 +91,14 @@ class DataSourceViewSet(ModelViewSet):
     def get_queryset(self):
         linked_to = self.kwargs.get("linkedTo", None)
         profile = self.request.user.iaso_profile
-        sources = DataSource.objects.filter(projects__account=profile.account).distinct()
+        order = self.request.GET.get("order", "name").split(",")
+        sources = DataSource.objects.filter(
+            projects__account=profile.account
+        ).distinct()
         if linked_to:
             org_unit = OrgUnit.objects.get(pk=linked_to)
-            useful_sources = org_unit.source_set.values_list("algorithm_run__version_2__data_source_id", flat=True)
+            useful_sources = org_unit.source_set.values_list(
+                "algorithm_run__version_2__data_source_id", flat=True
+            )
             sources = sources.filter(id__in=useful_sources)
-        return sources.order_by("name")
+        return sources.order_by(*order)

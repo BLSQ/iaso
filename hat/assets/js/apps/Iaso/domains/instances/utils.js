@@ -1,5 +1,7 @@
 import React from 'react';
 import instancesTableColumns from './config';
+import MESSAGES from './messages';
+import DeleteDialog from './components/DeleteInstanceDialog';
 
 const NO_VALUE = '/';
 const hasNoValue = value => !value || value === '';
@@ -35,8 +37,15 @@ const renderValue = (settings, c) => {
     return <span>{value}</span>;
 };
 
-export const getInstancesColumns = (formatMessage, visibleColumns) => {
+export const getInstancesColumns = (
+    formatMessage,
+    visibleColumns,
+    showDeleted = false,
+) => {
     const metasColumns = [...instancesTableColumns(formatMessage)];
+    if (showDeleted) {
+        metasColumns.shift();
+    }
     let tableColumns = [];
     metasColumns.forEach(c => {
         const metaColumn = visibleColumns.find(vc => vc.key === c.accessor);
@@ -117,4 +126,30 @@ export const getInstancesFilesList = instances => {
         }
     });
     return filesList;
+};
+
+export const getSelectedActions = (
+    formatMessage,
+    filters,
+    setForceRefresh,
+    isUnDeleteAction = false,
+) => {
+    const label = formatMessage(
+        isUnDeleteAction ? MESSAGES.unDeleteInstance : MESSAGES.deleteInstance,
+    );
+    return [
+        {
+            icon: (newSelection, resetSelection) => (
+                <DeleteDialog
+                    selection={newSelection}
+                    filters={filters}
+                    setForceRefresh={setForceRefresh}
+                    resetSelection={resetSelection}
+                    isUnDeleteAction={isUnDeleteAction}
+                />
+            ),
+            label,
+            disabled: false,
+        },
+    ];
 };

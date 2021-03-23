@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No',
         id: 'iaso.label.no',
     },
+    actions: {
+        defaultMessage: 'Actions',
+        id: 'iaso.label.actions',
+    },
     dataSources: {
         defaultMessage: 'Data Sources',
         id: 'iaso.label.dataSources',
@@ -48,6 +52,14 @@ const MESSAGES = defineMessages({
     cancel: {
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',
+    },
+    defaultSource: {
+        id: 'iaso.dataSources.default',
+        defaultMessage: 'Default source',
+    },
+    defaultVersion: {
+        id: 'iaso.dataSources.defaultVersion',
+        defaultMessage: 'Default version',
     },
 });
 

@@ -3,6 +3,7 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { Tooltip } from '@material-ui/core';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
+import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
 
 const dataSourcesTableColumns = (
@@ -16,11 +17,20 @@ const dataSourcesTableColumns = (
         sortable: false,
         Cell: settings =>
             defaultSourceVersion &&
+            defaultSourceVersion.source &&
             defaultSourceVersion.source.id === settings.original.id && (
                 <Tooltip title={formatMessage(MESSAGES.defaultSource)}>
                     <CheckCircleIcon color="primary" />
                 </Tooltip>
             ),
+    },
+    {
+        Header: formatMessage(MESSAGES.defaultVersion),
+        accessor: 'default_version__number',
+        Cell: settings => {
+            if (!settings.original.default_version) return textPlaceholder;
+            return <span>{settings.original.default_version.number}</span>;
+        },
     },
     {
         Header: formatMessage(MESSAGES.dataSourceName),

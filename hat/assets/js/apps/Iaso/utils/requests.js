@@ -554,9 +554,9 @@ export const updateDataSource = (dispatch, dataSourceId, dataSource) =>
         throw error;
     });
 
-export const updateDefaultSource = (dispatch, accountId, sourceVersion) =>
+export const updateDefaultSource = (dispatch, accountId, default_version) =>
     putRequest(`/api/accounts/${accountId}/`, {
-        default_version: sourceVersion,
+        default_version,
     }).catch(error => {
         dispatch(
             enqueueSnackbar(

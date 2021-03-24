@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import moment from 'moment';
-import { withStyles, Grid, Box, Tabs, Tab } from '@material-ui/core';
+import { withStyles, Box, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -91,6 +91,12 @@ const styles = theme => ({
     },
 });
 
+const getDefaultSource = currentUser =>
+    currentUser &&
+    currentUser.account &&
+    currentUser.account.default_version &&
+    currentUser.account.default_version.data_source;
+
 class OrgUnits extends Component {
     constructor(props) {
         super(props);
@@ -99,11 +105,12 @@ class OrgUnits extends Component {
             listUpdated: false,
             multiActionPopupOpen: false,
             selection: selectionInitialState,
+            shouldRenderFilters: false,
         };
     }
 
     componentWillMount() {
-        const { dispatch, params } = this.props;
+        const { dispatch, params, currentUser } = this.props;
         this.props.resetOrgUnitsLevels();
 
         dispatch(this.props.setFetchingOrgUnitTypes(true));
@@ -111,6 +118,8 @@ class OrgUnits extends Component {
             this.props.setOrgUnitTypes(orgUnitTypes);
             dispatch(this.props.setFetchingOrgUnitTypes(false));
         });
+
+        fetchGroups(dispatch).then(groups => this.props.setGroups(groups));
 
         fetchSources(dispatch).then(data => {
             const sources = [];
@@ -124,8 +133,26 @@ class OrgUnits extends Component {
             if (this.props.params.searchActive) {
                 this.fetchOrgUnits(params.tab === 'map');
             }
+            const searches = decodeSearch(params.searches);
+            let needRedirect = false;
+            const defaultSource = getDefaultSource(currentUser);
+            searches.forEach((search, index) => {
+                if (!search.source && defaultSource) {
+                    searches[index].source = defaultSource.id;
+                    needRedirect = true;
+                }
+            });
+            if (needRedirect) {
+                const newParams = {
+                    ...params,
+                    searches: encodeUriSearches(searches),
+                };
+                this.props.redirectTo(baseUrl, newParams);
+            }
+            this.setState({
+                shouldRenderFilters: true,
+            });
         });
-        fetchGroups(dispatch).then(groups => this.props.setGroups(groups));
     }
 
     componentDidUpdate(prevProps) {
@@ -339,6 +366,7 @@ class OrgUnits extends Component {
             fetchingOrgUnitTypes,
             redirectTo,
             searchCounts,
+            currentUser,
         } = this.props;
 
         const {
@@ -346,6 +374,7 @@ class OrgUnits extends Component {
             multiActionPopupOpen,
             selection,
             selection: { selectedItems, selectAll },
+            shouldRenderFilters,
         } = this.state;
         const tableColumns = orgUnitsTableColumns(
             formatMessage,
@@ -374,9 +403,11 @@ class OrgUnits extends Component {
                 disabled: multiEditDisabled,
             },
         ];
+
+        const defaultSource = getDefaultSource(currentUser);
         return (
             <>
-                {fetchingList && <LoadingSpinner />}
+                {(fetchingList || !shouldRenderFilters) && <LoadingSpinner />}
                 <OrgUnitsMultiActionsDialog
                     open={multiActionPopupOpen}
                     params={params}
@@ -391,6 +422,7 @@ class OrgUnits extends Component {
                         defaultItem={{
                             validation_status: 'all',
                             color: getChipColors(0).replace('#', ''),
+                            source: defaultSource.id,
                         }}
                         paramKey="searches"
                         tabParamKey="searchTabIndex"
@@ -404,32 +436,33 @@ class OrgUnits extends Component {
                     />
                 </TopBar>
                 <Box className={classes.containerFullHeightPadded}>
-                    {decodeSearch(params.searches).map((s, searchIndex) => {
-                        const currentSearchIndex = parseInt(
-                            params.searchTabIndex,
-                            10,
-                        );
-                        return (
-                            <div
-                                key={searchIndex}
-                                className={
-                                    searchIndex !== currentSearchIndex
-                                        ? classes.hiddenOpacity
-                                        : null
-                                }
-                            >
-                                <OrgUnitsFiltersComponent
-                                    baseUrl={baseUrl}
-                                    params={params}
-                                    onSearch={() =>
-                                        this.onSearch(params.tab === 'map')
+                    {shouldRenderFilters &&
+                        decodeSearch(params.searches).map((s, searchIndex) => {
+                            const currentSearchIndex = parseInt(
+                                params.searchTabIndex,
+                                10,
+                            );
+                            return (
+                                <div
+                                    key={searchIndex}
+                                    className={
+                                        searchIndex !== currentSearchIndex
+                                            ? classes.hiddenOpacity
+                                            : null
                                     }
-                                    currentTab={tab}
-                                    searchIndex={searchIndex}
-                                />
-                            </div>
-                        );
-                    })}
+                                >
+                                    <OrgUnitsFiltersComponent
+                                        baseUrl={baseUrl}
+                                        params={params}
+                                        onSearch={() =>
+                                            this.onSearch(params.tab === 'map')
+                                        }
+                                        currentTab={tab}
+                                        searchIndex={searchIndex}
+                                    />
+                                </div>
+                            );
+                        })}
                     {params.searchActive && (
                         <>
                             <Tabs
@@ -546,6 +579,7 @@ OrgUnits.propTypes = {
     setGroups: PropTypes.func.isRequired,
     resetOrgUnitsLevels: PropTypes.func.isRequired,
     searchCounts: PropTypes.array.isRequired,
+    currentUser: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -554,6 +588,7 @@ const MapStateToProps = state => ({
     fetchingList: state.orgUnits.fetchingList,
     fetchingOrgUnitTypes: state.orgUnits.fetchingOrgUnitTypes,
     filtersUpdated: state.orgUnits.filtersUpdated,
+    currentUser: state.users.current,
 });
 
 const MapDispatchToProps = dispatch => ({

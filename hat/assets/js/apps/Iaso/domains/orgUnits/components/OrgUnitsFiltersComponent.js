@@ -306,8 +306,8 @@ class OrgUnitsFiltersComponent extends Component {
 }
 OrgUnitsFiltersComponent.defaultProps = {
     baseUrl: '',
-    sources: [],
     groups: [],
+    sources: undefined,
 };
 
 OrgUnitsFiltersComponent.propTypes = {
@@ -317,7 +317,7 @@ OrgUnitsFiltersComponent.propTypes = {
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
-    sources: PropTypes.array,
+    sources: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
     redirectTo: PropTypes.func.isRequired,
     setFiltersUpdated: PropTypes.func.isRequired,
     filtersUpdated: PropTypes.bool.isRequired,

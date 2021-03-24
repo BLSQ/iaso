@@ -42,6 +42,11 @@ class OrgUnitLevelFilterComponent extends Component {
             oU => oU.id === currentLevelId,
         );
         const statusIcons = status(formatMessage).options;
+        const statusIcon =
+            validationStatus &&
+            statusIcons.find(
+                icon => icon.value === validationStatus.validation_status,
+            ).icon;
 
         return (
             <Fragment>
@@ -52,7 +57,7 @@ class OrgUnitLevelFilterComponent extends Component {
                     alignItems="center"
                     spacing={1}
                 >
-                    <Grid item xs={11}>
+                    <Grid item xs={statusIcon ? 11 : 12}>
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
@@ -67,18 +72,15 @@ class OrgUnitLevelFilterComponent extends Component {
                             ]}
                         />
                     </Grid>
-                    <Grid item xs={1}>
-                        <a
-                            href={`/dashboard/orgunits/detail/orgUnitId/${currentLevelId}`}
-                        >
-                            {validationStatus &&
-                                statusIcons.find(
-                                    icon =>
-                                        icon.value ===
-                                        validationStatus.validation_status,
-                                ).icon}
-                        </a>
-                    </Grid>
+                    {statusIcon && (
+                        <Grid item xs={1}>
+                            <a
+                                href={`/dashboard/orgunits/detail/orgUnitId/${currentLevelId}`}
+                            >
+                                {statusIcon}
+                            </a>
+                        </Grid>
+                    )}
                 </Grid>
             </Fragment>
         );

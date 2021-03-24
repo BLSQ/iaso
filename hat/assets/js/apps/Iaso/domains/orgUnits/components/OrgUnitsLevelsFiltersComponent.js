@@ -218,7 +218,6 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             currentOrgUnitId,
         } = this.props;
         const { levels } = this.state;
-        // console.log('orgUnitsLevels', orgUnitsLevels);
         return (
             <div>
                 {orgUnitsLevels.map((level, index) => {

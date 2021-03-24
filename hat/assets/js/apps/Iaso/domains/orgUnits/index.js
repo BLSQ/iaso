@@ -422,7 +422,7 @@ class OrgUnits extends Component {
                         defaultItem={{
                             validation_status: 'all',
                             color: getChipColors(0).replace('#', ''),
-                            source: defaultSource.id,
+                            source: defaultSource && defaultSource.id,
                         }}
                         paramKey="searches"
                         tabParamKey="searchTabIndex"

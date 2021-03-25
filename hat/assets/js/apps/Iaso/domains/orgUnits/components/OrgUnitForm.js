@@ -69,7 +69,6 @@ const OrgUnitForm = ({
         setFormState(initialFormState(orgUnit));
         onResetOrgUnit();
     };
-    console.log('formState', formState);
     const isNewOrgunit = orgUnit && !orgUnit.id;
     return (
         <>

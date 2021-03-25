@@ -273,8 +273,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.name = name
 
         source_ref = request.data.get("source_ref", None)
-        if not source_ref:
-            errors.append({"errorKey": "source_ref", "errorMessage": _("External reference is required")})
         org_unit.source_ref = source_ref
 
         org_unit.short_name = request.data.get("short_name", "")
@@ -415,10 +413,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
             )
 
         org_unit.name = name
-        source_ref = request.data.get("source_ref", None)
 
-        if not source_ref:
-            errors.append({"errorKey": "source_ref", "errorMessage": _("External reference is required")})
+        source_ref = request.data.get("source_ref", None)
         org_unit.source_ref = source_ref
 
         org_unit.short_name = request.data.get("short_name", "")

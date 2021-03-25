@@ -89,7 +89,6 @@ const OrgUnitInfosComponent = ({
             <InputComponent
                 keyValue="source_ref"
                 value={orgUnit.source_ref.value || ''}
-                required
                 onChange={onChangeInfo}
                 errors={orgUnit.source_ref.errors}
             />

@@ -17,6 +17,7 @@ const initialFormState = orgUnit => ({
     validation_status: orgUnit.validation_status,
     aliases: orgUnit.aliases,
     parent_id: orgUnit.parent_id,
+    source_ref: orgUnit.source_ref,
 });
 
 const styles = theme => ({
@@ -68,7 +69,7 @@ const OrgUnitForm = ({
         setFormState(initialFormState(orgUnit));
         onResetOrgUnit();
     };
-
+    console.log('formState', formState);
     const isNewOrgunit = orgUnit && !orgUnit.id;
     return (
         <>

@@ -87,6 +87,13 @@ const OrgUnitInfosComponent = ({
                 ]}
             />
             <InputComponent
+                keyValue="source_ref"
+                value={orgUnit.source_ref.value || ''}
+                required
+                onChange={onChangeInfo}
+                errors={orgUnit.source_ref.errors}
+            />
+            <InputComponent
                 keyValue="aliases"
                 onChange={onChangeInfo}
                 value={orgUnit.aliases.value}
@@ -115,11 +122,6 @@ const OrgUnitInfosComponent = ({
                     value={orgUnit.source}
                     disabled
                     label={MESSAGES.source}
-                />
-                <InputComponent
-                    keyValue="source_ref"
-                    value={orgUnit.source_ref}
-                    disabled
                 />
                 <InputComponent
                     keyValue="created_at"

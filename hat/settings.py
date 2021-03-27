@@ -291,7 +291,7 @@ BEANSTALK_WORKER = bool(os.environ.get("WORKER", False))
 BEANSTALK_SQS_URL = os.environ.get(
     "BEANSTALK_SQS_URL", "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue"
 )
-BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_URL", "eu-central-1")
+BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
 
 if DEBUG:
     BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.FakeTaskService"

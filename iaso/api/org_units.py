@@ -80,7 +80,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
-        direct_children = request.GET.get("directChildren", False)
+        direct_children = request.GET.get("onlyDirectChildren", False)
 
         if not is_export and limit and not as_location:
             queryset.prefetch_related("group_set")

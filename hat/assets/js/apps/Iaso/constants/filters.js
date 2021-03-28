@@ -347,7 +347,9 @@ export const group = (groupList, urlKey = 'group') => ({
     isMultiSelect: true,
     isClearable: true,
     options: groupList.map(a => ({
-        label: a.name,
+        label: a.source_version
+            ? `${a.name} - ${a.source_version.data_source.name}`
+            : a.name,
         value: a.id,
     })),
     label: MESSAGES.group,

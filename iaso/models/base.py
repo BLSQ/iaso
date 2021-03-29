@@ -87,9 +87,7 @@ class Account(models.Model):
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "default_version": self.default_version.as_dict()
-            if self.default_version
-            else None,
+            "default_version": self.default_version.as_dict() if self.default_version else None,
         }
 
     def __str__(self):
@@ -113,6 +111,9 @@ class DataSource(models.Model):
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    default_version = models.ForeignKey(
+        "SourceVersion", null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     def __str__(self):
         return "%s " % (self.name,)

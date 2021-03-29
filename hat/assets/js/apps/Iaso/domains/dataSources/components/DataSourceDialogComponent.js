@@ -48,7 +48,7 @@ export class DataSourceDialogComponent extends Component {
         let saveCurrentDataSource;
         const currentDataSource = {};
         Object.keys(form).forEach(key => {
-            if (key !== 'is_default_source' && key !== 'default_version_id') {
+            if (key !== 'is_default_source') {
                 currentDataSource[key] = form[key].value;
             }
         });
@@ -110,12 +110,6 @@ export class DataSourceDialogComponent extends Component {
             ...form,
             [fieldName]: { value: fieldValue, errors: [] },
         };
-        if (fieldName === 'is_default_source' && fieldValue === false) {
-            newForm.default_version_id = {
-                value: null,
-                errors: [],
-            };
-        }
         const isDataTouched = !isEqual(this.inititalForm(), newForm);
         this.setState({
             form: newForm,
@@ -146,11 +140,9 @@ export class DataSourceDialogComponent extends Component {
             defaultSourceVersion.source &&
             defaultSourceVersion.source.id === initialData.id;
         let defaultVersionId = null;
-        if (isDefaultSource) {
-            defaultVersionId =
-                defaultSourceVersion &&
-                defaultSourceVersion.version &&
-                defaultSourceVersion.version.id;
+        const defaultVersion = get(initialData, 'default_version', null);
+        if (defaultVersion) {
+            defaultVersionId = defaultVersion.id;
         }
         return {
             id: { value: get(initialData, 'id', null), errors: [] },
@@ -171,12 +163,12 @@ export class DataSourceDialogComponent extends Component {
                 value: get(initialData, 'projects', []).map(p => p.id),
                 errors: [],
             },
-            is_default_source: {
-                value: isDefaultSource,
-                errors: [],
-            },
             default_version_id: {
                 value: defaultVersionId,
+                errors: [],
+            },
+            is_default_source: {
+                value: isDefaultSource,
                 errors: [],
             },
         };
@@ -256,6 +248,28 @@ export class DataSourceDialogComponent extends Component {
                             }))}
                             label={MESSAGES.projects}
                         />
+                        {form.id.value && (
+                            <InputComponent
+                                multi={false}
+                                clearable={!form.is_default_source.value}
+                                keyValue="default_version_id"
+                                onChange={(key, value) =>
+                                    this.setFieldValue(key, value)
+                                }
+                                value={form.default_version_id.value}
+                                errors={form.default_version_id.errors}
+                                type="select"
+                                options={
+                                    initialData
+                                        ? initialData.versions.map(v => ({
+                                              label: v.number,
+                                              value: v.id,
+                                          }))
+                                        : []
+                                }
+                                label={MESSAGES.defaultVersion}
+                            />
+                        )}
                         <Box>
                             <InputComponent
                                 keyValue="read_only"
@@ -284,30 +298,6 @@ export class DataSourceDialogComponent extends Component {
                                     type="checkbox"
                                     label={MESSAGES.defaultSource}
                                 />
-                                {form.is_default_source.value && (
-                                    <InputComponent
-                                        multi={false}
-                                        clearable
-                                        keyValue="default_version_id"
-                                        onChange={(key, value) =>
-                                            this.setFieldValue(key, value)
-                                        }
-                                        value={form.default_version_id.value}
-                                        errors={form.default_version_id.errors}
-                                        type="select"
-                                        options={
-                                            initialData
-                                                ? initialData.versions.map(
-                                                      v => ({
-                                                          label: v.number,
-                                                          value: v.id,
-                                                      }),
-                                                  )
-                                                : []
-                                        }
-                                        label={MESSAGES.defaultVersion}
-                                    />
-                                )}
                             </Box>
                         )}
                     </Grid>

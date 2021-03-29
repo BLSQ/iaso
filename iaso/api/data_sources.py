@@ -1,6 +1,7 @@
 from .common import ModelViewSet
-from iaso.models import DataSource, OrgUnit
+from iaso.models import DataSource, OrgUnit, SourceVersion
 from rest_framework import serializers, permissions
+from rest_framework.generics import get_object_or_404
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
@@ -17,10 +18,12 @@ class DataSourceSerializer(serializers.ModelSerializer):
             "versions",
             "url",
             "projects",
+            "default_version",
         ]
 
     url = serializers.SerializerMethodField()
     versions = serializers.SerializerMethodField()
+    default_version = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
 
     @staticmethod
@@ -30,6 +33,10 @@ class DataSourceSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_versions(obj: DataSource):
         return [v.as_dict_without_data_source() for v in obj.versions.all()]
+
+    @staticmethod
+    def get_default_version(obj: DataSource):
+        return obj.default_version.as_dict_without_data_source() if obj.default_version else None
 
     @staticmethod
     def get_projects(obj: DataSource):
@@ -48,20 +55,29 @@ class DataSourceSerializer(serializers.ModelSerializer):
         return ds
 
     def update(self, data_source, validated_data):
+        print(self.context["request"].data)
         name = validated_data.pop("name", None)
         read_only = validated_data.pop("read_only", None)
         description = validated_data.pop("description", None)
+        default_version_id = self.context["request"].data["default_version_id"]
         account = self.context["request"].user.iaso_profile.account
         projects = account.project_set.filter(
             id__in=self.context["request"].data["project_ids"]
         )
-
         if name is not None:
             data_source.name = name
         if read_only is not None:
             data_source.read_only = read_only
         if description is not None:
             data_source.description = description
+        if default_version_id is not None:
+            sourceVersion = get_object_or_404(
+                SourceVersion,
+                id=default_version_id,
+            )
+            data_source.default_version = sourceVersion
+        else:
+            data_source.default_version = None
 
         data_source.save()
 

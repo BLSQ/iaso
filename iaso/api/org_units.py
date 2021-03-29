@@ -266,12 +266,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
         self.check_object_permissions(request, org_unit)
 
         original_copy = deepcopy(org_unit)
-        name = request.data.get("name", None)
 
+        name = request.data.get("name", None)
         if not name:
             errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
-
         org_unit.name = name
+
+        source_ref = request.data.get("source_ref", None)
+        org_unit.source_ref = source_ref
 
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
@@ -411,9 +413,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
             )
 
         org_unit.name = name
+
         source_ref = request.data.get("source_ref", None)
-        if source_ref:
-            org_unit.source_ref = source_ref
+        org_unit.source_ref = source_ref
+
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
 

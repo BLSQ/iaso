@@ -6,7 +6,6 @@ on:
       environment:
         description: Iaso-playground, Iaso-staging, or Iaso-env (prod)
         required: true
-        default: iaso-stg-worker
       slack_channel:
         description: Slack Channel for notification (iasops by default)
         required: false

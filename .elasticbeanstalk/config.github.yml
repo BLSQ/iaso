@@ -1,6 +1,6 @@
 branch-defaults:
   default:
-    environment: Iaso-staging
+    environment: iaso-stg-worker
 global:
   application_name: Iaso
   default_ec2_keyname: iaso-eb

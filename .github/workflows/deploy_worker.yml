@@ -18,8 +18,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.inputs.branch }}
 
       - name: Use node.js 10
         uses: actions/setup-node@v1

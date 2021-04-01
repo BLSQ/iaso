@@ -10,7 +10,6 @@ import { redirectTo } from '../../routing/actions';
 import formsTableColumns from './config';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import FormDialogComponent from './components/FormDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import { fetchForms } from '../../utils/requests';

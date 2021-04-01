@@ -1,6 +1,5 @@
 import formsTableColumns from './config';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
-import FormDialogComponent from './components/FormDialogComponent';
 
 import fixtures from './fixture.json';
 
@@ -15,7 +14,6 @@ const defaultProps = {
 let columns;
 const fakeForm = fixtures.forms[0];
 let wrapper;
-let formDialogComponent;
 
 describe('Forms config', () => {
     it('sould return an array of 9 columns', () => {
@@ -101,56 +99,52 @@ describe('Forms config', () => {
                         original: tempForm,
                     }),
                 );
-                formDialogComponent = wrapper.find(FormDialogComponent);
             });
-            it('FormDialogComponent should be displayed ', () => {
-                expect(formDialogComponent).to.have.lengthOf(1);
-            });
-            describe(', editIcon', () => {
-                it('should be rendered', () => {
-                    const editIcon = shallow(
-                        formDialogComponent.props().renderTrigger({
-                            openDialog: () => null,
-                        }),
-                    );
-                    expect(editIcon).to.have.lengthOf(1);
-                });
-                it('should toggle openDialog on click', () => {
-                    const openDialogSpy = sinon.spy();
+            // describe(', editIcon', () => {
+            //     it('should be rendered', () => {
+            //         const editIcon = shallow(
+            //             formDialogComponent.props().renderTrigger({
+            //                 openDialog: () => null,
+            //             }),
+            //         );
+            //         expect(editIcon).to.have.lengthOf(1);
+            //     });
+            //     it('should toggle openDialog on click', () => {
+            //         const openDialogSpy = sinon.spy();
 
-                    const editIcon = shallow(
-                        formDialogComponent.props().renderTrigger({
-                            openDialog: () => openDialogSpy(),
-                        }),
-                    );
-                    editIcon.props().onClick();
-                    expect(openDialogSpy).to.have.been.calledOnce;
-                });
-            });
-            it('FormDialogComponent onSuccess should toggle component state on click', () => {
-                const onSuccessSpy = sinon.spy();
-                const tempForm = { ...fakeForm };
-                tempForm.instances_count = 0;
-                columns = formsTableColumns(
-                    () => null,
-                    {
-                        ...defaultProps,
-                        setState: () => onSuccessSpy(),
-                        state: { currentOrgUnit: { id: 1 } },
-                    },
-                    true,
-                    false,
-                );
-                const actionColumn = columns[columns.length - 1];
-                wrapper = shallow(
-                    actionColumn.Cell({
-                        original: tempForm,
-                    }),
-                );
-                formDialogComponent = wrapper.find(FormDialogComponent);
-                formDialogComponent.props().onSuccess();
-                expect(onSuccessSpy).to.have.been.calledOnce;
-            });
+            //         const editIcon = shallow(
+            //             formDialogComponent.props().renderTrigger({
+            //                 openDialog: () => openDialogSpy(),
+            //             }),
+            //         );
+            //         editIcon.props().onClick();
+            //         expect(openDialogSpy).to.have.been.calledOnce;
+            //     });
+            // });
+            // it('FormDialogComponent onSuccess should toggle component state on click', () => {
+            //     const onSuccessSpy = sinon.spy();
+            //     const tempForm = { ...fakeForm };
+            //     tempForm.instances_count = 0;
+            //     columns = formsTableColumns(
+            //         () => null,
+            //         {
+            //             ...defaultProps,
+            //             setState: () => onSuccessSpy(),
+            //             state: { currentOrgUnit: { id: 1 } },
+            //         },
+            //         true,
+            //         false,
+            //     );
+            //     const actionColumn = columns[columns.length - 1];
+            //     wrapper = shallow(
+            //         actionColumn.Cell({
+            //             original: tempForm,
+            //         }),
+            //     );
+            //     formDialogComponent = wrapper.find(FormDialogComponent);
+            //     formDialogComponent.props().onSuccess();
+            //     expect(onSuccessSpy).to.have.been.calledOnce;
+            // });
         });
     });
 });

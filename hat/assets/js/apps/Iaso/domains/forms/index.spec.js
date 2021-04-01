@@ -87,34 +87,3 @@ describe('Forms connected component', () => {
     //     mock.stop('react-intl');
     // });
 });
-
-// it('should update on success', () => {
-//     expect(instance.state.isUpdated).to.equal(false);
-//     const formDialogComponent = wrapperForm.find(FormDialogComponent);
-//     formDialogComponent.props().onSuccess();
-//     wrapperForm.update();
-//     expect(instance.state.isUpdated).to.equal(true);
-// });
-
-// it('getExportUrl without exportTypes should return csv by default', () => {
-//     expect(instance.getExportUrl()).to.equal('/api/forms/?&csv=true');
-// });
-
-// it('should not display loader if not loading', () => {
-//     expect(wrapperForm.find(LoadingSpinner)).to.have.lengthOf(0);
-// });
-
-// it('should display loading spinner if loading', () => {
-//     wrapperForm = shallow(<Forms {...defaultProps} isLoading />);
-//     expect(wrapperForm.find(LoadingSpinner)).to.have.lengthOf(1);
-// });
-// it('should display DownloadButtonsComponent if forms list ins not null', () => {
-//     expect(wrapperForm.find(DownloadButtonsComponent)).to.have.lengthOf(1);
-// });
-// it('render TopBar', () => {
-//     expect(wrapperForm.find(TopBar)).to.have.lengthOf(1);
-// });
-
-// it('render FormDialogComponent', () => {
-//     expect(wrapperForm.find(FormDialogComponent)).to.have.lengthOf(1);
-// });

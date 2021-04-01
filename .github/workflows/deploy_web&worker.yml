@@ -8,7 +8,7 @@ on:
         required: true
         default: Iaso-staging
       worker_environment:
-        description: Iaso-playground, Iaso-staging, or Iaso-env (prod)
+        description: Iaso-playground-worker, iaso-stg-worker, or Iaso-env-worker (prod)
         required: true
         default: iaso-stg-worker
       slack_channel:

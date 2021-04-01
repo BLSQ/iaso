@@ -102,6 +102,6 @@ jobs:
           SLACK_USERNAME: github-actions-DEPLOY
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: ${{ github.event.inputs.slack_channel }}
-          SLACK_TITLE: Iaso successfully deployed on ${{ github.event.inputs.environment }}
-          SLACK_MESSAGE: Iaso successfully deployed on ${{ github.event.inputs.environment }}
+          SLACK_TITLE: Iaso successfully deployed on ${{ github.event.inputs.web_environment }} and ${{ github.event.inputs.worker_environment }}
+          SLACK_MESSAGE: Iaso successfully deployed on ${{ github.event.inputs.web_environment }} and ${{ github.event.inputs.worker_environment }}
         if: success()

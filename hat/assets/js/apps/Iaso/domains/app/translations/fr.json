@@ -63,6 +63,7 @@
     "iaso.forms.update": "Mise à jour du formulaire",
     "iaso.forms.updated_at": "Modification",
     "iaso.forms.validated": "Validé",
+    "iaso.forms.viewInstances": "Voir le(s) soumission(s)",
     "iaso.forms.yes": "Oui",
     "iaso.groups.create": "Créer un groupe",
     "iaso.groups.dialog.delete": "Etes-cous certain de vouloir effacer ce groupe?",

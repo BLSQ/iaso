@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Forms',
         id: 'iaso.forms.title',
     },
+    detailTitle: {
+        defaultMessage: 'Form',
+        id: 'iaso.instance.formShort',
+    },
     createForm: {
         defaultMessage: 'Create form',
         id: 'iaso.forms.create',
@@ -49,9 +53,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.source_ref',
         defaultMessage: 'External reference',
     },
-    view: {
-        id: 'iaso.label.view',
-        defaultMessage: 'View',
+    viewInstances: {
+        id: 'iaso.forms.viewInstances',
+        defaultMessage: 'View submission(s)',
     },
     created_at: {
         id: 'iaso.forms.created_at',

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { setForms } from './actions';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
+import { redirectTo } from '../../routing/actions';
 
 import formsTableColumns from './config';
 
@@ -54,12 +56,14 @@ const Forms = props => {
                 onForceRefreshDone={() => setForceRefresh(false)}
                 results={reduxPage}
                 extraComponent={
-                    <FormDialogComponent
-                        titleMessage={MESSAGES.createForm}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent onClick={openDialog} />
-                        )}
-                        onSuccess={() => setForceRefresh(true)}
+                    <AddButtonComponent
+                        onClick={() => {
+                            dispatch(
+                                redirectTo(baseUrls.formDetail, {
+                                    formId: '0',
+                                }),
+                            );
+                        }}
                     />
                 }
                 toggleActiveSearch
@@ -68,6 +72,10 @@ const Forms = props => {
             />
         </>
     );
+};
+
+Forms.propTypes = {
+    params: PropTypes.object.isRequired,
 };
 
 export default Forms;

@@ -4,7 +4,6 @@ import Grid from '@material-ui/core/Grid';
 import { Link } from 'react-router';
 
 // import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import FormDialogComponent from './components/FormDialogComponent';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
@@ -147,28 +146,18 @@ const formsTableColumns = (
 
             return (
                 <section>
+                    {showEditAction && (
+                        <IconButtonComponent
+                            url={`${baseUrls.formDetail}/formId/${settings.original.id}`}
+                            icon="edit"
+                            tooltipMessage={MESSAGES.edit}
+                        />
+                    )}
                     <IconButtonComponent
                         url={`${urlToInstances}`}
                         icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.view}
+                        tooltipMessage={MESSAGES.viewInstances}
                     />
-                    {showEditAction && (
-                        <FormDialogComponent
-                            renderTrigger={({ openDialog }) => (
-                                <IconButtonComponent
-                                    onClick={openDialog}
-                                    icon="edit"
-                                    tooltipMessage={MESSAGES.edit}
-                                />
-                            )}
-                            onSuccess={() =>
-                                component.setState({ isUpdated: true })
-                            }
-                            initialData={settings.original}
-                            titleMessage={MESSAGES.update}
-                            key={settings.original.updated_at}
-                        />
-                    )}
                     {showMappingAction && (
                         <IconButtonComponent
                             url={`/forms/mappings/formId/${settings.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}

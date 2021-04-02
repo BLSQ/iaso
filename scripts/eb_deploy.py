@@ -4,8 +4,8 @@ import sys
 
 
 def eb_deploy(env_name):
-    #return os.system(f"eb deploy {env_name}")
-    print(f"eb deploy {env_name}")
+    return os.system(f"eb deploy {env_name}")
+    # for Action debugging: print(f"eb deploy {env_name}")
 
 
 if __name__ == '__main__':

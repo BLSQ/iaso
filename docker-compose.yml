@@ -9,7 +9,7 @@ services:
         NODE_ENV: ""
     image: iaso
     ports:
-      - "8081:8080"
+      - "8081:8081"
     volumes: &hat_volumes
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso

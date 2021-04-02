@@ -9,7 +9,7 @@ set -e
 
 command -v eb >/dev/null 2>&1  || {
     cat <<DESC
-Error: Could not find `eb`!
+Error: Could not find 'eb'!
 You to need to install the aws eb cli
 https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
 Locally, we'll assume you have your credentials setup with 'aws
@@ -33,4 +33,4 @@ fi
 # probably not needed because we copied the config
 #eb init "${eb_application_name}" --region "${AWS_DEFAULT_REGION}" --platform "${eb_platform}"
 
-eb deploy "${EB_ENV}"
+eb deploy "${EB_ENV_WEB}" && eb deplob "${EB_ENV_WORKER}"

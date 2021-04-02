@@ -1,10 +1,10 @@
-name: deploy
+name: deploy new
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: Iaso-playground, Iaso-staging, or Iaso-env (prod)
+        description: playground, staging or prod for worker and web or exact Env name
         required: true
       slack_channel:
         description: Slack Channel for notification (iasops by default)
@@ -18,6 +18,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.branch }}
 
       - name: Use node.js 10
         uses: actions/setup-node@v1
@@ -33,6 +35,7 @@ jobs:
         run: |
            cp .elasticbeanstalk/config.github.yml .elasticbeanstalk/config.yml
            pip install awsebcli --upgrade
+
 #      - name: Install GDAL
 #        run: sudo apt install gdal-bin
 #
@@ -46,6 +49,7 @@ jobs:
           node --version
           npm --version
           pip list
+
       - name: npm install (and test)
         run: |
                 npm i
@@ -78,7 +82,7 @@ jobs:
 #          SLACK_TITLE: Iaso deploying on ${{ github.event.inputs.environment }}...
 #
       - name: deploy to beanstalk
-        run: scripts/eb_deploy.sh
+        run: python scripts/eb_deploy.py ${{ github.event.inputs.environment }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

@@ -5,6 +5,7 @@ on:
     inputs:
       environment:
         description: playground, staging or prod for worker and web or exact Env name
+        default: staging
         required: true
       slack_channel:
         description: Slack Channel for notification (iasops by default)
@@ -35,6 +36,7 @@ jobs:
         run: |
            cp .elasticbeanstalk/config.github.yml .elasticbeanstalk/config.yml
            pip install awsebcli --upgrade
+           pip install boto3 --upgrade
 
 #      - name: Install GDAL
 #        run: sudo apt install gdal-bin

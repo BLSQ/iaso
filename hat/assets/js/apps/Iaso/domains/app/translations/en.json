@@ -363,6 +363,7 @@
     "iaso.snackBar.fetchDevicesError": "An error occurred while fetching devices list",
     "iaso.snackBar.fetchDevicesOwnershipError": "An error occurred while fetching devices ownerships list",
     "iaso.snackBar.fetchFormError": "An error occurred while fetching form detail",
+    "iaso.snackBar.fetchFormVersionsError": "An error occurred while fetching form versions",
     "iaso.snackBar.fetchFormsError": "An error occurred while fetching forms list",
     "iaso.snackBar.fetchGroupsError": "An error occurred while fetching groups list",
     "iaso.snackBar.fetchInstanceDictError": "An error occurred while fetching instances list",

@@ -364,6 +364,7 @@
     "iaso.snackBar.fetchDevicesError": "Une erreur est survenue en récupérant la liste des appareils",
     "iaso.snackBar.fetchDevicesOwnershipError": "Une erreur est survenue en récupérant la liste des utilisateurs d'appareils",
     "iaso.snackBar.fetchFormError": "Une erreur est survenue en récupérant les details du formulaire",
+    "iaso.snackBar.fetchFormVersionsError": "Une erreur est survenue en récupérant les version du formulaire",
     "iaso.snackBar.fetchFormsError": "Une erreur est survenue en récupérant la liste des formulaires",
     "iaso.snackBar.fetchGroupsError": "Une erreur est survenue en récupérant la liste des groupes",
     "iaso.snackBar.fetchInstanceDictError": "Une erreur est survenue en récupérant la liste des soumissions",

@@ -310,13 +310,14 @@ DataSourceDialogComponent.defaultProps = {
     initialData: null,
     defaultSourceVersion: null,
     currentUser: null,
+    projects: [],
 };
 DataSourceDialogComponent.propTypes = {
     dispatch: PropTypes.func.isRequired,
     projects: PropTypes.oneOfType([
         PropTypes.object,
         PropTypes.arrayOf(PropTypes.object),
-    ]).isRequired,
+    ]),
     onSuccess: PropTypes.func.isRequired,
     initialData: PropTypes.object,
     renderTrigger: PropTypes.func.isRequired,

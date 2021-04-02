@@ -28,6 +28,7 @@ import {
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import InputComponent from '../../components/forms/InputComponent';
 import FileInputComponent from '../../components/forms/FileInputComponent';
+import FormVersions from './components/FormVersionsComponent';
 
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../constants/snackBars';
@@ -391,6 +392,7 @@ const FormDetail = ({ router, params }) => {
                         />
                     </Grid>
                 </Grid>
+                <FormVersions formId={params.formId} />
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {!currentForm.id.value !== '' && (
                         <Button

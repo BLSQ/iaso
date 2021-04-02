@@ -12,6 +12,18 @@ import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
 
+export const fomrVersionsTableColumns = formatMessage => [
+    {
+        Header: formatMessage(MESSAGES.version),
+        accessor: 'version_id',
+        Cell: settings => {
+            console.log('settings.original', settings.original);
+            return '1';
+            return <ColumnTextComponent text={settings.original.version_id} />;
+        },
+    },
+];
+
 const formsTableColumns = (
     formatMessage,
     component,

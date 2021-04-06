@@ -58,13 +58,13 @@ case "$1" in
       ./manage.py migrate --noinput
       npm run webpack-prod
       ./manage.py collectstatic --noinput
-      ./manage.py runserver 0.0.0.0:8080
+      ./manage.py runserver 0.0.0.0:8081
     else
       export DEV_SERVER=true
       export SHOW_DEBUG_TOOLBAR=true
       ./scripts/wait_for_dbs.sh
       ./manage.py migrate --noinput
-      ./manage.py runserver 0.0.0.0:8080
+      ./manage.py runserver 0.0.0.0:8081
     fi
   ;;
   "start_webpack" )

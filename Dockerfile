@@ -37,6 +37,8 @@ RUN pip install --quiet -r requirements.txt
 
 # NODE Deps, JS/CSS production build
 COPY package.json /opt/app/package.json
+COPY package-lock.json /opt/app/package-lock.json
+
 RUN npm install --loglevel silent
 
 ENV PATH /opt/app/node_modules/.bin:$PATH

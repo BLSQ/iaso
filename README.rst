@@ -28,7 +28,7 @@ Make sure you have it installed and can connect to the **docker daemon**.
 1. Environment variables
 ------------------------
 
-The `docker-compose.yml` file contains sensible defaults for the django application.
+The `docker-compose.yml` file contains sensible defaults for the Django application.
 
 Other environment variables can be provided by a `.env file <https://docs.docker.com/v17.12/compose/environment-variables/#the-env-file>`_.
 
@@ -48,14 +48,21 @@ Run in project directory:
 
     docker-compose build
 
-3. Run migrations
+3. Start the database
+---------------------
+
+.. code:: bash
+
+    docker-compose up db
+
+4. Run migrations
 -----------------
 
 .. code:: bash
 
     docker-compose run iaso manage migrate
 
-4. Start the server
+5. Start the server
 -------------------
 
 Run in project directory:
@@ -68,21 +75,62 @@ Run in project directory:
 This will build and download the containers and start them. The ``docker-compose.yml``
 file describes the setup of the containers.
 
-The web server should be reachable at ``http://localhost:8081``.
+The web server should be reachable at ``http://localhost:8081`` (you should see a login form).
 
 
-Create a user
--------------
+6. Create a superuser
+---------------------
 
-To login to the app or the django admin, a superuser needs to be created with:
+To login to the app or the Django admin, a superuser needs to be created with:
 
 .. code:: bash
 
     docker-compose run iaso manage createsuperuser
 
+You can now login in the admin at ``http://localhost:8081/admin``.
 
 Then additional users with custom groups and permissions can be added through
-the django admin at ``/admin`` or loaded via fixtures.
+the Django admin or loaded via fixtures.
+
+7. Create and import data
+-------------------------
+
+Go to http://localhost:8081/admin/iaso/account/
+Create an account: Enter `test` as name and save.
+
+Go to http://localhost:8081/admin/iaso/project/add/
+Create a project: Enter `test` as name and `test` as account and save. 
+
+Go to http://localhost:8081/admin/iaso/profile/
+Create a profile with your user and the test account.
+
+Run the following command to populate your database with a tree of org units (these are childcare schools in the West of DRC):
+
+```
+docker-compose run iaso manage  tree_importer --org_unit_csv_file testdata/schools.csv --source_name wb_schools_2019 --version_number=1 --project_id=1 --main_org_unit_name maternelle
+```
+
+You can now login on ``http://localhost:8081`` 
+
+
+8. Create a form
+----------------
+
+On ``http://localhost:8081/dashboard/forms/list``, click "+ Create".
+
+Fill the mandatory fields (name and projects), upload `seed-data-command-cvs_survey.xls` (from `/testdata`) in the file box and add a bunch of org unit types in the selector. 
+
+At this point, if you want to edit forms directly on your machine using Enketo, go to the Enketo setup section of this README (down below).
+
+Once you are done, you can click on the eye for your newly added form, click on "+ Create", tap a letter, then enter, select the org unit, then click "Create instance". 
+
+If Enketo is running and well setup, you can fill the form now. 
+
+
+9. Create other cool stuff
+--------------------------
+
+You can now start to develop additional features on Iaso!
 
 
 Run commands on the server
@@ -105,7 +153,7 @@ The following are some examples:
 +-------------------------------------+----------------------------------------------------------+
 | Run a shell command                 | ``docker-compose run iaso eval curl http://google.com `` |
 +-------------------------------------+----------------------------------------------------------+
-| Run django manage.py                | ``docker-compose run iaso manage help``                   |
+| Run Django manage.py                | ``docker-compose run iaso manage help``                   |
 +-------------------------------------+----------------------------------------------------------+
 | Create a python shell               | ``docker-compose run iaso manage shell``                  |
 +-------------------------------------+----------------------------------------------------------+
@@ -208,7 +256,7 @@ Tests can be executed with
 Code reloading
 ==============
 
-In development the django dev server will restart when it detects a file change, either in Python or Javascript.
+In development the Django dev server will restart when it detects a file change, either in Python or Javascript.
 
 .. code:: shell
 

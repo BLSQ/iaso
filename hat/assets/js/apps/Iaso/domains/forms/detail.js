@@ -392,7 +392,6 @@ const FormDetail = ({ router, params }) => {
                         />
                     </Grid>
                 </Grid>
-                <FormVersions formId={params.formId} />
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {!currentForm.id.value !== '' && (
                         <Button
@@ -414,6 +413,7 @@ const FormDetail = ({ router, params }) => {
                         <FormattedMessage {...MESSAGES.save} />
                     </Button>
                 </Box>
+                <FormVersions formId={params.formId} />
             </Box>
         </>
     );

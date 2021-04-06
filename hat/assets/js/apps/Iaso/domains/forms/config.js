@@ -1,6 +1,6 @@
 import React from 'react';
 import moment from 'moment';
-import Grid from '@material-ui/core/Grid';
+import { Grid } from '@material-ui/core';
 import { Link } from 'react-router';
 
 // import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
@@ -12,15 +12,49 @@ import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
 
-export const fomrVersionsTableColumns = formatMessage => [
+export const formVersionsTableColumns = formatMessage => [
+    {
+        Header: formatMessage(MESSAGES.startPeriod),
+        accessor: 'start_period',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={settings.original.start_period || textPlaceholder}
+            />
+        ),
+    },
+    {
+        Header: formatMessage(MESSAGES.endPeriod),
+        accessor: 'end_period',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={settings.original.end_period || textPlaceholder}
+            />
+        ),
+    },
     {
         Header: formatMessage(MESSAGES.version),
         accessor: 'version_id',
-        Cell: settings => {
-            console.log('settings.original', settings.original);
-            return '1';
-            return <ColumnTextComponent text={settings.original.version_id} />;
-        },
+        Cell: settings => (
+            <ColumnTextComponent text={settings.original.version_id} />
+        ),
+    },
+    {
+        Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
+        sortable: false,
+        Cell: settings => (
+            <section>
+                {settings.original.xls_file && (
+                    <IconButtonComponent
+                        onClick={() =>
+                            window.open(settings.original.xls_file, '_blank')
+                        }
+                        icon="xls"
+                        tooltipMessage={MESSAGES.xls_form_file}
+                    />
+                )}
+            </section>
+        ),
     },
 ];
 

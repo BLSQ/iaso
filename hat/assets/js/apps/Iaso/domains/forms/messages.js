@@ -277,6 +277,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.version',
         defaultMessage: 'Version',
     },
+    versions: {
+        id: 'iaso.label.versions',
+        defaultMessage: 'Versions',
+    },
     catchment: {
         id: 'iaso.label.catchment',
         defaultMessage: 'Catchment',
@@ -400,6 +404,14 @@ const MESSAGES = defineMessages({
     sourcedestinationversion: {
         id: 'iaso.label.sourcedestinationversion',
         defaultMessage: 'Destination source version',
+    },
+    startPeriod: {
+        id: 'iaso.label.startPeriod',
+        defaultMessage: 'Start period',
+    },
+    endPeriod: {
+        id: 'iaso.label.endPeriod',
+        defaultMessage: 'end period',
     },
 });
 

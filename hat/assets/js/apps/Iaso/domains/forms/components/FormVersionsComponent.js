@@ -1,26 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
+import { FormattedMessage } from 'react-intl';
+import { Box, Typography } from '@material-ui/core';
 import { fetchList } from '../../../utils/requests';
 
 import SingleTable from '../../../components/tables/SingleTable';
-// import DataSourceDialogComponent from './components/DataSourceDialogComponent';
-// import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
 
 import { baseUrls } from '../../../constants/urls';
 
-import fomrVersionsTableColumns from '../config';
+import { formVersionsTableColumns } from '../config';
 import { useSafeIntl } from '../../../hooks/intl';
+import MESSAGES from '../messages';
 
-const baseUrl = baseUrls.sources;
-const defaultOrder = 'version_id';
+const baseUrl = baseUrls.formDetail;
+const defaultOrder = 'start_period';
 const FormVersionsComponent = ({ formId }) => {
-    const [forceRefresh, setForceRefresh] = useState(false);
-    const dispatch = useDispatch();
     const intl = useSafeIntl();
     return (
-        <>
+        <Box mt={4}>
+            <Typography color="primary" variant="h5">
+                <FormattedMessage {...MESSAGES.versions} />
+            </Typography>
             <SingleTable
+                isFullHeight={false}
                 baseUrl={baseUrl}
                 endPointPath="formversions"
                 exportButtons={false}
@@ -34,25 +36,10 @@ const FormVersionsComponent = ({ formId }) => {
                         'form versions',
                     )
                 }
-                defaultSorted={[{ id: defaultOrder, desc: false }]}
-                columns={fomrVersionsTableColumns(
-                    intl.formatMessage,
-                    setForceRefresh,
-                )}
-                forceRefresh={forceRefresh}
-                onForceRefreshDone={() => setForceRefresh(false)}
-                // extraComponent={
-                //     <DataSourceDialogComponent
-                //         defaultSourceVersion={defaultSourceVersion}
-                //         titleMessage={MESSAGES.createDataSource}
-                //         renderTrigger={({ openDialog }) => (
-                //             <AddButtonComponent onClick={openDialog} />
-                //         )}
-                //         onSuccess={() => setForceRefresh(true)}
-                //     />
-                // }
+                defaultSorted={[{ id: defaultOrder, desc: true }]}
+                columns={formVersionsTableColumns(intl.formatMessage)}
             />
-        </>
+        </Box>
     );
 };
 FormVersionsComponent.propTypes = {

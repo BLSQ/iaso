@@ -191,6 +191,7 @@ const FormDetail = ({ router, params }) => {
         if (params.formId && params.formId !== '0') {
             dispatch(fetchFormDetail(params.formId));
         } else {
+            dispatch(setCurrentForm(undefined));
             dispatch(setIsLoadingForm(false));
         }
     }, []);
@@ -247,6 +248,7 @@ const FormDetail = ({ router, params }) => {
                                     onChange={(key, value) =>
                                         setFieldValue(key, value)
                                     }
+                                    value={currentForm.xls_file.value}
                                     label={MESSAGES.xls_form_file}
                                     errors={currentForm.xls_file.errors}
                                     required
@@ -395,6 +397,7 @@ const FormDetail = ({ router, params }) => {
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {!currentForm.id.value !== '' && (
                         <Button
+                            data-id="form-detail-cancel"
                             className={classes.marginLeft}
                             disabled={!isFormModified}
                             variant="contained"
@@ -404,6 +407,7 @@ const FormDetail = ({ router, params }) => {
                         </Button>
                     )}
                     <Button
+                        data-id="form-detail-confirm"
                         disabled={!isFormModified}
                         variant="contained"
                         className={classes.marginLeft}

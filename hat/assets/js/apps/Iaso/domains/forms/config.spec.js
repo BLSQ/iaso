@@ -35,7 +35,17 @@ describe('Forms config', () => {
                 }
             });
         });
-        it('should open a tabon click on xls icon', () => {
+        it('should render a component if Cell is defined and missing start_period, end_period and version_id', () => {
+            formVersionscolumns.forEach(c => {
+                if (c.Cell) {
+                    const cell = c.Cell({
+                        original: formVersionsfixture.form_versions[1],
+                    });
+                    expect(cell).to.exist;
+                }
+            });
+        });
+        it('should open a tab on click on xls icon', () => {
             const actionColumn =
                 formVersionscolumns[formVersionscolumns.length - 1];
             wrapper = shallow(
@@ -62,6 +72,19 @@ describe('Forms config', () => {
                 if (c.Cell) {
                     const cell = c.Cell({
                         original: fakeForm,
+                    });
+                    expect(cell).to.exist;
+                }
+            });
+        });
+        it('should render a component if Cell is defined and no from id', () => {
+            columns.forEach(c => {
+                if (c.Cell) {
+                    const cell = c.Cell({
+                        original: {
+                            ...fakeForm,
+                            form_id: 0,
+                        },
                     });
                     expect(cell).to.exist;
                 }
@@ -124,72 +147,6 @@ describe('Forms config', () => {
                     'instances/formId/14/levels/1',
                 );
                 expect(redEyeIcon).to.have.lengthOf(1);
-            });
-            describe(', if showEditAction is true', () => {
-                before(() => {
-                    const tempForm = { ...fakeForm };
-                    tempForm.instances_count = 0;
-                    columns = formsTableColumns(
-                        () => null,
-                        {
-                            ...defaultProps,
-                            state: { currentOrgUnit: { id: 1 } },
-                        },
-                        true,
-                        false,
-                    );
-                    const actionColumn = columns[columns.length - 1];
-                    wrapper = shallow(
-                        actionColumn.Cell({
-                            original: tempForm,
-                        }),
-                    );
-                });
-                // describe(', editIcon', () => {
-                //     it('should be rendered', () => {
-                //         const editIcon = shallow(
-                //             formDialogComponent.props().renderTrigger({
-                //                 openDialog: () => null,
-                //             }),
-                //         );
-                //         expect(editIcon).to.have.lengthOf(1);
-                //     });
-                //     it('should toggle openDialog on click', () => {
-                //         const openDialogSpy = sinon.spy();
-
-                //         const editIcon = shallow(
-                //             formDialogComponent.props().renderTrigger({
-                //                 openDialog: () => openDialogSpy(),
-                //             }),
-                //         );
-                //         editIcon.props().onClick();
-                //         expect(openDialogSpy).to.have.been.calledOnce;
-                //     });
-                // });
-                // it('FormDialogComponent onSuccess should toggle component state on click', () => {
-                //     const onSuccessSpy = sinon.spy();
-                //     const tempForm = { ...fakeForm };
-                //     tempForm.instances_count = 0;
-                //     columns = formsTableColumns(
-                //         () => null,
-                //         {
-                //             ...defaultProps,
-                //             setState: () => onSuccessSpy(),
-                //             state: { currentOrgUnit: { id: 1 } },
-                //         },
-                //         true,
-                //         false,
-                //     );
-                //     const actionColumn = columns[columns.length - 1];
-                //     wrapper = shallow(
-                //         actionColumn.Cell({
-                //             original: tempForm,
-                //         }),
-                //     );
-                //     formDialogComponent = wrapper.find(FormDialogComponent);
-                //     formDialogComponent.props().onSuccess();
-                //     expect(onSuccessSpy).to.have.been.calledOnce;
-                // });
             });
         });
     });

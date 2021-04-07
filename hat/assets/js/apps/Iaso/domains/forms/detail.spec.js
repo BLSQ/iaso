@@ -6,7 +6,13 @@ import Detail from './detail';
 import SingleTable from '../../components/tables/SingleTable';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import { renderWithStore } from '../../../../test/utils/redux';
-import { mockGetRequestsList } from '../../../../test/utils/requests';
+import {
+    mockGetRequestsList,
+    mockPostRequest,
+    mockPostRequestError,
+    mockDeleteRequestError,
+    mockDeleteRequest,
+} from '../../../../test/utils/requests';
 import formsFixture from './fixtures/forms.json';
 import TopBar from '../../components/nav/TopBarComponent';
 
@@ -108,7 +114,7 @@ const resetAndMock = theId => {
 
 describe('Detail form connected component', () => {
     describe('with a new form', () => {
-        beforeEach(() => {
+        before(() => {
             resetAndMock('0');
             connectedWrapper = mount(
                 renderWithStore(
@@ -128,7 +134,7 @@ describe('Detail form connected component', () => {
             expect(connectedWrapper.exists()).to.equal(true);
         });
 
-        it('should call create form on confirm', () => {
+        it('should fail silently if createForm fails with 400', done => {
             const confirmButton = connectedWrapper
                 .find('[data-id="form-detail-confirm"]')
                 .at(0);
@@ -139,10 +145,134 @@ describe('Detail form connected component', () => {
             expect(inputName.props().value).to.equal(newName);
             const createFormStub = sinon
                 .stub(requestsStub, 'createForm')
-                .returns(new Promise(resolve => resolve()));
+                .returns(
+                    new Promise((resolve, reject) =>
+                        // eslint-disable-next-line prefer-promise-reject-errors
+                        reject({
+                            status: 400,
+                            details: {
+                                project_ids: ['This list may not be empty.'],
+                            },
+                        }),
+                    ),
+                );
+
             confirmButton.props().onClick();
             expect(createFormStub).to.have.been.called;
+
             sinon.restore();
+            setTimeout(() => {
+                done();
+            }, 100);
+        });
+        it('should fail silently if createForm fails with 500', done => {
+            const confirmButton = connectedWrapper
+                .find('[data-id="form-detail-confirm"]')
+                .at(0);
+            let inputName = connectedWrapper.find('[keyValue="name"]').at(0);
+            inputName.props().onChange('name', newName);
+            connectedWrapper.update();
+            inputName = connectedWrapper.find('[keyValue="name"]').at(0);
+            expect(inputName.props().value).to.equal(newName);
+            const createFormStub = sinon
+                .stub(requestsStub, 'createForm')
+                .returns(
+                    new Promise((resolve, reject) =>
+                        // eslint-disable-next-line prefer-promise-reject-errors
+                        reject({
+                            status: 500,
+                        }),
+                    ),
+                );
+
+            confirmButton.props().onClick();
+            expect(createFormStub).to.have.been.called;
+
+            sinon.restore();
+            setTimeout(() => {
+                done();
+            }, 100);
+        });
+        it('should call create form on confirm', done => {
+            nock.cleanAll();
+            nock.abortPendingRequests();
+            const confirmButton = connectedWrapper
+                .find('[data-id="form-detail-confirm"]')
+                .at(0);
+            let inputName = connectedWrapper.find('[keyValue="name"]').at(0);
+            inputName.props().onChange('name', newName);
+            connectedWrapper.update();
+            inputName = connectedWrapper.find('[keyValue="name"]').at(0);
+            expect(inputName.props().value).to.equal(newName);
+            // mockPostRequest('/api/forms/', { id: 69 });
+            mockPostRequest('/api/formversions/', {});
+            mockDeleteRequest(`/api/forms/${formId}/`, {});
+            const createFormStub = sinon
+                .stub(requestsStub, 'createForm')
+                .returns(new Promise(resolve => resolve({ id: 69 })));
+
+            confirmButton.props().onClick();
+            expect(createFormStub).to.have.been.called;
+
+            sinon.restore();
+            setTimeout(() => {
+                done();
+            }, 100);
+        });
+
+        it('should call delete form on form version creation fail', done => {
+            nock.cleanAll();
+            nock.abortPendingRequests();
+            const confirmButton = connectedWrapper
+                .find('[data-id="form-detail-confirm"]')
+                .at(0);
+            let inputName = connectedWrapper.find('[keyValue="name"]').at(0);
+            inputName.props().onChange('name', newName);
+            connectedWrapper.update();
+            inputName = connectedWrapper.find('[keyValue="name"]').at(0);
+            expect(inputName.props().value).to.equal(newName);
+            // mockPostRequest('/api/forms/', { id: 69 });
+
+            const createFormStub = sinon
+                .stub(requestsStub, 'createForm')
+                .returns(new Promise(resolve => resolve({ id: 69 })));
+            mockPostRequestError('/api/formversions/', {});
+            mockDeleteRequest(`/api/forms/${formId}/`, {});
+
+            confirmButton.props().onClick();
+            expect(createFormStub).to.have.been.called;
+
+            sinon.restore();
+            setTimeout(() => {
+                done();
+            }, 100);
+        });
+        it('should fail silently if delete fail', done => {
+            nock.cleanAll();
+            nock.abortPendingRequests();
+            const confirmButton = connectedWrapper
+                .find('[data-id="form-detail-confirm"]')
+                .at(0);
+            let inputName = connectedWrapper.find('[keyValue="name"]').at(0);
+            inputName.props().onChange('name', newName);
+            connectedWrapper.update();
+            inputName = connectedWrapper.find('[keyValue="name"]').at(0);
+            expect(inputName.props().value).to.equal(newName);
+            // mockPostRequest('/api/forms/', { id: 69 });
+
+            const createFormStub = sinon
+                .stub(requestsStub, 'createForm')
+                .returns(new Promise(resolve => resolve({ id: 69 })));
+            mockPostRequestError('/api/formversions/', {});
+            mockDeleteRequestError(`/api/forms/${formId}/`, {});
+
+            confirmButton.props().onClick();
+            expect(createFormStub).to.have.been.called;
+
+            sinon.restore();
+            setTimeout(() => {
+                done();
+            }, 100);
         });
     });
 
@@ -199,50 +329,51 @@ describe('Detail form connected component', () => {
         });
 
         describe('on confirm', () => {
-            it('should call update form', () => {
+            beforeEach(() => {
+                nock.cleanAll();
+                nock.abortPendingRequests();
+                mockPostRequest('/api/formversions/', {});
+                mockDeleteRequest(`/api/forms/${formId}/`, {});
+            });
+            it('should call update form', done => {
                 const confirmButton = connectedWrapper
                     .find('[data-id="form-detail-confirm"]')
                     .at(0);
-                let inputName = connectedWrapper
-                    .find('[keyValue="name"]')
-                    .at(0);
-                inputName.props().onChange('name', newName);
-                connectedWrapper.update();
-                inputName = connectedWrapper.find('[keyValue="name"]').at(0);
-                expect(inputName.props().value).to.equal(newName);
+
                 const updateFormStub = sinon
                     .stub(requestsStub, 'updateForm')
-                    .returns(new Promise(resolve => resolve()));
+                    .returns(new Promise(resolve => resolve({ id: 69 })));
                 confirmButton.props().onClick();
                 expect(updateFormStub).to.have.been.called;
+                sinon.restore();
+                setTimeout(() => {
+                    done();
+                }, 100);
             });
+            it('should call update form with a file', done => {
+                let inputName = connectedWrapper
+                    .find('[keyValue="xls_file"]')
+                    .at(0);
+                inputName.props().onChange('xls_file', newFile);
+                connectedWrapper.update();
+                inputName = connectedWrapper
+                    .find('[keyValue="xls_file"]')
+                    .at(0);
+                expect(inputName.props().value).to.equal(newFile);
+                const confirmButton = connectedWrapper
+                    .find('[data-id="form-detail-confirm"]')
+                    .at(0);
 
-            // it('should call deleteForm form if failing', () => {
-            //     let inputName = connectedWrapper
-            //         .find('[keyValue="xls_file"]')
-            //         .at(0);
-            //     inputName.props().onChange('xls_file', newFile);
-            //     connectedWrapper.update();
-            //     inputName = connectedWrapper
-            //         .find('[keyValue="xls_file"]')
-            //         .at(0);
-            //     console.log('value', inputName.props().value);
-            //     const confirmButton = connectedWrapper
-            //         .find('[data-id="form-detail-confirm"]')
-            //         .at(0);
-            //     sinon
-            //         .stub(requestsStub, 'updateForm')
-            //         .returns(new Promise(resolve => resolve()));
-            //     sinon
-            //         .stub(requestsStub, 'createFormVersion')
-            //         .returns(new Promise((resolve, reject) => reject()));
-            //     const deleteFormStub = sinon
-            //         .stub(requestsStub, 'deleteForm')
-            //         .returns(new Promise(resolve => resolve()));
-            //     confirmButton.props().onClick();
-            //     expect(deleteFormStub).to.have.been.called;
-            //     sinon.restore();
-            // });
+                const updateFormStub = sinon
+                    .stub(requestsStub, 'updateForm')
+                    .returns(new Promise(resolve => resolve({ id: 69 })));
+                confirmButton.props().onClick();
+                expect(updateFormStub).to.have.been.called;
+                sinon.restore();
+                setTimeout(() => {
+                    done();
+                }, 100);
+            });
         });
 
         it('displays loadingSpinner if is loading', () => {

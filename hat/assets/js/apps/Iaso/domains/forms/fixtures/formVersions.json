@@ -18,7 +18,7 @@
         },
         {
             "id": 7,
-            "version_id": "2021033100",
+            "version_id": null,
             "form_id": 32,
             "form_name": "BROL",
             "full_name": "BROL - V2021033100",
@@ -27,8 +27,8 @@
             "file": "http://localhost:8081/media/forms/cacahuet_2021033101.xml",
             "created_at": 1617198801.081379,
             "updated_at": 1617378030.18252,
-            "start_period": "202008",
-            "end_period": "202012",
+            "start_period": null,
+            "end_period": null,
             "mapping_versions": []
         }
     ],

@@ -35,7 +35,9 @@ export const formVersionsTableColumns = formatMessage => [
         Header: formatMessage(MESSAGES.version),
         accessor: 'version_id',
         Cell: settings => (
-            <ColumnTextComponent text={settings.original.version_id} />
+            <ColumnTextComponent
+                text={settings.original.version_id || textPlaceholder}
+            />
         ),
     },
     {
@@ -127,7 +129,9 @@ const formsTableColumns = (
         Header: formatMessage(MESSAGES.form_id),
         sortable: false,
         Cell: settings => (
-            <ColumnTextComponent text={settings.original.form_id} />
+            <ColumnTextComponent
+                text={settings.original.form_id || textPlaceholder}
+            />
         ),
     },
     {
@@ -192,6 +196,11 @@ const formsTableColumns = (
 
             return (
                 <section>
+                    <IconButtonComponent
+                        url={`${urlToInstances}`}
+                        icon="remove-red-eye"
+                        tooltipMessage={MESSAGES.viewInstances}
+                    />
                     {showEditAction && (
                         <IconButtonComponent
                             url={`${baseUrls.formDetail}/formId/${settings.original.id}`}
@@ -199,11 +208,6 @@ const formsTableColumns = (
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
-                    <IconButtonComponent
-                        url={`${urlToInstances}`}
-                        icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.viewInstances}
-                    />
                     {showMappingAction && (
                         <IconButtonComponent
                             url={`/forms/mappings/formId/${settings.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}

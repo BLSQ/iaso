@@ -94,8 +94,7 @@ const FormDetail = ({ router, params }) => {
         setFormState,
     ] = useFormState(initialFormState(initialData));
 
-    const onConfirm = () => {
-        // TODO: messy & hard to follow... move in async action & use async/await to avoid callback hell
+    const onConfirm = async () => {
         let isUpdate;
         let saveForm;
         let formData;
@@ -112,57 +111,59 @@ const FormDetail = ({ router, params }) => {
             saveForm = updateForm(dispatch, currentForm.id.value, formData);
         }
         dispatch(setIsLoadingForm(true));
-        return saveForm
-            .then(savedFormData => {
-                dispatch(setCurrentForm(savedFormData));
-                if (isUpdate && currentForm.xls_file.value === null) {
-                    // allow form update without new version
-                    return Promise.resolve();
-                }
-                if (!isUpdate) {
-                    dispatch(
-                        redirectToReplace(baseUrls.formDetail, {
-                            formId: savedFormData.id,
-                        }),
+        let isSaveSuccessful = false;
+        let savedFormData;
+        try {
+            savedFormData = await saveForm;
+            dispatch(setCurrentForm(savedFormData));
+            if (
+                !isUpdate ||
+                (isUpdate && currentForm.xls_file.value !== null)
+            ) {
+                try {
+                    await createFormVersion(
+                        dispatch,
+                        {
+                            form_id: savedFormData.id,
+                            xls_file: currentForm.xls_file.value,
+                        },
+                        isUpdate,
                     );
-                }
-                return createFormVersion(
-                    dispatch,
-                    {
-                        form_id: savedFormData.id,
-                        xls_file: currentForm.xls_file.value,
-                    },
-                    isUpdate,
-                ).catch(createVersionError => {
+                    isSaveSuccessful = true;
+                } catch (createVersionError) {
                     // when creating form, if version creation fails, delete freshly created, version-less form
                     if (!isUpdate) {
-                        return deleteForm(dispatch, savedFormData.id)
-                            .then(() => console.log('Form deleted'))
-                            .catch(() =>
-                                console.warn('Form could not be deleted'),
-                            )
-                            .then(() => {
-                                throw createVersionError;
-                            });
+                        try {
+                            await deleteForm(dispatch, savedFormData.id);
+                            console.log('Form deleted');
+                        } catch (deleteFormError) {
+                            console.warn('Form could not be deleted');
+                        }
                     }
-                    throw createVersionError;
-                });
-            })
-            .then(() => {
-                dispatch(enqueueSnackbar(succesfullSnackBar()));
-            })
-            .catch(error => {
-                if (error.status === 400) {
-                    Object.entries(error.details).forEach(
-                        ([errorKey, errorMessages]) => {
-                            setFieldErrors(errorKey, errorMessages);
-                        },
-                    );
                 }
-            })
-            .then(() => {
-                dispatch(setIsLoadingForm(false));
-            });
+            } else {
+                isSaveSuccessful = true;
+            }
+        } catch (error) {
+            if (error.status === 400) {
+                Object.entries(error.details).forEach(
+                    ([errorKey, errorMessages]) => {
+                        setFieldErrors(errorKey, errorMessages);
+                    },
+                );
+            }
+        }
+        if (isSaveSuccessful) {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            if (!isUpdate) {
+                dispatch(
+                    redirectToReplace(baseUrls.formDetail, {
+                        formId: savedFormData.id,
+                    }),
+                );
+            }
+        }
+        dispatch(setIsLoadingForm(false));
     };
 
     const setPeriodType = value => {

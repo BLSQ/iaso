@@ -4,7 +4,6 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
 from django.contrib.postgres.fields import JSONField
-from django.db.models.functions import Now
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import ArrayField, CITextField
 
@@ -15,26 +14,7 @@ from ..utils import slugify_underscore
 from .. import periods
 from uuid import uuid4
 
-class SoftDeletableModel(models.Model):
-    deleted_at = models.DateTimeField(default=None, blank=True, null=True)
-
-    class Meta:
-        abstract = True
-
-    def delete_hard(self, using=None, keep_parents=False):
-        return super().delete(using, keep_parents)
-
-    def delete(self, using=None, keep_parents=False):
-        self.deleted_at = Now()
-        self.save()
-
-    def restore(self):
-        self.deleted_at = None
-        self.save()
-
-class SoftDeletableManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(deleted_at=None)
+from ..utils.models.soft_deletable import SoftDeletableManager, SoftDeletableModel
 
 class FormQuerySet(SoftDeletableManager):
     def exists_with_same_version_id_within_projects(self, form: "Form", form_id: str):

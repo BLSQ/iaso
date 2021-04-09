@@ -4,6 +4,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
 from django.contrib.postgres.fields import JSONField
+from django.db.models.functions import Now
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import ArrayField, CITextField
 
@@ -62,6 +63,7 @@ class Form(models.Model):
     form_id = models.TextField(null=True, blank=True)  # extracted from version xls file
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(default=None, blank=True, null=True)
     name = models.TextField()
     device_field = models.TextField(null=True, blank=True)
     location_field = models.TextField(null=True, blank=True)
@@ -112,6 +114,16 @@ class Form(models.Model):
 
         return res
 
+    def delete_hard(self, using=None, keep_parents=False):
+        return super().delete(using, keep_parents)
+
+    def delete(self, using=None, keep_parents=False):
+        self.deleted_at = Now()
+        self.save()
+
+    def restore(self):
+        self.deleted_at = None
+        self.save()
 
 def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
     path = pathlib.Path(filename)

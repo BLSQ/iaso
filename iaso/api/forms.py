@@ -3,8 +3,10 @@ import typing
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
-from rest_framework import serializers, permissions
+from rest_framework import serializers, permissions, status
+from rest_framework.decorators import action
 from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from iaso.models import Form, Project, OrgUnitType
@@ -107,10 +109,15 @@ class FormSerializer(serializers.ModelSerializer):
 
 
 class DeletedFormsViewSet(ReadOnlyModelViewSet):
-    permission_classes = [HasFormPermission]
     queryset = Form.deleted.all()
     serializer_class = FormSerializer
     results_key = "forms"
+
+    @action(detail=True, methods=['post'], serializer_class=serializers.Serializer)
+    def restore(self, request, pk):
+        object = self.get_object()
+        object.restore()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class FormsViewSet(ModelViewSet):
     """ Forms API

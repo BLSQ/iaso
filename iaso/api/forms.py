@@ -5,6 +5,8 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import serializers, permissions
 from rest_framework.request import Request
+from rest_framework.viewsets import ReadOnlyModelViewSet
+
 from iaso.models import Form, Project, OrgUnitType
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField
@@ -103,6 +105,12 @@ class FormSerializer(serializers.ModelSerializer):
 
         return data
 
+
+class DeletedFormsViewSet(ReadOnlyModelViewSet):
+    permission_classes = [HasFormPermission]
+    queryset = Form.deleted.all()
+    serializer_class = FormSerializer
+    results_key = "forms"
 
 class FormsViewSet(ModelViewSet):
     """ Forms API

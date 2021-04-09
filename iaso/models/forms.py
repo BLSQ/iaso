@@ -15,8 +15,28 @@ from ..utils import slugify_underscore
 from .. import periods
 from uuid import uuid4
 
+class SoftDeletableModel(models.Model):
+    deleted_at = models.DateTimeField(default=None, blank=True, null=True)
 
-class FormQuerySet(models.QuerySet):
+    class Meta:
+        abstract = True
+
+    def delete_hard(self, using=None, keep_parents=False):
+        return super().delete(using, keep_parents)
+
+    def delete(self, using=None, keep_parents=False):
+        self.deleted_at = Now()
+        self.save()
+
+    def restore(self):
+        self.deleted_at = None
+        self.save()
+
+class SoftDeletableManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at=None)
+
+class FormQuerySet(SoftDeletableManager):
     def exists_with_same_version_id_within_projects(self, form: "Form", form_id: str):
         """Checks whether the provided form_id is already in a form that is:
 
@@ -50,8 +70,7 @@ class FormQuerySet(models.QuerySet):
 
         return queryset
 
-
-class Form(models.Model):
+class Form(SoftDeletableModel):
     PERIOD_TYPE_CHOICES = (
         (periods.PERIOD_TYPE_MONTH, _("Month")),
         (periods.PERIOD_TYPE_QUARTER, _("Quarter")),
@@ -63,7 +82,6 @@ class Form(models.Model):
     form_id = models.TextField(null=True, blank=True)  # extracted from version xls file
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(default=None, blank=True, null=True)
     name = models.TextField()
     device_field = models.TextField(null=True, blank=True)
     location_field = models.TextField(null=True, blank=True)
@@ -83,7 +101,7 @@ class Form(models.Model):
     uuid = models.UUIDField(default=uuid4, unique=True)
     label_keys = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
-    objects = FormQuerySet.as_manager()
+    objects = FormQuerySet()
 
     @property
     def latest_version(self):
@@ -113,17 +131,6 @@ class Form(models.Model):
                     res[field] = getattr(self, field)
 
         return res
-
-    def delete_hard(self, using=None, keep_parents=False):
-        return super().delete(using, keep_parents)
-
-    def delete(self, using=None, keep_parents=False):
-        self.deleted_at = Now()
-        self.save()
-
-    def restore(self):
-        self.deleted_at = None
-        self.save()
 
 def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
     path = pathlib.Path(filename)

@@ -4,6 +4,7 @@ from django.test import tag
 from django.utils.timezone import now
 
 from iaso import models as m
+from iaso.models import Form
 from iaso.test import APITestCase
 
 
@@ -392,6 +393,9 @@ class FormsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f"/api/forms/{self.form_1.id}/", format="json")
         self.assertJSONResponse(response, 204)
+
+        self.assertIsNotNone(Form.deleted.get(pk=self.form_1.id))
+        self.assertFalse(Form.objects.filter(pk=self.form_1.id).exists())
 
     @tag("iaso_only")
     def test_forms_destroy_with_instances(self):

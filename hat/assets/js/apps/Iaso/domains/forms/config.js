@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import moment from 'moment';
 import Grid from '@material-ui/core/Grid';
 import { Link } from 'react-router';
@@ -12,6 +13,8 @@ import { baseUrls } from '../../constants/urls';
 import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
+import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import {deleteForm} from "../../utils/requests";
 
 const formsTableColumns = (
     formatMessage,
@@ -176,24 +179,26 @@ const formsTableColumns = (
                             tooltipMessage={MESSAGES.dhis2Mappings}
                         />
                     )}
-                    {/* {
-                        // TODO: deactivated, hard delete is too dangerous - to discuss
-                        false && (
-                            <DeleteDialog
-                                disabled={settings.original.instances_count > 0}
-                                titleMessage={MESSAGES.deleteFormTitle}
-                                message={MESSAGES.deleteFormText}
-                                onConfirm={closeDialog =>
-                                    component
-                                        .deleteForm(settings.original)
-                                        .then(closeDialog)
-                                }
-                            />
-                        )
-                    } */}
+                    <DispatchableDeleteDialog form={settings.original} />
                 </section>
             );
         },
     },
 ];
+
+const DispatchableDeleteDialog = ({form}) => {
+    const dispatch = useDispatch();
+
+    return (
+        <DeleteDialog
+            disabled={form.instances_count > 0}
+            titleMessage={MESSAGES.deleteFormTitle}
+            message={MESSAGES.deleteFormText}
+            onConfirm={closeDialog => {
+                deleteForm(dispatch, form.id).then(closeDialog)
+            }}
+        />
+    )
+}
+
 export default formsTableColumns;

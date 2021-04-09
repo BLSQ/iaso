@@ -9,6 +9,7 @@ import { baseUrls } from '../../constants/urls';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import OrgUnitTooltip from './components/OrgUnitTooltip';
 import { textPlaceholder } from '../../constants/uiConstants';
+import getDisplayName from '../../utils/usersUtils';
 import MESSAGES from './messages';
 import { getStatusMessage, getOrgUnitGroups } from './utils';
 
@@ -173,7 +174,7 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => [
     {
         Header: formatMessage(MESSAGES.user),
         accessor: 'user__username',
-        Cell: settings => <span>{settings.original.user.userName}</span>,
+        Cell: settings => <span>{getDisplayName(settings.original.user)}</span>,
     },
     {
         expander: true,

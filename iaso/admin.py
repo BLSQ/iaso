@@ -71,6 +71,13 @@ class FormAdmin(admin.GeoModelAdmin):
         "updated_at",
     )
 
+class DeletedForm(Form):
+    class Meta:
+        proxy = True
+
+class DeletedFormAdmin(FormAdmin):
+    def get_queryset(self, request):
+        return Form.deleted.all()
 
 class FormVersionAdmin(admin.GeoModelAdmin):
     search_fields = ("form__name", "form__form_id")
@@ -179,6 +186,7 @@ class TaskAdmin(admin.ModelAdmin):
 
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
+admin.site.register(DeletedForm, DeletedFormAdmin)
 admin.site.register(Instance, InstanceAdmin)
 admin.site.register(InstanceFile, InstanceFileAdmin)
 admin.site.register(Account)

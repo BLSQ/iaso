@@ -4,7 +4,7 @@ from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Project
 from django.contrib.gis.geos import Point
 from uuid import uuid4
 from django.db import models, transaction
-
+from unidecode import unidecode
 
 def get_or_create(unit_dict, name, org_unit_type, parent_id, version_id, longitude, latitude, source_ref, save=True):
     id_string = "%s%s" % (name, parent_id)
@@ -41,10 +41,10 @@ def get_or_create(unit_dict, name, org_unit_type, parent_id, version_id, longitu
 
 column_dict = {
     "name": "Nom Ecole",
-    "parents": ["Proved", "Sproved", "Territoire", "Groupement", "Commune"],
+    "parents": ["Country", "ProvincePoliAdmin", "Proved", "Sproved", "Territoire", "Groupement", "Commune"],
     "longitude": "GPS_longitude",
     "latitude": "GPS_latitude",
-    "source_ref": "Numero SECOPE",
+    "source_ref": "source_ref",
 }
 
 
@@ -122,7 +122,7 @@ class Command(BaseCommand):
             top_org_units = set([])
             print("Inserting all units")
             index = 0
-            with open(file_name) as csvfile:
+            with open(file_name, encoding='utf-8-sig') as csvfile:
                 csv_reader = csv.reader(csvfile, delimiter=";")
                 index = 1
                 for row in csv_reader:
@@ -132,20 +132,23 @@ class Command(BaseCommand):
                     if index == 1:
 
                         headers = row
-                        col_indices = {headers[i]: i for i in range(len(headers))}
+                        col_indices = {headers[i].strip(): i for i in range(len(headers))}
+                        print("col_indices", col_indices)
                     else:
                         try:
                             previous_parent = None
                             for parent in column_dict["parents"]:
                                 type = org_unit_dicts[parent]["type"]
                                 name = row[col_indices[parent]]
-                                top = False
-                                if not previous_parent:
-                                    top = True
-                                previous_parent = get_or_create(org_unit_dicts[parent]["units"], name, type, previous_parent.id if previous_parent else None, version.id, None, None, None)
-                                parent_units.append(previous_parent)
-                                if top:
-                                    top_org_units.add(previous_parent)
+                                simplified_name = unidecode(name).lower().replace("neant", "").strip()
+                                if simplified_name:
+                                    top = False
+                                    if not previous_parent:
+                                        top = True
+                                    previous_parent = get_or_create(org_unit_dicts[parent]["units"], name, type, previous_parent.id if previous_parent else None, version.id, None, None, None)
+                                    parent_units.append(previous_parent)
+                                    if top:
+                                        top_org_units.add(previous_parent)
                             name = row[col_indices[column_dict["name"]]]
                             source_ref = row[col_indices[column_dict["source_ref"]]]
                             latitude = row[col_indices[column_dict["latitude"]]]
@@ -163,7 +166,7 @@ class Command(BaseCommand):
             OrgUnit.objects.bulk_create(leaf_units)
 
             print("computing paths for parents")
-            top_parents = OrgUnit.objects.filter(id__in=[u.id for u in parent_units]).exclude(parent__path=None).filter(path=None)
+            top_parents = OrgUnit.objects.filter(id__in=[u.id for u in parent_units]).filter(parent=None)
             for ou in top_parents:
                 print("computing for", ou)
                 ou.save(force_recalculate=True)

@@ -4,7 +4,7 @@ import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'react-leaflet-draw';
 
-import { Grid, Divider } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 
 import L from 'leaflet';
 import PropTypes from 'prop-types';
@@ -17,11 +17,10 @@ import {
     mapOrgUnitByLocation,
     shapeOptions,
     polygonDrawOpiton,
-    circleColorMarkerOptions,
     clusterCustomMarker,
 } from '../../../utils/mapUtils';
+import { getMarkerList } from '../utils';
 
-import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
 import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
@@ -30,9 +29,7 @@ import OrgUnitTypeChipsFilterComponent from './OrgUnitTypeChipsFilterComponent';
 import FormsChipsFilterComponent from '../../forms/components/FormsChipsFilterComponent';
 import SourcesChipsFilterComponent from '../../../components/filters/chips/SourcesChipsFilterComponent';
 import MarkerComponent from '../../../components/maps/markers/MarkerComponent';
-import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import OrgUnitPopupComponent from './OrgUnitPopupComponent';
-import InstancePopupComponent from '../../instances/components/InstancePopupComponent';
 
 import { resetMapReducer } from '../../../redux/mapReducer';
 import { setCurrentSubOrgUnit } from '../actions';
@@ -45,6 +42,7 @@ import {
 
 import 'leaflet-draw/dist/leaflet.draw.css';
 import injectIntl from '../../../libs/intl/injectIntl';
+import InstancePopupComponent from '../../instances/components/InstancePopupComponent';
 
 const zoom = 5;
 const padding = [75, 75];
@@ -167,6 +165,7 @@ class OrgUnitMapComponent extends Component {
         }
         if (
             this.props.sourcesSelected &&
+            !prevProps.sourcesSelected &&
             this.props.orgUnitTypesSelected &&
             (this.props.sourcesSelected.length > 0 ||
                 this.props.orgUnitTypesSelected.length > 0)
@@ -365,7 +364,6 @@ class OrgUnitMapComponent extends Component {
             resetOrgUnit,
             orgUnitLocationModified,
             setOrgUnitLocationModified,
-            isClusterActive,
         } = this.props;
         const { editGeoJson, currentOption } = this.state;
         const editLocationEnabled = editGeoJson.location;
@@ -382,7 +380,6 @@ class OrgUnitMapComponent extends Component {
             sourcesSelected || [],
         );
         const showEditComponent = hasMarker || !orgUnit.geo_json;
-        console.log('isClusterActive', isClusterActive);
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
@@ -450,8 +447,6 @@ class OrgUnitMapComponent extends Component {
                     settingsOptionComponent={
                         <Fragment>
                             <TileSwitch />
-                            <Divider />
-                            <ClusterSwitch />
                         </Fragment>
                     }
                 >
@@ -477,86 +472,15 @@ class OrgUnitMapComponent extends Component {
                             url={currentTile.url}
                         />
                         {!editLocationEnabled &&
-                            mappedOrgUnitTypesSelected.map(ot => (
-                                <Fragment key={ot.id}>
-                                    {!isClusterActive && (
-                                        <MarkersListComponent
-                                            items={ot.orgUnits.locations}
-                                            onMarkerClick={o =>
-                                                this.fetchSubOrgUnitDetail(o)
-                                            }
-                                            PopupComponent={
-                                                OrgUnitPopupComponent
-                                            }
-                                            popupProps={{
-                                                displayUseLocation: true,
-                                                useLocation: selectedOrgUnit =>
-                                                    this.useOrgUnitLocation(
-                                                        selectedOrgUnit,
-                                                    ),
-                                            }}
-                                            isCircle
-                                            markerProps={() => ({
-                                                ...circleColorMarkerOptions(
-                                                    ot.color,
-                                                ),
-                                            })}
-                                        />
-                                    )}
-                                    {ot.orgUnits.shapes.map(o => (
-                                        <GeoJSON
-                                            key={o.id}
-                                            data={o.geo_json}
-                                            onClick={() =>
-                                                this.fetchSubOrgUnitDetail(o)
-                                            }
-                                            style={() => ({ color: ot.color })}
-                                        >
-                                            <OrgUnitPopupComponent
-                                                displayUseLocation
-                                                useLocation={selectedOrgUnit =>
-                                                    this.useOrgUnitLocation(
-                                                        selectedOrgUnit,
-                                                    )
-                                                }
-                                            />
-                                        </GeoJSON>
-                                    ))}
-                                </Fragment>
-                            ))}
-                        {mappedSourcesSelected.map(s => (
-                            <Fragment key={s.id}>
-                                {!isClusterActive && (
-                                    <MarkersListComponent
-                                        items={s.orgUnits.locations}
-                                        onMarkerClick={o =>
-                                            this.fetchSubOrgUnitDetail(o)
-                                        }
-                                        PopupComponent={OrgUnitPopupComponent}
-                                        popupProps={{
-                                            displayUseLocation: true,
-                                            useLocation: selectedOrgUnit =>
-                                                this.useOrgUnitLocation(
-                                                    selectedOrgUnit,
-                                                ),
-                                        }}
-                                        markerProps={() => ({
-                                            ...circleColorMarkerOptions(
-                                                s.color,
-                                            ),
-                                        })}
-                                        // customMarker={colorMarker(s.color)}
-                                        isCircle
-                                    />
-                                )}
-                                {s.orgUnits.shapes.map(o => (
+                            mappedOrgUnitTypesSelected.map(ot =>
+                                ot.orgUnits.shapes.map(o => (
                                     <GeoJSON
                                         key={o.id}
                                         data={o.geo_json}
                                         onClick={() =>
                                             this.fetchSubOrgUnitDetail(o)
                                         }
-                                        style={() => ({ color: s.color })}
+                                        style={() => ({ color: ot.color })}
                                     >
                                         <OrgUnitPopupComponent
                                             displayUseLocation
@@ -567,120 +491,59 @@ class OrgUnitMapComponent extends Component {
                                             }
                                         />
                                     </GeoJSON>
-                                ))}
-                            </Fragment>
-                        ))}
-
-                        {isClusterActive && (
-                            <MarkerClusterGroup
-                                iconCreateFunction={clusterCustomMarker}
-                            >
-                                {mappedOrgUnitTypesSelected.map(ot => (
-                                    <MarkersListComponent
-                                        items={ot.orgUnits.locations}
-                                        onMarkerClick={o =>
-                                            this.fetchSubOrgUnitDetail(o)
-                                        }
-                                        PopupComponent={OrgUnitPopupComponent}
-                                        popupProps={{
-                                            displayUseLocation: true,
-                                            useLocation: selectedOrgUnit =>
-                                                this.useOrgUnitLocation(
-                                                    selectedOrgUnit,
-                                                ),
-                                        }}
-                                        isCircle
-                                        markerProps={() => ({
-                                            ...circleColorMarkerOptions(
-                                                ot.color,
-                                            ),
-                                        })}
-                                    />
-                                ))}
-                                {mappedSourcesSelected.map(s => (
-                                    <MarkersListComponent
-                                        items={s.orgUnits.locations}
-                                        onMarkerClick={o =>
-                                            this.fetchSubOrgUnitDetail(o)
-                                        }
-                                        PopupComponent={OrgUnitPopupComponent}
-                                        popupProps={{
-                                            displayUseLocation: true,
-                                            useLocation: selectedOrgUnit =>
-                                                this.useOrgUnitLocation(
-                                                    selectedOrgUnit,
-                                                ),
-                                        }}
-                                        markerProps={() => ({
-                                            ...circleColorMarkerOptions(
-                                                s.color,
-                                            ),
-                                        })}
-                                        // customMarker={colorMarker(s.color)}
-                                        isCircle
-                                    />
-                                ))}
-                                {formsSelected.map(f => (
-                                    <MarkersListComponent
-                                        markerProps={() => ({
-                                            ...circleColorMarkerOptions(
-                                                f.color,
-                                            ),
-                                        })}
-                                        key={f.id}
-                                        items={f.instances}
-                                        onMarkerClick={i =>
-                                            this.fetchInstanceDetail(i)
-                                        }
-                                        PopupComponent={InstancePopupComponent}
-                                        popupProps={{
-                                            displayUseLocation: true,
-                                            useLocation: selectedOrgUnit =>
-                                                this.useOrgUnitLocation(
-                                                    selectedOrgUnit,
-                                                ),
-                                        }}
-                                        isCircle
-                                    />
-                                ))}
-                                {hasMarker && currentOption !== 'edit' && (
-                                    <MarkerComponent
-                                        item={orgUnit}
-                                        draggable={currentOption === 'edit'}
-                                        onDragend={newMarker =>
-                                            this.props.onChangeLocation(
-                                                newMarker.getLatLng(),
+                                )),
+                            )}
+                        {mappedSourcesSelected.map(s =>
+                            s.orgUnits.shapes.map(o => (
+                                <GeoJSON
+                                    key={o.id}
+                                    data={o.geo_json}
+                                    onClick={() =>
+                                        this.fetchSubOrgUnitDetail(o)
+                                    }
+                                    style={() => ({ color: s.color })}
+                                >
+                                    <OrgUnitPopupComponent
+                                        displayUseLocation
+                                        useLocation={selectedOrgUnit =>
+                                            this.useOrgUnitLocation(
+                                                selectedOrgUnit,
                                             )
                                         }
                                     />
-                                )}
-                            </MarkerClusterGroup>
+                                </GeoJSON>
+                            )),
                         )}
-                        {!isClusterActive &&
-                            formsSelected.map(f => (
-                                <MarkersListComponent
-                                    markerProps={() => ({
-                                        ...circleColorMarkerOptions(f.color),
-                                    })}
-                                    key={f.id}
-                                    items={f.instances}
-                                    onMarkerClick={i =>
-                                        this.fetchInstanceDetail(i)
-                                    }
-                                    PopupComponent={InstancePopupComponent}
-                                    popupProps={{
-                                        displayUseLocation: true,
-                                        useLocation: selectedOrgUnit =>
-                                            this.useOrgUnitLocation(
-                                                selectedOrgUnit,
-                                            ),
-                                    }}
-                                    isCircle
-                                />
-                            ))}
-
-                        {(currentOption === 'edit' || !isClusterActive) &&
-                            hasMarker && (
+                        <MarkerClusterGroup
+                            maxClusterRadius={0} // only apply cluster on markers with same coordinates
+                            iconCreateFunction={clusterCustomMarker}
+                        >
+                            {mappedOrgUnitTypesSelected.map(ot =>
+                                getMarkerList(
+                                    ot.orgUnits.locations,
+                                    a => this.fetchSubOrgUnitDetail(a),
+                                    ot.color,
+                                    ot.id,
+                                ),
+                            )}
+                            {mappedSourcesSelected.map(s =>
+                                getMarkerList(
+                                    s.orgUnits.locations,
+                                    a => this.fetchSubOrgUnitDetail(a),
+                                    s.color,
+                                    s.id,
+                                ),
+                            )}
+                            {formsSelected.map(f =>
+                                getMarkerList(
+                                    f.instances,
+                                    a => this.fetchInstanceDetail(a),
+                                    f.color,
+                                    f.id,
+                                    InstancePopupComponent,
+                                ),
+                            )}
+                            {hasMarker && currentOption !== 'edit' && (
                                 <MarkerComponent
                                     item={orgUnit}
                                     draggable={currentOption === 'edit'}
@@ -691,6 +554,19 @@ class OrgUnitMapComponent extends Component {
                                     }
                                 />
                             )}
+                        </MarkerClusterGroup>
+
+                        {hasMarker && currentOption === 'edit' && (
+                            <MarkerComponent
+                                item={orgUnit}
+                                draggable={currentOption === 'edit'}
+                                onDragend={newMarker =>
+                                    this.props.onChangeLocation(
+                                        newMarker.getLatLng(),
+                                    )
+                                }
+                            />
+                        )}
                     </Map>
                 </InnerDrawer>
             </Grid>
@@ -722,8 +598,6 @@ OrgUnitMapComponent.propTypes = {
     saveOrgUnit: PropTypes.func.isRequired,
     setOrgUnitLocationModified: PropTypes.func.isRequired,
     orgUnitLocationModified: PropTypes.bool.isRequired,
-    fetchingSubOrgUnits: PropTypes.bool.isRequired,
-    isClusterActive: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -731,8 +605,6 @@ const MapStateToProps = state => ({
     currentTile: state.map.currentTile,
     orgUnitTypesSelected: state.orgUnits.currentSubOrgUnitsTypesSelected,
     sourcesSelected: state.orgUnits.currentSourcesSelected,
-    fetchingSubOrgUnits: state.orgUnits.fetchingSubOrgUnits,
-    isClusterActive: state.map.isClusterActive,
 });
 
 const MapDispatchToProps = dispatch => ({

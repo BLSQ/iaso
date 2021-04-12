@@ -95,23 +95,19 @@ the Django admin or loaded via fixtures.
 7. Create and import data
 -------------------------
 
-Go to http://localhost:8081/admin/iaso/account/
-Create an account: Enter `test` as name and save.
+To create the initial account, project and profile, do the following:
 
-Go to http://localhost:8081/admin/iaso/project/add/
-Create a project: Enter `test` as name and `test` as account and save. 
+.. code:: bash
 
-Go to http://localhost:8081/admin/iaso/profile/
-Create a profile with your user and the test account.
+    docker exec iaso_iaso_1 ./manage.py create_and_import_data
 
-Run the following command to populate your database with a tree of org units (these are childcare schools in the West of DRC):
+And run the following command to populate your database with a tree of org units (these are childcare schools in the West of DRC):
 
-```
-docker-compose run iaso manage  tree_importer --org_unit_csv_file testdata/schools.csv --source_name wb_schools_2019 --version_number=1 --project_id=1 --main_org_unit_name maternelle
-```
+.. code:: bash
 
-You can now login on ``http://localhost:8081`` 
+    docker-compose run iaso manage tree_importer --org_unit_csv_file testdata/schools.csv --source_name wb_schools_2019 --version_number=1 --project_id=1 --main_org_unit_name maternelle
 
+You can now login on ``http://localhost:8081``
 
 8. Create a form
 ----------------

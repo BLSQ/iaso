@@ -21,9 +21,9 @@ let xlsButton;
 
 describe('Forms config', () => {
     describe('formVersionsTableColumns', () => {
-        it('sould return an array of 4 columns', () => {
+        it('sould return an array of 2 columns', () => {
             formVersionscolumns = formVersionsTableColumns(() => null);
-            expect(formVersionscolumns).to.have.lengthOf(4);
+            expect(formVersionscolumns).to.have.lengthOf(2);
         });
         it('should render a component if Cell is defined', () => {
             formVersionscolumns.forEach(c => {

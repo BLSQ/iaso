@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
@@ -83,7 +83,7 @@ const FormDetail = ({ router, params }) => {
     const allProjects = useSelector(state => state.projects.allProjects);
     const initialData = useSelector(state => state.forms.current);
     const isLoading = useSelector(state => state.forms.isLoading);
-
+    const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
     const dispatch = useDispatch();
     const intl = useSafeIntl();
     const classes = useStyles();
@@ -161,6 +161,7 @@ const FormDetail = ({ router, params }) => {
                         formId: savedFormData.id,
                     }),
                 );
+                setForceRefreshVersions(true);
             }
         }
         dispatch(setIsLoadingForm(false));
@@ -418,7 +419,11 @@ const FormDetail = ({ router, params }) => {
                         <FormattedMessage {...MESSAGES.save} />
                     </Button>
                 </Box>
-                <FormVersions formId={params.formId} />
+                <FormVersions
+                    formId={params.formId}
+                    forceRefresh={forceRefreshVersions}
+                    setForceRefresh={setForceRefreshVersions}
+                />
             </Box>
         </>
     );

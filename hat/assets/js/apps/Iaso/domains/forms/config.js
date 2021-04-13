@@ -13,24 +13,24 @@ import { getOrgUnitParentsIds } from '../orgUnits/utils';
 import MESSAGES from './messages';
 
 export const formVersionsTableColumns = formatMessage => [
-    {
-        Header: formatMessage(MESSAGES.startPeriod),
-        accessor: 'start_period',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.start_period || textPlaceholder}
-            />
-        ),
-    },
-    {
-        Header: formatMessage(MESSAGES.endPeriod),
-        accessor: 'end_period',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.end_period || textPlaceholder}
-            />
-        ),
-    },
+    // {
+    //     Header: formatMessage(MESSAGES.startPeriod),
+    //     accessor: 'start_period',
+    //     Cell: settings => (
+    //         <ColumnTextComponent
+    //             text={settings.original.start_period || textPlaceholder}
+    //         />
+    //     ),
+    // },
+    // {
+    //     Header: formatMessage(MESSAGES.endPeriod),
+    //     accessor: 'end_period',
+    //     Cell: settings => (
+    //         <ColumnTextComponent
+    //             text={settings.original.end_period || textPlaceholder}
+    //         />
+    //     ),
+    // },
     {
         Header: formatMessage(MESSAGES.version),
         accessor: 'version_id',

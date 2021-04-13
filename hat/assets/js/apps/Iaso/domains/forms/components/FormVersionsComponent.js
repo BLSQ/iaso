@@ -14,7 +14,7 @@ import MESSAGES from '../messages';
 
 const baseUrl = baseUrls.formDetail;
 const defaultOrder = 'start_period';
-const FormVersionsComponent = ({ formId }) => {
+const FormVersionsComponent = ({ formId, forceRefresh, setForceRefresh }) => {
     const intl = useSafeIntl();
     return (
         <Box mt={4}>
@@ -38,12 +38,16 @@ const FormVersionsComponent = ({ formId }) => {
                 }
                 defaultSorted={[{ id: defaultOrder, desc: true }]}
                 columns={formVersionsTableColumns(intl.formatMessage)}
+                forceRefresh={forceRefresh}
+                onForceRefreshDone={() => setForceRefresh(false)}
             />
         </Box>
     );
 };
 FormVersionsComponent.propTypes = {
     formId: PropTypes.string.isRequired,
+    forceRefresh: PropTypes.bool.isRequired,
+    setForceRefresh: PropTypes.func.isRequired,
 };
 
 export default FormVersionsComponent;

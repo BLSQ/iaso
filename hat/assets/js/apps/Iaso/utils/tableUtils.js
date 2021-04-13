@@ -2,6 +2,7 @@ import React from 'react';
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
 import { capitalize } from './index';
+import InfoHeaderComponent from '../components/tables/InfoHeaderComponent';
 
 const getTableUrl = (
     urlKey,
@@ -188,7 +189,11 @@ export const getColumnsHeadersInfos = columns => {
         if (c.headerInfo) {
             newColumns[i] = {
                 ...newColumns[i],
-                Header: `INFOS: ${newColumns[i].Header}`,
+                Header: (
+                    <InfoHeaderComponent message={c.headerInfo}>
+                        {newColumns[i].Header}
+                    </InfoHeaderComponent>
+                ),
             };
         }
     });

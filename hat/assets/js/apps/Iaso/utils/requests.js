@@ -494,6 +494,23 @@ export const createFormVersion = (dispatch, formVersionData, isUpdate) => {
     });
 };
 
+export const fetchFormVersions = (dispatch, formId) => {
+    const data = { form_id: formId };
+
+    return postRequest('/api/formversions/', data).catch(error => {
+        dispatch(
+            enqueueSnackbar(
+                errorSnackBar(
+                    isUpdate ? 'updateFormError' : 'createFormError',
+                    null,
+                    error,
+                ),
+            ),
+        );
+        throw error;
+    });
+};
+
 export const fetchCompleteness = (dispatch, url) =>
     getRequest(url)
         .then(res => res.completeness)
@@ -565,3 +582,15 @@ export const updateDefaultSource = (dispatch, accountId, default_version) =>
         );
         throw error;
     });
+
+// TO-DO: replace all requests similar to this
+export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
+    getRequest(url)
+        .then(data => data)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(errorSnackBar(errorKeyMessage, null, error)),
+            );
+            console.error(`Error while fetching ${consoleError} list:`, error);
+            throw error;
+        });

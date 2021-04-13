@@ -6,7 +6,7 @@ import {
 } from './actions';
 
 export const projectsInitialState = {
-    allProjects: [],
+    allProjects: undefined,
     allFeatureFlags: [],
     list: [],
     current: null,

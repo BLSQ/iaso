@@ -15,6 +15,7 @@ import StopRoundedIcon from '@material-ui/icons/StopRounded';
 import XmlSvg from '../svg/XmlSvgComponent';
 import DHIS2Svg from '../svg/DHIS2SvgComponent';
 import OrgUnitSvg from '../svg/OrgUnitSvgComponent';
+import ExcellSvg from '../svg/ExcellSvgComponent';
 
 import commonStyles from '../../styles/common';
 
@@ -31,6 +32,7 @@ const ICON_VARIANTS = {
     orgUnit: OrgUnitSvg,
     refresh: CachedRoundedIcon,
     stop: StopRoundedIcon,
+    xls: ExcellSvg,
 };
 
 const styles = theme => ({

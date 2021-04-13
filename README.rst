@@ -112,9 +112,11 @@ You can now login on ``http://localhost:8081``
 8. Create a form
 ----------------
 
-On ``http://localhost:8081/dashboard/forms/list``, click "+ Create".
+Run the following command to create a form:
 
-Fill the mandatory fields (name and projects), upload `seed-data-command-cvs_survey.xls` (from `/testdata`) in the file box and add a bunch of org unit types in the selector. 
+.. code:: bash
+
+    docker exec iaso_iaso_1 ./manage.py create_form
 
 At this point, if you want to edit forms directly on your machine using Enketo, go to the Enketo setup section of this README (down below).
 

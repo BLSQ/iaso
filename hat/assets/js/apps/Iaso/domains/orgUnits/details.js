@@ -15,7 +15,6 @@ import {
     setCurrentForms,
     setSources,
     setGroups,
-    setFetching,
     setFetchingDetail,
     saveOrgUnit as saveOrgUnitAction,
     createOrgUnit as createOrgUnitAction,
@@ -122,7 +121,6 @@ class OrgUnitDetail extends Component {
             setSelectedSources,
         } = this.props;
         this.props.resetOrgUnitsLevels();
-        dispatch(setFetching(true));
         const promisesArray = [];
         if (this.props.orgUnitTypes.length === 0) {
             promisesArray.push(
@@ -176,10 +174,6 @@ class OrgUnitDetail extends Component {
 
         Promise.all(promisesArray).then(() => {
             this.fetchDetail().then(async currentOrgUnit => {
-                if (this.state.tab !== 'map') {
-                    dispatch(setFetching(false));
-                }
-                dispatch(setFetchingDetail(false));
                 const { links } = await fetchLinks(
                     dispatch,
                     `/api/links/?orgUnitId=${orgUnitId}`,
@@ -205,18 +199,26 @@ class OrgUnitDetail extends Component {
                         selectedSources = selectedSources.concat(linkSources);
                     }
                 });
-                const fullSelectedSources = [];
-                selectedSources.forEach(async (ss, index) => {
-                    const detail = await fetchAssociatedOrgUnits(
-                        dispatch,
-                        ss,
-                        currentOrgUnit,
-                    );
-                    fullSelectedSources.push(detail);
-                    if (index === selectedSources.length - 1) {
-                        setSelectedSources(fullSelectedSources);
+                if (selectedSources.length === 0) {
+                    setSelectedSources([]);
+                } else {
+                    const fullSelectedSources = [];
+
+                    for (let i = 0; i < selectedSources.length; i += 1) {
+                        const ss = selectedSources[i];
+                        // eslint-disable-next-line no-await-in-loop
+                        const detail = await fetchAssociatedOrgUnits(
+                            dispatch,
+                            ss,
+                            currentOrgUnit,
+                        );
+                        fullSelectedSources.push(detail);
+                        if (i === selectedSources.length - 1) {
+                            setSelectedSources(fullSelectedSources);
+                        }
                     }
-                });
+                }
+                dispatch(setFetchingDetail(false));
             });
         });
     }
@@ -374,15 +376,18 @@ class OrgUnitDetail extends Component {
             });
     }
 
-    handleResetOrgUnit() {
+    async handleResetOrgUnit() {
         this.props.resetOrgUnitsLevels();
-        const { redirectTo, params } = this.props;
+        const { redirectTo, params, dispatch } = this.props;
         const newParams = {
             ...params,
             levels: null,
         };
         redirectTo(baseUrl, newParams);
-        this.fetchDetail();
+
+        dispatch(setFetchingDetail(true));
+        await this.fetchDetail();
+        dispatch(setFetchingDetail(false));
     }
 
     goToRevision(orgUnitRevision) {
@@ -418,7 +423,6 @@ class OrgUnitDetail extends Component {
         const {
             classes,
             fetching,
-            fetchingSubOrgUnits,
             intl: { formatMessage },
             orgUnitTypes,
             groups,
@@ -491,7 +495,7 @@ class OrgUnitDetail extends Component {
                         </Tabs>
                     )}
                 </TopBar>
-                {(fetching || fetchingSubOrgUnits) && <LoadingSpinner />}
+                {fetching && <LoadingSpinner />}
                 {currentOrgUnit && (
                     <section>
                         {tab === 'infos' && (
@@ -685,7 +689,6 @@ OrgUnitDetail.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     redirectToPush: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
-    fetchingSubOrgUnits: PropTypes.bool.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     resetOrgUnits: PropTypes.func.isRequired,
@@ -710,7 +713,6 @@ OrgUnitDetail.propTypes = {
 
 const MapStateToProps = state => ({
     fetching: state.orgUnits.fetchingDetail,
-    fetchingSubOrgUnits: state.orgUnits.fetchingSubOrgUnits,
     currentOrgUnit: state.orgUnits.current,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     currentForms: state.orgUnits.currentForms,

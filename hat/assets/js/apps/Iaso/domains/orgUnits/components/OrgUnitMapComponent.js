@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'react-leaflet-draw';
+import { withTheme } from '@material-ui/core/styles';
 
 import { Grid } from '@material-ui/core';
 
@@ -17,7 +18,7 @@ import {
     mapOrgUnitByLocation,
     shapeOptions,
     polygonDrawOpiton,
-    clusterCustomMarker,
+    colorClusterCustomMarker,
 } from '../../../utils/mapUtils';
 import { getMarkerList } from '../utils';
 
@@ -166,9 +167,7 @@ class OrgUnitMapComponent extends Component {
         if (
             this.props.sourcesSelected &&
             !prevProps.sourcesSelected &&
-            this.props.orgUnitTypesSelected &&
-            (this.props.sourcesSelected.length > 0 ||
-                this.props.orgUnitTypesSelected.length > 0)
+            this.props.orgUnitTypesSelected
         ) {
             this.fitToBounds();
         }
@@ -364,6 +363,7 @@ class OrgUnitMapComponent extends Component {
             resetOrgUnit,
             orgUnitLocationModified,
             setOrgUnitLocationModified,
+            theme,
         } = this.props;
         const { editGeoJson, currentOption } = this.state;
         const editLocationEnabled = editGeoJson.location;
@@ -516,7 +516,12 @@ class OrgUnitMapComponent extends Component {
                         )}
                         <MarkerClusterGroup
                             maxClusterRadius={0} // only apply cluster on markers with same coordinates
-                            iconCreateFunction={clusterCustomMarker}
+                            iconCreateFunction={cluster =>
+                                colorClusterCustomMarker(
+                                    cluster,
+                                    theme.palette.secondary.main,
+                                )
+                            }
                         >
                             {mappedOrgUnitTypesSelected.map(ot =>
                                 getMarkerList(
@@ -598,6 +603,7 @@ OrgUnitMapComponent.propTypes = {
     saveOrgUnit: PropTypes.func.isRequired,
     setOrgUnitLocationModified: PropTypes.func.isRequired,
     orgUnitLocationModified: PropTypes.bool.isRequired,
+    theme: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -617,4 +623,4 @@ const MapDispatchToProps = dispatch => ({
 export default connect(
     MapStateToProps,
     MapDispatchToProps,
-)(injectIntl(OrgUnitMapComponent));
+)(withTheme(injectIntl(OrgUnitMapComponent)));

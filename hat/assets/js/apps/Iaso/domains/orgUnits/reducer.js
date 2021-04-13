@@ -77,7 +77,7 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
 
         case SET_ORG_UNIT: {
             const current = action.payload;
-            return { ...state, current, fetchingDetail: false };
+            return { ...state, current };
         }
 
         case SET_SUB_ORG_UNIT: {

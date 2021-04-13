@@ -41,7 +41,7 @@ def get_or_create(unit_dict, name, org_unit_type, parent_id, version_id, longitu
 
 column_dict = {
     "name": "Nom Ecole",
-    "parents": ["Country", "ProvincePoliAdmin", "Proved", "Sproved", "Territoire", "Groupement", "Commune"],
+    "parents": ["Country", "ProvincePoliAdmin", "Proved", "Sproved"],# "Territoire", "Groupement", "Commune"],
     "longitude": "GPS_longitude",
     "latitude": "GPS_latitude",
     "source_ref": "source_ref",

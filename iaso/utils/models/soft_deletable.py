@@ -1,19 +1,17 @@
 from django.db import models
 from django.db.models.functions import Now
 
-class SoftDeletableQuerySet(models.QuerySet):
-    def only_deleted(self):
-        return self.filter(deleted_at__isnull=False)
-
-class SoftDeletableManager(models.Manager):
+class DefaultSoftDeletableManager(models.Manager):
     def get_queryset(self):
-        return SoftDeletableQuerySet(self.model, using=self._db).filter(deleted_at=None)
+        return super().get_queryset().filter(deleted_at=None)
 
-    def only_deleted(self):
-        return self.get_queryset().only_deleted()
+class IncludeDeletedSoftDeletableManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset()
 
-    def include_deleted(self):
-        return SoftDeletableQuerySet(self.model, using=self._db)
+class OnlyDeletedSoftDeletableManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=False)
 
 class SoftDeletableModel(models.Model):
     class Meta:

@@ -72,7 +72,7 @@ class FormAdmin(admin.GeoModelAdmin):
         "deleted_at",
     )
     def get_queryset(self, request):
-        return Form.objects.include_deleted()
+        return Form.objects_include_deleted.all()
 
 class FormVersionAdmin(admin.GeoModelAdmin):
     search_fields = ("form__name", "form__form_id")

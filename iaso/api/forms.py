@@ -107,18 +107,6 @@ class FormSerializer(serializers.ModelSerializer):
 
         return data
 
-
-class DeletedFormsViewSet(ReadOnlyModelViewSet):
-    queryset = Form.deleted.all()
-    serializer_class = FormSerializer
-    results_key = "forms"
-
-    @action(detail=True, methods=['post'], serializer_class=serializers.Serializer)
-    def restore(self, request, pk):
-        object = self.get_object()
-        object.restore()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
 class FormsViewSet(ModelViewSet):
     """ Forms API
 
@@ -149,7 +137,12 @@ class FormsViewSet(ModelViewSet):
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
 
     def get_queryset(self):
-        queryset = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+
+        form_objects = Form.objects
+        if self.request.query_params.get("only_deleted", None):
+            form_objects = Form.objects_only_deleted
+
+        queryset = form_objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
         org_unit_id = self.request.query_params.get("orgUnitId", None)
         if org_unit_id:
             queryset = queryset.filter(instances__org_unit__id=org_unit_id)

@@ -17,7 +17,7 @@ from .api.data_sources import DataSourceViewSet
 from .api.copy_version import CopyVersionViewSet
 from .api.dhis2_ou_importer import Dhis2OuImporterViewSet
 from .api.source_versions import SourceVersionViewSet
-from .api.forms import FormsViewSet, DeletedFormsViewSet
+from .api.forms import FormsViewSet
 from .api.form_versions import FormVersionsViewSet
 from .api.links import LinkViewSet
 from .api.profiles import ProfilesViewSet
@@ -58,7 +58,6 @@ router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
 router.register(r"instances", InstancesViewSet, basename="instances")
 router.register(r"forms", FormsViewSet, basename="forms")
-router.register(r"forms-deleted", DeletedFormsViewSet, basename="forms-deleted")
 router.register(r"formversions", FormVersionsViewSet, basename="formversions")
 router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")

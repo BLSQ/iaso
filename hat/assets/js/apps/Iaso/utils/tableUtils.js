@@ -181,3 +181,16 @@ export const tableInitialResult = {
     pages: 0,
     count: 0,
 };
+
+export const getColumnsHeadersInfos = columns => {
+    const newColumns = [...columns];
+    columns.forEach((c, i) => {
+        if (c.headerInfo) {
+            newColumns[i] = {
+                ...newColumns[i],
+                Header: `INFOS: ${newColumns[i].Header}`,
+            };
+        }
+    });
+    return newColumns;
+};

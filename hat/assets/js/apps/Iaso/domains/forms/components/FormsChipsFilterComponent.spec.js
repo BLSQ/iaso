@@ -83,4 +83,7 @@ describe('FormsChipsFilterComponent', () => {
         );
         expect(wrapper.exists()).to.equal(true);
     });
+    after(() => {
+        sinon.restore();
+    });
 });

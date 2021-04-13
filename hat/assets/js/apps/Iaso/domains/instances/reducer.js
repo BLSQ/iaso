@@ -3,7 +3,6 @@ import {
     SET_INSTANCES_SMALL_DICT,
     SET_INSTANCES_FETCHING,
     SET_CURRENT_INSTANCE,
-    SET_INSTANCE_CURRENT_FORM,
     SET_INSTANCES_FILTER_UDPATED,
     RESET_INSTANCES,
 } from './actions';
@@ -19,7 +18,6 @@ export const instancesInitialState = {
         pages: 0,
     },
     current: null,
-    currentForm: null,
     isInstancesFilterUpdated: false,
 };
 
@@ -61,11 +59,6 @@ export const instancesReducer = (
         case SET_CURRENT_INSTANCE: {
             const current = action.payload;
             return { ...state, current };
-        }
-
-        case SET_INSTANCE_CURRENT_FORM: {
-            const currentForm = action.payload;
-            return { ...state, currentForm };
         }
 
         case SET_INSTANCES_FILTER_UDPATED: {

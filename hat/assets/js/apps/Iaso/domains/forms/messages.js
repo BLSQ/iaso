@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Forms',
         id: 'iaso.forms.title',
     },
+    detailTitle: {
+        defaultMessage: 'Form',
+        id: 'iaso.instance.formShort',
+    },
     createForm: {
         defaultMessage: 'Create form',
         id: 'iaso.forms.create',
@@ -49,9 +53,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.source_ref',
         defaultMessage: 'External reference',
     },
-    view: {
-        id: 'iaso.label.view',
-        defaultMessage: 'View',
+    viewInstances: {
+        id: 'iaso.forms.viewInstances',
+        defaultMessage: 'View submission(s)',
     },
     created_at: {
         id: 'iaso.forms.created_at',
@@ -273,6 +277,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.version',
         defaultMessage: 'Version',
     },
+    versions: {
+        id: 'iaso.label.versions',
+        defaultMessage: 'Versions',
+    },
     catchment: {
         id: 'iaso.label.catchment',
         defaultMessage: 'Catchment',
@@ -396,6 +404,14 @@ const MESSAGES = defineMessages({
     sourcedestinationversion: {
         id: 'iaso.label.sourcedestinationversion',
         defaultMessage: 'Destination source version',
+    },
+    startPeriod: {
+        id: 'iaso.label.startPeriod',
+        defaultMessage: 'Start period',
+    },
+    endPeriod: {
+        id: 'iaso.label.endPeriod',
+        defaultMessage: 'end period',
     },
 });
 

@@ -11,7 +11,7 @@ export const orgUnitsTypesInitialState = {
     fetching: false,
     count: 0,
     pages: 1,
-    allTypes: [],
+    allTypes: undefined,
 };
 
 export const reducer = (state = orgUnitsTypesInitialState, action = {}) => {

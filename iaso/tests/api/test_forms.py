@@ -394,10 +394,9 @@ class FormsAPITestCase(APITestCase):
         response = self.client.delete(f"/api/forms/{self.form_1.id}/", format="json")
         self.assertJSONResponse(response, 204)
 
-        self.assertIsNotNone(Form.deleted.get(pk=self.form_1.id))
+        self.assertIsNotNone(Form.objects_only_deleted.get(pk=self.form_1.id))
         self.assertFalse(Form.objects.filter(pk=self.form_1.id).exists())
 
-    @tag("iaso_only")
     def test_forms_destroy_with_instances(self):
         """DELETE /forms/<form_id> form has instance: cannot be deleted"""
 

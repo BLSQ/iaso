@@ -93,7 +93,7 @@ const styles = theme => ({
         height: 15,
         borderRadius: 15,
     },
-    treeview: {
+    treeView: {
         margin: theme.spacing(2),
     },
 });
@@ -445,7 +445,7 @@ class OrgUnits extends Component {
                 <Grid container spacing={4}>
                     <Grid item xs={2}>
                         <TreeView
-                            className={classes.treeview}
+                            className={classes.treeView}
                             defaultCollapseIcon={<ExpandMoreIcon />}
                             defaultExpandIcon={<ChevronRightIcon />}
                         >

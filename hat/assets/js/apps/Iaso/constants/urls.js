@@ -1,5 +1,6 @@
 export const baseUrls = {
     forms: 'forms/list',
+    archived: 'forms/archived',
     mappings: 'forms/mappings',
     mappingDetail: 'forms/mapping',
     instances: 'instances',

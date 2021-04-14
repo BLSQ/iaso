@@ -72,6 +72,24 @@ export const formsPath = {
     isRootUrl: true,
 };
 
+export const archivedPath = {
+    baseUrl: baseUrls.archived,
+    permission: 'iaso_forms',
+    params: [
+        ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'searchActive',
+        },
+    ],
+    component: props => <Forms {...props} showOnlyDeleted />,
+    isRootUrl: true,
+};
+
 export const mappingsPath = {
     baseUrl: baseUrls.mappings,
     permission: 'iaso_mappings',
@@ -455,6 +473,7 @@ export const page500 = {
 
 export const routeConfigs = [
     formsPath,
+    archivedPath,
     mappingsPath,
     mappingDetailPath,
     instancesPath,

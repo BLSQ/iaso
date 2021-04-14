@@ -109,6 +109,7 @@ const SingleTable = ({
         params[getParamsKey(paramsPrefix, 'pageSize')],
         params[getParamsKey(paramsPrefix, 'page')],
         params[getParamsKey(paramsPrefix, 'order')],
+        params[getParamsKey(paramsPrefix, 'only_deleted')],
     ]);
 
     useEffect(() => {

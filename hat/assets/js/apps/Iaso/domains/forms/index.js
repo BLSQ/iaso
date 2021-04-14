@@ -41,6 +41,7 @@ const Forms = props => {
                 apiParams={{
                     ...props.params,
                     all: true,
+                    only_deleted: props.showOnlyDeleted ? 1 : 0,
                 }}
                 fetchItems={fetchForms}
                 defaultSorted={[{ id: 'instance_updated_at', desc: false }]}

@@ -3,7 +3,7 @@ import moment from 'moment';
 import { Grid } from '@material-ui/core';
 import { Link } from 'react-router';
 
-// import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import FormVersionsDialog from './components/FormVersionsDialogComponent';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
@@ -13,24 +13,24 @@ import { getOrgUnitParentsIds } from '../orgUnits/utils';
 import MESSAGES from './messages';
 
 export const formVersionsTableColumns = formatMessage => [
-    // {
-    //     Header: formatMessage(MESSAGES.startPeriod),
-    //     accessor: 'start_period',
-    //     Cell: settings => (
-    //         <ColumnTextComponent
-    //             text={settings.original.start_period || textPlaceholder}
-    //         />
-    //     ),
-    // },
-    // {
-    //     Header: formatMessage(MESSAGES.endPeriod),
-    //     accessor: 'end_period',
-    //     Cell: settings => (
-    //         <ColumnTextComponent
-    //             text={settings.original.end_period || textPlaceholder}
-    //         />
-    //     ),
-    // },
+    {
+        Header: formatMessage(MESSAGES.startPeriod),
+        accessor: 'start_period',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={settings.original.start_period || textPlaceholder}
+            />
+        ),
+    },
+    {
+        Header: formatMessage(MESSAGES.endPeriod),
+        accessor: 'end_period',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={settings.original.end_period || textPlaceholder}
+            />
+        ),
+    },
     {
         Header: formatMessage(MESSAGES.version),
         accessor: 'version_id',
@@ -55,6 +55,18 @@ export const formVersionsTableColumns = formatMessage => [
                         tooltipMessage={MESSAGES.xls_form_file}
                     />
                 )}
+                <FormVersionsDialog
+                    renderTrigger={({ openDialog }) => (
+                        <IconButtonComponent
+                            onClick={openDialog}
+                            icon="edit"
+                            tooltipMessage={MESSAGES.edit}
+                        />
+                    )}
+                    formVersion={settings.original}
+                    titleMessage={MESSAGES.updateFormVersion}
+                    key={settings.original.updated_at}
+                />
             </section>
         ),
     },

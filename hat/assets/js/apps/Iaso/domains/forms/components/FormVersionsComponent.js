@@ -5,6 +5,8 @@ import { Box, Typography } from '@material-ui/core';
 import { fetchList } from '../../../utils/requests';
 
 import SingleTable from '../../../components/tables/SingleTable';
+import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
+import FormVersionsDialog from './FormVersionsDialogComponent';
 
 import { baseUrls } from '../../../constants/urls';
 
@@ -41,6 +43,20 @@ const FormVersionsComponent = ({ formId, forceRefresh, setForceRefresh }) => {
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
             />
+            <Box
+                mt={2}
+                justifyContent="flex-end"
+                alignItems="center"
+                display="flex"
+            >
+                <FormVersionsDialog
+                    titleMessage={MESSAGES.createFormVersion}
+                    renderTrigger={({ openDialog }) => (
+                        <AddButtonComponent onClick={openDialog} />
+                    )}
+                    onConfirmed={() => console.log('On confirmed')}
+                />
+            </Box>
         </Box>
     );
 };

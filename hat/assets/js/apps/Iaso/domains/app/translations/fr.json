@@ -65,6 +65,8 @@
     "iaso.forms.validated": "Validé",
     "iaso.forms.viewInstances": "Voir le(s) soumission(s)",
     "iaso.forms.yes": "Oui",
+    "iaso.formversions.create": "Créer une version",
+    "iaso.formversions.update": "Modifier version",
     "iaso.groups.create": "Créer un groupe",
     "iaso.groups.dialog.delete": "Etes-cous certain de vouloir effacer ce groupe?",
     "iaso.groups.sourceVersion": "Version de la source",

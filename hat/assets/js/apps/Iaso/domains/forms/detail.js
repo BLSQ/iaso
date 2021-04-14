@@ -10,7 +10,12 @@ import isEqual from 'lodash/isEqual';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
 import { redirectToReplace } from '../../routing/actions';
-import { fetchFormDetail, setIsLoadingForm, setCurrentForm } from './actions';
+import {
+    fetchFormDetail,
+    setIsLoadingForm,
+    setCurrentForm,
+    setForms,
+} from './actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -49,7 +54,7 @@ const defaultForm = {
     org_unit_type_ids: [],
     project_ids: [],
     xls_file: null,
-    period_type: '',
+    period_type: null,
     derived: false,
     single_per_period: false,
     periods_before_allowed: 0,
@@ -163,6 +168,7 @@ const FormDetail = ({ router, params }) => {
                 );
                 setForceRefreshVersions(true);
             }
+            dispatch(setForms(null));
         }
         dispatch(setIsLoadingForm(false));
     };

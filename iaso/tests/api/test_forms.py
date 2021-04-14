@@ -4,6 +4,7 @@ from django.test import tag
 from django.utils.timezone import now
 
 from iaso import models as m
+from iaso.models import Form
 from iaso.test import APITestCase
 
 
@@ -393,13 +394,32 @@ class FormsAPITestCase(APITestCase):
         response = self.client.delete(f"/api/forms/{self.form_1.id}/", format="json")
         self.assertJSONResponse(response, 204)
 
+        self.assertIsNotNone(Form.deleted.get(pk=self.form_1.id))
+        self.assertFalse(Form.objects.filter(pk=self.form_1.id).exists())
+
     @tag("iaso_only")
     def test_forms_destroy_with_instances(self):
         """DELETE /forms/<form_id> form has instance: cannot be deleted"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f"/api/forms/{self.form_2.id}/", format="json")
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, 204)
+
+    @tag("iaso_only")
+    def test_forms_can_restore_deleted_form(self):
+        """DELETE /forms/<form_id> happy path"""
+        self.form_1.delete()
+
+        self.assertIsNotNone(Form.deleted.get(pk=self.form_1.id))
+        self.assertFalse(Form.objects.filter(pk=self.form_1.id).exists())
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(f"/api/forms-deleted/{self.form_1.id}/restore", format="json")
+        print(response)
+        self.assertJSONResponse(response, 204)
+
+        self.assertIsNotNone(Form.objects.get(pk=self.form_1.id))
+        self.assertFalse(Form.deleted.filter(pk=self.form_1.id).exists())
 
     @tag("iaso_only")
     def test_forms_destroy_wrong_auth(self):

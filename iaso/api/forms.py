@@ -3,8 +3,12 @@ import typing
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
-from rest_framework import serializers, permissions
+from rest_framework import serializers, permissions, status
+from rest_framework.decorators import action
 from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.viewsets import ReadOnlyModelViewSet
+
 from iaso.models import Form, Project, OrgUnitType
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField
@@ -103,7 +107,6 @@ class FormSerializer(serializers.ModelSerializer):
 
         return data
 
-
 class FormsViewSet(ModelViewSet):
     """ Forms API
 
@@ -134,7 +137,12 @@ class FormsViewSet(ModelViewSet):
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
 
     def get_queryset(self):
-        queryset = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+
+        form_objects = Form.objects
+        if self.request.query_params.get("only_deleted", None):
+            form_objects = Form.objects_only_deleted
+
+        queryset = form_objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
         org_unit_id = self.request.query_params.get("orgUnitId", None)
         if org_unit_id:
             queryset = queryset.filter(instances__org_unit__id=org_unit_id)

@@ -13,7 +13,7 @@ import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import {deleteForm} from "../../utils/requests";
+import { deleteForm } from '../../utils/requests';
 
 export const formVersionsTableColumns = formatMessage => [
     // {
@@ -225,7 +225,7 @@ const formsTableColumns = (
     },
 ];
 
-const DispatchableDeleteDialog = ({form}) => {
+const DispatchableDeleteDialog = ({ form }) => {
     const dispatch = useDispatch();
 
     return (
@@ -234,10 +234,10 @@ const DispatchableDeleteDialog = ({form}) => {
             titleMessage={MESSAGES.deleteFormTitle}
             message={MESSAGES.deleteFormText}
             onConfirm={closeDialog => {
-                deleteForm(dispatch, form.id).then(closeDialog)
+                deleteForm(dispatch, form.id).then(closeDialog);
             }}
         />
-    )
-}
+    );
+};
 
 export default formsTableColumns;

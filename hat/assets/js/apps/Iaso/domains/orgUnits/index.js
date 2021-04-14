@@ -3,6 +3,10 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import moment from 'moment';
 import { withStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
+import TreeView from '@material-ui/lab/TreeView';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import TreeItem from '@material-ui/lab/TreeItem';
 
 import PropTypes from 'prop-types';
 
@@ -88,6 +92,9 @@ const styles = theme => ({
         width: 15,
         height: 15,
         borderRadius: 15,
+    },
+    treeview: {
+        margin: theme.spacing(2),
     },
 });
 
@@ -437,7 +444,29 @@ class OrgUnits extends Component {
                 </TopBar>
                 <Grid container spacing={4}>
                     <Grid item xs={2}>
-                        <Box>tree</Box>
+                        <TreeView
+                            className={classes.treeview}
+                            defaultCollapseIcon={<ExpandMoreIcon />}
+                            defaultExpandIcon={<ChevronRightIcon />}
+                        >
+                            <TreeItem nodeId="1" label="Applications">
+                                <TreeItem nodeId="2" label="Calendar" />
+                                <TreeItem nodeId="3" label="Chrome" />
+                                <TreeItem nodeId="4" label="Webstorm" />
+                            </TreeItem>
+                            <TreeItem nodeId="5" label="Documents">
+                                <TreeItem nodeId="10" label="OSS" />
+                                <TreeItem nodeId="6" label="Material-UI">
+                                    <TreeItem nodeId="7" label="src">
+                                        <TreeItem nodeId="8" label="index.js" />
+                                        <TreeItem
+                                            nodeId="9"
+                                            label="tree-view.js"
+                                        />
+                                    </TreeItem>
+                                </TreeItem>
+                            </TreeItem>
+                        </TreeView>
                     </Grid>
                     <Grid item xs={10}>
                         <Box className={classes.containerFullHeightPadded}>

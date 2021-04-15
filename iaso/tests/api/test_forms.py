@@ -404,21 +404,27 @@ class FormsAPITestCase(APITestCase):
         response = self.client.delete(f"/api/forms/{self.form_2.id}/", format="json")
         self.assertJSONResponse(response, 204)
 
-    @tag("iaso_only")
     def test_forms_can_restore_deleted_form(self):
-        """DELETE /forms/<form_id> happy path"""
+        """PATCH /forms/<form_id>/?only_deleted=1"""
         self.form_1.delete()
 
-        self.assertIsNotNone(Form.deleted.get(pk=self.form_1.id))
+        self.assertIsNotNone(Form.objects_only_deleted.get(pk=self.form_1.id))
         self.assertFalse(Form.objects.filter(pk=self.form_1.id).exists())
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/forms-deleted/{self.form_1.id}/restore", format="json")
-        print(response)
-        self.assertJSONResponse(response, 204)
+        response = self.client.patch(
+            f"/api/forms/{self.form_1.id}/?only_deleted=1",
+            format="json",
+            HTTP_ACCEPT="application/json",
+            data={
+                "deleted_at": None,
+            },
+        )
+
+        self.assertJSONResponse(response, 200)
 
         self.assertIsNotNone(Form.objects.get(pk=self.form_1.id))
-        self.assertFalse(Form.deleted.filter(pk=self.form_1.id).exists())
+        self.assertFalse(Form.objects_only_deleted.filter(pk=self.form_1.id).exists())
 
     @tag("iaso_only")
     def test_forms_destroy_wrong_auth(self):

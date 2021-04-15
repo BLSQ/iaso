@@ -46,6 +46,7 @@ class FormSerializer(serializers.ModelSerializer):
             "instance_updated_at",
             "created_at",
             "updated_at",
+            "deleted_at",
             "derived",
             "label_keys"
         ]
@@ -84,17 +85,18 @@ class FormSerializer(serializers.ModelSerializer):
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)
-        for project in data["projects"]:
-            if self.context["request"].user.iaso_profile.account != project.account:
-                raise serializers.ValidationError({"project_ids": "Invalid project ids"})
+        if "projects" in data:
+            for project in data["projects"]:
+                if self.context["request"].user.iaso_profile.account != project.account:
+                    raise serializers.ValidationError({"project_ids": "Invalid project ids"})
 
-        # validate org_unit_types against projects
-        allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
-        if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
-            raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
+            # validate org_unit_types against projects
+            allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
+            if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
+                raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
 
         # If the period type is None, some period-specific fields must have specific values
-        if data["period_type"] is None:
+        if "period_type" in data and data["period_type"] is None:
             tracker_errors = {}
             if data["single_per_period"] is not False:
                 tracker_errors["single_per_period"] = "Should be false"

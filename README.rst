@@ -60,7 +60,7 @@ Run in project directory:
 
 .. code:: bash
 
-    docker-compose run iaso manage migrate
+    docker-compose exec iaso ./manage.py migrate
 
 5. Start the server
 -------------------
@@ -85,7 +85,7 @@ To login to the app or the Django admin, a superuser needs to be created with:
 
 .. code:: bash
 
-    docker-compose run iaso manage createsuperuser
+    docker-compose exec iaso ./manage.py createsuperuser
 
 You can now login in the admin at ``http://localhost:8081/admin``.
 
@@ -107,7 +107,7 @@ Create a profile with your user and the test account.
 Run the following command to populate your database with a tree of org units (these are childcare schools in the West of DRC):
 
 ```
-docker-compose run iaso manage  tree_importer --org_unit_csv_file testdata/schools.csv --source_name wb_schools_2019 --version_number=1 --project_id=1 --main_org_unit_name maternelle
+docker-compose exec iaso ./manage.py  tree_importer --org_unit_csv_file testdata/schools.csv --source_name wb_schools_2019 --version_number=1 --project_id=1 --main_org_unit_name maternelle
 ```
 
 You can now login on ``http://localhost:8081`` 
@@ -147,23 +147,23 @@ The following are some examples:
 +-------------------------------------+----------------------------------------------------------+
 | Action                              | Command                                                  |
 +=====================================+==========================================================+
-| Run tests                           | ``docker-compose run iaso manage test``                          |
+| Run tests                           | ``docker-compose exec iaso ./manage.py test``                          |
 +-------------------------------------+----------------------------------------------------------+
 | Create a shell inside the container | ``docker-compose run iaso bash``                          |
 +-------------------------------------+----------------------------------------------------------+
 | Run a shell command                 | ``docker-compose run iaso eval curl http://google.com `` |
 +-------------------------------------+----------------------------------------------------------+
-| Run Django manage.py                | ``docker-compose run iaso manage help``                   |
+| Run Django manage.py                | ``docker-compose exec iaso ./manage.py help``                   |
 +-------------------------------------+----------------------------------------------------------+
-| Create a python shell               | ``docker-compose run iaso manage shell``                  |
+| Create a python shell               | ``docker-compose exec iaso ./manage.py shell``                  |
 +-------------------------------------+----------------------------------------------------------+
-| Create a postgresql shell           | ``docker-compose run iaso manage dbshell``                |
+| Create a postgresql shell           | ``docker-compose exec iaso ./manage.py dbshell``                |
 +-------------------------------------+----------------------------------------------------------+
-| Create pending ORM migration files  | ``docker-compose run iaso manage makemigrations``         |
+| Create pending ORM migration files  | ``docker-compose exec iaso ./manage.py makemigrations``         |
 +-------------------------------------+----------------------------------------------------------+
-| Apply pending ORM migrations        | ``docker-compose run iaso manage migrate``                |
+| Apply pending ORM migrations        | ``docker-compose exec iaso ./manage.py migrate``                |
 +-------------------------------------+----------------------------------------------------------+
-| Show ORM migrations                 | ``docker-compose run iaso manage showmigrations``         |
+| Show ORM migrations                 | ``docker-compose exec iaso ./manage.py showmigrations``         |
 +-------------------------------------+----------------------------------------------------------+
 
 To seed data coming from play.dhis2.org, since the previous commands doesn't run
@@ -250,7 +250,7 @@ Tests can be executed with
 
 .. code:: bash
 
-    docker-compose run iaso manage test
+    docker-compose exec iaso ./manage.py test
 
 
 Code reloading

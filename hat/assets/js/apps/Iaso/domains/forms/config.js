@@ -1,11 +1,10 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import moment from 'moment';
-import Grid from '@material-ui/core/Grid';
+import { Grid } from '@material-ui/core';
 import { Link } from 'react-router';
 
 // import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import FormDialogComponent from './components/FormDialogComponent';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
@@ -15,6 +14,54 @@ import { getOrgUnitParentsIds } from '../orgUnits/utils';
 import MESSAGES from './messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { deleteForm } from '../../utils/requests';
+
+export const formVersionsTableColumns = formatMessage => [
+    // {
+    //     Header: formatMessage(MESSAGES.startPeriod),
+    //     accessor: 'start_period',
+    //     Cell: settings => (
+    //         <ColumnTextComponent
+    //             text={settings.original.start_period || textPlaceholder}
+    //         />
+    //     ),
+    // },
+    // {
+    //     Header: formatMessage(MESSAGES.endPeriod),
+    //     accessor: 'end_period',
+    //     Cell: settings => (
+    //         <ColumnTextComponent
+    //             text={settings.original.end_period || textPlaceholder}
+    //         />
+    //     ),
+    // },
+    {
+        Header: formatMessage(MESSAGES.version),
+        accessor: 'version_id',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={settings.original.version_id || textPlaceholder}
+            />
+        ),
+    },
+    {
+        Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
+        sortable: false,
+        Cell: settings => (
+            <section>
+                {settings.original.xls_file && (
+                    <IconButtonComponent
+                        onClick={() =>
+                            window.open(settings.original.xls_file, '_blank')
+                        }
+                        icon="xls"
+                        tooltipMessage={MESSAGES.xls_form_file}
+                    />
+                )}
+            </section>
+        ),
+    },
+];
 
 const formsTableColumns = (
     formatMessage,
@@ -85,7 +132,9 @@ const formsTableColumns = (
         Header: formatMessage(MESSAGES.form_id),
         sortable: false,
         Cell: settings => (
-            <ColumnTextComponent text={settings.original.form_id} />
+            <ColumnTextComponent
+                text={settings.original.form_id || textPlaceholder}
+            />
         ),
     },
     {
@@ -153,23 +202,13 @@ const formsTableColumns = (
                     <IconButtonComponent
                         url={`${urlToInstances}`}
                         icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.view}
+                        tooltipMessage={MESSAGES.viewInstances}
                     />
                     {showEditAction && (
-                        <FormDialogComponent
-                            renderTrigger={({ openDialog }) => (
-                                <IconButtonComponent
-                                    onClick={openDialog}
-                                    icon="edit"
-                                    tooltipMessage={MESSAGES.edit}
-                                />
-                            )}
-                            onSuccess={() =>
-                                component.setState({ isUpdated: true })
-                            }
-                            initialData={settings.original}
-                            titleMessage={MESSAGES.update}
-                            key={settings.original.updated_at}
+                        <IconButtonComponent
+                            url={`${baseUrls.formDetail}/formId/${settings.original.id}`}
+                            icon="edit"
+                            tooltipMessage={MESSAGES.edit}
                         />
                     )}
                     {showMappingAction && (

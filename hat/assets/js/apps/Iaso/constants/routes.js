@@ -1,5 +1,6 @@
 import React from 'react';
 import Forms from '../domains/forms';
+import FormDetail from '../domains/forms/detail';
 import OrgUnits from '../domains/orgUnits';
 import Links from '../domains/links';
 import Runs from '../domains/links/Runs';
@@ -88,6 +89,19 @@ export const archivedPath = {
     ],
     component: props => <Forms {...props} showOnlyDeleted />,
     isRootUrl: true,
+};
+
+export const formDetailPath = {
+    baseUrl: baseUrls.formDetail,
+    permission: 'iaso_forms',
+    component: props => <FormDetail {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'formId',
+        },
+        ...paginationPathParams,
+    ],
 };
 
 export const mappingsPath = {
@@ -474,6 +488,7 @@ export const page500 = {
 export const routeConfigs = [
     formsPath,
     archivedPath,
+    formDetailPath,
     mappingsPath,
     mappingDetailPath,
     instancesPath,

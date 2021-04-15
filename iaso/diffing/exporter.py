@@ -17,12 +17,7 @@ def all_slices(iterables, size: int):
 
 
 def sort_by_path(diffs):
-    def by_path(ou):
-        path = ou.source_path()
-        return path if path else ""
-
-    # make sure we create new parent first
-    return sorted(diffs, key=lambda d: by_path(d.org_unit))
+    return sorted(diffs, key=lambda d: str(d.org_unit.path))
 
 
 def assign_dhis2_ids(to_create_diffs):
@@ -78,12 +73,12 @@ class Exporter:
         # build the "minimal" payloads for creation, groups only done at later stage
         for to_create in to_create_diffs:
             name_comparison = to_create.comparison("name")
-            self.iaso_logger.info("----", name_comparison.after, to_create.org_unit.source_path())
+            self.iaso_logger.info("----", name_comparison.after, to_create.org_unit.path)
 
             payload = {
                 "id": to_create.org_unit.source_ref,
                 "name": name_comparison.after,
-                "shortName": name_comparison.after,
+                "shortName": name_comparison.after[:50],
                 "openingDate": "1960-08-03T00:00:00.000",
             }
             if to_create.org_unit.parent:

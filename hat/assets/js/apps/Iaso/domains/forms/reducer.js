@@ -1,8 +1,8 @@
 import { SET_FORMS, SET_CURRENT_FORM, SET_IS_LOADING_FORM } from './actions';
 
 export const formsInitialState = {
-    current: null,
-    isLoading: false,
+    current: undefined,
+    isLoading: true,
     formsPage: {
         list: null,
         count: 0,

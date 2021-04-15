@@ -163,6 +163,8 @@ class FormVersion(models.Model):
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    start_period = models.TextField(blank=True, null=True)
+    end_period = models.TextField(blank=True, null=True)
 
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
@@ -192,6 +194,7 @@ class FormVersion(models.Model):
     def as_dict(self):
         return {
             "id": self.id,
+            "version_id": self.version_id,
             "version_id": self.version_id,
             "file": self.file.url,
             "xls_file": self.xls_file.url if self.xls_file else None,

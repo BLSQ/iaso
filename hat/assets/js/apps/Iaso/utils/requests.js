@@ -4,6 +4,7 @@ import {
     postRequest,
     putRequest,
     deleteRequest,
+    restoreRequest,
 } from '../libs/Api';
 
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
@@ -472,6 +473,14 @@ export const deleteForm = (dispatch, formId) =>
     deleteRequest(`/api/forms/${formId}/`).catch(error => {
         dispatch(
             enqueueSnackbar(errorSnackBar('deleteFormError', null, error)),
+        );
+        throw error;
+    });
+
+export const restoreForm = (dispatch, formId) =>
+    restoreRequest(`/api/forms/${formId}/?only_deleted=1`).catch(error => {
+        dispatch(
+            enqueueSnackbar(errorSnackBar('archiveFormError', null, error)),
         );
         throw error;
     });

@@ -8,6 +8,7 @@ import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
 import { redirectTo } from '../../routing/actions';
 
 import formsTableColumns from './config';
+import archivedFormsTableColumns from './config-archived';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
@@ -23,6 +24,10 @@ import { formsFilters } from '../../constants/filters';
 const baseUrl = baseUrls.forms;
 
 const Forms = props => {
+    const { showOnlyDeleted } = props;
+    const columnsConfig = showOnlyDeleted
+        ? archivedFormsTableColumns
+        : formsTableColumns;
     const reduxPage = useSelector(state => state.forms.formsPage);
     const dispatch = useDispatch();
     const intl = useSafeIntl();
@@ -41,11 +46,11 @@ const Forms = props => {
                 apiParams={{
                     ...props.params,
                     all: true,
-                    only_deleted: props.showOnlyDeleted ? 1 : 0,
+                    only_deleted: showOnlyDeleted ? 1 : 0,
                 }}
                 fetchItems={fetchForms}
                 defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
-                columns={formsTableColumns(intl.formatMessage)}
+                columns={columnsConfig(intl.formatMessage)}
                 hideGpkg
                 defaultPageSize={50}
                 onDataLoaded={({ list, count, pages }) => {

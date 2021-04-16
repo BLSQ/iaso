@@ -77,6 +77,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.dialog.deleteFormText',
         defaultMessage: 'This operation cannot be undone.',
     },
+    restoreFormTooltip: {
+        defaultMessage: 'Restore form',
+        id: 'iaso.forms.restore.tooltip',
+    },
     edit: {
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',

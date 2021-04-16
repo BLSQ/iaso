@@ -1,7 +1,7 @@
 import typing
 from rest_framework import serializers, parsers, permissions
 
-from iaso.models import Form, FormVersion
+from iaso.models import Form, FormVersion, MappingVersion
 from django.db.models.functions import Concat
 from django.db.models import Value, Count
 from django.db.models import BooleanField
@@ -26,6 +26,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "file",
             "created_at",
             "updated_at",
+            "start_period",
+            "end_period",
+            "mapping_versions",
         ]
         fields = [
             "id",
@@ -39,6 +42,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "descriptor",
             "created_at",
             "updated_at",
+            "start_period",
+            "end_period",
+            "mapping_versions",
         ]
         read_only_fields = [
             "id",
@@ -60,12 +66,19 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     descriptor = serializers.SerializerMethodField()
+    mapping_versions = serializers.SerializerMethodField()
 
     def get_form_name(self, form_version):
         return form_version.form.name
 
+
     def get_descriptor(self, form_version):
         return form_version.get_or_save_form_descriptor()
+
+    @staticmethod
+    def get_mapping_versions(obj: FormVersion):
+        return [f.as_dict() for f in obj.mapping_versions.all()]
+
 
     def validate(self, data: typing.MutableMapping):
         form = data["form"]
@@ -131,6 +144,9 @@ class FormVersionsViewSet(ModelViewSet):
         search_name = self.request.query_params.get("search_name", None)
         if search_name:
             queryset = queryset.filter(form__name__icontains=search_name)
+        form_id = self.request.query_params.get("form_id", None)
+        if form_id:
+            queryset = queryset.filter(form__id=form_id)
 
         queryset = queryset.annotate(full_name=Concat("form__name", Value(" - V"), "version_id"))
 

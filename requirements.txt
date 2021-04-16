@@ -1,12 +1,12 @@
 # django
-django==3.0.7
+django==3.0.14
 django-cors-headers==3.2.1
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 pandas==1.0.1
 pyproj==3.0.1
 geopandas==0.8.0
 numpy==1.18.1
-Pillow==7.0.0
+Pillow==8.1.1
 django-storages==1.9.1
 boto3==1.12.1
 geopy==1.21.0
@@ -34,7 +34,7 @@ jsonschema==3.2.0
 # exporting tools
 xlsxwriter==1.2.7
 beautifulsoup4==4.7.1
-lxml==4.6.2
+lxml==4.6.3
 
 # dhis2 api wrapper
 dhis2.py==2.0.2
@@ -57,7 +57,7 @@ pre-commit==1.14.4
 jupyter==1.0.0
 ipython==7.12.0
 django-extensions==2.2.8
-lxml==4.6.2
+lxml==4.6.3
 xlrd==1.2.0
 pyjwt==1.7.1
 djangorestframework_simplejwt==4.4.0

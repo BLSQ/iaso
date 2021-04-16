@@ -534,6 +534,13 @@ class MappingVersion(models.Model):
     def __str__(self):
         return "%s - %s" % (self.form_version, self.name)
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
 
 class ExternalCredentials(models.Model):
     account = models.ForeignKey(

@@ -9,13 +9,15 @@ import moment from 'moment';
 
 import {
     resetInstances,
-    setCurrentForm,
-    fetchFormDetail as fetchFormDetailAction,
     setInstances,
     setInstancesSmallDict,
     setInstancesFetching,
     createInstance,
 } from './actions';
+import {
+    setCurrentForm,
+    fetchFormDetail as fetchFormDetailAction,
+} from '../forms/actions';
 import { setOrgUnitTypes } from '../orgUnits/actions';
 import {
     setDevicesList,
@@ -45,7 +47,6 @@ import {
 } from './utils';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
-import DeleteDialog from './components/DeleteInstanceDialog';
 import TopBar from '../../components/nav/TopBarComponent';
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
@@ -560,7 +561,7 @@ const MapStateToProps = state => ({
     reduxPage: state.instances.instancesPage,
     instancesSmall: state.instances.instancesSmall,
     fetching: state.instances.fetching,
-    currentForm: state.instances.currentForm,
+    currentForm: state.forms.current,
     prevPathname: state.routerCustom.prevPathname,
 });
 

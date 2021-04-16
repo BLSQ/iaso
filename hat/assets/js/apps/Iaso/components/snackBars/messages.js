@@ -281,6 +281,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Error updating the default source',
         id: 'iaso.snackBar.updateDefaultSourceError',
     },
+    fetchFormVersionsError: {
+        id: 'iaso.snackBar.fetchFormVersionsError',
+        defaultMessage: 'An error occurred while fetching form versions',
+    },
 });
 
 export default MESSAGES;

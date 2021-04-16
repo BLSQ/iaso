@@ -7,7 +7,8 @@ import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
-import { restoreForm } from '../../utils/requests';
+import { restoreForm, fetchForms } from '../../utils/requests';
+import { setForms, setIsLoadingForm } from './actions';
 
 const archivedTableColumn = formatMessage => [
     {
@@ -138,7 +139,18 @@ const DispatchableRestoreButton = ({ form }) => {
     return (
         <IconButtonComponent
             onClick={() => {
-                restoreForm(dispatch, form.id);
+                restoreForm(dispatch, form.id).then(() => {
+                    dispatch(setIsLoadingForm(true));
+                    fetchForms(
+                        dispatch,
+                        '/api/forms/?&order=instance_updated_at&all=true&only_deleted=1',
+                    ).then(result => {
+                        dispatch(
+                            setForms(result.forms, result.count, result.pages),
+                        );
+                        dispatch(setIsLoadingForm(false));
+                    });
+                });
             }}
             icon="restore-from-trash"
             tooltipMessage={MESSAGES.restoreFormTooltip}

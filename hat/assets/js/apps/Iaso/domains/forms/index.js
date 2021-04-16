@@ -73,6 +73,7 @@ const Forms = props => {
                 toggleActiveSearch
                 searchActive
                 filters={formsFilters()}
+                forceRefresh
             />
         </>
     );

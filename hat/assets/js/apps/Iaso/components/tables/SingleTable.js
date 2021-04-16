@@ -72,7 +72,7 @@ const SingleTable = ({
     );
 
     const handleFetch = () => {
-        if (results && results.list && firstLoad) {
+        if (results && results.list && firstLoad && !forceRefresh) {
             setTableResults(results);
         } else {
             const url = getTableUrl(endPointPath, tableParams);

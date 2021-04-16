@@ -3,11 +3,8 @@ import typing
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
-from rest_framework import serializers, permissions, status
-from rest_framework.decorators import action
+from rest_framework import serializers, permissions
 from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from iaso.models import Form, Project, OrgUnitType
 from iaso.utils import timestamp_to_datetime

@@ -58,15 +58,17 @@ const Forms = props => {
                 }}
                 results={reduxPage}
                 extraComponent={
-                    <AddButtonComponent
-                        onClick={() => {
-                            dispatch(
-                                redirectTo(baseUrls.formDetail, {
-                                    formId: '0',
-                                }),
-                            );
-                        }}
-                    />
+                    !showOnlyDeleted && (
+                        <AddButtonComponent
+                            onClick={() => {
+                                dispatch(
+                                    redirectTo(baseUrls.formDetail, {
+                                        formId: '0',
+                                    }),
+                                );
+                            }}
+                        />
+                    )
                 }
                 toggleActiveSearch
                 searchActive

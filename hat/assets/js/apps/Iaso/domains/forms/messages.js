@@ -65,6 +65,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.update',
         defaultMessage: 'Update form',
     },
+    deleted_at: {
+        id: 'iaso.forms.deleted_at',
+        defaultMessage: 'Deleted at',
+    },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS mappings',

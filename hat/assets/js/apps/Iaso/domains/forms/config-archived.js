@@ -9,36 +9,6 @@ import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
 import { restoreForm } from '../../utils/requests';
 
-export const formVersionsTableColumns = formatMessage => [
-    {
-        Header: formatMessage(MESSAGES.version),
-        accessor: 'version_id',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.version_id || textPlaceholder}
-            />
-        ),
-    },
-    {
-        Header: formatMessage(MESSAGES.actions),
-        accessor: 'actions',
-        sortable: false,
-        Cell: settings => (
-            <section>
-                {settings.original.xls_file && (
-                    <IconButtonComponent
-                        onClick={() =>
-                            window.open(settings.original.xls_file, '_blank')
-                        }
-                        icon="xls"
-                        tooltipMessage={MESSAGES.xls_form_file}
-                    />
-                )}
-            </section>
-        ),
-    },
-];
-
 const archivedTableColumn = formatMessage => [
     {
         Header: formatMessage(MESSAGES.name),
@@ -46,39 +16,13 @@ const archivedTableColumn = formatMessage => [
         Cell: settings => <ColumnTextComponent text={settings.original.name} />,
     },
     {
-        Header: formatMessage(MESSAGES.created_at),
-        accessor: 'created_at',
+        Header: formatMessage(MESSAGES.form_id),
+        sortable: false,
         Cell: settings => (
             <ColumnTextComponent
-                text={moment
-                    .unix(settings.original.created_at)
-                    .format('DD/MM/YYYY HH:mm')}
+                text={settings.original.form_id || textPlaceholder}
             />
         ),
-    },
-    {
-        Header: formatMessage(MESSAGES.updated_at),
-        accessor: 'updated_at',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={moment
-                    .unix(settings.original.updated_at)
-                    .format('DD/MM/YYYY HH:mm')}
-            />
-        ),
-    },
-    {
-        Header: formatMessage(MESSAGES.instance_updated_at),
-        accessor: 'instance_updated_at',
-        Cell: settings => {
-            const dateText = settings.original.instance_updated_at
-                ? moment
-                      .unix(settings.original.instance_updated_at)
-                      .format('DD/MM/YYYY HH:mm')
-                : textPlaceholder;
-
-            return <ColumnTextComponent text={dateText} />;
-        },
     },
     {
         Header: formatMessage(MESSAGES.type),
@@ -97,15 +41,6 @@ const archivedTableColumn = formatMessage => [
         accessor: 'instances_count',
         Cell: settings => (
             <ColumnTextComponent text={settings.original.instances_count} />
-        ),
-    },
-    {
-        Header: formatMessage(MESSAGES.form_id),
-        sortable: false,
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.form_id || textPlaceholder}
-            />
         ),
     },
     {
@@ -150,6 +85,39 @@ const archivedTableColumn = formatMessage => [
             ),
     },
     {
+        Header: formatMessage(MESSAGES.created_at),
+        accessor: 'created_at',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={moment
+                    .unix(settings.original.created_at)
+                    .format('DD/MM/YYYY HH:mm')}
+            />
+        ),
+    },
+    {
+        Header: formatMessage(MESSAGES.updated_at),
+        accessor: 'updated_at',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={moment
+                    .unix(settings.original.updated_at)
+                    .format('DD/MM/YYYY HH:mm')}
+            />
+        ),
+    },
+    {
+        Header: formatMessage(MESSAGES.deleted_at),
+        accessor: 'deleted_at',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={moment
+                    .unix(settings.original.deleted_at)
+                    .format('DD/MM/YYYY HH:mm')}
+            />
+        ),
+    },
+    {
         Header: formatMessage(MESSAGES.actions),
         resizable: false,
         sortable: false,
@@ -169,7 +137,9 @@ const DispatchableRestoreButton = ({ form }) => {
 
     return (
         <IconButtonComponent
-            onClick={() => restoreForm(dispatch, form.id)}
+            onClick={() => {
+                restoreForm(dispatch, form.id);
+            }}
             icon="restore-from-trash"
             tooltipMessage={MESSAGES.restoreFormTooltip}
         />

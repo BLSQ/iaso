@@ -182,7 +182,7 @@ const formsTableColumns = (
         Header: formatMessage(MESSAGES.actions),
         resizable: false,
         sortable: false,
-        width: 150,
+        width: 182,
         Cell: settings => {
             let urlToInstances = `${baseUrls.instances}/formId/${settings.original.id}`;
             if (

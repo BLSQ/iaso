@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -23,8 +23,7 @@ import { formsFilters } from '../../constants/filters';
 
 const baseUrl = baseUrls.forms;
 
-const Forms = props => {
-    const { showOnlyDeleted } = props;
+const Forms = ({ params, showOnlyDeleted }) => {
     const columnsConfig = showOnlyDeleted
         ? archivedFormsTableColumns
         : formsTableColumns;
@@ -44,7 +43,7 @@ const Forms = props => {
                 endPointPath="forms"
                 dataKey="forms"
                 apiParams={{
-                    ...props.params,
+                    ...params,
                     all: true,
                     only_deleted: showOnlyDeleted ? 1 : 0,
                 }}
@@ -81,6 +80,11 @@ const Forms = props => {
 
 Forms.propTypes = {
     params: PropTypes.object.isRequired,
+    showOnlyDeleted: PropTypes.bool,
+};
+
+Forms.defaultProps = {
+    showOnlyDeleted: false,
 };
 
 export default Forms;

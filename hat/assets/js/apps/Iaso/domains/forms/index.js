@@ -8,7 +8,7 @@ import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
 import { redirectTo } from '../../routing/actions';
 
 import formsTableColumns from './config';
-import archivedFormsTableColumns from './config-archived';
+import archivedFormsTableColumns from './configArchived';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';

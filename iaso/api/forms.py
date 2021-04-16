@@ -71,7 +71,7 @@ class FormSerializer(serializers.ModelSerializer):
     instance_updated_at = TimestampField(read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
-    deleted_at = TimestampField(allow_null=True)
+    deleted_at = TimestampField(allow_null=True, required=False)
 
     @staticmethod
     def get_latest_form_version(obj: Form):

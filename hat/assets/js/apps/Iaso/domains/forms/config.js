@@ -12,7 +12,8 @@ import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { deleteForm } from '../../utils/requests';
+import { deleteForm, fetchForms } from '../../utils/requests';
+import { setForms, setIsLoadingForm } from './actions';
 
 export const formVersionsTableColumns = formatMessage => [
     {
@@ -214,8 +215,19 @@ const DispatchableDeleteDialog = ({ form }) => {
             disabled={form.instances_count > 0}
             titleMessage={MESSAGES.deleteFormTitle}
             message={MESSAGES.deleteFormText}
-            onConfirm={closeDialog => {
-                deleteForm(dispatch, form.id).then(closeDialog);
+            onConfirm={() => {
+                deleteForm(dispatch, form.id).then(() => {
+                    dispatch(setIsLoadingForm(true));
+                    fetchForms(
+                        dispatch,
+                        '/api/forms/?&order=instance_updated_at&all=true',
+                    ).then(result => {
+                        dispatch(
+                            setForms(result.forms, result.count, result.pages),
+                        );
+                        dispatch(setIsLoadingForm(false));
+                    });
+                });
             }}
         />
     );

@@ -39,7 +39,11 @@ const FormVersionsComponent = ({ formId, forceRefresh, setForceRefresh }) => {
                     )
                 }
                 defaultSorted={[{ id: defaultOrder, desc: true }]}
-                columns={formVersionsTableColumns(intl.formatMessage)}
+                columns={formVersionsTableColumns(
+                    intl.formatMessage,
+                    setForceRefresh,
+                    formId,
+                )}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
             />
@@ -50,11 +54,12 @@ const FormVersionsComponent = ({ formId, forceRefresh, setForceRefresh }) => {
                 display="flex"
             >
                 <FormVersionsDialog
+                    formId={formId}
                     titleMessage={MESSAGES.createFormVersion}
                     renderTrigger={({ openDialog }) => (
                         <AddButtonComponent onClick={openDialog} />
                     )}
-                    onConfirmed={() => console.log('On confirmed')}
+                    onConfirmed={() => setForceRefresh(true)}
                 />
             </Box>
         </Box>

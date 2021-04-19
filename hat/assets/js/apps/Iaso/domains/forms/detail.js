@@ -24,12 +24,7 @@ import { useFormState } from '../../hooks/form';
 
 import { baseUrls } from '../../constants/urls';
 
-import {
-    createForm,
-    updateForm,
-    // createFormVersion,
-    // deleteForm,
-} from '../../utils/requests';
+import { createForm, updateForm } from '../../utils/requests';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import FormVersions from './components/FormVersionsComponent';
 import FormForm from './components/FormFormComponent';
@@ -50,7 +45,6 @@ const defaultForm = {
     depth: null,
     org_unit_type_ids: [],
     project_ids: [],
-    xls_file: null,
     period_type: null,
     derived: false,
     single_per_period: false,
@@ -69,7 +63,6 @@ const initialFormState = (form = defaultForm) => ({
         ? form.org_unit_types.map(ot => ot.id)
         : [],
     project_ids: form.projects ? form.projects.map(p => p.id) : [],
-    xls_file: null,
     period_type: form.period_type,
     derived: form.derived,
     single_per_period: form.single_per_period,
@@ -102,18 +95,14 @@ const FormDetail = ({ router, params }) => {
         let formData;
         if (params.formId === '0') {
             isUpdate = false;
-            formData = mapValues(
-                omit(currentForm, ['xls_file', 'form_id']),
-                v => v.value,
-            );
+            formData = mapValues(omit(currentForm, ['form_id']), v => v.value);
             saveForm = createForm(dispatch, formData);
         } else {
             isUpdate = true;
-            formData = mapValues(omit(currentForm, 'xls_file'), v => v.value);
+            formData = mapValues(currentForm, v => v.value);
             saveForm = updateForm(dispatch, currentForm.id.value, formData);
         }
         dispatch(setIsLoadingForm(true));
-        // let isSaveSuccessful = false;
         let savedFormData;
         try {
             savedFormData = await saveForm;
@@ -128,34 +117,6 @@ const FormDetail = ({ router, params }) => {
                 setForceRefreshVersions(true);
             }
             dispatch(setForms(null));
-            // if (
-            //     !isUpdate ||
-            //     (isUpdate && currentForm.xls_file.value !== null)
-            // ) {
-            //     try {
-            //         await createFormVersion(
-            //             dispatch,
-            //             {
-            //                 form_id: savedFormData.id,
-            //                 xls_file: currentForm.xls_file.value,
-            //             },
-            //             isUpdate,
-            //         );
-            //         isSaveSuccessful = true;
-            //     } catch (createVersionError) {
-            //         // when creating form, if version creation fails, delete freshly created, version-less form
-            //         if (!isUpdate) {
-            //             try {
-            //                 await deleteForm(dispatch, savedFormData.id);
-            //                 console.log('Form deleted');
-            //             } catch (deleteFormError) {
-            //                 console.warn('Form could not be deleted');
-            //             }
-            //         }
-            //     }
-            // } else {
-            //     isSaveSuccessful = true;
-            // }
         } catch (error) {
             if (error.status === 400) {
                 Object.entries(error.details).forEach(
@@ -165,18 +126,6 @@ const FormDetail = ({ router, params }) => {
                 );
             }
         }
-        // if (isSaveSuccessful) {
-        //     dispatch(enqueueSnackbar(succesfullSnackBar()));
-        //     if (!isUpdate) {
-        //         dispatch(
-        //             redirectToReplace(baseUrls.formDetail, {
-        //                 formId: savedFormData.id,
-        //             }),
-        //         );
-        //         setForceRefreshVersions(true);
-        //     }
-        //     dispatch(setForms(null));
-        // }
         dispatch(setIsLoadingForm(false));
     };
 

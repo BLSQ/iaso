@@ -12,7 +12,11 @@ import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
 
-export const formVersionsTableColumns = formatMessage => [
+export const formVersionsTableColumns = (
+    formatMessage,
+    setForceRefresh,
+    formId,
+) => [
     {
         Header: formatMessage(MESSAGES.startPeriod),
         accessor: 'start_period',
@@ -63,7 +67,9 @@ export const formVersionsTableColumns = formatMessage => [
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
+                    onConfirmed={() => setForceRefresh(true)}
                     formVersion={settings.original}
+                    formId={formId}
                     titleMessage={MESSAGES.updateFormVersion}
                     key={settings.original.updated_at}
                 />

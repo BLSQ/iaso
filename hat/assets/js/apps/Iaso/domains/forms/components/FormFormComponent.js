@@ -7,7 +7,6 @@ import { useSelector } from 'react-redux';
 import { Grid } from '@material-ui/core';
 
 import InputComponent from '../../../components/forms/InputComponent';
-import FileInputComponent from '../../../components/forms/FileInputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
@@ -48,18 +47,6 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                     label={MESSAGES.name}
                     required
                 />
-                <Grid container direction="column">
-                    <Grid item>
-                        <FileInputComponent
-                            keyValue="xls_file"
-                            onChange={(key, value) => setFieldValue(key, value)}
-                            value={currentForm.xls_file.value}
-                            label={MESSAGES.xls_form_file}
-                            errors={currentForm.xls_file.errors}
-                            required
-                        />
-                    </Grid>
-                </Grid>
                 <InputComponent
                     keyValue="period_type"
                     clearable

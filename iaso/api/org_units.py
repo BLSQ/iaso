@@ -82,8 +82,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         small_search = request.GET.get("smallSearch", None)
         direct_children = request.GET.get("onlyDirectChildren", False)
 
-        if not is_export and limit and not as_location:
-            queryset.prefetch_related("group_set")
+        queryset.prefetch_related("group_set")
 
         if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
@@ -166,6 +165,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
         elif gpkg_format:
             return self.list_to_gpkg(queryset)
         else:
+
+            '''
+            When filtering the org units by group, the values_list will return the groups also filtered.
+            In order to get the all groups independently of filters, we should get the groups 
+            based on the org_unit FK.
+            '''
+            org_ids = queryset.order_by('pk').values_list('pk', flat=True).distinct()
+            groups = Group.objects.filter(org_units__id__in=list(org_ids)).only('id', 'name').distinct().prefetch_related('org_units')
+
             columns = [
                 {"title": "ID", "width": 10},
                 {"title": "Nom", "width": 25},
@@ -193,8 +201,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     counts_by_forms.append("form_" + str(frm.id) + "_instances")
                 columns.append({"title": "Total d'instances", "width": 15})
 
+            for group in groups:
+                columns.append({'title': group.name, 'width': 20})
+
             parent_field_names = ["parent__" * i + "name" for i in range(1, 5)]
             parent_field_names.extend(["parent__" * i + "source_ref" for i in range(1, 5)])
+
             queryset = queryset.values(
                 "id",
                 "name",
@@ -229,6 +241,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     *[org_unit.get(field_name) for field_name in parent_field_names],
                     *[org_unit.get(count_field_name) for count_field_name in counts_by_forms],
                     org_unit.get("instances_count"),
+                    *[int(group.org_units.filter(id=org_unit.get("id")).exists()) for group in groups]
                 ]
                 return org_unit_values
 

@@ -1,6 +1,9 @@
 import React from 'react';
 import orderBy from 'lodash/orderBy';
 import { textPlaceholder } from '../../constants/uiConstants';
+import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
+import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
+import { circleColorMarkerOptions } from '../../utils/mapUtils';
 import MESSAGES from './messages';
 
 export const getPolygonPositionsFromSimplifiedGeom = field => {
@@ -176,4 +179,28 @@ export const getOrgUnitGroups = orgUnit => (
             orgUnit.groups.map(g => g.name).join(', ')}
         {(!orgUnit.groups || orgUnit.groups.length === 0) && textPlaceholder}
     </span>
+);
+
+export const getMarkerList = (
+    locationsList,
+    fetchDetail,
+    color,
+    keyId,
+    PopupComponent = OrgUnitPopupComponent,
+) => (
+    <MarkersListComponent
+        key={keyId}
+        items={locationsList}
+        onMarkerClick={fetchDetail}
+        PopupComponent={PopupComponent}
+        popupProps={{
+            displayUseLocation: true,
+            useLocation: selectedOrgUnit =>
+                this.useOrgUnitLocation(selectedOrgUnit),
+        }}
+        isCircle
+        markerProps={() => ({
+            ...circleColorMarkerOptions(color),
+        })}
+    />
 );

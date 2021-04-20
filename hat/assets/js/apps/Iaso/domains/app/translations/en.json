@@ -294,6 +294,7 @@
     "iaso.orgUnits.confirmMultiChange": "Confirm bulk changes ?",
     "iaso.orgUnits.dataSources": "Data Sources",
     "iaso.orgUnits.depth": "Depth",
+    "iaso.orgUnits.depthInfos": "Depth of the type in the hierarchy",
     "iaso.orgUnits.editGroups": "Edit groups",
     "iaso.orgUnits.editOrgUnitType": "Edit org unit type",
     "iaso.orgUnits.editValidation": "Edit validation",

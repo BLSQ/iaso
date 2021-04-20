@@ -14,6 +14,7 @@ import {
     defaultSelectionActions,
     selectionInitialState,
     getParamsKey,
+    getColumnsHeadersInfos,
 } from '../../utils/tableUtils';
 
 import { formatThousand } from '../../utils';
@@ -293,7 +294,7 @@ class Table extends Component {
                         showPagination={showPagination}
                         multiSort
                         manual
-                        columns={columns}
+                        columns={getColumnsHeadersInfos(columns)}
                         data={data}
                         pages={pages}
                         className="-striped -highlight"

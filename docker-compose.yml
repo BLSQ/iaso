@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   iaso:
     stdin_open: true
@@ -29,18 +29,19 @@ services:
     links: &hat_links
       - db
     environment: &hat_environment
-      IASO_ENVIRONMENT: 'development'
+      IASO_ENVIRONMENT: "development"
       RDS_HOSTNAME: db
       RDS_DB_NAME: iaso
       RDS_USERNAME: postgres
-      DEBUG: 'true'
+      RDS_PASSWORD: postgres
+      DEBUG: "true"
       TEST_PROD:
       SECRET_KEY: secret
       AWS_STORAGE_BUCKET_NAME:
       AWS_ACCESS_KEY_ID:
       AWS_SECRET_ACCESS_KEY:
-      PYTHONUNBUFFERED: 'true'
-      ENKETO_DEV: 'true'
+      PYTHONUNBUFFERED: "true"
+      ENKETO_DEV: "true"
       ENKETO_API_TOKEN: AZE78974654azeAZE
       ENKETO_URL: ${ENKETO_URL}
     # Limit logging in dev to not overflow terminal
@@ -52,7 +53,9 @@ services:
     command: start_dev
 
   db:
-    image: mdillon/postgis:10
+    image: iaso/postgis
+     # Workaround until there is a stable Postgis image for Apple Silicon
+    build: .docker/db
     logging: *iaso_logging
     ports:
       - "5433:5432"
@@ -61,6 +64,7 @@ services:
     environment:
       POSTGRES_DB: ${RDS_DB_NAME}
       POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
 
   # the webpack dev server
   webpack:

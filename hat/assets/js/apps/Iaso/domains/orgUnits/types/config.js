@@ -24,6 +24,7 @@ const TableColumns = (formatMessage, component) => [
     },
     {
         Header: formatMessage(MESSAGES.depth),
+        headerInfo: formatMessage(MESSAGES.depthInfos),
         accessor: 'depth',
         sortable: false,
         Cell: settings => (

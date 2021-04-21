@@ -8,6 +8,7 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { getYears } from '../../../utils';
 import commonStyles from '../../../styles/common';
 import { Period } from '../models';
+import { useSafeIntl } from '../../../hooks/intl';
 import {
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
@@ -42,6 +43,7 @@ const getIntegerArray = size =>
 
 const PeriodPicker = ({ periodType, title }) => {
     const classes = useStyles();
+    const intl = useSafeIntl();
     const [currentPeriod, setCurrentPeriod] = useState(getDefaultPeriod());
 
     const handleChange = (keyName, value) => {
@@ -76,6 +78,7 @@ const PeriodPicker = ({ periodType, title }) => {
             borderRadius={5}
             borderColor="rgba(0, 0, 0, 0.23)"
         >
+            {intl.formatMessage(MESSAGES.july)}
             {/* {periodString}
             {periodType} */}
             <Typography variant="h6" className={classes.title}>
@@ -106,9 +109,13 @@ const PeriodPicker = ({ periodType, title }) => {
                                 clearable={false}
                                 value={currentPeriod.month}
                                 type="select"
-                                options={getIntegerArray(12).map(m => ({
-                                    label: m,
-                                    value: m,
+                                options={getIntegerArray(12).map(month => ({
+                                    label: intl.formatMessage(
+                                        MESSAGES.find(
+                                            mess => mess.order === month,
+                                        ),
+                                    ),
+                                    value: month,
                                 }))}
                                 label={MESSAGES.month}
                             />

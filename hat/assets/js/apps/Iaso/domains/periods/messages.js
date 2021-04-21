@@ -17,6 +17,54 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.six_month',
         defaultMessage: 'Semester',
     },
+    january: {
+        defaultMessage: 'January',
+        id: 'iaso.label.months.january',
+    },
+    february: {
+        defaultMessage: 'February',
+        id: 'iaso.label.months.february',
+    },
+    march: {
+        defaultMessage: 'March',
+        id: 'iaso.label.months.march',
+    },
+    april: {
+        defaultMessage: 'April',
+        id: 'iaso.label.months.april',
+    },
+    may: {
+        defaultMessage: 'May',
+        id: 'iaso.label.months.may',
+    },
+    june: {
+        defaultMessage: 'June',
+        id: 'iaso.label.months.june',
+    },
+    july: {
+        defaultMessage: 'July',
+        id: 'iaso.label.months.jully',
+    },
+    august: {
+        defaultMessage: 'August',
+        id: 'iaso.label.months.august',
+    },
+    september: {
+        defaultMessage: 'September',
+        id: 'iaso.label.months.september',
+    },
+    october: {
+        defaultMessage: 'October',
+        id: 'iaso.label.months.october',
+    },
+    november: {
+        defaultMessage: 'November',
+        id: 'iaso.label.months.november',
+    },
+    december: {
+        defaultMessage: 'December',
+        id: 'iaso.label.months.december',
+    },
 });
 
 export default MESSAGES;

@@ -16,7 +16,11 @@ import MESSAGES from '../messages';
 
 const baseUrl = baseUrls.formDetail;
 const defaultOrder = 'start_period';
-const FormVersionsComponent = ({ formId, forceRefresh, setForceRefresh }) => {
+const FormVersionsComponent = ({
+    forceRefresh,
+    setForceRefresh,
+    currentForm,
+}) => {
     const intl = useSafeIntl();
     return (
         <Box mt={4}>
@@ -33,7 +37,7 @@ const FormVersionsComponent = ({ formId, forceRefresh, setForceRefresh }) => {
                 fetchItems={(d, url) =>
                     fetchList(
                         d,
-                        `${url}&form_id=${formId}`,
+                        `${url}&form_id=${currentForm.id.value}`,
                         'fetchFormVersionsError',
                         'form versions',
                     )
@@ -42,7 +46,7 @@ const FormVersionsComponent = ({ formId, forceRefresh, setForceRefresh }) => {
                 columns={formVersionsTableColumns(
                     intl.formatMessage,
                     setForceRefresh,
-                    formId,
+                    currentForm,
                 )}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
@@ -54,7 +58,7 @@ const FormVersionsComponent = ({ formId, forceRefresh, setForceRefresh }) => {
                 display="flex"
             >
                 <FormVersionsDialog
-                    formId={formId}
+                    currentForm={currentForm}
                     titleMessage={MESSAGES.createFormVersion}
                     renderTrigger={({ openDialog }) => (
                         <AddButtonComponent onClick={openDialog} />
@@ -66,6 +70,7 @@ const FormVersionsComponent = ({ formId, forceRefresh, setForceRefresh }) => {
     );
 };
 FormVersionsComponent.propTypes = {
+    currentForm: PropTypes.object.isRequired,
     formId: PropTypes.string.isRequired,
     forceRefresh: PropTypes.bool.isRequired,
     setForceRefresh: PropTypes.func.isRequired,

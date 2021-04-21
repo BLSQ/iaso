@@ -133,11 +133,15 @@ class FormVersionManager(models.Manager):
         with transaction.atomic():
             latest_version = self.latest_version(form)
 
+            version_id = survey.version
+            if kwargs.get('version_id') is not None:
+                version_id = kwargs.pop('version_id')
+            print (kwargs)
             form_version = super().create(
                 **kwargs,
                 form=form,
                 file=SimpleUploadedFile(survey.generate_file_name("xml"), survey.to_xml(), content_type="text/xml"),
-                version_id=survey.version,
+                version_id=version_id,
                 form_descriptor=survey.to_json(),
             )
             form.form_id = survey.form_id
@@ -189,7 +193,6 @@ class FormVersion(models.Model):
     def as_dict(self):
         return {
             "id": self.id,
-            "version_id": self.version_id,
             "version_id": self.version_id,
             "file": self.file.url,
             "xls_file": self.xls_file.url if self.xls_file else None,

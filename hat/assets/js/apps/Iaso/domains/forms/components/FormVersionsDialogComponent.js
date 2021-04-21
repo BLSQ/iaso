@@ -6,9 +6,12 @@ import { Grid } from '@material-ui/core';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
+import PeriodPicker from '../../periods/components/PeriodPickerComponent';
+
 import MESSAGES from '../messages';
 import { createFormVersion } from '../../../utils/requests';
 import { useFormState } from '../../../hooks/form';
+import { useSafeIntl } from '../../../hooks/intl';
 
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../../constants/snackBars';
@@ -26,10 +29,11 @@ const FormVersionsDialogComponent = ({
     formVersion,
     titleMessage,
     onConfirmed,
-    formId,
+    currentForm,
     ...dialogProps
 }) => {
     const dispatch = useDispatch();
+    const intl = useSafeIntl();
 
     const [
         formState,
@@ -50,7 +54,10 @@ const FormVersionsDialogComponent = ({
             const savePromise = !formVersion.id
                 ? createFormVersion(dispatch, {
                       xls_file: formState.xls_file.value,
-                      form_id: formId,
+                      data: {
+                          form_id: currentForm.id.value,
+                          version_id: formState.version_id.value,
+                      },
                   })
                 : () => null;
             try {
@@ -70,7 +77,6 @@ const FormVersionsDialogComponent = ({
         },
         [dispatch, setFieldErrors, formState],
     );
-
     return (
         <ConfirmCancelDialogComponent
             titleMessage={titleMessage}
@@ -92,7 +98,14 @@ const FormVersionsDialogComponent = ({
                         errors={formState.version_id.errors}
                         type="text"
                         label={MESSAGES.version}
-                        required
+                    />
+                    <PeriodPicker
+                        periodType={currentForm.period_type.value}
+                        title={intl.formatMessage(MESSAGES.startPeriod)}
+                    />
+                    <PeriodPicker
+                        periodType={currentForm.period_type.value}
+                        title={intl.formatMessage(MESSAGES.endPeriod)}
                     />
                     {!formState.id.value && (
                         <FileInputComponent
@@ -116,7 +129,7 @@ FormVersionsDialogComponent.defaultProps = {
 
 FormVersionsDialogComponent.propTypes = {
     formVersion: PropTypes.object,
-    formId: PropTypes.string.isRequired,
+    currentForm: PropTypes.object.isRequired,
     titleMessage: PropTypes.object.isRequired,
     renderTrigger: PropTypes.func.isRequired,
     onConfirmed: PropTypes.func.isRequired,

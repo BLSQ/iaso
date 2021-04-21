@@ -107,14 +107,13 @@ export const getPossibleYears = () => {
     return possibleYears;
 };
 
-export const getYears = yearsCount => {
-    const currentYear = new Date().getFullYear();
+export const getYears = (yearsCount, offset = 0) => {
+    const currentYear = new Date().getFullYear() + offset;
     const years = Array(yearsCount)
         .fill()
         .map((y, i) => currentYear - i);
     return years;
 };
-
 export const NormalizeBarChartDatas = (settings, d) => {
     const newDatas = [];
     settings.map((setting, index) => {

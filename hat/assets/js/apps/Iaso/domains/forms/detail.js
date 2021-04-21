@@ -45,7 +45,7 @@ const defaultForm = {
     depth: null,
     org_unit_type_ids: [],
     project_ids: [],
-    period_type: null,
+    period_type: undefined,
     derived: false,
     single_per_period: false,
     periods_before_allowed: 0,
@@ -63,7 +63,10 @@ const initialFormState = (form = defaultForm) => ({
         ? form.org_unit_types.map(ot => ot.id)
         : [],
     project_ids: form.projects ? form.projects.map(p => p.id) : [],
-    period_type: form.period_type,
+    period_type:
+        form.period_type && form.period_type !== ''
+            ? form.period_type
+            : undefined,
     derived: form.derived,
     single_per_period: form.single_per_period,
     periods_before_allowed: form.periods_before_allowed,
@@ -203,6 +206,7 @@ const FormDetail = ({ router, params }) => {
                 </Box>
                 <FormVersions
                     formId={params.formId}
+                    currentForm={currentForm}
                     forceRefresh={forceRefreshVersions}
                     setForceRefresh={setForceRefreshVersions}
                 />

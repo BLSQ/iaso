@@ -49,7 +49,6 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         read_only_fields = [
             "id",
             "form_name",
-            "version_id",
             "full_name",
             "mapped",
             "file",
@@ -60,6 +59,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
     form_id = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
     form_name = serializers.SerializerMethodField()
+    version_id = serializers.CharField()
+    start_period = serializers.CharField()
+    end_period = serializers.CharField()
     xls_file = serializers.FileField(required=True, allow_empty_file=False)  # field is not required in model
     mapped = serializers.BooleanField(read_only=True)
     full_name = serializers.CharField(read_only=True)
@@ -113,7 +115,6 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     def create(self, validated_data):
         form = validated_data.pop("form")
         survey = validated_data.pop("survey")
-
         return FormVersion.objects.create_for_form_and_survey(form=form, survey=survey, **validated_data)
 
 

@@ -148,11 +148,11 @@ export class Period {
         return `${prefix}-${year}`;
     }
 
-    // more period functions -----------------
-
-    padMonth(n) {
+    static padMonth(n) {
         return n < 10 ? `0${n}` : n;
     }
+
+    // more period functions -----------------
 
     nextYearMonth(period) {
         let year = parseInt(period.slice(0, 4), 0);

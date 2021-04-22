@@ -152,7 +152,7 @@ export class Period {
         return n < 10 ? `0${n}` : n;
     }
 
-    static isßefore(p1String, p2String) {
+    static isBefore(p1String, p2String) {
         const p1 = new Period(p1String);
         const p2 = new Period(p2String);
         if (p1.year < p2.year) {
@@ -196,7 +196,7 @@ export class Period {
 
     // more period functions -----------------
 
-    nextYearMonth(period) {
+    static nextYearMonth(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let month = parseInt(period.slice(4, 6), 0);
         if (month === 12) {
@@ -208,7 +208,7 @@ export class Period {
         return `${year}${this.padMonth(month)}`;
     }
 
-    previousYearMonth(period) {
+    static previousYearMonth(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let month = parseInt(period.slice(4, 6), 0);
         if (month === 1) {
@@ -220,27 +220,27 @@ export class Period {
         return `${year}${this.padMonth(month)}`;
     }
 
-    nextYear(period) {
+    static nextYear(period) {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year + 1}`;
     }
 
-    previousYear(period) {
+    static previousYear(period) {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year - 1}`;
     }
 
-    nextFinancialJuly(period) {
+    static nextFinancialJuly(period) {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year + 1}July`;
     }
 
-    previousFinancialJuly(period) {
+    static previousFinancialJuly(period) {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year - 1}July`;
     }
 
-    nextQuarter(period) {
+    static nextQuarter(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let quarter = parseInt(period.slice(5, 6), 0);
         if (quarter === 4) {
@@ -252,7 +252,7 @@ export class Period {
         return `${year}Q${quarter}`;
     }
 
-    nextSixMonth(period) {
+    static nextSixMonth(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let sixMonth = parseInt(period.slice(5, 6), 0);
         if (sixMonth === 2) {
@@ -264,7 +264,7 @@ export class Period {
         return `${year}S${sixMonth}`;
     }
 
-    previousQuarter(period) {
+    static previousQuarter(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let quarter = parseInt(period.slice(5, 6), 0);
         if (quarter === 1) {
@@ -276,7 +276,7 @@ export class Period {
         return `${year}Q${quarter}`;
     }
 
-    previousSixMonth(period) {
+    static previousSixMonth(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let sixMonth = parseInt(period.slice(5, 6), 0);
         if (sixMonth === 1) {
@@ -288,7 +288,7 @@ export class Period {
         return `${year}S${sixMonth}`;
     }
 
-    next(period) {
+    static next(period) {
         if (period.includes('Q')) {
             return this.nextQuarter(period);
         }
@@ -308,7 +308,7 @@ export class Period {
         throw new Error(`unsupported period format ${period}`);
     }
 
-    previous(period) {
+    static previous(period) {
         if (period.includes('Q')) {
             return this.previousQuarter(period);
         }
@@ -327,7 +327,7 @@ export class Period {
         throw new Error(`unsupported period format ${period}`);
     }
 
-    previousPeriods(numberOfPeriods) {
+    static previousPeriods(numberOfPeriods) {
         let previous = '';
         const previousPeriods = [];
         let tempPeriodString = this.periodString;

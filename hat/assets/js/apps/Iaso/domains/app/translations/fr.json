@@ -66,6 +66,7 @@
     "iaso.forms.viewInstances": "Voir le(s) soumission(s)",
     "iaso.forms.yes": "Oui",
     "iaso.formversions.create": "Créer une version",
+    "iaso.formversions.periodError": "La période de début doit être avant la période de fin",
     "iaso.formversions.update": "Modifier version",
     "iaso.groups.create": "Créer un groupe",
     "iaso.groups.dialog.delete": "Etes-cous certain de vouloir effacer ce groupe?",

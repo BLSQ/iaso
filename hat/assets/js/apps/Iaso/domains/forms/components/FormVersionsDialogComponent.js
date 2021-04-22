@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Grid } from '@material-ui/core';
+import { Grid, Typography, Box } from '@material-ui/core';
 
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -13,6 +13,7 @@ import { createFormVersion } from '../../../utils/requests';
 import { useFormState } from '../../../hooks/form';
 import { useSafeIntl } from '../../../hooks/intl';
 import { Period } from '../../periods/models';
+import { getDefaultPeriodString } from '../../periods/utils';
 
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../../constants/snackBars';
@@ -20,8 +21,8 @@ import { setIsLoadingForm } from '../actions';
 
 const emptyVersion = {
     id: null,
-    start_period: null,
-    end_period: null,
+    start_period: getDefaultPeriodString(),
+    end_period: Period.next(getDefaultPeriodString()),
     version_id: null,
     xls_file: null,
 };
@@ -35,7 +36,9 @@ const FormVersionsDialogComponent = ({
 }) => {
     const dispatch = useDispatch();
     const intl = useSafeIntl();
-
+    const [errorOnPeriods, setErrorOnPeriods] = useState(false);
+    const defaultStartPeriod =
+        formVersion.start_period || getDefaultPeriodString();
     const [
         formState,
         setFieldValue,
@@ -43,8 +46,8 @@ const FormVersionsDialogComponent = ({
         setFormState,
     ] = useFormState({
         id: formVersion.id,
-        start_period: formVersion.start_period,
-        end_period: formVersion.end_period,
+        start_period: defaultStartPeriod,
+        end_period: formVersion.end_period || Period.next(defaultStartPeriod),
         version_id: formVersion.version_id,
         xls_file: formVersion.xls_file,
     });
@@ -79,21 +82,25 @@ const FormVersionsDialogComponent = ({
         [dispatch, setFieldErrors, formState],
     );
 
-    const handlePeriodChange = (keyName, value) => {
-        // CHECK if start period is before end period and trigger errors and block save
-        if (!value) return;
-        if (keyName === 'start_period' && formState.end_period.value) {
-            console.log(
-                'start is before end',
-                Period.isßefore(value, formState.end_period.value),
+    useEffect(() => {
+        if (formState.start_period.value && formState.end_period.value) {
+            const isValidPeriod = Period.isBefore(
+                formState.start_period.value,
+                formState.end_period.value,
             );
+            if (!isValidPeriod) {
+                setErrorOnPeriods(true);
+            } else {
+                setErrorOnPeriods(false);
+            }
         }
-        setFieldValue(keyName, value);
-    };
+    }, [formState.start_period.value, formState.end_period.value]);
 
     console.log('formState', formState);
+
     return (
         <ConfirmCancelDialogComponent
+            allowConfirm={!errorOnPeriods && Boolean(formState.xls_file.value)}
             titleMessage={titleMessage}
             onConfirm={onConfirm}
             cancelMessage={MESSAGES.cancel}
@@ -115,21 +122,36 @@ const FormVersionsDialogComponent = ({
                         label={MESSAGES.version}
                     />
                     <PeriodPicker
+                        hasError={errorOnPeriods}
                         periodType={currentForm.period_type.value}
                         title={intl.formatMessage(MESSAGES.startPeriod)}
                         activePeriodString={formState.start_period.value}
                         onChange={startPeriod =>
-                            handlePeriodChange('start_period', startPeriod)
+                            setFieldValue('start_period', startPeriod)
                         }
                     />
                     <PeriodPicker
+                        hasError={errorOnPeriods}
                         periodType={currentForm.period_type.value}
                         title={intl.formatMessage(MESSAGES.endPeriod)}
                         activePeriodString={formState.end_period.value}
                         onChange={endPeriod =>
-                            handlePeriodChange('end_period', endPeriod)
+                            setFieldValue('end_period', endPeriod)
                         }
                     />
+                    {errorOnPeriods && (
+                        <Box mb={2} mt={-1}>
+                            <Typography
+                                variant="body1"
+                                color="error"
+                                fontSize="small"
+                            >
+                                {intl.formatMessage(
+                                    MESSAGES.formVersionPeriodError,
+                                )}
+                            </Typography>
+                        </Box>
+                    )}
                     {!formState.id.value && (
                         <FileInputComponent
                             keyValue="xls_file"

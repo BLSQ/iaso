@@ -421,6 +421,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.endPeriod',
         defaultMessage: 'end period',
     },
+    formVersionPeriodError: {
+        id: 'iaso.formversions.periodError',
+        defaultMessage: 'Start period should be before end period',
+    },
 });
 
 export default MESSAGES;

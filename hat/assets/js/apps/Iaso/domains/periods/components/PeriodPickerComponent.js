@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
 import { makeStyles, Grid, Box, Typography } from '@material-ui/core';
+import { useTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { getYears, getIntegerArray } from '../../../utils';
-import { getDefaultPeriodString } from '../utils';
 import commonStyles from '../../../styles/common';
 import { Period } from '../models';
 import { useSafeIntl } from '../../../hooks/intl';
@@ -30,10 +30,19 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const PeriodPicker = ({ periodType, title, onChange, activePeriodString }) => {
+const PeriodPicker = ({
+    periodType,
+    title,
+    onChange,
+    activePeriodString,
+    hasError,
+}) => {
     const classes = useStyles();
+    const theme = useTheme();
     const intl = useSafeIntl();
-    const [currentPeriod, setCurrentPeriod] = useState(null);
+    const [currentPeriod, setCurrentPeriod] = useState(
+        new Period(activePeriodString),
+    );
 
     const handleChange = (keyName, value) => {
         let newPeriodString;
@@ -55,19 +64,11 @@ const PeriodPicker = ({ periodType, title, onChange, activePeriodString }) => {
     };
 
     useEffect(() => {
-        if (!activePeriodString) {
-            onChange(getDefaultPeriodString());
-        }
-    }, []);
-
-    useEffect(() => {
         if (activePeriodString) {
             setCurrentPeriod(new Period(activePeriodString));
         }
     }, [activePeriodString]);
 
-    console.log('activePeriodString', activePeriodString);
-    console.log('currentPeriod', currentPeriod);
     if (!currentPeriod) return null;
     return (
         <Box
@@ -76,7 +77,11 @@ const PeriodPicker = ({ periodType, title, onChange, activePeriodString }) => {
             mb={2}
             border={1}
             borderRadius={5}
-            borderColor="rgba(0, 0, 0, 0.23)"
+            borderColor={
+                hasError
+                    ? theme.palette.error.main
+                    : theme.palette.ligthGray.border
+            }
         >
             <Typography variant="h6" className={classes.title}>
                 {title}
@@ -149,7 +154,6 @@ const PeriodPicker = ({ periodType, title, onChange, activePeriodString }) => {
 };
 PeriodPicker.defaultProps = {
     periodType: PERIOD_TYPE_MONTH,
-    activePeriodString: null,
 };
 
 PeriodPicker.propTypes = {
@@ -159,7 +163,8 @@ PeriodPicker.propTypes = {
     activePeriodString: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.object,
-    ]),
+    ]).isRequired,
+    hasError: PropTypes.bool.isRequired,
 };
 
 export default PeriodPicker;

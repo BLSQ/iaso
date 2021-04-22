@@ -322,3 +322,9 @@ export const isFixedStructure = currentCase =>
     currentCase.user_type !== null &&
     (currentCase.user_type === 'CDTC' ||
         currentCase.user_type === 'fixed_structure');
+
+export const getIntegerArray = size =>
+    Array(size)
+        .fill()
+        .map((y, i) => size - i)
+        .reverse();

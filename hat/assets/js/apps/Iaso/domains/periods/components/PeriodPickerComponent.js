@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { makeStyles, Grid, Box, Typography } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
 import InputComponent from '../../../components/forms/InputComponent';
 
-import { getYears } from '../../../utils';
+import { getYears, getIntegerArray } from '../../../utils';
+import { getDefaultPeriodString } from '../utils';
 import commonStyles from '../../../styles/common';
 import { Period } from '../models';
 import { useSafeIntl } from '../../../hooks/intl';
@@ -14,73 +15,69 @@ import {
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
+    MONTHS,
+    QUARTERS,
+    SEMESTERS,
 } from '../constants';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     title: {
-        fontSize: 18,
+        fontSize: 17,
         marginBottom: theme.spacing(1),
         color: 'rgba(0, 0, 0, 0.7)',
     },
 }));
 
-const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
-const semesters = ['S1', 'S2'];
-
-const getDefaultPeriod = () => {
-    const currentYear = new Date().getFullYear();
-    const currentMonth = Period.padMonth(new Date().getMonth() + 1);
-    return new Period(`${currentYear}${currentMonth}`);
-};
-
-const getIntegerArray = size =>
-    Array(size)
-        .fill()
-        .map((y, i) => size - i)
-        .reverse();
-
-const PeriodPicker = ({ periodType, title }) => {
+const PeriodPicker = ({ periodType, title, onChange, activePeriodString }) => {
     const classes = useStyles();
     const intl = useSafeIntl();
-    const [currentPeriod, setCurrentPeriod] = useState(getDefaultPeriod());
+    const [currentPeriod, setCurrentPeriod] = useState(null);
 
     const handleChange = (keyName, value) => {
-        let periodString;
+        let newPeriodString;
         if (keyName === 'year') {
-            periodString = `${value}${Period.padMonth(currentPeriod.month)}`;
+            newPeriodString = `${value}${Period.padMonth(currentPeriod.month)}`;
         }
         if (keyName === 'month') {
-            periodString = `${currentPeriod.year}${Period.padMonth(value)}`;
+            newPeriodString = `${currentPeriod.year}${Period.padMonth(value)}`;
         }
         if (keyName === 'quarter') {
-            periodString = `${currentPeriod.year}${quarters[value - 1]}`;
+            newPeriodString = `${currentPeriod.year}${QUARTERS[value]}`;
         }
         if (keyName === 'semester') {
-            periodString = `${currentPeriod.year}${semesters[value - 1]}`;
+            newPeriodString = `${currentPeriod.year}${SEMESTERS[value]}`;
         }
-        if (periodString) {
-            setCurrentPeriod(new Period(periodString));
+        if (newPeriodString) {
+            onChange(newPeriodString);
         }
     };
-    const { periodString } = currentPeriod.asPeriodType(periodType);
-    console.log('currentPeriod', currentPeriod.asPeriodType(periodType));
+
+    useEffect(() => {
+        if (!activePeriodString) {
+            onChange(getDefaultPeriodString());
+        }
+    }, []);
+
+    useEffect(() => {
+        if (activePeriodString) {
+            setCurrentPeriod(new Period(activePeriodString));
+        }
+    }, [activePeriodString]);
+
+    console.log('activePeriodString', activePeriodString);
+    console.log('currentPeriod', currentPeriod);
+    if (!currentPeriod) return null;
     return (
         <Box
             mt={2}
-            pt={1}
-            pb={2}
-            pl={2}
-            pr={2}
+            p={1}
             mb={2}
             border={1}
             borderRadius={5}
             borderColor="rgba(0, 0, 0, 0.23)"
         >
-            {intl.formatMessage(MESSAGES.july)}
-            {/* {periodString}
-            {periodType} */}
             <Typography variant="h6" className={classes.title}>
                 {title}
             </Typography>
@@ -105,17 +102,12 @@ const PeriodPicker = ({ periodType, title }) => {
                             <InputComponent
                                 keyValue="month"
                                 onChange={handleChange}
-                                required
                                 clearable={false}
                                 value={currentPeriod.month}
                                 type="select"
-                                options={getIntegerArray(12).map(month => ({
-                                    label: intl.formatMessage(
-                                        MESSAGES.find(
-                                            mess => mess.order === month,
-                                        ),
-                                    ),
-                                    value: month,
+                                options={getIntegerArray(12).map(m => ({
+                                    label: intl.formatMessage(MONTHS[m]),
+                                    value: m,
                                 }))}
                                 label={MESSAGES.month}
                             />
@@ -128,7 +120,7 @@ const PeriodPicker = ({ periodType, title }) => {
                                 value={currentPeriod.quarter}
                                 type="select"
                                 options={getIntegerArray(4).map(q => ({
-                                    label: q,
+                                    label: QUARTERS[q],
                                     value: q,
                                 }))}
                                 label={MESSAGES.quarter}
@@ -139,12 +131,11 @@ const PeriodPicker = ({ periodType, title }) => {
                             <InputComponent
                                 keyValue="semester"
                                 onChange={handleChange}
-                                required
                                 clearable={false}
                                 value={currentPeriod.semester}
                                 type="select"
                                 options={getIntegerArray(2).map(s => ({
-                                    label: s,
+                                    label: SEMESTERS[s],
                                     value: s,
                                 }))}
                                 label={MESSAGES.six_month}
@@ -158,11 +149,17 @@ const PeriodPicker = ({ periodType, title }) => {
 };
 PeriodPicker.defaultProps = {
     periodType: PERIOD_TYPE_MONTH,
+    activePeriodString: null,
 };
 
 PeriodPicker.propTypes = {
     periodType: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     title: PropTypes.string.isRequired,
+    onChange: PropTypes.func.isRequired,
+    activePeriodString: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.object,
+    ]),
 };
 
 export default PeriodPicker;

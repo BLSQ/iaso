@@ -12,6 +12,7 @@ import MESSAGES from '../messages';
 import { createFormVersion } from '../../../utils/requests';
 import { useFormState } from '../../../hooks/form';
 import { useSafeIntl } from '../../../hooks/intl';
+import { Period } from '../../periods/models';
 
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../../constants/snackBars';
@@ -43,7 +44,7 @@ const FormVersionsDialogComponent = ({
     ] = useFormState({
         id: formVersion.id,
         start_period: formVersion.start_period,
-        end_period: formVersion.short_name,
+        end_period: formVersion.end_period,
         version_id: formVersion.version_id,
         xls_file: formVersion.xls_file,
     });
@@ -59,7 +60,7 @@ const FormVersionsDialogComponent = ({
                           version_id: formState.version_id.value,
                       },
                   })
-                : () => null;
+                : () => null; // TO-DO => update version
             try {
                 await savePromise;
                 closeDialog();
@@ -77,6 +78,20 @@ const FormVersionsDialogComponent = ({
         },
         [dispatch, setFieldErrors, formState],
     );
+
+    const handlePeriodChange = (keyName, value) => {
+        // CHECK if start period is before end period and trigger errors and block save
+        if (!value) return;
+        if (keyName === 'start_period' && formState.end_period.value) {
+            console.log(
+                'start is before end',
+                Period.isßefore(value, formState.end_period.value),
+            );
+        }
+        setFieldValue(keyName, value);
+    };
+
+    console.log('formState', formState);
     return (
         <ConfirmCancelDialogComponent
             titleMessage={titleMessage}
@@ -102,10 +117,18 @@ const FormVersionsDialogComponent = ({
                     <PeriodPicker
                         periodType={currentForm.period_type.value}
                         title={intl.formatMessage(MESSAGES.startPeriod)}
+                        activePeriodString={formState.start_period.value}
+                        onChange={startPeriod =>
+                            handlePeriodChange('start_period', startPeriod)
+                        }
                     />
                     <PeriodPicker
                         periodType={currentForm.period_type.value}
                         title={intl.formatMessage(MESSAGES.endPeriod)}
+                        activePeriodString={formState.end_period.value}
+                        onChange={endPeriod =>
+                            handlePeriodChange('end_period', endPeriod)
+                        }
                     />
                     {!formState.id.value && (
                         <FileInputComponent

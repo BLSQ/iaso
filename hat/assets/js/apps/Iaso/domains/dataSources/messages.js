@@ -41,6 +41,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
+    add: {
+        id: 'iaso.label.add',
+        defaultMessage: 'Add',
+    },
     createDataSource: {
         defaultMessage: 'Create data sources',
         id: 'iaso.dataSources.create',

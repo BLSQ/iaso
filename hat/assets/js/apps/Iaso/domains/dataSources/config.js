@@ -5,6 +5,7 @@ import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
+import { AddDataSourceVersion } from './components/AddDataSourceVersion';
 
 const dataSourcesTableColumns = (
     formatMessage,
@@ -59,27 +60,48 @@ const dataSourcesTableColumns = (
         Header: formatMessage(MESSAGES.actions),
         resizable: false,
         sortable: false,
-        Cell: settings => (
-            <section>
-                <DataSourceDialogComponent
-                    renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
-                            onClick={openDialog}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
-                        />
-                    )}
-                    initialData={{
-                        ...settings.original,
-                        projects: settings.original.projects.flat(),
-                    }}
-                    defaultSourceVersion={defaultSourceVersion}
-                    titleMessage={MESSAGES.updateDataSource}
-                    key={settings.original.updated_at}
-                    onSuccess={() => setForceRefresh(true)}
-                />
-            </section>
-        ),
+        Cell: settings => {
+            // console.log('settings',settings);
+            const latestVersion = settings.original.versions.sort(
+                (v1, v2) => v2.number - v1.number,
+            )[0]?.number??0;
+            return (
+                <section>
+                    <DataSourceDialogComponent
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="edit"
+                                tooltipMessage={MESSAGES.edit}
+                            />
+                        )}
+                        initialData={{
+                            ...settings.original,
+                            projects: settings.original.projects.flat(),
+                        }}
+                        defaultSourceVersion={defaultSourceVersion}
+                        titleMessage={MESSAGES.updateDataSource}
+                        key={settings.original.updated_at}
+                        onSuccess={() => setForceRefresh(true)}
+                    />
+                    {/* My component here */}
+                    <AddDataSourceVersion
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="map"
+                                tooltipMessage={MESSAGES.edit}
+                            />
+                        )}
+                        defaultSourceVersion={defaultSourceVersion}
+                        titleMessage={MESSAGES.add}
+                        key={`${settings.original.updated_at} add`}
+                        sourceId={settings.original.name}
+                        sourceVersion={latestVersion+1}
+                    />
+                </section>
+            );
+        },
     },
 ];
 export default dataSourcesTableColumns;

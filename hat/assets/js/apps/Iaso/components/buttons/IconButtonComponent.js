@@ -33,6 +33,7 @@ const ICON_VARIANTS = {
     refresh: CachedRoundedIcon,
     stop: StopRoundedIcon,
     xls: ExcellSvg,
+    // TODO add ADD icon
 };
 
 const styles = theme => ({

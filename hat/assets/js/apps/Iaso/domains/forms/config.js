@@ -212,7 +212,6 @@ const DispatchableDeleteDialog = ({ form }) => {
 
     return (
         <DeleteDialog
-            disabled={form.instances_count > 0}
             titleMessage={MESSAGES.deleteFormTitle}
             message={MESSAGES.deleteFormText}
             onConfirm={() => {

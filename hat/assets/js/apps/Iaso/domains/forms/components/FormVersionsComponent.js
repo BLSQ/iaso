@@ -20,6 +20,7 @@ const FormVersionsComponent = ({
     forceRefresh,
     setForceRefresh,
     currentForm,
+    formId,
 }) => {
     const intl = useSafeIntl();
     return (
@@ -37,7 +38,7 @@ const FormVersionsComponent = ({
                 fetchItems={(d, url) =>
                     fetchList(
                         d,
-                        `${url}&form_id=${currentForm.id.value}`,
+                        `${url}&form_id=${formId}`,
                         'fetchFormVersionsError',
                         'form versions',
                     )

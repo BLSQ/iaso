@@ -8,7 +8,7 @@ import FileInputComponent from '../../../components/forms/FileInputComponent';
 import PeriodPicker from '../../periods/components/PeriodPickerComponent';
 
 import MESSAGES from '../messages';
-import { createFormVersion } from '../../../utils/requests';
+import { createFormVersion, updateFormVersion } from '../../../utils/requests';
 import { useFormState } from '../../../hooks/form';
 import { useSafeIntl } from '../../../hooks/intl';
 import { errorTypes, getPeriodsErrors } from '../../periods/utils';
@@ -17,12 +17,12 @@ import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../../constants/snackBars';
 import { setIsLoadingForm } from '../actions';
 
-const emptyVersion = {
-    id: null,
+const emptyVersion = (id = null) => ({
+    id,
     start_period: null,
     end_period: null,
     xls_file: null,
-};
+});
 
 const FormVersionsDialogComponent = ({
     formVersion,
@@ -68,28 +68,28 @@ const FormVersionsDialogComponent = ({
         async closeDialog => {
             dispatch(setIsLoadingForm(true));
             let savePromise;
+            const data = {
+                form_id: formId,
+            };
+            if (formState.start_period.value) {
+                data.start_period = formState.start_period.value;
+            }
+            if (formState.end_period.value) {
+                data.end_period = formState.end_period.value;
+            }
             if (!formVersion.id) {
-                const data = {
-                    form_id: formId,
-                };
-                if (formState.start_period.value) {
-                    data.start_period = formState.start_period.value;
-                }
-                if (formState.end_period.value) {
-                    data.end_period = formState.end_period.value;
-                }
                 savePromise = createFormVersion(dispatch, {
                     xls_file: formState.xls_file.value,
                     data,
                 });
             } else {
-                // UPDATE
-                savePromise = () => null;
+                data.id = formVersion.id;
+                savePromise = updateFormVersion(dispatch, data);
             }
             try {
                 await savePromise;
                 closeDialog();
-                setFormState(emptyVersion);
+                setFormState(emptyVersion(formVersion.id));
                 onConfirmed();
                 dispatch(enqueueSnackbar(succesfullSnackBar()));
             } catch (error) {
@@ -219,7 +219,7 @@ const FormVersionsDialogComponent = ({
 };
 
 FormVersionsDialogComponent.defaultProps = {
-    formVersion: emptyVersion,
+    formVersion: emptyVersion(),
 };
 
 FormVersionsDialogComponent.propTypes = {

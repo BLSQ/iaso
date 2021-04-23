@@ -19,6 +19,15 @@ export const formVersionsTableColumns = (
     periodType,
 ) => [
     {
+        Header: formatMessage(MESSAGES.version),
+        accessor: 'version_id',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={settings.original.version_id || textPlaceholder}
+            />
+        ),
+    },
+    {
         Header: formatMessage(MESSAGES.startPeriod),
         accessor: 'start_period',
         Cell: settings => (
@@ -33,15 +42,6 @@ export const formVersionsTableColumns = (
         Cell: settings => (
             <ColumnTextComponent
                 text={settings.original.end_period || textPlaceholder}
-            />
-        ),
-    },
-    {
-        Header: formatMessage(MESSAGES.version),
-        accessor: 'version_id',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.version_id || textPlaceholder}
             />
         ),
     },

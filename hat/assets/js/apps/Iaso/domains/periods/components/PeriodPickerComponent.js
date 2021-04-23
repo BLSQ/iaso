@@ -28,7 +28,6 @@ const useStyles = makeStyles(theme => ({
     title: {
         fontSize: 17,
         marginBottom: theme.spacing(1),
-        color: 'rgba(0, 0, 0, 0.7)',
     },
 }));
 
@@ -85,7 +84,11 @@ const PeriodPicker = ({
             )}
             {periodType !== PERIOD_TYPE_DAY && (
                 <>
-                    <Typography variant="h6" className={classes.title}>
+                    <Typography
+                        variant="h6"
+                        color="primary"
+                        className={classes.title}
+                    >
                         {title}
                     </Typography>
                     <Grid container spacing={2}>

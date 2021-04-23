@@ -60,7 +60,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
     form_id = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
     form_name = serializers.SerializerMethodField()
-    xls_file = serializers.FileField(required=True, allow_empty_file=False)  # field is not required in model
+    xls_file = serializers.FileField(required=False, allow_empty_file=False)  # field is not required in model
     mapped = serializers.BooleanField(read_only=True)
     full_name = serializers.CharField(read_only=True)
     created_at = TimestampField(read_only=True)
@@ -83,8 +83,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
 
     def validate(self, data: typing.MutableMapping):
+        if self.context["request"].method == "PUT":
+            return data
         form = data["form"]
-
         # validate form (access check)
         permission_checker = HasFormPermission()
         if not permission_checker.has_object_permission(self.context["request"], self.context["view"], form):
@@ -118,6 +119,11 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
         return FormVersion.objects.create_for_form_and_survey(form=form, survey=survey, **validated_data)
 
+    def update(self, form_version, validated_data):
+        form_version.start_period = validated_data.pop("start_period", None)
+        form_version.end_period = validated_data.pop("end_period", None)
+        form_version.save()
+        return form_version
 
 class FormVersionsViewSet(ModelViewSet):
     """ Form versions API
@@ -133,8 +139,8 @@ class FormVersionsViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
-    parser_classes = (parsers.MultiPartParser,)
-    http_method_names = ["get", "post", "head", "options", "trace"]
+    parser_classes = (parsers.MultiPartParser, parsers.JSONParser)
+    http_method_names = ["get", "put", "post", "head", "options", "trace"]
 
     def get_queryset(self):
         orders = self.request.query_params.get("order", "full_name").split(",")

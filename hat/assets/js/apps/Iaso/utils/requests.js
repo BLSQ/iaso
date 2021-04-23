@@ -482,11 +482,25 @@ export const createFormVersion = (dispatch, formVersionData) => {
 
     return postRequest('/api/formversions/', data, fileData).catch(error => {
         dispatch(
-            enqueueSnackbar(errorSnackBar('createFormError', null, error)),
+            enqueueSnackbar(
+                errorSnackBar('createFormVersionError', null, error),
+            ),
         );
         throw error;
     });
 };
+
+export const updateFormVersion = (dispatch, formVersion) =>
+    putRequest(`/api/formversions/${formVersion.id}/`, formVersion).catch(
+        error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('updateFormVersionError', null, error),
+                ),
+            );
+            throw error;
+        },
+    );
 
 export const fetchFormVersions = (dispatch, formId) => {
     const data = { form_id: formId };

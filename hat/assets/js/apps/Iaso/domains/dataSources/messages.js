@@ -65,6 +65,38 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.defaultVersion',
         defaultMessage: 'Default version',
     },
+    dhisUrl: {
+        id: 'iaso.dataSources.dhisUrl',
+        defaultMessage: 'DHIS url',
+    },
+    dhisLogin: {
+        id: 'iaso.dataSources.dhisLogin',
+        defaultMessage: 'DHIS login',
+    },
+    dhisPassword: {
+        id: 'iaso.dataSources.dhisPassword',
+        defaultMessage: 'DHIS password',
+    },
+    dataSourceVersion: {
+        id: 'iaso.dataSources.dataSourceVersion',
+        defaultMessage: 'Source version',
+    },
+    continueOnError: {
+        id: 'iaso.dataSources.continueOnError',
+        defaultMessage: 'Continue on error',
+    },
+    validateStatus: {
+        id: 'iaso.dataSources.validateStatus',
+        defaultMessage: 'Validate status',
+    },
+    makeDefaultSource: {
+        id: 'iaso.dataSources.makeDefaultSource',
+        defaultMessage: 'Make default data source',
+    },
+    goToCurrentTask: {
+        id: 'iaso.dataSources.goToCurrentTask',
+        defaultMessage: 'Go to current task when done',
+    },
 });
 
 export default MESSAGES;

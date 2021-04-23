@@ -5,7 +5,7 @@ import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
-import { AddDataSourceVersion } from './components/AddDataSourceVersion';
+import { AddDataSourceVersion } from './components/AddDataSourceVersion/AddDataSourceVersion';
 
 const dataSourcesTableColumns = (
     formatMessage,
@@ -61,10 +61,11 @@ const dataSourcesTableColumns = (
         resizable: false,
         sortable: false,
         Cell: settings => {
-            // console.log('settings',settings);
-            const latestVersion = settings.original.versions.sort(
+            const sortedVersions = settings.original.versions.sort(
                 (v1, v2) => v2.number - v1.number,
-            )[0]?.number??0;
+            );
+            const latestVersion =
+                sortedVersions.length > 0 ? sortedVersions[0].number : 0;
             return (
                 <section>
                     <DataSourceDialogComponent
@@ -97,7 +98,7 @@ const dataSourcesTableColumns = (
                         titleMessage={MESSAGES.add}
                         key={`${settings.original.updated_at} add`}
                         sourceId={settings.original.name}
-                        sourceVersion={latestVersion+1}
+                        sourceVersion={latestVersion + 1}
                     />
                 </section>
             );

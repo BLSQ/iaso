@@ -8,5 +8,6 @@ export CACHE="false"
 export DEV_SERVER="true"
 export RDS_DB_NAME="iaso"
 export USE_S3="false"
+export TEST_PROD="true"
 
 ./manage.py runserver

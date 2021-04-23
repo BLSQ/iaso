@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
-
-import { makeStyles, Grid, Box, Typography } from '@material-ui/core';
+import React, { useState } from 'react';
+import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
 import InputComponent from '../../../components/forms/InputComponent';
+import DatePickerComponent from './DatePickerComponent';
 
 import { getYears, getIntegerArray } from '../../../utils';
+import { getPeriodPickerString } from '../utils';
 import commonStyles from '../../../styles/common';
 import { Period } from '../models';
 import { useSafeIntl } from '../../../hooks/intl';
 import {
+    PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_SIX_MONTH,
@@ -41,41 +43,26 @@ const PeriodPicker = ({
     const theme = useTheme();
     const intl = useSafeIntl();
     const [currentPeriod, setCurrentPeriod] = useState(
-        new Period(activePeriodString),
+        activePeriodString && Period.getPeriodType(activePeriodString)
+            ? Period.parse(activePeriodString)[1]
+            : null,
     );
 
     const handleChange = (keyName, value) => {
-        let newPeriodString;
-        if (keyName === 'year') {
-            newPeriodString = `${value}${Period.padMonth(currentPeriod.month)}`;
-        }
-        if (keyName === 'month') {
-            newPeriodString = `${currentPeriod.year}${Period.padMonth(value)}`;
-        }
-        if (keyName === 'quarter') {
-            newPeriodString = `${currentPeriod.year}${QUARTERS[value]}`;
-        }
-        if (keyName === 'semester') {
-            newPeriodString = `${currentPeriod.year}${SEMESTERS[value]}`;
-        }
-        if (newPeriodString) {
-            onChange(newPeriodString);
-        }
+        const newPeriod = {
+            ...currentPeriod,
+            [keyName]: value,
+        };
+        setCurrentPeriod(newPeriod);
+        onChange(getPeriodPickerString(periodType, newPeriod, value));
     };
 
-    useEffect(() => {
-        if (activePeriodString) {
-            setCurrentPeriod(new Period(activePeriodString));
-        }
-    }, [activePeriodString]);
-
-    if (!currentPeriod) return null;
     return (
         <Box
             mt={2}
-            p={1}
-            mb={2}
-            border={1}
+            p={periodType === PERIOD_TYPE_DAY ? 0 : 1}
+            mb={3}
+            border={periodType === PERIOD_TYPE_DAY ? 0 : 1}
             borderRadius={5}
             borderColor={
                 hasError
@@ -83,87 +70,118 @@ const PeriodPicker = ({
                     : theme.palette.ligthGray.border
             }
         >
-            <Typography variant="h6" className={classes.title}>
-                {title}
-            </Typography>
-            <Grid container spacing={2}>
-                <Grid item sm={periodType === PERIOD_TYPE_YEAR ? 12 : 6}>
-                    <InputComponent
-                        keyValue="year"
-                        onChange={handleChange}
-                        clearable={false}
-                        value={currentPeriod.year}
-                        type="select"
-                        options={getYears(20, 10).map(y => ({
-                            label: y,
-                            value: y,
-                        }))}
-                        label={MESSAGES.year}
-                    />
-                </Grid>
-                {periodType !== PERIOD_TYPE_YEAR && (
-                    <Grid item sm={6}>
-                        {periodType === PERIOD_TYPE_MONTH && (
+            {periodType === PERIOD_TYPE_DAY && (
+                <DatePickerComponent
+                    placeholder={title}
+                    currentDate={activePeriodString}
+                    hasError={hasError}
+                    onChange={date =>
+                        handleChange(
+                            'day',
+                            date ? date.format('YYYYMMDD') : null,
+                        )
+                    }
+                />
+            )}
+            {periodType !== PERIOD_TYPE_DAY && (
+                <>
+                    <Typography variant="h6" className={classes.title}>
+                        {title}
+                    </Typography>
+                    <Grid container spacing={2}>
+                        <Grid
+                            item
+                            sm={periodType === PERIOD_TYPE_YEAR ? 12 : 6}
+                        >
                             <InputComponent
-                                keyValue="month"
+                                keyValue="year"
                                 onChange={handleChange}
-                                clearable={false}
-                                value={currentPeriod.month}
+                                clearable
+                                value={currentPeriod && currentPeriod.year}
                                 type="select"
-                                options={getIntegerArray(12).map(m => ({
-                                    label: intl.formatMessage(MONTHS[m]),
-                                    value: m,
+                                options={getYears(15, 10, true).map(y => ({
+                                    label: y,
+                                    value: y,
                                 }))}
-                                label={MESSAGES.month}
+                                label={MESSAGES.year}
                             />
-                        )}
-                        {periodType === PERIOD_TYPE_QUARTER && (
-                            <InputComponent
-                                keyValue="quarter"
-                                onChange={handleChange}
-                                clearable={false}
-                                value={currentPeriod.quarter}
-                                type="select"
-                                options={getIntegerArray(4).map(q => ({
-                                    label: QUARTERS[q],
-                                    value: q,
-                                }))}
-                                label={MESSAGES.quarter}
-                            />
-                        )}
+                        </Grid>
+                        {periodType !== PERIOD_TYPE_YEAR && (
+                            <Grid item sm={6}>
+                                {periodType === PERIOD_TYPE_MONTH && (
+                                    <InputComponent
+                                        keyValue="month"
+                                        onChange={handleChange}
+                                        clearable
+                                        value={
+                                            currentPeriod && currentPeriod.month
+                                        }
+                                        type="select"
+                                        options={getIntegerArray(12).map(m => ({
+                                            label: intl.formatMessage(
+                                                MONTHS[m],
+                                            ),
+                                            value: m,
+                                        }))}
+                                        label={MESSAGES.month}
+                                    />
+                                )}
+                                {periodType === PERIOD_TYPE_QUARTER && (
+                                    <InputComponent
+                                        keyValue="quarter"
+                                        onChange={handleChange}
+                                        clearable
+                                        value={
+                                            currentPeriod &&
+                                            currentPeriod.quarter
+                                        }
+                                        type="select"
+                                        options={getIntegerArray(4).map(q => ({
+                                            label: QUARTERS[q],
+                                            value: q,
+                                        }))}
+                                        label={MESSAGES.quarter}
+                                    />
+                                )}
 
-                        {periodType === PERIOD_TYPE_SIX_MONTH && (
-                            <InputComponent
-                                keyValue="semester"
-                                onChange={handleChange}
-                                clearable={false}
-                                value={currentPeriod.semester}
-                                type="select"
-                                options={getIntegerArray(2).map(s => ({
-                                    label: SEMESTERS[s],
-                                    value: s,
-                                }))}
-                                label={MESSAGES.six_month}
-                            />
+                                {periodType === PERIOD_TYPE_SIX_MONTH && (
+                                    <InputComponent
+                                        keyValue="semester"
+                                        onChange={handleChange}
+                                        clearable
+                                        value={
+                                            currentPeriod &&
+                                            currentPeriod.semester
+                                        }
+                                        type="select"
+                                        options={getIntegerArray(2).map(s => ({
+                                            label: SEMESTERS[s],
+                                            value: s,
+                                        }))}
+                                        label={MESSAGES.six_month}
+                                    />
+                                )}
+                            </Grid>
                         )}
                     </Grid>
-                )}
-            </Grid>
+                </>
+            )}
         </Box>
     );
 };
+
 PeriodPicker.defaultProps = {
-    periodType: PERIOD_TYPE_MONTH,
+    activePeriodString: undefined,
 };
 
 PeriodPicker.propTypes = {
-    periodType: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+    periodType: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
     activePeriodString: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.object,
-    ]).isRequired,
+    ]),
     hasError: PropTypes.bool.isRequired,
 };
 

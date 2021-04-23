@@ -1,5 +1,6 @@
 import _ from 'lodash/fp';
 import {
+    PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_SIX_MONTH,
@@ -16,12 +17,19 @@ export class Period {
         this.quarter = periodParts.quarter;
         this.semester = periodParts.semester;
         this.year = periodParts.year;
+        this.day = periodParts.day;
         this.periodString = periodString;
     }
 
     asPeriodType(periodType) {
         let periodTypeString;
         switch (periodType) {
+            case PERIOD_TYPE_DAY:
+                periodTypeString = `${this.year}${String(this.month).padStart(
+                    2,
+                    '0',
+                )}${String(this.day).padStart(2, '0')}`;
+                break;
             case PERIOD_TYPE_MONTH:
                 periodTypeString = `${this.year}${String(this.month).padStart(
                     2,
@@ -59,6 +67,10 @@ export class Period {
 
     toCode() {
         switch (this.periodType) {
+            case PERIOD_TYPE_DAY:
+                return `${String(this.day).padStart(2, '0')}/${String(
+                    this.month,
+                ).padStart(2, '0')}/${this.year}`;
             case PERIOD_TYPE_MONTH:
                 return `${String(this.month).padStart(2, '0')}/${this.year}`;
             case PERIOD_TYPE_QUARTER:
@@ -86,11 +98,34 @@ export class Period {
         if (periodString.length === 6) {
             return [PERIOD_TYPE_MONTH, Period.parseMonthString(periodString)];
         }
+        if (periodString.length === 8) {
+            return [PERIOD_TYPE_DAY, Period.parseDayString(periodString)];
+        }
         if (periodString.length === 4) {
             return [PERIOD_TYPE_YEAR, Period.parseYearString(periodString)];
         }
 
         throw new Error(`Invalid period string ${periodString}`);
+    }
+
+    static getPeriodType(periodString) {
+        if (periodString.includes('Q') && periodString.length === 6) {
+            return PERIOD_TYPE_QUARTER;
+        }
+        if (periodString.includes('S') && periodString.length === 6) {
+            return PERIOD_TYPE_SIX_MONTH;
+        }
+        if (periodString.length === 6) {
+            return PERIOD_TYPE_MONTH;
+        }
+        if (periodString.length === 8) {
+            return PERIOD_TYPE_DAY;
+        }
+        if (periodString.length === 4) {
+            return PERIOD_TYPE_YEAR;
+        }
+
+        return null;
     }
 
     static parseQuarterString(quarterString) {
@@ -101,6 +136,7 @@ export class Period {
             quarter,
             semester: Math.ceil(quarter / 2),
             year,
+            day: 1,
         };
     }
 
@@ -112,6 +148,7 @@ export class Period {
             quarter: semester * 2,
             semester,
             year,
+            day: 1,
         };
     }
 
@@ -124,6 +161,21 @@ export class Period {
             quarter: Math.ceil(month / 3),
             semester: Math.ceil(month / 6),
             year,
+            day: 1,
+        };
+    }
+
+    static parseDayString(monthString) {
+        const year = Number(monthString.slice(0, 4));
+        const month = Number(monthString.slice(4, 6));
+        const day = Number(monthString.slice(6, 8));
+
+        return {
+            month,
+            quarter: Math.ceil(month / 3),
+            semester: Math.ceil(month / 6),
+            year,
+            day,
         };
     }
 
@@ -131,10 +183,11 @@ export class Period {
         const year = Number(yearString);
 
         return {
-            month: 12,
-            quarter: 4,
-            semester: 2,
+            month: 1,
+            quarter: 1,
+            semester: 1,
             year,
+            day: 1,
         };
     }
 
@@ -159,6 +212,12 @@ export class Period {
             return true;
         }
         if (p1.year === p2.year) {
+            if (p1.periodType === PERIOD_TYPE_DAY) {
+                return (
+                    p1.month < p2.month ||
+                    (p1.month === p2.month && p1.day < p2.day)
+                );
+            }
             if (p1.periodType === PERIOD_TYPE_MONTH) {
                 return p1.month < p2.month;
             }
@@ -180,6 +239,12 @@ export class Period {
             return true;
         }
         if (p1.year === p2.year) {
+            if (p1.periodType === PERIOD_TYPE_DAY) {
+                return (
+                    p1.month > p2.month ||
+                    (p1.month === p2.month && p1.day > p2.day)
+                );
+            }
             if (p1.periodType === PERIOD_TYPE_MONTH) {
                 return p1.month > p2.month;
             }

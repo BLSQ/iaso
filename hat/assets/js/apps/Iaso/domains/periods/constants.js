@@ -1,5 +1,6 @@
 import MESSAGES from './messages';
 
+export const PERIOD_TYPE_DAY = 'DAY';
 export const PERIOD_TYPE_YEAR = 'YEAR';
 export const PERIOD_TYPE_SIX_MONTH = 'SIX_MONTH';
 export const PERIOD_TYPE_QUARTER = 'QUARTER';

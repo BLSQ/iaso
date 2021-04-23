@@ -65,6 +65,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'December',
         id: 'iaso.label.months.december',
     },
+    clear: {
+        id: 'iaso.label.clear',
+        defaultMessage: 'Clear',
+    },
+    chronologicalPeriodError: {
+        id: 'iaso.formversions.chronologicalPeriodError',
+        defaultMessage: 'Start period should be before end period',
+    },
+    invalidPeriodError: {
+        id: 'iaso.formversions.periodError',
+        defaultMessage: 'Period not valid',
+    },
 });
 
 export default MESSAGES;

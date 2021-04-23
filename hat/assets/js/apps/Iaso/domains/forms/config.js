@@ -15,7 +15,8 @@ import MESSAGES from './messages';
 export const formVersionsTableColumns = (
     formatMessage,
     setForceRefresh,
-    currentForm,
+    formId,
+    periodType,
 ) => [
     {
         Header: formatMessage(MESSAGES.startPeriod),
@@ -69,8 +70,14 @@ export const formVersionsTableColumns = (
                     )}
                     onConfirmed={() => setForceRefresh(true)}
                     formVersion={settings.original}
-                    currentForm={currentForm}
-                    titleMessage={MESSAGES.updateFormVersion}
+                    periodType={periodType}
+                    formId={formId}
+                    titleMessage={{
+                        ...MESSAGES.updateFormVersion,
+                        values: {
+                            version_id: settings.original.version_id,
+                        },
+                    }}
                     key={settings.original.updated_at}
                 />
             </section>

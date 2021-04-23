@@ -71,7 +71,7 @@ const MESSAGES = defineMessages({
     },
     updateFormVersion: {
         id: 'iaso.formversions.update',
-        defaultMessage: 'Update version',
+        defaultMessage: 'Update version {version_id}',
     },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
@@ -420,10 +420,6 @@ const MESSAGES = defineMessages({
     endPeriod: {
         id: 'iaso.label.endPeriod',
         defaultMessage: 'end period',
-    },
-    formVersionPeriodError: {
-        id: 'iaso.formversions.periodError',
-        defaultMessage: 'Start period should be before end period',
     },
 });
 

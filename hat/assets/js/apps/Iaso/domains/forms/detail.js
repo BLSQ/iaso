@@ -45,7 +45,7 @@ const defaultForm = {
     depth: null,
     org_unit_type_ids: [],
     project_ids: [],
-    period_type: undefined,
+    period_type: null,
     derived: false,
     single_per_period: false,
     periods_before_allowed: 0,
@@ -205,8 +205,7 @@ const FormDetail = ({ router, params }) => {
                     </Button>
                 </Box>
                 <FormVersions
-                    formId={params.formId}
-                    currentForm={currentForm}
+                    periodType={currentForm.period_type.value || undefined}
                     forceRefresh={forceRefreshVersions}
                     setForceRefresh={setForceRefreshVersions}
                 />

@@ -571,6 +571,7 @@ export const updateDataSource = (dispatch, dataSourceId, dataSource) =>
         throw error;
     });
 
+// eslint-disable-next-line camelcase
 export const updateDefaultSource = (dispatch, accountId, default_version) =>
     putRequest(`/api/accounts/${accountId}/`, {
         default_version,
@@ -592,5 +593,21 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
                 enqueueSnackbar(errorSnackBar(errorKeyMessage, null, error)),
             );
             console.error(`Error while fetching ${consoleError} list:`, error);
+            throw error;
+        });
+
+export const postRequestHandler = params =>
+    postRequest(params.url, params.body)
+        .then(data => data)
+        .catch(error => {
+            params.dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(params.errorKeyMessage, null, error),
+                ),
+            );
+            console.error(
+                `Error while posting ${params.consoleError} :`,
+                error,
+            );
             throw error;
         });

@@ -97,7 +97,7 @@ const dataSourcesTableColumns = (
                         defaultSourceVersion={defaultSourceVersion}
                         titleMessage={MESSAGES.add}
                         key={`${settings.original.updated_at} add`}
-                        sourceId={settings.original.name}
+                        sourceId={settings.original.id}
                         sourceVersion={latestVersion + 1}
                     />
                 </section>

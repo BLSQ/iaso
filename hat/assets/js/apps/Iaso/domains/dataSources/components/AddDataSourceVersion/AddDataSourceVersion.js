@@ -1,16 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import MESSAGES from '../../messages';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { UneditableFields } from './UneditableFields';
 import { EditableTextFields } from './EditableTextFields';
 import { Checkboxes } from './Checkboxes';
+import { postRequestHandler } from '../../../../utils/requests';
+
+const sendRequest = (requestBody, dispatch) => {
+    if (requestBody)
+        postRequestHandler({
+            url: '/api/dhis2ouimporter/',
+            body: requestBody,
+            errorKeyMessage: 'dhisouimporterError',
+            consoleError: 'DHIS OU Importer',
+            dispatch,
+        });
+};
 
 const AddDataSourceVersion = ({
     renderTrigger,
     titleMessage,
     sourceId,
     sourceVersion,
+    dispatch,
 }) => {
     const [dhisUrl, setDhisUrl] = useState(null);
     const [dhisLogin, setDhisLogin] = useState(null);
@@ -20,8 +34,29 @@ const AddDataSourceVersion = ({
     const [makeDefault, setMakeDefault] = useState(false);
     const [goToPageWhenDone, setGoToPageWhenDone] = useState(false);
     const [allowConfirm, setAllowConfirm] = useState(false);
+    const [requestBody, setRequestBody] = useState();
 
-    const onConfirm = () => {};
+    // TODO prevent multiple saves
+    const onConfirm = useCallback(() => {
+        setRequestBody({
+            source_id: sourceId,
+            source_version_number: sourceVersion,
+            dhis2_url: dhisUrl,
+            dhis2_login: dhisLogin,
+            dhis2_password: dhisPassword,
+            force: false,
+            validate_status: validateStatus,
+            continue_on_error: continueOnError,
+        });
+    }, [
+        sourceId,
+        sourceVersion,
+        dhisUrl,
+        dhisLogin,
+        dhisPassword,
+        validateStatus,
+        continueOnError,
+    ]);
 
     useEffect(() => {
         if (dhisUrl && dhisLogin && dhisPassword) {
@@ -30,6 +65,13 @@ const AddDataSourceVersion = ({
             setAllowConfirm(false);
         }
     }, [dhisUrl, dhisLogin, dhisPassword]);
+
+    // TODO: update after save
+    useEffect(() => sendRequest(requestBody, dispatch), [
+        requestBody,
+        dispatch,
+        sendRequest,
+    ]);
 
     return (
         <ConfirmCancelDialogComponent
@@ -114,7 +156,18 @@ const AddDataSourceVersion = ({
 AddDataSourceVersion.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     titleMessage: PropTypes.object.isRequired,
-    sourceId: PropTypes.string.isRequired,
+    sourceId: PropTypes.number.isRequired,
     sourceVersion: PropTypes.number.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
-export { AddDataSourceVersion };
+
+const mapStateToProps = state => {
+    return {};
+};
+const mapDispatchToProps = dispatch => ({ dispatch });
+const addDataSourceVersion = connect(
+    mapStateToProps,
+    mapDispatchToProps,
+)(AddDataSourceVersion);
+
+export { addDataSourceVersion as AddDataSourceVersion };

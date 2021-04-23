@@ -1,22 +1,77 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import MESSAGES from '../../messages';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { UneditableFields } from './UneditableFields';
 import { EditableTextFields } from './EditableTextFields';
 import { Checkboxes } from './Checkboxes';
-import { postRequestHandler } from '../../../../utils/requests';
-
+import {
+    postRequestHandler,
+    putRequestHandler,
+} from '../../../../utils/requests';
+// TODO discuss way to remove dispatch prop drilling
 const sendRequest = (requestBody, dispatch) => {
     if (requestBody)
-        postRequestHandler({
+        return postRequestHandler({
             url: '/api/dhis2ouimporter/',
             body: requestBody,
             errorKeyMessage: 'dhisouimporterError',
             consoleError: 'DHIS OU Importer',
             dispatch,
         });
+    return null;
+};
+
+const useSendRequest = (requestBody, dispatch) => {
+    const [result, setResult] = useState(null);
+    useEffect(() => {
+        const executeRequest = async () => {
+            const response = await sendRequest(requestBody, dispatch);
+            if (response) setResult(response);
+        };
+        // TODO add error handling
+        executeRequest();
+    }, [requestBody]);
+    return result;
+};
+
+const updateDefault = (accountId, requestBody, dispatch) => {
+    if (requestBody) {
+        return putRequestHandler({
+            url: `/api/accounts/${accountId}/`,
+            body: requestBody,
+            errorKeyMessage: 'updateDefaultSourceError',
+            consoleError: 'Update Default Source Data',
+            dispatch,
+        });
+    }
+    return null;
+};
+
+const useUpdateDefaultDataSource = (parameters, triggers) => {
+    const [result, setResult] = useState(null);
+    useEffect(() => {
+        let shouldTrigger = true;
+        triggers.forEach(trigger => {
+            if (!trigger) shouldTrigger = false;
+        });
+        const executeDefaultUpdate = async () => {
+            if (shouldTrigger) {
+                // TODO find correct value for new default version id
+                const body = { default_version: parameters.sourceVersion };
+                const updatedDefault = await updateDefault(
+                    parameters.accountId,
+                    body,
+                    parameters.dispatch,
+                );
+                setResult(updatedDefault);
+                // TODO add error handling
+            }
+        };
+        executeDefaultUpdate();
+    }, [...triggers]);
+    return result;
 };
 
 const AddDataSourceVersion = ({
@@ -25,6 +80,7 @@ const AddDataSourceVersion = ({
     sourceId,
     sourceVersion,
     dispatch,
+    // defaultSourceVersion,
 }) => {
     const [dhisUrl, setDhisUrl] = useState(null);
     const [dhisLogin, setDhisLogin] = useState(null);
@@ -35,28 +91,40 @@ const AddDataSourceVersion = ({
     const [goToPageWhenDone, setGoToPageWhenDone] = useState(false);
     const [allowConfirm, setAllowConfirm] = useState(false);
     const [requestBody, setRequestBody] = useState();
+    const [closeDialogCallback, setCloseDialogCallback] = useState(null);
+    const accountId = useSelector(state => state.users.current.account.id);
+    // TODO add reset function for custom hooks values
+    const dhisOu = useSendRequest(requestBody);
+    const updatedDefaultDataSource = useUpdateDefaultDataSource(
+        { accountId, sourceVersion, dispatch },
+        [dhisOu, makeDefault],
+    );
 
-    // TODO prevent multiple saves
-    const onConfirm = useCallback(() => {
-        setRequestBody({
-            source_id: sourceId,
-            source_version_number: sourceVersion,
-            dhis2_url: dhisUrl,
-            dhis2_login: dhisLogin,
-            dhis2_password: dhisPassword,
-            force: false,
-            validate_status: validateStatus,
-            continue_on_error: continueOnError,
-        });
-    }, [
-        sourceId,
-        sourceVersion,
-        dhisUrl,
-        dhisLogin,
-        dhisPassword,
-        validateStatus,
-        continueOnError,
-    ]);
+    const onConfirm = useCallback(
+        closeDialog => {
+            setAllowConfirm(false);
+            setCloseDialogCallback(() => closeDialog);
+            setRequestBody({
+                source_id: sourceId,
+                source_version_number: sourceVersion,
+                dhis2_url: dhisUrl,
+                dhis2_login: dhisLogin,
+                dhis2_password: dhisPassword,
+                force: false,
+                validate_status: validateStatus,
+                continue_on_error: continueOnError,
+            });
+        },
+        [
+            sourceId,
+            sourceVersion,
+            dhisUrl,
+            dhisLogin,
+            dhisPassword,
+            validateStatus,
+            continueOnError,
+        ],
+    );
 
     useEffect(() => {
         if (dhisUrl && dhisLogin && dhisPassword) {
@@ -66,12 +134,14 @@ const AddDataSourceVersion = ({
         }
     }, [dhisUrl, dhisLogin, dhisPassword]);
 
-    // TODO: update after save
-    useEffect(() => sendRequest(requestBody, dispatch), [
-        requestBody,
-        dispatch,
-        sendRequest,
-    ]);
+    useEffect(() => {
+        if (
+            (dhisOu && !makeDefault) ||
+            (makeDefault && updatedDefaultDataSource)
+        )
+            // TODO reset dhisOu and updatedDefaultDataSource values
+            closeDialogCallback();
+    }, [closeDialogCallback, dhisOu, updatedDefaultDataSource]);
 
     return (
         <ConfirmCancelDialogComponent
@@ -161,10 +231,12 @@ AddDataSourceVersion.propTypes = {
     dispatch: PropTypes.func.isRequired,
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = _ => {
     return {};
 };
+
 const mapDispatchToProps = dispatch => ({ dispatch });
+
 const addDataSourceVersion = connect(
     mapStateToProps,
     mapDispatchToProps,

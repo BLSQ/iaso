@@ -611,3 +611,12 @@ export const postRequestHandler = params =>
             );
             throw error;
         });
+
+export const putRequestHandler = params =>
+    putRequest(params.url, params.body).catch(error => {
+        params.dispatch(
+            enqueueSnackbar(errorSnackBar(params.errorKeyMessage, null, error)),
+        );
+        console.error(`Error while putting ${params.consoleError} :`, error);
+        throw error;
+    });

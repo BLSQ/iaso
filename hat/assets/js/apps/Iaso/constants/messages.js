@@ -17,6 +17,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Completeness',
         id: 'iaso.completeness.title',
     },
+    archived: {
+        defaultMessage: 'Archived',
+        id: 'iaso.archived.title',
+    },
     orgUnitsTitle: {
         defaultMessage: 'Org units',
         id: 'iaso.orgUnits.title',

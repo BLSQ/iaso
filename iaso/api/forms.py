@@ -5,6 +5,7 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import serializers, permissions
 from rest_framework.request import Request
+
 from iaso.models import Form, Project, OrgUnitType
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField
@@ -42,6 +43,7 @@ class FormSerializer(serializers.ModelSerializer):
             "instance_updated_at",
             "created_at",
             "updated_at",
+            "deleted_at",
             "derived",
             "label_keys"
         ]
@@ -69,6 +71,7 @@ class FormSerializer(serializers.ModelSerializer):
     instance_updated_at = TimestampField(read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+    deleted_at = TimestampField(allow_null=True, required=False)
 
     @staticmethod
     def get_latest_form_version(obj: Form):
@@ -80,17 +83,18 @@ class FormSerializer(serializers.ModelSerializer):
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)
-        for project in data["projects"]:
-            if self.context["request"].user.iaso_profile.account != project.account:
-                raise serializers.ValidationError({"project_ids": "Invalid project ids"})
+        if "projects" in data:
+            for project in data["projects"]:
+                if self.context["request"].user.iaso_profile.account != project.account:
+                    raise serializers.ValidationError({"project_ids": "Invalid project ids"})
 
-        # validate org_unit_types against projects
-        allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
-        if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
-            raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
+            # validate org_unit_types against projects
+            allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
+            if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
+                raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
 
         # If the period type is None, some period-specific fields must have specific values
-        if data["period_type"] is None:
+        if "period_type" in data and data["period_type"] is None:
             tracker_errors = {}
             if data["single_per_period"] is not False:
                 tracker_errors["single_per_period"] = "Should be false"
@@ -102,7 +106,6 @@ class FormSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(tracker_errors)
 
         return data
-
 
 class FormsViewSet(ModelViewSet):
     """ Forms API
@@ -134,7 +137,12 @@ class FormsViewSet(ModelViewSet):
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
 
     def get_queryset(self):
-        queryset = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+
+        form_objects = Form.objects
+        if self.request.query_params.get("only_deleted", None):
+            form_objects = Form.objects_only_deleted
+
+        queryset = form_objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
         org_unit_id = self.request.query_params.get("orgUnitId", None)
         if org_unit_id:
             queryset = queryset.filter(instances__org_unit__id=org_unit_id)

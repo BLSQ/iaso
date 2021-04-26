@@ -74,7 +74,7 @@ const SingleTable = ({
     );
 
     const handleFetch = () => {
-        if (results && results.list && firstLoad) {
+        if (results && results.list && firstLoad && !forceRefresh) {
             setTableResults(results);
         } else {
             const url = getTableUrl(endPointPath, tableParams);
@@ -111,6 +111,7 @@ const SingleTable = ({
         params[getParamsKey(paramsPrefix, 'pageSize')],
         params[getParamsKey(paramsPrefix, 'page')],
         params[getParamsKey(paramsPrefix, 'order')],
+        params[getParamsKey(paramsPrefix, 'only_deleted')],
     ]);
 
     useEffect(() => {

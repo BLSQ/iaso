@@ -21,9 +21,9 @@ let xlsButton;
 
 describe('Forms config', () => {
     describe('formVersionsTableColumns', () => {
-        it('sould return an array of 2 columns', () => {
+        it('sould return an array of 4 columns', () => {
             formVersionscolumns = formVersionsTableColumns(() => null);
-            expect(formVersionscolumns).to.have.lengthOf(2);
+            expect(formVersionscolumns).to.have.lengthOf(4);
         });
         it('should render a component if Cell is defined', () => {
             formVersionscolumns.forEach(c => {
@@ -144,7 +144,7 @@ describe('Forms config', () => {
                 );
                 const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
                 expect(redEyeIcon.prop('url')).to.equal(
-                    'instances/formId/14/levels/1',
+                    'instances/formId/69/levels/1',
                 );
                 expect(redEyeIcon).to.have.lengthOf(1);
             });

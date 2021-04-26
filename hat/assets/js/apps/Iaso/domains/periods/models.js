@@ -1,4 +1,5 @@
 import _ from 'lodash/fp';
+
 import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
@@ -54,6 +55,8 @@ export class Period {
 
     get monthRange() {
         switch (this.periodType) {
+            case PERIOD_TYPE_DAY:
+                throw new Error(`Invalid period type ${this.periodType}`);
             case PERIOD_TYPE_MONTH:
                 return [this.month];
             case PERIOD_TYPE_QUARTER:
@@ -183,11 +186,11 @@ export class Period {
         const year = Number(yearString);
 
         return {
-            month: 1,
-            quarter: 1,
-            semester: 1,
+            month: 12,
+            quarter: 4,
+            semester: 2,
             year,
-            day: 1,
+            day: 31,
         };
     }
 
@@ -261,7 +264,7 @@ export class Period {
 
     // more period functions -----------------
 
-    static nextYearMonth(period) {
+    nextYearMonth(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let month = parseInt(period.slice(4, 6), 0);
         if (month === 12) {
@@ -270,10 +273,10 @@ export class Period {
         } else {
             month += 1;
         }
-        return `${year}${this.padMonth(month)}`;
+        return `${year}${Period.padMonth(month)}`;
     }
 
-    static previousYearMonth(period) {
+    previousYearMonth(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let month = parseInt(period.slice(4, 6), 0);
         if (month === 1) {
@@ -282,30 +285,30 @@ export class Period {
         } else {
             month -= 1;
         }
-        return `${year}${this.padMonth(month)}`;
+        return `${year}${Period.padMonth(month)}`;
     }
 
-    static nextYear(period) {
+    nextYear(period) {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year + 1}`;
     }
 
-    static previousYear(period) {
+    previousYear(period) {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year - 1}`;
     }
 
-    static nextFinancialJuly(period) {
+    nextFinancialJuly(period) {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year + 1}July`;
     }
 
-    static previousFinancialJuly(period) {
+    previousFinancialJuly(period) {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year - 1}July`;
     }
 
-    static nextQuarter(period) {
+    nextQuarter(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let quarter = parseInt(period.slice(5, 6), 0);
         if (quarter === 4) {
@@ -317,7 +320,7 @@ export class Period {
         return `${year}Q${quarter}`;
     }
 
-    static nextSixMonth(period) {
+    nextSixMonth(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let sixMonth = parseInt(period.slice(5, 6), 0);
         if (sixMonth === 2) {
@@ -329,7 +332,7 @@ export class Period {
         return `${year}S${sixMonth}`;
     }
 
-    static previousQuarter(period) {
+    previousQuarter(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let quarter = parseInt(period.slice(5, 6), 0);
         if (quarter === 1) {
@@ -341,7 +344,7 @@ export class Period {
         return `${year}Q${quarter}`;
     }
 
-    static previousSixMonth(period) {
+    previousSixMonth(period) {
         let year = parseInt(period.slice(0, 4), 0);
         let sixMonth = parseInt(period.slice(5, 6), 0);
         if (sixMonth === 1) {
@@ -353,7 +356,7 @@ export class Period {
         return `${year}S${sixMonth}`;
     }
 
-    static next(period) {
+    next(period) {
         if (period.includes('Q')) {
             return this.nextQuarter(period);
         }
@@ -373,7 +376,7 @@ export class Period {
         throw new Error(`unsupported period format ${period}`);
     }
 
-    static previous(period) {
+    previous(period) {
         if (period.includes('Q')) {
             return this.previousQuarter(period);
         }
@@ -392,7 +395,7 @@ export class Period {
         throw new Error(`unsupported period format ${period}`);
     }
 
-    static previousPeriods(numberOfPeriods) {
+    previousPeriods(numberOfPeriods) {
         let previous = '';
         const previousPeriods = [];
         let tempPeriodString = this.periodString;

@@ -1,5 +1,6 @@
 import { Period } from './models';
 import {
+    PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_SIX_MONTH,
@@ -18,6 +19,145 @@ const getMonthRange = m =>
         .map((x, i) => i + 1);
 
 describe('Periods model', () => {
+    it('should raise an error if period is invalid', () => {
+        periodString = 'ZELDA';
+        expect(() => new Period(periodString)).to.throw(
+            `Invalid period string ${periodString}`,
+        );
+    });
+    it('asPeriodType should raise an error if invalid period type', () => {
+        period = new Period('2020');
+        const periodType = 'ZELDA';
+        expect(() => period.asPeriodType(periodType)).to.throw(
+            `Invalid period type ${periodType}`,
+        );
+    });
+    it('previous should raise an error if invalid period format', () => {
+        const tempPeriod = 'ZELDA';
+        expect(() => period.previous(tempPeriod)).to.throw(
+            `unsupported period format ${tempPeriod}`,
+        );
+    });
+    it('next should raise an error if invalid period format', () => {
+        const tempPeriod = 'ZELDA';
+        expect(() => period.next(tempPeriod)).to.throw(
+            `unsupported period format ${tempPeriod}`,
+        );
+    });
+    it('previous should raise an error if invalid period format', () => {
+        const tempPeriod = 'ZELDA';
+        expect(() => period.previous(tempPeriod)).to.throw(
+            `unsupported period format ${tempPeriod}`,
+        );
+    });
+    it('next financial july should return correct financial july', () => {
+        const tempPeriod = '2020July';
+        expect(period.next(tempPeriod)).to.eql('2021July');
+    });
+    it('previous financial july should return correct financial july', () => {
+        const tempPeriod = '2020July';
+        expect(period.previous(tempPeriod)).to.eql('2019July');
+    });
+    it("getPeriodType should return null if period type doesn' t exist", () => {
+        expect(Period.getPeriodType('ZELDA')).to.eql(null);
+    });
+    describe('day string', () => {
+        before(() => {
+            periodString = '20200101';
+            period = new Period(periodString);
+            month = 1;
+            expectedPeriod = {
+                periodType: PERIOD_TYPE_DAY,
+                month,
+                day: 1,
+                quarter: 1,
+                semester: 1,
+                year: 2020,
+                periodString,
+            };
+        });
+        it('should create a daily period object', () => {
+            expect(period).to.eql(expectedPeriod);
+        });
+        it('asPeriodType should create a monthly period object', () => {
+            expect(period.asPeriodType(PERIOD_TYPE_DAY)).to.eql(expectedPeriod);
+        });
+        it('toCode should return correct code', () => {
+            expect(period.toCode()).to.eql('01/01/2020');
+        });
+        it('monthRange should throw an error', () => {
+            expect(() => period.monthRange).to.throw(
+                `Invalid period type ${expectedPeriod.periodType}`,
+            );
+        });
+        it('nextYear should return next year string', () => {
+            expect(period.nextYear(periodString)).to.eql(
+                `${expectedPeriod.year + 1}`,
+            );
+        });
+        it('previousYear should return previous year string', () => {
+            expect(period.previousYear(periodString)).to.eql(
+                `${expectedPeriod.year - 1}`,
+            );
+        });
+        it('nextFinancialJuly should return next year july string', () => {
+            expect(period.nextFinancialJuly(periodString)).to.eql(
+                `${expectedPeriod.year + 1}July`,
+            );
+        });
+        it('previousFinancialJuly should return next year july string', () => {
+            expect(period.previousFinancialJuly(periodString)).to.eql(
+                `${expectedPeriod.year - 1}July`,
+            );
+        });
+        it('nextYearMonth should return next month of the year string', () => {
+            expect(period.nextYearMonth(periodString)).to.eql(
+                `${expectedPeriod.year}0${expectedPeriod.month + 1}`,
+            );
+        });
+        it('nextYearMonth should return next month of next year string', () => {
+            expect(period.nextYearMonth('202012')).to.eql(
+                `${expectedPeriod.year + 1}01`,
+            );
+        });
+        it('previousYearMonth should return next month of previous year string', () => {
+            expect(period.previousYearMonth(periodString)).to.eql(
+                `${expectedPeriod.year - 1}12`,
+            );
+        });
+        it('previousYearMonth should return previous month of the year string', () => {
+            expect(period.previousYearMonth('202012')).to.eql(
+                `${expectedPeriod.year}11`,
+            );
+        });
+
+        it('getPeriodType should correct period type', () => {
+            expect(Period.getPeriodType('20201201')).to.eql(PERIOD_TYPE_DAY);
+        });
+        describe('isBefore', () => {
+            it('should return true', () => {
+                expect(Period.isBefore('20200101', '20200201')).to.eql(true);
+            });
+            it('should return true the same month and diff day', () => {
+                expect(Period.isBefore('20200101', '20200105')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isBefore('20200201', '20200101')).to.eql(false);
+            });
+        });
+        describe('isAfter', () => {
+            it('should return true', () => {
+                expect(Period.isAfter('20200201', '20200101')).to.eql(true);
+            });
+            it('should return true the same month and diff day', () => {
+                expect(Period.isAfter('20200105', '20200101')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isAfter('20200101', '20200201')).to.eql(false);
+            });
+        });
+    });
+
     describe('monthly string', () => {
         before(() => {
             periodString = '202001';
@@ -26,6 +166,7 @@ describe('Periods model', () => {
             expectedPeriod = {
                 periodType: PERIOD_TYPE_MONTH,
                 month,
+                day: 1,
                 quarter: 1,
                 semester: 1,
                 year: 2020,
@@ -100,6 +241,25 @@ describe('Periods model', () => {
         it('previousPeriods should return previous 2 months', () => {
             expect(period.previousPeriods(2)).to.eql(['201911', '201912']);
         });
+        it('getPeriodType should correct period type', () => {
+            expect(Period.getPeriodType('202012')).to.eql(PERIOD_TYPE_MONTH);
+        });
+        describe('isBefore', () => {
+            it('should return true', () => {
+                expect(Period.isBefore('202001', '202002')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isBefore('202002', '202001')).to.eql(false);
+            });
+        });
+        describe('isAfter', () => {
+            it('should return true', () => {
+                expect(Period.isAfter('202002', '202001')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isAfter('202001', '202002')).to.eql(false);
+            });
+        });
     });
 
     describe('quarterly string', () => {
@@ -110,6 +270,7 @@ describe('Periods model', () => {
             expectedPeriod = {
                 periodType: PERIOD_TYPE_QUARTER,
                 month,
+                day: 1,
                 quarter: 1,
                 semester: 1,
                 year: 2020,
@@ -158,6 +319,25 @@ describe('Periods model', () => {
         it('previousPeriods should return previous 2 quarters', () => {
             expect(period.previousPeriods(2)).to.eql(['2019Q3', '2019Q4']);
         });
+        it('getPeriodType should correct period type', () => {
+            expect(Period.getPeriodType('2020Q1')).to.eql(PERIOD_TYPE_QUARTER);
+        });
+        describe('isBefore', () => {
+            it('should return true', () => {
+                expect(Period.isBefore('2020Q1', '2020Q2')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isBefore('2020Q2', '2020Q1')).to.eql(false);
+            });
+        });
+        describe('isAfter', () => {
+            it('should return true', () => {
+                expect(Period.isAfter('2020Q2', '2020Q1')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isAfter('2020Q1', '2020Q2')).to.eql(false);
+            });
+        });
     });
 
     describe('sixmonthly string', () => {
@@ -167,6 +347,7 @@ describe('Periods model', () => {
             period = new Period(periodString);
             expectedPeriod = {
                 periodType: PERIOD_TYPE_SIX_MONTH,
+                day: 1,
                 month,
                 quarter: 2,
                 semester: 1,
@@ -216,6 +397,27 @@ describe('Periods model', () => {
         it('previousPeriods should return previous 2 semesters', () => {
             expect(period.previousPeriods(2)).to.eql(['2019S1', '2019S2']);
         });
+        it('getPeriodType should correct period type', () => {
+            expect(Period.getPeriodType('2020S1')).to.eql(
+                PERIOD_TYPE_SIX_MONTH,
+            );
+        });
+        describe('isBefore', () => {
+            it('should return true', () => {
+                expect(Period.isBefore('2020S1', '2020S2')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isBefore('2020S2', '2020S1')).to.eql(false);
+            });
+        });
+        describe('isAfter', () => {
+            it('should return true', () => {
+                expect(Period.isAfter('2020S2', '2020S1')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isAfter('2020S1', '2020S2')).to.eql(false);
+            });
+        });
     });
 
     describe('yearly string', () => {
@@ -225,6 +427,7 @@ describe('Periods model', () => {
             period = new Period(periodString);
             expectedPeriod = {
                 periodType: PERIOD_TYPE_YEAR,
+                day: 31,
                 month,
                 quarter: 4,
                 semester: 2,
@@ -267,55 +470,41 @@ describe('Periods model', () => {
         it('previousPeriods should return previous 2 years', () => {
             expect(period.previousPeriods(2)).to.eql(['2018', '2019']);
         });
+        it('getPeriodType should correct period type', () => {
+            expect(Period.getPeriodType('2020')).to.eql(PERIOD_TYPE_YEAR);
+        });
+        describe('isBefore', () => {
+            it('should return true', () => {
+                expect(Period.isBefore('2020', '2021')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isBefore('2022', '2021')).to.eql(false);
+            });
+            it('should return false if same year', () => {
+                expect(Period.isBefore('2021', '2021')).to.eql(false);
+            });
+        });
+        describe('isAfter', () => {
+            it('should return true', () => {
+                expect(Period.isAfter('2021', '2020')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isAfter('2020', '2021')).to.eql(false);
+            });
+            it('should return false if same year', () => {
+                expect(Period.isAfter('2021', '2021')).to.eql(false);
+            });
+        });
     });
 
-    it('should raise an error if period is invalid', () => {
-        periodString = 'ZELDA';
-        expect(() => new Period(periodString)).to.throw(
-            `Invalid period string ${periodString}`,
-        );
-    });
-    it('asPeriodType should raise an error if invalid period type', () => {
-        period = new Period('2020');
-        const periodType = 'ZELDA';
-        expect(() => period.asPeriodType(periodType)).to.throw(
-            `Invalid period type ${periodType}`,
-        );
-    });
-    it('previous should raise an error if invalid period format', () => {
-        const tempPeriod = 'ZELDA';
-        expect(() => period.previous(tempPeriod)).to.throw(
-            `unsupported period format ${tempPeriod}`,
-        );
-    });
-    it('next should raise an error if invalid period format', () => {
-        const tempPeriod = 'ZELDA';
-        expect(() => period.next(tempPeriod)).to.throw(
-            `unsupported period format ${tempPeriod}`,
-        );
-    });
-    it('previous should raise an error if invalid period format', () => {
-        const tempPeriod = 'ZELDA';
-        expect(() => period.previous(tempPeriod)).to.throw(
-            `unsupported period format ${tempPeriod}`,
-        );
-    });
-    it('next financial july should return correct financial july', () => {
-        const tempPeriod = '2020July';
-        expect(period.next(tempPeriod)).to.eql('2021July');
-    });
-    it('previous financial july should return correct financial july', () => {
-        const tempPeriod = '2020July';
-        expect(period.previous(tempPeriod)).to.eql('2019July');
-    });
     describe('padMonth', () => {
         it('should return a string starting with 0 if smaller than 9', () => {
             const m = 1;
-            expect(period.padMonth(m)).to.eql(`0${m}`);
+            expect(Period.padMonth(m)).to.eql(`0${m}`);
         });
         it('should return same number if bigger than 9', () => {
             const m = 10;
-            expect(period.padMonth(m)).to.eql(m);
+            expect(Period.padMonth(m)).to.eql(m);
         });
     });
 });

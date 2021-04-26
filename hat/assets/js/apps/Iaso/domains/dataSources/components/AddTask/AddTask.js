@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { connect, useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { Grid } from '@material-ui/core';
+import isEqual from 'lodash/isEqual';
 import MESSAGES from '../../messages';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { UneditableFields } from './UneditableFields';
@@ -8,7 +10,6 @@ import { EditableTextFields } from './EditableTextFields';
 import { Checkboxes } from './Checkboxes';
 import { postRequestHandler } from '../../../../utils/requests';
 
-// TODO discuss way to remove dispatch prop drilling
 const sendRequest = (requestBody, dispatch) => {
     if (requestBody)
         return postRequestHandler({
@@ -35,7 +36,13 @@ const useSendRequest = requestBody => {
     return result;
 };
 
-const AddTask = ({ renderTrigger, titleMessage, sourceId, sourceVersion }) => {
+const AddTask = ({
+    renderTrigger,
+    titleMessage,
+    sourceId,
+    sourceVersion,
+    sourceCredentials,
+}) => {
     const [dhisUrl, setDhisUrl] = useState(null);
     const [dhisLogin, setDhisLogin] = useState(null);
     const [dhisPassword, setDhisPassword] = useState(null);
@@ -45,6 +52,9 @@ const AddTask = ({ renderTrigger, titleMessage, sourceId, sourceVersion }) => {
     const [allowConfirm, setAllowConfirm] = useState(false);
     const [requestBody, setRequestBody] = useState();
     const [closeDialogCallback, setCloseDialogCallback] = useState(null);
+    const [showOptionalFields, setShowOptionalFields] = useState(
+        isEqual(sourceCredentials, {}),
+    );
     // TODO add reset function for custom hooks values
     const dhisOu = useSendRequest(requestBody);
 
@@ -88,6 +98,80 @@ const AddTask = ({ renderTrigger, titleMessage, sourceId, sourceVersion }) => {
             closeDialogCallback();
     }, [closeDialogCallback, dhisOu]);
 
+    const renderDefaultLayout = () => {
+        return (
+            <Checkboxes
+                checkboxes={[
+                    {
+                        keyValue: 'continue_on_error',
+                        label: MESSAGES.continueOnError,
+                        value: continueOnError,
+                        onChange: setContinueOnError,
+                    },
+                    {
+                        keyValue: 'validate_status',
+                        label: MESSAGES.validateStatus,
+                        value: validateStatus,
+                        onChange: setValidateStatus,
+                    },
+                    {
+                        keyValue: 'go_to_current_task',
+                        label: MESSAGES.goToCurrentTask,
+                        value: goToPageWhenDone,
+                        onChange: setGoToPageWhenDone,
+                    },
+                    {
+                        keyValue: 'change_source',
+                        label: MESSAGES.edit,
+                        value: showOptionalFields,
+                        onChange: setShowOptionalFields,
+                    },
+                ]}
+            />
+        );
+    };
+
+    const renderWithOptionalFields = () => {
+        return (
+            <Grid container>
+                <Grid xs={6} item>
+                    {renderDefaultLayout()}
+                </Grid>
+                <Grid xs={6} item>
+                    <EditableTextFields
+                        fields={[
+                            {
+                                keyValue: 'dhis_url',
+                                label: MESSAGES.dhisUrl,
+                                value: dhisUrl,
+                                onChange: (key, value) => {
+                                    setDhisUrl(value);
+                                },
+                            },
+                            {
+                                keyValue: 'dhis_login',
+                                label: MESSAGES.dhisLogin,
+                                value: dhisLogin,
+                                onChange: (key, value) => {
+                                    setDhisLogin(value);
+                                },
+                            },
+                            {
+                                keyValue: 'dhis_password',
+                                label: MESSAGES.dhisPassword,
+                                value: dhisPassword,
+                                onChange: (key, value) => {
+                                    setDhisPassword(value);
+                                },
+                                password: true,
+                            },
+                        ]}
+                    />
+                </Grid>
+            </Grid>
+        );
+    };
+
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
@@ -113,60 +197,23 @@ const AddTask = ({ renderTrigger, titleMessage, sourceId, sourceVersion }) => {
                     },
                 ]}
             />
-            <EditableTextFields
-                fields={[
-                    {
-                        keyValue: 'dhis_url',
-                        label: MESSAGES.dhisUrl,
-                        value: dhisUrl,
-                        onChange: setDhisUrl,
-                    },
-                    {
-                        keyValue: 'dhis_login',
-                        label: MESSAGES.dhisLogin,
-                        value: dhisLogin,
-                        onChange: setDhisLogin,
-                    },
-                    {
-                        keyValue: 'dhis_password',
-                        label: MESSAGES.dhisPassword,
-                        value: dhisPassword,
-                        onChange: setDhisPassword,
-                        password: true,
-                    },
-                ]}
-            />
-            <Checkboxes
-                checkboxes={[
-                    {
-                        keyValue: 'continue_on_error',
-                        label: MESSAGES.continueOnError,
-                        value: continueOnError,
-                        onChange: setContinueOnError,
-                    },
-                    {
-                        keyValue: 'validate_status',
-                        label: MESSAGES.validateStatus,
-                        value: validateStatus,
-                        onChange: setValidateStatus,
-                    },
-                    {
-                        keyValue: 'go_to_current_task',
-                        label: MESSAGES.goToCurrentTask,
-                        value: goToPageWhenDone,
-                        onChange: setGoToPageWhenDone,
-                    },
-                ]}
-            />
+            <Grid container>
+                {showOptionalFields
+                    ? renderWithOptionalFields()
+                    : renderDefaultLayout()}
+            </Grid>
         </ConfirmCancelDialogComponent>
     );
 };
-
+AddTask.defaultProps = {
+    sourceCredentials: {},
+};
 AddTask.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     titleMessage: PropTypes.object.isRequired,
     sourceId: PropTypes.number.isRequired,
     sourceVersion: PropTypes.number.isRequired,
+    sourceCredentials: PropTypes.object,
 };
 
 export { AddTask };

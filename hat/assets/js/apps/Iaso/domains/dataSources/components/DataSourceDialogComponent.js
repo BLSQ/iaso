@@ -19,6 +19,7 @@ import { setIsLoading } from '../actions';
 import { fetchCurrentUser } from '../../users/actions';
 import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import { EditableTextFields } from './AddTask/EditableTextFields';
 
 export class DataSourceDialogComponent extends Component {
     constructor(props) {
@@ -174,6 +175,19 @@ export class DataSourceDialogComponent extends Component {
                 value: isDefaultSource,
                 errors: [],
             },
+            // TODO get initial data
+            dhis_url: {
+                value: '',
+                errors: [],
+            },
+            dhis_login: {
+                value: '',
+                errors: [],
+            },
+            dhis_password: {
+                value: '',
+                errors: [],
+            },
         };
     }
 
@@ -211,7 +225,7 @@ export class DataSourceDialogComponent extends Component {
                 allowConfirm={allowConfirm}
             >
                 <Grid container spacing={4} justify="flex-start">
-                    <Grid xs={12} item>
+                    <Grid xs={6} item>
                         <InputComponent
                             keyValue="name"
                             onChange={(key, value) =>
@@ -226,9 +240,9 @@ export class DataSourceDialogComponent extends Component {
 
                         <InputComponent
                             keyValue="description"
-                            onChange={(key, value) =>
-                                this.setFieldValue(key, value)
-                            }
+                            onChange={(key, value) => {
+                                this.setFieldValue(key, value);
+                            }}
                             value={form.description.value}
                             errors={form.description.errors}
                             type="text"
@@ -306,6 +320,38 @@ export class DataSourceDialogComponent extends Component {
                                 />
                             </Box>
                         )}
+                    </Grid>
+                    <Grid xs={6} item>
+                        <EditableTextFields
+                            fields={[
+                                {
+                                    value: form.dhis_url.value,
+                                    keyValue: 'dhis_url',
+                                    errors: form.dhis_url.errors,
+                                    label: MESSAGES.dhisUrl,
+                                    onChange: (key, value) => {
+                                        this.setFieldValue(key, value);
+                                    },
+                                },
+                                {
+                                    value: form.dhis_login.value,
+                                    keyValue: 'dhis_login',
+                                    errors: form.dhis_login.errors,
+                                    label: MESSAGES.dhisLogin,
+                                    onChange: (key, value) =>
+                                        this.setFieldValue(key, value),
+                                },
+                                {
+                                    value: form.dhis_password.value,
+                                    keyValue: 'dhis_password',
+                                    errors: form.dhis_password.errors,
+                                    label: MESSAGES.dhisPassword,
+                                    onChange: (key, value) =>
+                                        this.setFieldValue(key, value),
+                                    password: true,
+                                },
+                            ]}
+                        />
                     </Grid>
                 </Grid>
             </ConfirmCancelDialogComponent>

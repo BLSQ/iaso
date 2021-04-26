@@ -11,9 +11,8 @@ const EditableTextFields = ({ fields }) => {
             keyValue={field.keyValue}
             label={field.label}
             value={field.value}
-            onChange={(_, value) => {
-                field.onChange(value);
-            }}
+            errors={field.errors ? field.errors : []}
+            onChange={(key, value) => field.onChange(key, value)}
         />
     ));
 };

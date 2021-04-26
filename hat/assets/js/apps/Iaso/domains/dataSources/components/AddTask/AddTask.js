@@ -7,6 +7,7 @@ import { UneditableFields } from './UneditableFields';
 import { EditableTextFields } from './EditableTextFields';
 import { Checkboxes } from './Checkboxes';
 import { postRequestHandler } from '../../../../utils/requests';
+
 // TODO discuss way to remove dispatch prop drilling
 const sendRequest = (requestBody, dispatch) => {
     if (requestBody)
@@ -20,7 +21,8 @@ const sendRequest = (requestBody, dispatch) => {
     return null;
 };
 
-const useSendRequest = (requestBody, dispatch) => {
+const useSendRequest = requestBody => {
+    const dispatch = useDispatch();
     const [result, setResult] = useState(null);
     useEffect(() => {
         const executeRequest = async () => {
@@ -43,9 +45,8 @@ const AddTask = ({ renderTrigger, titleMessage, sourceId, sourceVersion }) => {
     const [allowConfirm, setAllowConfirm] = useState(false);
     const [requestBody, setRequestBody] = useState();
     const [closeDialogCallback, setCloseDialogCallback] = useState(null);
-    const dispatch = useDispatch();
     // TODO add reset function for custom hooks values
-    const dhisOu = useSendRequest(requestBody, dispatch);
+    const dhisOu = useSendRequest(requestBody);
 
     const onConfirm = useCallback(
         closeDialog => {

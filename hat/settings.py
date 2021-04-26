@@ -16,7 +16,7 @@ from datetime import timedelta
 
 
 TESTING = os.environ.get("TESTING", "").lower() == "true"
-PLUGIN_POLIO_ENABLED = os.environ.get("PLUGIN_POLIO_ENABLED", 0) == 1
+PLUGIN_POLIO_ENABLED = os.environ.get("PLUGIN_POLIO_ENABLED", "").lower() == "true"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -125,7 +125,7 @@ INSTALLED_APPS = [
 ]
 
 if PLUGIN_POLIO_ENABLED:
-    INSTALLED_APPS.append('plugins.polio.apps.PolioConfig')
+    INSTALLED_APPS.append('plugins.polio')
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

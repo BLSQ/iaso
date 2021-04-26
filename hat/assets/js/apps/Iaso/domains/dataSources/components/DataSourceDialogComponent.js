@@ -26,6 +26,7 @@ export class DataSourceDialogComponent extends Component {
         this.state = {
             isDataTouched: false,
             form: this.inititalForm(),
+            hasConfirmed: false,
         };
     }
 
@@ -44,7 +45,6 @@ export class DataSourceDialogComponent extends Component {
     onConfirm(closeDialog) {
         const { dispatch, initialData, onSuccess, currentUser } = this.props;
         const { form } = this.state;
-
         let saveCurrentDataSource;
         const currentDataSource = {};
         Object.keys(form).forEach(key => {
@@ -52,6 +52,7 @@ export class DataSourceDialogComponent extends Component {
                 currentDataSource[key] = form[key].value;
             }
         });
+        this.setState({ hasConfirmed: true });
         if (initialData === null) {
             saveCurrentDataSource = createDataSource(
                 dispatch,
@@ -70,6 +71,7 @@ export class DataSourceDialogComponent extends Component {
             closeDialog();
             dispatch(enqueueSnackbar(succesfullSnackBar()));
             onSuccess();
+            this.setState({ hasConfirmed: false });
         };
 
         return saveCurrentDataSource
@@ -94,6 +96,7 @@ export class DataSourceDialogComponent extends Component {
             })
             .catch(error => {
                 dispatch(setIsLoading(false));
+                this.setState({ hasConfirmed: false });
                 if (error.status === 400) {
                     Object.entries(error.details).forEach(
                         ([errorKey, errorMessages]) => {
@@ -188,9 +191,12 @@ export class DataSourceDialogComponent extends Component {
             titleMessage,
             initialData,
         } = this.props;
-        const { form, isDataTouched } = this.state;
+        const { form, isDataTouched, hasConfirmed } = this.state;
         let allowConfirm = isDataTouched;
-        if (form.is_default_source.value && !form.default_version_id.value) {
+        if (
+            (form.is_default_source.value && !form.default_version_id.value) ||
+            hasConfirmed
+        ) {
             allowConfirm = false;
         }
         return (

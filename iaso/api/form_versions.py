@@ -83,6 +83,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
 
     def validate(self, data: typing.MutableMapping):
+        #  TO_DO: validate start en end period (is a period and start before end)
         if self.context["request"].method == "PUT":
             return data
         form = data["form"]

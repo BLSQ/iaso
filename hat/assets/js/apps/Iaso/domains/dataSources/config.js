@@ -5,7 +5,7 @@ import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
-import { AddDataSourceVersion } from './components/AddDataSourceVersion/AddDataSourceVersion';
+import { AddTask } from './components/AddTask/AddTask';
 
 const dataSourcesTableColumns = (
     formatMessage,
@@ -86,7 +86,7 @@ const dataSourcesTableColumns = (
                         onSuccess={() => setForceRefresh(true)}
                     />
                     {/* My component here */}
-                    <AddDataSourceVersion
+                    <AddTask
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
                                 onClick={openDialog}

@@ -16,6 +16,7 @@ from datetime import timedelta
 
 
 TESTING = os.environ.get("TESTING", "").lower() == "true"
+PLUGIN_POLIO_ENABLED = os.environ.get("PLUGIN_POLIO_ENABLED", 0) == 1
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -122,6 +123,9 @@ INSTALLED_APPS = [
     "django_extensions",
     "beanstalk_worker",
 ]
+
+if PLUGIN_POLIO_ENABLED:
+    INSTALLED_APPS.append('plugins.polio.apps.PolioConfig')
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -279,6 +283,13 @@ WEBPACK_LOADER = {
     }
 }
 
+
+# TODO: ADD POLIO CONFIG ON WEBPACK LOADER
+# if PLUGIN_POLIO_ENABLED:
+#   WEBPACK_LOADER["POLIO"]: {
+#    'BUNDLE_DIR_NAME': 'plugins/polio/build/',
+#    'STATS_FILE': os.path.join(BASE_DIR, 'plugins/polio/webpack-stats-dashboard.json')
+#}
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 

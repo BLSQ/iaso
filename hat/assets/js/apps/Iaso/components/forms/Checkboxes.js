@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
-import InputComponent from '../../../../components/forms/InputComponent';
+import InputComponent from './InputComponent';
 
 const Checkboxes = ({ checkboxes, inline }) => {
     const style = inline ? { display: 'inlineFlex' } : { display: 'grid' };

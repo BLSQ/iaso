@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { Grid } from '@material-ui/core';
 import isEqual from 'lodash/isEqual';
-import MESSAGES from '../../messages';
-import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-import { UneditableFields } from './UneditableFields';
-import { EditableTextFields } from './EditableTextFields';
-import { Checkboxes } from './Checkboxes';
-import { postRequestHandler } from '../../../../utils/requests';
+import MESSAGES from '../messages';
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import { UneditableFields } from '../../../components/forms/UneditableFields';
+import { EditableTextFields } from '../../../components/forms/EditableTextFields';
+import { Checkboxes } from '../../../components/forms/Checkboxes';
+import { postRequestHandler } from '../../../utils/requests';
 
 const sendRequest = (requestBody, dispatch) => {
     if (requestBody)
@@ -22,6 +22,11 @@ const sendRequest = (requestBody, dispatch) => {
     return null;
 };
 
+/**
+ *
+ * @param {Object} requestBody - request's body
+ * @returns {Object} request's response
+ */
 const useSendRequest = requestBody => {
     const dispatch = useDispatch();
     const [result, setResult] = useState(null);
@@ -100,34 +105,50 @@ const AddTask = ({
 
     const renderDefaultLayout = () => {
         return (
-            <Checkboxes
-                checkboxes={[
-                    {
-                        keyValue: 'continue_on_error',
-                        label: MESSAGES.continueOnError,
-                        value: continueOnError,
-                        onChange: setContinueOnError,
-                    },
-                    {
-                        keyValue: 'validate_status',
-                        label: MESSAGES.validateStatus,
-                        value: validateStatus,
-                        onChange: setValidateStatus,
-                    },
-                    {
-                        keyValue: 'go_to_current_task',
-                        label: MESSAGES.goToCurrentTask,
-                        value: goToPageWhenDone,
-                        onChange: setGoToPageWhenDone,
-                    },
-                    {
-                        keyValue: 'change_source',
-                        label: MESSAGES.edit,
-                        value: showOptionalFields,
-                        onChange: setShowOptionalFields,
-                    },
-                ]}
-            />
+            <>
+                <UneditableFields
+                    fields={[
+                        {
+                            keyValue: 'source_name',
+                            value: sourceId,
+                            label: MESSAGES.dataSourceName,
+                        },
+                        {
+                            keyValue: 'source_version',
+                            value: sourceVersion,
+                            label: MESSAGES.dataSourceVersion,
+                        },
+                    ]}
+                />
+                <Checkboxes
+                    checkboxes={[
+                        {
+                            keyValue: 'continue_on_error',
+                            label: MESSAGES.continueOnError,
+                            value: continueOnError,
+                            onChange: setContinueOnError,
+                        },
+                        {
+                            keyValue: 'validate_status',
+                            label: MESSAGES.validateStatus,
+                            value: validateStatus,
+                            onChange: setValidateStatus,
+                        },
+                        {
+                            keyValue: 'go_to_current_task',
+                            label: MESSAGES.goToCurrentTask,
+                            value: goToPageWhenDone,
+                            onChange: setGoToPageWhenDone,
+                        },
+                        {
+                            keyValue: 'change_source',
+                            label: MESSAGES.edit,
+                            value: showOptionalFields,
+                            onChange: setShowOptionalFields,
+                        },
+                    ]}
+                />
+            </>
         );
     };
 
@@ -180,23 +201,9 @@ const AddTask = ({
             onClosed={() => {}}
             confirmMessage={MESSAGES.save}
             cancelMessage={MESSAGES.cancel}
-            maxWidth="sm"
+            maxWidth="md"
             allowConfirm={allowConfirm}
         >
-            <UneditableFields
-                fields={[
-                    {
-                        keyValue: 'source_name',
-                        value: sourceId,
-                        label: MESSAGES.dataSourceName,
-                    },
-                    {
-                        keyValue: 'source_version',
-                        value: sourceVersion,
-                        label: MESSAGES.dataSourceVersion,
-                    },
-                ]}
-            />
             <Grid container>
                 {showOptionalFields
                     ? renderWithOptionalFields()

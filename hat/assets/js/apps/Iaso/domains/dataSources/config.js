@@ -5,7 +5,7 @@ import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
-import { AddTask } from './components/AddTask/AddTask';
+import { AddTask } from './components/AddTaskComponent';
 
 const dataSourcesTableColumns = (
     formatMessage,
@@ -66,6 +66,7 @@ const dataSourcesTableColumns = (
             );
             const latestVersion =
                 sortedVersions.length > 0 ? sortedVersions[0].number : 0;
+            console.log('settings', settings);
             return (
                 <section>
                     <DataSourceDialogComponent
@@ -99,6 +100,13 @@ const dataSourcesTableColumns = (
                         key={`${settings.original.updated_at} add`}
                         sourceId={settings.original.id}
                         sourceVersion={latestVersion + 1}
+                        sourceCredentials={
+                            {
+                                // url: settings.dhis_url,
+                                // login: settings.dhis_login,
+                                // password: settings.dhis_password,
+                            }
+                        }
                     />
                 </section>
             );

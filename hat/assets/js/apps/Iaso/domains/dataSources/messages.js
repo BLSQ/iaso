@@ -89,6 +89,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.validateStatus',
         defaultMessage: 'Validate status',
     },
+    // TODO remove + remove from json
     makeDefaultSource: {
         id: 'iaso.dataSources.makeDefaultSource',
         defaultMessage: 'Make default data source',

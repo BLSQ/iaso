@@ -19,7 +19,7 @@ import { setIsLoading } from '../actions';
 import { fetchCurrentUser } from '../../users/actions';
 import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { EditableTextFields } from './AddTask/EditableTextFields';
+import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 
 export class DataSourceDialogComponent extends Component {
     constructor(props) {
@@ -221,7 +221,7 @@ export class DataSourceDialogComponent extends Component {
                 onClosed={() => this.setInitialState()}
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
-                maxWidth="sm"
+                maxWidth="md"
                 allowConfirm={allowConfirm}
             >
                 <Grid container spacing={4} justify="flex-start">

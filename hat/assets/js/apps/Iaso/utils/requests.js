@@ -596,6 +596,14 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
             throw error;
         });
 
+/**
+ * @param {Object} params
+ * @param {string} params.url - endpoint's url
+ * @param {Object} params.body - request's body
+ * @param {string} params.errorKeyMessage - The message displayed in the error snackbar
+ * @param {string} params.consoleError - the message to embed in the console's error message
+ * @param {function} dispatch - redux's dispatch function
+ */
 export const postRequestHandler = params =>
     postRequest(params.url, params.body)
         .then(data => data)

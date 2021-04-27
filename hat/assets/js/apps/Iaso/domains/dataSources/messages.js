@@ -65,6 +65,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.defaultVersion',
         defaultMessage: 'Default version',
     },
+    dhisName: {
+        id: 'iaso.dataSources.dhisName',
+        defaultMessage: 'DHIS name',
+    },
     dhisUrl: {
         id: 'iaso.dataSources.dhisUrl',
         defaultMessage: 'DHIS url',
@@ -97,6 +101,18 @@ const MESSAGES = defineMessages({
     goToCurrentTask: {
         id: 'iaso.dataSources.goToCurrentTask',
         defaultMessage: 'Go to current task when done',
+    },
+    launch: {
+        id: 'iaso.label.launch',
+        defaultMessage: 'Launch',
+    },
+    addTask: {
+        id: 'iaso.dataSources.addTask',
+        defaultMessage: 'Add task',
+    },
+    useDefaultDhisSettings: {
+        id: 'iaso.dataSources.useDefaultDhisSettings',
+        defaultMessage: 'Use default DHIS settings',
     },
 });
 

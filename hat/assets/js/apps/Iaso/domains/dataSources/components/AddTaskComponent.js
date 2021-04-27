@@ -5,10 +5,11 @@ import { Grid } from '@material-ui/core';
 import isEqual from 'lodash/isEqual';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { UneditableFields } from '../../../components/forms/UneditableFields';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 import { Checkboxes } from '../../../components/forms/Checkboxes';
 import { postRequestHandler } from '../../../utils/requests';
+import { redirectTo } from '../../../routing/actions';
+import { baseUrls } from '../../../constants/urls';
 
 const sendRequest = (requestBody, dispatch) => {
     if (requestBody)
@@ -25,6 +26,15 @@ const sendRequest = (requestBody, dispatch) => {
 /**
  *
  * @param {Object} requestBody - request's body
+ * @param {number} requestBody.source_id
+ * @param {number} requestBody.source_version_number
+ * @param {string} requestBody.dhis_name
+ * @param {string} requestBody.dhis_url
+ * @param {string} requestBody.dhis_login
+ * @param {string} requestBody.dhis_password
+ * @param {boolean} requestBody.force - should be false
+ * @param {boolean} requestBody.validate_status
+ * @param {boolean} requestBody.continue_on_error
  * @returns {Object} request's response
  */
 const useSendRequest = requestBody => {
@@ -48,18 +58,29 @@ const AddTask = ({
     sourceVersion,
     sourceCredentials,
 }) => {
-    const [dhisUrl, setDhisUrl] = useState(null);
-    const [dhisLogin, setDhisLogin] = useState(null);
-    const [dhisPassword, setDhisPassword] = useState(null);
+    // TODO use useFormState
+    const [dhisName, setDhisName] = useState(
+        sourceCredentials.name ? sourceCredentials.name : null,
+    );
+    const [dhisUrl, setDhisUrl] = useState(
+        sourceCredentials.url ? sourceCredentials.url : null,
+    );
+    const [dhisLogin, setDhisLogin] = useState(
+        sourceCredentials.login ? sourceCredentials.login : null,
+    );
+    const [dhisPassword, setDhisPassword] = useState(
+        sourceCredentials.password ? sourceCredentials.password : null,
+    );
     const [continueOnError, setContinueOnError] = useState(false);
     const [validateStatus, setValidateStatus] = useState(false);
-    const [goToPageWhenDone, setGoToPageWhenDone] = useState(false);
     const [allowConfirm, setAllowConfirm] = useState(false);
     const [requestBody, setRequestBody] = useState();
     const [closeDialogCallback, setCloseDialogCallback] = useState(null);
-    const [showOptionalFields, setShowOptionalFields] = useState(
-        isEqual(sourceCredentials, {}),
+    // TODO redefine value, find better name than doesn't overlap with hooks naming conventions
+    const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(
+        !isEqual(sourceCredentials, {}),
     );
+    const dispatch = useDispatch();
     // TODO add reset function for custom hooks values
     const dhisOu = useSendRequest(requestBody);
 
@@ -67,20 +88,24 @@ const AddTask = ({
         closeDialog => {
             setAllowConfirm(false);
             setCloseDialogCallback(() => closeDialog);
-            setRequestBody({
+            const body = {
                 source_id: sourceId,
                 source_version_number: sourceVersion,
-                dhis2_url: dhisUrl,
-                dhis2_login: dhisLogin,
-                dhis2_password: dhisPassword,
                 force: false,
                 validate_status: validateStatus,
                 continue_on_error: continueOnError,
-            });
+            };
+            if (!withExistingDhis2Settings) {
+                body.dhis2_password = dhisPassword;
+                body.dhis2_url = dhisUrl;
+                body.dhis2_login = dhisLogin;
+            }
+            setRequestBody(body);
         },
         [
             sourceId,
             sourceVersion,
+            dhisName,
             dhisUrl,
             dhisLogin,
             dhisPassword,
@@ -90,77 +115,73 @@ const AddTask = ({
     );
 
     useEffect(() => {
-        if (dhisUrl && dhisLogin && dhisPassword) {
-            setAllowConfirm(true);
+        if (!withExistingDhis2Settings) {
+            if (dhisName && dhisUrl && dhisLogin && dhisPassword) {
+                setAllowConfirm(true);
+            } else {
+                setAllowConfirm(false);
+            }
         } else {
-            setAllowConfirm(false);
+            setAllowConfirm(true);
         }
-    }, [dhisUrl, dhisLogin, dhisPassword]);
+    }, [withExistingDhis2Settings, dhisName, dhisUrl, dhisLogin, dhisPassword]);
 
-    useEffect(() => {
-        if (dhisOu)
-            // TODO reset dhisOu and updatedDefaultDataSource values
-            closeDialogCallback();
-    }, [closeDialogCallback, dhisOu]);
-
-    const renderDefaultLayout = () => {
+    // useEffect(() => {
+    //     if (dhisOu)
+    //         // TODO reset dhisOu and updatedDefaultDataSource values
+    //         closeDialogCallback();
+    // }, [closeDialogCallback, dhisOu]);
+    /**
+     *
+     * @param {boolean} showDefaultOverride
+     */
+    const renderDefaultLayout = showDefaultOverride => {
+        const checkboxes = [
+            {
+                keyValue: 'continue_on_error',
+                label: MESSAGES.continueOnError,
+                value: continueOnError,
+                onChange: setContinueOnError,
+            },
+            {
+                keyValue: 'validate_status',
+                label: MESSAGES.validateStatus,
+                value: validateStatus,
+                onChange: setValidateStatus,
+            },
+        ];
+        if (showDefaultOverride) {
+            checkboxes.push({
+                keyValue: 'change_source',
+                label: MESSAGES.useDefaultDhisSettings,
+                value: withExistingDhis2Settings,
+                onChange: setWithExistingDhis2Settings,
+            });
+        }
         return (
             <>
-                <UneditableFields
-                    fields={[
-                        {
-                            keyValue: 'source_name',
-                            value: sourceId,
-                            label: MESSAGES.dataSourceName,
-                        },
-                        {
-                            keyValue: 'source_version',
-                            value: sourceVersion,
-                            label: MESSAGES.dataSourceVersion,
-                        },
-                    ]}
-                />
-                <Checkboxes
-                    checkboxes={[
-                        {
-                            keyValue: 'continue_on_error',
-                            label: MESSAGES.continueOnError,
-                            value: continueOnError,
-                            onChange: setContinueOnError,
-                        },
-                        {
-                            keyValue: 'validate_status',
-                            label: MESSAGES.validateStatus,
-                            value: validateStatus,
-                            onChange: setValidateStatus,
-                        },
-                        {
-                            keyValue: 'go_to_current_task',
-                            label: MESSAGES.goToCurrentTask,
-                            value: goToPageWhenDone,
-                            onChange: setGoToPageWhenDone,
-                        },
-                        {
-                            keyValue: 'change_source',
-                            label: MESSAGES.edit,
-                            value: showOptionalFields,
-                            onChange: setShowOptionalFields,
-                        },
-                    ]}
-                />
+                <Checkboxes checkboxes={checkboxes} />
             </>
         );
     };
-
-    const renderWithOptionalFields = () => {
+    /**
+     *
+     * @param {boolean} showDefaultOverride
+     */
+    const renderWithOptionalFields = showDefaultOverride => {
         return (
-            <Grid container>
-                <Grid xs={6} item>
-                    {renderDefaultLayout()}
-                </Grid>
+            <>
                 <Grid xs={6} item>
                     <EditableTextFields
                         fields={[
+                            {
+                                keyValue: 'dhis_name',
+                                label: MESSAGES.dhisName,
+                                value: dhisName,
+                                onChange: (key, value) => {
+                                    setDhisName(value);
+                                },
+                            },
                             {
                                 keyValue: 'dhis_url',
                                 label: MESSAGES.dhisUrl,
@@ -188,26 +209,32 @@ const AddTask = ({
                             },
                         ]}
                     />
+                    {renderDefaultLayout(showDefaultOverride)}
                 </Grid>
-            </Grid>
+            </>
         );
     };
-
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
             titleMessage={titleMessage}
             onConfirm={onConfirm}
             onClosed={() => {}}
-            confirmMessage={MESSAGES.save}
+            confirmMessage={MESSAGES.launch}
             cancelMessage={MESSAGES.cancel}
             maxWidth="md"
             allowConfirm={allowConfirm}
+            additionalButton
+            additionalMessage={MESSAGES.add}
+            onAdditionalButtonClick={closeDialog => {
+                closeDialog();
+                dispatch(redirectTo(baseUrls.tasks, {}));
+            }}
         >
-            <Grid container>
-                {showOptionalFields
-                    ? renderWithOptionalFields()
-                    : renderDefaultLayout()}
+            <Grid container spacing={4} style={{ marginTop: '5px' }}>
+                {withExistingDhis2Settings
+                    ? renderDefaultLayout(!isEqual(sourceCredentials, {}))
+                    : renderWithOptionalFields(!isEqual(sourceCredentials, {}))}
             </Grid>
         </ConfirmCancelDialogComponent>
     );

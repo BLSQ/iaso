@@ -1,6 +1,7 @@
 import React from 'react';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { Tooltip } from '@material-ui/core';
+
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
@@ -66,7 +67,13 @@ const dataSourcesTableColumns = (
             );
             const latestVersion =
                 sortedVersions.length > 0 ? sortedVersions[0].number : 0;
-            console.log('settings', settings);
+            const addTaskTitle = {
+                id: 'addAskTitle',
+                defaultMessage: `${formatMessage(MESSAGES.addTask)} - Source: ${
+                    settings.original.name
+                } - Version: ${latestVersion + 1}`,
+            };
+
             return (
                 <section>
                     <DataSourceDialogComponent
@@ -86,26 +93,23 @@ const dataSourcesTableColumns = (
                         key={settings.original.updated_at}
                         onSuccess={() => setForceRefresh(true)}
                     />
-                    {/* My component here */}
                     <AddTask
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
                                 onClick={openDialog}
-                                icon="map"
+                                icon="add"
                                 tooltipMessage={MESSAGES.edit}
                             />
                         )}
                         defaultSourceVersion={defaultSourceVersion}
-                        titleMessage={MESSAGES.add}
-                        key={`${settings.original.updated_at} add`}
+                        titleMessage={addTaskTitle}
+                        key={`${settings.original.updated_at} ${settings.original.id} addTask`}
                         sourceId={settings.original.id}
                         sourceVersion={latestVersion + 1}
                         sourceCredentials={
-                            {
-                                // url: settings.dhis_url,
-                                // login: settings.dhis_login,
-                                // password: settings.dhis_password,
-                            }
+                            settings.original.credentials
+                                ? settings.original.credentials
+                                : {}
                         }
                     />
                 </section>

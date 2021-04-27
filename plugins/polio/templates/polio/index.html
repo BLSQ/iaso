@@ -1,10 +1,13 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-  <body>
-    <h1>Hi!</h1>
-    <div id="app"></div>
+{% extends 'iaso/base.html' %} {% load i18n %} {% load render_bundle f {% block
+extrajs %}
+<script type="text/javascript">
+  var STATIC_URL = '{{ STATIC_URL }}';
+</script>
+{% endblock %}rom webpack_loader %} {% block body %}
+<section>
+  {% load render_bundle from webpack_loader %} {% block content %}
 
-    <script src="{% static 'main.bundle.js' %}"></script>
-  </body>
-</html>
+  <div id="app"></div>
+  {% render_bundle 'common' %} {% render_bundle 'polio' %} {% endblock %}
+</section>
+{% endblock %}

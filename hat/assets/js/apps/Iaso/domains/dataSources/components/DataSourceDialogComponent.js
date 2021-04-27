@@ -54,6 +54,14 @@ export class DataSourceDialogComponent extends Component {
             }
         });
         this.setState({ hasConfirmed: true });
+        currentDataSource.credentials = {
+            dhis_login: currentDataSource.dhis_login,
+            dhis_url: currentDataSource.dhis_url,
+            dhis_password: currentDataSource.dhis_password,
+        };
+        delete currentDataSource.dhis_login;
+        delete currentDataSource.dhis_url;
+        delete currentDataSource.dhis_password;
         if (initialData === null) {
             saveCurrentDataSource = createDataSource(
                 dispatch,

@@ -1,8 +1,30 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Route, BrowserRouter, Switch } from 'react-router-dom';
 
-const HelloWorld = () => {
-    return <h1>My name is react</h1>;
+const Home = () => {
+    return <h1>Home</h1>;
 };
 
-ReactDOM.render(<HelloWorld />, document.getElementById('app'));
+const Test = () => {
+    return <h1>Home</h1>;
+};
+
+const App = () => {
+    return (
+        <BrowserRouter basename="/dashboard/polio">
+            <div>
+                <Switch>
+                    <Route path="/">
+                        <Home />
+                    </Route>
+                    <Route path="/test">
+                        <Test />
+                    </Route>
+                </Switch>
+            </div>
+        </BrowserRouter>
+    );
+};
+
+ReactDOM.render(<App />, document.getElementById('app'));

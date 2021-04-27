@@ -1,15 +1,13 @@
 {
-  "name": "polio",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "react-router": "^5.2.0",
-    "react-router-dom": "^5.2.0"
-  }
+    "name": "iaso-polio",
+    "version": "1.0.0",
+    "description": "Iaso polio app",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Bluesquare",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "react-router-dom": "^5.2.0"
+    }
 }

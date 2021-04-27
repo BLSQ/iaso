@@ -67,6 +67,10 @@ module.exports = {
           { loader: 'react-hot-loader/webpack' },
           {
             loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env', '@babel/preset-react'],
+              plugins: [['@babel/transform-runtime']],
+            },
           },
         ],
       },

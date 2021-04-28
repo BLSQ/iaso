@@ -7,48 +7,20 @@ import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 import { Checkboxes } from '../../../components/forms/Checkboxes';
-import { postRequestHandler } from '../../../utils/requests';
 import { redirectTo } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
+import { useDhisOuImporterRequest } from '../requests';
+import { useFormState } from '../../../hooks/form';
 
-const sendRequest = (requestBody, dispatch) => {
-    if (requestBody)
-        return postRequestHandler({
-            url: '/api/dhis2ouimporter/',
-            body: requestBody,
-            errorKeyMessage: 'dhisouimporterError',
-            consoleError: 'DHIS OU Importer',
-            dispatch,
-        });
-    return null;
-};
-
-/**
- *
- * @param {Object} requestBody - request's body
- * @param {number} requestBody.source_id
- * @param {number} requestBody.source_version_number
- * @param {string} requestBody.dhis_name
- * @param {string} requestBody.dhis_url
- * @param {string} requestBody.dhis_login
- * @param {string} requestBody.dhis_password
- * @param {boolean} requestBody.force - should be false
- * @param {boolean} requestBody.validate_status
- * @param {boolean} requestBody.continue_on_error
- * @returns {Object} request's response
- */
-const useSendRequest = requestBody => {
-    const dispatch = useDispatch();
-    const [result, setResult] = useState(null);
-    useEffect(() => {
-        const executeRequest = async () => {
-            const response = await sendRequest(requestBody, dispatch);
-            if (response) setResult(response);
-        };
-        // TODO add error handling
-        executeRequest();
-    }, [requestBody]);
-    return result;
+const initialFormState = sourceCredentials => {
+    return {
+        dhis2_name: sourceCredentials.name ? sourceCredentials.name : null,
+        dhis2_url: sourceCredentials.url ? sourceCredentials.url : null,
+        dhis2_login: sourceCredentials.login ? sourceCredentials.login : null,
+        dhis2_password: null,
+        validate_status: false,
+        continue_on_error: false,
+    };
 };
 
 const AddTask = ({
@@ -58,65 +30,76 @@ const AddTask = ({
     sourceVersion,
     sourceCredentials,
 }) => {
-    // TODO use useFormState
-    const [dhisName, setDhisName] = useState(
-        sourceCredentials.name ? sourceCredentials.name : null,
+    // eslint-disable-next-line no-unused-vars
+    const [form, setFormField, _, setFormState] = useFormState(
+        initialFormState(sourceCredentials),
     );
-    const [dhisUrl, setDhisUrl] = useState(
-        sourceCredentials.url ? sourceCredentials.url : null,
-    );
-    const [dhisLogin, setDhisLogin] = useState(
-        sourceCredentials.login ? sourceCredentials.login : null,
-    );
-    const [dhisPassword, setDhisPassword] = useState(
-        sourceCredentials.password ? sourceCredentials.password : null,
-    );
-    const [continueOnError, setContinueOnError] = useState(false);
-    const [validateStatus, setValidateStatus] = useState(false);
     const [allowConfirm, setAllowConfirm] = useState(false);
+    const [redirect, setRedirect] = useState(false);
     const [requestBody, setRequestBody] = useState();
     const [closeDialogCallback, setCloseDialogCallback] = useState(null);
-    // TODO redefine value, find better name than doesn't overlap with hooks naming conventions
+    // TODO find better name than doesn't overlap with hooks naming conventions
     const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(
         !isEqual(sourceCredentials, {}),
     );
     const dispatch = useDispatch();
-    // TODO add reset function for custom hooks values
-    const dhisOu = useSendRequest(requestBody);
+    // TODO add and return reset function
+    const dhisOu = useDhisOuImporterRequest(requestBody);
+
+    const submit = useCallback(() => {
+        setAllowConfirm(false);
+        const body = {
+            source_id: sourceId,
+            source_version_number: sourceVersion,
+            force: false,
+            validate_status: form.validate_status.value,
+            continue_on_error: form.continue_on_error.value,
+        };
+        if (!withExistingDhis2Settings) {
+            body.dhis2_password = form.dhis2_password.value;
+            body.dhis2_url = form.dhis2_url.value;
+            body.dhis2_login = form.dhis2_login.value;
+        }
+        setRequestBody(body);
+    }, [
+        sourceId,
+        sourceVersion,
+        form.dhis2_url.value,
+        form.dhis2_login.value,
+        form.dhis2_password.value,
+        form.validate_status.value,
+        form.continue_on_error.value,
+    ]);
+
+    // TODO check if sourceCredentials doesn't make reset refresh too many times
+    const reset = useCallback(() => {
+        setRequestBody(null);
+        setFormState(initialFormState(sourceCredentials));
+    }, [sourceCredentials]);
 
     const onConfirm = useCallback(
         closeDialog => {
-            setAllowConfirm(false);
+            submit();
             setCloseDialogCallback(() => closeDialog);
-            const body = {
-                source_id: sourceId,
-                source_version_number: sourceVersion,
-                force: false,
-                validate_status: validateStatus,
-                continue_on_error: continueOnError,
-            };
-            if (!withExistingDhis2Settings) {
-                body.dhis2_password = dhisPassword;
-                body.dhis2_url = dhisUrl;
-                body.dhis2_login = dhisLogin;
-            }
-            setRequestBody(body);
         },
-        [
-            sourceId,
-            sourceVersion,
-            dhisName,
-            dhisUrl,
-            dhisLogin,
-            dhisPassword,
-            validateStatus,
-            continueOnError,
-        ],
+        [submit],
     );
 
+    const onRedirect = useCallback(
+        closeDialog => {
+            onConfirm(closeDialog);
+            setRedirect(true);
+        },
+        [onConfirm],
+    );
     useEffect(() => {
         if (!withExistingDhis2Settings) {
-            if (dhisName && dhisUrl && dhisLogin && dhisPassword) {
+            if (
+                form.dhis2_name.value &&
+                form.dhis2_url.value &&
+                form.dhis2_login.value &&
+                form.dhis2_password.value
+            ) {
                 setAllowConfirm(true);
             } else {
                 setAllowConfirm(false);
@@ -124,30 +107,44 @@ const AddTask = ({
         } else {
             setAllowConfirm(true);
         }
-    }, [withExistingDhis2Settings, dhisName, dhisUrl, dhisLogin, dhisPassword]);
+    }, [
+        withExistingDhis2Settings,
+        form.dhis2_name.value,
+        form.dhis2_url.value,
+        form.dhis2_login.value,
+        form.dhis2_password.value,
+        // this dep to unlock buttons after successful request
+        // TODO include this behaviour in reset() func
+        dhisOu,
+    ]);
 
-    // useEffect(() => {
-    //     if (dhisOu)
-    //         // TODO reset dhisOu and updatedDefaultDataSource values
-    //         closeDialogCallback();
-    // }, [closeDialogCallback, dhisOu]);
-    /**
-     *
-     * @param {boolean} showDefaultOverride
-     */
+    useEffect(() => {
+        if (dhisOu) {
+            closeDialogCallback();
+            if (redirect) {
+                dispatch(redirectTo(baseUrls.tasks, {}));
+            }
+            reset();
+        }
+    }, [closeDialogCallback, dhisOu, reset, redirect]);
+
     const renderDefaultLayout = showDefaultOverride => {
         const checkboxes = [
             {
                 keyValue: 'continue_on_error',
                 label: MESSAGES.continueOnError,
-                value: continueOnError,
-                onChange: setContinueOnError,
+                value: form.continue_on_error.value,
+                onChange: value => {
+                    setFormField('continue_on_error', value);
+                },
             },
             {
                 keyValue: 'validate_status',
                 label: MESSAGES.validateStatus,
-                value: validateStatus,
-                onChange: setValidateStatus,
+                value: form.validate_status.value,
+                onChange: value => {
+                    setFormField('validate_status', value);
+                },
             },
         ];
         if (showDefaultOverride) {
@@ -164,46 +161,43 @@ const AddTask = ({
             </>
         );
     };
-    /**
-     *
-     * @param {boolean} showDefaultOverride
-     */
+
     const renderWithOptionalFields = showDefaultOverride => {
         return (
             <>
-                <Grid xs={6} item>
+                <Grid xs={12} item>
                     <EditableTextFields
                         fields={[
                             {
-                                keyValue: 'dhis_name',
+                                keyValue: 'dhis2_name',
                                 label: MESSAGES.dhisName,
-                                value: dhisName,
-                                onChange: (key, value) => {
-                                    setDhisName(value);
+                                value: form.dhis2_name.value,
+                                onChange: (field, value) => {
+                                    setFormField(field, value);
                                 },
                             },
                             {
-                                keyValue: 'dhis_url',
+                                keyValue: 'dhis2_url',
                                 label: MESSAGES.dhisUrl,
-                                value: dhisUrl,
-                                onChange: (key, value) => {
-                                    setDhisUrl(value);
+                                value: form.dhis2_url.value,
+                                onChange: (field, value) => {
+                                    setFormField(field, value);
                                 },
                             },
                             {
-                                keyValue: 'dhis_login',
+                                keyValue: 'dhis2_login',
                                 label: MESSAGES.dhisLogin,
-                                value: dhisLogin,
-                                onChange: (key, value) => {
-                                    setDhisLogin(value);
+                                value: form.dhis2_login.value,
+                                onChange: (field, value) => {
+                                    setFormField(field, value);
                                 },
                             },
                             {
-                                keyValue: 'dhis_password',
+                                keyValue: 'dhis2_password',
                                 label: MESSAGES.dhisPassword,
-                                value: dhisPassword,
-                                onChange: (key, value) => {
-                                    setDhisPassword(value);
+                                value: form.dhis2_password.value,
+                                onChange: (field, value) => {
+                                    setFormField(field, value);
                                 },
                                 password: true,
                             },
@@ -219,17 +213,15 @@ const AddTask = ({
             renderTrigger={renderTrigger}
             titleMessage={titleMessage}
             onConfirm={onConfirm}
-            onClosed={() => {}}
+            // eslint-disable-next-line no-unused-vars
+            onClosed={closeDialog => reset()}
             confirmMessage={MESSAGES.launch}
             cancelMessage={MESSAGES.cancel}
-            maxWidth="md"
+            maxWidth="sm"
             allowConfirm={allowConfirm}
             additionalButton
             additionalMessage={MESSAGES.add}
-            onAdditionalButtonClick={closeDialog => {
-                closeDialog();
-                dispatch(redirectTo(baseUrls.tasks, {}));
-            }}
+            onAdditionalButtonClick={onRedirect}
         >
             <Grid container spacing={4} style={{ marginTop: '5px' }}>
                 {withExistingDhis2Settings

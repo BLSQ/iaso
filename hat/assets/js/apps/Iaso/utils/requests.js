@@ -606,7 +606,10 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
  */
 export const postRequestHandler = params =>
     postRequest(params.url, params.body)
-        .then(data => data)
+        .then(data => {
+            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return data;
+        })
         .catch(error => {
             params.dispatch(
                 enqueueSnackbar(

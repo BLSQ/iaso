@@ -9,10 +9,12 @@ import Button from "@material-ui/core/Button";
 import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
 import ExitIcon from "@material-ui/icons/ExitToApp";
 
-import commonStyles from "../styles/common";
-import { SIDEBAR_WIDTH } from "../styles/constants";
-import { LogoSvg } from "./LogoSvgComponent";
+import commonStyles from "../../styles/common";
+import { SIDEBAR_WIDTH } from "../../styles/constants";
+import { LogoSvg } from "../svg/LogoSvgComponent";
 import { makeStyles } from "@material-ui/core";
+import { menuItems } from "../../constants/menuItems";
+import { SidebarMenuItem } from "./SidebarMenuItem";
 
 const useStyles = makeStyles((theme) => ({
   ...commonStyles(theme),
@@ -64,7 +66,11 @@ export const SidebarMenu = ({ isDrawerOpened, toggleDrawer }) => {
       </div>
       <Divider />
 
-      <List className={classes.list}></List>
+      <List className={classes.list}>
+        {menuItems.map((menuItem) => (
+          <SidebarMenuItem menuItem={menuItem} />
+        ))}
+      </List>
 
       <Box className={classes.user}>
         <Typography

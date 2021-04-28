@@ -218,7 +218,6 @@ export class DataSourceDialogComponent extends Component {
     }
 
     render() {
-        console.log('cred', this.props.sourceCredentials);
         const {
             renderTrigger,
             projects,

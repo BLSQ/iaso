@@ -103,7 +103,7 @@ const dataSourcesTableColumns = (
                             <IconButtonComponent
                                 onClick={openDialog}
                                 icon="add"
-                                tooltipMessage={MESSAGES.edit}
+                                tooltipMessage={MESSAGES.addTask}
                             />
                         )}
                         defaultSourceVersion={defaultSourceVersion}

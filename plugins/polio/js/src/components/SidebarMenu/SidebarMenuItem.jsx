@@ -41,21 +41,25 @@ export const MenuItem = ({
   };
 
   return (
-    <a href={menuItem.path}>
-      <ListItem button style={itemStyle} onClick={onExpand}>
-        <ListItemIcon className={classes.listItemIcon}>
-          {icons[menuItem.icon]({ color })}
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <Typography type="body2" color={color}>
-              {menuItem.label}
-            </Typography>
-          }
-        />
-        {menuItem.subMenu && subMenuIcon}
-      </ListItem>
-    </a>
+    <ListItem
+      button
+      href={menuItem.path}
+      style={itemStyle}
+      component={menuItem.path && "a"}
+      onClick={menuItem.subMenu && onExpand}
+    >
+      <ListItemIcon className={classes.listItemIcon}>
+        {icons[menuItem.icon]({ color })}
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <Typography type="body2" color={color}>
+            {menuItem.label}
+          </Typography>
+        }
+      />
+      {menuItem.subMenu && subMenuIcon}
+    </ListItem>
   );
 };
 

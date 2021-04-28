@@ -2,8 +2,12 @@ import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import Drawer from "@material-ui/core/Drawer";
 import Divider from "@material-ui/core/Divider";
-import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
 import List from "@material-ui/core/List";
+import Box from "@material-ui/core/Box";
+import Button from "@material-ui/core/Button";
+
+import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
+import ExitIcon from "@material-ui/icons/ExitToApp";
 
 import commonStyles from "../styles/common";
 import { SIDEBAR_WIDTH } from "../styles/constants";
@@ -31,6 +35,15 @@ const useStyles = makeStyles((theme) => ({
     paddingRight: theme.spacing(3),
     height: 90,
   },
+  user: {
+    marginTop: "auto",
+    marginBottom: theme.spacing(3),
+    marginLeft: theme.spacing(3),
+    marginRight: theme.spacing(3),
+  },
+  userName: {
+    margin: theme.spacing(1),
+  },
 }));
 
 export const SidebarMenu = ({ isDrawerOpened, toggleDrawer }) => {
@@ -52,6 +65,20 @@ export const SidebarMenu = ({ isDrawerOpened, toggleDrawer }) => {
       <Divider />
 
       <List className={classes.list}></List>
+
+      <Box className={classes.user}>
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          className={classes.userName}
+        >
+          UserName
+        </Typography>
+        <Button size="small" color="inherit" href="/logout-iaso">
+          <ExitIcon className={classes.smallButtonIcon} />
+          Logout
+        </Button>
+      </Box>
     </Drawer>
   );
 };

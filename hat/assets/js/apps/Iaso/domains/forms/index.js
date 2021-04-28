@@ -8,6 +8,7 @@ import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
 import { redirectTo } from '../../routing/actions';
 
 import formsTableColumns from './config';
+import archivedFormsTableColumns from './configArchived';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
@@ -22,7 +23,10 @@ import { formsFilters } from '../../constants/filters';
 
 const baseUrl = baseUrls.forms;
 
-const Forms = props => {
+const Forms = ({ params, showOnlyDeleted }) => {
+    const columnsConfig = showOnlyDeleted
+        ? archivedFormsTableColumns
+        : formsTableColumns;
     const reduxPage = useSelector(state => state.forms.formsPage);
     const dispatch = useDispatch();
     const intl = useSafeIntl();
@@ -39,12 +43,13 @@ const Forms = props => {
                 endPointPath="forms"
                 dataKey="forms"
                 apiParams={{
-                    ...props.params,
+                    ...params,
                     all: true,
+                    only_deleted: showOnlyDeleted ? 1 : 0,
                 }}
                 fetchItems={fetchForms}
                 defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
-                columns={formsTableColumns(intl.formatMessage)}
+                columns={columnsConfig(intl.formatMessage)}
                 hideGpkg
                 defaultPageSize={50}
                 onDataLoaded={({ list, count, pages }) => {
@@ -52,19 +57,22 @@ const Forms = props => {
                 }}
                 results={reduxPage}
                 extraComponent={
-                    <AddButtonComponent
-                        onClick={() => {
-                            dispatch(
-                                redirectTo(baseUrls.formDetail, {
-                                    formId: '0',
-                                }),
-                            );
-                        }}
-                    />
+                    !showOnlyDeleted && (
+                        <AddButtonComponent
+                            onClick={() => {
+                                dispatch(
+                                    redirectTo(baseUrls.formDetail, {
+                                        formId: '0',
+                                    }),
+                                );
+                            }}
+                        />
+                    )
                 }
                 toggleActiveSearch
                 searchActive
                 filters={formsFilters()}
+                forceRefresh
             />
         </>
     );
@@ -72,6 +80,11 @@ const Forms = props => {
 
 Forms.propTypes = {
     params: PropTypes.object.isRequired,
+    showOnlyDeleted: PropTypes.bool,
+};
+
+Forms.defaultProps = {
+    showOnlyDeleted: false,
 };
 
 export default Forms;

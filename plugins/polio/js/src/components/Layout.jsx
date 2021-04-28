@@ -9,9 +9,11 @@ const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
   },
+
   menuButton: {
     marginRight: theme.spacing(2),
-  },
+    marginLeft: theme.spacing(1),
+},
 }));
 
 export const Layout = ({ children }) => {

@@ -267,7 +267,7 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, "iaso/static"), os.path.join(BASE_DIR, "hat/assets/webpack"), os.path.join(BASE_DIR, "plugins/polio/build"),)
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "iaso/static"), os.path.join(BASE_DIR, "hat/assets/webpack"), )
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
@@ -283,13 +283,6 @@ WEBPACK_LOADER = {
     }
 }
 
-
-# TODO: ADD POLIO CONFIG ON WEBPACK LOADER
-# if PLUGIN_POLIO_ENABLED:
-#   WEBPACK_LOADER["POLIO"] =  {
-#    'BUNDLE_DIR_NAME': 'plugins/polio/build/',
-#    'STATS_FILE': os.path.join(BASE_DIR, 'plugins/polio/build/polio-webpack-stats.json')
-# }
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 

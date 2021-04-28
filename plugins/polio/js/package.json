@@ -14,6 +14,7 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
+    "postbuild": "mv ../static/polio/index.html ../templates/polio/",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject"
   },

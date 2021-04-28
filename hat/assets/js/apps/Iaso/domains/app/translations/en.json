@@ -16,7 +16,7 @@
     "iaso.dataSources.dhisName": "DHIS name",
     "iaso.dataSources.dhisPassword": "DHIS password",
     "iaso.dataSources.dhisUrl": "DHIS url",
-    "iaso.dataSources.goToCurrentTask": "Go to current task when done",
+    "iaso.dataSources.goToCurrentTask": "Launch and show task",
     "iaso.dataSources.makeDefaultSource": "Make default data source",
     "iaso.dataSources.name": "Data Source name",
     "iaso.dataSources.update": "Update data sources",

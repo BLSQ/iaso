@@ -100,7 +100,7 @@ const MESSAGES = defineMessages({
     },
     goToCurrentTask: {
         id: 'iaso.dataSources.goToCurrentTask',
-        defaultMessage: 'Go to current task when done',
+        defaultMessage: 'Launch and show task',
     },
     launch: {
         id: 'iaso.label.launch',

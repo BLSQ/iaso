@@ -55,10 +55,12 @@ export class DataSourceDialogComponent extends Component {
         });
         this.setState({ hasConfirmed: true });
         currentDataSource.credentials = {
+            dhis_name: currentDataSource.dhis_name,
             dhis_login: currentDataSource.dhis_login,
             dhis_url: currentDataSource.dhis_url,
             dhis_password: currentDataSource.dhis_password,
         };
+        delete currentDataSource.dhis_name;
         delete currentDataSource.dhis_login;
         delete currentDataSource.dhis_url;
         delete currentDataSource.dhis_password;
@@ -183,13 +185,22 @@ export class DataSourceDialogComponent extends Component {
                 value: isDefaultSource,
                 errors: [],
             },
-            // TODO get initial data
+            dhis_name: {
+                value: this.props.sourceCredentials.name
+                    ? this.props.sourceCredentials.name
+                    : '',
+                errors: [],
+            },
             dhis_url: {
-                value: '',
+                value: this.props.sourceCredentials.url
+                    ? this.props.sourceCredentials.url
+                    : '',
                 errors: [],
             },
             dhis_login: {
-                value: '',
+                value: this.props.sourceCredentials.login
+                    ? this.props.sourceCredentials.login
+                    : '',
                 errors: [],
             },
             dhis_password: {
@@ -207,6 +218,7 @@ export class DataSourceDialogComponent extends Component {
     }
 
     render() {
+        console.log('cred', this.props.sourceCredentials);
         const {
             renderTrigger,
             projects,
@@ -333,6 +345,15 @@ export class DataSourceDialogComponent extends Component {
                         <EditableTextFields
                             fields={[
                                 {
+                                    value: form.dhis_name.value,
+                                    keyValue: 'dhis_name',
+                                    errors: form.dhis_name.errors,
+                                    label: MESSAGES.dhisName,
+                                    onChange: (key, value) => {
+                                        this.setFieldValue(key, value);
+                                    },
+                                },
+                                {
                                     value: form.dhis_url.value,
                                     keyValue: 'dhis_url',
                                     errors: form.dhis_url.errors,
@@ -371,6 +392,7 @@ DataSourceDialogComponent.defaultProps = {
     defaultSourceVersion: null,
     currentUser: null,
     projects: [],
+    sourceCredentials: {},
 };
 DataSourceDialogComponent.propTypes = {
     dispatch: PropTypes.func.isRequired,
@@ -384,6 +406,7 @@ DataSourceDialogComponent.propTypes = {
     titleMessage: PropTypes.object.isRequired,
     currentUser: PropTypes.object,
     defaultSourceVersion: PropTypes.object,
+    sourceCredentials: PropTypes.object,
 };
 const mapStateToProps = state => ({
     projects: state.projects.allProjects,

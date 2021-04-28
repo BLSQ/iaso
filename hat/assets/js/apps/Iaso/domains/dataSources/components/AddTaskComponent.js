@@ -122,7 +122,11 @@ const AddTask = ({
         if (dhisOu) {
             closeDialogCallback();
             if (redirect) {
-                dispatch(redirectTo(baseUrls.tasks, {}));
+                dispatch(
+                    redirectTo(baseUrls.tasks, {
+                        order: '-created_at',
+                    }),
+                );
             }
             reset();
         }
@@ -220,7 +224,7 @@ const AddTask = ({
             maxWidth="sm"
             allowConfirm={allowConfirm}
             additionalButton
-            additionalMessage={MESSAGES.add}
+            additionalMessage={MESSAGES.goToCurrentTask}
             onAdditionalButtonClick={onRedirect}
         >
             <Grid container spacing={4} style={{ marginTop: '5px' }}>

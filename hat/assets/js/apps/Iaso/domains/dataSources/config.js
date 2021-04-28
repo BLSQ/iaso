@@ -92,6 +92,11 @@ const dataSourcesTableColumns = (
                         titleMessage={MESSAGES.updateDataSource}
                         key={settings.original.updated_at}
                         onSuccess={() => setForceRefresh(true)}
+                        sourceCredentials={
+                            settings.original.credentials
+                                ? settings.original.credentials
+                                : {}
+                        }
                     />
                     <AddTask
                         renderTrigger={({ openDialog }) => (

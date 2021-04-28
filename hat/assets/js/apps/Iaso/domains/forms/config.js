@@ -1,5 +1,4 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import moment from 'moment';
 import { Grid } from '@material-ui/core';
 import { Link } from 'react-router';
@@ -13,8 +12,6 @@ import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { deleteForm, fetchForms } from '../../utils/requests';
-import { setForms, setIsLoadingForm } from './actions';
 
 export const formVersionsTableColumns = (
     formatMessage,
@@ -94,6 +91,7 @@ const formsTableColumns = (
     component,
     showEditAction = true,
     showMappingAction = true,
+    deleteForm = null,
 ) => [
     {
         Header: formatMessage(MESSAGES.name),
@@ -244,36 +242,17 @@ const formsTableColumns = (
                             tooltipMessage={MESSAGES.dhis2Mappings}
                         />
                     )}
-                    <DispatchableDeleteDialog form={settings.original} />
+                    <DeleteDialog
+                        titleMessage={MESSAGES.deleteFormTitle}
+                        message={MESSAGES.deleteFormText}
+                        onConfirm={closeDialog =>
+                            deleteForm(settings.original.id).then(closeDialog)
+                        }
+                    />
                 </section>
             );
         },
     },
 ];
-
-const DispatchableDeleteDialog = ({ form }) => {
-    const dispatch = useDispatch();
-
-    return (
-        <DeleteDialog
-            titleMessage={MESSAGES.deleteFormTitle}
-            message={MESSAGES.deleteFormText}
-            onConfirm={() => {
-                deleteForm(dispatch, form.id).then(() => {
-                    dispatch(setIsLoadingForm(true));
-                    fetchForms(
-                        dispatch,
-                        '/api/forms/?&order=instance_updated_at&all=true',
-                    ).then(result => {
-                        dispatch(
-                            setForms(result.forms, result.count, result.pages),
-                        );
-                        dispatch(setIsLoadingForm(false));
-                    });
-                });
-            }}
-        />
-    );
-};
 
 export default formsTableColumns;

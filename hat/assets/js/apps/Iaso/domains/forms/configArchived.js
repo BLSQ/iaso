@@ -1,5 +1,4 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import moment from 'moment';
 import { Grid } from '@material-ui/core';
 import { Link } from 'react-router';
@@ -7,10 +6,8 @@ import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
-import { restoreForm, fetchForms } from '../../utils/requests';
-import { setForms, setIsLoadingForm } from './actions';
 
-const archivedTableColumn = formatMessage => [
+const archivedTableColumn = (formatMessage, restoreForm) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
@@ -126,36 +123,14 @@ const archivedTableColumn = formatMessage => [
         Cell: settings => {
             return (
                 <section>
-                    <DispatchableRestoreButton form={settings.original} />
+                    <IconButtonComponent
+                        onClick={() => restoreForm(settings.original.id)}
+                        icon="restore-from-trash"
+                        tooltipMessage={MESSAGES.restoreFormTooltip}
+                    />
                 </section>
             );
         },
     },
 ];
-
-const DispatchableRestoreButton = ({ form }) => {
-    const dispatch = useDispatch();
-
-    return (
-        <IconButtonComponent
-            onClick={() => {
-                restoreForm(dispatch, form.id).then(() => {
-                    dispatch(setIsLoadingForm(true));
-                    fetchForms(
-                        dispatch,
-                        '/api/forms/?&order=instance_updated_at&all=true&only_deleted=1',
-                    ).then(result => {
-                        dispatch(
-                            setForms(result.forms, result.count, result.pages),
-                        );
-                        dispatch(setIsLoadingForm(false));
-                    });
-                });
-            }}
-            icon="restore-from-trash"
-            tooltipMessage={MESSAGES.restoreFormTooltip}
-        />
-    );
-};
-
 export default archivedTableColumn;

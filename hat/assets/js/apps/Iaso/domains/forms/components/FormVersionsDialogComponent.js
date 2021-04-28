@@ -167,6 +167,7 @@ const FormVersionsDialogComponent = ({
                     {startPeriodInvalid && (
                         <Box mb={2} mt={-3}>
                             <Typography
+                                id="start-invalid"
                                 variant="body1"
                                 color="error"
                                 fontSize="small"
@@ -191,6 +192,7 @@ const FormVersionsDialogComponent = ({
                     {endPeriodInvalid && (
                         <Box mb={2} mt={-3}>
                             <Typography
+                                id="end-invalid"
                                 variant="body1"
                                 color="error"
                                 fontSize="small"
@@ -202,6 +204,7 @@ const FormVersionsDialogComponent = ({
                     {chronologicalError && (
                         <Box mb={2} mt={-1}>
                             <Typography
+                                id="chronological-error"
                                 variant="body1"
                                 color="error"
                                 fontSize="small"

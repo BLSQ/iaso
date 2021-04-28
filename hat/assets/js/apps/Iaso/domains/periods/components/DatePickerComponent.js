@@ -37,7 +37,6 @@ const DatePickerComponent = ({
     const classes = useStyles();
     const intl = useSafeIntl();
     const [dateError, setDateError] = useState(null);
-    console.log('currentDate', currentDate);
     return (
         <FormControl className={classes.formControl}>
             <KeyboardDatePicker

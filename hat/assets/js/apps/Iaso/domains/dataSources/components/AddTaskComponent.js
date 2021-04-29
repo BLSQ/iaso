@@ -159,11 +159,7 @@ const AddTask = ({
                 onChange: setWithExistingDhis2Settings,
             });
         }
-        return (
-            <>
-                <Checkboxes checkboxes={checkboxes} />
-            </>
-        );
+        return <Checkboxes checkboxes={checkboxes} />;
     };
 
     const renderWithOptionalFields = showDefaultOverride => {
@@ -218,7 +214,7 @@ const AddTask = ({
             titleMessage={titleMessage}
             onConfirm={onConfirm}
             // eslint-disable-next-line no-unused-vars
-            onClosed={closeDialog => reset()}
+            onClosed={reset}
             confirmMessage={MESSAGES.launch}
             cancelMessage={MESSAGES.cancel}
             maxWidth="sm"

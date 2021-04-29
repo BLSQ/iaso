@@ -26,7 +26,7 @@ export class DataSourceDialogComponent extends Component {
         super(props);
         this.state = {
             isDataTouched: false,
-            form: this.inititalForm(),
+            form: this.initialForm(),
             hasConfirmed: false,
         };
     }
@@ -44,6 +44,7 @@ export class DataSourceDialogComponent extends Component {
     }
 
     onConfirm(closeDialog) {
+        this.setState({ hasConfirmed: true });
         const { dispatch, initialData, onSuccess, currentUser } = this.props;
         const { form } = this.state;
         let saveCurrentDataSource;
@@ -53,17 +54,17 @@ export class DataSourceDialogComponent extends Component {
                 currentDataSource[key] = form[key].value;
             }
         });
-        this.setState({ hasConfirmed: true });
-        currentDataSource.credentials = {
-            dhis_name: currentDataSource.dhis_name,
-            dhis_login: currentDataSource.dhis_login,
-            dhis_url: currentDataSource.dhis_url,
-            dhis_password: currentDataSource.dhis_password,
-        };
-        delete currentDataSource.dhis_name;
-        delete currentDataSource.dhis_login;
-        delete currentDataSource.dhis_url;
-        delete currentDataSource.dhis_password;
+        console.log('currentDataSource', currentDataSource);
+        // currentDataSource.credentials = {
+        //     dhis_name: currentDataSource.dhis_name,
+        //     dhis_login: currentDataSource.dhis_login,
+        //     dhis_url: currentDataSource.dhis_url,
+        //     dhis_password: currentDataSource.dhis_password,
+        // };
+        // delete currentDataSource.dhis_name;
+        // delete currentDataSource.dhis_login;
+        // delete currentDataSource.dhis_url;
+        // delete currentDataSource.dhis_password;
         if (initialData === null) {
             saveCurrentDataSource = createDataSource(
                 dispatch,
@@ -124,11 +125,19 @@ export class DataSourceDialogComponent extends Component {
             ...form,
             [fieldName]: { value: fieldValue, errors: [] },
         };
-        const isDataTouched = !isEqual(this.inititalForm(), newForm);
-        this.setState({
-            form: newForm,
-            isDataTouched,
+        const isDataTouched = !isEqual(this.initialForm(), newForm);
+        this.setState(_ => {
+            return {
+                form: newForm,
+                isDataTouched,
+            };
         });
+    }
+
+    setCredentials(credentialsField, credentialsFieldValue) {
+        const newCredentials = { ...this.state.form.credentials.value };
+        newCredentials[credentialsField] = credentialsFieldValue;
+        this.setFieldValue('credentials', newCredentials);
     }
 
     setFieldErrors(fieldName, fieldErrors) {
@@ -143,7 +152,7 @@ export class DataSourceDialogComponent extends Component {
         });
     }
 
-    inititalForm() {
+    initialForm() {
         const { defaultSourceVersion } = this.props;
         const initialData = this.props.initialData
             ? this.props.initialData
@@ -185,26 +194,19 @@ export class DataSourceDialogComponent extends Component {
                 value: isDefaultSource,
                 errors: [],
             },
-            dhis_name: {
-                value: this.props.sourceCredentials.name
-                    ? this.props.sourceCredentials.name
-                    : '',
-                errors: [],
-            },
-            dhis_url: {
-                value: this.props.sourceCredentials.url
-                    ? this.props.sourceCredentials.url
-                    : '',
-                errors: [],
-            },
-            dhis_login: {
-                value: this.props.sourceCredentials.login
-                    ? this.props.sourceCredentials.login
-                    : '',
-                errors: [],
-            },
-            dhis_password: {
-                value: '',
+            credentials: {
+                value: {
+                    dhis_name: this.props.sourceCredentials.name
+                        ? this.props.sourceCredentials.name
+                        : '',
+                    dhis_url: this.props.sourceCredentials.url
+                        ? this.props.sourceCredentials.url
+                        : '',
+                    dhis_login: this.props.sourceCredentials.login
+                        ? this.props.sourceCredentials.login
+                        : '',
+                    dhis_password: '',
+                },
                 errors: [],
             },
         };
@@ -213,7 +215,7 @@ export class DataSourceDialogComponent extends Component {
     setInitialState() {
         this.setState({
             isDataTouched: false,
-            form: this.inititalForm(),
+            form: this.initialForm(),
         });
     }
 
@@ -344,38 +346,38 @@ export class DataSourceDialogComponent extends Component {
                         <EditableTextFields
                             fields={[
                                 {
-                                    value: form.dhis_name.value,
+                                    value: form.credentials.value.dhis_name,
                                     keyValue: 'dhis_name',
-                                    errors: form.dhis_name.errors,
+                                    errors: form.credentials.errors,
                                     label: MESSAGES.dhisName,
                                     onChange: (key, value) => {
-                                        this.setFieldValue(key, value);
+                                        this.setCredentials(key, value);
                                     },
                                 },
                                 {
-                                    value: form.dhis_url.value,
+                                    value: form.credentials.value.dhis_url,
                                     keyValue: 'dhis_url',
-                                    errors: form.dhis_url.errors,
+                                    errors: form.credentials.errors,
                                     label: MESSAGES.dhisUrl,
                                     onChange: (key, value) => {
-                                        this.setFieldValue(key, value);
+                                        this.setCredentials(key, value);
                                     },
                                 },
                                 {
-                                    value: form.dhis_login.value,
+                                    value: form.credentials.value.dhis_login,
                                     keyValue: 'dhis_login',
-                                    errors: form.dhis_login.errors,
+                                    errors: form.credentials.errors,
                                     label: MESSAGES.dhisLogin,
                                     onChange: (key, value) =>
-                                        this.setFieldValue(key, value),
+                                        this.setCredentials(key, value),
                                 },
                                 {
-                                    value: form.dhis_password.value,
+                                    value: form.credentials.value.dhis_password,
                                     keyValue: 'dhis_password',
-                                    errors: form.dhis_password.errors,
+                                    errors: form.credentials.errors,
                                     label: MESSAGES.dhisPassword,
                                     onChange: (key, value) =>
-                                        this.setFieldValue(key, value),
+                                        this.setCredentials(key, value),
                                     password: true,
                                 },
                             ]}

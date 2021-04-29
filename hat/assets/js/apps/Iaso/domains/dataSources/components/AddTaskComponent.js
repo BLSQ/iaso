@@ -14,7 +14,6 @@ import { useFormState } from '../../../hooks/form';
 
 const initialFormState = sourceCredentials => {
     return {
-        dhis2_name: sourceCredentials.name ? sourceCredentials.name : null,
         dhis2_url: sourceCredentials.url ? sourceCredentials.url : null,
         dhis2_login: sourceCredentials.login ? sourceCredentials.login : null,
         dhis2_password: null,
@@ -96,7 +95,6 @@ const AddTask = ({
     useEffect(() => {
         if (!withExistingDhis2Settings) {
             if (
-                form.dhis2_name.value &&
                 form.dhis2_url.value &&
                 form.dhis2_login.value &&
                 form.dhis2_password.value
@@ -110,7 +108,6 @@ const AddTask = ({
         }
     }, [
         withExistingDhis2Settings,
-        form.dhis2_name.value,
         form.dhis2_url.value,
         form.dhis2_login.value,
         form.dhis2_password.value,
@@ -169,14 +166,6 @@ const AddTask = ({
                 <Grid xs={12} item>
                     <EditableTextFields
                         fields={[
-                            {
-                                keyValue: 'dhis2_name',
-                                label: MESSAGES.dhisName,
-                                value: form.dhis2_name.value,
-                                onChange: (field, value) => {
-                                    setFormField(field, value);
-                                },
-                            },
                             {
                                 keyValue: 'dhis2_url',
                                 label: MESSAGES.dhisUrl,

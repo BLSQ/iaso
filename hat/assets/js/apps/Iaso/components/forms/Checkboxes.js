@@ -19,7 +19,7 @@ const Checkboxes = ({ checkboxes, inline }) => {
         />
     ));
 
-    return <Box style={{ ...style, paddingLeft: '10px' }}>{boxes}</Box>;
+    return <Box style={{ ...style }}>{boxes}</Box>;
 };
 
 Checkboxes.defaultProps = {

@@ -69,6 +69,7 @@ const AddTask = ({
         form.dhis2_password.value,
         form.validate_status.value,
         form.continue_on_error.value,
+        withExistingDhis2Settings,
     ]);
 
     // TODO check if sourceCredentials doesn't make reset refresh too many times
@@ -224,9 +225,13 @@ const AddTask = ({
             onAdditionalButtonClick={onRedirect}
         >
             <Grid container spacing={4} style={{ marginTop: '5px' }}>
-                {withExistingDhis2Settings
-                    ? renderDefaultLayout(!isEqual(sourceCredentials, {}))
-                    : renderWithOptionalFields(!isEqual(sourceCredentials, {}))}
+                {withExistingDhis2Settings ? (
+                    <Grid xs={12} item>
+                        {renderDefaultLayout(!isEqual(sourceCredentials, {}))}
+                    </Grid>
+                ) : (
+                    renderWithOptionalFields(!isEqual(sourceCredentials, {}))
+                )}
             </Grid>
         </ConfirmCancelDialogComponent>
     );

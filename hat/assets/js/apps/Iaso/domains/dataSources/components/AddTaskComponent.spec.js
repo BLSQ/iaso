@@ -1,16 +1,14 @@
 import React from 'react';
+import { act } from 'react-dom/test-utils';
+
 import nock from 'nock';
 
-import {
-    mockGetRequestsList,
-    mockPostRequest,
-} from '../../../../../test/utils/requests';
+import { AddTask } from './AddTaskComponent';
+import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
+import InputComponent from '../../../components/forms/InputComponent';
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import { mockPostRequest } from '../../../../../test/utils/requests';
 import { renderWithStore } from '../../../../../test/utils/redux';
-import { postRequest } from '../../../libs/Api';
-
-const mock = require('mock-require');
-
-mock('@material-ui/core/Dialog', ({ children }) => <>{children}</>);
 
 const existingCredentials = {
     name: 'Goron',
@@ -18,91 +16,189 @@ const existingCredentials = {
     url: '/api/divinebeast/vahnaboris',
 };
 
-const newCredentials = {
-    name: 'Rito',
-    login: 'Revali',
-    url: '/api/divinebeast/vahmedoh',
-    password: 'iamastoopidbird',
-};
-
 const SOURCE_ID = 1;
+const SOURCE_VERSION = 1;
 
-const requestWithDefaultCredentials = {
-    url: '/api/dhis2ouimporter/',
-    body: {
-        source_id: SOURCE_ID,
-        source_version_number: 1,
-        force: false,
-        continue_on_error: false,
-        validate_status: false,
-        dhis_url: existingCredentials.url,
-        dhis_login: existingCredentials.login,
-        dhis_name: existingCredentials.name,
-        dhis_password: null,
-    },
-};
-
-const requestWithNewCredentials = {
-    url: '/api/dhis2ouimporter/',
-    body: {
-        source_id: SOURCE_ID,
-        source_version_number: 2,
-        force: false,
-        continue_on_error: false,
-        validate_status: false,
-        dhis_url: newCredentials.url,
-        dhis_login: newCredentials.login,
-        dhis_name: newCredentials.name,
-        dhis_password: newCredentials.password,
-    },
-};
-const defautProps = {
-    renderTrigger: () => {},
-    titleMessage: { id: 'Title', defaultMessage: 'Title' },
-    source_id: SOURCE_ID,
-};
-
-describe('AddTaskComponent', () => {
-    describe('when it mounts', () => {
-        it('mounts correctly', () => {});
-        it('bumps the version number', () => {});
-        it('displays the source name', () => {});
+const awaitUseEffect = async wrapper => {
+    await act(async () => {
+        await Promise.resolve(wrapper);
+        await new Promise(resolve => setImmediate(resolve));
+        wrapper.update();
     });
-    // pass credentials in props
+    return Promise.resolve();
+};
+
+const fillFields = async (component, fieldKeys) => {
+    for (let i = 0; i < fieldKeys.length; i += 1) {
+        const keyValue = fieldKeys[i];
+        const element = component
+            .find(InputComponent)
+            .filter(`[keyValue="${keyValue}"]`);
+        expect(element.exists()).to.equal(true);
+        element.props().onChange(keyValue, 'LINK');
+        // eslint-disable-next-line no-await-in-loop
+        await awaitUseEffect(component);
+    }
+};
+
+let connectedWrapper;
+let inputComponent;
+let confirmCancelDialogComponent;
+
+const renderWrapper = credentials => {
+    connectedWrapper = mount(
+        renderWithStore(
+            <AddTask
+                sourceId={SOURCE_ID}
+                sourceVersion={SOURCE_VERSION}
+                titleMessage={{ id: 'Title', defaultMessage: 'Title' }}
+                onConfirmed={() => null}
+                sourceCredentials={credentials}
+                renderTrigger={({ openDialog }) => (
+                    <IconButtonComponent
+                        id="open-dialog"
+                        onClick={openDialog}
+                        icon="edit"
+                        tooltipMessage={{
+                            id: 'tooltip',
+                            defaultMessage: 'tooltip',
+                        }}
+                    />
+                )}
+            />,
+        ),
+    );
+    inputComponent = connectedWrapper.find('#open-dialog').at(0);
+    inputComponent.props().onClick();
+    connectedWrapper.update();
+};
+const credentialsFieldKeys = [
+    'dhis2_name',
+    'dhis2_url',
+    'dhis2_login',
+    'dhis2_password',
+];
+const checkBoxesKeys = [
+    {
+        keyValue: 'continue_on_error',
+        defaultValue: false,
+    },
+    {
+        keyValue: 'validate_status',
+        defaultValue: false,
+    },
+];
+describe('AddTaskComponent', () => {
     describe('when credentials exist', () => {
-        before(() => {
+        beforeEach(() => {
             nock.cleanAll();
             nock.abortPendingRequests();
-            mockPostRequest(requestWithDefaultCredentials);
-            mockPostRequest(requestWithNewCredentials);
+            mockPostRequest('/api/dhis2ouimporter/', {});
+            renderWrapper(existingCredentials);
+            confirmCancelDialogComponent = connectedWrapper.find(
+                ConfirmCancelDialogComponent,
+            );
         });
-        it('uses existing credentials by default', () => {});
-        it('displays necessary fields when unselecting defaults', () => {});
-        it("displays existing credentials in the form's fields", () => {});
+
+        it('mounts correctly', () => {
+            expect(connectedWrapper.exists()).to.equal(true);
+        });
+
+        it('onConfirm should submit form with source credentials', async () => {
+            confirmCancelDialogComponent.props().onConfirm(() => null);
+            await awaitUseEffect(connectedWrapper);
+            expect(nock.activeMocks()).to.have.lengthOf(0);
+        });
+
+        it('displays necessary fields when unselecting defaults', async () => {
+            // First check that fields are not present
+            credentialsFieldKeys.forEach(keyValue => {
+                const element = connectedWrapper
+                    .find(InputComponent)
+                    .filter(`[keyValue="${keyValue}"]`);
+                expect(element.exists()).to.equal(false);
+            });
+            // unselect use source creds
+            const checkbox = connectedWrapper
+                .find(InputComponent)
+                .filter('[keyValue="change_source"]');
+            expect(checkbox.exists()).to.equal(true);
+            checkbox.props().onChange('change_source', false);
+            await awaitUseEffect(connectedWrapper);
+            // Check that fields are present with correct values
+            credentialsFieldKeys.forEach(keyValue => {
+                const element = connectedWrapper
+                    .find(InputComponent)
+                    .filter(`[keyValue="${keyValue}"]`);
+                expect(element.exists()).to.equal(true);
+            });
+        });
+
+        it('allow confirm should be true if all fields are filled', async () => {
+            // TODO extract logic
+            const checkbox = connectedWrapper
+                .find(InputComponent)
+                .filter('[keyValue="change_source"]');
+            checkbox.props().onChange('change_source', false);
+            connectedWrapper.update();
+            await fillFields(connectedWrapper, credentialsFieldKeys);
+            await awaitUseEffect(connectedWrapper);
+            expect(confirmCancelDialogComponent.exists()).to.equal(true);
+            expect(confirmCancelDialogComponent.props().allowConfirm).to.equal(
+                true,
+            );
+        });
+
+        it('onChange on checkBoxes change their values', () => {
+            // for each checkbox in array
+            checkBoxesKeys.forEach(async c => {
+                let checkbox = connectedWrapper
+                    .find(InputComponent)
+                    .filter(`[keyValue="${c.keyValue}"]`);
+                expect(checkbox.exists()).to.equal(true);
+                // Check original value
+                expect(checkbox.props().value).to.equal(c.defaultValue);
+                // Change the value
+                checkbox.props().onChange(c.keyValue, true);
+                connectedWrapper.update();
+                checkbox = connectedWrapper
+                    .find(InputComponent)
+                    .filter(`[keyValue="${c.keyValue}"]`);
+                // Check the newValue
+                expect(checkbox.props().value).to.equal(!c.defaultValue);
+            });
+        });
+
+        it('onConfirm should submit form', async () => {
+            let checkbox = connectedWrapper
+                .find(InputComponent)
+                .filter('[keyValue="change_source"]');
+            checkbox.props().onChange('change_source', false);
+            await awaitUseEffect(connectedWrapper);
+            checkbox = connectedWrapper
+                .find(InputComponent)
+                .filter('[keyValue="change_source"]');
+            expect(checkbox.props().value).to.equal(false);
+            await fillFields(connectedWrapper, credentialsFieldKeys);
+            await awaitUseEffect(connectedWrapper);
+            confirmCancelDialogComponent.props().onConfirm(() => null);
+            await awaitUseEffect(connectedWrapper);
+            expect(nock.activeMocks()).to.have.lengthOf(0);
+        });
+
+        it('onRedirect should submit form', async () => {
+            const closeDialogSpy = sinon.spy();
+            confirmCancelDialogComponent
+                .props()
+                .onAdditionalButtonClick(() => closeDialogSpy());
+            await awaitUseEffect(connectedWrapper);
+            expect(nock.activeMocks()).to.have.lengthOf(0);
+        });
     });
     describe("when credentials don't exist", () => {
-        it('displays necessary fields', () => {});
-        it('does not offer option to use existing credentials', () => {});
-    });
-    describe('when user fills in custom credentials', () => {
-        it('does not allow submitting if a field is empty', () => {});
-    });
-    describe("when user clicks 'Launch'", () => {
-        it('submits the form', () => {});
-        it('closes the modal', () => {});
-        it('displays snack bar', () => {});
-    });
-    describe("when user clicks 'Launch and go to task", () => {
-        it('submits the form', () => {});
-        it('closes the modal', () => {});
-        it('displays snack bar', () => {});
-        it('redirects to tasks page', () => {});
-    });
-    describe("when user clicks 'Cancel'", () => {
-        it('resets all field values', () => {});
-    });
-    describe('when the API return an error', () => {
-        it('closes the modal', () => {});
-        it('displays an error snack bar', () => {});
+        it('mounts correctly', () => {
+            renderWrapper();
+            expect(connectedWrapper.exists()).to.equal(true);
+        });
     });
 });

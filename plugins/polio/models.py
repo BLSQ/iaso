@@ -34,8 +34,8 @@ class Round(models.Model):
     im_ended_at = models.DateTimeField(null=True, blank=True)
     lqas_started_at = models.DateTimeField(null=True, blank=True)
     lqas_ended_at = models.DateTimeField(null=True, blank=True)
+    target_population = models.IntegerField()
     cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-
 
 
 class Campaign(models.Model):
@@ -82,11 +82,52 @@ class Campaign(models.Model):
     virus = models.CharField(max_length=6, choices=VIRUSES, null=True, blank=True)
     vacine = models.CharField(max_length=5, choices=VACINES, null=True, blank=True)
 
+    # Detection
     # TODO: Choices?
     detection_status = models.CharField(max_length=10)
+    detection_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
 
-    responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
+    # Risk Assessement
+    risk_assessement_status = models.CharField(max_length=5)
+    risk_assessement_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
+    investigation_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("Field Investigation Date"),
+    )
+    first_draft_submitted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("1st Draft Submission"),
+    )
+    rrt_oprtt_approval_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("RRT/OPRTT Approval"),
+    )
+    ag_nopv_group_met_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("AG/nOPV Group"),
+    )
+    dg_authorized_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("DG Authorization"),
+    )
 
+    # Budget
+    budget_status = models.CharField(max_length=5)
+    budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
+
+    eomg = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("EOMG"),
+    )
+    no_regret_fund_amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # Rounds
     round_one = models.ForeignKey(Round, on_delete=models.PROTECT, related_name="round_one")
     round_two = models.ForeignKey(Round, on_delete=models.PROTECT, related_name="round_two")
 

@@ -46,13 +46,14 @@ const useStyles = makeStyles(theme => ({
         marginBottom: 16,
     },
     form: {
-        marginTop: 32,
+        margin: 32,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
     },
     round1FormCalculations: {
-        marginTop: 32,
+        marginTop: 64,
+        marginBottom: 32,
     },
     input: {
         marginTop: 32,
@@ -106,6 +107,7 @@ const DateInput = props => {
             InputLabelProps={{
                 shrink: true,
             }}
+            variant={'outlined'}
             size={'medium'}
             {...props}
         />
@@ -134,7 +136,27 @@ const Round1Form = () => {
     );
 };
 const Round2Form = () => {
-    return <div>Round 2</div>;
+    const classes = useStyles();
+
+    return (
+        <>
+            <DateInput label={'Round 2 Start'} />
+            <DateInput label={'Round 2 End'} />
+            <DateInput label={'Mop Up Start'} />
+            <DateInput label={'Mop Up End'} />
+            <Box className={classes.round1FormCalculations}>
+                <Typography>
+                    Percentage of districts passing LQAS: 96% (182 passing / 192
+                    received / 200 total)
+                </Typography>
+                <Typography>Percentage of missed children: 10%</Typography>
+            </Box>
+            <DateInput label={'IM Start'} />
+            <DateInput label={'IM End'} />
+            <DateInput label={'LQAS Start'} />
+            <DateInput label={'LQAS End'} />
+        </>
+    );
 };
 
 const Form = ({ children }) => {

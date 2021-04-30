@@ -11,6 +11,8 @@ import {
     DialogContent,
     DialogTitle,
     DialogActions,
+    Tabs,
+    Tab,
 } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
@@ -57,6 +59,42 @@ const PageAction = ({ icon: Icon, onClick }) => {
             <Icon className={classes.buttonIcon} />
             Create
         </Button>
+    );
+};
+
+const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
+    const classes = useStyles();
+
+    return (
+        <Dialog
+            fullWidth
+            maxWidth={'sm'}
+            open={isOpen}
+            onBackdropClick={onClose}
+            scroll="body"
+        >
+            <DialogTitle className={classes.title}>Create campaign</DialogTitle>
+            <DialogContent className={classes.content}>
+                <Tabs
+                    value={''}
+                    textColor={'primary'}
+                    // onChange={handleChange}
+                    aria-label="disabled tabs example"
+                >
+                    <Tab label="Active" />
+                    <Tab label="Disabled" />
+                    <Tab label="Active" />
+                </Tabs>
+            </DialogContent>
+            <DialogActions className={classes.action}>
+                <Button onClick={onCancel} color="primary">
+                    Cancel
+                </Button>
+                <Button onClick={onConfirm} color="primary" autoFocus disabled>
+                    Confirm
+                </Button>
+            </DialogActions>
+        </Dialog>
     );
 };
 
@@ -116,34 +154,12 @@ export const Dashboard = () => {
 
     return (
         <>
-            <Dialog
-                fullWidth
-                maxWidth={'sm'}
-                open={isCreateDialogOpen}
-                onBackdropClick={() => setIsCreateDialogOpen(false)}
-                scroll="body"
-            >
-                <DialogTitle className={classes.title}>
-                    Create campaign
-                </DialogTitle>
-                <DialogContent className={classes.content}></DialogContent>
-                <DialogActions className={classes.action}>
-                    <Button
-                        onClick={() => setIsCreateDialogOpen(false)}
-                        color="primary"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={() => setIsCreateDialogOpen(false)}
-                        color="primary"
-                        autoFocus
-                        disabled
-                    >
-                        Confirm
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <CreateDialog
+                isOpen={isCreateDialogOpen}
+                onCancel={() => setIsCreateDialogOpen(false)}
+                onClose={() => setIsCreateDialogOpen(false)}
+                onConfirm={() => console.log('confirm')}
+            />
             <Layout title={'Campaigns for DRC'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <Grid

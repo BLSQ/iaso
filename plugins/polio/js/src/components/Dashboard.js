@@ -27,16 +27,11 @@ export const Dashboard = () => {
     const data = useMemo(
         () => [
             {
-                col1: 'Hello',
-                col2: 'World',
-            },
-            {
-                col1: 'react-table',
-                col2: 'rocks',
-            },
-            {
-                col1: 'whatever',
-                col2: 'you want',
+                name: 'DRC-39DS-01-2021',
+                notificationDate: '02-20-2021',
+                status: 'Risk Assessment Required',
+                duration: '4',
+                actions: 'Edit',
             },
         ],
         [],
@@ -45,12 +40,24 @@ export const Dashboard = () => {
     const columns = useMemo(
         () => [
             {
-                Header: 'Column 1',
-                accessor: 'col1',
+                Header: 'Name',
+                accessor: 'name',
             },
             {
-                Header: 'Column 2',
-                accessor: 'col2',
+                Header: 'cVDPV2 Notification Date',
+                accessor: 'notificationDate',
+            },
+            {
+                Header: 'Status',
+                accessor: 'status',
+            },
+            {
+                Header: 'Duration (days)',
+                accessor: 'duration',
+            },
+            {
+                Header: 'Actions',
+                accessor: 'actions',
             },
         ],
         [],

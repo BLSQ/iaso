@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { useTable } from 'react-table';
+
+import { Box, makeStyles, IconButton, Grid, Button } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
-import { Box, makeStyles, IconButton } from '@material-ui/core';
+import AddIcon from '@material-ui/icons/Add';
 
 import commonStyles from '../styles/common';
 
@@ -23,20 +25,27 @@ const useStyles = makeStyles(theme => ({
     tableRow: {
         display: 'flex',
     },
+    pageActions: {
+        marginBottom: 16,
+    },
 }));
 
-const Actions = () => {
-    return <Action icon={EditIcon} />;
-};
-
-const Action = ({ icon: Icon, color, onClick }) => {
+const RowAction = ({ icon: Icon, onClick }) => {
     return (
         <IconButton onClick={onClick}>
-            <Icon
-                color={color === 'white' ? 'inherit' : color}
-                style={color === 'white' ? { color: 'white' } : {}}
-            />
+            <Icon />
         </IconButton>
+    );
+};
+
+const PageAction = ({ icon: Icon, onClick }) => {
+    const classes = useStyles();
+
+    return (
+        <Button variant="contained" color="primary" onClick={onClick}>
+            <AddIcon className={classes.buttonIcon} />
+            Create
+        </Button>
     );
 };
 
@@ -50,7 +59,7 @@ export const Dashboard = () => {
                 notificationDate: '02-20-2021',
                 status: 'Risk Assessment Required',
                 duration: '4',
-                actions: <Actions />,
+                actions: <RowAction icon={EditIcon} />,
             },
         ],
         [],
@@ -95,6 +104,23 @@ export const Dashboard = () => {
     return (
         <Layout title={'Campaigns for DRC'}>
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <Grid
+                    container
+                    className={classes.pageActions}
+                    spacing={4}
+                    justify="flex-end"
+                    alignItems="center"
+                >
+                    <Grid
+                        item
+                        xs={4}
+                        container
+                        justify="flex-end"
+                        alignItems="center"
+                    >
+                        <PageAction icon={EditIcon} />
+                    </Grid>
+                </Grid>
                 <table className={classes.table} {...getTableProps()}>
                     <thead>
                         {headerGroups.map(headerGroup => (

@@ -8,5 +8,5 @@ class CampaignViewSet(viewsets.ModelViewSet):
     serializer_class = CampaignSerializer
 
 
-router = routers.DefaultRouter()
-router.register(r'campaigns', CampaignViewSet)
+router = routers.SimpleRouter()
+router.register(r'polio/campaigns', CampaignViewSet)

@@ -13,6 +13,7 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     table: {
         borderSpacing: 0,
+        width: '100%',
         border: '1px solid rgba(0,0,0,0.1)',
     },
     tableHeader: {

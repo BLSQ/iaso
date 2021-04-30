@@ -6,7 +6,7 @@ import commonStyles from '../../styles/common';
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     root: {
-        width: '240px',
+        flex: 1,
         height: '68px',
         border: '1px solid rgba(0,0,0,0.02)',
         backgroundColor: 'rgba(0,0,0,0.03)',

@@ -6,7 +6,7 @@ import commonStyles from '../../styles/common';
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     root: {
-        width: '240px',
+        flex: 1,
         height: '40px',
         borderRight: '1px solid #ccc',
         // boxShadow: 'inset 0 3px 0 0 #3f51b5',

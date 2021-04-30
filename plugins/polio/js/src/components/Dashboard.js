@@ -10,6 +10,7 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
+    DialogActions,
 } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
@@ -119,16 +120,29 @@ export const Dashboard = () => {
                 fullWidth
                 maxWidth={'sm'}
                 open={isCreateDialogOpen}
-                classes={{
-                    paper: classes.paper,
-                }}
                 onBackdropClick={() => setIsCreateDialogOpen(false)}
                 scroll="body"
             >
                 <DialogTitle className={classes.title}>title</DialogTitle>
                 <DialogContent className={classes.content}>
-                    Lorem ipsum
+                    Create campaign
                 </DialogContent>
+                <DialogActions className={classes.action}>
+                    <Button
+                        onClick={() => setIsCreateDialogOpen(false)}
+                        color="primary"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={() => setIsCreateDialogOpen(false)}
+                        color="primary"
+                        autoFocus
+                        disabled
+                    >
+                        Confirm
+                    </Button>
+                </DialogActions>
             </Dialog>
             <Layout title={'Campaigns for DRC'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>

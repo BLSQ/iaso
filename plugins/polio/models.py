@@ -102,20 +102,20 @@ class Campaign(models.Model):
         verbose_name=_("RRT/OPRTT Approval"),
     )
 
-    # Risk Assessement
-    risk_assessement_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
-    risk_assessement_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
+    # Risk Assessment
+    risk_assessment_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
+    risk_assessment_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
     investigation_at = models.DateTimeField(
         null=True,
         blank=True,
         verbose_name=_("Field Investigation Date"),
     )
-    risk_assessement_first_draft_submitted_at = models.DateTimeField(
+    risk_assessment_first_draft_submitted_at = models.DateTimeField(
         null=True,
         blank=True,
         verbose_name=_("1st Draft Submission"),
     )
-    risk_assessement_rrt_oprtt_approval_at = models.DateTimeField(
+    risk_assessment_rrt_oprtt_approval_at = models.DateTimeField(
         null=True,
         blank=True,
         verbose_name=_("RRT/OPRTT Approval"),

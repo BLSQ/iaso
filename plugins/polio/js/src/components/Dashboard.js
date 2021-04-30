@@ -1,8 +1,10 @@
-import { Box, makeStyles } from '@material-ui/core';
 import { useMemo } from 'react';
 import { useTable } from 'react-table';
+import EditIcon from '@material-ui/icons/Edit';
+import { Box, makeStyles, IconButton } from '@material-ui/core';
 
 import commonStyles from '../styles/common';
+
 import { TableHeader } from './Table/TableHeader';
 import { TableCell } from './Table/TableCell';
 
@@ -21,6 +23,21 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+const Actions = () => {
+    return <Action icon={EditIcon} />;
+};
+
+const Action = ({ icon: Icon, color, onClick }) => {
+    return (
+        <IconButton onClick={onClick}>
+            <Icon
+                color={color === 'white' ? 'inherit' : color}
+                style={color === 'white' ? { color: 'white' } : {}}
+            />
+        </IconButton>
+    );
+};
+
 export const Dashboard = () => {
     const classes = useStyles();
 
@@ -31,7 +48,7 @@ export const Dashboard = () => {
                 notificationDate: '02-20-2021',
                 status: 'Risk Assessment Required',
                 duration: '4',
-                actions: 'Edit',
+                actions: <Actions />,
             },
         ],
         [],

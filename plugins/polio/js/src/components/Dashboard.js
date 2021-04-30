@@ -98,6 +98,24 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
     );
 };
 
+const PageActions = ({ children }) => {
+    const classes = useStyles();
+
+    return (
+        <Grid
+            container
+            className={classes.pageActions}
+            spacing={4}
+            justify="flex-end"
+            alignItems="center"
+        >
+            <Grid item xs={4} container justify="flex-end" alignItems="center">
+                {children}
+            </Grid>
+        </Grid>
+    );
+};
+
 export const Dashboard = () => {
     const classes = useStyles();
 
@@ -162,26 +180,12 @@ export const Dashboard = () => {
             />
             <Layout title={'Campaigns for DRC'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    <Grid
-                        container
-                        className={classes.pageActions}
-                        spacing={4}
-                        justify="flex-end"
-                        alignItems="center"
-                    >
-                        <Grid
-                            item
-                            xs={4}
-                            container
-                            justify="flex-end"
-                            alignItems="center"
-                        >
-                            <PageAction
-                                icon={AddIcon}
-                                onClick={() => setIsCreateDialogOpen(true)}
-                            />
-                        </Grid>
-                    </Grid>
+                    <PageActions>
+                        <PageAction
+                            icon={AddIcon}
+                            onClick={() => setIsCreateDialogOpen(true)}
+                        />
+                    </PageActions>
                     <table className={classes.table} {...getTableProps()}>
                         <thead>
                             {headerGroups.map(headerGroup => (

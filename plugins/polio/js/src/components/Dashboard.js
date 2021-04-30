@@ -1,7 +1,16 @@
 import { useMemo } from 'react';
 import { useTable } from 'react-table';
 
-import { Box, makeStyles, IconButton, Grid, Button } from '@material-ui/core';
+import {
+    Box,
+    makeStyles,
+    IconButton,
+    Grid,
+    Button,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+} from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
 
@@ -10,6 +19,7 @@ import commonStyles from '../styles/common';
 import { TableHeader } from './Table/TableHeader';
 import { TableCell } from './Table/TableCell';
 import { Layout } from './Layout';
+import { useState } from 'react';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -43,7 +53,7 @@ const PageAction = ({ icon: Icon, onClick }) => {
 
     return (
         <Button variant="contained" color="primary" onClick={onClick}>
-            <AddIcon className={classes.buttonIcon} />
+            <Icon className={classes.buttonIcon} />
             Create
         </Button>
     );
@@ -51,6 +61,8 @@ const PageAction = ({ icon: Icon, onClick }) => {
 
 export const Dashboard = () => {
     const classes = useStyles();
+
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
     const data = useMemo(
         () => [
@@ -102,61 +114,85 @@ export const Dashboard = () => {
     } = tableInstance;
 
     return (
-        <Layout title={'Campaigns for DRC'}>
-            <Box className={classes.containerFullHeightNoTabPadded}>
-                <Grid
-                    container
-                    className={classes.pageActions}
-                    spacing={4}
-                    justify="flex-end"
-                    alignItems="center"
-                >
+        <>
+            <Dialog
+                fullWidth
+                maxWidth={'sm'}
+                open={isCreateDialogOpen}
+                classes={{
+                    paper: classes.paper,
+                }}
+                onBackdropClick={() => setIsCreateDialogOpen(false)}
+                scroll="body"
+            >
+                <DialogTitle className={classes.title}>title</DialogTitle>
+                <DialogContent className={classes.content}>
+                    Lorem ipsum
+                </DialogContent>
+            </Dialog>
+            <Layout title={'Campaigns for DRC'}>
+                <Box className={classes.containerFullHeightNoTabPadded}>
                     <Grid
-                        item
-                        xs={4}
                         container
+                        className={classes.pageActions}
+                        spacing={4}
                         justify="flex-end"
                         alignItems="center"
                     >
-                        <PageAction icon={EditIcon} />
+                        <Grid
+                            item
+                            xs={4}
+                            container
+                            justify="flex-end"
+                            alignItems="center"
+                        >
+                            <PageAction
+                                icon={AddIcon}
+                                onClick={() => setIsCreateDialogOpen(true)}
+                            />
+                        </Grid>
                     </Grid>
-                </Grid>
-                <table className={classes.table} {...getTableProps()}>
-                    <thead>
-                        {headerGroups.map(headerGroup => (
-                            <tr
-                                className={classes.tableHeader}
-                                {...headerGroup.getHeaderGroupProps()}
-                            >
-                                {headerGroup.headers.map(column => (
-                                    <TableHeader {...column.getHeaderProps()}>
-                                        {column.render('Header')}
-                                    </TableHeader>
-                                ))}
-                            </tr>
-                        ))}
-                    </thead>
-                    <tbody {...getTableBodyProps()}>
-                        {rows.map(row => {
-                            prepareRow(row);
-                            return (
+                    <table className={classes.table} {...getTableProps()}>
+                        <thead>
+                            {headerGroups.map(headerGroup => (
                                 <tr
-                                    className={classes.tableRow}
-                                    {...row.getRowProps()}
+                                    className={classes.tableHeader}
+                                    {...headerGroup.getHeaderGroupProps()}
                                 >
-                                    {row.cells.map(cell => {
-                                        return (
-                                            <TableCell {...cell.getCellProps()}>
-                                                {cell.render('Cell')}
-                                            </TableCell>
-                                        );
-                                    })}
+                                    {headerGroup.headers.map(column => (
+                                        <TableHeader
+                                            {...column.getHeaderProps()}
+                                        >
+                                            {column.render('Header')}
+                                        </TableHeader>
+                                    ))}
                                 </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </Box>
-        </Layout>
+                            ))}
+                        </thead>
+                        <tbody {...getTableBodyProps()}>
+                            {rows.map(row => {
+                                prepareRow(row);
+                                return (
+                                    <tr
+                                        className={classes.tableRow}
+                                        {...row.getRowProps()}
+                                    >
+                                        {row.cells.map(cell => {
+                                            return (
+                                                <TableCell
+                                                    {...cell.getCellProps()}
+                                                >
+                                                    {cell.render('Cell')}
+                                                </TableCell>
+                                            );
+                                        })}
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </Box>
+            </Layout>
+        </>
     );
 };

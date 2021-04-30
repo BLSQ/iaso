@@ -13,6 +13,8 @@ import {
     DialogActions,
     Tabs,
     Tab,
+    TextField,
+    Typography,
 } from '@material-ui/core';
 
 import EditIcon from '@material-ui/icons/Edit';
@@ -45,6 +47,18 @@ const useStyles = makeStyles(theme => ({
     },
     form: {
         marginTop: 32,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+    },
+    round1FormCalculations: {
+        marginTop: 32,
+    },
+    input: {
+        marginTop: 32,
+    },
+    tabs: {
+        borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
     },
 }));
 
@@ -79,8 +93,45 @@ const RiskAssessmentForm = () => {
 const BudgetForm = () => {
     return <div>Budget</div>;
 };
+
+const DateInput = props => {
+    const classes = useStyles();
+
+    return (
+        <TextField
+            className={classes.input}
+            displayEmpty
+            id="date"
+            type="date"
+            InputLabelProps={{
+                shrink: true,
+            }}
+            size={'medium'}
+            {...props}
+        />
+    );
+};
+
 const Round1Form = () => {
-    return <div>Round 1</div>;
+    const classes = useStyles();
+
+    return (
+        <>
+            <DateInput label={'Round 1 Start'} />
+            <DateInput label={'Round 1 End'} />
+            <DateInput label={'Mop Up Start'} />
+            <DateInput label={'Mop Up End'} />
+            <Box className={classes.round1FormCalculations}>
+                <Typography>
+                    Percentage of districts passing LQAS: 96% (182 passing / 192
+                    received / 200 total)
+                </Typography>
+                <Typography>Percentage of missed children: 10%</Typography>
+            </Box>
+            <DateInput label={'IM Start'} />
+            <DateInput label={'IM End'} />
+        </>
+    );
 };
 const Round2Form = () => {
     return <div>Round 2</div>;
@@ -90,9 +141,14 @@ const Form = ({ children }) => {
     const classes = useStyles();
 
     return (
-        <form className={classes.form} noValidate autoComplete="off">
+        <Box
+            component="form"
+            className={classes.form}
+            noValidate
+            autoComplete="off"
+        >
             {children}
-        </form>
+        </Box>
     );
 };
 
@@ -126,7 +182,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
         },
     ];
 
-    const [value, setValue] = useState(0);
+    const [value, setValue] = useState(4);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -146,6 +202,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
             <DialogContent className={classes.content}>
                 <Tabs
                     value={value}
+                    className={classes.tabs}
                     textColor={'primary'}
                     onChange={handleChange}
                     aria-label="disabled tabs example"

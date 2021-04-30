@@ -25,6 +25,7 @@ import { TableCell } from './Table/TableCell';
 
 import { Page } from './Page';
 import { useState } from 'react';
+import { useEffect } from 'react';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -67,7 +68,17 @@ const PageAction = ({ icon: Icon, onClick }) => {
 const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
     const classes = useStyles();
 
-    const [value, setValue] = useState();
+    const steps = [
+        'Base info',
+        'Detection',
+        'Risk Assessment',
+        'Budget',
+        'Preparedness',
+        'Round 1',
+        'Round 2',
+    ];
+
+    const [value, setValue] = useState(0);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -76,7 +87,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
     return (
         <Dialog
             fullWidth
-            maxWidth={'sm'}
+            maxWidth={'lg'}
             open={isOpen}
             onBackdropClick={onClose}
             scroll="body"
@@ -89,13 +100,9 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
                     onChange={handleChange}
                     aria-label="disabled tabs example"
                 >
-                    <Tab label="Base info" />
-                    <Tab label="Detection" />
-                    <Tab label="Risk Assessment" />
-                    <Tab label="Budget" />
-                    <Tab label="Preparedness" />
-                    <Tab label="Round 1" />
-                    <Tab label="Round 2" />
+                    {steps.map(step => (
+                        <Tab label={step} />
+                    ))}
                 </Tabs>
             </DialogContent>
             <DialogActions className={classes.action}>

@@ -32,7 +32,7 @@ STATUS = [
 
 
 class Round(models.Model):
-    started_at = models.DateTimeField()
+    started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     mop_up_started_at = models.DateTimeField(null=True, blank=True)
     mop_up_ended_at = models.DateTimeField(null=True, blank=True)
@@ -40,8 +40,8 @@ class Round(models.Model):
     im_ended_at = models.DateTimeField(null=True, blank=True)
     lqas_started_at = models.DateTimeField(null=True, blank=True)
     lqas_ended_at = models.DateTimeField(null=True, blank=True)
-    target_population = models.IntegerField()
-    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    target_population = models.IntegerField(null=True, blank=True)
+    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, null=True, blank=True)
 
 
 class Campaign(models.Model):

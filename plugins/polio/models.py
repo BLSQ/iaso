@@ -24,6 +24,11 @@ RESPONSIBLES = [
     ('DIST', _('District')),
 ]
 
+STATUS = [
+    ('PENDING', _('Pending')),
+    ('ONGOING', _('Ongoing')),
+    ('FINISHED', _('Finished')),
+]
 
 class Round(models.Model):
     started_at = models.DateTimeField()
@@ -84,11 +89,11 @@ class Campaign(models.Model):
 
     # Detection
     # TODO: Choices?
-    detection_status = models.CharField(max_length=10)
+    detection_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
     detection_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
 
     # Risk Assessement
-    risk_assessement_status = models.CharField(max_length=5)
+    risk_assessement_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
     risk_assessement_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
     investigation_at = models.DateTimeField(
         null=True,
@@ -117,7 +122,7 @@ class Campaign(models.Model):
     )
 
     # Budget
-    budget_status = models.CharField(max_length=5)
+    budget_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
 
     eomg = models.DateTimeField(

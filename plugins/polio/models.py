@@ -30,6 +30,7 @@ STATUS = [
     ('FINISHED', _('Finished')),
 ]
 
+
 class Round(models.Model):
     started_at = models.DateTimeField()
     ended_at = models.DateTimeField(null=True, blank=True)
@@ -44,7 +45,7 @@ class Round(models.Model):
 
 
 class Campaign(models.Model):
-    id = models.UUIDField(default=uuid4, primary_key=True)
+    id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     epid = models.CharField(default="", max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
@@ -52,19 +53,26 @@ class Campaign(models.Model):
     initial_org_unit = models.ForeignKey(
         'iaso.orgunit',
         null=True,
+        blank=True,
         on_delete=models.SET_NULL,
         related_name="campaigns"
     )
 
-    onset_at = models.DateTimeField(null=True, help_text=_("When the campaign starts"))
+    onset_at = models.DateTimeField(
+        null=True,
+        help_text=_("When the campaign starts"),
+        blank=True,
+    )
 
     three_level_call_at = models.DateTimeField(
         null=True,
+        blank=True,
         verbose_name=_("3 level call"),
     )
 
     cvdpv_notified_at = models.DateTimeField(
         null=True,
+        blank=True,
         verbose_name=_("cVDPV Notication"),
     )
     cvdpv2_notified_at = models.DateTimeField(
@@ -75,6 +83,7 @@ class Campaign(models.Model):
 
     pv_notified_at = models.DateTimeField(
         null=True,
+        blank=True,
         verbose_name=_("PV Notication"),
     )
 
@@ -89,7 +98,12 @@ class Campaign(models.Model):
 
     # Detection
     detection_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
-    detection_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
+    detection_responsible = models.CharField(
+        max_length=10,
+        choices=RESPONSIBLES,
+        null=True,
+        blank=True
+    )
     detection_first_draft_submitted_at = models.DateTimeField(
         null=True,
         blank=True,
@@ -103,7 +117,12 @@ class Campaign(models.Model):
 
     # Risk Assessment
     risk_assessment_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
-    risk_assessment_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
+    risk_assessment_responsible = models.CharField(
+        max_length=10,
+        choices=RESPONSIBLES,
+        null=True,
+        blank=True
+    )
     investigation_at = models.DateTimeField(
         null=True,
         blank=True,
@@ -132,18 +151,40 @@ class Campaign(models.Model):
 
     # Budget
     budget_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
-    budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
+    budget_responsible = models.CharField(
+        max_length=10,
+        choices=RESPONSIBLES,
+        null=True,
+        blank=True
+    )
 
     eomg = models.DateTimeField(
         null=True,
         blank=True,
         verbose_name=_("EOMG"),
     )
-    no_regret_fund_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    no_regret_fund_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
 
     # Rounds
-    round_one = models.ForeignKey(Round, on_delete=models.PROTECT, related_name="round_one")
-    round_two = models.ForeignKey(Round, on_delete=models.PROTECT, related_name="round_two")
+    round_one = models.OneToOneField(
+        Round,
+        on_delete=models.PROTECT,
+        related_name="round_one",
+        null=True,
+        blank=True
+    )
+    round_two = models.OneToOneField(
+        Round,
+        on_delete=models.PROTECT,
+        related_name="round_two",
+        null=True,
+        blank=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -3,9 +3,17 @@ import { useMemo } from 'react';
 import { useTable } from 'react-table';
 
 import commonStyles from '../styles/common';
+import { TableHeader } from './Table/TableHeader';
+import { TableCell } from './Table/TableCell';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    tableHeader: {
+        display: 'flex',
+    },
+    tableRow: {
+        display: 'flex',
+    },
 }));
 
 export const Dashboard = () => {
@@ -58,11 +66,14 @@ export const Dashboard = () => {
             <table {...getTableProps()}>
                 <thead>
                     {headerGroups.map(headerGroup => (
-                        <tr {...headerGroup.getHeaderGroupProps()}>
+                        <tr
+                            className={classes.tableHeader}
+                            {...headerGroup.getHeaderGroupProps()}
+                        >
                             {headerGroup.headers.map(column => (
-                                <th {...column.getHeaderProps()}>
+                                <TableHeader {...column.getHeaderProps()}>
                                     {column.render('Header')}
-                                </th>
+                                </TableHeader>
                             ))}
                         </tr>
                     ))}
@@ -71,12 +82,15 @@ export const Dashboard = () => {
                     {rows.map(row => {
                         prepareRow(row);
                         return (
-                            <tr {...row.getRowProps()}>
+                            <tr
+                                className={classes.tableRow}
+                                {...row.getRowProps()}
+                            >
                                 {row.cells.map(cell => {
                                     return (
-                                        <td {...cell.getCellProps()}>
+                                        <TableCell {...cell.getCellProps()}>
                                             {cell.render('Cell')}
-                                        </td>
+                                        </TableCell>
                                     );
                                 })}
                             </tr>

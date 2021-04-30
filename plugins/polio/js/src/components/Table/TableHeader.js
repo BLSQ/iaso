@@ -9,7 +9,7 @@ const useStyles = makeStyles(theme => ({
         width: '240px',
         height: '40px',
         borderRight: '1px solid #ccc',
-        boxShadow: 'inset 0 3px 0 0 #3f51b5',
+        // boxShadow: 'inset 0 3px 0 0 #3f51b5',
     },
     icon: {
         cursor: 'pointer',

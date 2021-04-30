@@ -65,17 +65,60 @@ const PageAction = ({ icon: Icon, onClick }) => {
     );
 };
 
+const BaseInfoForm = () => {
+    return <div>Base info</div>;
+};
+const DetectionForm = () => {
+    return <div>Dection</div>;
+};
+const RiskAssessmentForm = () => {
+    return <div>Risk Assessment</div>;
+};
+const BudgetForm = () => {
+    return <div>Budget</div>;
+};
+const PreparednessForm = () => {
+    return <div>Preparedness</div>;
+};
+const Round1Form = () => {
+    return <div>Round 1</div>;
+};
+const Round2Form = () => {
+    return <div>Round 2</div>;
+};
+
 const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
     const classes = useStyles();
 
     const steps = [
-        'Base info',
-        'Detection',
-        'Risk Assessment',
-        'Budget',
-        'Preparedness',
-        'Round 1',
-        'Round 2',
+        {
+            title: 'Base info',
+            form: BaseInfoForm,
+        },
+        {
+            title: 'Detection',
+            form: DetectionForm,
+        },
+        {
+            title: 'Risk Assessment',
+            form: RiskAssessmentForm,
+        },
+        {
+            title: 'Budget',
+            form: BudgetForm,
+        },
+        {
+            title: 'Preparedness',
+            form: PreparednessForm,
+        },
+        {
+            title: 'Round 1',
+            form: Round1Form,
+        },
+        {
+            title: 'Round 2',
+            form: Round2Form,
+        },
     ];
 
     const [value, setValue] = useState(0);
@@ -83,6 +126,8 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
+
+    const CurrentForm = steps[value].form;
 
     return (
         <Dialog
@@ -100,10 +145,11 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
                     onChange={handleChange}
                     aria-label="disabled tabs example"
                 >
-                    {steps.map(step => (
-                        <Tab label={step} />
+                    {steps.map(({ title }) => (
+                        <Tab label={title} />
                     ))}
                 </Tabs>
+                <CurrentForm />
             </DialogContent>
             <DialogActions className={classes.action}>
                 <Button onClick={onCancel} color="primary">

@@ -123,10 +123,10 @@ export const Dashboard = () => {
                 onBackdropClick={() => setIsCreateDialogOpen(false)}
                 scroll="body"
             >
-                <DialogTitle className={classes.title}>title</DialogTitle>
-                <DialogContent className={classes.content}>
+                <DialogTitle className={classes.title}>
                     Create campaign
-                </DialogContent>
+                </DialogTitle>
+                <DialogContent className={classes.content}></DialogContent>
                 <DialogActions className={classes.action}>
                     <Button
                         onClick={() => setIsCreateDialogOpen(false)}

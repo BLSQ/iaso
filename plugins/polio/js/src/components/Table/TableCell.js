@@ -1,6 +1,5 @@
 import { makeStyles, Typography } from '@material-ui/core';
-import { Box, Tooltip } from '@material-ui/core';
-import InfoIcon from '@material-ui/icons/Info';
+import { Box } from '@material-ui/core';
 
 import commonStyles from '../../styles/common';
 
@@ -8,8 +7,8 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     root: {
         width: '240px',
-        height: '40px',
-        borderRight: '1px solid rgba(0,0,0,0.02)',
+        height: '68px',
+        border: '1px solid rgba(0,0,0,0.02)',
         backgroundColor: 'rgba(0,0,0,0.03)',
     },
 }));

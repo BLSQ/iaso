@@ -91,6 +91,16 @@ class Campaign(models.Model):
     # TODO: Choices?
     detection_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
     detection_responsible = models.CharField(max_length=10, choices=RESPONSIBLES)
+    detection_first_draft_submitted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("1st Draft Submission"),
+    )
+    detection_rrt_oprtt_approval_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("RRT/OPRTT Approval"),
+    )
 
     # Risk Assessement
     risk_assessement_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
@@ -100,12 +110,12 @@ class Campaign(models.Model):
         blank=True,
         verbose_name=_("Field Investigation Date"),
     )
-    first_draft_submitted_at = models.DateTimeField(
+    risk_assessement_first_draft_submitted_at = models.DateTimeField(
         null=True,
         blank=True,
         verbose_name=_("1st Draft Submission"),
     )
-    rrt_oprtt_approval_at = models.DateTimeField(
+    risk_assessement_rrt_oprtt_approval_at = models.DateTimeField(
         null=True,
         blank=True,
         verbose_name=_("RRT/OPRTT Approval"),

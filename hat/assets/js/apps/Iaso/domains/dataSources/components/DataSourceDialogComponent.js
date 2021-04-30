@@ -54,17 +54,6 @@ export class DataSourceDialogComponent extends Component {
                 currentDataSource[key] = form[key].value;
             }
         });
-        console.log('currentDataSource', currentDataSource);
-        // currentDataSource.credentials = {
-        //     dhis_name: currentDataSource.dhis_name,
-        //     dhis_login: currentDataSource.dhis_login,
-        //     dhis_url: currentDataSource.dhis_url,
-        //     dhis_password: currentDataSource.dhis_password,
-        // };
-        // delete currentDataSource.dhis_name;
-        // delete currentDataSource.dhis_login;
-        // delete currentDataSource.dhis_url;
-        // delete currentDataSource.dhis_password;
         if (initialData === null) {
             saveCurrentDataSource = createDataSource(
                 dispatch,

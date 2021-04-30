@@ -58,6 +58,7 @@ const AddTask = ({
             body.dhis2_password = form.dhis2_password.value;
             body.dhis2_url = form.dhis2_url.value;
             body.dhis2_login = form.dhis2_login.value;
+            setWithExistingDhis2Settings(true);
         }
         setRequestBody(body);
     }, [

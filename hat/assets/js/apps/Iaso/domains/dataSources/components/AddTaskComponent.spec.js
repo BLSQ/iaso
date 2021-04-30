@@ -2,7 +2,7 @@ import React from 'react';
 import { act } from 'react-dom/test-utils';
 
 import nock from 'nock';
-
+import { expect } from 'chai';
 import { AddTask } from './AddTaskComponent';
 import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -72,12 +72,7 @@ const renderWrapper = credentials => {
     inputComponent.props().onClick();
     connectedWrapper.update();
 };
-const credentialsFieldKeys = [
-    'dhis2_name',
-    'dhis2_url',
-    'dhis2_login',
-    'dhis2_password',
-];
+const credentialsFieldKeys = ['dhis2_url', 'dhis2_login', 'dhis2_password'];
 const checkBoxesKeys = [
     {
         keyValue: 'continue_on_error',
@@ -106,6 +101,7 @@ describe('AddTaskComponent', () => {
 
         it('onConfirm should submit form with source credentials', async () => {
             confirmCancelDialogComponent.props().onConfirm(() => null);
+            await awaitUseEffect(connectedWrapper);
             await awaitUseEffect(connectedWrapper);
             expect(nock.activeMocks()).to.have.lengthOf(0);
         });
@@ -181,12 +177,18 @@ describe('AddTaskComponent', () => {
             expect(checkbox.props().value).to.equal(false);
             await fillFields(connectedWrapper, credentialsFieldKeys);
             await awaitUseEffect(connectedWrapper);
+            confirmCancelDialogComponent = connectedWrapper.find(
+                ConfirmCancelDialogComponent,
+            );
             confirmCancelDialogComponent.props().onConfirm(() => null);
             await awaitUseEffect(connectedWrapper);
             expect(nock.activeMocks()).to.have.lengthOf(0);
         });
 
         it('onRedirect should submit form', async () => {
+            confirmCancelDialogComponent = connectedWrapper.find(
+                ConfirmCancelDialogComponent,
+            );
             const closeDialogSpy = sinon.spy();
             confirmCancelDialogComponent
                 .props()
@@ -194,6 +196,17 @@ describe('AddTaskComponent', () => {
             await awaitUseEffect(connectedWrapper);
             expect(nock.activeMocks()).to.have.lengthOf(0);
         });
+        // it('onRedirect should redirect after receiving API response', async () => {
+        //     const closeDialogSpy = sinon.spy();
+        //     confirmCancelDialogComponent
+        //         .props()
+        //         .onAdditionalButtonClick(() => closeDialogSpy());
+        //     await awaitUseEffect(connectedWrapper);
+        //     const dispatchSpy = sinon.spy(
+        //         connectedWrapper.props().store.dispatch,
+        //     );
+        //     expect(dispatchSpy).to.have.been.calledOnce();
+        // });
     });
     describe("when credentials don't exist", () => {
         it('mounts correctly', () => {

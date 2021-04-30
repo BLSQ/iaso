@@ -54,6 +54,7 @@ case "$1" in
   "start_dev" )
     if [ -n "$TEST_PROD" ]; then
       ./scripts/wait_for_dbs.sh
+      ./scripts/enable_plugins.sh
       ./manage.py compilemessages -l fr
       ./manage.py migrate --noinput
       npm run webpack-prod

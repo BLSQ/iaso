@@ -17,13 +17,14 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const Layout = ({ children }) => {
+export const Layout = ({ children, title = 'Polio dashboard' }) => {
     const classes = useStyles();
     const [isDrawerOpened, setDrawerOpened] = useState(false);
 
     const toggleDrawer = () => {
         setDrawerOpened(state => !state);
     };
+
     return (
         <>
             <AppBar position="relative" color="primary">
@@ -38,7 +39,7 @@ export const Layout = ({ children }) => {
                         <MenuIcon />
                     </IconButton>
                     <Typography variant="h6" color="inherit">
-                        Polio Dashboard
+                        {title}
                     </Typography>
                 </Toolbar>
             </AppBar>

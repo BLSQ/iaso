@@ -5,17 +5,15 @@ import { Layout } from './components/Layout';
 
 function App() {
     return (
-        <Layout>
-            <Router>
-                <div>
-                    <Switch>
-                        <Route path="/">
-                            <Dashboard />
-                        </Route>
-                    </Switch>
-                </div>
-            </Router>
-        </Layout>
+        <Router>
+            <div>
+                <Switch>
+                    <Route path="/">
+                        <Dashboard />
+                    </Route>
+                </Switch>
+            </div>
+        </Router>
     );
 }
 

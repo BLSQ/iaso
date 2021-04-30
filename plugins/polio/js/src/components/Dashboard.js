@@ -8,8 +8,13 @@ import { TableCell } from './Table/TableCell';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    table: {
+        borderSpacing: 0,
+        border: '1px solid rgba(0,0,0,0.1)',
+    },
     tableHeader: {
         display: 'flex',
+        boxShadow: '0 2px 15px 0 rgb(0 0 0 / 15%)',
     },
     tableRow: {
         display: 'flex',
@@ -63,7 +68,7 @@ export const Dashboard = () => {
 
     return (
         <Box className={classes.containerFullHeightNoTabPadded}>
-            <table {...getTableProps()}>
+            <table className={classes.table} {...getTableProps()}>
                 <thead>
                     {headerGroups.map(headerGroup => (
                         <tr

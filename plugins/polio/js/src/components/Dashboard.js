@@ -25,7 +25,6 @@ import { TableCell } from './Table/TableCell';
 
 import { Page } from './Page';
 import { useState } from 'react';
-import { useEffect } from 'react';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -43,6 +42,9 @@ const useStyles = makeStyles(theme => ({
     },
     pageActions: {
         marginBottom: 16,
+    },
+    form: {
+        marginTop: 32,
     },
 }));
 
@@ -77,14 +79,21 @@ const RiskAssessmentForm = () => {
 const BudgetForm = () => {
     return <div>Budget</div>;
 };
-const PreparednessForm = () => {
-    return <div>Preparedness</div>;
-};
 const Round1Form = () => {
     return <div>Round 1</div>;
 };
 const Round2Form = () => {
     return <div>Round 2</div>;
+};
+
+const Form = ({ children }) => {
+    const classes = useStyles();
+
+    return (
+        <form className={classes.form} noValidate autoComplete="off">
+            {children}
+        </form>
+    );
 };
 
 const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
@@ -108,10 +117,6 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
             form: BudgetForm,
         },
         {
-            title: 'Preparedness',
-            form: PreparednessForm,
-        },
-        {
             title: 'Round 1',
             form: Round1Form,
         },
@@ -133,7 +138,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
         <Dialog
             fullWidth
             maxWidth={'lg'}
-            open={isOpen}
+            open={true}
             onBackdropClick={onClose}
             scroll="body"
         >
@@ -145,11 +150,13 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
                     onChange={handleChange}
                     aria-label="disabled tabs example"
                 >
-                    {steps.map(({ title }) => (
-                        <Tab label={title} />
-                    ))}
+                    {steps.map(({ title }) => {
+                        return <Tab label={title} />;
+                    })}
                 </Tabs>
-                <CurrentForm />
+                <Form>
+                    <CurrentForm />
+                </Form>
             </DialogContent>
             <DialogActions className={classes.action}>
                 <Button onClick={onCancel} color="primary">

@@ -16,6 +16,7 @@ from datetime import timedelta
 
 
 TESTING = os.environ.get("TESTING", "").lower() == "true"
+PLUGIN_POLIO_ENABLED = os.environ.get("PLUGIN_POLIO_ENABLED", "").lower() == "true"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -122,6 +123,9 @@ INSTALLED_APPS = [
     "django_extensions",
     "beanstalk_worker",
 ]
+
+if PLUGIN_POLIO_ENABLED:
+    INSTALLED_APPS.append('plugins.polio')
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -263,7 +267,7 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, "iaso/static"), os.path.join(BASE_DIR, "hat/assets/webpack"))
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "iaso/static"), os.path.join(BASE_DIR, "hat/assets/webpack"), )
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {

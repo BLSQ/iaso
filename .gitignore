@@ -100,6 +100,7 @@ hat/assets/messages/**/*.json
 \.DS_Store
 
 \.vscode/
+\.devcontainer
 
 /pgdata/
 
@@ -123,3 +124,6 @@ data
 .idea/modules.xml
 .idea/vcs.xml
 
+
+
+\static/

@@ -196,17 +196,6 @@ describe('AddTaskComponent', () => {
             await awaitUseEffect(connectedWrapper);
             expect(nock.activeMocks()).to.have.lengthOf(0);
         });
-        // it('onRedirect should redirect after receiving API response', async () => {
-        //     const closeDialogSpy = sinon.spy();
-        //     confirmCancelDialogComponent
-        //         .props()
-        //         .onAdditionalButtonClick(() => closeDialogSpy());
-        //     await awaitUseEffect(connectedWrapper);
-        //     const dispatchSpy = sinon.spy(
-        //         connectedWrapper.props().store.dispatch,
-        //     );
-        //     expect(dispatchSpy).to.have.been.calledOnce();
-        // });
     });
     describe("when credentials don't exist", () => {
         it('mounts correctly', () => {

@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const Layout = ({ children, title = 'Polio dashboard' }) => {
+export const Page = ({ children, title = 'Polio dashboard' }) => {
     const classes = useStyles();
     const [isDrawerOpened, setDrawerOpened] = useState(false);
 

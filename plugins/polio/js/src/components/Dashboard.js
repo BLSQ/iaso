@@ -14,6 +14,7 @@ import {
     Tabs,
     Tab,
 } from '@material-ui/core';
+
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
 
@@ -21,7 +22,8 @@ import commonStyles from '../styles/common';
 
 import { TableHeader } from './Table/TableHeader';
 import { TableCell } from './Table/TableCell';
-import { Layout } from './Layout';
+
+import { Page } from './Page';
 import { useState } from 'react';
 
 const useStyles = makeStyles(theme => ({
@@ -65,6 +67,12 @@ const PageAction = ({ icon: Icon, onClick }) => {
 const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
     const classes = useStyles();
 
+    const [value, setValue] = useState();
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
+
     return (
         <Dialog
             fullWidth
@@ -76,14 +84,18 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
             <DialogTitle className={classes.title}>Create campaign</DialogTitle>
             <DialogContent className={classes.content}>
                 <Tabs
-                    value={''}
+                    value={value}
                     textColor={'primary'}
-                    // onChange={handleChange}
+                    onChange={handleChange}
                     aria-label="disabled tabs example"
                 >
-                    <Tab label="Active" />
-                    <Tab label="Disabled" />
-                    <Tab label="Active" />
+                    <Tab label="Base info" />
+                    <Tab label="Detection" />
+                    <Tab label="Risk Assessment" />
+                    <Tab label="Budget" />
+                    <Tab label="Preparedness" />
+                    <Tab label="Round 1" />
+                    <Tab label="Round 2" />
                 </Tabs>
             </DialogContent>
             <DialogActions className={classes.action}>
@@ -178,7 +190,7 @@ export const Dashboard = () => {
                 onClose={() => setIsCreateDialogOpen(false)}
                 onConfirm={() => console.log('confirm')}
             />
-            <Layout title={'Campaigns for DRC'}>
+            <Page title={'Campaigns for DRC'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <PageActions>
                         <PageAction
@@ -226,7 +238,7 @@ export const Dashboard = () => {
                         </tbody>
                     </table>
                 </Box>
-            </Layout>
+            </Page>
         </>
     );
 };

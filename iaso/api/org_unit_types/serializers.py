@@ -41,12 +41,15 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
     updated_at = TimestampField(read_only=True)
     units_count = serializers.SerializerMethodField(read_only=True)
 
-    @staticmethod
-    def get_units_count(obj: OrgUnitType):
-        orgunits_count  = OrgUnit.objects.all().filter(
-                Q(validated=True)
-                & Q(org_unit_type__id=obj.id)
-            ).count()
+    def get_units_count(self, obj: OrgUnitType):
+        orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
+            self.context["request"].user,
+            self.context["request"].query_params.get("app_id")
+        ).filter(
+            Q(validated=True)
+            & Q(org_unit_type__id=obj.id)
+        )
+        orgunits_count  = orgUnits.count()
         return orgunits_count
 
     def get_sub_unit_types(self, obj: OrgUnitType):

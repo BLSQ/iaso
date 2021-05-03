@@ -24,7 +24,7 @@ const TableColumns = (formatMessage, component) => [
         ),
     },
     {
-        Header: formatMessage(MESSAGES.orgUnit),
+        Header: formatMessage(MESSAGES.validatedOrgUnitCount),
         accessor: 'units_count',
         sortable: false,
         Cell: settings => (

@@ -196,6 +196,7 @@
     "iaso.label.noOptions": "No result found",
     "iaso.label.notValid": "Not valid(s)",
     "iaso.label.orgUnit": "Org units",
+    "iaso.label.validatedOrgUnitCount": "Validated org units count",
     "iaso.label.orgUnitsTypes": "Organisation unit types",
     "iaso.label.origin": "Origin",
     "iaso.label.others": "Others",

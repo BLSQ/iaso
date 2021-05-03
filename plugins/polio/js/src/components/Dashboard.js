@@ -78,6 +78,43 @@ const RowAction = ({ icon: Icon, onClick }) => {
     );
 };
 
+const ResponsibleField = () => {
+    return (
+        <FormControl fullWidth variant="outlined">
+            <InputLabel id="responsible-label-id">Responsible</InputLabel>
+            <Select
+                label="Responsible"
+                labelId="responsible-label-id"
+                id="responsible-field-id"
+            >
+                <MenuItem value="WHO">WHO</MenuItem>
+                <MenuItem value="UNICEF">UNICEF</MenuItem>
+                <MenuItem value="NAT">National</MenuItem>
+                <MenuItem value="MOH">MOH</MenuItem>
+                <MenuItem value="PROV">PROVINCE</MenuItem>
+                <MenuItem value="DIST">District</MenuItem>
+            </Select>
+        </FormControl>
+    );
+};
+
+const StatusField = () => {
+    return (
+        <FormControl fullWidth variant="outlined">
+            <InputLabel id="status-label-id">Status</InputLabel>
+            <Select
+                label="Status"
+                labelId="status-label-id"
+                id="status-field-id"
+            >
+                <MenuItem value="PENDING">Pending</MenuItem>
+                <MenuItem value="ONGOING">Ongoing</MenuItem>
+                <MenuItem value="FINISHED">Finished</MenuItem>
+            </Select>
+        </FormControl>
+    );
+};
+
 const PageAction = ({ icon: Icon, onClick }) => {
     const classes = useStyles();
 
@@ -179,7 +216,27 @@ const BaseInfoForm = () => {
     );
 };
 const DetectionForm = () => {
-    return <div>Dection</div>;
+    const classes = useStyles();
+
+    return (
+        <>
+            <Grid container spacing={2}>
+                <Grid container direction="row" item spacing={2}>
+                    <Grid xs={12} md={6} item>
+                        <StatusField />
+                    </Grid>
+                    <Grid xs={12} md={6} item>
+                        <ResponsibleField />
+                    </Grid>
+                </Grid>
+                <Grid item md={6}>
+                    <DateInput label={'Date of onset'} fullWidth />
+                    <DateInput label={'PV2 Notifiation'} fullWidth />
+                    <DateInput label={'cVDPV2 Notifiation'} fullWidth />
+                </Grid>
+            </Grid>
+        </>
+    );
 };
 const RiskAssessmentForm = () => {
     return <div>Risk Assessment</div>;

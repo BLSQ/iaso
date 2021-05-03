@@ -59,7 +59,7 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'flex-start',
     },
     round1FormCalculations: {
-        marginTop: theme.spacing(8),
+        marginTop: theme.spacing(4),
         marginBottom: theme.spacing(4),
     },
     input: {
@@ -317,44 +317,48 @@ const Round1Form = () => {
     const classes = useStyles();
 
     return (
-        <>
-            <DateInput label={'Round 1 Start'} />
-            <DateInput label={'Round 1 End'} />
-            <DateInput label={'Mop Up Start'} />
-            <DateInput label={'Mop Up End'} />
-            <Box className={classes.round1FormCalculations}>
-                <Typography>
-                    Percentage of districts passing LQAS: 96% (182 passing / 192
-                    received / 200 total)
-                </Typography>
-                <Typography>Percentage of missed children: 10%</Typography>
-            </Box>
-            <DateInput label={'IM Start'} />
-            <DateInput label={'IM End'} />
-        </>
+        <Grid container spacing={2}>
+            <Grid xs={12} md={6} item>
+                <DateInput label={'Round 1 Start'} fullWidth />
+                <DateInput label={'Round 1 End'} fullWidth />
+                <DateInput label={'Mop Up Start'} fullWidth />
+                <DateInput label={'Mop Up End'} fullWidth />
+                <Box className={classes.round1FormCalculations}>
+                    <Typography>
+                        Percentage of districts passing LQAS: 96% (182 passing /
+                        192 received / 200 total)
+                    </Typography>
+                    <Typography>Percentage of missed children: 10%</Typography>
+                </Box>
+                <DateInput label={'IM Start'} fullWidth />
+                <DateInput label={'IM End'} fullWidth />
+            </Grid>
+        </Grid>
     );
 };
 const Round2Form = () => {
     const classes = useStyles();
 
     return (
-        <>
-            <DateInput label={'Round 2 Start'} />
-            <DateInput label={'Round 2 End'} />
-            <DateInput label={'Mop Up Start'} />
-            <DateInput label={'Mop Up End'} />
-            <Box className={classes.round1FormCalculations}>
-                <Typography>
-                    Percentage of districts passing LQAS: 96% (182 passing / 192
-                    received / 200 total)
-                </Typography>
-                <Typography>Percentage of missed children: 10%</Typography>
-            </Box>
-            <DateInput label={'IM Start'} />
-            <DateInput label={'IM End'} />
+        <Grid container spacing={2}>
+            <Grid xs={12} md={6} item>
+                <DateInput label={'Round 1 Start'} fullWidth />
+                <DateInput label={'Round 1 End'} fullWidth />
+                <DateInput label={'Mop Up Start'} fullWidth />
+                <DateInput label={'Mop Up End'} fullWidth />
+                <Box className={classes.round1FormCalculations}>
+                    <Typography>
+                        Percentage of districts passing LQAS: 96% (182 passing /
+                        192 received / 200 total)
+                    </Typography>
+                    <Typography>Percentage of missed children: 10%</Typography>
+                </Box>
+                <DateInput label={'IM Start'} fullWidth />
+                <DateInput label={'IM End'} fullWidth />
+            </Grid>
             <DateInput label={'LQAS Start'} />
             <DateInput label={'LQAS End'} />
-        </>
+        </Grid>
     );
 };
 

@@ -46,6 +46,7 @@ case "$1" in
     ./scripts/gen_docs.sh
   ;;
   "start" )
+    ./scripts/enable_plugins.sh
     ./manage.py compilemessages -l fr
     ./manage.py migrate --noinput
     ./manage.py collectstatic --noinput
@@ -54,6 +55,7 @@ case "$1" in
   "start_dev" )
     if [ -n "$TEST_PROD" ]; then
       ./scripts/wait_for_dbs.sh
+      ./scripts/enable_plugins.sh
       ./manage.py compilemessages -l fr
       ./manage.py migrate --noinput
       npm run webpack-prod
@@ -63,6 +65,7 @@ case "$1" in
       export DEV_SERVER=true
       export SHOW_DEBUG_TOOLBAR=true
       ./scripts/wait_for_dbs.sh
+      ./scripts/enable_plugins.sh
       ./manage.py migrate --noinput
       ./manage.py runserver 0.0.0.0:8081
     fi

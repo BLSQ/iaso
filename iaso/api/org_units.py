@@ -67,7 +67,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = self.get_queryset()
 
-        forms = Form.objects.all()
+        forms = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "name").split(",")

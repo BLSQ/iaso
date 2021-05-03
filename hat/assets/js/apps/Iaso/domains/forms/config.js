@@ -1,10 +1,9 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import moment from 'moment';
-import Grid from '@material-ui/core/Grid';
+import { Grid } from '@material-ui/core';
 import { Link } from 'react-router';
 
-// import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import FormDialogComponent from './components/FormDialogComponent';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
@@ -12,6 +11,39 @@ import { baseUrls } from '../../constants/urls';
 import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
+import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import { deleteForm, fetchForms } from '../../utils/requests';
+import { setForms, setIsLoadingForm } from './actions';
+
+export const formVersionsTableColumns = formatMessage => [
+    {
+        Header: formatMessage(MESSAGES.version),
+        accessor: 'version_id',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={settings.original.version_id || textPlaceholder}
+            />
+        ),
+    },
+    {
+        Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
+        sortable: false,
+        Cell: settings => (
+            <section>
+                {settings.original.xls_file && (
+                    <IconButtonComponent
+                        onClick={() =>
+                            window.open(settings.original.xls_file, '_blank')
+                        }
+                        icon="xls"
+                        tooltipMessage={MESSAGES.xls_form_file}
+                    />
+                )}
+            </section>
+        ),
+    },
+];
 
 const formsTableColumns = (
     formatMessage,
@@ -82,7 +114,9 @@ const formsTableColumns = (
         Header: formatMessage(MESSAGES.form_id),
         sortable: false,
         Cell: settings => (
-            <ColumnTextComponent text={settings.original.form_id} />
+            <ColumnTextComponent
+                text={settings.original.form_id || textPlaceholder}
+            />
         ),
     },
     {
@@ -130,7 +164,7 @@ const formsTableColumns = (
         Header: formatMessage(MESSAGES.actions),
         resizable: false,
         sortable: false,
-        width: 150,
+        width: 215,
         Cell: settings => {
             let urlToInstances = `${baseUrls.instances}/formId/${settings.original.id}`;
             if (
@@ -150,23 +184,13 @@ const formsTableColumns = (
                     <IconButtonComponent
                         url={`${urlToInstances}`}
                         icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.view}
+                        tooltipMessage={MESSAGES.viewInstances}
                     />
                     {showEditAction && (
-                        <FormDialogComponent
-                            renderTrigger={({ openDialog }) => (
-                                <IconButtonComponent
-                                    onClick={openDialog}
-                                    icon="edit"
-                                    tooltipMessage={MESSAGES.edit}
-                                />
-                            )}
-                            onSuccess={() =>
-                                component.setState({ isUpdated: true })
-                            }
-                            initialData={settings.original}
-                            titleMessage={MESSAGES.update}
-                            key={settings.original.updated_at}
+                        <IconButtonComponent
+                            url={`${baseUrls.formDetail}/formId/${settings.original.id}`}
+                            icon="edit"
+                            tooltipMessage={MESSAGES.edit}
                         />
                     )}
                     {showMappingAction && (
@@ -176,24 +200,36 @@ const formsTableColumns = (
                             tooltipMessage={MESSAGES.dhis2Mappings}
                         />
                     )}
-                    {/* {
-                        // TODO: deactivated, hard delete is too dangerous - to discuss
-                        false && (
-                            <DeleteDialog
-                                disabled={settings.original.instances_count > 0}
-                                titleMessage={MESSAGES.deleteFormTitle}
-                                message={MESSAGES.deleteFormText}
-                                onConfirm={closeDialog =>
-                                    component
-                                        .deleteForm(settings.original)
-                                        .then(closeDialog)
-                                }
-                            />
-                        )
-                    } */}
+                    <DispatchableDeleteDialog form={settings.original} />
                 </section>
             );
         },
     },
 ];
+
+const DispatchableDeleteDialog = ({ form }) => {
+    const dispatch = useDispatch();
+
+    return (
+        <DeleteDialog
+            titleMessage={MESSAGES.deleteFormTitle}
+            message={MESSAGES.deleteFormText}
+            onConfirm={() => {
+                deleteForm(dispatch, form.id).then(() => {
+                    dispatch(setIsLoadingForm(true));
+                    fetchForms(
+                        dispatch,
+                        '/api/forms/?&order=instance_updated_at&all=true',
+                    ).then(result => {
+                        dispatch(
+                            setForms(result.forms, result.count, result.pages),
+                        );
+                        dispatch(setIsLoadingForm(false));
+                    });
+                });
+            }}
+        />
+    );
+};
+
 export default formsTableColumns;

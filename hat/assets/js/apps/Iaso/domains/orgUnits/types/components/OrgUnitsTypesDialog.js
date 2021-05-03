@@ -21,8 +21,8 @@ export default function OrgUnitsTypesDialog({
 }) {
     const dispatch = useDispatch();
     const { allOrgUnitTypes, allProjects } = useSelector(state => ({
-        allOrgUnitTypes: state.orgUnitsTypes.allTypes,
-        allProjects: state.projects.allProjects,
+        allOrgUnitTypes: state.orgUnitsTypes.allTypes || [],
+        allProjects: state.projects.allProjects || [],
     }));
 
     const [formState, setFieldValue, setFieldErrors] = useFormState({

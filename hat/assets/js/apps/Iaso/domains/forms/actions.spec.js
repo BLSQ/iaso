@@ -5,7 +5,13 @@ import {
     setForms,
     setCurrentForm,
     setIsLoadingForm,
+    fetchFormDetail,
 } from './actions';
+
+const Api = require('../../libs/Api');
+
+const formId = 'GANON';
+let getRequest;
 
 describe('Forms actions', () => {
     it('should create an action to set forms', () => {
@@ -41,5 +47,29 @@ describe('Forms actions', () => {
 
         const action = setIsLoadingForm();
         expect(action).to.eql(expectedAction);
+    });
+
+    describe('fetchFormDetail', () => {
+        before(() => {
+            getRequest = sinon.stub(Api, 'getRequest');
+        });
+        it(' should success on getRetquest', () => {
+            const expectedRes = {
+                name: 'ZELDA',
+            };
+            getRequest = getRequest.returns(
+                new Promise(resolve => resolve(expectedRes)),
+            );
+            fetchFormDetail(formId)(fn => fn);
+            expect(getRequest).to.have.been.called;
+        });
+        it(' should fail silently', () => {
+            getRequest = getRequest.rejects(new Error());
+            fetchFormDetail(formId)(fn => fn);
+            expect(getRequest).to.have.been.called;
+        });
+        afterEach(() => {
+            sinon.restore();
+        });
     });
 });

@@ -73,6 +73,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.depth',
         defaultMessage: 'Depth',
     },
+    depthInfos: {
+        id: 'iaso.orgUnits.depthInfos',
+        defaultMessage: 'Depth of the type in the hierarchy',
+    },
 });
 
 export default MESSAGES;

@@ -1,5 +1,6 @@
 import React from 'react';
 import Forms from '../domains/forms';
+import FormDetail from '../domains/forms/detail';
 import OrgUnits from '../domains/orgUnits';
 import Links from '../domains/links';
 import Runs from '../domains/links/Runs';
@@ -70,6 +71,37 @@ export const formsPath = {
     ],
     component: props => <Forms {...props} />,
     isRootUrl: true,
+};
+
+export const archivedPath = {
+    baseUrl: baseUrls.archived,
+    permission: 'iaso_forms',
+    params: [
+        ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'searchActive',
+        },
+    ],
+    component: props => <Forms {...props} showOnlyDeleted />,
+    isRootUrl: true,
+};
+
+export const formDetailPath = {
+    baseUrl: baseUrls.formDetail,
+    permission: 'iaso_forms',
+    component: props => <FormDetail {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'formId',
+        },
+        ...paginationPathParams,
+    ],
 };
 
 export const mappingsPath = {
@@ -455,6 +487,8 @@ export const page500 = {
 
 export const routeConfigs = [
     formsPath,
+    archivedPath,
+    formDetailPath,
     mappingsPath,
     mappingDetailPath,
     instancesPath,

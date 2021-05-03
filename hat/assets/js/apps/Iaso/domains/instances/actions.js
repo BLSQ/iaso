@@ -12,7 +12,6 @@ export const SET_INSTANCES = 'SET_INSTANCES';
 export const SET_INSTANCES_SMALL_DICT = 'SET_INSTANCES_SMALL_DICT';
 export const SET_INSTANCES_FETCHING = 'SET_INSTANCES_FETCHING';
 export const SET_CURRENT_INSTANCE = 'SET_CURRENT_INSTANCE';
-export const SET_INSTANCE_CURRENT_FORM = 'SET_INSTANCE_CURRENT_FORM';
 export const SET_INSTANCES_FILTER_UDPATED = 'SET_INSTANCES_FILTER_UDPATED';
 export const RESET_INSTANCES = 'RESET_INSTANCES';
 
@@ -47,11 +46,6 @@ export const setCurrentInstance = instance => ({
     payload: instance,
 });
 
-export const setCurrentForm = form => ({
-    type: SET_INSTANCE_CURRENT_FORM,
-    payload: form,
-});
-
 export const resetInstances = () => ({
     type: RESET_INSTANCES,
 });
@@ -72,17 +66,6 @@ export const fetchEditUrl = (currentInstance, location) => dispatch => {
         .then(() => {
             dispatch(setInstancesFetching(false));
         });
-};
-
-export const fetchFormDetail = formId => dispatch => {
-    dispatch(setInstancesFetching(true));
-    return getRequest(`/api/forms/${formId}/`)
-        .then(res => dispatch(setCurrentForm(res)))
-        .catch(err =>
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchFormError', null, err)),
-            ),
-        );
 };
 
 export const fetchInstanceDetail = instanceId => dispatch => {

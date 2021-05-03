@@ -4,6 +4,7 @@ import {
     postRequest,
     putRequest,
     deleteRequest,
+    restoreRequest,
 } from '../libs/Api';
 
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
@@ -476,11 +477,36 @@ export const deleteForm = (dispatch, formId) =>
         throw error;
     });
 
+export const restoreForm = (dispatch, formId) =>
+    restoreRequest(`/api/forms/${formId}/?only_deleted=1`).catch(error => {
+        dispatch(
+            enqueueSnackbar(errorSnackBar('archiveFormError', null, error)),
+        );
+        throw error;
+    });
+
 export const createFormVersion = (dispatch, formVersionData, isUpdate) => {
     const data = { form_id: formVersionData.form_id };
     const fileData = { xls_file: formVersionData.xls_file };
 
     return postRequest('/api/formversions/', data, fileData).catch(error => {
+        dispatch(
+            enqueueSnackbar(
+                errorSnackBar(
+                    isUpdate ? 'updateFormError' : 'createFormError',
+                    null,
+                    error,
+                ),
+            ),
+        );
+        throw error;
+    });
+};
+
+export const fetchFormVersions = (dispatch, formId) => {
+    const data = { form_id: formId };
+
+    return postRequest('/api/formversions/', data).catch(error => {
         dispatch(
             enqueueSnackbar(
                 errorSnackBar(
@@ -565,3 +591,15 @@ export const updateDefaultSource = (dispatch, accountId, default_version) =>
         );
         throw error;
     });
+
+// TO-DO: replace all requests similar to this
+export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
+    getRequest(url)
+        .then(data => data)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(errorSnackBar(errorKeyMessage, null, error)),
+            );
+            console.error(`Error while fetching ${consoleError} list:`, error);
+            throw error;
+        });

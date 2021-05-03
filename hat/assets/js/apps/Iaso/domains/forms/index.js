@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { setForms } from './actions';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
+import { redirectTo } from '../../routing/actions';
 
 import formsTableColumns from './config';
+import archivedFormsTableColumns from './configArchived';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import FormDialogComponent from './components/FormDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import { fetchForms } from '../../utils/requests';
@@ -21,8 +23,10 @@ import { formsFilters } from '../../constants/filters';
 
 const baseUrl = baseUrls.forms;
 
-const Forms = props => {
-    const [forceRefresh, setForceRefresh] = useState(false);
+const Forms = ({ params, showOnlyDeleted }) => {
+    const columnsConfig = showOnlyDeleted
+        ? archivedFormsTableColumns
+        : formsTableColumns;
     const reduxPage = useSelector(state => state.forms.formsPage);
     const dispatch = useDispatch();
     const intl = useSafeIntl();
@@ -39,35 +43,48 @@ const Forms = props => {
                 endPointPath="forms"
                 dataKey="forms"
                 apiParams={{
-                    ...props.params,
+                    ...params,
                     all: true,
+                    only_deleted: showOnlyDeleted ? 1 : 0,
                 }}
                 fetchItems={fetchForms}
                 defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
-                columns={formsTableColumns(intl.formatMessage)}
+                columns={columnsConfig(intl.formatMessage)}
                 hideGpkg
                 defaultPageSize={50}
                 onDataLoaded={({ list, count, pages }) => {
                     dispatch(setForms(list, count, pages));
                 }}
-                forceRefresh={forceRefresh}
-                onForceRefreshDone={() => setForceRefresh(false)}
                 results={reduxPage}
                 extraComponent={
-                    <FormDialogComponent
-                        titleMessage={MESSAGES.createForm}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent onClick={openDialog} />
-                        )}
-                        onSuccess={() => setForceRefresh(true)}
-                    />
+                    !showOnlyDeleted && (
+                        <AddButtonComponent
+                            onClick={() => {
+                                dispatch(
+                                    redirectTo(baseUrls.formDetail, {
+                                        formId: '0',
+                                    }),
+                                );
+                            }}
+                        />
+                    )
                 }
                 toggleActiveSearch
                 searchActive
                 filters={formsFilters()}
+                forceRefresh
             />
         </>
     );
+};
+
+Forms.propTypes = {
+    params: PropTypes.object.isRequired,
+    showOnlyDeleted: PropTypes.bool,
+};
+
+Forms.defaultProps = {
+    showOnlyDeleted: false,
 };
 
 export default Forms;

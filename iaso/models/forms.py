@@ -14,6 +14,9 @@ from ..utils import slugify_underscore
 from .. import periods
 from uuid import uuid4
 
+from ..utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel, \
+    IncludeDeletedSoftDeletableManager, OnlyDeletedSoftDeletableManager
+
 
 class FormQuerySet(models.QuerySet):
     def exists_with_same_version_id_within_projects(self, form: "Form", form_id: str):
@@ -49,8 +52,7 @@ class FormQuerySet(models.QuerySet):
 
         return queryset
 
-
-class Form(models.Model):
+class Form(SoftDeletableModel):
     PERIOD_TYPE_CHOICES = (
         (periods.PERIOD_TYPE_MONTH, _("Month")),
         (periods.PERIOD_TYPE_QUARTER, _("Quarter")),
@@ -81,7 +83,11 @@ class Form(models.Model):
     uuid = models.UUIDField(default=uuid4, unique=True)
     label_keys = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
-    objects = FormQuerySet.as_manager()
+    objects = DefaultSoftDeletableManager.from_queryset(FormQuerySet)()
+
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(FormQuerySet)()
+
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(FormQuerySet)()
 
     @property
     def latest_version(self):
@@ -111,7 +117,6 @@ class Form(models.Model):
                     res[field] = getattr(self, field)
 
         return res
-
 
 def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
     path = pathlib.Path(filename)
@@ -158,6 +163,8 @@ class FormVersion(models.Model):
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    start_period = models.TextField(blank=True, null=True)
+    end_period = models.TextField(blank=True, null=True)
 
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
@@ -187,6 +194,7 @@ class FormVersion(models.Model):
     def as_dict(self):
         return {
             "id": self.id,
+            "version_id": self.version_id,
             "version_id": self.version_id,
             "file": self.file.url,
             "xls_file": self.xls_file.url if self.xls_file else None,

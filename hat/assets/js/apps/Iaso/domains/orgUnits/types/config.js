@@ -4,6 +4,7 @@ import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import ColumnTextComponent from '../../../components/tables/ColumnTextComponent';
 import { displayDateFromTimestamp } from '../../../utils/intlUtil';
+import { formatThousand } from '../../../utils';
 import MESSAGES from './messages';
 
 const TableColumns = (formatMessage, component) => [
@@ -20,6 +21,16 @@ const TableColumns = (formatMessage, component) => [
         sortable: false,
         Cell: settings => (
             <ColumnTextComponent text={settings.original.short_name} />
+        ),
+    },
+    {
+        Header: formatMessage(MESSAGES.orgUnit),
+        accessor: 'units_count',
+        sortable: false,
+        Cell: settings => (
+            <ColumnTextComponent
+                text={formatThousand(settings.original.units_count)}
+            />
         ),
     },
     {

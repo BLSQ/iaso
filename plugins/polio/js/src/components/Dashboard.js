@@ -263,8 +263,35 @@ const RiskAssessmentForm = () => {
         </>
     );
 };
+
 const BudgetForm = () => {
-    return <div>Budget</div>;
+    const classes = useStyles();
+    return (
+        <>
+            <Grid container spacing={2}>
+                <Grid container direction="row" item spacing={2}>
+                    <Grid xs={12} md={6} item>
+                        <StatusField />
+                    </Grid>
+                    <Grid xs={12} md={6} item>
+                        <ResponsibleField />
+                    </Grid>
+                </Grid>
+                <Grid item md={6}>
+                    <DateInput label={'1st Draft Submission'} fullWidth />
+                    <DateInput label={'RRT/OPRTT Approval'} fullWidth />
+                    <DateInput label={'EOMG Group'} fullWidth />
+                    <TextInput
+                        label="No Regret Fund"
+                        className={classes.input}
+                    />
+                    <TextInput label="Cost Round 1" className={classes.input} />
+                    <TextInput label="Cost Round 2" className={classes.input} />
+                    <Typography>Cost/Child: $3 (computed)</Typography>
+                </Grid>
+            </Grid>
+        </>
+    );
 };
 
 const DateInput = props => {

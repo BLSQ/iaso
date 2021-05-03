@@ -69,9 +69,11 @@ const dataSourcesTableColumns = (
                 sortedVersions.length > 0 ? sortedVersions[0].number : 0;
             const addTaskTitle = {
                 id: 'addAskTitle',
-                defaultMessage: `${formatMessage(MESSAGES.addTask)} - Source: ${
-                    settings.original.name
-                } - Version: ${latestVersion + 1}`,
+                defaultMessage: `${formatMessage(
+                    MESSAGES.importFromDhis2,
+                )} - Source: ${settings.original.name} - Version: ${
+                    latestVersion + 1
+                }`,
             };
 
             return (
@@ -102,8 +104,8 @@ const dataSourcesTableColumns = (
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
                                 onClick={openDialog}
-                                icon="add"
-                                tooltipMessage={MESSAGES.addTask}
+                                icon="download"
+                                tooltipMessage={MESSAGES.importFromDhis2}
                             />
                         )}
                         defaultSourceVersion={defaultSourceVersion}

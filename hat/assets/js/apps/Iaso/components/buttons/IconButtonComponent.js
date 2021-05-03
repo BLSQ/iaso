@@ -12,7 +12,7 @@ import History from '@material-ui/icons/History';
 import Map from '@material-ui/icons/Map';
 import CachedRoundedIcon from '@material-ui/icons/CachedRounded';
 import StopRoundedIcon from '@material-ui/icons/StopRounded';
-import AddIcon from '@material-ui/icons/Add';
+import GetAppIcon from '@material-ui/icons/GetApp';
 import RestoreFromTrash from '@material-ui/icons/RestoreFromTrash';
 
 import XmlSvg from '../svg/XmlSvgComponent';
@@ -37,7 +37,7 @@ const ICON_VARIANTS = {
     refresh: CachedRoundedIcon,
     stop: StopRoundedIcon,
     xls: ExcellSvg,
-    add: AddIcon,
+    download: GetAppIcon,
 };
 
 const styles = theme => ({

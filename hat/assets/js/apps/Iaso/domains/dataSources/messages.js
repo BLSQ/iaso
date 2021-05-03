@@ -93,11 +93,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.validateStatus',
         defaultMessage: 'Validate status',
     },
-    // TODO remove + remove from json
-    makeDefaultSource: {
-        id: 'iaso.dataSources.makeDefaultSource',
-        defaultMessage: 'Make default data source',
-    },
+
     goToCurrentTask: {
         id: 'iaso.dataSources.goToCurrentTask',
         defaultMessage: 'Launch and show task',
@@ -106,9 +102,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.launch',
         defaultMessage: 'Launch',
     },
-    addTask: {
-        id: 'iaso.dataSources.addTask',
-        defaultMessage: 'Add task',
+    importFromDhis2: {
+        id: 'iaso.dataSources.importFromDhis2',
+        defaultMessage: 'Import from DHIS2',
     },
     useDefaultDhisSettings: {
         id: 'iaso.dataSources.useDefaultDhisSettings',

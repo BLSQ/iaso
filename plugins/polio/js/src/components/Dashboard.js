@@ -356,8 +356,10 @@ const Round2Form = () => {
                 <DateInput label={'IM Start'} fullWidth />
                 <DateInput label={'IM End'} fullWidth />
             </Grid>
-            <DateInput label={'LQAS Start'} />
-            <DateInput label={'LQAS End'} />
+            <Grid xs={12} md={6} item>
+                <DateInput label={'LQAS Start'} fullWidth />
+                <DateInput label={'LQAS End'} fullWidth />
+            </Grid>
         </Grid>
     );
 };
@@ -418,7 +420,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
     return (
         <Dialog
             fullWidth
-            maxWidth={'lg'}
+            maxWidth={'md'}
             open={isOpen}
             onBackdropClick={onClose}
             scroll="body"

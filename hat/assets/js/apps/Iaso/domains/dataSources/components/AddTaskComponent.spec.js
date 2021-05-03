@@ -1,6 +1,4 @@
 import React from 'react';
-import { act } from 'react-dom/test-utils';
-
 import nock from 'nock';
 import { expect } from 'chai';
 import { AddTask } from './AddTaskComponent';
@@ -9,6 +7,7 @@ import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { mockPostRequest } from '../../../../../test/utils/requests';
 import { renderWithStore } from '../../../../../test/utils/redux';
+import { awaitUseEffect, fillFields } from '../../../../../test/utils';
 
 const existingCredentials = {
     name: 'Goron',
@@ -18,28 +17,6 @@ const existingCredentials = {
 
 const SOURCE_ID = 1;
 const SOURCE_VERSION = 1;
-
-const awaitUseEffect = async wrapper => {
-    await act(async () => {
-        await Promise.resolve(wrapper);
-        await new Promise(resolve => setImmediate(resolve));
-        wrapper.update();
-    });
-    return Promise.resolve();
-};
-
-const fillFields = async (component, fieldKeys) => {
-    for (let i = 0; i < fieldKeys.length; i += 1) {
-        const keyValue = fieldKeys[i];
-        const element = component
-            .find(InputComponent)
-            .filter(`[keyValue="${keyValue}"]`);
-        expect(element.exists()).to.equal(true);
-        element.props().onChange(keyValue, 'LINK');
-        // eslint-disable-next-line no-await-in-loop
-        await awaitUseEffect(component);
-    }
-};
 
 let connectedWrapper;
 let inputComponent;

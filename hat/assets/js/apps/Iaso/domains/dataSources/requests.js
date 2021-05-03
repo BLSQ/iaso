@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { postRequestHandler } from '../../utils/requests';
 
-export const sendDhisOuImporterRequest = (requestBody, dispatch) => {
+export const sendDhisOuImporterRequest = async (requestBody, dispatch) => {
     if (requestBody)
         return postRequestHandler({
             url: '/api/dhis2ouimporter/',

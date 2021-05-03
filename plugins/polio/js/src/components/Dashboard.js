@@ -13,8 +13,12 @@ import {
     DialogActions,
     Tabs,
     Tab,
+    InputLabel,
+    Select,
+    MenuItem,
     TextField,
     Typography,
+    FormControl,
 } from '@material-ui/core';
 
 import EditIcon from '@material-ui/icons/Edit';
@@ -30,6 +34,9 @@ import { useState } from 'react';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    root: {
+        flexGrow: 1,
+    },
     table: {
         borderSpacing: 0,
         width: '100%',
@@ -43,20 +50,20 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
     },
     pageActions: {
-        marginBottom: 16,
+        marginBottom: theme.spacing(2),
     },
     form: {
-        margin: 32,
+        marginTop: theme.spacing(4),
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
     },
     round1FormCalculations: {
-        marginTop: 64,
-        marginBottom: 32,
+        marginTop: theme.spacing(8),
+        marginBottom: theme.spacing(4),
     },
     input: {
-        marginTop: 32,
+        marginBottom: theme.spacing(2),
     },
     tabs: {
         borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
@@ -83,7 +90,93 @@ const PageAction = ({ icon: Icon, onClick }) => {
 };
 
 const BaseInfoForm = () => {
-    return <div>Base info</div>;
+    const classes = useStyles();
+    return (
+        <>
+            <Typography>
+                Enter information about the new outbreak response
+            </Typography>
+            <Grid container spacing={2}>
+                <Grid container direction="row" item spacing={2}>
+                    <Grid xs={12} md={6} item>
+                        <TextField
+                            label="EPID"
+                            className={classes.input}
+                            fullWidth
+                            variant="outlined"
+                        />
+                        <TextField
+                            label="OBR Name"
+                            fullWidth
+                            variant="outlined"
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <FormControl
+                            className={classes.input}
+                            fullWidth
+                            variant="outlined"
+                        >
+                            <InputLabel id="virus-label-id">Virus</InputLabel>
+                            <Select
+                                label="Virus"
+                                labelId="virus-label-id"
+                                id="virus-field-id"
+                            >
+                                <MenuItem value="PV1">PV1</MenuItem>
+                                <MenuItem>PV2</MenuItem>
+                                <MenuItem>PV3</MenuItem>
+                                <MenuItem>cVDPV2</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel id="virus-label-id">Vacines</InputLabel>
+                            <Select
+                                label="Vacines"
+                                labelId="virus-label-id"
+                                id="virus-field-id"
+                            >
+                                <MenuItem>mOPV2</MenuItem>
+                                <MenuItem>nOPV2</MenuItem>
+                                <MenuItem>bOPV</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <TextField
+                        className={classes.input}
+                        label="Description"
+                        fullWidth
+                        variant="outlined"
+                    />
+                    <TextField
+                        className={classes.input}
+                        label="Country"
+                        fullWidth
+                        variant="outlined"
+                    />
+                    <TextField
+                        className={classes.input}
+                        label="Province"
+                        fullWidth
+                        variant="outlined"
+                    />
+                    <TextField label="Distrit" fullWidth variant="outlined" />
+                </Grid>
+                <Grid container item spacing={2}>
+                    <Grid item xs={12} md={6}>
+                        <DateInput label={'Date of onset'} fullWidth />
+                        <DateInput label={'cVDPV Notifiation'} fullWidth />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <DateInput label={'PV Notification'} fullWidth />
+                        <DateInput label={'3 level call'} fullWidth />
+                    </Grid>
+                </Grid>
+            </Grid>
+        </>
+    );
 };
 const DetectionForm = () => {
     return <div>Dection</div>;
@@ -204,7 +297,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
         },
     ];
 
-    const [value, setValue] = useState(4);
+    const [value, setValue] = useState(0);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -216,7 +309,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
         <Dialog
             fullWidth
             maxWidth={'lg'}
-            open={true}
+            open={isOpen}
             onBackdropClick={onClose}
             scroll="body"
         >

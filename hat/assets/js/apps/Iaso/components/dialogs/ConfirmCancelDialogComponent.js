@@ -108,6 +108,7 @@ ConfirmCancelDialogComponent.defaultProps = {
     cancelMessage: MESSAGES.no,
     maxWidth: 'sm',
     onClosed: () => {},
+    onOpen: () => {},
     additionalButton: false,
     additionalMessage: null,
     onAdditionalButtonClick: null,
@@ -120,6 +121,7 @@ ConfirmCancelDialogComponent.propTypes = {
     cancelMessage: PropTypes.object, // TODO: make a message prop type
     maxWidth: PropTypes.string,
     onClosed: PropTypes.func,
+    onOpen: PropTypes.func,
     additionalButton: PropTypes.bool,
     additionalMessage: PropTypes.object || null,
     onAdditionalButtonClick: PropTypes.func || null,

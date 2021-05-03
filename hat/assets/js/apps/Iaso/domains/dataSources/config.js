@@ -2,8 +2,10 @@ import React from 'react';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { Tooltip } from '@material-ui/core';
 
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+// eslint-disable-next-line import/no-named-as-default
+// eslint-disable-next-line import/no-named-as-default-member
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
 import { AddTask } from './components/AddTaskComponent';

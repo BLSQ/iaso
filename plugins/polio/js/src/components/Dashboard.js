@@ -78,6 +78,21 @@ const RowAction = ({ icon: Icon, onClick }) => {
     );
 };
 
+const TextInput = props => {
+    return (
+        <TextField
+            displayEmpty
+            InputLabelProps={{
+                shrink: true,
+            }}
+            fullWidth
+            variant={'outlined'}
+            size={'medium'}
+            {...props}
+        />
+    );
+};
+
 const ResponsibleField = () => {
     return (
         <FormControl fullWidth variant="outlined">
@@ -130,23 +145,16 @@ const BaseInfoForm = () => {
     const classes = useStyles();
     return (
         <>
-            <Typography>
-                Enter information about the new outbreak response
-            </Typography>
             <Grid container spacing={2}>
+                <Grid xs={12} item>
+                    <Typography>
+                        Enter information about the new outbreak response
+                    </Typography>
+                </Grid>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
-                        <TextField
-                            label="EPID"
-                            className={classes.input}
-                            fullWidth
-                            variant="outlined"
-                        />
-                        <TextField
-                            label="OBR Name"
-                            fullWidth
-                            variant="outlined"
-                        />
+                        <TextInput label="EPID" className={classes.input} />
+                        <TextInput label="OBR Name" />
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <FormControl
@@ -181,25 +189,10 @@ const BaseInfoForm = () => {
                     </Grid>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                    <TextField
-                        className={classes.input}
-                        label="Description"
-                        fullWidth
-                        variant="outlined"
-                    />
-                    <TextField
-                        className={classes.input}
-                        label="Country"
-                        fullWidth
-                        variant="outlined"
-                    />
-                    <TextField
-                        className={classes.input}
-                        label="Province"
-                        fullWidth
-                        variant="outlined"
-                    />
-                    <TextField label="Distrit" fullWidth variant="outlined" />
+                    <TextInput className={classes.input} label="Description" />
+                    <TextInput className={classes.input} label="Country" />
+                    <TextInput className={classes.input} label="Province" />
+                    <TextInput label="Distrit" />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>
@@ -216,8 +209,6 @@ const BaseInfoForm = () => {
     );
 };
 const DetectionForm = () => {
-    const classes = useStyles();
-
     return (
         <>
             <Grid container spacing={2}>
@@ -239,7 +230,38 @@ const DetectionForm = () => {
     );
 };
 const RiskAssessmentForm = () => {
-    return <div>Risk Assessment</div>;
+    const classes = useStyles();
+    return (
+        <>
+            <Grid container spacing={2}>
+                <Grid container direction="row" item spacing={2}>
+                    <Grid xs={12} md={6} item>
+                        <StatusField />
+                    </Grid>
+                    <Grid xs={12} md={6} item>
+                        <ResponsibleField />
+                    </Grid>
+                </Grid>
+                <Grid item md={6}>
+                    <DateInput label={'Field Investigation Date'} fullWidth />
+                    <DateInput label={'3 level call'} fullWidth />
+                    <DateInput label={'1st Draft Submission'} fullWidth />
+                    <DateInput label={'RRT/OPRTT Approval'} fullWidth />
+                    <DateInput label={'AG/nOPV Group'} fullWidth />
+                    <DateInput label={'DG Authorization'} fullWidth />
+                    <TextInput
+                        label="Target population Round 1"
+                        className={classes.input}
+                    />
+                    <TextInput
+                        label="Target population Round 2"
+                        className={classes.input}
+                    />
+                    <Typography>Vials Requested (computed) 37400</Typography>
+                </Grid>
+            </Grid>
+        </>
+    );
 };
 const BudgetForm = () => {
     return <div>Budget</div>;

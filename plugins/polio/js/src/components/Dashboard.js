@@ -33,6 +33,7 @@ import { TextInput, StatusField, ResponsibleField, DateInput } from './Inputs';
 
 import { Page } from './Page';
 import { useState } from 'react';
+import { useFormik, useFormikContext, FormikProvider } from 'formik';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -93,6 +94,8 @@ const PageAction = ({ icon: Icon, onClick }) => {
 
 const BaseInfoForm = () => {
     const classes = useStyles();
+    const { values } = useFormikContext();
+
     return (
         <>
             <Grid container spacing={2}>
@@ -312,6 +315,13 @@ const Form = ({ children }) => {
 
 const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
     const classes = useStyles();
+    const formik = useFormik({
+        initialValues: {},
+        validateOnBlur: true,
+        onSubmit: (values, helpers) => {
+            alert(JSON.stringify(values, null, 2));
+        },
+    });
 
     const steps = [
         {
@@ -366,18 +376,25 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
                     aria-label="disabled tabs example"
                 >
                     {steps.map(({ title }) => {
-                        return <Tab label={title} />;
+                        return <Tab key={title} label={title} />;
                     })}
                 </Tabs>
-                <Form>
-                    <CurrentForm />
-                </Form>
+                <FormikProvider value={formik}>
+                    <Form>
+                        <CurrentForm />
+                    </Form>
+                </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
                 <Button onClick={onCancel} color="primary">
                     Cancel
                 </Button>
-                <Button onClick={onConfirm} color="primary" autoFocus disabled>
+                <Button
+                    onClick={formik.handleSubmit}
+                    color="primary"
+                    autoFocus
+                    disabled={!formik.isValid}
+                >
                     Confirm
                 </Button>
             </DialogActions>

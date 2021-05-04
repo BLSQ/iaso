@@ -1,24 +1,23 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTable } from 'react-table';
 
 import {
     Box,
-    makeStyles,
-    IconButton,
-    Grid,
     Button,
     Dialog,
+    DialogActions,
     DialogContent,
     DialogTitle,
-    DialogActions,
-    Tabs,
-    Tab,
-    InputLabel,
-    Select,
-    MenuItem,
-    TextField,
-    Typography,
     FormControl,
+    Grid,
+    IconButton,
+    InputLabel,
+    makeStyles,
+    MenuItem,
+    Select,
+    Tab,
+    Tabs,
+    Typography,
 } from '@material-ui/core';
 
 import EditIcon from '@material-ui/icons/Edit';
@@ -29,11 +28,10 @@ import commonStyles from '../styles/common';
 import { TableHeader } from './Table/TableHeader';
 import { TableCell } from './Table/TableCell';
 
-import { TextInput, StatusField, ResponsibleField, DateInput } from './Inputs';
+import { DateInput, ResponsibleField, StatusField, TextInput } from './Inputs';
 
 import { Page } from './Page';
-import { useState } from 'react';
-import { useFormik, useFormikContext, FormikProvider } from 'formik';
+import { FormikProvider, useFormik, useFormikContext } from 'formik';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

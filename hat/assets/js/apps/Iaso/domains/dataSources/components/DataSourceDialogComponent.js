@@ -72,14 +72,13 @@ export class DataSourceDialogComponent extends Component {
 
         const onSuccesfullUpdate = () => {
             dispatch(enqueueSnackbar(succesfullSnackBar()));
+            dispatch(setIsLoading(false));
             onSuccess();
         };
 
         return saveCurrentDataSource
             .then(() => {
                 closeDialog();
-            })
-            .then(() => {
                 if (
                     form.is_default_source.value &&
                     currentUser &&

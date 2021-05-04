@@ -1,20 +1,20 @@
-import { FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
+import { Select } from './Select';
 
-export const StatusField = ({ field, form, ...props }) => {
-    return (
-        <FormControl fullWidth variant="outlined">
-            <InputLabel id="status-label-id">Status</InputLabel>
-            <Select
-                label="Status"
-                labelId="status-label-id"
-                id="status-field-id"
-                {...props}
-                {...field}
-            >
-                <MenuItem value="PENDING">Pending</MenuItem>
-                <MenuItem value="ONGOING">Ongoing</MenuItem>
-                <MenuItem value="FINISHED">Finished</MenuItem>
-            </Select>
-        </FormControl>
-    );
+const statuses = [
+    {
+        value: 'PENDING',
+        label: 'Pending',
+    },
+    {
+        value: 'ONGOING',
+        label: 'Ongoing',
+    },
+    {
+        value: 'FINISHED',
+        label: 'Finished',
+    },
+];
+
+export const StatusField = props => {
+    return <Select label="Status" options={statuses} {...props} />;
 };

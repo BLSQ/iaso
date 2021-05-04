@@ -1,23 +1,32 @@
-import { FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
+import { Select } from './Select';
 
-export const ResponsibleField = ({ field, form, ...props }) => {
-    return (
-        <FormControl fullWidth variant="outlined">
-            <InputLabel id="responsible-label-id">Responsible</InputLabel>
-            <Select
-                label="Responsible"
-                labelId="responsible-label-id"
-                id="responsible-field-id"
-                {...props}
-                {...field}
-            >
-                <MenuItem value="WHO">WHO</MenuItem>
-                <MenuItem value="UNICEF">UNICEF</MenuItem>
-                <MenuItem value="NAT">National</MenuItem>
-                <MenuItem value="MOH">MOH</MenuItem>
-                <MenuItem value="PROV">PROVINCE</MenuItem>
-                <MenuItem value="DIST">District</MenuItem>
-            </Select>
-        </FormControl>
-    );
-};
+const RESPONSIBLES = [
+    {
+        value: 'WHO',
+        label: 'WHO',
+    },
+    {
+        value: 'UNICEF',
+        label: 'UNICEF',
+    },
+    {
+        value: 'NAT',
+        label: 'National',
+    },
+    {
+        value: 'MOH',
+        label: 'MOH',
+    },
+    {
+        value: 'PROV',
+        label: 'PROVINCE',
+    },
+    {
+        value: 'DIST',
+        label: 'District',
+    },
+];
+
+export const ResponsibleField = props => (
+    <Select label="Responsible" options={RESPONSIBLES} {...props} />
+);

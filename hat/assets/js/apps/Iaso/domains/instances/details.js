@@ -23,6 +23,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
+import ExportButtonComponent from '../../components/buttons/ExportButtonComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
@@ -58,11 +59,17 @@ const actions = (currentInstance, reAssignInstance) => [
         id: 'instanceExportAction',
         icon: (
             <ExportInstancesDialogComponent
+                renderTrigger={(openDialog, isInstancesFilterUpdated) => (
+                    <ExportButtonComponent
+                        onClick={openDialog}
+                        isDisabled={isInstancesFilterUpdated}
+                        batchExport={false}
+                    />
+                )}
                 getFilters={() => ({
                     form_id: currentInstance.form_id,
                     search: `ids:${currentInstance.id}`,
                 })}
-                batchExport={false}
             />
         ),
         disabled: currentInstance && currentInstance.deleted,

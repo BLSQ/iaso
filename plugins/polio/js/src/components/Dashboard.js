@@ -31,7 +31,7 @@ import { TableCell } from './Table/TableCell';
 import { DateInput, ResponsibleField, StatusField, TextInput } from './Inputs';
 
 import { Page } from './Page';
-import { FormikProvider, useFormik, useFormikContext } from 'formik';
+import { FormikProvider, useFormik, Field, useFormikContext } from 'formik';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -92,7 +92,6 @@ const PageAction = ({ icon: Icon, onClick }) => {
 
 const BaseInfoForm = () => {
     const classes = useStyles();
-    const { values } = useFormikContext();
 
     return (
         <>
@@ -104,8 +103,19 @@ const BaseInfoForm = () => {
                 </Grid>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
-                        <TextInput label="EPID" className={classes.input} />
-                        <TextInput label="OBR Name" />
+                        <Field
+                            label="EPID"
+                            name={'epid'}
+                            component={TextInput}
+                            className={classes.input}
+                        />
+
+                        <Field
+                            label="OBR Name"
+                            name={'obr_name'}
+                            component={TextInput}
+                            className={classes.input}
+                        />
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <FormControl
@@ -140,19 +150,49 @@ const BaseInfoForm = () => {
                     </Grid>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                    <TextInput className={classes.input} label="Description" />
+                    <Field
+                        className={classes.input}
+                        label="Description"
+                        name={'description'}
+                        component={TextInput}
+                    />
+
                     <TextInput className={classes.input} label="Country" />
                     <TextInput className={classes.input} label="Province" />
-                    <TextInput label="Distrit" />
+                    <TextInput label="District" />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>
-                        <DateInput label={'Date of onset'} fullWidth />
-                        <DateInput label={'cVDPV Notifiation'} fullWidth />
+                        <Field
+                            className={classes.input}
+                            label={'Date of onset'}
+                            fullWidth
+                            name={'onset_at'}
+                            component={DateInput}
+                        />
+                        <Field
+                            className={classes.input}
+                            label={'cVDPV Notifiation'}
+                            fullWidth
+                            name={'cvdpv_notified_at'}
+                            component={DateInput}
+                        />
                     </Grid>
                     <Grid item xs={12} md={6}>
-                        <DateInput label={'PV Notification'} fullWidth />
-                        <DateInput label={'3 level call'} fullWidth />
+                        <Field
+                            className={classes.input}
+                            label={'PV Notification'}
+                            fullWidth
+                            name={'pv_notified_at'}
+                            component={DateInput}
+                        />
+                        <Field
+                            className={classes.input}
+                            label={'3 level call'}
+                            fullWidth
+                            name={'three_level_call_at'}
+                            component={DateInput}
+                        />
                     </Grid>
                 </Grid>
             </Grid>
@@ -165,16 +205,38 @@ const DetectionForm = () => {
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
-                        <StatusField />
+                        <Field
+                            name={'detection_status'}
+                            component={StatusField}
+                        />
                     </Grid>
                     <Grid xs={12} md={6} item>
-                        <ResponsibleField />
+                        <Field
+                            name={'detection_responsible'}
+                            component={ResponsibleField}
+                        />
                     </Grid>
                 </Grid>
                 <Grid item md={6}>
-                    <DateInput label={'Date of onset'} fullWidth />
-                    <DateInput label={'PV2 Notifiation'} fullWidth />
-                    <DateInput label={'cVDPV2 Notifiation'} fullWidth />
+                    <Field
+                        label={'Date of onset'}
+                        fullWidth
+                        name={'onset_at'}
+                        component={DateInput}
+                    />
+
+                    <Field
+                        label={'PV2 Notification'}
+                        fullWidth
+                        name={'pv2_notified_at'}
+                        component={DateInput}
+                    />
+                    <Field
+                        label={'cVDPV2 Notifiation'}
+                        fullWidth
+                        name={'cvdpv2_notified_at'}
+                        component={DateInput}
+                    />
                 </Grid>
             </Grid>
         </>
@@ -182,33 +244,84 @@ const DetectionForm = () => {
 };
 const RiskAssessmentForm = () => {
     const classes = useStyles();
+    const { values } = useFormikContext();
+    const { round_one = {}, round_two = {} } = values;
+
+    const targetPopulationTotal = useMemo(() => {
+        return (
+            parseInt(round_one.target_population || 0) +
+            parseInt(round_two.target_population || 0)
+        );
+    }, [round_one, round_two]);
     return (
         <>
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
-                        <StatusField />
+                        <Field
+                            name={'risk_assessment_status'}
+                            component={StatusField}
+                        />
                     </Grid>
                     <Grid xs={12} md={6} item>
-                        <ResponsibleField />
+                        <Field
+                            name={'risk_assessment_responsible'}
+                            component={ResponsibleField}
+                        />
                     </Grid>
                 </Grid>
                 <Grid item md={6}>
-                    <DateInput label={'Field Investigation Date'} fullWidth />
-                    <DateInput label={'3 level call'} fullWidth />
-                    <DateInput label={'1st Draft Submission'} fullWidth />
-                    <DateInput label={'RRT/OPRTT Approval'} fullWidth />
-                    <DateInput label={'AG/nOPV Group'} fullWidth />
-                    <DateInput label={'DG Authorization'} fullWidth />
-                    <TextInput
+                    <Field
+                        label={'Field Investigation Date'}
+                        name={'investigation_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'3 level call'}
+                        name={'three_level_call_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'1st Draft Submission'}
+                        name={'risk_assessment_first_draft_submitted_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'RRT/OPRTT Approval'}
+                        name={'risk_assessment_rrt_oprtt_approval_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'AG/nOPV Group'}
+                        name={'ag_nopv_group_met_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'DG Authorization'}
+                        name={'dg_authorized_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
                         label="Target population Round 1"
+                        name={'round_one.target_population'}
+                        component={TextInput}
                         className={classes.input}
                     />
-                    <TextInput
+                    <Field
                         label="Target population Round 2"
+                        name={'round_two.target_population'}
+                        component={TextInput}
                         className={classes.input}
                     />
-                    <Typography>Vials Requested (computed) 37400</Typography>
+                    <Typography>
+                        Vials Requested (computed) {targetPopulationTotal}
+                    </Typography>
                 </Grid>
             </Grid>
         </>
@@ -217,28 +330,70 @@ const RiskAssessmentForm = () => {
 
 const BudgetForm = () => {
     const classes = useStyles();
+
+    const { values } = useFormikContext();
+    const { round_one = {}, round_two = {} } = values;
+
+    const totalCost = useMemo(() => {
+        return parseInt(round_one.cost || 0) + parseInt(round_two.cost || 0);
+    }, [round_one, round_two]);
+
     return (
         <>
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
-                        <StatusField />
+                        <Field name={'budget_status'} component={StatusField} />
                     </Grid>
                     <Grid xs={12} md={6} item>
-                        <ResponsibleField />
+                        <Field
+                            name={'budget_responsible'}
+                            component={ResponsibleField}
+                        />
                     </Grid>
                 </Grid>
                 <Grid item md={6}>
-                    <DateInput label={'1st Draft Submission'} fullWidth />
-                    <DateInput label={'RRT/OPRTT Approval'} fullWidth />
-                    <DateInput label={'EOMG Group'} fullWidth />
-                    <TextInput
+                    <Field
+                        label={'1st Draft Submission'}
+                        name={'risk_assessment_first_draft_submitted_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'RRT/OPRTT Approval'}
+                        name={'risk_assessment_rrt_oprtt_approval_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+
+                    <Field
+                        label={'EOMG Group'}
+                        name={'eomg'}
+                        component={DateInput}
+                        fullWidth
+                    />
+
+                    <Field
                         label="No Regret Fund"
+                        name={'no_regret_fund_amount'}
+                        component={TextInput}
                         className={classes.input}
                     />
-                    <TextInput label="Cost Round 1" className={classes.input} />
-                    <TextInput label="Cost Round 2" className={classes.input} />
-                    <Typography>Cost/Child: $3 (computed)</Typography>
+
+                    <Field
+                        label="Cost Round 1"
+                        name={'round_one.cost'}
+                        component={TextInput}
+                        className={classes.input}
+                    />
+
+                    <Field
+                        label="Cost Round 2"
+                        name={'round_two.cost'}
+                        component={TextInput}
+                        className={classes.input}
+                    />
+                    <Typography>Cost/Child: ${totalCost} (computed)</Typography>
                 </Grid>
             </Grid>
         </>
@@ -251,10 +406,31 @@ const Round1Form = () => {
     return (
         <Grid container spacing={2}>
             <Grid xs={12} md={6} item>
-                <DateInput label={'Round 1 Start'} fullWidth />
-                <DateInput label={'Round 1 End'} fullWidth />
-                <DateInput label={'Mop Up Start'} fullWidth />
-                <DateInput label={'Mop Up End'} fullWidth />
+                <Field
+                    label={'Round 1 Start'}
+                    name={'round_one.started_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+
+                <Field
+                    label={'Round 1 End'}
+                    name={'round_one.ended_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+                <Field
+                    label={'Mop Up Start'}
+                    name={'round_one.mop_up_started_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+                <Field
+                    label={'Mop Up End'}
+                    name={'round_one.mop_up_ended_at'}
+                    component={DateInput}
+                    fullWidth
+                />
                 <Box className={classes.round1FormCalculations}>
                     <Typography>
                         Percentage of districts passing LQAS: 96% (182 passing /
@@ -262,8 +438,20 @@ const Round1Form = () => {
                     </Typography>
                     <Typography>Percentage of missed children: 10%</Typography>
                 </Box>
-                <DateInput label={'IM Start'} fullWidth />
-                <DateInput label={'IM End'} fullWidth />
+
+                <Field
+                    label={'IM Start'}
+                    name={'round_one.im_started_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+
+                <Field
+                    label={'IM End'}
+                    name={'round_one.im_ended_at'}
+                    component={DateInput}
+                    fullWidth
+                />
             </Grid>
         </Grid>
     );
@@ -274,10 +462,31 @@ const Round2Form = () => {
     return (
         <Grid container spacing={2}>
             <Grid xs={12} md={6} item>
-                <DateInput label={'Round 1 Start'} fullWidth />
-                <DateInput label={'Round 1 End'} fullWidth />
-                <DateInput label={'Mop Up Start'} fullWidth />
-                <DateInput label={'Mop Up End'} fullWidth />
+                <Field
+                    label={'Round 2 Start'}
+                    name={'round_two.started_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+
+                <Field
+                    label={'Round 2 End'}
+                    name={'round_two.ended_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+                <Field
+                    label={'Mop Up Start'}
+                    name={'round_two.mop_up_started_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+                <Field
+                    label={'Mop Up End'}
+                    name={'round_two.mop_up_ended_at'}
+                    component={DateInput}
+                    fullWidth
+                />
                 <Box className={classes.round1FormCalculations}>
                     <Typography>
                         Percentage of districts passing LQAS: 96% (182 passing /
@@ -285,12 +494,35 @@ const Round2Form = () => {
                     </Typography>
                     <Typography>Percentage of missed children: 10%</Typography>
                 </Box>
-                <DateInput label={'IM Start'} fullWidth />
-                <DateInput label={'IM End'} fullWidth />
+
+                <Field
+                    label={'IM Start'}
+                    name={'round_two.im_started_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+
+                <Field
+                    label={'IM End'}
+                    name={'round_two.im_ended_at'}
+                    component={DateInput}
+                    fullWidth
+                />
             </Grid>
             <Grid xs={12} md={6} item>
-                <DateInput label={'LQAS Start'} fullWidth />
-                <DateInput label={'LQAS End'} fullWidth />
+                <Field
+                    label={'LQAS Start'}
+                    name={'round_two.lqas_started_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+
+                <Field
+                    label={'LQAS End'}
+                    name={'round_two.lqas_ended_at'}
+                    component={DateInput}
+                    fullWidth
+                />
             </Grid>
         </Grid>
     );
@@ -319,6 +551,10 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
         onSubmit: (values, helpers) => {
             alert(JSON.stringify(values, null, 2));
         },
+    });
+
+    console.log({
+        values: formik.values,
     });
 
     const steps = [

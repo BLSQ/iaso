@@ -32,6 +32,49 @@ import { DateInput, ResponsibleField, StatusField, TextInput } from './Inputs';
 
 import { Page } from './Page';
 import { FormikProvider, useFormik, Field, useFormikContext } from 'formik';
+import * as yup from 'yup';
+
+const round_shape = yup.object().shape({
+    started_at: yup.date().nullable(),
+    ended_at: yup.date().nullable(),
+    mop_up_started_at: yup.date().nullable(),
+    mop_up_ended_at: yup.date().nullable(),
+    im_started_at: yup.date().nullable(),
+    im_ended_at: yup.date().nullable(),
+    lqas_started_at: yup.date().nullable(),
+    lqas_ended_at: yup.date().nullable(),
+    target_population: yup.number().nullable().positive().integer(),
+    cost: yup.number().nullable().positive().integer(),
+});
+
+const schema = yup.object().shape({
+    epid: yup.string().nullable(),
+    obr_name: yup.string().trim().required(),
+    description: yup.string().nullable(),
+    onset_at: yup.date().nullable(),
+    three_level_call_at: yup.date().nullable(),
+
+    cvdpv_notified_at: yup.date().nullable(),
+    cvdpv2_notified_at: yup.date().nullable(),
+
+    pv_notified_at: yup.date().nullable(),
+    pv2_notified_at: yup.date().nullable(),
+
+    detection_first_draft_submitted_at: yup.date().nullable(),
+    detection_rrt_oprtt_approval_at: yup.date().nullable(),
+
+    investigation_at: yup.date().nullable(),
+    risk_assessment_first_draft_submitted_at: yup.date().nullable(),
+    risk_assessment_rrt_oprtt_approval_at: yup.date().nullable(),
+    ag_nopv_group_met_at: yup.date().nullable(),
+    dg_authorized_at: yup.date().nullable(),
+
+    eomg: yup.date().nullable(),
+    no_regret_fund_amount: yup.number().nullable().positive().integer(),
+
+    round_one: round_shape,
+    round_two: round_shape,
+});
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -548,6 +591,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
     const formik = useFormik({
         initialValues: {},
         validateOnBlur: true,
+        validationSchema: schema,
         onSubmit: (values, helpers) => {
             alert(JSON.stringify(values, null, 2));
         },

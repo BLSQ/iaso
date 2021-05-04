@@ -1,7 +1,7 @@
 import { TextField } from '@material-ui/core';
 import { useInputStyles } from './Styles';
 
-export const DateInput = props => {
+export const DateInput = ({ field, form, ...props }) => {
     const classes = useInputStyles();
 
     return (
@@ -16,6 +16,7 @@ export const DateInput = props => {
             variant={'outlined'}
             size={'medium'}
             {...props}
+            {...field}
         />
     );
 };

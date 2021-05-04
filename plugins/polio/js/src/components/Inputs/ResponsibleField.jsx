@@ -1,6 +1,6 @@
-import { FormControl, InputLabel, MenuItem, Select } from '@material-ui/core'
+import { FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
 
-export const ResponsibleField = () => {
+export const ResponsibleField = ({ field, form, ...props }) => {
     return (
         <FormControl fullWidth variant="outlined">
             <InputLabel id="responsible-label-id">Responsible</InputLabel>
@@ -8,6 +8,8 @@ export const ResponsibleField = () => {
                 label="Responsible"
                 labelId="responsible-label-id"
                 id="responsible-field-id"
+                {...props}
+                {...field}
             >
                 <MenuItem value="WHO">WHO</MenuItem>
                 <MenuItem value="UNICEF">UNICEF</MenuItem>

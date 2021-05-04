@@ -1,6 +1,6 @@
 import { TextField } from '@material-ui/core';
 
-export const TextInput = props => {
+export const TextInput = ({ field, form, ...props }) => {
     return (
         <TextField
             displayEmpty
@@ -11,6 +11,7 @@ export const TextInput = props => {
             variant={'outlined'}
             size={'medium'}
             {...props}
+            {...field}
         />
     );
 };

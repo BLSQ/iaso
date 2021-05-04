@@ -30,6 +30,7 @@ from .api.export_requests import ExportRequestsViewSet
 
 from .api.tasks import TaskSourceViewSet
 from .api.accounts import AccountViewSet
+from plugins.router import router as plugins_router
 
 from .api.enketo import (
     enketo_edit_url,
@@ -52,7 +53,6 @@ from iaso import matching
 import pkgutil
 
 router = routers.DefaultRouter()
-
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
@@ -85,6 +85,9 @@ router.register(r"featureflags", FeatureFlagViewSet, basename="featureflags")
 router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
+
+router.registry.extend(plugins_router.registry)
+
 urlpatterns = [
     url(
         r"^fill/(?P<form_uuid>[a-z0-9-]+)/(?P<org_unit_id>[0-9-]+)/(?P<period>[a-z0-9-]+)?$",

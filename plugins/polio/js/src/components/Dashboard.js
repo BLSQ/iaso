@@ -8,12 +8,9 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    FormControl,
     Grid,
     IconButton,
-    InputLabel,
     makeStyles,
-    MenuItem,
     Tab,
     Tabs,
     Typography,
@@ -29,14 +26,14 @@ import { TableCell } from './Table/TableCell';
 
 import {
     DateInput,
-    Select,
     ResponsibleField,
+    Select,
     StatusField,
     TextInput,
 } from './Inputs';
 
 import { Page } from './Page';
-import { FormikProvider, useFormik, Field, useFormikContext } from 'formik';
+import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 

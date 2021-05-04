@@ -29,6 +29,8 @@ import commonStyles from '../styles/common';
 import { TableHeader } from './Table/TableHeader';
 import { TableCell } from './Table/TableCell';
 
+import { TextInput, StatusField, ResponsibleField, DateInput } from './Inputs';
+
 import { Page } from './Page';
 import { useState } from 'react';
 
@@ -75,58 +77,6 @@ const RowAction = ({ icon: Icon, onClick }) => {
         <IconButton onClick={onClick}>
             <Icon />
         </IconButton>
-    );
-};
-
-const TextInput = props => {
-    return (
-        <TextField
-            displayEmpty
-            InputLabelProps={{
-                shrink: true,
-            }}
-            fullWidth
-            variant={'outlined'}
-            size={'medium'}
-            {...props}
-        />
-    );
-};
-
-const ResponsibleField = () => {
-    return (
-        <FormControl fullWidth variant="outlined">
-            <InputLabel id="responsible-label-id">Responsible</InputLabel>
-            <Select
-                label="Responsible"
-                labelId="responsible-label-id"
-                id="responsible-field-id"
-            >
-                <MenuItem value="WHO">WHO</MenuItem>
-                <MenuItem value="UNICEF">UNICEF</MenuItem>
-                <MenuItem value="NAT">National</MenuItem>
-                <MenuItem value="MOH">MOH</MenuItem>
-                <MenuItem value="PROV">PROVINCE</MenuItem>
-                <MenuItem value="DIST">District</MenuItem>
-            </Select>
-        </FormControl>
-    );
-};
-
-const StatusField = () => {
-    return (
-        <FormControl fullWidth variant="outlined">
-            <InputLabel id="status-label-id">Status</InputLabel>
-            <Select
-                label="Status"
-                labelId="status-label-id"
-                id="status-field-id"
-            >
-                <MenuItem value="PENDING">Pending</MenuItem>
-                <MenuItem value="ONGOING">Ongoing</MenuItem>
-                <MenuItem value="FINISHED">Finished</MenuItem>
-            </Select>
-        </FormControl>
     );
 };
 
@@ -291,25 +241,6 @@ const BudgetForm = () => {
                 </Grid>
             </Grid>
         </>
-    );
-};
-
-const DateInput = props => {
-    const classes = useStyles();
-
-    return (
-        <TextField
-            className={classes.input}
-            displayEmpty
-            id="date"
-            type="date"
-            InputLabelProps={{
-                shrink: true,
-            }}
-            variant={'outlined'}
-            size={'medium'}
-            {...props}
-        />
     );
 };
 

@@ -14,7 +14,6 @@ import {
     InputLabel,
     makeStyles,
     MenuItem,
-    Select,
     Tab,
     Tabs,
     Typography,
@@ -28,11 +27,18 @@ import commonStyles from '../styles/common';
 import { TableHeader } from './Table/TableHeader';
 import { TableCell } from './Table/TableCell';
 
-import { DateInput, ResponsibleField, StatusField, TextInput } from './Inputs';
+import {
+    DateInput,
+    Select,
+    ResponsibleField,
+    StatusField,
+    TextInput,
+} from './Inputs';
 
 import { Page } from './Page';
 import { FormikProvider, useFormik, Field, useFormikContext } from 'formik';
 import * as yup from 'yup';
+import { polioVacines, polioViruses } from '../constants/virus';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -161,35 +167,19 @@ const BaseInfoForm = () => {
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
-                        <FormControl
+                        <Field
+                            label="Virus"
+                            name="virus"
                             className={classes.input}
-                            fullWidth
-                            variant="outlined"
-                        >
-                            <InputLabel id="virus-label-id">Virus</InputLabel>
-                            <Select
-                                label="Virus"
-                                labelId="virus-label-id"
-                                id="virus-field-id"
-                            >
-                                <MenuItem value="PV1">PV1</MenuItem>
-                                <MenuItem>PV2</MenuItem>
-                                <MenuItem>PV3</MenuItem>
-                                <MenuItem>cVDPV2</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <FormControl fullWidth variant="outlined">
-                            <InputLabel id="virus-label-id">Vacines</InputLabel>
-                            <Select
-                                label="Vacines"
-                                labelId="virus-label-id"
-                                id="virus-field-id"
-                            >
-                                <MenuItem>mOPV2</MenuItem>
-                                <MenuItem>nOPV2</MenuItem>
-                                <MenuItem>bOPV</MenuItem>
-                            </Select>
-                        </FormControl>
+                            options={polioViruses}
+                            component={Select}
+                        />
+                        <Field
+                            label="Vacines"
+                            name="vacine"
+                            options={polioVacines}
+                            component={Select}
+                        />
                     </Grid>
                 </Grid>
                 <Grid item xs={12} md={6}>

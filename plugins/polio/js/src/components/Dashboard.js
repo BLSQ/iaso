@@ -652,6 +652,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
                 <Button
                     onClick={formik.handleSubmit}
                     color='primary'
+                    variant={'contained'}
                     autoFocus
                     disabled={!formik.isValid}
                 >

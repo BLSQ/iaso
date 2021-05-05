@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import {
     getRequest,
     patchRequest,
@@ -6,7 +8,6 @@ import {
     deleteRequest,
     restoreRequest,
 } from '../libs/Api';
-
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { succesfullSnackBar, errorSnackBar } from '../constants/snackBars';
 
@@ -510,6 +511,7 @@ export const fetchFormVersions = (dispatch, formId) => {
         dispatch(
             enqueueSnackbar(
                 errorSnackBar(
+                    // @ts-ignore
                     isUpdate ? 'updateFormError' : 'createFormError',
                     null,
                     error,
@@ -580,6 +582,7 @@ export const updateDataSource = (dispatch, dataSourceId, dataSource) =>
         throw error;
     });
 
+// eslint-disable-next-line camelcase
 export const updateDefaultSource = (dispatch, accountId, default_version) =>
     putRequest(`/api/accounts/${accountId}/`, {
         default_version,
@@ -603,3 +606,364 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
             console.error(`Error while fetching ${consoleError} list:`, error);
             throw error;
         });
+/**
+ * @typedef {Object} handlerParams
+ * @property {string} url - endpoint's url
+ * @property {Object=} body - request's body
+ * @property {string} errorKeyMessage - The message displayed in the error snackbar
+ * @property {string} consoleError - the message to embed in the console's error message
+ * @property {object=} fileData - object to pass when using multipart mode
+ * @property{function} dispatch - redux's dispatch function
+ */
+
+/**
+ * @typedef {Object} makeHookParams
+ * @property {string} url - endpoint's url
+ * @property {string} errorKeyMessage - A key to embed in error snack bar massage
+ * @property {string} consoleError - the message to embed in the console's error message
+ */
+
+/**
+ *
+ * @param {handlerParams} params { url: string, errorKeyMessage: string, consoleError: string }
+ * @returns {object} API response
+ */
+export const getRequestHandler = params =>
+    getRequest(params.url)
+        .then(data => {
+            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return data;
+        })
+        .catch(error => {
+            params.dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(params.errorKeyMessage, null, error),
+                ),
+            );
+            console.error(
+                `Error while fetching ${params.consoleError} list:`,
+                error,
+            );
+            throw error;
+        });
+// TODO see if it's better to make a separate type for requests with and without body
+/**
+ *
+ * @param {handlerParams} params { url: string, body: object, errorKeyMessage: string, consoleError: string, fileData?: object }
+ * @returns {object} API response
+ */
+
+export const postRequestHandler = params =>
+    postRequest(params.url, params.body, params.fileData ?? {})
+        .then(data => {
+            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return data;
+        })
+        .catch(error => {
+            params.dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(params.errorKeyMessage, null, error),
+                ),
+            );
+            console.error(
+                `Error while posting ${params.consoleError} :`,
+                error,
+            );
+            throw error;
+        });
+
+/**
+ *
+ * @param {handlerParams} params { url: string, body: object, errorKeyMessage: string, consoleError: string }
+ * @returns {object} API response
+ */
+
+export const putRequestHandler = params =>
+    putRequest(params.url, params.body)
+        .then(data => {
+            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return data;
+        })
+        .catch(error => {
+            params.dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(params.errorKeyMessage, null, error),
+                ),
+            );
+            console.error(
+                `Error while putting ${params.consoleError} :`,
+                error,
+            );
+            throw error;
+        });
+
+/**
+ *
+ * @param {handlerParams} params { url: string, body: object, errorKeyMessage: string, consoleError: string }
+ * @returns {object} API response
+ */
+export const patchRequestHandler = params =>
+    patchRequest(params.url, params.body)
+        .then(data => {
+            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return data;
+        })
+        .catch(error => {
+            params.dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(params.errorKeyMessage, null, error),
+                ),
+            );
+            console.error(
+                `Error while posting ${params.consoleError} :`,
+                error,
+            );
+            throw error;
+        });
+
+/**
+ *
+ * @param {handlerParams} params { url: string, errorKeyMessage: string, consoleError: string }
+ * @returns {Promise<void>} API response
+ */
+export const deleteRequestHandler = params =>
+    deleteRequest(params.url)
+        .then(() => {
+            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+        })
+        .catch(error => {
+            params.dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(params.errorKeyMessage, null, error),
+                ),
+            );
+            console.error(
+                `Error while deleting ${params.consoleError} :`,
+                error,
+            );
+            throw error;
+        });
+
+/**
+ *
+ * @param {handlerParams} params { url: string, errorKeyMessage: string, consoleError: string }
+ * @returns {Promise<void>} API response
+ */
+export const restoreRequestHandler = params =>
+    restoreRequest(params.url)
+        .then(() => {
+            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+        })
+        .catch(error => {
+            params.dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(params.errorKeyMessage, null, error),
+                ),
+            );
+            console.error(
+                `Error while restoring ${params.consoleError} :`,
+                error,
+            );
+            throw error;
+        });
+
+/**
+ * A function that returns a hook. The return hook should be named 'useXXX' to allow React to recognize it as such
+ * The returned takes a trigger that can be used to make the request conditional (to the update of a state value for example).
+ * @param {makeHookParams} params - url: string, errorKeyMessage: string, consoleError: string
+ * @returns {function} a react hook that takes a trigger, makes a get request and returns the response
+ *
+ * @example const useGetRequest = makeGetRequestHook({url : '/api/url', errorKeyMessage : 'hook_test_error', consoleError: 'Hook Test Error '});
+ * // In your component;
+ * useGetRequest(trigger)
+ */
+
+// TODO confirm trigger with use
+export const makeGetRequestHook = params => {
+    return trigger => {
+        const dispatch = useDispatch();
+        const [result, setResult] = useState(null);
+        useEffect(() => {
+            // declaring async function inside useEffect to be able to use async code
+            const executeRequest = async () => {
+                if (trigger) {
+                    const response = await getRequestHandler({
+                        url: params.url,
+                        errorKeyMessage: params.errorKeyMessage,
+                        consoleError: params.consoleError,
+                        dispatch,
+                    });
+                    if (response) setResult(response);
+                }
+            };
+            executeRequest();
+        }, [trigger, dispatch]);
+        return result;
+    };
+};
+
+/**
+ * A function that returns a hook. The return hook should be named 'useXXX' to allow React to recognize it as such
+ * @param {makeHookParams} params - url: string, errorKeyMessage: string, consoleError: string
+ * @returns {function} a react hook that takes a requestBody, an optional fieldData object, then makes a post request and returns the response
+ *
+ * @example const usePostRequest = makePostRequestHook({url : '/api/url', errorKeyMessage : 'hook_test_error', consoleError: 'Hook Test Error '});
+ * // In your component;
+ * usePostRequest(requestBody)
+ */
+export const makePostRequestHook = params => {
+    return (requestBody, fileData = {}) => {
+        const dispatch = useDispatch();
+        const [result, setResult] = useState(null);
+        useEffect(() => {
+            // declaring async function inside useEffect to be able to use async code
+            const executeRequest = async () => {
+                if (requestBody) {
+                    const response = await postRequestHandler({
+                        url: params.url,
+                        body: requestBody,
+                        errorKeyMessage: params.errorKeyMessage,
+                        consoleError: params.consoleError,
+                        fileData,
+                        dispatch,
+                    });
+                    if (response) setResult(response);
+                }
+            };
+            executeRequest();
+        }, [requestBody, dispatch]);
+        return result;
+    };
+};
+
+/**
+ * A function that returns a hook. The return hook should be named 'useXXX' to allow React to recognize it as such
+ * @param {makeHookParams} params - url: string, errorKeyMessage: string, consoleError: string
+ * @returns {function} a react hook that takes a requestBody, then makes a put request and returns the response
+ *
+ * @example const usePutRequest = makePutRequestHook({url : '/api/url', errorKeyMessage : 'hook_test_error', consoleError: 'Hook Test Error '});
+ * // In your component;
+ * usePutRequest(requestBody)
+ */
+
+export const makePutRequestHook = params => {
+    return requestBody => {
+        const dispatch = useDispatch();
+        const [result, setResult] = useState(null);
+        useEffect(() => {
+            // declaring async function inside useEffect to be able to use async code
+            const executeRequest = async () => {
+                if (requestBody) {
+                    const response = await putRequestHandler({
+                        url: params.url,
+                        body: requestBody,
+                        errorKeyMessage: params.errorKeyMessage,
+                        consoleError: params.consoleError,
+                        dispatch,
+                    });
+                    if (response) setResult(response);
+                }
+            };
+            executeRequest();
+        }, [requestBody, dispatch]);
+        return result;
+    };
+};
+
+/**
+ * A function that returns a hook. The return hook should be named 'useXXX' to allow React to recognize it as such
+ * @param {makeHookParams} params - url: string, errorKeyMessage: string, consoleError: string
+ * @returns {function} a react hook that takes a requestBody, then makes a patch request and returns the response
+ *
+ * @example const usePatchRequest = makePatchRequestHook({url : '/api/url', errorKeyMessage : 'hook_test_error', consoleError: 'Hook Test Error '});
+ * // In your component;
+ * usePatchRequest(requestBody)
+ */
+
+export const makePatchRequestHook = params => {
+    return requestBody => {
+        const dispatch = useDispatch();
+        const [result, setResult] = useState(null);
+        useEffect(() => {
+            // declaring async function inside useEffect to be able to use async code
+            const executeRequest = async () => {
+                if (requestBody) {
+                    const response = await patchRequestHandler({
+                        url: params.url,
+                        body: requestBody,
+                        errorKeyMessage: params.errorKeyMessage,
+                        consoleError: params.consoleError,
+                        dispatch,
+                    });
+                    if (response) setResult(response);
+                }
+            };
+            executeRequest();
+        }, [requestBody, dispatch]);
+        return result;
+    };
+};
+
+/**
+ * A function that returns a hook. The return hook should be named 'useXXX' to allow React to recognize it as such
+ * The returned takes a trigger that can be used to make the request conditional (to the update of a state value for example).
+ * @param {makeHookParams} params - url: string, errorKeyMessage: string, consoleError: string
+ * @returns {function} a react hook that takes a trigger, makes a delete request and returns the response
+ *
+ * @example const useDeleteRequest = makeDeleteRequestHook({url : '/api/url', errorKeyMessage : 'hook_test_error', consoleError: 'Hook Test Error '});
+ * // In your component;
+ * useDeleteRequest(trigger)
+ */
+// TODO confirm trigger with use
+// TODO add return value when refactoring to take error management out of components
+export const makeDeleteRequestHook = params => {
+    return trigger => {
+        const dispatch = useDispatch();
+        useEffect(() => {
+            // declaring async function inside useEffect to be able to use async code
+            const executeRequest = async () => {
+                if (trigger) {
+                    await deleteRequestHandler({
+                        url: params.url,
+                        errorKeyMessage: params.errorKeyMessage,
+                        consoleError: params.consoleError,
+                        dispatch,
+                    });
+                }
+            };
+            executeRequest();
+        }, [trigger, dispatch]);
+    };
+};
+
+/**
+ * A function that returns a hook. The return hook should be named 'useXXX' to allow React to recognize it as such
+ * The returned takes a trigger that can be used to make the request conditional (to the update of a state value for example).
+ * @param {makeHookParams} params - url: string, errorKeyMessage: string, consoleError: string
+ * @returns {function} a react hook that takes a trigger, makes a restore request and returns the response
+ *
+ * @example const useRestoreRequest = makeRestoreRequestHook({url : '/api/url', errorKeyMessage : 'hook_test_error', consoleError: 'Hook Test Error '});
+ * // In your component;
+ * useRestoreRequest(trigger)
+ */
+// TODO confirm trigger with use
+// TODO add return value when refactoring to take error management out of components
+export const makeRestoreRequestHook = params => {
+    return trigger => {
+        const dispatch = useDispatch();
+        useEffect(() => {
+            // declaring async function inside useEffect to be able to use async code
+            const executeRequest = async () => {
+                if (trigger) {
+                    await restoreRequestHandler({
+                        url: params.url,
+                        errorKeyMessage: params.errorKeyMessage,
+                        consoleError: params.consoleError,
+                        dispatch,
+                    });
+                }
+            };
+            executeRequest();
+        }, [trigger, dispatch]);
+    };
+};

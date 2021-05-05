@@ -30,6 +30,7 @@ import { Page } from './Page';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
+import { useGetCampaigns } from '../hooks/useGetCampaigns';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -682,35 +683,24 @@ const PageActions = ({ children }) => {
 
 export const Dashboard = () => {
     const classes = useStyles();
+    const { data = [] } = useGetCampaigns();
 
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-    const data = useMemo(
-        () => [
-            {
-                name: 'DRC-39DS-01-2021',
-                notificationDate: '02-20-2021',
-                status: 'Risk Assessment Required',
-                duration: '4',
-                actions: <RowAction icon={EditIcon} />,
-            },
-        ],
-        [],
-    );
 
     const columns = useMemo(
         () => [
             {
                 Header: 'Name',
-                accessor: 'name',
+                accessor: 'obr_name',
             },
             {
                 Header: 'cVDPV2 Notification Date',
-                accessor: 'notificationDate',
+                accessor: 'cvdpv2_notified_at',
             },
             {
                 Header: 'Status',
-                accessor: 'status',
+                accessor: 'detection_status',
             },
             {
                 Header: 'Duration (days)',

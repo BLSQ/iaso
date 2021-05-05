@@ -39,6 +39,7 @@ import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { useCreateCampaign } from '../hooks/useCreateCampaign';
+import { useGetOrgUnits } from '../hooks/useGetOrgUnits';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -141,6 +142,9 @@ const PageAction = ({ icon: Icon, onClick }) => {
 
 const BaseInfoForm = () => {
     const classes = useStyles();
+    const {
+        data: { orgUnits = [] },
+    } = useGetOrgUnits();
 
     return (
         <>
@@ -190,9 +194,16 @@ const BaseInfoForm = () => {
                         component={TextInput}
                     />
 
-                    <TextInput className={classes.input} label="Country" />
-                    <TextInput className={classes.input} label="Province" />
-                    <TextInput label="District" />
+                    <Field
+                        label="Level 1"
+                        name="org_units"
+                        className={classes.input}
+                        options={orgUnits.map(orgUnit => ({
+                            value: orgUnit.id,
+                            label: orgUnit.name,
+                        }))}
+                        component={Select}
+                    />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>

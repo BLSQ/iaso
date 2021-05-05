@@ -130,13 +130,13 @@ const RowAction = ({ icon: Icon, onClick }) => {
     );
 };
 
-const PageAction = ({ icon: Icon, onClick }) => {
+const PageAction = ({ icon: Icon, onClick, children }) => {
     const classes = useStyles();
 
     return (
         <Button variant="contained" color="primary" onClick={onClick}>
             <Icon className={classes.buttonIcon} />
-            Create
+            {children}
         </Button>
     );
 };
@@ -854,7 +854,9 @@ export const Dashboard = () => {
                         <PageAction
                             icon={AddIcon}
                             onClick={handleClickCreateButton}
-                        />
+                        >
+                            Create
+                        </PageAction>
                     </PageActions>
                     {status === 'success' && (
                         <table className={classes.table} {...getTableProps()}>

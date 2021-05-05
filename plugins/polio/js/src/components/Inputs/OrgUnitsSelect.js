@@ -1,10 +1,11 @@
 import { Select } from './Select';
 import { useGetOrgUnits } from '../../hooks/useGetOrgUnits';
 import { useState, useEffect } from 'react';
+import { useGetAuthenticatedUser } from '../../hooks/useGetAuthenticatedUser';
 
 export const OrgUnitsSelect = props => {
-    const { level, addLevel } = props;
-    const { data = {} } = useGetOrgUnits(level);
+    const { level, source, addLevel } = props;
+    const { data = {} } = useGetOrgUnits(level, source);
     const { orgUnits = [] } = data;
 
     return (
@@ -25,8 +26,8 @@ export const OrgUnitsSelect = props => {
 };
 
 export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
+    const { data = {}, isLoading } = useGetAuthenticatedUser();
     const [levels, setLevel] = useState([0]);
-
     const { name } = field;
     const { setFieldValue } = form;
 
@@ -41,10 +42,17 @@ export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
         });
     };
 
+    if (isLoading) {
+        return null;
+    }
+
+    const source = data?.account?.default_version?.data_source?.id;
+
     return levels.map((level, index) => {
         return (
             <OrgUnitsSelect
                 key={level}
+                source={source}
                 label={`Level ${index + 1}`}
                 level={level}
                 addLevel={addLevel}

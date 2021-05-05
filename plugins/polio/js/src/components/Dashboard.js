@@ -582,26 +582,20 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
 
     const classes = useStyles();
 
-    const handleSubmit = (values, helpers) => {
-        const defaultValues = {
-            round_one: {},
-            round_two: {},
-        };
-
-        createCampaign(
-            { ...defaultValues, ...values },
-            {
-                onSuccess: () => {
-                    helpers.resetForm();
-                    queryClient.invalidateQueries(['polio', 'campaigns']);
-                    onClose();
-                },
+    const handleSubmit = (values, helpers) =>
+        createCampaign(values, {
+            onSuccess: () => {
+                helpers.resetForm();
+                queryClient.invalidateQueries(['polio', 'campaigns']);
+                onClose();
             },
-        );
-    };
+        });
 
     const formik = useFormik({
-        initialValues: {},
+        initialValues: {
+            round_one: {},
+            round_two: {},
+        },
         validateOnBlur: true,
         validationSchema: schema,
         onSubmit: handleSubmit,

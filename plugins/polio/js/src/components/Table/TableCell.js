@@ -20,6 +20,11 @@ const useStyles = makeStyles(theme => ({
 export const TableCell = ({ children, isOdd }) => {
     const classes = useStyles();
 
+    const renderChildren = () => {
+        if (typeof children === 'string') return children;
+        return children.props.value ? children : '-';
+    };
+
     return (
         <Box
             className={classnames({
@@ -32,7 +37,7 @@ export const TableCell = ({ children, isOdd }) => {
             component="td"
         >
             <Typography variant="body2" noWrap>
-                {children.props.value ? children : '-'}
+                {renderChildren()}
             </Typography>
         </Box>
     );

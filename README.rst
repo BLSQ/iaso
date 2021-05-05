@@ -354,7 +354,7 @@ To enable the Enketo editor in your local environment, you will have to install 
 
 .. code:: shell
 
-    git clone git@bitbucket.org:bluesquare_org/enketo-express.git
+    git clone https://github.com/BLSQ/enketo.git
     cd setup/docker
     docker-compose up
 

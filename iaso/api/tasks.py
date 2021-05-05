@@ -61,4 +61,5 @@ class TaskSourceViewSet(ModelViewSet):
 
     def get_queryset(self):
         profile = self.request.user.iaso_profile
-        return Task.objects.filter(account=profile.account).order_by("created_at")
+        order = self.request.query_params.get("order","created_at").split(",")
+        return Task.objects.filter(account=profile.account).order_by(*order)

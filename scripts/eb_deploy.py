@@ -13,7 +13,7 @@ if __name__ == '__main__':
     desc = client.describe_environments(ApplicationName='Iaso')
     eb_envs = {x['EnvironmentName']: x for x in desc['Environments']}
 
-    if sys.argv[1] in eb_envs.keys():
+    if sys.argv[1].lower() in [x.lower() for x in eb_envs.keys()]:
         exit(eb_deploy(sys.argv[1]))
 
     tag_envs = {}
@@ -22,10 +22,10 @@ if __name__ == '__main__':
         tags = {x['Key']: x['Value'] for x in
                 client.list_tags_for_resource(ResourceArn=env_details['EnvironmentArn'])['ResourceTags']}
         tag_envs[env_name] = tags
-        if "env" in tags and tags["env"] == sys.argv[1]:
+        if "env" in tags and tags["env"].lower() == sys.argv[1].lower():
             target_envs.append(env_name)
 
-    if len(tag_envs) == 0:
+    if len(target_envs) == 0:
         print("No target env found for", sys.argv[1])
     else:
         for e in target_envs:

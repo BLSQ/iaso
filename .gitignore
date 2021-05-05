@@ -115,14 +115,7 @@ data
 
 # dev environment
 .env
-.idea/codeStyles/Project.xml
-.idea/codeStyles/codeStyleConfig.xml
-.idea/inspectionProfiles/profiles_settings.xml
-.idea/libraries/Django_Lib.xml
-.idea/iaso.iml
-.idea/misc.xml
-.idea/modules.xml
-.idea/vcs.xml
+\.idea/*
 
 
 

@@ -64,9 +64,9 @@ class Dhis2OuImporterViewSet(viewsets.ViewSet):
         force = data.get("force", False)
         validate_status = data.get("validate_status", False)
         continue_on_error = data.get("continue_on_error", False)
-        dhis2_url = data["dhis2_url"]
-        dhis2_login = data["dhis2_login"]
-        dhis2_password = data["dhis2_password"]
+        dhis2_url = data.get("dhis2_url",None)
+        dhis2_login = data.get("dhis2_login",None)
+        dhis2_password = data.get("dhis2_password",None)
 
         task = dhis2_ou_importer(
             source_id,

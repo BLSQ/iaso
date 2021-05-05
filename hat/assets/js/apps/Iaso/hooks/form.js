@@ -51,7 +51,7 @@ function formStateInitializer(initialValues) {
  * >   ...
  * > />
  * @param initialValues
- * @returns [Object, func, func]
+ * @returns [Object, func, func, func]
  */
 export function useFormState(initialValues) {
     const [formState, dispatch] = useReducer(

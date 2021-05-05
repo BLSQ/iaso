@@ -216,6 +216,7 @@ def dhis2_ou_importer(
             "dhis2_password": password,
             "dhis2_user": login,
         }
+    # TODO handle case when request doesn't have all 3 fields (url, login, password) to avoid creating tasks with parameters other than those expected by user
     else:
         if source.credentials:
             connection_config = {

@@ -768,25 +768,31 @@ export const Dashboard = () => {
                             ))}
                         </thead>
                         <tbody {...getTableBodyProps()}>
-                            {rows.map(row => {
-                                prepareRow(row);
-                                return (
-                                    <tr
-                                        className={classes.tableRow}
-                                        {...row.getRowProps()}
-                                    >
-                                        {row.cells.map(cell => {
-                                            return (
-                                                <TableCell
-                                                    {...cell.getCellProps()}
-                                                >
-                                                    {cell.render('Cell')}
-                                                </TableCell>
-                                            );
-                                        })}
-                                    </tr>
-                                );
-                            })}
+                            {data.length > 0 ? (
+                                rows.map(row => {
+                                    prepareRow(row);
+                                    return (
+                                        <tr
+                                            className={classes.tableRow}
+                                            {...row.getRowProps()}
+                                        >
+                                            {row.cells.map(cell => {
+                                                return (
+                                                    <TableCell
+                                                        {...cell.getCellProps()}
+                                                    >
+                                                        {cell.render('Cell')}
+                                                    </TableCell>
+                                                );
+                                            })}
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr>
+                                    <TableCell>no campaigns yet</TableCell>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </Box>

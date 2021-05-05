@@ -142,7 +142,6 @@ const PageAction = ({ icon: Icon, onClick }) => {
 
 const BaseInfoForm = () => {
     const classes = useStyles();
-    const { values } = useFormikContext();
 
     return (
         <>
@@ -595,6 +594,7 @@ const CreateEditDialog = ({
         });
 
     const defaultValues = {
+        detection_status: 'PENDING',
         round_one: {},
         round_two: {},
     };

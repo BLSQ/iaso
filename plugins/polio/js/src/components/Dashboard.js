@@ -38,7 +38,7 @@ import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
-import { useCreateCampaign } from '../hooks/useCreateCampaign';
+import { useSaveCampaign } from '../hooks/useSaveCampaign';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -592,12 +592,12 @@ const CreateEditDialog = ({
         : CreateEditDialogMode.CREATE;
 
     const queryClient = useQueryClient();
-    const { mutate: createCampaign } = useCreateCampaign();
+    const { mutate: saveCampaign } = useSaveCampaign();
 
     const classes = useStyles();
 
     const handleSubmit = (values, helpers) =>
-        createCampaign(values, {
+        saveCampaign(values, {
             onSuccess: () => {
                 helpers.resetForm();
                 queryClient.invalidateQueries(['polio', 'campaigns']);

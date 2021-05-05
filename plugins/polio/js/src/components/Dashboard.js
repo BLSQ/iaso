@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTable } from 'react-table';
+import { useQueryClient } from 'react-query';
 
 import {
     Box,
@@ -7,9 +8,9 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
+    IconButton,
     DialogTitle,
     Grid,
-    IconButton,
     makeStyles,
     Tab,
     Tabs,
@@ -24,13 +25,20 @@ import commonStyles from '../styles/common';
 import { TableHeader } from './Table/TableHeader';
 import { TableCell } from './Table/TableCell';
 
-import { DateInput, ResponsibleField, Select, StatusField, TextInput } from './Inputs';
+import {
+    DateInput,
+    ResponsibleField,
+    Select,
+    StatusField,
+    TextInput,
+} from './Inputs';
 
 import { Page } from './Page';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
+import { useCreateCampaign } from '../hooks/useCreateCampaign';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -124,7 +132,7 @@ const PageAction = ({ icon: Icon, onClick }) => {
     const classes = useStyles();
 
     return (
-        <Button variant='contained' color='primary' onClick={onClick}>
+        <Button variant="contained" color="primary" onClick={onClick}>
             <Icon className={classes.buttonIcon} />
             Create
         </Button>
@@ -142,17 +150,17 @@ const BaseInfoForm = () => {
                         Enter information about the new outbreak response
                     </Typography>
                 </Grid>
-                <Grid container direction='row' item spacing={2}>
+                <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
                         <Field
-                            label='EPID'
+                            label="EPID"
                             name={'epid'}
                             component={TextInput}
                             className={classes.input}
                         />
 
                         <Field
-                            label='OBR Name'
+                            label="OBR Name"
                             name={'obr_name'}
                             component={TextInput}
                             className={classes.input}
@@ -160,15 +168,15 @@ const BaseInfoForm = () => {
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Field
-                            label='Virus'
-                            name='virus'
+                            label="Virus"
+                            name="virus"
                             className={classes.input}
                             options={polioViruses}
                             component={Select}
                         />
                         <Field
-                            label='Vacines'
-                            name='vacine'
+                            label="Vacines"
+                            name="vacine"
                             options={polioVacines}
                             component={Select}
                         />
@@ -177,14 +185,14 @@ const BaseInfoForm = () => {
                 <Grid item xs={12} md={6}>
                     <Field
                         className={classes.input}
-                        label='Description'
+                        label="Description"
                         name={'description'}
                         component={TextInput}
                     />
 
-                    <TextInput className={classes.input} label='Country' />
-                    <TextInput className={classes.input} label='Province' />
-                    <TextInput label='District' />
+                    <TextInput className={classes.input} label="Country" />
+                    <TextInput className={classes.input} label="Province" />
+                    <TextInput label="District" />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>
@@ -228,7 +236,7 @@ const DetectionForm = () => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid container direction='row' item spacing={2}>
+                <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
                         <Field
                             name={'detection_status'}
@@ -281,7 +289,7 @@ const RiskAssessmentForm = () => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid container direction='row' item spacing={2}>
+                <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
                         <Field
                             name={'risk_assessment_status'}
@@ -333,13 +341,13 @@ const RiskAssessmentForm = () => {
                         fullWidth
                     />
                     <Field
-                        label='Target population Round 1'
+                        label="Target population Round 1"
                         name={'round_one.target_population'}
                         component={TextInput}
                         className={classes.input}
                     />
                     <Field
-                        label='Target population Round 2'
+                        label="Target population Round 2"
                         name={'round_two.target_population'}
                         component={TextInput}
                         className={classes.input}
@@ -366,7 +374,7 @@ const BudgetForm = () => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid container direction='row' item spacing={2}>
+                <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
                         <Field name={'budget_status'} component={StatusField} />
                     </Grid>
@@ -399,21 +407,21 @@ const BudgetForm = () => {
                     />
 
                     <Field
-                        label='No Regret Fund'
+                        label="No Regret Fund"
                         name={'no_regret_fund_amount'}
                         component={TextInput}
                         className={classes.input}
                     />
 
                     <Field
-                        label='Cost Round 1'
+                        label="Cost Round 1"
                         name={'round_one.cost'}
                         component={TextInput}
                         className={classes.input}
                     />
 
                     <Field
-                        label='Cost Round 2'
+                        label="Cost Round 2"
                         name={'round_two.cost'}
                         component={TextInput}
                         className={classes.input}
@@ -558,10 +566,10 @@ const Form = ({ children }) => {
 
     return (
         <Box
-            component='form'
+            component="form"
             className={classes.form}
             noValidate
-            autoComplete='off'
+            autoComplete="off"
         >
             {children}
         </Box>
@@ -569,18 +577,28 @@ const Form = ({ children }) => {
 };
 
 const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
+    const queryClient = useQueryClient();
+    const { mutate: createCampaign } = useCreateCampaign();
+
     const classes = useStyles();
+
+    const handleSubmit = (values, helpers) =>
+        createCampaign(values, {
+            onSuccess: () => {
+                helpers.resetForm();
+                queryClient.invalidateQueries(['polio', 'campaigns']);
+                onClose();
+            },
+        });
+
     const formik = useFormik({
-        initialValues: {},
+        initialValues: {
+            round_one: {},
+            round_two: {},
+        },
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (values, helpers) => {
-            alert(JSON.stringify(values, null, 2));
-        },
-    });
-
-    console.log({
-        values: formik.values,
+        onSubmit: handleSubmit,
     });
 
     const steps = [
@@ -624,7 +642,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
             maxWidth={'md'}
             open={isOpen}
             onBackdropClick={onClose}
-            scroll='body'
+            scroll="body"
         >
             <DialogTitle className={classes.title}>Create campaign</DialogTitle>
             <DialogContent className={classes.content}>
@@ -633,7 +651,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
                     className={classes.tabs}
                     textColor={'primary'}
                     onChange={handleChange}
-                    aria-label='disabled tabs example'
+                    aria-label="disabled tabs example"
                 >
                     {steps.map(({ title }) => {
                         return <Tab key={title} label={title} />;
@@ -646,12 +664,12 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
-                <Button onClick={onCancel} color='primary'>
+                <Button onClick={onCancel} color="primary">
                     Cancel
                 </Button>
                 <Button
                     onClick={formik.handleSubmit}
-                    color='primary'
+                    color="primary"
                     variant={'contained'}
                     autoFocus
                     disabled={!formik.isValid}
@@ -671,10 +689,10 @@ const PageActions = ({ children }) => {
             container
             className={classes.pageActions}
             spacing={4}
-            justify='flex-end'
-            alignItems='center'
+            justify="flex-end"
+            alignItems="center"
         >
-            <Grid item xs={4} container justify='flex-end' alignItems='center'>
+            <Grid item xs={4} container justify="flex-end" alignItems="center">
                 {children}
             </Grid>
         </Grid>
@@ -683,10 +701,23 @@ const PageActions = ({ children }) => {
 
 export const Dashboard = () => {
     const classes = useStyles();
-    const { data = [] } = useGetCampaigns();
+    const { data: campaigns = [], status } = useGetCampaigns();
+
+    const handleClickEditRow = id => {
+        console.log(id);
+    };
+
+    const data = campaigns.map(campaign => ({
+        ...campaign,
+        actions: (
+            <RowAction
+                icon={EditIcon}
+                onClick={() => handleClickEditRow(campaign.id)}
+            />
+        ),
+    }));
 
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-
 
     const columns = useMemo(
         () => [
@@ -740,45 +771,57 @@ export const Dashboard = () => {
                             onClick={() => setIsCreateDialogOpen(true)}
                         />
                     </PageActions>
-                    <table className={classes.table} {...getTableProps()}>
-                        <thead>
-                        {headerGroups.map(headerGroup => (
-                            <tr
-                                className={classes.tableHeader}
-                                {...headerGroup.getHeaderGroupProps()}
-                            >
-                                {headerGroup.headers.map(column => (
-                                    <TableHeader
-                                        {...column.getHeaderProps()}
+                    {status === 'success' && (
+                        <table className={classes.table} {...getTableProps()}>
+                            <thead>
+                                {headerGroups.map(headerGroup => (
+                                    <tr
+                                        className={classes.tableHeader}
+                                        {...headerGroup.getHeaderGroupProps()}
                                     >
-                                        {column.render('Header')}
-                                    </TableHeader>
-                                ))}
-                            </tr>
-                        ))}
-                        </thead>
-                        <tbody {...getTableBodyProps()}>
-                        {rows.map(row => {
-                            prepareRow(row);
-                            return (
-                                <tr
-                                    className={classes.tableRow}
-                                    {...row.getRowProps()}
-                                >
-                                    {row.cells.map(cell => {
-                                        return (
-                                            <TableCell
-                                                {...cell.getCellProps()}
+                                        {headerGroup.headers.map(column => (
+                                            <TableHeader
+                                                {...column.getHeaderProps()}
                                             >
-                                                {cell.render('Cell')}
-                                            </TableCell>
+                                                {column.render('Header')}
+                                            </TableHeader>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </thead>
+                            <tbody {...getTableBodyProps()}>
+                                {data.length > 0 ? (
+                                    rows.map(row => {
+                                        prepareRow(row);
+                                        return (
+                                            <tr
+                                                className={classes.tableRow}
+                                                {...row.getRowProps()}
+                                            >
+                                                {row.cells.map(cell => {
+                                                    return (
+                                                        <TableCell
+                                                            {...cell.getCellProps()}
+                                                        >
+                                                            {cell.render(
+                                                                'Cell',
+                                                            )}
+                                                        </TableCell>
+                                                    );
+                                                })}
+                                            </tr>
                                         );
-                                    })}
-                                </tr>
-                            );
-                        })}
-                        </tbody>
-                    </table>
+                                    })
+                                ) : (
+                                    <tr>
+                                        <TableCell>
+                                            no campaigns available
+                                        </TableCell>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
                 </Box>
             </Page>
         </>

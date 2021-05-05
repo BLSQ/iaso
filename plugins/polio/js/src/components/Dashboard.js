@@ -37,6 +37,7 @@ import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
+import { useCreateCampaign } from '../hooks/useCreateCampaign';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -575,18 +576,15 @@ const Form = ({ children }) => {
 };
 
 const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
+    const { mutate: createCampaign } = useCreateCampaign();
+
     const classes = useStyles();
     const formik = useFormik({
         initialValues: {},
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (values, helpers) => {
-            alert(JSON.stringify(values, null, 2));
-        },
-    });
-
-    console.log({
-        values: formik.values,
+        onSubmit: (values, helpers) =>
+            createCampaign(values, { onSuccess: () => onClose() }),
     });
 
     const steps = [

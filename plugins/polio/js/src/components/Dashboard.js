@@ -790,7 +790,9 @@ export const Dashboard = () => {
                                 })
                             ) : (
                                 <tr>
-                                    <TableCell>no campaigns yet</TableCell>
+                                    <TableCell>
+                                        no campaigns available
+                                    </TableCell>
                                 </tr>
                             )}
                         </tbody>

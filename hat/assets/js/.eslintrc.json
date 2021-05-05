@@ -16,7 +16,8 @@
     "ecmaFeatures": {
       "jsx": true
     },
-    "sourceType": "module"
+    "sourceType": "module",
+    "ecmaVersion": 2020
   },
   "rules": {
     "no-tabs": "off",

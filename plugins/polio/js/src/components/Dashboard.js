@@ -586,10 +586,6 @@ const CreateEditDialog = ({
     onConfirm,
     selectedCampaign,
 }) => {
-    const mode = selectedCampaign
-        ? CreateEditDialogMode.EDIT
-        : CreateEditDialogMode.CREATE;
-
     const { mutate: saveCampaign } = useSaveCampaign();
 
     const classes = useStyles();
@@ -607,10 +603,7 @@ const CreateEditDialog = ({
         round_two: {},
     };
 
-    const initialValues =
-        mode === CreateEditDialogMode.EDIT
-            ? { ...defaultValues, ...selectedCampaign }
-            : defaultValues;
+    const initialValues = { ...defaultValues, ...(selectedCampaign ?? {}) };
 
     const formik = useFormik({
         initialValues,

@@ -39,7 +39,7 @@ import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { useCreateCampaign } from '../hooks/useCreateCampaign';
-import OrgUnitsSelect from './Inputs/OrgUnitsSelect';
+import OrgUnitsSelect, { OrgUnitsLevels } from './Inputs/OrgUnitsSelect';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -190,12 +190,8 @@ const BaseInfoForm = () => {
                         name={'description'}
                         component={TextInput}
                     />
-                    <Field
-                        label="Level 1"
-                        name="initial_org_unit"
-                        className={classes.input}
-                        component={OrgUnitsSelect}
-                    />
+
+                    <OrgUnitsLevels />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>

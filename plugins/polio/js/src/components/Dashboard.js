@@ -592,8 +592,6 @@ const CreateEditDialog = ({
         ? CreateEditDialogMode.EDIT
         : CreateEditDialogMode.CREATE;
 
-    console.log({ mode, selectedCampaign });
-
     const queryClient = useQueryClient();
     const { mutate: createCampaign } = useCreateCampaign();
 
@@ -608,11 +606,18 @@ const CreateEditDialog = ({
             },
         });
 
+    const defaultValues = {
+        round_one: {},
+        round_two: {},
+    };
+
+    const initialValues =
+        mode === CreateEditDialogMode.EDIT
+            ? { ...defaultValues, ...selectedCampaign }
+            : defaultValues;
+
     const formik = useFormik({
-        initialValues: {
-            round_one: {},
-            round_two: {},
-        },
+        initialValues,
         validateOnBlur: true,
         validationSchema: schema,
         onSubmit: handleSubmit,

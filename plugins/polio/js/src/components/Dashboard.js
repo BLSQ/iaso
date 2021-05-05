@@ -196,7 +196,7 @@ const BaseInfoForm = () => {
 
                     <Field
                         label="Level 1"
-                        name="org_units"
+                        name="initial_org_unit"
                         className={classes.input}
                         options={orgUnits.map(orgUnit => ({
                             value: orgUnit.id,

@@ -142,7 +142,6 @@ const PageAction = ({ icon: Icon, onClick }) => {
 const BaseInfoForm = () => {
     const classes = useStyles();
     const { values } = useFormikContext();
-    console.log(values);
 
     return (
         <>
@@ -591,7 +590,6 @@ const CreateEditDialog = ({
         ? CreateEditDialogMode.EDIT
         : CreateEditDialogMode.CREATE;
 
-    const queryClient = useQueryClient();
     const { mutate: saveCampaign } = useSaveCampaign();
 
     const classes = useStyles();
@@ -600,7 +598,6 @@ const CreateEditDialog = ({
         saveCampaign(values, {
             onSuccess: () => {
                 helpers.resetForm();
-                queryClient.invalidateQueries(['polio', 'campaigns']);
                 onClose();
             },
         });
@@ -614,8 +611,6 @@ const CreateEditDialog = ({
         mode === CreateEditDialogMode.EDIT
             ? { ...defaultValues, ...selectedCampaign }
             : defaultValues;
-
-    console.log({ selectedCampaign, initialValues });
 
     const formik = useFormik({
         initialValues,
@@ -761,8 +756,6 @@ export const Dashboard = () => {
     const selectedCampaign = campaigns.find(
         campaign => campaign.id === selectedCampaignId,
     );
-
-    console.log({ selectedCampaignId, campaigns });
 
     const columns = useMemo(
         () => [

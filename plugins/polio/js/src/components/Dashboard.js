@@ -579,19 +579,30 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
     const { mutate: createCampaign } = useCreateCampaign();
 
     const classes = useStyles();
-    const formik = useFormik({
-        initialValues: {},
-        validateOnBlur: true,
-        validationSchema: schema,
-        onSubmit: (values, helpers) => {
-            createCampaign(values, {
+
+    const handleSubmit = (values, helpers) => {
+        const defaultValues = {
+            round_one: {},
+            round_two: {},
+        };
+
+        createCampaign(
+            { ...defaultValues, ...values },
+            {
                 onSuccess: () => {
                     helpers.resetForm();
                     queryClient.invalidateQueries(['polio', 'campaigns']);
                     onClose();
                 },
-            });
-        },
+            },
+        );
+    };
+
+    const formik = useFormik({
+        initialValues: {},
+        validateOnBlur: true,
+        validationSchema: schema,
+        onSubmit: handleSubmit,
     });
 
     const steps = [

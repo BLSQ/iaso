@@ -8,6 +8,10 @@ export const OrgUnitsSelect = props => {
     const { data = {} } = useGetOrgUnits(level, source);
     const { orgUnits = [] } = data;
 
+    if (orgUnits.length === 0) {
+        return null;
+    }
+
     return (
         <Select
             {...props}

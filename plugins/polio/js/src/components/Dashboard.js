@@ -705,7 +705,7 @@ const PageActions = ({ children }) => {
 
 export const Dashboard = () => {
     const classes = useStyles();
-    const { data = [] } = useGetCampaigns();
+    const { data = [], status } = useGetCampaigns();
 
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -761,53 +761,57 @@ export const Dashboard = () => {
                             onClick={() => setIsCreateDialogOpen(true)}
                         />
                     </PageActions>
-                    <table className={classes.table} {...getTableProps()}>
-                        <thead>
-                            {headerGroups.map(headerGroup => (
-                                <tr
-                                    className={classes.tableHeader}
-                                    {...headerGroup.getHeaderGroupProps()}
-                                >
-                                    {headerGroup.headers.map(column => (
-                                        <TableHeader
-                                            {...column.getHeaderProps()}
-                                        >
-                                            {column.render('Header')}
-                                        </TableHeader>
-                                    ))}
-                                </tr>
-                            ))}
-                        </thead>
-                        <tbody {...getTableBodyProps()}>
-                            {data.length > 0 ? (
-                                rows.map(row => {
-                                    prepareRow(row);
-                                    return (
-                                        <tr
-                                            className={classes.tableRow}
-                                            {...row.getRowProps()}
-                                        >
-                                            {row.cells.map(cell => {
-                                                return (
-                                                    <TableCell
-                                                        {...cell.getCellProps()}
-                                                    >
-                                                        {cell.render('Cell')}
-                                                    </TableCell>
-                                                );
-                                            })}
-                                        </tr>
-                                    );
-                                })
-                            ) : (
-                                <tr>
-                                    <TableCell>
-                                        no campaigns available
-                                    </TableCell>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                    {status === 'success' && (
+                        <table className={classes.table} {...getTableProps()}>
+                            <thead>
+                                {headerGroups.map(headerGroup => (
+                                    <tr
+                                        className={classes.tableHeader}
+                                        {...headerGroup.getHeaderGroupProps()}
+                                    >
+                                        {headerGroup.headers.map(column => (
+                                            <TableHeader
+                                                {...column.getHeaderProps()}
+                                            >
+                                                {column.render('Header')}
+                                            </TableHeader>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </thead>
+                            <tbody {...getTableBodyProps()}>
+                                {data.length > 0 ? (
+                                    rows.map(row => {
+                                        prepareRow(row);
+                                        return (
+                                            <tr
+                                                className={classes.tableRow}
+                                                {...row.getRowProps()}
+                                            >
+                                                {row.cells.map(cell => {
+                                                    return (
+                                                        <TableCell
+                                                            {...cell.getCellProps()}
+                                                        >
+                                                            {cell.render(
+                                                                'Cell',
+                                                            )}
+                                                        </TableCell>
+                                                    );
+                                                })}
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    <tr>
+                                        <TableCell>
+                                            no campaigns available
+                                        </TableCell>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
                 </Box>
             </Page>
         </>

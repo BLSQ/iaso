@@ -4,14 +4,11 @@ import { sendRequest } from '../utils/networking';
 export const useSaveCampaign = () => {
     const queryClient = useQueryClient();
 
-    const mutationFn = body => {
-        if (body.id) {
-            return sendRequest('PUT', `/api/polio/campaigns/${body.id}`, body);
-        }
-        return sendRequest('POST', '/api/polio/campaigns/', body);
-    };
-
-    const { mutate, ...result } = useMutation(mutationFn);
+    const { mutate, ...result } = useMutation(body => {
+        const method = body.id ? 'PUT' : 'POST';
+        const path = `/api/polio/campaigns/${body.id ?? ''}`;
+        return sendRequest(method, path, body);
+    });
 
     return {
         ...result,

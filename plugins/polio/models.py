@@ -46,7 +46,7 @@ class Round(models.Model):
 
 class Campaign(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
-    epid = models.CharField(default="", max_length=255, null=True, blank=True)
+    epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
 

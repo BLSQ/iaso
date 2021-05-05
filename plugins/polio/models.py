@@ -46,7 +46,7 @@ class Round(models.Model):
 
 class Campaign(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
-    epid = models.CharField(default="", max_length=255, null=True, blank=True)
+    epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
 
@@ -97,7 +97,7 @@ class Campaign(models.Model):
     vacine = models.CharField(max_length=5, choices=VACINES, null=True, blank=True)
 
     # Detection
-    detection_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
+    detection_status = models.CharField(default='PENDING', max_length=10, choices=STATUS)
     detection_responsible = models.CharField(
         max_length=10,
         choices=RESPONSIBLES,

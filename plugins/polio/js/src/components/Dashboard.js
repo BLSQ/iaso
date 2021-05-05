@@ -576,7 +576,24 @@ const Form = ({ children }) => {
     );
 };
 
-const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
+const CreateEditDialogMode = {
+    EDIT: 'EDIT',
+    CREATE: 'CREATE',
+};
+
+const CreateEditDialog = ({
+    isOpen,
+    onClose,
+    onCancel,
+    onConfirm,
+    selectedCampaign,
+}) => {
+    const mode = selectedCampaign
+        ? CreateEditDialogMode.EDIT
+        : CreateEditDialogMode.CREATE;
+
+    console.log({ mode, selectedCampaign });
+
     const queryClient = useQueryClient();
     const { mutate: createCampaign } = useCreateCampaign();
 
@@ -706,11 +723,29 @@ const PageActions = ({ children }) => {
 };
 
 export const Dashboard = () => {
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [selectedCampaignId, setSelectedCampaignId] = useState();
+
     const classes = useStyles();
     const { data: campaigns = [], status } = useGetCampaigns();
 
     const handleClickEditRow = id => {
-        console.log(id);
+        setSelectedCampaignId(id);
+        openDialog();
+    };
+
+    const handleClickCreateButton = () => {
+        setSelectedCampaignId(undefined);
+        openDialog();
+    };
+
+    const openDialog = () => {
+        setIsCreateDialogOpen(true);
+    };
+
+    const closeDialog = () => {
+        setSelectedCampaignId(undefined);
+        setIsCreateDialogOpen(false);
     };
 
     const data = campaigns.map(campaign => ({
@@ -723,7 +758,9 @@ export const Dashboard = () => {
         ),
     }));
 
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const selectedCampaign = campaigns.find(
+        campaign => campaign.id === selectedCampaignId,
+    );
 
     const columns = useMemo(
         () => [
@@ -763,10 +800,11 @@ export const Dashboard = () => {
 
     return (
         <>
-            <CreateDialog
+            <CreateEditDialog
+                selectedCampaign={selectedCampaign}
                 isOpen={isCreateDialogOpen}
-                onCancel={() => setIsCreateDialogOpen(false)}
-                onClose={() => setIsCreateDialogOpen(false)}
+                onCancel={closeDialog}
+                onClose={closeDialog}
                 onConfirm={() => console.log('confirm')}
             />
             <Page title={'Campaigns for DRC'}>
@@ -774,7 +812,7 @@ export const Dashboard = () => {
                     <PageActions>
                         <PageAction
                             icon={AddIcon}
-                            onClick={() => setIsCreateDialogOpen(true)}
+                            onClick={handleClickCreateButton}
                         />
                     </PageActions>
                     {status === 'success' && (

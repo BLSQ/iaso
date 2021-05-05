@@ -190,8 +190,11 @@ const BaseInfoForm = () => {
                         name={'description'}
                         component={TextInput}
                     />
-
-                    <OrgUnitsLevels />
+                    <Field
+                        className={classes.input}
+                        name={'initial_org_unit'}
+                        component={OrgUnitsLevels}
+                    />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>

@@ -1,7 +1,6 @@
 import { Select } from './Select';
 import { useGetOrgUnits } from '../../hooks/useGetOrgUnits';
-import { useState } from 'react';
-import { Field } from 'formik';
+import { useState, useEffect } from 'react';
 
 export const OrgUnitsSelect = props => {
     const { level, addLevel } = props;
@@ -25,8 +24,15 @@ export const OrgUnitsSelect = props => {
     );
 };
 
-export const OrgUnitsLevels = props => {
+export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
     const [levels, setLevel] = useState([0]);
+
+    const { name } = field;
+    const { setFieldValue } = form;
+
+    useEffect(() => {
+        setFieldValue(name, levels[levels.length - 1]);
+    }, [levels, name, setFieldValue]);
 
     const addLevel = ({ parent_id = 0, org_unit_id }) => {
         setLevel(oldLevels => {
@@ -35,11 +41,11 @@ export const OrgUnitsLevels = props => {
         });
     };
 
-    return levels.map(level => {
+    return levels.map((level, index) => {
         return (
             <OrgUnitsSelect
                 key={level}
-                {...props}
+                label={`Level ${index + 1}`}
                 level={level}
                 addLevel={addLevel}
             />

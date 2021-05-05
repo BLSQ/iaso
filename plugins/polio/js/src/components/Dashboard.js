@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useTable } from 'react-table';
-import { useQueryClient } from 'react-query';
 
 import {
     Box,
@@ -16,7 +15,8 @@ import {
     Tabs,
     Typography,
 } from '@material-ui/core';
-
+import get from 'lodash.get';
+import merge from 'lodash.merge';
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
 
@@ -38,7 +38,8 @@ import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
-import { useCreateCampaign } from '../hooks/useCreateCampaign';
+import { useSaveCampaign } from '../hooks/useSaveCampaign';
+import { useEffect } from 'react';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -49,8 +50,8 @@ const round_shape = yup.object().shape({
     im_ended_at: yup.date().nullable(),
     lqas_started_at: yup.date().nullable(),
     lqas_ended_at: yup.date().nullable(),
-    target_population: yup.number().nullable().positive().integer(),
-    cost: yup.number().nullable().positive().integer(),
+    target_population: yup.number().nullable().min(0).integer(),
+    cost: yup.number().nullable().min(0).integer(),
 });
 
 const schema = yup.object().shape({
@@ -278,14 +279,11 @@ const DetectionForm = () => {
 const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { values } = useFormikContext();
-    const { round_one = {}, round_two = {} } = values;
 
-    const targetPopulationTotal = useMemo(() => {
-        return (
-            parseInt(round_one.target_population || 0) +
-            parseInt(round_two.target_population || 0)
-        );
-    }, [round_one, round_two]);
+    const targetPopulationTotal =
+        parseInt(get(values, 'round_one.target_population', 0)) +
+        parseInt(get(values, 'round_two.target_population', 0));
+
     return (
         <>
             <Grid container spacing={2}>
@@ -365,11 +363,10 @@ const BudgetForm = () => {
     const classes = useStyles();
 
     const { values } = useFormikContext();
-    const { round_one = {}, round_two = {} } = values;
 
-    const totalCost = useMemo(() => {
-        return parseInt(round_one.cost || 0) + parseInt(round_two.cost || 0);
-    }, [round_one, round_two]);
+    const totalCost =
+        parseInt(get(values, 'round_one.cost', 0)) +
+        parseInt(get(values, 'round_two.cost', 0));
 
     return (
         <>
@@ -576,32 +573,41 @@ const Form = ({ children }) => {
     );
 };
 
-const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
-    const queryClient = useQueryClient();
-    const { mutate: createCampaign } = useCreateCampaign();
+const CreateEditDialog = ({
+    isOpen,
+    onClose,
+    onCancel,
+    onConfirm,
+    selectedCampaign,
+}) => {
+    const { mutate: saveCampaign } = useSaveCampaign();
 
     const classes = useStyles();
 
     const handleSubmit = (values, helpers) =>
-        createCampaign(values, {
+        saveCampaign(values, {
             onSuccess: () => {
                 helpers.resetForm();
-                queryClient.invalidateQueries(['polio', 'campaigns']);
                 onClose();
             },
         });
 
+    const defaultValues = {
+        round_one: {},
+        round_two: {},
+    };
+
+    const initialValues = merge(selectedCampaign, defaultValues);
+
     const formik = useFormik({
-        initialValues: {
-            round_one: {},
-            round_two: {},
-        },
+        initialValues,
+        enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
         onSubmit: handleSubmit,
     });
 
-    const steps = [
+    const tabs = [
         {
             title: 'Base info',
             form: BaseInfoForm,
@@ -628,13 +634,18 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
         },
     ];
 
-    const [value, setValue] = useState(0);
+    const [selectedTab, setSelectedTab] = useState(0);
 
     const handleChange = (event, newValue) => {
-        setValue(newValue);
+        setSelectedTab(newValue);
     };
 
-    const CurrentForm = steps[value].form;
+    const CurrentForm = tabs[selectedTab].form;
+
+    // default to tab 0 when opening
+    useEffect(() => {
+        setSelectedTab(0);
+    }, [isOpen]);
 
     return (
         <Dialog
@@ -647,13 +658,13 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
             <DialogTitle className={classes.title}>Create campaign</DialogTitle>
             <DialogContent className={classes.content}>
                 <Tabs
-                    value={value}
+                    value={selectedTab}
                     className={classes.tabs}
                     textColor={'primary'}
                     onChange={handleChange}
                     aria-label="disabled tabs example"
                 >
-                    {steps.map(({ title }) => {
+                    {tabs.map(({ title }) => {
                         return <Tab key={title} label={title} />;
                     })}
                 </Tabs>
@@ -700,11 +711,29 @@ const PageActions = ({ children }) => {
 };
 
 export const Dashboard = () => {
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [selectedCampaignId, setSelectedCampaignId] = useState();
+
     const classes = useStyles();
     const { data: campaigns = [], status } = useGetCampaigns();
 
     const handleClickEditRow = id => {
-        console.log(id);
+        setSelectedCampaignId(id);
+        openDialog();
+    };
+
+    const handleClickCreateButton = () => {
+        setSelectedCampaignId(undefined);
+        openDialog();
+    };
+
+    const openDialog = () => {
+        setIsCreateDialogOpen(true);
+    };
+
+    const closeDialog = () => {
+        setSelectedCampaignId(undefined);
+        setIsCreateDialogOpen(false);
     };
 
     const data = campaigns.map(campaign => ({
@@ -717,7 +746,9 @@ export const Dashboard = () => {
         ),
     }));
 
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const selectedCampaign = campaigns.find(
+        campaign => campaign.id === selectedCampaignId,
+    );
 
     const columns = useMemo(
         () => [
@@ -757,10 +788,11 @@ export const Dashboard = () => {
 
     return (
         <>
-            <CreateDialog
+            <CreateEditDialog
+                selectedCampaign={selectedCampaign}
                 isOpen={isCreateDialogOpen}
-                onCancel={() => setIsCreateDialogOpen(false)}
-                onClose={() => setIsCreateDialogOpen(false)}
+                onCancel={closeDialog}
+                onClose={closeDialog}
                 onConfirm={() => console.log('confirm')}
             />
             <Page title={'Campaigns for DRC'}>
@@ -768,7 +800,7 @@ export const Dashboard = () => {
                     <PageActions>
                         <PageAction
                             icon={AddIcon}
-                            onClick={() => setIsCreateDialogOpen(true)}
+                            onClick={handleClickCreateButton}
                         />
                     </PageActions>
                     {status === 'success' && (

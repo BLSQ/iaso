@@ -16,7 +16,7 @@ import {
     Tabs,
     Typography,
 } from '@material-ui/core';
-
+import get from 'lodash.get'
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
 
@@ -279,11 +279,10 @@ const DetectionForm = () => {
 const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { values } = useFormikContext();
-    const { round_one = {}, round_two = {} } = values;
 
     const targetPopulationTotal =
-        parseInt(round_one.target_population || 0) +
-        parseInt(round_two.target_population || 0);
+        parseInt(get(values, 'round_one.target_population', 0)) +
+        parseInt(get(values,'round_two.target_population', 0));
 
     return (
         <>
@@ -364,10 +363,9 @@ const BudgetForm = () => {
     const classes = useStyles();
 
     const { values } = useFormikContext();
-    const { round_one = {}, round_two = {} } = values;
 
     const totalCost =
-        parseInt(round_one.cost || 0) + parseInt(round_two.cost || 0);
+        parseInt(get(values, 'round_one.cost', 0)) + parseInt(get(values, 'round_two.cost', 0))
 
     return (
         <>

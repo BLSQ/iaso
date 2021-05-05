@@ -6,30 +6,43 @@ export const mockPutRequest = (url, body = []) => {
         .put(url, () => true)
         .reply(200, body);
 };
-
+/**
+ *
+ * @deprecated Use mockRequest instead
+ */
 export const mockPostRequest = (url, body = []) => {
     return nock(baseUrl)
         .post(url, () => true)
         .reply(200, body);
 };
 
+/**
+ * @deprecated Use mockRequestError instead
+ */
 export const mockPostRequestError = url => {
     return nock(baseUrl)
         .post(url, () => true)
         .replyWithError({});
 };
-
+/**
+ * @deprecated Use mockRequest instead
+ */
 export const mockGetRequest = (url, body = []) => {
     return nock(baseUrl)
         .get(url, () => true)
         .reply(200, body);
 };
-
+/**
+ * @deprecated Use mockRequest instead
+ */
 export const mockDeleteRequest = (url, body = []) => {
     return nock(baseUrl)
         .delete(url, () => true)
         .reply(200, body);
 };
+/**
+ * @deprecated Use mockRequestError instead
+ */
 export const mockDeleteRequestError = url => {
     return nock(baseUrl)
         .delete(url, () => true)
@@ -38,6 +51,62 @@ export const mockDeleteRequestError = url => {
 
 export const mockGetRequestsList = requests => {
     requests.forEach(r => {
-        mockGetRequest(r.url, r.body, r.onSuccess);
+        mockGetRequest(r.url, r.body);
     });
+};
+
+export const mockRequestError = (requestType, url, message) => {
+    const request = nock(baseUrl);
+    let response;
+    switch (requestType) {
+        case 'get':
+            response = request.get(url, () => true);
+            break;
+        case 'post':
+            response = request.post(url, () => true);
+            break;
+        case 'put':
+            response = request.put(url, () => true);
+            break;
+        case 'patch':
+            response = request.patch(url, () => true);
+            break;
+        case 'delete':
+            response = request.delete(url, () => true);
+            break;
+        default:
+            throw new Error(
+                "unknown request type. Should be: 'get', 'post','put','patch'or 'delete'",
+            );
+    }
+    response.replyWithError({
+        message,
+    });
+};
+
+export const mockRequest = (requestType, url, body = []) => {
+    const request = nock(baseUrl);
+    let response;
+    switch (requestType) {
+        case 'get':
+            response = request.get(url, () => true);
+            break;
+        case 'post':
+            response = request.post(url, () => true);
+            break;
+        case 'put':
+            response = request.put(url, () => true);
+            break;
+        case 'patch':
+            response = request.patch(url, () => true);
+            break;
+        case 'delete':
+            response = request.delete(url, () => true);
+            break;
+        default:
+            throw new Error(
+                "unknown request type. Should be: 'get', 'post','put','patch'or 'delete'",
+            );
+    }
+    response.reply(200, body);
 };

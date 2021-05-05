@@ -15,7 +15,8 @@ import {
     Tabs,
     Typography,
 } from '@material-ui/core';
-
+import get from 'lodash.get';
+import merge from 'lodash.merge';
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -51,8 +52,8 @@ const round_shape = yup.object().shape({
     im_ended_at: yup.date().nullable(),
     lqas_started_at: yup.date().nullable(),
     lqas_ended_at: yup.date().nullable(),
-    target_population: yup.number().nullable().positive().integer(),
-    cost: yup.number().nullable().positive().integer(),
+    target_population: yup.number().nullable().min(0).integer(),
+    cost: yup.number().nullable().min(0).integer(),
 });
 
 const schema = yup.object().shape({
@@ -280,11 +281,10 @@ const DetectionForm = () => {
 const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { values } = useFormikContext();
-    const { round_one = {}, round_two = {} } = values;
 
     const targetPopulationTotal =
-        parseInt(round_one.target_population || 0) +
-        parseInt(round_two.target_population || 0);
+        parseInt(get(values, 'round_one.target_population', 0)) +
+        parseInt(get(values, 'round_two.target_population', 0));
 
     return (
         <>
@@ -365,10 +365,10 @@ const BudgetForm = () => {
     const classes = useStyles();
 
     const { values } = useFormikContext();
-    const { round_one = {}, round_two = {} } = values;
 
     const totalCost =
-        parseInt(round_one.cost || 0) + parseInt(round_two.cost || 0);
+        parseInt(get(values, 'round_one.cost', 0)) +
+        parseInt(get(values, 'round_two.cost', 0));
 
     return (
         <>
@@ -589,12 +589,11 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
         });
 
     const defaultValues = {
-        detection_status: 'PENDING',
         round_one: {},
         round_two: {},
     };
 
-    const initialValues = { ...defaultValues, ...(selectedCampaign ?? {}) };
+    const initialValues = merge(selectedCampaign, defaultValues);
 
     const formik = useFormik({
         initialValues,

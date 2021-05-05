@@ -9,14 +9,12 @@ import {
     DialogContent,
     DialogTitle,
     Grid,
-    IconButton,
     makeStyles,
     Tab,
     Tabs,
     Typography,
 } from '@material-ui/core';
 
-// import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
 
 import commonStyles from '../styles/common';

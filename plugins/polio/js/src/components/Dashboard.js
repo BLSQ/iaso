@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTable } from 'react-table';
+import { useQueryClient } from 'react-query';
 
 import {
     Box,
@@ -574,6 +575,7 @@ const Form = ({ children }) => {
 };
 
 const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
+    const queryClient = useQueryClient();
     const { mutate: createCampaign } = useCreateCampaign();
 
     const classes = useStyles();
@@ -585,6 +587,7 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
             createCampaign(values, {
                 onSuccess: () => {
                     helpers.resetForm();
+                    queryClient.invalidateQueries(['polio', 'campaigns']);
                     onClose();
                 },
             });

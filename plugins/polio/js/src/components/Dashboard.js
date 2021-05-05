@@ -39,6 +39,7 @@ import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
+import { useEffect } from 'react';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -574,11 +575,6 @@ const Form = ({ children }) => {
     );
 };
 
-const CreateEditDialogMode = {
-    EDIT: 'EDIT',
-    CREATE: 'CREATE',
-};
-
 const CreateEditDialog = ({
     isOpen,
     onClose,
@@ -607,12 +603,13 @@ const CreateEditDialog = ({
 
     const formik = useFormik({
         initialValues,
+        enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
         onSubmit: handleSubmit,
     });
 
-    const steps = [
+    const tabs = [
         {
             title: 'Base info',
             form: BaseInfoForm,
@@ -639,13 +636,18 @@ const CreateEditDialog = ({
         },
     ];
 
-    const [value, setValue] = useState(0);
+    const [selectedTab, setSelectedTab] = useState(0);
 
     const handleChange = (event, newValue) => {
-        setValue(newValue);
+        setSelectedTab(newValue);
     };
 
-    const CurrentForm = steps[value].form;
+    const CurrentForm = tabs[selectedTab].form;
+
+    // default to tab 0 when opening
+    useEffect(() => {
+        setSelectedTab(0);
+    }, [isOpen]);
 
     return (
         <Dialog
@@ -658,13 +660,13 @@ const CreateEditDialog = ({
             <DialogTitle className={classes.title}>Create campaign</DialogTitle>
             <DialogContent className={classes.content}>
                 <Tabs
-                    value={value}
+                    value={selectedTab}
                     className={classes.tabs}
                     textColor={'primary'}
                     onChange={handleChange}
                     aria-label="disabled tabs example"
                 >
-                    {steps.map(({ title }) => {
+                    {tabs.map(({ title }) => {
                         return <Tab key={title} label={title} />;
                     })}
                 </Tabs>

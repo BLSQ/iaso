@@ -67,9 +67,14 @@ export const SidebarMenu = ({ isDrawerOpened, toggleDrawer }) => {
             <Divider />
 
             <List className={classes.list}>
-                {menuItems.map(menuItem => (
-                    <SidebarMenuItem menuItem={menuItem} />
-                ))}
+                {menuItems.map(menuItem => {
+                    return (
+                        <SidebarMenuItem
+                            menuItem={menuItem}
+                            key={menuItem.label}
+                        />
+                    );
+                })}
             </List>
 
             <Box className={classes.user}>

@@ -26,7 +26,7 @@ export const OrgUnitsSelect = props => {
 };
 
 export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
-    const { data = {}, isLoading } = useGetAuthenticatedUser();
+    const { data = {} } = useGetAuthenticatedUser();
     const [levels, setLevel] = useState([0]);
     const { name } = field;
     const { setFieldValue } = form;
@@ -41,10 +41,6 @@ export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
             return [...oldLevels.slice(0, index + 1), org_unit_id];
         });
     };
-
-    if (isLoading) {
-        return null;
-    }
 
     const source = data?.account?.default_version?.data_source?.id;
 

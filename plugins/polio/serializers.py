@@ -16,13 +16,20 @@ class CampaignSerializer(serializers.ModelSerializer):
         round_one_data = validated_data.pop('round_one')
         round_two_data = validated_data.pop('round_two')
 
-        campaign = Campaign.objects.create(
+        return Campaign.objects.create(
             **validated_data,
             round_one=Round.objects.create(**round_one_data),
             round_two=Round.objects.create(**round_two_data)
         )
 
-        return campaign
+    def update(self, instance, validated_data):
+        round_one_data = validated_data.pop('round_one')
+        round_two_data = validated_data.pop('round_two')
+
+        Round.objects.filter(pk=instance.round_one_id).update(**round_one_data)
+        Round.objects.filter(pk=instance.round_two_id).update(**round_two_data)
+
+        return super().update(instance, validated_data)
 
     class Meta:
         model = Campaign

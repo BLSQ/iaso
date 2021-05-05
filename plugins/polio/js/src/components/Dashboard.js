@@ -878,7 +878,7 @@ export const Dashboard = () => {
                             </thead>
                             <tbody {...getTableBodyProps()}>
                                 {rows.length > 0 ? (
-                                    rows.map(row => {
+                                    rows.map((row, rowIndex) => {
                                         prepareRow(row);
                                         return (
                                             <tr
@@ -888,6 +888,7 @@ export const Dashboard = () => {
                                                 {row.cells.map(cell => {
                                                     return (
                                                         <TableCell
+                                                            isOdd={rowIndex % 2}
                                                             {...cell.getCellProps()}
                                                         >
                                                             {cell.render(

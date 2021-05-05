@@ -581,8 +581,14 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
         initialValues: {},
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (values, helpers) =>
-            createCampaign(values, { onSuccess: () => onClose() }),
+        onSubmit: (values, helpers) => {
+            createCampaign(values, {
+                onSuccess: () => {
+                    helpers.resetForm();
+                    onClose();
+                },
+            });
+        },
     });
 
     const steps = [

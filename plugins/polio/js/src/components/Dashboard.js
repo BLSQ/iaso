@@ -141,6 +141,8 @@ const PageAction = ({ icon: Icon, onClick }) => {
 
 const BaseInfoForm = () => {
     const classes = useStyles();
+    const { values } = useFormikContext();
+    console.log(values);
 
     return (
         <>
@@ -280,12 +282,10 @@ const RiskAssessmentForm = () => {
     const { values } = useFormikContext();
     const { round_one = {}, round_two = {} } = values;
 
-    const targetPopulationTotal = useMemo(() => {
-        return (
-            parseInt(round_one.target_population || 0) +
-            parseInt(round_two.target_population || 0)
-        );
-    }, [round_one, round_two]);
+    const targetPopulationTotal =
+        parseInt(round_one.target_population || 0) +
+        parseInt(round_two.target_population || 0);
+
     return (
         <>
             <Grid container spacing={2}>
@@ -367,9 +367,8 @@ const BudgetForm = () => {
     const { values } = useFormikContext();
     const { round_one = {}, round_two = {} } = values;
 
-    const totalCost = useMemo(() => {
-        return parseInt(round_one.cost || 0) + parseInt(round_two.cost || 0);
-    }, [round_one, round_two]);
+    const totalCost =
+        parseInt(round_one.cost ?? 0) + parseInt(round_two.cost ?? 0);
 
     return (
         <>
@@ -616,6 +615,8 @@ const CreateEditDialog = ({
             ? { ...defaultValues, ...selectedCampaign }
             : defaultValues;
 
+    console.log({ selectedCampaign, initialValues });
+
     const formik = useFormik({
         initialValues,
         validateOnBlur: true,
@@ -760,6 +761,8 @@ export const Dashboard = () => {
     const selectedCampaign = campaigns.find(
         campaign => campaign.id === selectedCampaignId,
     );
+
+    console.log({ selectedCampaignId, campaigns });
 
     const columns = useMemo(
         () => [

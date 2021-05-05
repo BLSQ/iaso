@@ -708,9 +708,19 @@ const PageActions = ({ children }) => {
 export const Dashboard = () => {
     const classes = useStyles();
     const { data: campaigns = [], status } = useGetCampaigns();
+
+    const handleClickEditRow = id => {
+        console.log(id);
+    };
+
     const data = campaigns.map(campaign => ({
         ...campaign,
-        actions: <RowAction icon={EditIcon} />,
+        actions: (
+            <RowAction
+                icon={EditIcon}
+                onClick={() => handleClickEditRow(campaign.id)}
+            />
+        ),
     }));
 
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

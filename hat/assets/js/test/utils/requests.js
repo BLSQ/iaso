@@ -74,9 +74,12 @@ export const mockRequestError = (requestType, url, message) => {
         case 'delete':
             response = request.delete(url, () => true);
             break;
+        case 'restore':
+            response = request.patch(url, () => true);
+            break;
         default:
             throw new Error(
-                "unknown request type. Should be: 'get', 'post','put','patch'or 'delete'",
+                "unknown request type. Should be: 'get', 'post','put','patch', restore',or 'delete'",
             );
     }
     response.replyWithError({
@@ -103,9 +106,12 @@ export const mockRequest = (requestType, url, body = []) => {
         case 'delete':
             response = request.delete(url, () => true);
             break;
+        case 'restore':
+            response = request.patch(url, () => true);
+            break;
         default:
             throw new Error(
-                "unknown request type. Should be: 'get', 'post','put','patch'or 'delete'",
+                "unknown request type. Should be: 'get', 'post','put','patch', 'restore',or 'delete'",
             );
     }
     response.reply(200, body);

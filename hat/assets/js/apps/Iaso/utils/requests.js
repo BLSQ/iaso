@@ -724,12 +724,13 @@ export const patchRequestHandler = params =>
 /**
  *
  * @param {handlerParams} params { url: string, errorKeyMessage: string, consoleError: string }
- * @returns {Promise<void>} API response
+ * @returns {Promise<boolean>} API response
  */
 export const deleteRequestHandler = params =>
     deleteRequest(params.url)
-        .then(() => {
+        .then(data => {
             params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return data;
         })
         .catch(error => {
             params.dispatch(
@@ -747,12 +748,13 @@ export const deleteRequestHandler = params =>
 /**
  *
  * @param {handlerParams} params { url: string, errorKeyMessage: string, consoleError: string }
- * @returns {Promise<void>} API response
+ * @returns {Promise<boolean>} API response
  */
 export const restoreRequestHandler = params =>
     restoreRequest(params.url)
-        .then(() => {
+        .then(data => {
             params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return data;
         })
         .catch(error => {
             params.dispatch(

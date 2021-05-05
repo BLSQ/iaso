@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useTable } from 'react-table';
-import { useQueryClient } from 'react-query';
 
 import {
     Box,

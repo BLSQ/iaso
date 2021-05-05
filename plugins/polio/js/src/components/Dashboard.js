@@ -30,7 +30,7 @@ import { Page } from './Page';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
-import { useCampaign } from '../hooks/useCampaign';
+import { useGetCampaigns } from '../hooks/useGetCampaigns';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -683,7 +683,7 @@ const PageActions = ({ children }) => {
 
 export const Dashboard = () => {
     const classes = useStyles();
-    const { data = [] } = useCampaign();
+    const { data = [] } = useGetCampaigns();
 
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 

@@ -742,7 +742,7 @@ export const Dashboard = () => {
         setIsCreateDialogOpen(false);
     };
 
-    const data = campaigns.map(campaign => ({
+    const tableData = campaigns.map(campaign => ({
         ...campaign,
         actions: (
             <>
@@ -788,15 +788,13 @@ export const Dashboard = () => {
         [],
     );
 
-    const tableInstance = useTable({ columns, data });
-
     const {
         getTableProps,
         getTableBodyProps,
         headerGroups,
         rows,
         prepareRow,
-    } = tableInstance;
+    } = useTable({ columns, data: tableData });
 
     return (
         <>

@@ -97,7 +97,7 @@ class Campaign(models.Model):
     vacine = models.CharField(max_length=5, choices=VACINES, null=True, blank=True)
 
     # Detection
-    detection_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
+    detection_status = models.CharField(default='PENDING', max_length=10, choices=STATUS)
     detection_responsible = models.CharField(
         max_length=10,
         choices=RESPONSIBLES,

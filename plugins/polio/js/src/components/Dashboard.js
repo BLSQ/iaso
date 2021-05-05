@@ -18,6 +18,7 @@ import {
 
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 import commonStyles from '../styles/common';
 
@@ -723,6 +724,10 @@ export const Dashboard = () => {
         openDialog();
     };
 
+    const handleClickDeleteRow = id => {
+        console.log(id);
+    };
+
     const handleClickCreateButton = () => {
         setSelectedCampaignId(undefined);
         openDialog();
@@ -740,10 +745,16 @@ export const Dashboard = () => {
     const data = campaigns.map(campaign => ({
         ...campaign,
         actions: (
-            <RowAction
-                icon={EditIcon}
-                onClick={() => handleClickEditRow(campaign.id)}
-            />
+            <>
+                <RowAction
+                    icon={EditIcon}
+                    onClick={() => handleClickEditRow(campaign.id)}
+                />
+                <RowAction
+                    icon={DeleteIcon}
+                    onClick={() => handleClickDeleteRow(campaign.id)}
+                />
+            </>
         ),
     }));
 

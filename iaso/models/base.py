@@ -555,6 +555,14 @@ class ExternalCredentials(models.Model):
     def __str__(self):
         return "%s - %s - %s (%s)" % (self.name, self.login, self.url, self.account)
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "login": self.login,
+            "url": self.url,
+        }
+
 
 class InstanceQuerySet(models.QuerySet):
     def with_status(self):

@@ -32,14 +32,14 @@ STATUS = [
 
 
 class Round(models.Model):
-    started_at = models.DateTimeField(null=True, blank=True)
-    ended_at = models.DateTimeField(null=True, blank=True)
-    mop_up_started_at = models.DateTimeField(null=True, blank=True)
-    mop_up_ended_at = models.DateTimeField(null=True, blank=True)
-    im_started_at = models.DateTimeField(null=True, blank=True)
-    im_ended_at = models.DateTimeField(null=True, blank=True)
-    lqas_started_at = models.DateTimeField(null=True, blank=True)
-    lqas_ended_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateField(null=True, blank=True)
+    ended_at = models.DateField(null=True, blank=True)
+    mop_up_started_at = models.DateField(null=True, blank=True)
+    mop_up_ended_at = models.DateField(null=True, blank=True)
+    im_started_at = models.DateField(null=True, blank=True)
+    im_ended_at = models.DateField(null=True, blank=True)
+    lqas_started_at = models.DateField(null=True, blank=True)
+    lqas_ended_at = models.DateField(null=True, blank=True)
     target_population = models.IntegerField(null=True, blank=True)
     cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, null=True, blank=True)
 
@@ -58,36 +58,36 @@ class Campaign(models.Model):
         related_name="campaigns"
     )
 
-    onset_at = models.DateTimeField(
+    onset_at = models.DateField(
         null=True,
         help_text=_("When the campaign starts"),
         blank=True,
     )
 
-    three_level_call_at = models.DateTimeField(
+    three_level_call_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("3 level call"),
     )
 
-    cvdpv_notified_at = models.DateTimeField(
+    cvdpv_notified_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("cVDPV Notication"),
     )
-    cvdpv2_notified_at = models.DateTimeField(
+    cvdpv2_notified_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("cVDPV2 Notication"),
     )
 
-    pv_notified_at = models.DateTimeField(
+    pv_notified_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("PV Notication"),
     )
 
-    pv2_notified_at = models.DateTimeField(
+    pv2_notified_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("PV2 Notication"),
@@ -104,12 +104,12 @@ class Campaign(models.Model):
         null=True,
         blank=True
     )
-    detection_first_draft_submitted_at = models.DateTimeField(
+    detection_first_draft_submitted_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("1st Draft Submission"),
     )
-    detection_rrt_oprtt_approval_at = models.DateTimeField(
+    detection_rrt_oprtt_approval_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("RRT/OPRTT Approval"),
@@ -123,27 +123,27 @@ class Campaign(models.Model):
         null=True,
         blank=True
     )
-    investigation_at = models.DateTimeField(
+    investigation_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("Field Investigation Date"),
     )
-    risk_assessment_first_draft_submitted_at = models.DateTimeField(
+    risk_assessment_first_draft_submitted_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("1st Draft Submission"),
     )
-    risk_assessment_rrt_oprtt_approval_at = models.DateTimeField(
+    risk_assessment_rrt_oprtt_approval_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("RRT/OPRTT Approval"),
     )
-    ag_nopv_group_met_at = models.DateTimeField(
+    ag_nopv_group_met_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("AG/nOPV Group"),
     )
-    dg_authorized_at = models.DateTimeField(
+    dg_authorized_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("DG Authorization"),
@@ -158,7 +158,7 @@ class Campaign(models.Model):
         blank=True
     )
 
-    eomg = models.DateTimeField(
+    eomg = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("EOMG"),

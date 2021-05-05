@@ -367,7 +367,7 @@ const BudgetForm = () => {
     const { round_one = {}, round_two = {} } = values;
 
     const totalCost =
-        parseInt(round_one.cost ?? 0) + parseInt(round_two.cost ?? 0);
+        parseInt(round_one.cost || 0) + parseInt(round_two.cost || 0);
 
     return (
         <>

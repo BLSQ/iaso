@@ -25,7 +25,7 @@ export const TableCell = ({ children }) => {
             component="td"
         >
             <Typography variant="body2" noWrap>
-                {children}
+                {children.props.value ? children : '-'}
             </Typography>
         </Box>
     );

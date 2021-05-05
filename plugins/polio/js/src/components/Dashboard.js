@@ -8,6 +8,7 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
+    IconButton,
     DialogTitle,
     Grid,
     makeStyles,
@@ -16,6 +17,7 @@ import {
     Typography,
 } from '@material-ui/core';
 
+import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
 
 import commonStyles from '../styles/common';
@@ -118,13 +120,13 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-// const RowAction = ({ icon: Icon, onClick }) => {
-//     return (
-//         <IconButton onClick={onClick}>
-//             <Icon />
-//         </IconButton>
-//     );
-// };
+const RowAction = ({ icon: Icon, onClick }) => {
+    return (
+        <IconButton onClick={onClick}>
+            <Icon />
+        </IconButton>
+    );
+};
 
 const PageAction = ({ icon: Icon, onClick }) => {
     const classes = useStyles();
@@ -705,7 +707,11 @@ const PageActions = ({ children }) => {
 
 export const Dashboard = () => {
     const classes = useStyles();
-    const { data = [], status } = useGetCampaigns();
+    const { data: campaigns = [], status } = useGetCampaigns();
+    const data = campaigns.map(campaign => ({
+        ...campaign,
+        actions: <RowAction icon={EditIcon} />,
+    }));
 
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 

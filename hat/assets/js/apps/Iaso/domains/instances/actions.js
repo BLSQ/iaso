@@ -118,9 +118,11 @@ export const restoreInstance = currentInstance => dispatch => {
 
 export const reAssignInstance = (currentInstance, payload) => dispatch => {
     dispatch(setInstancesFetching(true));
-
-    if (!payload.period) delete payload.period;
-    patchRequest(`/api/instances/${currentInstance.id}/`, payload)
+    const payloadCopy = {
+        ...payload,
+    };
+    if (!payload.period) delete payloadCopy.period;
+    patchRequest(`/api/instances/${currentInstance.id}/`, payloadCopy)
         .then(res => {
             dispatch(fetchInstanceDetail(currentInstance.id));
         })

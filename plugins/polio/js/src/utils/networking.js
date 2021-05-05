@@ -10,8 +10,7 @@ export const sendRequest = async (method, path, body) => {
 
     const response = await fetch(path, requestInit);
 
-    // DELETE doesn't return a response
-    if (method === 'DELETE') return;
+    if (response.status === 204) return;
 
     return await response.json();
 };

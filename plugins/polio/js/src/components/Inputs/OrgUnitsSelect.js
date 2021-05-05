@@ -51,6 +51,7 @@ export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
     return levels.map((level, index) => {
         return (
             <OrgUnitsSelect
+                {...props}
                 key={level}
                 source={source}
                 label={`Level ${index + 1}`}

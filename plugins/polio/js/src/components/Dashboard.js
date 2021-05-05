@@ -832,7 +832,7 @@ export const Dashboard = () => {
                                 ))}
                             </thead>
                             <tbody {...getTableBodyProps()}>
-                                {data.length > 0 ? (
+                                {rows.length > 0 ? (
                                     rows.map(row => {
                                         prepareRow(row);
                                         return (

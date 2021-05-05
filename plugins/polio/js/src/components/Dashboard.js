@@ -39,7 +39,6 @@ import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { useCreateCampaign } from '../hooks/useCreateCampaign';
-import { useGetOrgUnits } from '../hooks/useGetOrgUnits';
 import OrgUnitsSelect from './Inputs/OrgUnitsSelect';
 
 const round_shape = yup.object().shape({

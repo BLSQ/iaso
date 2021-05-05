@@ -3,8 +3,10 @@ import { useGetOrgUnits } from '../../hooks/useGetOrgUnits';
 
 export const OrgUnitsSelect = props => {
     const {
-        data: { orgUnits = [] },
+        data = {}
     } = useGetOrgUnits();
+
+    const { orgUnits = [] } = data;
 
     return (
         <Select

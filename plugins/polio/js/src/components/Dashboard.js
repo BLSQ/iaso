@@ -19,6 +19,7 @@ import get from 'lodash.get';
 import merge from 'lodash.merge';
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 import commonStyles from '../styles/common';
 
@@ -40,6 +41,7 @@ import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useEffect } from 'react';
+import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -129,13 +131,13 @@ const RowAction = ({ icon: Icon, onClick }) => {
     );
 };
 
-const PageAction = ({ icon: Icon, onClick }) => {
+const PageAction = ({ icon: Icon, onClick, children }) => {
     const classes = useStyles();
 
     return (
         <Button variant="contained" color="primary" onClick={onClick}>
             <Icon className={classes.buttonIcon} />
-            Create
+            {children}
         </Button>
     );
 };
@@ -573,13 +575,7 @@ const Form = ({ children }) => {
     );
 };
 
-const CreateEditDialog = ({
-    isOpen,
-    onClose,
-    onCancel,
-    onConfirm,
-    selectedCampaign,
-}) => {
+const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
 
     const classes = useStyles();
@@ -675,7 +671,7 @@ const CreateEditDialog = ({
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
-                <Button onClick={onCancel} color="primary">
+                <Button onClick={onClose} color="primary">
                     Cancel
                 </Button>
                 <Button
@@ -710,39 +706,94 @@ const PageActions = ({ children }) => {
     );
 };
 
+const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
+    const classes = useStyles();
+
+    return (
+        <Dialog fullWidth open={isOpen} onBackdropClick={onClose}>
+            <DialogTitle className={classes.title}>
+                Are you sure you want to delete this campaign?
+            </DialogTitle>
+            <DialogContent className={classes.content}>
+                This operation cannot be undone
+            </DialogContent>
+            <DialogActions className={classes.action}>
+                <Button onClick={onClose} color="primary">
+                    No
+                </Button>
+                <Button onClick={onConfirm} color="primary" autoFocus>
+                    Yes
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+};
+
 export const Dashboard = () => {
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
+    const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] = useState(
+        false,
+    );
     const [selectedCampaignId, setSelectedCampaignId] = useState();
 
     const classes = useStyles();
+
     const { data: campaigns = [], status } = useGetCampaigns();
+    const { mutate: removeCampaign } = useRemoveCampaign();
+
+    const openCreateEditDialog = () => {
+        setIsCreateEditDialogOpen(true);
+    };
+
+    const closeCreateEditDialog = () => {
+        setSelectedCampaignId(undefined);
+        setIsCreateEditDialogOpen(false);
+    };
+
+    const openDeleteConfirmDialog = () => {
+        setIsConfirmDeleteDialogOpen(true);
+    };
+
+    const closeDeleteConfirmDialog = () => {
+        setIsConfirmDeleteDialogOpen(false);
+    };
+
+    const handleDeleteConfirmDialogConfirm = () => {
+        removeCampaign(selectedCampaign.id, {
+            onSuccess: () => {
+                closeDeleteConfirmDialog();
+            },
+        });
+    };
 
     const handleClickEditRow = id => {
         setSelectedCampaignId(id);
-        openDialog();
+        openCreateEditDialog();
+    };
+
+    const handleClickDeleteRow = id => {
+        setSelectedCampaignId(id);
+        openDeleteConfirmDialog();
     };
 
     const handleClickCreateButton = () => {
         setSelectedCampaignId(undefined);
-        openDialog();
+        openCreateEditDialog();
     };
 
-    const openDialog = () => {
-        setIsCreateDialogOpen(true);
-    };
-
-    const closeDialog = () => {
-        setSelectedCampaignId(undefined);
-        setIsCreateDialogOpen(false);
-    };
-
-    const data = campaigns.map(campaign => ({
+    const tableData = campaigns.map(campaign => ({
         ...campaign,
         actions: (
-            <RowAction
-                icon={EditIcon}
-                onClick={() => handleClickEditRow(campaign.id)}
-            />
+            <>
+                <RowAction
+                    icon={EditIcon}
+                    onClick={() => handleClickEditRow(campaign.id)}
+                />
+                <RowAction
+                    icon={DeleteIcon}
+                    onClick={() => handleClickDeleteRow(campaign.id)}
+                />
+            </>
         ),
     }));
 
@@ -776,24 +827,25 @@ export const Dashboard = () => {
         [],
     );
 
-    const tableInstance = useTable({ columns, data });
-
     const {
         getTableProps,
         getTableBodyProps,
         headerGroups,
         rows,
         prepareRow,
-    } = tableInstance;
+    } = useTable({ columns, data: tableData });
 
     return (
         <>
             <CreateEditDialog
                 selectedCampaign={selectedCampaign}
-                isOpen={isCreateDialogOpen}
-                onCancel={closeDialog}
-                onClose={closeDialog}
-                onConfirm={() => console.log('confirm')}
+                isOpen={isCreateEditDialogOpen}
+                onClose={closeCreateEditDialog}
+            />
+            <DeleteConfirmDialog
+                isOpen={isConfirmDeleteDialogOpen}
+                onClose={closeDeleteConfirmDialog}
+                onConfirm={handleDeleteConfirmDialogConfirm}
             />
             <Page title={'Campaigns for DRC'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
@@ -801,7 +853,9 @@ export const Dashboard = () => {
                         <PageAction
                             icon={AddIcon}
                             onClick={handleClickCreateButton}
-                        />
+                        >
+                            Create
+                        </PageAction>
                     </PageActions>
                     {status === 'success' && (
                         <table className={classes.table} {...getTableProps()}>
@@ -822,8 +876,8 @@ export const Dashboard = () => {
                                 ))}
                             </thead>
                             <tbody {...getTableBodyProps()}>
-                                {data.length > 0 ? (
-                                    rows.map(row => {
+                                {rows.length > 0 ? (
+                                    rows.map((row, rowIndex) => {
                                         prepareRow(row);
                                         return (
                                             <tr
@@ -833,6 +887,7 @@ export const Dashboard = () => {
                                                 {row.cells.map(cell => {
                                                     return (
                                                         <TableCell
+                                                            isOdd={rowIndex % 2}
                                                             {...cell.getCellProps()}
                                                         >
                                                             {cell.render(

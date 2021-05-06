@@ -33,6 +33,7 @@ function DialogComponent({
     renderTrigger,
     maxWidth,
     onClosed,
+    onOpen,
 }) {
     // we use the renderDialog flag in addition to the open flag to control whether to render the full dialog
     // content, or only the trigger (to avoid rendering multiple heavy contents in list)
@@ -40,6 +41,7 @@ function DialogComponent({
     const [renderDialog, setRenderDialog] = useState(false);
     const openDialog = useCallback(() => {
         setOpen(true);
+        onOpen();
         setRenderDialog(true);
     }, [setOpen, setRenderDialog]);
     const closeDialog = useCallback(() => {
@@ -81,6 +83,7 @@ function DialogComponent({
 DialogComponent.defaultProps = {
     maxWidth: 'sm',
     onClosed: () => {},
+    onOpen: () => {},
 };
 DialogComponent.propTypes = {
     classes: PropTypes.object.isRequired,
@@ -90,5 +93,6 @@ DialogComponent.propTypes = {
     renderActions: PropTypes.func.isRequired,
     renderTrigger: PropTypes.func.isRequired,
     onClosed: PropTypes.func,
+    onOpen: PropTypes.func,
 };
 export default withStyles(styles)(DialogComponent);

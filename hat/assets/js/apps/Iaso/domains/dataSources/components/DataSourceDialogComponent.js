@@ -44,7 +44,9 @@ export class DataSourceDialogComponent extends Component {
     }
 
     onConfirm(closeDialog) {
-        this.setState({ hasConfirmed: true });
+        this.setState(state => {
+            return { ...state, hasConfirmed: true };
+        });
         const { dispatch, initialData, onSuccess, currentUser } = this.props;
         const { form } = this.state;
         let saveCurrentDataSource;
@@ -69,14 +71,14 @@ export class DataSourceDialogComponent extends Component {
         dispatch(setIsLoading(true));
 
         const onSuccesfullUpdate = () => {
-            closeDialog();
             dispatch(enqueueSnackbar(succesfullSnackBar()));
+            dispatch(setIsLoading(false));
             onSuccess();
-            this.setState({ hasConfirmed: false });
         };
 
         return saveCurrentDataSource
             .then(() => {
+                closeDialog();
                 if (
                     form.is_default_source.value &&
                     currentUser &&
@@ -127,6 +129,14 @@ export class DataSourceDialogComponent extends Component {
         const newCredentials = { ...this.state.form.credentials.value };
         newCredentials[credentialsField] = credentialsFieldValue;
         this.setFieldValue('credentials', newCredentials);
+    }
+
+    setProjects(keyName, value) {
+        if (value.length >= 1) {
+            this.setFieldValue(keyName, commaSeparatedIdsToArray(value));
+        } else {
+            this.setFieldValue(keyName, this.state.form.project_ids.value);
+        }
     }
 
     setFieldErrors(fieldName, fieldErrors) {
@@ -204,6 +214,7 @@ export class DataSourceDialogComponent extends Component {
     setInitialState() {
         this.setState({
             isDataTouched: false,
+            hasConfirmed: false,
             form: this.initialForm(),
         });
     }
@@ -228,7 +239,9 @@ export class DataSourceDialogComponent extends Component {
                 renderTrigger={renderTrigger}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => this.onConfirm(closeDialog)}
-                onClosed={() => this.setInitialState()}
+                onOpen={() => {
+                    this.setInitialState();
+                }}
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
                 maxWidth="md"
@@ -263,12 +276,9 @@ export class DataSourceDialogComponent extends Component {
                             multi
                             clearable
                             keyValue="project_ids"
-                            onChange={(key, value) =>
-                                this.setFieldValue(
-                                    key,
-                                    commaSeparatedIdsToArray(value),
-                                )
-                            }
+                            onChange={(key, value) => {
+                                this.setProjects(key, value);
+                            }}
                             value={form.project_ids.value.join(',')}
                             errors={form.project_ids.errors}
                             type="select"

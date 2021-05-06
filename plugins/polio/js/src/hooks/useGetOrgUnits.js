@@ -26,14 +26,12 @@ export const useGetAllParentsOrgUnits = initialOrgUnit => {
         }
 
         let parent = initialOrgUnit;
-        const initialState = [];
+        const initialState = [initialOrgUnit];
         while (parent !== 0) {
             const result = await sendRequest('GET', '/api/orgunits/' + parent);
             parent = result?.parent_id ?? 0;
             initialState.unshift(parent);
         }
-
-        console.log(initialState);
 
         return initialState;
     });

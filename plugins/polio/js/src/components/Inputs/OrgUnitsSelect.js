@@ -16,11 +16,6 @@ export const OrgUnitsSelect = props => {
         return null;
     }
 
-    console.log({
-        orgUnits,
-        value,
-    });
-
     return (
         <Select
             {...props}
@@ -34,7 +29,7 @@ export const OrgUnitsSelect = props => {
                     org_unit_id: event.target.value,
                 });
             }}
-            value={value}
+            value={value ?? 0}
         />
     );
 };
@@ -60,12 +55,7 @@ export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
     const source = data?.account?.default_version?.data_source?.id;
     const initialOrgUnit = form?.initialValues?.initial_org_unit ?? 0;
 
-    const {
-        status,
-        data: initialState,
-        error,
-        isFetching,
-    } = useGetAllParentsOrgUnits(initialOrgUnit);
+    const { data: initialState } = useGetAllParentsOrgUnits(initialOrgUnit);
 
     const [levels, setLevel] = useState([0]);
 

@@ -673,7 +673,11 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
-                <Button onClick={onClose} color="primary">
+                <Button
+                    onClick={onClose}
+                    color="primary"
+                    disabled={formik.isSubmitting}
+                >
                     Cancel
                 </Button>
                 <Button
@@ -681,7 +685,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
                     color="primary"
                     variant={'contained'}
                     autoFocus
-                    disabled={!formik.isValid}
+                    disabled={!formik.isValid || formik.isSubmitting}
                 >
                     Confirm
                 </Button>

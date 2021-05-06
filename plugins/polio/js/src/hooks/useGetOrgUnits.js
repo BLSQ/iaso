@@ -46,6 +46,9 @@ export const useGetAllParentsOrgUnits = initialOrgUnit => {
                 initialState.unshift(currentParent.id);
                 currentParent = currentParent.parent;
             }
+
+            initialState.unshift(0);
+
             return initialState;
         },
         {

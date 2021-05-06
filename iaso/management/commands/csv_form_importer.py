@@ -81,13 +81,16 @@ class Command(BaseCommand):
                     csv_reader = csv.reader(csv_file, delimiter=";")
                     index = 1
                     for row in csv_reader:
-                        if index % 4 == 0:
+                        if index % 10 == 0:
                             print("index", index)
                             break
 
                         if index == 1:
                             headers = row
                             col_indices = {headers[i].strip(): i for i in range(len(headers))}
+                            for key in col_indices:
+                                if key not in keys:
+                                    print("unmapped", key)
                             #print("col_indices", col_indices)
                         else:
                             source_ref = row[0].strip()
@@ -172,7 +175,7 @@ class Command(BaseCommand):
                                 data['instanceID'] = "uuid:%s" % uuid
 
                             try:
-                                print(json.dumps(data, indent=2))
+                                #print(json.dumps(data, indent=2))
                                 ou = OrgUnit.objects.get(source_ref=row[0].strip(), version_id=101)
                                 #print("OU", ou)
                                 instance = Instance()

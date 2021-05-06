@@ -39,6 +39,7 @@ import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
+import { OrgUnitsLevels } from './Inputs/OrgUnitsSelect';
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useEffect } from 'react';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
@@ -192,10 +193,11 @@ const BaseInfoForm = () => {
                         name={'description'}
                         component={TextInput}
                     />
-
-                    <TextInput className={classes.input} label="Country" />
-                    <TextInput className={classes.input} label="Province" />
-                    <TextInput label="District" />
+                    <Field
+                        className={classes.input}
+                        name={'initial_org_unit'}
+                        component={OrgUnitsLevels}
+                    />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>
@@ -671,7 +673,11 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
-                <Button onClick={onClose} color="primary">
+                <Button
+                    onClick={onClose}
+                    color="primary"
+                    disabled={formik.isSubmitting}
+                >
                     Cancel
                 </Button>
                 <Button
@@ -679,7 +685,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
                     color="primary"
                     variant={'contained'}
                     autoFocus
-                    disabled={!formik.isValid}
+                    disabled={!formik.isValid || formik.isSubmitting}
                 >
                     Confirm
                 </Button>

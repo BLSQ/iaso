@@ -5,11 +5,20 @@ import {
 } from '../../hooks/useGetOrgUnits';
 import { useState, useEffect } from 'react';
 import { useGetAuthenticatedUser } from '../../hooks/useGetAuthenticatedUser';
+import { CircularProgress } from '@material-ui/core';
 
 export const OrgUnitsSelect = props => {
     const { level, source, addLevel, value } = props;
-    const { data = {} } = useGetOrgUnits(level, source);
+    const { data = {}, isLoading } = useGetOrgUnits(level, source);
     const { orgUnits = [] } = data;
+
+    if (isLoading) {
+        return (
+            <div>
+                <CircularProgress />
+            </div>
+        );
+    }
 
     if (orgUnits.length === 0) {
         return null;

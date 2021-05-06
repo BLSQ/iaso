@@ -1,10 +1,12 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import permissions, serializers
 import logging
 
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
+from hat.menupermissions.models import CustomPermissionSupport
 from iaso.models import Account, DataSource, SourceVersion, Profile
 
 logger = logging.getLogger(__name__)
@@ -65,6 +67,20 @@ class SetupAccountSerializer(serializers.Serializer):
         )
         account.users.add(user)
         profile = Profile.objects.create(account=account, user=user)
+
+        permissions_to_add = [
+            "iaso_forms",
+            "iaso_mappings",
+            "iaso_completeness",
+            "iaso_org_units",
+            "iaso_links",
+            "iaso_users",
+            "iaso_projects",
+            "iaso_sources",
+        ]
+        content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
+        user.user_permissions.set(
+            Permission.objects.filter(codename__in=permissions_to_add, content_type=content_type))
         return validated_data
 
 

@@ -9,7 +9,7 @@ export const useGetOrgUnits = (parent, source) => {
     };
 
     return useQuery(
-        ['org_units', params],
+        ['orgunits', params],
         () => {
             const queryString = new URLSearchParams(params);
 
@@ -30,7 +30,7 @@ export const useGetOrgUnits = (parent, source) => {
 
 export const useGetAllParentsOrgUnits = initialOrgUnit => {
     return useQuery(
-        ['org_units_parents', initialOrgUnit],
+        ['orgunits', initialOrgUnit],
         async () => {
             if (initialOrgUnit === 0) {
                 return [0];

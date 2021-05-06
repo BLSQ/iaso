@@ -14,6 +14,7 @@ services:
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
       - ./media:/opt/app/media
+      - ./plugins:/opt/app/plugins
       - ./scripts:/opt/app/scripts
       - ./entrypoint.sh:/opt/app/entrypoint.sh
       - ./docs:/opt/app/docs
@@ -29,6 +30,7 @@ services:
     links: &hat_links
       - db
     environment: &hat_environment
+      PLUGIN_POLIO_ENABLED: ${PLUGIN_POLIO_ENABLED}
       IASO_ENVIRONMENT: "development"
       RDS_HOSTNAME: db
       RDS_DB_NAME: iaso
@@ -53,8 +55,9 @@ services:
     command: start_dev
 
   db:
-    image: iaso/postgis
-     # Workaround until there is a stable Postgis image for Apple Silicon
+    image:
+      iaso/postgis
+      # Workaround until there is a stable Postgis image for Apple Silicon
     build: .docker/db
     logging: *iaso_logging
     ports:

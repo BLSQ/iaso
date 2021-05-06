@@ -27,6 +27,7 @@ const requests = [
         url: '/api/forms/?&all=true&limit=10&page=1&order=-created_at',
         body: {
             forms: [],
+            pages: 0,
         },
     },
 ];
@@ -34,6 +35,7 @@ const requests = [
 let connectedWrapper;
 let addButton;
 let redirectAction;
+let singleTable;
 
 describe('Forms connected component', () => {
     before(() => {
@@ -49,11 +51,6 @@ describe('Forms connected component', () => {
 
     it('render TopBar', () => {
         expect(connectedWrapper.find(TopBar)).to.have.lengthOf(1);
-    });
-
-    it('render SingleTable', () => {
-        const singleTable = connectedWrapper.find(SingleTable);
-        expect(singleTable).to.have.lengthOf(1);
     });
 
     describe('AddButtonComponent', () => {
@@ -79,6 +76,30 @@ describe('Forms connected component', () => {
     describe('should connect to api', () => {
         it('and call forms api', () => {
             expect(nock.activeMocks()).to.have.lengthOf(0);
+        });
+    });
+    describe('singleTable', () => {
+        it('should render', () => {
+            singleTable = connectedWrapper.find(SingleTable);
+            expect(singleTable).to.have.lengthOf(1);
+        });
+        it(' should update forceRefresh', () => {
+            singleTable.props().onForceRefreshDone();
+            expect(singleTable.props().forceRefresh).to.equal(false);
+        });
+    });
+    describe('displaying archived forms', () => {
+        it('mount properly', () => {
+            nock.cleanAll();
+            nock.abortPendingRequests();
+            const archivedRequests = [...requests];
+            archivedRequests[2].url =
+                '/api/forms/?&all=true&only_deleted=1&limit=10&page=1&order=-created_at';
+            mockGetRequestsList(requests);
+            connectedWrapper = mount(
+                renderWithStore(<Forms params={{}} showOnlyDeleted />),
+            );
+            expect(connectedWrapper.exists()).to.equal(true);
         });
     });
 });

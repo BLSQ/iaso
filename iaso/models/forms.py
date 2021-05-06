@@ -135,6 +135,7 @@ class FormVersionQuerySet(models.QuerySet):
 
 class FormVersionManager(models.Manager):
     def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
+        print (kwargs)
         with transaction.atomic():
             latest_version = self.latest_version(form)
 

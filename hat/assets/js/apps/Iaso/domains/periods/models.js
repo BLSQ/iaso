@@ -1,5 +1,7 @@
 import _ from 'lodash/fp';
+
 import {
+    PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_SIX_MONTH,
@@ -16,12 +18,19 @@ export class Period {
         this.quarter = periodParts.quarter;
         this.semester = periodParts.semester;
         this.year = periodParts.year;
+        this.day = periodParts.day;
         this.periodString = periodString;
     }
 
     asPeriodType(periodType) {
         let periodTypeString;
         switch (periodType) {
+            case PERIOD_TYPE_DAY:
+                periodTypeString = `${this.year}${String(this.month).padStart(
+                    2,
+                    '0',
+                )}${String(this.day).padStart(2, '0')}`;
+                break;
             case PERIOD_TYPE_MONTH:
                 periodTypeString = `${this.year}${String(this.month).padStart(
                     2,
@@ -46,6 +55,8 @@ export class Period {
 
     get monthRange() {
         switch (this.periodType) {
+            case PERIOD_TYPE_DAY:
+                throw new Error(`Invalid period type ${this.periodType}`);
             case PERIOD_TYPE_MONTH:
                 return [this.month];
             case PERIOD_TYPE_QUARTER:
@@ -59,6 +70,10 @@ export class Period {
 
     toCode() {
         switch (this.periodType) {
+            case PERIOD_TYPE_DAY:
+                return `${String(this.day).padStart(2, '0')}/${String(
+                    this.month,
+                ).padStart(2, '0')}/${this.year}`;
             case PERIOD_TYPE_MONTH:
                 return `${String(this.month).padStart(2, '0')}/${this.year}`;
             case PERIOD_TYPE_QUARTER:
@@ -86,11 +101,34 @@ export class Period {
         if (periodString.length === 6) {
             return [PERIOD_TYPE_MONTH, Period.parseMonthString(periodString)];
         }
+        if (periodString.length === 8) {
+            return [PERIOD_TYPE_DAY, Period.parseDayString(periodString)];
+        }
         if (periodString.length === 4) {
             return [PERIOD_TYPE_YEAR, Period.parseYearString(periodString)];
         }
 
         throw new Error(`Invalid period string ${periodString}`);
+    }
+
+    static getPeriodType(periodString) {
+        if (periodString.includes('Q') && periodString.length === 6) {
+            return PERIOD_TYPE_QUARTER;
+        }
+        if (periodString.includes('S') && periodString.length === 6) {
+            return PERIOD_TYPE_SIX_MONTH;
+        }
+        if (periodString.length === 6) {
+            return PERIOD_TYPE_MONTH;
+        }
+        if (periodString.length === 8) {
+            return PERIOD_TYPE_DAY;
+        }
+        if (periodString.length === 4) {
+            return PERIOD_TYPE_YEAR;
+        }
+
+        return null;
     }
 
     static parseQuarterString(quarterString) {
@@ -101,6 +139,7 @@ export class Period {
             quarter,
             semester: Math.ceil(quarter / 2),
             year,
+            day: 1,
         };
     }
 
@@ -112,6 +151,7 @@ export class Period {
             quarter: semester * 2,
             semester,
             year,
+            day: 1,
         };
     }
 
@@ -124,6 +164,21 @@ export class Period {
             quarter: Math.ceil(month / 3),
             semester: Math.ceil(month / 6),
             year,
+            day: 1,
+        };
+    }
+
+    static parseDayString(monthString) {
+        const year = Number(monthString.slice(0, 4));
+        const month = Number(monthString.slice(4, 6));
+        const day = Number(monthString.slice(6, 8));
+
+        return {
+            month,
+            quarter: Math.ceil(month / 3),
+            semester: Math.ceil(month / 6),
+            year,
+            day,
         };
     }
 
@@ -135,6 +190,7 @@ export class Period {
             quarter: 4,
             semester: 2,
             year,
+            day: 31,
         };
     }
 
@@ -148,11 +204,65 @@ export class Period {
         return `${prefix}-${year}`;
     }
 
-    // more period functions -----------------
-
-    padMonth(n) {
+    static padMonth(n) {
         return n < 10 ? `0${n}` : n;
     }
+
+    static isBefore(p1String, p2String) {
+        const p1 = new Period(p1String);
+        const p2 = new Period(p2String);
+        if (p1.year < p2.year) {
+            return true;
+        }
+        if (p1.year === p2.year) {
+            if (p1.periodType === PERIOD_TYPE_DAY) {
+                return (
+                    p1.month < p2.month ||
+                    (p1.month === p2.month && p1.day < p2.day)
+                );
+            }
+            if (p1.periodType === PERIOD_TYPE_MONTH) {
+                return p1.month < p2.month;
+            }
+            if (p1.periodType === PERIOD_TYPE_QUARTER) {
+                return p1.quarter < p2.quarter;
+            }
+            if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
+                return p1.semester < p2.semester;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    static isAfter(p1String, p2String) {
+        const p1 = new Period(p1String);
+        const p2 = new Period(p2String);
+        if (p1.year > p2.year) {
+            return true;
+        }
+        if (p1.year === p2.year) {
+            if (p1.periodType === PERIOD_TYPE_DAY) {
+                return (
+                    p1.month > p2.month ||
+                    (p1.month === p2.month && p1.day > p2.day)
+                );
+            }
+            if (p1.periodType === PERIOD_TYPE_MONTH) {
+                return p1.month > p2.month;
+            }
+            if (p1.periodType === PERIOD_TYPE_QUARTER) {
+                return p1.quarter > p2.quarter;
+            }
+            if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
+                return p1.semester > p2.semester;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    // more period functions -----------------
 
     nextYearMonth(period) {
         let year = parseInt(period.slice(0, 4), 0);
@@ -163,7 +273,7 @@ export class Period {
         } else {
             month += 1;
         }
-        return `${year}${this.padMonth(month)}`;
+        return `${year}${Period.padMonth(month)}`;
     }
 
     previousYearMonth(period) {
@@ -175,7 +285,7 @@ export class Period {
         } else {
             month -= 1;
         }
-        return `${year}${this.padMonth(month)}`;
+        return `${year}${Period.padMonth(month)}`;
     }
 
     nextYear(period) {

@@ -51,6 +51,7 @@ const SingleTable = ({
     setIsLoading,
     multiSelect,
     selectionActions,
+    watchToRender,
 }) => {
     const [loading, setLoading] = useState(false);
     const [selection, setSelection] = useState(selectionInitialState);
@@ -58,6 +59,7 @@ const SingleTable = ({
     const [firstLoad, setfFrstLoad] = useState(true);
     const [tableResults, setTableResults] = useState(tableInitialResult);
     const [expanded, setExpanded] = useState({});
+    const { list, pages, count } = tableResults;
 
     const dispatch = useDispatch();
     const classes = useStyles();
@@ -125,7 +127,6 @@ const SingleTable = ({
         }
     }, [forceRefresh]);
 
-    const { list, pages, count } = tableResults;
     const { limit } = tableParams;
     let extraProps = {
         loading,
@@ -206,6 +207,7 @@ const SingleTable = ({
                             extraComponent,
                     )}
                     paramsPrefix={paramsPrefix}
+                    watchToRender={watchToRender}
                 />
             )}
         </Box>
@@ -242,6 +244,7 @@ SingleTable.defaultProps = {
     setIsLoading: true,
     multiSelect: false,
     selectionActions: [],
+    watchToRender: null,
 };
 
 SingleTable.propTypes = {
@@ -257,8 +260,8 @@ SingleTable.propTypes = {
     defaultSorted: PropTypes.array,
     dataKey: PropTypes.string,
     exportButtons: PropTypes.bool,
-    forceRefresh: PropTypes.bool,
     hideGpkg: PropTypes.bool,
+    forceRefresh: PropTypes.bool,
     onForceRefreshDone: PropTypes.func,
     extraComponent: PropTypes.node,
     searchExtraComponent: PropTypes.node,
@@ -271,6 +274,7 @@ SingleTable.propTypes = {
     setIsLoading: PropTypes.bool,
     multiSelect: PropTypes.bool,
     selectionActions: PropTypes.array,
+    watchToRender: PropTypes.any,
 };
 
 export default withRouter(SingleTable);

@@ -1,5 +1,8 @@
 import formsTableColumns, { formVersionsTableColumns } from './config';
+import archivedTableColumn from './configArchived';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import FormVersionsDialog from './components/FormVersionsDialogComponent';
 
 import formsFixture from './fixtures/forms.json';
 import formVersionsfixture from './fixtures/formVersions.json';
@@ -18,12 +21,22 @@ const fakeForm = formsFixture.forms[0];
 const fakeFormVersion = formVersionsfixture.form_versions[0];
 let wrapper;
 let xlsButton;
+let actionColumn;
+let formVersionsDialog;
+let deleteDialog;
+let deleteFormSpy;
+let restoreFormSpy;
+let restoreIcon;
+const setForceRefreshSpy = sinon.spy();
 
 describe('Forms config', () => {
     describe('formVersionsTableColumns', () => {
-        it('sould return an array of 2 columns', () => {
-            formVersionscolumns = formVersionsTableColumns(() => null);
-            expect(formVersionscolumns).to.have.lengthOf(2);
+        it('sould return an array of 4 columns', () => {
+            formVersionscolumns = formVersionsTableColumns(
+                () => null,
+                () => setForceRefreshSpy(),
+            );
+            expect(formVersionscolumns).to.have.lengthOf(4);
         });
         it('should render a component if Cell is defined', () => {
             formVersionscolumns.forEach(c => {
@@ -46,8 +59,7 @@ describe('Forms config', () => {
             });
         });
         it('should open a tab on click on xls icon', () => {
-            const actionColumn =
-                formVersionscolumns[formVersionscolumns.length - 1];
+            actionColumn = formVersionscolumns[formVersionscolumns.length - 1];
             wrapper = shallow(
                 actionColumn.Cell({
                     original: fakeFormVersion,
@@ -60,6 +72,19 @@ describe('Forms config', () => {
             xlsButton.props().onClick();
             expect(openStub).to.have.been.called;
             sinon.restore();
+        });
+        it('should render IconButtonComponent', () => {
+            formVersionsDialog = wrapper.find(FormVersionsDialog);
+            expect(formVersionsDialog).to.have.lengthOf(1);
+            const iconButtonComponent = shallow(
+                formVersionsDialog.props().renderTrigger({ openDialog: null }),
+            );
+
+            expect(iconButtonComponent).to.have.lengthOf(1);
+        });
+        it('should trigger setForceRefresh on onConfirmed', () => {
+            formVersionsDialog.props().onConfirmed();
+            expect(setForceRefreshSpy.calledOnce).to.equal(true);
         });
     });
     describe('formsTableColumns', () => {
@@ -105,14 +130,20 @@ describe('Forms config', () => {
         describe('action colmumn', () => {
             it('should only display eye icon button if instances_count = 0,showEditAction = false, showMappingAction = false', () => {
                 const tempForm = { ...fakeForm };
+
+                deleteFormSpy = sinon.spy();
                 columns = formsTableColumns(
                     () => null,
                     defaultProps,
                     false,
                     false,
+                    () => {
+                        deleteFormSpy();
+                        return new Promise(resolve => resolve());
+                    },
                 );
                 tempForm.instances_count = 0;
-                const actionColumn = columns[columns.length - 1];
+                actionColumn = columns[columns.length - 1];
                 wrapper = shallow(
                     actionColumn.Cell({
                         original: tempForm,
@@ -127,6 +158,12 @@ describe('Forms config', () => {
                 expect(dhisIcon).to.have.lengthOf(0);
                 expect(wrapper.find(IconButtonComponent)).to.have.lengthOf(1);
             });
+            it('should trigger deleteFormSpy on onConfirm', () => {
+                deleteDialog = wrapper.find(DeleteDialog);
+                expect(deleteDialog).to.have.lengthOf(1);
+                deleteDialog.props().onConfirm();
+                expect(deleteFormSpy.calledOnce).to.equal(true);
+            });
             it('should change url if currentOrg unit is defined and display red eye icon', () => {
                 const tempForm = { ...fakeForm };
                 tempForm.instances_count = 5;
@@ -136,7 +173,7 @@ describe('Forms config', () => {
                     false,
                     false,
                 );
-                const actionColumn = columns[columns.length - 1];
+                actionColumn = columns[columns.length - 1];
                 wrapper = shallow(
                     actionColumn.Cell({
                         original: tempForm,
@@ -144,9 +181,71 @@ describe('Forms config', () => {
                 );
                 const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
                 expect(redEyeIcon.prop('url')).to.equal(
-                    'instances/formId/14/levels/1',
+                    'instances/formId/69/levels/1',
                 );
                 expect(redEyeIcon).to.have.lengthOf(1);
+            });
+        });
+    });
+
+    describe('archivedTableColumn', () => {
+        it('sould return an array of 9 columns', () => {
+            restoreFormSpy = sinon.spy();
+            columns = archivedTableColumn(
+                () => null,
+                () => restoreFormSpy(),
+            );
+            expect(columns).to.have.lengthOf(9);
+        });
+        it('should render a component if Cell is defined', () => {
+            columns.forEach(c => {
+                if (c.Cell) {
+                    const cell = c.Cell({
+                        original: fakeForm,
+                    });
+                    expect(cell).to.exist;
+                }
+            });
+        });
+        it('should render a component if Cell is defined and no form id', () => {
+            columns.forEach(c => {
+                if (c.Cell) {
+                    const cell = c.Cell({
+                        original: {
+                            ...fakeForm,
+                            form_id: 0,
+                        },
+                    });
+                    expect(cell).to.exist;
+                }
+            });
+        });
+        it('should render a component if value not present and Cell is defined', () => {
+            const tempForm = { ...fakeForm };
+            delete tempForm.instance_updated_at;
+            columns.forEach(c => {
+                if (c.Cell) {
+                    const cell = c.Cell({
+                        original: tempForm,
+                    });
+                    expect(cell).to.exist;
+                }
+            });
+        });
+        describe('action colmumn', () => {
+            it('should render restore icon', () => {
+                actionColumn = columns[columns.length - 1];
+                wrapper = shallow(
+                    actionColumn.Cell({
+                        original: fakeForm,
+                    }),
+                );
+                restoreIcon = wrapper.find('[icon="restore-from-trash"]');
+                expect(restoreIcon).to.have.lengthOf(1);
+            });
+            it('should trigger restoreForm on onConfirm', () => {
+                restoreIcon.props().onClick();
+                expect(restoreFormSpy.calledOnce).to.equal(true);
             });
         });
     });

@@ -101,11 +101,24 @@ class FormsVersionAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_form_versions_update(self):
-        """PUT /formversions/<form_id>: not authorized for now"""
-
+        """PUT /formversions/<form_id>: ok"""
         self.client.force_authenticate(self.yoda)
-        response = self.client.put(f"/api/formversions/33/", data={})
-        self.assertJSONResponse(response, 405)
+
+        start_period = "BIG BANG"
+        end_period = "DOOMSDAY"
+        response = self.client.put(
+            f"/api/formversions/{self.form_2 .form_versions.first().id}/",
+            data={
+                "end_period": end_period,
+                "form_id": self.form_2.id,
+                'start_period': start_period,
+            },
+            format="json",
+        )
+        response_data = response.json()
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["start_period"], start_period)
+        self.assertEqual(response_data["end_period"], end_period)
 
     @tag("iaso_only")
     def test_form_versions_destroy(self):
@@ -294,7 +307,6 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
         response_data = response.json()
         self.assertHasError(response_data, "form_id")
-        self.assertHasError(response_data, "xls_file")
 
     @tag("iaso_only")
     def test_form_versions_create_no_auth(self):
@@ -318,7 +330,7 @@ class FormsVersionAPITestCase(APITestCase):
         form_file_mock.name = "test_batman.xml"
         response = self.client.post(
             f"/api/formversions/",
-            data={"form_id": self.form_1.id, "version_id": "february_2020", "file": form_file_mock},
+            data={"form_id": self.form_1.id, "version_id": "february_2020", "xls_file": form_file_mock},
             format="multipart",
         )
         self.assertJSONResponse(response, 400)
@@ -336,3 +348,7 @@ class FormsVersionAPITestCase(APITestCase):
         if check_annotated_fields:
             self.assertHasField(form_version_data, "mapped", bool)
             self.assertHasField(form_version_data, "full_name", str)
+
+
+
+

@@ -8,31 +8,48 @@ export const useGetOrgUnits = (parent, source) => {
         validation_status: 'VALID',
     };
 
-    return useQuery(['org_units', params], () => {
-        const queryString = new URLSearchParams(params);
+    return useQuery(
+        ['org_units', params],
+        () => {
+            const queryString = new URLSearchParams(params);
 
-        if (source === undefined) {
-            params.delete('source');
-        }
+            if (source === undefined) {
+                params.delete('source');
+            }
 
-        return sendRequest('GET', '/api/orgunits/?' + queryString.toString());
-    });
+            return sendRequest(
+                'GET',
+                '/api/orgunits/?' + queryString.toString(),
+            );
+        },
+        {
+            refetchOnWindowFocus: false,
+        },
+    );
 };
 
 export const useGetAllParentsOrgUnits = initialOrgUnit => {
-    return useQuery(['org_units_parents', initialOrgUnit], async () => {
-        if (initialOrgUnit === 0) {
-            return [0];
-        }
+    return useQuery(
+        ['org_units_parents', initialOrgUnit],
+        async () => {
+            if (initialOrgUnit === 0) {
+                return [0];
+            }
 
-        let parent = initialOrgUnit;
-        const initialState = [initialOrgUnit];
-        while (parent !== 0) {
-            const result = await sendRequest('GET', '/api/orgunits/' + parent);
-            parent = result?.parent_id ?? 0;
-            initialState.unshift(parent);
-        }
-
-        return initialState;
-    });
+            const result = await sendRequest(
+                'GET',
+                '/api/orgunits/' + initialOrgUnit,
+            );
+            const initialState = [result.id];
+            let currentParent = result.parent;
+            while (currentParent) {
+                initialState.unshift(currentParent.id);
+                currentParent = currentParent.parent;
+            }
+            return initialState;
+        },
+        {
+            refetchOnWindowFocus: false,
+        },
+    );
 };

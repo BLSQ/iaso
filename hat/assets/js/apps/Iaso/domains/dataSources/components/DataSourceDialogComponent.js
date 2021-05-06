@@ -115,8 +115,9 @@ export class DataSourceDialogComponent extends Component {
             [fieldName]: { value: fieldValue, errors: [] },
         };
         const isDataTouched = !isEqual(this.initialForm(), newForm);
-        this.setState(_ => {
+        this.setState(state => {
             return {
+                ...state,
                 form: newForm,
                 isDataTouched,
             };

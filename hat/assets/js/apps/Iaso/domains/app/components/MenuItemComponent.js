@@ -19,11 +19,7 @@ import muiTheme from '../../../utils/theme';
 
 import injectIntl from '../../../libs/intl/injectIntl';
 
-import {
-    listMenuPermission,
-    userHasOneOfPermissions,
-    userHasPermission,
-} from '../../users/utils';
+import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),

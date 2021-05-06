@@ -201,7 +201,7 @@ const QuestionMappingForm = ({
         setNewQuestionMapping(val);
     };
 
-    const mapToMapping = (options, input) => {
+    const mapToMapping = options => {
         const results = [];
 
         options
@@ -403,7 +403,7 @@ const QuestionMappingForm = ({
                                 item = [{ ...newQuestionMapping }];
                                 if (
                                     iasoField &&
-                                    iasoField.value != 'undefined'
+                                    iasoField.value !== 'undefined'
                                 ) {
                                     item = [
                                         {

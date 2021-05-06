@@ -49,7 +49,7 @@ const ExportInstancesDialogComponent = ({
             <InputComponent
                 clearable
                 keyValue="algoId"
-                onChange={(key, value) => setForceExport(!forceExport)}
+                onChange={() => setForceExport(!forceExport)}
                 value={forceExport}
                 type="checkbox"
                 label={MESSAGES.forceExport}

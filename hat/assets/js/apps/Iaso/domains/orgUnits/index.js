@@ -68,7 +68,8 @@ import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.orgUnits;
 let warningDisplayed = false;
-export const locationLimitMax = 3000;
+const locationLimitMax = 3000;
+export { locationLimitMax };
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -109,6 +110,7 @@ class OrgUnits extends Component {
         };
     }
 
+    // eslint-disable-next-line camelcase
     UNSAFE_componentWillMount() {
         const { dispatch, params, currentUser } = this.props;
         this.props.resetOrgUnitsLevels();
@@ -200,11 +202,6 @@ class OrgUnits extends Component {
         dispatch(closeFixedSnackbar('locationLimitWarning'));
     }
 
-    onTabsDeleted() {
-        this.props.resetOrgUnits();
-        this.props.setFiltersUpdated(true);
-    }
-
     handleTableSelection(selectionType, items = [], totalCount = 0) {
         const { selection } = this.state;
         const newSelection = setTableSelection(
@@ -216,6 +213,39 @@ class OrgUnits extends Component {
         this.setState({
             selection: newSelection,
         });
+    }
+
+    handleChangeTab(tab, redirect = true) {
+        const { redirectTo, params, filtersUpdated } = this.props;
+        const { listUpdated } = this.state;
+        const newState = {
+            ...this.state,
+            tab,
+        };
+        if (redirect) {
+            const newParams = {
+                ...params,
+                tab,
+            };
+            redirectTo(baseUrl, newParams);
+        }
+
+        if (
+            tab === 'map' &&
+            params.searchActive &&
+            (filtersUpdated || listUpdated)
+        ) {
+            if (listUpdated) {
+                newState.listUpdated = false;
+            }
+            this.fetchOrgUnitsLocations();
+        }
+        this.setState(newState);
+    }
+
+    onTabsDeleted() {
+        this.props.resetOrgUnits();
+        this.props.setFiltersUpdated(true);
     }
 
     onSearch(withLocations) {
@@ -276,34 +306,6 @@ class OrgUnits extends Component {
         this.setState({
             multiActionPopupOpen,
         });
-    
-
-    handleChangeTab(tab, redirect = true) {
-        const { redirectTo, params, filtersUpdated } = this.props;
-        const { listUpdated } = this.state;
-        const newState = {
-            ...this.state,
-            tab,
-        };
-        if (redirect) {
-            const newParams = {
-                ...params,
-                tab,
-            };
-            redirectTo(baseUrl, newParams);
-        }
-
-        if (
-            tab === 'map' &&
-            params.searchActive &&
-            (filtersUpdated || listUpdated)
-        ) {
-            if (listUpdated) {
-                newState.listUpdated = false;
-            }
-            this.fetchOrgUnitsLocations();
-        }
-        this.setState(newState);
     }
 
     fetchOrgUnitsLocations() {

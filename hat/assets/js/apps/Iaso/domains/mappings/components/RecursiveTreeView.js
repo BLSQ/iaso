@@ -5,6 +5,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import TreeItem from '@material-ui/lab/TreeItem';
 import _ from 'lodash';
+import PropTypes from 'prop-types';
 import Descriptor from '../descriptor';
 
 import { isMapped, isNeverMapped } from '../question_mappings';
@@ -87,6 +88,12 @@ const RecursiveTreeView = props => {
             </TreeView>
         </div>
     );
+};
+
+RecursiveTreeView.propTypes = {
+    formVersion: PropTypes.object.isRequired,
+    mappingVersion: PropTypes.object.isRequired,
+    onQuestionSelected: PropTypes.func.isRequired,
 };
 
 export default RecursiveTreeView;

@@ -7,7 +7,7 @@
   "scripts": {
     "fix-lint": "prettier-eslint \"./hat/assets/js/**/*.js\" --lint-different  --write",
     "show-lint-problems": "eslint \"./hat/assets/js/**/*.js\"",
-    "export-lint-problems": "eslint \"./hat/assets/js/**/*.js\" -o ./hat/assets/js/lintErrors.html -f html",
+    "export-lint-problems": "eslint \"./hat/assets/js/**/*.js\" -f html -o ./hat/assets/js/lintErrors.html",
     "test-coverage": "nyc npm run test",
     "test": "mocha --require @babel/register --require ./hat/assets/js/test/helpers.js --require ./hat/assets/js/test/dom.js './hat/assets/js/**/*.spec.js'",
     "test-watch": "mocha --require @babel/register --require ./hat/assets/js/test/helpers.js --require ./hat/assets/js/test/dom.js './hat/assets/js/**/*.spec.js' --watch",

@@ -185,6 +185,20 @@ class Instances extends Component {
         }
     }
 
+    handleChangeTab(tab, redirect = true) {
+        if (redirect) {
+            const { redirectToReplace, params } = this.props;
+            const newParams = {
+                ...params,
+                tab,
+            };
+            redirectToReplace(baseUrl, newParams);
+        }
+        this.setState({
+            tab,
+        });
+    }
+
     onSearch() {
         const { params } = this.props;
         this.fetchInstances();
@@ -247,20 +261,6 @@ class Instances extends Component {
 
     setForceRefresh(forceRefresh) {
         this.setState({ forceRefresh });
-    }
-
-    handleChangeTab(tab, redirect = true) {
-        if (redirect) {
-            const { redirectToReplace, params } = this.props;
-            const newParams = {
-                ...params,
-                tab,
-            };
-            redirectToReplace(baseUrl, newParams);
-        }
-        this.setState({
-            tab,
-        });
     }
 
     goBack() {

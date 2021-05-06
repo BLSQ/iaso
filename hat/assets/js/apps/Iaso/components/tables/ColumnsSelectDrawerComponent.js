@@ -161,7 +161,7 @@ const ColumnsSelectDrawerComponent = ({
                     <Divider />
                     <div className={classes.list}>
                         <List>
-                            {displayedOptions.map((o, i) => (
+                            {displayedOptions.map(o => (
                                 <InView key={o.key}>
                                     {({ inView, ref }) => (
                                         <div ref={ref} id={o.key}>

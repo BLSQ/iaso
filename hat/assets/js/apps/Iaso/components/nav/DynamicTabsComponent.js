@@ -86,18 +86,6 @@ class DynamicTabsComponent extends Component {
         };
     }
 
-    setTabsElement(element, index) {
-        const { tabsWidth } = this.state;
-        const newWidth = element.getBoundingClientRect().width;
-        if (newWidth !== tabsWidth[index]) {
-            const newArray = [...tabsWidth];
-            newArray[index] = newWidth;
-            this.setState({
-                tabsWidth: newArray,
-            });
-        }
-    }
-
     handleAddTab() {
         const {
             redirectTo,
@@ -171,6 +159,18 @@ class DynamicTabsComponent extends Component {
         newParams[paramKey] = JSON.stringify(newItems);
         redirectTo(baseUrl, newParams);
         this.setState(newState);
+    }
+
+    setTabsElement(element, index) {
+        const { tabsWidth } = this.state;
+        const newWidth = element.getBoundingClientRect().width;
+        if (newWidth !== tabsWidth[index]) {
+            const newArray = [...tabsWidth];
+            newArray[index] = newWidth;
+            this.setState({
+                tabsWidth: newArray,
+            });
+        }
     }
 
     render() {

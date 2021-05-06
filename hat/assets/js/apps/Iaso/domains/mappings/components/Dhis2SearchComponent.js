@@ -50,6 +50,7 @@ const Dhis2Search = props => {
     const [inputValue, setInputValue] = React.useState(defaultValue || '');
 
     const [options, setOptions] = React.useState([]);
+    // TODO confirm this is dead code
     const [_selectedOption, setSelectedOption] = React.useState([]);
     const handleChange = event => {
         setInputValue(event.target.value);
@@ -98,6 +99,7 @@ const Dhis2Search = props => {
 
     const onSearchChange = (evt, value) => {
         onChange(name, value, resourceName);
+        // TODO confirm this is dead code
         setSelectedOption(value);
     };
 

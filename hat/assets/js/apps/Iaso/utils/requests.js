@@ -485,23 +485,31 @@ export const restoreForm = (dispatch, formId) =>
         throw error;
     });
 
-export const createFormVersion = (dispatch, formVersionData, isUpdate) => {
-    const data = { form_id: formVersionData.form_id };
+export const createFormVersion = (dispatch, formVersionData) => {
+    const { data } = formVersionData;
     const fileData = { xls_file: formVersionData.xls_file };
 
     return postRequest('/api/formversions/', data, fileData).catch(error => {
         dispatch(
             enqueueSnackbar(
-                errorSnackBar(
-                    isUpdate ? 'updateFormError' : 'createFormError',
-                    null,
-                    error,
-                ),
+                errorSnackBar('createFormVersionError', null, error),
             ),
         );
         throw error;
     });
 };
+
+export const updateFormVersion = (dispatch, formVersion) =>
+    putRequest(`/api/formversions/${formVersion.id}/`, formVersion).catch(
+        error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('updateFormVersionError', null, error),
+                ),
+            );
+            throw error;
+        },
+    );
 
 export const fetchFormVersions = (dispatch, formId) => {
     const data = { form_id: formId };
@@ -580,6 +588,7 @@ export const updateDataSource = (dispatch, dataSourceId, dataSource) =>
         throw error;
     });
 
+// eslint-disable-next-line camelcase
 export const updateDefaultSource = (dispatch, accountId, default_version) =>
     putRequest(`/api/accounts/${accountId}/`, {
         default_version,
@@ -603,3 +612,39 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
             console.error(`Error while fetching ${consoleError} list:`, error);
             throw error;
         });
+
+/**
+ * @param {Object} params
+ * @param {string} params.url - endpoint's url
+ * @param {Object} params.body - request's body
+ * @param {string} params.errorKeyMessage - The message displayed in the error snackbar
+ * @param {string} params.consoleError - the message to embed in the console's error message
+ * @param {function} dispatch - redux's dispatch function
+ */
+export const postRequestHandler = params =>
+    postRequest(params.url, params.body)
+        .then(data => {
+            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return data;
+        })
+        .catch(error => {
+            params.dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(params.errorKeyMessage, null, error),
+                ),
+            );
+            console.error(
+                `Error while posting ${params.consoleError} :`,
+                error,
+            );
+            throw error;
+        });
+
+export const putRequestHandler = params =>
+    putRequest(params.url, params.body).catch(error => {
+        params.dispatch(
+            enqueueSnackbar(errorSnackBar(params.errorKeyMessage, null, error)),
+        );
+        console.error(`Error while putting ${params.consoleError} :`, error);
+        throw error;
+    });

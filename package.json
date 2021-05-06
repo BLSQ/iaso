@@ -46,6 +46,7 @@
     "leaflet-draw": "^1.0.4",
     "leaflet.markercluster": "^1.4.1",
     "lodash": "^4.17.15",
+    "lodash.merge": "^4.6.2",
     "moment": "^2.20.1",
     "notistack": "^0.8.9",
     "npm": "^7.11.2",

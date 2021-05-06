@@ -104,6 +104,7 @@
     "expect": "readonly",
     "shallow": "readonly",
     "mount": "readonly",
-    "sinon": "readonly"
+    "sinon": "readonly",
+    "render":"readonly"
   }
 }

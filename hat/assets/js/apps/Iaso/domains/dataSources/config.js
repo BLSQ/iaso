@@ -1,10 +1,12 @@
 import React from 'react';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { Tooltip } from '@material-ui/core';
+
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
+import { AddTask } from './components/AddTaskComponent';
 
 const dataSourcesTableColumns = (
     formatMessage,
@@ -59,27 +61,65 @@ const dataSourcesTableColumns = (
         Header: formatMessage(MESSAGES.actions),
         resizable: false,
         sortable: false,
-        Cell: settings => (
-            <section>
-                <DataSourceDialogComponent
-                    renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
-                            onClick={openDialog}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
-                        />
-                    )}
-                    initialData={{
-                        ...settings.original,
-                        projects: settings.original.projects.flat(),
-                    }}
-                    defaultSourceVersion={defaultSourceVersion}
-                    titleMessage={MESSAGES.updateDataSource}
-                    key={settings.original.updated_at}
-                    onSuccess={() => setForceRefresh(true)}
-                />
-            </section>
-        ),
+        Cell: settings => {
+            const sortedVersions = settings.original.versions.sort(
+                (v1, v2) => v2.number - v1.number,
+            );
+            const latestVersion =
+                sortedVersions.length > 0 ? sortedVersions[0].number : 0;
+            const addTaskTitle = {
+                id: 'addAskTitle',
+                defaultMessage: `${formatMessage(MESSAGES.addTask)} - Source: ${
+                    settings.original.name
+                } - Version: ${latestVersion + 1}`,
+            };
+
+            return (
+                <section>
+                    <DataSourceDialogComponent
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="edit"
+                                tooltipMessage={MESSAGES.edit}
+                            />
+                        )}
+                        initialData={{
+                            ...settings.original,
+                            projects: settings.original.projects.flat(),
+                        }}
+                        defaultSourceVersion={defaultSourceVersion}
+                        titleMessage={MESSAGES.updateDataSource}
+                        key={settings.original.updated_at}
+                        onSuccess={() => setForceRefresh(true)}
+                        sourceCredentials={
+                            settings.original.credentials
+                                ? settings.original.credentials
+                                : {}
+                        }
+                    />
+                    <AddTask
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="add"
+                                tooltipMessage={MESSAGES.addTask}
+                            />
+                        )}
+                        defaultSourceVersion={defaultSourceVersion}
+                        titleMessage={addTaskTitle}
+                        key={`${settings.original.updated_at} ${settings.original.id} addTask`}
+                        sourceId={settings.original.id}
+                        sourceVersion={latestVersion + 1}
+                        sourceCredentials={
+                            settings.original.credentials
+                                ? settings.original.credentials
+                                : {}
+                        }
+                    />
+                </section>
+            );
+        },
     },
 ];
 export default dataSourcesTableColumns;

@@ -80,7 +80,10 @@ class SetupAccountSerializer(serializers.Serializer):
         ]
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
         user.user_permissions.set(
-            Permission.objects.filter(codename__in=permissions_to_add, content_type=content_type))
+            Permission.objects.filter(
+                codename__in=permissions_to_add, content_type=content_type
+            )
+        )
         return validated_data
 
 

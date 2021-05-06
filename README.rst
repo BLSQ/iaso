@@ -105,7 +105,7 @@ And run the following command to populate your database with a tree of org units
 
 .. code:: bash
 
-    docker-compose exec iaso ./manage.py tree_importer --org_unit_csv_file testdata/schools.csv --source_name wb_schools_2019 --version_number=1 --project_id=1 --main_org_unit_name maternelle
+    docker-compose exec iaso ./manage.py tree_importer --org_unit_csv_file testdata/schools.csv --source_name wb_schools_2019 --data_dict testdata/data_dict.json --version_number=1 --project_id=1 --main_org_unit_name maternelle
 
 You can now login on ``http://localhost:8081``
 

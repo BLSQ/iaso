@@ -5,7 +5,6 @@ import {
 } from '../../hooks/useGetOrgUnits';
 import { useState, useEffect } from 'react';
 import { useGetAuthenticatedUser } from '../../hooks/useGetAuthenticatedUser';
-import { sendRequest } from '../../utils/networking';
 
 export const OrgUnitsSelect = props => {
     const { level, source, addLevel, value } = props;
@@ -32,22 +31,6 @@ export const OrgUnitsSelect = props => {
             value={value ?? 0}
         />
     );
-};
-
-const fetchAllParents = async initialOrgUnit => {
-    if (initialOrgUnit === 0) {
-        return [0];
-    }
-
-    let parent = initialOrgUnit;
-    const initialState = [];
-    while (parent !== 0) {
-        const result = await sendRequest('GET', '/api/orgunits/' + parent);
-        parent = result.parent_id ?? 0;
-        initialState.unshift(parent);
-    }
-
-    return initialState;
 };
 
 export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {

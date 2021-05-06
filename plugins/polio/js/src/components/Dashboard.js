@@ -39,7 +39,7 @@ import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
-import OrgUnitsSelect, { OrgUnitsLevels } from './Inputs/OrgUnitsSelect';
+import { OrgUnitsLevels } from './Inputs/OrgUnitsSelect';
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useEffect } from 'react';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';

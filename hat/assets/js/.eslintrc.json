@@ -21,6 +21,7 @@
   },
   "rules": {
     "no-tabs": "off",
+    "no-console":["warn",{"allow":["warn","error"]}],
     "prettier/prettier": "error",
     "camelcase": "warn",
     "constructor-super": "warn",

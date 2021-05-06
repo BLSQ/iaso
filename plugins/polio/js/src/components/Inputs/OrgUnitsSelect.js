@@ -1,16 +1,25 @@
 import { Select } from './Select';
-import { useGetOrgUnits } from '../../hooks/useGetOrgUnits';
+import {
+    useGetAllParentsOrgUnits,
+    useGetOrgUnits,
+} from '../../hooks/useGetOrgUnits';
 import { useState, useEffect } from 'react';
 import { useGetAuthenticatedUser } from '../../hooks/useGetAuthenticatedUser';
+import { sendRequest } from '../../utils/networking';
 
 export const OrgUnitsSelect = props => {
-    const { level, source, addLevel } = props;
+    const { level, source, addLevel, value } = props;
     const { data = {} } = useGetOrgUnits(level, source);
     const { orgUnits = [] } = data;
 
     if (orgUnits.length === 0) {
         return null;
     }
+
+    console.log({
+        orgUnits,
+        value,
+    });
 
     return (
         <Select
@@ -25,13 +34,45 @@ export const OrgUnitsSelect = props => {
                     org_unit_id: event.target.value,
                 });
             }}
+            value={value}
         />
     );
 };
 
+const fetchAllParents = async initialOrgUnit => {
+    if (initialOrgUnit === 0) {
+        return [0];
+    }
+
+    let parent = initialOrgUnit;
+    const initialState = [];
+    while (parent !== 0) {
+        const result = await sendRequest('GET', '/api/orgunits/' + parent);
+        parent = result.parent_id ?? 0;
+        initialState.unshift(parent);
+    }
+
+    return initialState;
+};
+
 export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
     const { data = {} } = useGetAuthenticatedUser();
+    const source = data?.account?.default_version?.data_source?.id;
+    const initialOrgUnit = form?.initialValues?.initial_org_unit ?? 0;
+
+    const {
+        status,
+        data: initialState,
+        error,
+        isFetching,
+    } = useGetAllParentsOrgUnits(initialOrgUnit);
+
     const [levels, setLevel] = useState([0]);
+
+    useEffect(() => {
+        setLevel(initialState ?? [0]);
+    }, [initialState]);
+
     const { name } = field;
     const { setFieldValue } = form;
 
@@ -46,8 +87,6 @@ export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
         });
     };
 
-    const source = data?.account?.default_version?.data_source?.id;
-
     return levels.map((level, index) => {
         return (
             <OrgUnitsSelect
@@ -57,6 +96,7 @@ export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
                 label={`Level ${index + 1}`}
                 level={level}
                 addLevel={addLevel}
+                value={levels[index + 1]}
             />
         );
     });

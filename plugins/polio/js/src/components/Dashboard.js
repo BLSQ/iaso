@@ -465,10 +465,10 @@ const Round1Form = () => {
                 />
                 <Box className={classes.round1FormCalculations}>
                     <Typography>
-                        Percentage of districts passing LQAS: 96% (182 passing /
-                        192 received / 200 total)
+                        Percentage of districts passing LQAS: xx% (xxx passing /
+                        xxx received / xx total)
                     </Typography>
-                    <Typography>Percentage of missed children: 10%</Typography>
+                    <Typography>Percentage of missed children: xx%</Typography>
                 </Box>
 
                 <Field
@@ -521,10 +521,10 @@ const Round2Form = () => {
                 />
                 <Box className={classes.round1FormCalculations}>
                     <Typography>
-                        Percentage of districts passing LQAS: 96% (182 passing /
-                        192 received / 200 total)
+                        Percentage of districts passing LQAS: xx% (xxx passing /
+                        xxx received / xxx total)
                     </Typography>
-                    <Typography>Percentage of missed children: 10%</Typography>
+                    <Typography>Percentage of missed children: xx%</Typography>
                 </Box>
 
                 <Field

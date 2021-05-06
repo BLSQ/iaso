@@ -257,8 +257,7 @@ const QuestionMappingForm = ({
             )}
 
             <div>
-                withinRepeatGroup ? {withinRepeatGroup}
-{' '}
+                withinRepeatGroup ? {withinRepeatGroup}{' '}
                 {JSON.stringify(repeatGroupMapping)}
             </div>
 

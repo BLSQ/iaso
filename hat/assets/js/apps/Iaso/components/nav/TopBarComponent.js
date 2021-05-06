@@ -30,7 +30,7 @@ function TopBar(props) {
         goBack,
     } = props;
     return (
-        <Fragment>
+        <>
             <AppBar position="relative" color="primary">
                 <Toolbar>
                     {!displayBackButton && (
@@ -59,7 +59,7 @@ function TopBar(props) {
                 </Toolbar>
                 {children}
             </AppBar>
-        </Fragment>
+        </>
     );
 }
 

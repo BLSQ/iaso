@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
       "jsx": "react",
-      "checkJs": true
+      "checkJs": false
     },
     "exclude": ["node_modules", "**/node_modules/*"],
     "include":["hat/assets/js/apps/Iaso/**/*"]

@@ -30,7 +30,7 @@ function OrgunitOptionSaveComponent(props) {
         saveOrgUnit,
     } = props;
     return (
-        <Fragment>
+        <>
             <Button
                 className={classes.button}
                 disabled={!orgUnitLocationModified}
@@ -62,7 +62,7 @@ function OrgunitOptionSaveComponent(props) {
             >
                 <FormattedMessage {...MESSAGES.save} />
             </Button>
-        </Fragment>
+        </>
     );
 }
 

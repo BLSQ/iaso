@@ -201,12 +201,12 @@ class DynamicTabsComponent extends Component {
                                     <Tooltip
                                         size="small"
                                         title={
-                                            <Fragment>
+                                            <>
                                                 <FormattedMessage
                                                     {...MESSAGES.delete}
                                                 />
                                                 {` ${baseLabel.toLowerCase()}`}
-                                            </Fragment>
+                                            </>
                                         }
                                     >
                                         <IconButton
@@ -283,10 +283,10 @@ class DynamicTabsComponent extends Component {
                     <Tooltip
                         size="small"
                         title={
-                            <Fragment>
+                            <>
                                 <FormattedMessage {...MESSAGES.add} />
                                 {` ${baseLabel.toLowerCase()}`}
-                            </Fragment>
+                            </>
                         }
                     >
                         <IconButton

@@ -194,7 +194,7 @@ const LogCompareComponent = ({
                     <FormattedMessage {...LOG_MESSAGES.noDifference} />
                 )}
                 {!isEqual(l.fields, compareLog[i].fields) && (
-                    <Fragment>
+                    <>
                         <Table className={classes.table}>
                             <TableBody>
                                 {fields.map(field => {
@@ -340,12 +340,11 @@ const LogCompareComponent = ({
                                     confirm={() =>
                                         goToRevision({
                                             fields: differenceArray[i],
-                                        })
-                                    }
+                                        })}
                                 />
                             </Grid>
                         </Grid>
-                    </Fragment>
+                    </>
                 )}
             </Paper>
         );

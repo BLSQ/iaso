@@ -76,7 +76,7 @@ class LinksDetails extends Component {
         } = this.props;
         const { link, loading } = this.state;
         return (
-            <Fragment>
+            <>
                 <Divider />
                 <Container maxWidth={false} className={classes.root}>
                     {loading && (
@@ -85,7 +85,7 @@ class LinksDetails extends Component {
                         />
                     )}
                     {link && (
-                        <Fragment>
+                        <>
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>
                                     <LinksCompare
@@ -114,31 +114,31 @@ class LinksDetails extends Component {
                                     onClick={() => validateLink()}
                                 >
                                     {validated && (
-                                        <Fragment>
+                                        <>
                                             <CheckBox
                                                 className={classes.buttonIcon}
                                             />
                                             <FormattedMessage
                                                 {...MESSAGES.validated}
                                             />
-                                        </Fragment>
+                                        </>
                                     )}
                                     {!validated && (
-                                        <Fragment>
+                                        <>
                                             <CheckBoxOutlineBlank
                                                 className={classes.buttonIcon}
                                             />
                                             <FormattedMessage
                                                 {...MESSAGES.notValidated}
                                             />
-                                        </Fragment>
+                                        </>
                                     )}
                                 </Button>
                             </Grid>
-                        </Fragment>
+                        </>
                     )}
                 </Container>
-            </Fragment>
+            </>
         );
     }
 }

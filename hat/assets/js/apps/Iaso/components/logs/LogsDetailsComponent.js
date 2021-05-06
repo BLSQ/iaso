@@ -65,7 +65,7 @@ class LogsDetails extends Component {
         } = this.props;
         const { log, loading } = this.state;
         return (
-            <Fragment>
+            <>
                 <Divider />
                 <Container maxWidth={false} className={classes.root}>
                     {loading && (
@@ -74,7 +74,7 @@ class LogsDetails extends Component {
                         />
                     )}
                     {log && (
-                        <Fragment>
+                        <>
                             {log.past_value.length > 0 &&
                                 log.new_value.length > 0 && (
                                     <Grid container spacing={2}>
@@ -130,10 +130,10 @@ class LogsDetails extends Component {
                                         </Grid>
                                     </Grid>
                                 )}
-                        </Fragment>
+                        </>
                     )}
                 </Container>
-            </Fragment>
+            </>
         );
     }
 }

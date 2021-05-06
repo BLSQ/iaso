@@ -100,9 +100,7 @@ class ArrayFieldInput extends Component {
         return (
             <Grid container spacing={0} className={classes.marginTop}>
                 <Grid item xs={1}>
-                    <span className={classes.label}>{label}
-:
-</span>
+                    <span className={classes.label}>{label}:</span>
                 </Grid>
                 <Grid item xs={11}>
                     <List className={classes.list}>

@@ -14,7 +14,8 @@ export function renderWithIntl(Component, props) {
 }
 
 export function renderWithDOMNode(Component, props, node) {
-    return ReactDOM.render( // eslint-disable-line
+    return ReactDOM.render(
+        // eslint-disable-line
         <IntlProvider locale="en" messages={{}}>
             <Component {...props} />
         </IntlProvider>,

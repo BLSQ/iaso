@@ -88,7 +88,7 @@ const ImageGallery = ({
     if (!currentImg) return null;
     const currentImgSrc = currentImg.path;
     return (
-        <Fragment>
+        <>
             <Dialog
                 classes={{
                     paper: classes.paper,
@@ -137,7 +137,7 @@ const ImageGallery = ({
                     <img className={classes.image} alt="" src={currentImgSrc} />
                 </DialogContent>
             </Dialog>
-        </Fragment>
+        </>
     );
 };
 

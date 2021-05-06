@@ -38,7 +38,7 @@ function SourcesChipsFilterComponent(props) {
         currentOrgUnit.source_id,
     );
     return (
-        <Fragment>
+        <>
             <Box px={2} className={classes.innerDrawerToolbar} component="div">
                 <Typography variant="subtitle1">
                     <FormattedMessage {...MESSAGES.sources} />
@@ -62,13 +62,12 @@ function SourcesChipsFilterComponent(props) {
                         source,
                         currentOrgUnit,
                         fitToBounds,
-                    )
-                }
+                    )}
                 setSelectedItems={props.setSelectedItems}
                 selectedItems={sourcesSelected}
                 currentItems={sources}
             />
-        </Fragment>
+        </>
     );
 }
 

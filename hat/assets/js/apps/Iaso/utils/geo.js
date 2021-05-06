@@ -132,9 +132,7 @@ const villagesInHighlightBuffer = (map, plotted, highlightBufferSize) => {
 };
 
 const getShape = (type, element, shapes, shapeOptions, zooms, map) => {
-    const newIsLoadingShape = Object.assign({}, element.state.isLoadingShape, {
-        [type]: true,
-    });
+    const newIsLoadingShape = { ...element.state.isLoadingShape, [type]: true };
     element.setState({
         isLoadingShape: newIsLoadingShape,
     });
@@ -143,11 +141,10 @@ const getShape = (type, element, shapes, shapeOptions, zooms, map) => {
         const minZoomTemp = zooms[type];
         shape.addLayer(L.geoJson(response, shapeOptions(type)));
         map.addLayer(shape);
-        const newIsLoadingShapeCallBack = Object.assign(
-            {},
-            element.state.isLoadingShape,
-            { [type]: false },
-        );
+        const newIsLoadingShapeCallBack = {
+            ...element.state.isLoadingShape,
+            [type]: false,
+        };
         element.setState({
             isLoadingShape: newIsLoadingShapeCallBack,
         });

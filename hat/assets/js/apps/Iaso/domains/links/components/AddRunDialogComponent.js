@@ -101,7 +101,7 @@ class AddRunDialogComponent extends Component {
             versionDestination,
         } = this.state;
         return (
-            <Fragment>
+            <>
                 <Button
                     variant="contained"
                     className={classes.button}
@@ -136,8 +136,7 @@ class AddRunDialogComponent extends Component {
                                     clearable
                                     keyValue="algoId"
                                     onChange={(key, value) =>
-                                        this.onChange('algoId', value)
-                                    }
+                                        this.onChange('algoId', value)}
                                     value={algoId}
                                     type="select"
                                     options={algorithms.map(a => ({
@@ -160,8 +159,7 @@ class AddRunDialogComponent extends Component {
                                     clearable
                                     keyValue="sourceOriginId"
                                     onChange={(key, value) =>
-                                        this.onChange('sourceOriginId', value)
-                                    }
+                                        this.onChange('sourceOriginId', value)}
                                     value={sourceOriginId}
                                     type="select"
                                     options={
@@ -180,8 +178,7 @@ class AddRunDialogComponent extends Component {
                                     disabled={!sourceOriginId}
                                     keyValue="versionOrigin"
                                     onChange={(key, value) =>
-                                        this.onChange('versionOrigin', value)
-                                    }
+                                        this.onChange('versionOrigin', value)}
                                     value={versionOrigin}
                                     type="select"
                                     options={(sourceOriginId
@@ -208,8 +205,7 @@ class AddRunDialogComponent extends Component {
                                         this.onChange(
                                             'sourceDestinationId',
                                             value,
-                                        )
-                                    }
+                                        )}
                                     value={sourceDestinationId}
                                     type="select"
                                     options={
@@ -231,8 +227,7 @@ class AddRunDialogComponent extends Component {
                                         this.onChange(
                                             'versionDestination',
                                             value,
-                                        )
-                                    }
+                                        )}
                                     value={versionDestination}
                                     type="select"
                                     options={(sourceDestinationId
@@ -275,7 +270,7 @@ class AddRunDialogComponent extends Component {
                         </Button>
                     </DialogActions>
                 </Dialog>
-            </Fragment>
+            </>
         );
     }
 }

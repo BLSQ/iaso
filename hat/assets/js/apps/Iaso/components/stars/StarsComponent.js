@@ -42,7 +42,7 @@ function StarsComponent(props) {
         stars.push(<Star key={i} starBgColor={bgColor} />);
     }
     return (
-        <Fragment>
+        <>
             <div className={classes.stars}>
                 <div
                     style={{
@@ -55,7 +55,7 @@ function StarsComponent(props) {
             {displayCount && (
                 <span className={classes.score}>{`(${score}/100)`}</span>
             )}
-        </Fragment>
+        </>
     );
 }
 StarsComponent.defaultProps = {

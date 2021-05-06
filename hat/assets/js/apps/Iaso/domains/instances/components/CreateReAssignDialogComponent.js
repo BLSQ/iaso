@@ -38,10 +38,13 @@ const CreateReAssignDialogComponent = ({
     const currentFormOrInstance = currentInstance || formType;
 
     // Begin check if this is a Form type
-    if (currentFormOrInstance.period === undefined || currentFormOrInstance.period === '') {
+    if (
+        currentFormOrInstance.period === undefined ||
+        currentFormOrInstance.period === ''
+    ) {
         const toDay = new Date();
         const period = new Period(
-            toDay.getFullYear() + `0${toDay.getMonth()+1}`.slice(-2),
+            toDay.getFullYear() + `0${toDay.getMonth() + 1}`.slice(-2),
         );
         currentFormOrInstance.period =
             currentFormOrInstance.period_type !== null &&
@@ -153,8 +156,7 @@ const CreateReAssignDialogComponent = ({
                             variant="subtitle1"
                             className={classes.chipListTitle}
                         >
-                            <FormattedMessage {...MESSAGES.selectedOrgUnit} />
-                            {':'}
+                            <FormattedMessage {...MESSAGES.selectedOrgUnit} />:
                         </Typography>
                         <OrgUnitTooltip
                             orgUnit={fieldValue.orgUnit.value}

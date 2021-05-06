@@ -65,7 +65,7 @@ class EditOrgUnitOptionComponent extends Component {
                         </Typography>
                     </Box>
                     {hasMarker && (
-                        <Fragment>
+                        <>
                             <InputComponent
                                 disabled={editCatchmentEnabled}
                                 keyValue="latitude"
@@ -88,8 +88,7 @@ class EditOrgUnitOptionComponent extends Component {
                                     onChangeLocation({
                                         lat: orgUnit.latitude,
                                         lng: parseFloat(longitude),
-                                    })
-                                }
+                                    })}
                                 value={orgUnit.longitude}
                                 type="number"
                                 label={MESSAGES.longitude}
@@ -112,16 +111,15 @@ class EditOrgUnitOptionComponent extends Component {
                                 color="primary"
                                 className={classes.buttonTopMargin}
                                 onClick={() =>
-                                    onChangeLocation({ lat: null, lng: null })
-                                }
+                                    onChangeLocation({ lat: null, lng: null })}
                             >
                                 <DeleteIcon className={classes.buttonIcon} />
                                 <FormattedMessage {...MESSAGES.deleteMarker} />
                             </Button>
-                        </Fragment>
+                        </>
                     )}
                     {!orgUnit.geo_json && !hasMarker && (
-                        <Fragment>
+                        <>
                             <Button
                                 disabled={editCatchmentEnabled}
                                 variant="outlined"
@@ -132,7 +130,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 <AddLocation className={classes.buttonIcon} />
                                 <FormattedMessage {...MESSAGES.addLocation} />
                             </Button>
-                        </Fragment>
+                        </>
                     )}
                 </Box>
             </Box>

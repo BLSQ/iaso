@@ -15,8 +15,8 @@ export const useSaveCampaign = () => {
         mutate: (variables, { onSuccess, ...options }) =>
             mutate(variables, {
                 ...options,
-                onSuccess: (...args) => {
-                    queryClient.invalidateQueries(['polio', 'campaigns']);
+                onSuccess: async (...args) => {
+                    await queryClient.invalidateQueries(['polio', 'campaigns']);
                     onSuccess(...args);
                 },
             }),

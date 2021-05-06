@@ -84,8 +84,8 @@ router.register(r"derivedinstances", DerivedInstancesViewSet, basename="derivedi
 router.register(r"mobile/orgunits", MobileOrgUnitViewSet, basename="orgunitsmobile")
 router.register(r"featureflags", FeatureFlagViewSet, basename="featureflags")
 router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
-router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
+router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 
 router.registry.extend(plugins_router.registry)

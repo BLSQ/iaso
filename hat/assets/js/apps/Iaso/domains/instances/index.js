@@ -105,7 +105,7 @@ class Instances extends Component {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const {
             dispatch,
             params: { formId, columns },

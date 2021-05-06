@@ -403,6 +403,7 @@ export const isCoordInsidePolygon = ([x, y], poly) => {
         for (
             let i = 0, j = polyPoints.length - 1;
             i < polyPoints.length;
+            // TODO replace unary with  j = i, i += 1
             j = i++
         ) {
             const xi = polyPoints[i].lat;

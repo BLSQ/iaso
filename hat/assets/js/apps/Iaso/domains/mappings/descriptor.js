@@ -54,7 +54,7 @@ class Descriptor {
         return node.path.find(
             questionName =>
                 indexedQuestions[questionName] &&
-                indexedQuestions[questionName].type == 'repeat',
+                indexedQuestions[questionName].type === 'repeat',
         );
     }
 
@@ -72,17 +72,19 @@ class Descriptor {
     }
 
     static getNodeName(node) {
-        if (node.type == 'group' && node.name == 'begin') {
-            node.name = node.label;
+        let result = node.name;
+        if (node.type === 'group' && node.name === 'begin') {
+            result = node.label;
         }
-        return node.name;
+        return result;
     }
 
     static indexQuestions(descriptor) {
         const acc = {};
-        if (descriptor && descriptor.children) {
-            descriptor.path = ['survey'];
-            descriptor.children.forEach(child =>
+        const descriptorCopy = { ...(descriptor ?? {}) };
+        if (descriptor?.children) {
+            descriptorCopy.path = ['survey'];
+            descriptorCopy.children.forEach(child =>
                 this.recursiveIndex(child, acc, [descriptor, child]),
             );
         }

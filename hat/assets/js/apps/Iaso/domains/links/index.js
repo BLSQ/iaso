@@ -61,7 +61,7 @@ class Links extends Component {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const { dispatch, fetchUsersProfiles } = this.props;
         fetchUsersProfiles();
         fetchOrgUnitsTypes(dispatch).then(orgUnitTypes =>

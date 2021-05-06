@@ -46,7 +46,8 @@ const extendDivisionInfo = (division, villages, legend) => {
     // find out the population and number of villages by type
     const population = inDivision.reduce(sum('population'), 0);
     const villagesOfficial = inDivision.reduce(countByType('YES'), 0);
-    const villagesNotOfficial = inDivision.reduce(countByType('NO'), 0);
+    // TODO delete unused var
+    // const villagesNotOfficial = inDivision.reduce(countByType('NO'), 0);
     const villagesOther = inDivision.reduce(countByType('OTHER'), 0);
     const villagesUnknown = inDivision.reduce(countByType('NA'), 0);
 

@@ -185,7 +185,7 @@ const QuestionMappingForm = ({
     const [iasoField, setIasoField] = React.useState(iasoFieldOptions[0]);
     const [fieldType, setFieldType] = React.useState(fieldTypeOptions[1]);
 
-    if (indexedQuestions == undefined) {
+    if (indexedQuestions === undefined) {
         return <>Loading...</>;
     }
     const withinRepeatGroup = Descriptor.withinRepeatGroup(
@@ -237,7 +237,7 @@ const QuestionMappingForm = ({
         ? repeatGroupMapping[0].program_id
         : mapping.derivate_settings.program_id;
 
-    if (question.type == 'repeat') {
+    if (question.type === 'repeat') {
         return (
             <EventTrackerProgramForm
                 dataSourceId={mapping.mapping.data_source.id}
@@ -343,7 +343,7 @@ const QuestionMappingForm = ({
                     />
                     {fieldType && (
                         <>
-                            {fieldType.value == 'dataElement' && (
+                            {fieldType.value === 'dataElement' && (
                                 <Dhis2ProgramDataElementSearch
                                     question={question}
                                     onChange={onChange}
@@ -352,7 +352,7 @@ const QuestionMappingForm = ({
                                     programId={programId}
                                 />
                             )}
-                            {fieldType.value == 'trackedEntityAttribute' && (
+                            {fieldType.value === 'trackedEntityAttribute' && (
                                 <Dhis2ProgramTrackedEntityAttributeSearch
                                     question={question}
                                     onChange={onChange}

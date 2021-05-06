@@ -34,7 +34,7 @@ class LogsDetails extends Component {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.fetchDetail();
     }
 

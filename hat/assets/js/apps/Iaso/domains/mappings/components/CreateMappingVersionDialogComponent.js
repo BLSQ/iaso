@@ -52,7 +52,7 @@ const CreateMappingVersionDialogComponent = ({
         };
         if (mappingType === 'AGGREGATE') {
             payload.dataset = dataset;
-        } else if (mappingType === 'EVENT' || mappingType == 'EVENT_TRACKER') {
+        } else if (mappingType === 'EVENT' || mappingType === 'EVENT_TRACKER') {
             payload.program = dataset;
         }
 

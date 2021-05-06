@@ -44,7 +44,7 @@ class LinksDetails extends Component {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.fetchDetail();
     }
 

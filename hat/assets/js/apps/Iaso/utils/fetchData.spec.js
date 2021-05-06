@@ -1,4 +1,3 @@
-/* global describe, it, beforeEach, afterEach */
 import assert from 'assert';
 import { createUrl } from './fetchData';
 

@@ -77,8 +77,6 @@ import { baseUrls } from './constants/urls';
 
 import ProtectedRoute from './domains/users/components/ProtectedRoute';
 
-import * as zoomBar from './components/leaflet/zoom-bar'; // don't delete - needed to override leaflet zoombar
-
 export default function iasoApp(element, baseUrl) {
     let routes = routeConfigs.map(routeConfig => (
         <Route

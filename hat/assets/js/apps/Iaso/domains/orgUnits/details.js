@@ -237,65 +237,6 @@ class OrgUnitDetail extends Component {
         }
     }
 
-    setOrgUnitLocationModified() {
-        this.setState({
-            orgUnitLocationModified: true,
-        });
-    }
-
-    resetCurrentOrgUnit() {
-        this.setState({
-            currentOrgUnit: undefined,
-        });
-    }
-
-    fetchDetail() {
-        const {
-            params: { orgUnitId },
-            dispatch,
-        } = this.props;
-        if (orgUnitId !== '0') {
-            return fetchOrgUnitDetail(dispatch, orgUnitId).then(orgUnit => {
-                const orgUnitTree = getOrgUnitsTree(orgUnit);
-                if (orgUnitTree.length > 0) {
-                    const { redirectTo, params } = this.props;
-                    const levels = orgUnitTree.map(o => o.id);
-                    const newParams = {
-                        ...params,
-                        levels,
-                    };
-                    redirectTo(baseUrl, newParams);
-                }
-                this.props.setCurrentOrgUnit(orgUnit);
-                if (orgUnit.org_unit_type_id) {
-                    fetchForms(
-                        this.props.dispatch,
-                        `/api/forms/?orgUnitTypeId=${orgUnit.org_unit_type_id}`,
-                    ).then(data => {
-                        const forms = [];
-                        data.forms.forEach((f, i) => {
-                            forms.push({
-                                ...f,
-                                color: getChipColors(i, true),
-                            });
-                        });
-                        this.props.setCurrentForms(forms);
-                    });
-                }
-
-                this.setState({
-                    currentOrgUnit: orgUnit,
-                });
-                return orgUnit;
-            });
-        }
-        this.props.setCurrentOrgUnit(initialOrgUnit);
-        this.setState({
-            currentOrgUnit: initialOrgUnit,
-        });
-        return new Promise(resolve => resolve());
-    }
-
     handleChangeTab(tab, redirect = true) {
         if (redirect) {
             const { redirectTo, params } = this.props;
@@ -388,6 +329,65 @@ class OrgUnitDetail extends Component {
         dispatch(setFetchingDetail(true));
         await this.fetchDetail();
         dispatch(setFetchingDetail(false));
+    }
+
+    setOrgUnitLocationModified() {
+        this.setState({
+            orgUnitLocationModified: true,
+        });
+    }
+
+    resetCurrentOrgUnit() {
+        this.setState({
+            currentOrgUnit: undefined,
+        });
+    }
+
+    fetchDetail() {
+        const {
+            params: { orgUnitId },
+            dispatch,
+        } = this.props;
+        if (orgUnitId !== '0') {
+            return fetchOrgUnitDetail(dispatch, orgUnitId).then(orgUnit => {
+                const orgUnitTree = getOrgUnitsTree(orgUnit);
+                if (orgUnitTree.length > 0) {
+                    const { redirectTo, params } = this.props;
+                    const levels = orgUnitTree.map(o => o.id);
+                    const newParams = {
+                        ...params,
+                        levels,
+                    };
+                    redirectTo(baseUrl, newParams);
+                }
+                this.props.setCurrentOrgUnit(orgUnit);
+                if (orgUnit.org_unit_type_id) {
+                    fetchForms(
+                        this.props.dispatch,
+                        `/api/forms/?orgUnitTypeId=${orgUnit.org_unit_type_id}`,
+                    ).then(data => {
+                        const forms = [];
+                        data.forms.forEach((f, i) => {
+                            forms.push({
+                                ...f,
+                                color: getChipColors(i, true),
+                            });
+                        });
+                        this.props.setCurrentForms(forms);
+                    });
+                }
+
+                this.setState({
+                    currentOrgUnit: orgUnit,
+                });
+                return orgUnit;
+            });
+        }
+        this.props.setCurrentOrgUnit(initialOrgUnit);
+        this.setState({
+            currentOrgUnit: initialOrgUnit,
+        });
+        return new Promise(resolve => resolve());
     }
 
     goToRevision(orgUnitRevision) {

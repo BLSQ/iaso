@@ -60,7 +60,7 @@ class Runs extends Component {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const { dispatch, fetchUsersProfiles } = this.props;
         fetchUsersProfiles();
         fetchSources(dispatch).then(sources => this.props.setSources(sources));

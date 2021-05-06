@@ -5,7 +5,7 @@ const DerivedQuestionMappingForm = ({ mapping, question, mappingVersion }) => (
     <>
         <h2>Aggregation</h2>
         {mappingVersion.derivate_settings.aggregations
-            .filter(agg => agg.id == question.name)
+            .filter(agg => agg.id === question.name)
             .map(agg => (
                 <ObjectDumper key={agg.id} object={agg} />
             ))}

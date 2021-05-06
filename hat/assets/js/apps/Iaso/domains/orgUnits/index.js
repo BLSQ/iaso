@@ -109,7 +109,7 @@ class OrgUnits extends Component {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const { dispatch, params, currentUser } = this.props;
         this.props.resetOrgUnitsLevels();
 
@@ -205,6 +205,19 @@ class OrgUnits extends Component {
         this.props.setFiltersUpdated(true);
     }
 
+    handleTableSelection(selectionType, items = [], totalCount = 0) {
+        const { selection } = this.state;
+        const newSelection = setTableSelection(
+            selection,
+            selectionType,
+            items,
+            totalCount,
+        );
+        this.setState({
+            selection: newSelection,
+        });
+    }
+
     onSearch(withLocations) {
         const { redirectTo, params } = this.props;
         this.handleTableSelection('reset');
@@ -263,20 +276,7 @@ class OrgUnits extends Component {
         this.setState({
             multiActionPopupOpen,
         });
-    }
-
-    handleTableSelection(selectionType, items = [], totalCount = 0) {
-        const { selection } = this.state;
-        const newSelection = setTableSelection(
-            selection,
-            selectionType,
-            items,
-            totalCount,
-        );
-        this.setState({
-            selection: newSelection,
-        });
-    }
+    
 
     handleChangeTab(tab, redirect = true) {
         const { redirectTo, params, filtersUpdated } = this.props;

@@ -64,7 +64,7 @@ class ArrayFieldInput extends Component {
         };
     }
 
-    componentWillReceiveProps(newProps) {
+    UNSAFE_componentWillReceiveProps(newProps) {
         this.setState({
             fieldList: addPositionIndex(newProps.fieldList),
         });

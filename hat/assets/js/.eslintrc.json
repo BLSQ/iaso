@@ -21,7 +21,7 @@
   },
   "rules": {
     "no-tabs": "off",
-    "no-console":["warn",{"allow":["warn","error"]}],
+    "no-console":["error",{"allow":["warn","error"]}],
     "prettier/prettier": "error",
     "camelcase": "warn",
     "constructor-super": "warn",
@@ -57,7 +57,7 @@
     "no-undef": "warn",
     "no-underscore-dangle": "off",
     "no-unreachable": "warn",
-    "no-unused-vars": "warn",
+    "no-unused-vars": ["error",{"ignoreRestSiblings":true}],
     "react/button-has-type": "off",
     "react/destructuring-assignment": "off",
     "react/forbid-prop-types": [

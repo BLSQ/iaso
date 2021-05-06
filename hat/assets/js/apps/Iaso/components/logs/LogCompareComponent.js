@@ -340,7 +340,8 @@ const LogCompareComponent = ({
                                     confirm={() =>
                                         goToRevision({
                                             fields: differenceArray[i],
-                                        })}
+                                        })
+                                    }
                                 />
                             </Grid>
                         </Grid>

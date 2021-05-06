@@ -56,7 +56,8 @@ export function FormsChipsFilterComponent(props) {
                         form,
                         currentOrgUnit,
                         fitToBounds,
-                    )}
+                    )
+                }
                 setSelectedItems={props.setFormsSelected}
                 selectedItems={formsSelected}
                 currentItems={currentForms}

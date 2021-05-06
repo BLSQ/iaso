@@ -59,6 +59,18 @@ class AddRunDialogComponent extends Component {
         };
     }
 
+    handleClose(isAccepted) {
+        const { executeRun } = this.props;
+        const runItem = {
+            ...this.state,
+        };
+        delete runItem.open;
+        this.toggleDialog();
+        if (isAccepted) {
+            executeRun(runItem);
+        }
+    }
+
     onChange(key, value) {
         const newState = {
             ...this.state,
@@ -71,18 +83,6 @@ class AddRunDialogComponent extends Component {
         this.setState({
             open: !this.state.open,
         });
-    }
-
-    handleClose(isAccepted) {
-        const { executeRun } = this.props;
-        const runItem = {
-            ...this.state,
-        };
-        delete runItem.open;
-        this.toggleDialog();
-        if (isAccepted) {
-            executeRun(runItem);
-        }
     }
 
     render() {
@@ -136,7 +136,8 @@ class AddRunDialogComponent extends Component {
                                     clearable
                                     keyValue="algoId"
                                     onChange={(key, value) =>
-                                        this.onChange('algoId', value)}
+                                        this.onChange('algoId', value)
+                                    }
                                     value={algoId}
                                     type="select"
                                     options={algorithms.map(a => ({
@@ -159,7 +160,8 @@ class AddRunDialogComponent extends Component {
                                     clearable
                                     keyValue="sourceOriginId"
                                     onChange={(key, value) =>
-                                        this.onChange('sourceOriginId', value)}
+                                        this.onChange('sourceOriginId', value)
+                                    }
                                     value={sourceOriginId}
                                     type="select"
                                     options={
@@ -178,7 +180,8 @@ class AddRunDialogComponent extends Component {
                                     disabled={!sourceOriginId}
                                     keyValue="versionOrigin"
                                     onChange={(key, value) =>
-                                        this.onChange('versionOrigin', value)}
+                                        this.onChange('versionOrigin', value)
+                                    }
                                     value={versionOrigin}
                                     type="select"
                                     options={(sourceOriginId
@@ -205,7 +208,8 @@ class AddRunDialogComponent extends Component {
                                         this.onChange(
                                             'sourceDestinationId',
                                             value,
-                                        )}
+                                        )
+                                    }
                                     value={sourceDestinationId}
                                     type="select"
                                     options={
@@ -227,7 +231,8 @@ class AddRunDialogComponent extends Component {
                                         this.onChange(
                                             'versionDestination',
                                             value,
-                                        )}
+                                        )
+                                    }
                                     value={versionDestination}
                                     type="select"
                                     options={(sourceDestinationId

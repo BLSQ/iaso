@@ -91,7 +91,8 @@ class InnerDrawer extends Component {
                                     value={activeOption}
                                     indicatorColor="primary"
                                     onChange={(event, newtab) =>
-                                        this.toggleOption(newtab)}
+                                        this.toggleOption(newtab)
+                                    }
                                 >
                                     {filtersOptionComponent && (
                                         <Tab

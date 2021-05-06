@@ -222,7 +222,8 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                             withMarginTop={false}
                             keyValue="org_unit_type_id"
                             onChange={(key, orgUnitTypeId) =>
-                                this.onOrgUnitSelect(orgUnitTypeId)}
+                                this.onOrgUnitSelect(orgUnitTypeId)
+                            }
                             value={null}
                             type="select"
                             options={orgUnitTypesList.map(t => ({

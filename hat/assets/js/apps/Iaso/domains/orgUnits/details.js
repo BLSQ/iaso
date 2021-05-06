@@ -482,7 +482,8 @@ class OrgUnitDetail extends Component {
                                 indicator: classes.indicator,
                             }}
                             onChange={(event, newtab) =>
-                                this.handleChangeTab(newtab)}
+                                this.handleChangeTab(newtab)
+                            }
                         >
                             {tabs.map(t => (
                                 <Tab
@@ -510,9 +511,11 @@ class OrgUnitDetail extends Component {
                                     orgUnitTypes={orgUnitTypes}
                                     groups={groups}
                                     onResetOrgUnit={() =>
-                                        this.handleResetOrgUnit()}
+                                        this.handleResetOrgUnit()
+                                    }
                                     saveOrgUnit={newOrgUnit =>
-                                        this.handleSaveOrgUnit(newOrgUnit)}
+                                        this.handleSaveOrgUnit(newOrgUnit)
+                                    }
                                     params={params}
                                     baseUrl={baseUrl}
                                     orgUnitModified={orgUnitModified}
@@ -527,20 +530,24 @@ class OrgUnitDetail extends Component {
                             <Box className={classes.containerFullHeight}>
                                 <OrgUnitMap
                                     setOrgUnitLocationModified={() =>
-                                        this.setOrgUnitLocationModified()}
+                                        this.setOrgUnitLocationModified()
+                                    }
                                     orgUnitLocationModified={
                                         orgUnitLocationModified
                                     }
                                     orgUnit={currentOrgUnit}
                                     resetOrgUnit={() =>
-                                        this.handleResetOrgUnit()}
+                                        this.handleResetOrgUnit()
+                                    }
                                     saveOrgUnit={() =>
-                                        this.handleSaveOrgUnit(currentOrgUnit)}
+                                        this.handleSaveOrgUnit(currentOrgUnit)
+                                    }
                                     onChangeLocation={location => {
                                         this.handleChangeLocation(location);
                                     }}
                                     onChangeShape={(keyValue, shape) =>
-                                        this.handleChangeShape(keyValue, shape)}
+                                        this.handleChangeShape(keyValue, shape)
+                                    }
                                 />
                             </Box>
                         </div>
@@ -549,7 +556,8 @@ class OrgUnitDetail extends Component {
                                 params={params}
                                 logObjectId={currentOrgUnit.id}
                                 goToRevision={orgUnitRevision =>
-                                    this.goToRevision(orgUnitRevision)}
+                                    this.goToRevision(orgUnitRevision)
+                                }
                             />
                         )}
                         {tab === 'forms' && (
@@ -638,7 +646,8 @@ class OrgUnitDetail extends Component {
                                                 handleFetch,
                                             ),
                                         classes,
-                                    )}
+                                    )
+                                }
                                 subComponent={(link, handleFetch) =>
                                     link ? (
                                         <LinksDetails
@@ -648,9 +657,11 @@ class OrgUnitDetail extends Component {
                                                 this.validateLink(
                                                     link,
                                                     handleFetch,
-                                                )}
+                                                )
+                                            }
                                         />
-                                    ) : null}
+                                    ) : null
+                                }
                             />
                         </div>
                     </section>

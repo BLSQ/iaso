@@ -62,7 +62,8 @@ function SourcesChipsFilterComponent(props) {
                         source,
                         currentOrgUnit,
                         fitToBounds,
-                    )}
+                    )
+                }
                 setSelectedItems={props.setSelectedItems}
                 selectedItems={sourcesSelected}
                 currentItems={sources}

@@ -85,7 +85,7 @@ class Descriptor {
         if (descriptor?.children) {
             descriptorCopy.path = ['survey'];
             descriptorCopy.children.forEach(child =>
-                this.recursiveIndex(child, acc, [descriptor, child]),
+                this.recursiveIndex(child, acc, [descriptorCopy, child]),
             );
         }
         return acc;

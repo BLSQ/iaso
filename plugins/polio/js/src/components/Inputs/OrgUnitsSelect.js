@@ -8,7 +8,7 @@ import { useGetAuthenticatedUser } from '../../hooks/useGetAuthenticatedUser';
 import { CircularProgress } from '@material-ui/core';
 
 export const OrgUnitsSelect = props => {
-    const { level, source, addLevel, value } = props;
+    const { level, source, onChange, value } = props;
     const { data = {}, isLoading } = useGetOrgUnits(level, source);
     const { orgUnits = [] } = data;
 
@@ -32,12 +32,12 @@ export const OrgUnitsSelect = props => {
                 label: orgUnit.name,
             }))}
             onChange={event => {
-                addLevel({
+                onChange({
                     parent_id: level,
                     org_unit_id: event.target.value,
                 });
             }}
-            value={value ?? 0}
+            value={value ?? ''}
         />
     );
 };
@@ -48,7 +48,6 @@ export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
     const initialOrgUnit = form?.initialValues?.initial_org_unit ?? null;
 
     const { data: initialState } = useGetAllParentsOrgUnits(initialOrgUnit);
-
     const [levels, setLevel] = useState([null]);
 
     useEffect(() => {
@@ -77,7 +76,7 @@ export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
                 source={source}
                 label={`Level ${index + 1}`}
                 level={level}
-                addLevel={addLevel}
+                onChange={addLevel}
                 value={levels[index + 1]}
             />
         );

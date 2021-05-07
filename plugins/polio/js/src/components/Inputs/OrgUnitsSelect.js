@@ -45,14 +45,14 @@ export const OrgUnitsSelect = props => {
 export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
     const { data = {} } = useGetAuthenticatedUser();
     const source = data?.account?.default_version?.data_source?.id;
-    const initialOrgUnit = form?.initialValues?.initial_org_unit ?? 0;
+    const initialOrgUnit = form?.initialValues?.initial_org_unit ?? null;
 
     const { data: initialState } = useGetAllParentsOrgUnits(initialOrgUnit);
 
-    const [levels, setLevel] = useState([0]);
+    const [levels, setLevel] = useState([null]);
 
     useEffect(() => {
-        setLevel(initialState ?? [0]);
+        setLevel(initialState ?? [null]);
     }, [initialState]);
 
     const { name } = field;

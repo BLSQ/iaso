@@ -59,16 +59,7 @@ class SetupAccountSerializer(serializers.Serializer):
         account.users.add(user)
         profile = Profile.objects.create(account=account, user=user)
 
-        permissions_to_add = [
-            "iaso_forms",
-            "iaso_mappings",
-            "iaso_completeness",
-            "iaso_org_units",
-            "iaso_links",
-            "iaso_users",
-            "iaso_projects",
-            "iaso_sources",
-        ]
+        permissions_to_add = CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
         user.user_permissions.set(
             Permission.objects.filter(

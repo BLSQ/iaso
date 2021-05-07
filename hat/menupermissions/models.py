@@ -16,6 +16,18 @@ SOURCES = _("Sources")
 
 
 class CustomPermissionSupport(models.Model):
+    # Used in setup_account api
+    DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER = [
+            "iaso_forms",
+            "iaso_mappings",
+            "iaso_completeness",
+            "iaso_org_units",
+            "iaso_links",
+            "iaso_users",
+            "iaso_projects",
+            "iaso_sources",
+        ]
+
     class Meta:
 
         managed = False  # No database table creation or deletion operations \

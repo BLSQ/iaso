@@ -14,7 +14,7 @@ export const useGetOrgUnits = (parent, source) => {
             const queryString = new URLSearchParams(params);
 
             if (source === undefined) {
-                params.delete('source');
+                queryString.delete('source');
             }
 
             return sendRequest(

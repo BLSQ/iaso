@@ -64,6 +64,7 @@ class ArrayFieldInput extends Component {
         };
     }
 
+    // eslint-disable-next-line camelcase
     UNSAFE_componentWillReceiveProps(newProps) {
         this.setState({
             fieldList: addPositionIndex(newProps.fieldList),

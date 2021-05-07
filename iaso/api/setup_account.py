@@ -40,16 +40,7 @@ class SetupAccountSerializer(serializers.Serializer):
             )
         return value
 
-    def save(self):
-        assert hasattr(
-            self, "_errors"
-        ), "You must call `.is_valid()` before calling `.save()`."
-
-        assert (
-            not self.errors
-        ), "You cannot call `.save()` on a serializer with invalid data."
-        validated_data = self.validated_data
-
+    def create(self, validated_data):
         data_source = DataSource.objects.create(
             name=validated_data["account_name"], description="via setup_account"
         )

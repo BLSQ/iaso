@@ -15,7 +15,6 @@ import {
     Tabs,
     Typography,
 } from '@material-ui/core';
-import get from 'lodash.get';
 import merge from 'lodash.merge';
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
@@ -142,6 +141,8 @@ const PageAction = ({ icon: Icon, onClick, children }) => {
         </Button>
     );
 };
+
+const defaultToZero = value => (value === '' ? 0 : value);
 
 const BaseInfoForm = () => {
     const classes = useStyles();
@@ -285,8 +286,8 @@ const RiskAssessmentForm = () => {
     const { values } = useFormikContext();
 
     const targetPopulationTotal =
-        parseInt(get(values, 'round_one.target_population', 0)) +
-        parseInt(get(values, 'round_two.target_population', 0));
+        parseInt(defaultToZero(values?.round_one?.target_population ?? 0)) +
+        parseInt(defaultToZero(values?.round_two?.target_population ?? 0));
 
     return (
         <>
@@ -355,7 +356,10 @@ const RiskAssessmentForm = () => {
                         className={classes.input}
                     />
                     <Typography>
-                        Vials Requested (computed) {targetPopulationTotal}
+                        Vials Requested{' '}
+                        {Number.isNaN(targetPopulationTotal)
+                            ? 0
+                            : targetPopulationTotal}
                     </Typography>
                 </Grid>
             </Grid>
@@ -369,8 +373,8 @@ const BudgetForm = () => {
     const { values } = useFormikContext();
 
     const totalCost =
-        parseInt(get(values, 'round_one.cost', 0)) +
-        parseInt(get(values, 'round_two.cost', 0));
+        parseInt(defaultToZero(values?.round_one?.cost ?? 0)) *
+        parseInt(defaultToZero(values?.round_one?.target_population ?? 0));
 
     return (
         <>
@@ -427,7 +431,9 @@ const BudgetForm = () => {
                         component={TextInput}
                         className={classes.input}
                     />
-                    <Typography>Cost/Child: ${totalCost} (computed)</Typography>
+                    <Typography>
+                        Cost/Child: ${Number.isNaN(totalCost) ? 0 : totalCost}
+                    </Typography>
                 </Grid>
             </Grid>
         </>
@@ -648,7 +654,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     return (
         <Dialog
             fullWidth
-            maxWidth={'md'}
+            maxWidth={'lg'}
             open={isOpen}
             onBackdropClick={onClose}
             scroll="body"

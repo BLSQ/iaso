@@ -368,9 +368,10 @@ const BudgetForm = () => {
 
     const { values } = useFormikContext();
 
-    const totalCost =
-        parseInt(get(values, 'round_one.cost', 0)) +
-        parseInt(get(values, 'round_two.cost', 0));
+    const totalCost = parseInt(
+        get(values, 'round_one.cost', 0) *
+            get(values, 'round_one.target_population', 0),
+    );
 
     return (
         <>

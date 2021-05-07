@@ -16,6 +16,7 @@ from .api.devices_position import DevicesPositionViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.copy_version import CopyVersionViewSet
 from .api.dhis2_ou_importer import Dhis2OuImporterViewSet
+from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.forms import FormsViewSet
 from .api.form_versions import FormVersionsViewSet
@@ -84,6 +85,7 @@ router.register(r"mobile/orgunits", MobileOrgUnitViewSet, basename="orgunitsmobi
 router.register(r"featureflags", FeatureFlagViewSet, basename="featureflags")
 router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
+router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 
 router.registry.extend(plugins_router.registry)

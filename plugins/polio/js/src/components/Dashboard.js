@@ -648,7 +648,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     return (
         <Dialog
             fullWidth
-            maxWidth={'md'}
+            maxWidth={'lg'}
             open={isOpen}
             onBackdropClick={onClose}
             scroll="body"

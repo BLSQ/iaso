@@ -23,7 +23,12 @@ const useStyles = makeStyles(theme => ({
         color: theme.palette.gray.main,
     },
 }));
-
+/**
+ * formVersion = {
+ *   descriptor:{
+ *     children:any,
+ *     }}
+ */
 const RecursiveTreeView = props => {
     const classes = useStyles();
     const { formVersion, mappingVersion, onQuestionSelected } = props;

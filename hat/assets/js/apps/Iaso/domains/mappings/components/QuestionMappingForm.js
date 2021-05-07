@@ -150,6 +150,7 @@ const Dhis2ProgramDataElementSearch = ({
             }
             label="Search for tracker data element (and combo) by name, code or id"
             onChange={onChange}
+            // TODO find a better way to format/concat theis string
             fields="id,name,programStages[id,name,programStageDataElements[compulsory,code,dataElement[id,name,code,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]]]]"
             mapOptions={mapToMappingProgramElements}
             fetchFromPromise={(

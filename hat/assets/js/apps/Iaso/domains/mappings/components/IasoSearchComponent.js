@@ -22,7 +22,7 @@ const IasoSearchComponent = props => {
 
     const [options, setOptions] = React.useState([]);
     // TODO confirm it is dead code
-    const [selectedOption, setSelectedOption] = React.useState([]);
+    // const [selectedOption, setSelectedOption] = React.useState([]);
     const handleChange = event => {
         setInputValue(event.target.value);
     };
@@ -30,7 +30,7 @@ const IasoSearchComponent = props => {
     const fetchMemo = React.useMemo(
         () =>
             throttle(
-                (input, callback) =>
+                input =>
                     fetch(
                         `/api/${resourceName}.json?search_name=${input.input}${
                             fields ? `&fields=${fields}` : ''
@@ -72,7 +72,7 @@ const IasoSearchComponent = props => {
     const onSearchChange = (evt, value) => {
         onChange(name, value, resourceName);
         // TODO confirm this is dead code
-        setSelectedOption(value);
+        // setSelectedOption(value);
     };
 
     return (

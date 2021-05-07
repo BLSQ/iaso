@@ -16,6 +16,7 @@ const KeyValueFields = ({ entry }) =>
 
 const renderValue = (settings, c) => {
     const { key } = c;
+    // TODO refactor to use camelCase
     const { file_content } = settings.original;
     const value = file_content[key];
 

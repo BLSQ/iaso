@@ -160,9 +160,11 @@ const CreateMappingVersionDialogComponent = ({
 CreateMappingVersionDialogComponent.propTypes = {
     createMappingRequest: PropTypes.func.isRequired,
     fetchSources: PropTypes.func.isRequired,
-    mappingSources: PropTypes.array.isRequired,
+    mappingSources: PropTypes.array,
 };
-
+CreateMappingVersionDialogComponent.defaultProps = {
+    mappingSources: [],
+};
 const MapStateToProps = state => ({
     mappingSources: state.mappings.mappingSources,
 });

@@ -110,6 +110,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.useDefaultDhisSettings',
         defaultMessage: 'Use default DHIS settings',
     },
+    emptyProjectsError: {
+        id: 'iaso.datasources.emptyProjectsError',
+        defaultMessage: 'Please choose at least one project',
+    },
 });
 
 export default MESSAGES;

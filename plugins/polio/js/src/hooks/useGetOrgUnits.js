@@ -13,7 +13,11 @@ export const useGetOrgUnits = (parent, source) => {
         () => {
             const queryString = new URLSearchParams(params);
 
-            if (source === undefined) {
+            if (params.parent_id === null) {
+                queryString.set('parent_id', 0);
+            }
+
+            if (params.source === undefined) {
                 queryString.delete('source');
             }
 
@@ -32,14 +36,15 @@ export const useGetAllParentsOrgUnits = initialOrgUnit => {
     return useQuery(
         ['orgunits', initialOrgUnit],
         async () => {
-            if (initialOrgUnit === 0) {
-                return [0];
+            if (initialOrgUnit === null) {
+                return [null];
             }
 
             const result = await sendRequest(
                 'GET',
                 '/api/orgunits/' + initialOrgUnit,
             );
+
             const initialState = [result.id];
             let currentParent = result.parent;
             while (currentParent) {
@@ -47,7 +52,7 @@ export const useGetAllParentsOrgUnits = initialOrgUnit => {
                 currentParent = currentParent.parent;
             }
 
-            initialState.unshift(0);
+            initialState.unshift(null);
 
             return initialState;
         },

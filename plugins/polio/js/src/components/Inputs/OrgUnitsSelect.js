@@ -58,6 +58,10 @@ export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
     const { setFieldValue } = form;
 
     useEffect(() => {
+        if (!levels[levels.length - 1]) {
+            return;
+        }
+
         setFieldValue(name, levels[levels.length - 1]);
     }, [levels, name, setFieldValue]);
 

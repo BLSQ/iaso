@@ -28,13 +28,16 @@ class Command(BaseCommand):
         parser.add_argument(
             "--form_id", type=str
         )
-
+        parser.add_argument(
+            "--limit", type=int, required=False
+        )
     def handle(self, *args, **options):
         with transaction.atomic():
             file_name = options.get("csv_file")
             template_json = options.get("template_json")
             mapping_file_name = options.get("mapping_csv_file")
             options_file_name = options.get("options_csv_file")
+            limit = options.get("limit", None)
             form_id = options.get("form_id")
             form = Form.objects.get(form_id=form_id)
             project = form.projects.first()
@@ -72,7 +75,7 @@ class Command(BaseCommand):
                     }
 
             print("option_mapping", json.dumps(option_mapping, indent=2))
-            print("mapping", json.dumps(mapping, indent=2))
+            #print("mapping", json.dumps(mapping, indent=2))
 
             keys = mapping.keys()
             #print(file_name)
@@ -81,9 +84,11 @@ class Command(BaseCommand):
                     csv_reader = csv.reader(csv_file, delimiter=";")
                     index = 1
                     for row in csv_reader:
-                        if index % 10 == 0:
-                            print("index", index)
+                        if limit and index > limit:
                             break
+                        if index % 1000 == 0:
+                            print("index", index)
+
 
                         if index == 1:
                             headers = row
@@ -103,7 +108,8 @@ class Command(BaseCommand):
 
                                 formula = m.get('formula', None)
                                 t = m.get('type', None)
-
+                                #print(t, t == "select", t== "multiselect")
+                                #print(key, formula, t)
                                 if formula:
                                     formula = formula.strip()
                                     variables = formula.split("-")
@@ -111,13 +117,13 @@ class Command(BaseCommand):
                                     v1 = variables[0].strip()
                                     v2 = variables[1].strip()
                                     try:
-                                        value = math.max(float(data[v1]) - float(data[v2]), 0)
+                                        value = max(float(data[v1]) - float(data[v2]), 0)
 
                                         data[m['xls_form_id']] = int(value)
                                         #print(formula, value)
-                                    except:
+                                    except Exception as e:
                                         pass
-                                        #print("problems with values", v1, data[v1], v2, data[v2])
+                                        #print("problems with values", v1, data[v1], v2, data[v2], e)
 
                                     #print(formula)
                                 elif t == "select":
@@ -135,15 +141,15 @@ class Command(BaseCommand):
                                         if value in d["values"]:
                                             #print("FOUND FOUND", value, d["values"] )
                                             data[select_id] = select
-                                            data[select] = "true"
+                                            data[select] = 1
                                         else:
                                             #print("NOT FOUND", value, d["values"], select)
-                                            data[select] = "false"
+                                            data[select] = 0
                                 elif t.strip() == "multiselect":
 
                                     # print("MULTISELECT SAMA")
                                     local_mapping = option_mapping[key]
-                                    # print("local_mapping", local_mapping)
+                                    #print("local_mapping", local_mapping)
 
                                     # print("option_map", option_map)
                                     # print("option_map", option_map)
@@ -153,20 +159,27 @@ class Command(BaseCommand):
                                         # print(select, d)
                                         for v in d["values"]:
                                             if v in value:
-                                                data[select] = "true"
+                                                data[select] = 1
+                                                #print("multiselect found ", select)
                                                 # print("1")
                                             else:
-                                                data[select] = "false"
+                                                data[select] = 0
+                                                #print("multiselect NOT FOUND ", select)
                                                 # print("0")
                                     #print("type", t)
                                 else:
                                     #print('key', key, m)
                                     try:
                                         value = row[col_indices[key]]
+                                        value = value.strip()
+                                        #print(m['xls_form_id'], value)
                                         if value.upper() == "OUI":
-                                            value = "true"
+                                            value = 1
+                                            #print("oui")
                                         if value.upper() == "NON":
-                                            value = "false"
+                                            value = 0
+                                            #print("non")
+
                                         data[m['xls_form_id']] = value
                                         #print("value for %s %s %s" % (key, m['xls_form_id'], value, ))
                                     except:

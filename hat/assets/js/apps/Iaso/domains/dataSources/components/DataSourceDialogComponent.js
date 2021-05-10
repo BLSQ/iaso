@@ -20,6 +20,34 @@ import { fetchCurrentUser } from '../../users/actions';
 import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
+import { useSafeIntl } from '../../../hooks/intl';
+
+// This wrapper to import translations to project_ids
+const ProjectIds = ({ keyValue, value, onChange, errors, options, label }) => {
+    const intl = useSafeIntl();
+    return (
+        <InputComponent
+            keyValue={keyValue}
+            value={value}
+            onChange={onChange}
+            errors={errors.length === 1 ? [intl.formatMessage(errors[0])] : []}
+            options={options}
+            label={label}
+            type="select"
+            multi
+            clearable
+        />
+    );
+};
+
+ProjectIds.propTypes = {
+    keyValue: PropTypes.string.isRequired,
+    value: PropTypes.any.isRequired,
+    onChange: PropTypes.func.isRequired,
+    errors: PropTypes.array.isRequired,
+    options: PropTypes.array.isRequired,
+    label: PropTypes.any.isRequired,
+};
 
 export class DataSourceDialogComponent extends Component {
     constructor(props) {
@@ -228,10 +256,12 @@ export class DataSourceDialogComponent extends Component {
             initialData,
         } = this.props;
         const { form, isDataTouched, hasConfirmed } = this.state;
+        const projectsIsEmpty = form.project_ids.value.length === 0;
         let allowConfirm = isDataTouched;
         if (
             (form.is_default_source.value && !form.default_version_id.value) ||
-            hasConfirmed
+            hasConfirmed ||
+            projectsIsEmpty
         ) {
             allowConfirm = false;
         }
@@ -253,8 +283,7 @@ export class DataSourceDialogComponent extends Component {
                         <InputComponent
                             keyValue="name"
                             onChange={(key, value) =>
-                                this.setFieldValue(key, value)
-                            }
+                                this.setFieldValue(key, value)}
                             value={form.name.value}
                             errors={form.name.errors}
                             type="text"
@@ -265,6 +294,12 @@ export class DataSourceDialogComponent extends Component {
                         <InputComponent
                             keyValue="description"
                             onChange={(key, value) => {
+                                this.setState(state => {
+                                    return {
+                                        ...state,
+                                        isDataTouched: !state.isDataTouched,
+                                    };
+                                });
                                 this.setFieldValue(key, value);
                             }}
                             value={form.description.value}
@@ -273,30 +308,34 @@ export class DataSourceDialogComponent extends Component {
                             label={MESSAGES.dataSourceDescription}
                             multiline
                         />
-                        <InputComponent
-                            multi
-                            clearable
-                            keyValue="project_ids"
-                            onChange={(key, value) => {
-                                this.setProjects(key, value);
-                            }}
-                            value={form.project_ids.value.join(',')}
-                            errors={form.project_ids.errors}
-                            type="select"
-                            options={projects.map(p => ({
-                                label: p.name,
-                                value: p.id,
-                            }))}
-                            label={MESSAGES.projects}
-                        />
+                        <Box>
+                            <ProjectIds
+                                multi
+                                clearable
+                                keyValue="project_ids"
+                                onChange={(key, value) => {
+                                    this.setProjects(key, value);
+                                }}
+                                value={form.project_ids.value.join(',')}
+                                errors={
+                                    projectsIsEmpty
+                                        ? [MESSAGES.emptyProjectsError]
+                                        : []
+                                }
+                                options={projects.map(p => ({
+                                    label: p.name,
+                                    value: p.id,
+                                }))}
+                                label={MESSAGES.projects}
+                            />
+                        </Box>
                         {form.id.value && (
                             <InputComponent
                                 multi={false}
                                 clearable={!form.is_default_source.value}
                                 keyValue="default_version_id"
                                 onChange={(key, value) =>
-                                    this.setFieldValue(key, value)
-                                }
+                                    this.setFieldValue(key, value)}
                                 value={form.default_version_id.value}
                                 errors={form.default_version_id.errors}
                                 type="select"
@@ -315,8 +354,7 @@ export class DataSourceDialogComponent extends Component {
                             <InputComponent
                                 keyValue="read_only"
                                 onChange={(key, value) =>
-                                    this.setFieldValue(key, value)
-                                }
+                                    this.setFieldValue(key, value)}
                                 value={form.read_only.value}
                                 errors={form.read_only.errors}
                                 type="checkbox"
@@ -332,8 +370,7 @@ export class DataSourceDialogComponent extends Component {
                                         !isDataTouched
                                     }
                                     onChange={(key, value) =>
-                                        this.setFieldValue(key, value)
-                                    }
+                                        this.setFieldValue(key, value)}
                                     value={form.is_default_source.value}
                                     errors={form.is_default_source.errors}
                                     type="checkbox"

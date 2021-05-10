@@ -5,6 +5,7 @@
     "iaso.completeness.generateDerivedInstances": "Générer les instances dérivées",
     "iaso.completeness.title": "Complétude des données",
     "iaso.dataSources.continueOnError": "Continuer en cas d'erreur",
+    "iaso.datasources.emptyProjectsError":"Veuillez choisir au moins un projet",
     "iaso.dataSources.create": "Créer une source de données",
     "iaso.dataSources.dataSourceReadOnly": "Lecture seule",
     "iaso.dataSources.dataSourceVersion": "Version de la source",

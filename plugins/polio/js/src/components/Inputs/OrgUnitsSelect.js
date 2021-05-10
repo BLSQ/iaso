@@ -8,7 +8,7 @@ import { useGetAuthenticatedUser } from '../../hooks/useGetAuthenticatedUser';
 import { CircularProgress } from '@material-ui/core';
 
 export const OrgUnitsSelect = props => {
-    const { level, source, addLevel, value } = props;
+    const { level, source, onChange, value } = props;
     const { data = {}, isLoading } = useGetOrgUnits(level, source);
     const { orgUnits = [] } = data;
 
@@ -32,12 +32,12 @@ export const OrgUnitsSelect = props => {
                 label: orgUnit.name,
             }))}
             onChange={event => {
-                addLevel({
+                onChange({
                     parent_id: level,
                     org_unit_id: event.target.value,
                 });
             }}
-            value={value ?? 0}
+            value={value ?? ''}
         />
     );
 };
@@ -45,20 +45,23 @@ export const OrgUnitsSelect = props => {
 export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
     const { data = {} } = useGetAuthenticatedUser();
     const source = data?.account?.default_version?.data_source?.id;
-    const initialOrgUnit = form?.initialValues?.initial_org_unit ?? 0;
+    const initialOrgUnit = form?.initialValues?.initial_org_unit ?? null;
 
     const { data: initialState } = useGetAllParentsOrgUnits(initialOrgUnit);
-
-    const [levels, setLevel] = useState([0]);
+    const [levels, setLevel] = useState([null]);
 
     useEffect(() => {
-        setLevel(initialState ?? [0]);
+        setLevel(initialState ?? [null]);
     }, [initialState]);
 
     const { name } = field;
     const { setFieldValue } = form;
 
     useEffect(() => {
+        if (!levels[levels.length - 1]) {
+            return;
+        }
+
         setFieldValue(name, levels[levels.length - 1]);
     }, [levels, name, setFieldValue]);
 
@@ -77,7 +80,7 @@ export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
                 source={source}
                 label={`Level ${index + 1}`}
                 level={level}
-                addLevel={addLevel}
+                onChange={addLevel}
                 value={levels[index + 1]}
             />
         );

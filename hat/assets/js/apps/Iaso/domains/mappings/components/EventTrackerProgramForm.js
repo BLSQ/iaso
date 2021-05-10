@@ -11,10 +11,6 @@ const EventTrackerProgramForm = ({
     repeatGroupMapping,
     onConfirmedQuestionMapping,
 }) => {
-    console.log('dataSourceId', dataSourceId);
-    console.log('repeatGroupMapping', repeatGroupMapping);
-    console.log('onConfirmedQuestionMapping', onConfirmedQuestionMapping);
-
     const [program, setProgram] = React.useState('');
     const [
         trackedEntityAttributes,

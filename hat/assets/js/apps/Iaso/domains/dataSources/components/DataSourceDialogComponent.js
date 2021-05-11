@@ -19,13 +19,43 @@ import { setIsLoading } from '../actions';
 import { fetchCurrentUser } from '../../users/actions';
 import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import { EditableTextFields } from '../../../components/forms/EditableTextFields';
+import { useSafeIntl } from '../../../hooks/intl';
+
+// This wrapper to import translations to project_ids
+const ProjectIds = ({ keyValue, value, onChange, errors, options, label }) => {
+    const intl = useSafeIntl();
+    return (
+        <InputComponent
+            keyValue={keyValue}
+            value={value}
+            onChange={onChange}
+            errors={errors.length === 1 ? [intl.formatMessage(errors[0])] : []}
+            options={options}
+            label={label}
+            type="select"
+            multi
+            clearable
+        />
+    );
+};
+
+ProjectIds.propTypes = {
+    keyValue: PropTypes.string.isRequired,
+    value: PropTypes.any.isRequired,
+    onChange: PropTypes.func.isRequired,
+    errors: PropTypes.array.isRequired,
+    options: PropTypes.array.isRequired,
+    label: PropTypes.any.isRequired,
+};
 
 export class DataSourceDialogComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
             isDataTouched: false,
-            form: this.inititalForm(),
+            form: this.initialForm(),
+            hasConfirmed: false,
         };
     }
 
@@ -42,9 +72,11 @@ export class DataSourceDialogComponent extends Component {
     }
 
     onConfirm(closeDialog) {
+        this.setState(state => {
+            return { ...state, hasConfirmed: true };
+        });
         const { dispatch, initialData, onSuccess, currentUser } = this.props;
         const { form } = this.state;
-
         let saveCurrentDataSource;
         const currentDataSource = {};
         Object.keys(form).forEach(key => {
@@ -67,13 +99,14 @@ export class DataSourceDialogComponent extends Component {
         dispatch(setIsLoading(true));
 
         const onSuccesfullUpdate = () => {
-            closeDialog();
             dispatch(enqueueSnackbar(succesfullSnackBar()));
+            dispatch(setIsLoading(false));
             onSuccess();
         };
 
         return saveCurrentDataSource
             .then(() => {
+                closeDialog();
                 if (
                     form.is_default_source.value &&
                     currentUser &&
@@ -94,6 +127,7 @@ export class DataSourceDialogComponent extends Component {
             })
             .catch(error => {
                 dispatch(setIsLoading(false));
+                this.setState({ hasConfirmed: false });
                 if (error.status === 400) {
                     Object.entries(error.details).forEach(
                         ([errorKey, errorMessages]) => {
@@ -110,11 +144,27 @@ export class DataSourceDialogComponent extends Component {
             ...form,
             [fieldName]: { value: fieldValue, errors: [] },
         };
-        const isDataTouched = !isEqual(this.inititalForm(), newForm);
-        this.setState({
-            form: newForm,
-            isDataTouched,
+        const isDataTouched = !isEqual(this.initialForm(), newForm);
+        this.setState(_ => {
+            return {
+                form: newForm,
+                isDataTouched,
+            };
         });
+    }
+
+    setCredentials(credentialsField, credentialsFieldValue) {
+        const newCredentials = { ...this.state.form.credentials.value };
+        newCredentials[credentialsField] = credentialsFieldValue;
+        this.setFieldValue('credentials', newCredentials);
+    }
+
+    setProjects(keyName, value) {
+        if (value.length >= 1) {
+            this.setFieldValue(keyName, commaSeparatedIdsToArray(value));
+        } else {
+            this.setFieldValue(keyName, this.state.form.project_ids.value);
+        }
     }
 
     setFieldErrors(fieldName, fieldErrors) {
@@ -129,7 +179,7 @@ export class DataSourceDialogComponent extends Component {
         });
     }
 
-    inititalForm() {
+    initialForm() {
         const { defaultSourceVersion } = this.props;
         const initialData = this.props.initialData
             ? this.props.initialData
@@ -171,13 +221,29 @@ export class DataSourceDialogComponent extends Component {
                 value: isDefaultSource,
                 errors: [],
             },
+            credentials: {
+                value: {
+                    dhis_name: this.props.sourceCredentials.name
+                        ? this.props.sourceCredentials.name
+                        : '',
+                    dhis_url: this.props.sourceCredentials.url
+                        ? this.props.sourceCredentials.url
+                        : '',
+                    dhis_login: this.props.sourceCredentials.login
+                        ? this.props.sourceCredentials.login
+                        : '',
+                    dhis_password: '',
+                },
+                errors: [],
+            },
         };
     }
 
     setInitialState() {
         this.setState({
             isDataTouched: false,
-            form: this.inititalForm(),
+            hasConfirmed: false,
+            form: this.initialForm(),
         });
     }
 
@@ -188,9 +254,14 @@ export class DataSourceDialogComponent extends Component {
             titleMessage,
             initialData,
         } = this.props;
-        const { form, isDataTouched } = this.state;
+        const { form, isDataTouched, hasConfirmed } = this.state;
+        const projectsIsEmpty = form.project_ids.value.length === 0;
         let allowConfirm = isDataTouched;
-        if (form.is_default_source.value && !form.default_version_id.value) {
+        if (
+            (form.is_default_source.value && !form.default_version_id.value) ||
+            hasConfirmed ||
+            projectsIsEmpty
+        ) {
             allowConfirm = false;
         }
         return (
@@ -198,19 +269,20 @@ export class DataSourceDialogComponent extends Component {
                 renderTrigger={renderTrigger}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => this.onConfirm(closeDialog)}
-                onClosed={() => this.setInitialState()}
+                onOpen={() => {
+                    this.setInitialState();
+                }}
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
-                maxWidth="sm"
+                maxWidth="md"
                 allowConfirm={allowConfirm}
             >
                 <Grid container spacing={4} justify="flex-start">
-                    <Grid xs={12} item>
+                    <Grid xs={6} item>
                         <InputComponent
                             keyValue="name"
                             onChange={(key, value) =>
-                                this.setFieldValue(key, value)
-                            }
+                                this.setFieldValue(key, value)}
                             value={form.name.value}
                             errors={form.name.errors}
                             type="text"
@@ -220,42 +292,49 @@ export class DataSourceDialogComponent extends Component {
 
                         <InputComponent
                             keyValue="description"
-                            onChange={(key, value) =>
-                                this.setFieldValue(key, value)
-                            }
+                            onChange={(key, value) => {
+                                this.setState(state => {
+                                    return {
+                                        ...state,
+                                        isDataTouched: !state.isDataTouched,
+                                    };
+                                });
+                                this.setFieldValue(key, value);
+                            }}
                             value={form.description.value}
                             errors={form.description.errors}
                             type="text"
                             label={MESSAGES.dataSourceDescription}
                             multiline
                         />
-                        <InputComponent
-                            multi
-                            clearable
-                            keyValue="project_ids"
-                            onChange={(key, value) =>
-                                this.setFieldValue(
-                                    key,
-                                    commaSeparatedIdsToArray(value),
-                                )
-                            }
-                            value={form.project_ids.value.join(',')}
-                            errors={form.project_ids.errors}
-                            type="select"
-                            options={projects.map(p => ({
-                                label: p.name,
-                                value: p.id,
-                            }))}
-                            label={MESSAGES.projects}
-                        />
+                        <Box>
+                            <ProjectIds
+                                multi
+                                clearable
+                                keyValue="project_ids"
+                                onChange={(key, value) => {
+                                    this.setProjects(key, value);
+                                }}
+                                value={form.project_ids.value.join(',')}
+                                errors={
+                                    projectsIsEmpty
+                                        ? [MESSAGES.emptyProjectsError]
+                                        : []
+                                }
+                                options={projects.map(p => ({
+                                    label: p.name,
+                                    value: p.id,
+                                }))}
+                                label={MESSAGES.projects}
+                            />
+                        </Box>
                         {form.id.value && (
                             <InputComponent
                                 multi={false}
                                 clearable={!form.is_default_source.value}
                                 keyValue="default_version_id"
                                 onChange={(key, value) =>
-                                    this.setFieldValue(key, value)
-                                }
+                                    this.setFieldValue(key, value)}
                                 value={form.default_version_id.value}
                                 errors={form.default_version_id.errors}
                                 type="select"
@@ -274,8 +353,7 @@ export class DataSourceDialogComponent extends Component {
                             <InputComponent
                                 keyValue="read_only"
                                 onChange={(key, value) =>
-                                    this.setFieldValue(key, value)
-                                }
+                                    this.setFieldValue(key, value)}
                                 value={form.read_only.value}
                                 errors={form.read_only.errors}
                                 type="checkbox"
@@ -291,8 +369,7 @@ export class DataSourceDialogComponent extends Component {
                                         !isDataTouched
                                     }
                                     onChange={(key, value) =>
-                                        this.setFieldValue(key, value)
-                                    }
+                                        this.setFieldValue(key, value)}
                                     value={form.is_default_source.value}
                                     errors={form.is_default_source.errors}
                                     type="checkbox"
@@ -300,6 +377,47 @@ export class DataSourceDialogComponent extends Component {
                                 />
                             </Box>
                         )}
+                    </Grid>
+                    <Grid xs={6} item>
+                        <EditableTextFields
+                            fields={[
+                                {
+                                    value: form.credentials.value.dhis_name,
+                                    keyValue: 'dhis_name',
+                                    errors: form.credentials.errors,
+                                    label: MESSAGES.dhisName,
+                                    onChange: (key, value) => {
+                                        this.setCredentials(key, value);
+                                    },
+                                },
+                                {
+                                    value: form.credentials.value.dhis_url,
+                                    keyValue: 'dhis_url',
+                                    errors: form.credentials.errors,
+                                    label: MESSAGES.dhisUrl,
+                                    onChange: (key, value) => {
+                                        this.setCredentials(key, value);
+                                    },
+                                },
+                                {
+                                    value: form.credentials.value.dhis_login,
+                                    keyValue: 'dhis_login',
+                                    errors: form.credentials.errors,
+                                    label: MESSAGES.dhisLogin,
+                                    onChange: (key, value) =>
+                                        this.setCredentials(key, value),
+                                },
+                                {
+                                    value: form.credentials.value.dhis_password,
+                                    keyValue: 'dhis_password',
+                                    errors: form.credentials.errors,
+                                    label: MESSAGES.dhisPassword,
+                                    onChange: (key, value) =>
+                                        this.setCredentials(key, value),
+                                    password: true,
+                                },
+                            ]}
+                        />
                     </Grid>
                 </Grid>
             </ConfirmCancelDialogComponent>
@@ -311,6 +429,7 @@ DataSourceDialogComponent.defaultProps = {
     defaultSourceVersion: null,
     currentUser: null,
     projects: [],
+    sourceCredentials: {},
 };
 DataSourceDialogComponent.propTypes = {
     dispatch: PropTypes.func.isRequired,
@@ -324,6 +443,7 @@ DataSourceDialogComponent.propTypes = {
     titleMessage: PropTypes.object.isRequired,
     currentUser: PropTypes.object,
     defaultSourceVersion: PropTypes.object,
+    sourceCredentials: PropTypes.object,
 };
 const mapStateToProps = state => ({
     projects: state.projects.allProjects,

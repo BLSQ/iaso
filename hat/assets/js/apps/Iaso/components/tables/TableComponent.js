@@ -122,7 +122,8 @@ class Table extends Component {
                 nextProps.selection.unSelectedItems,
                 this.props.selection.unSelectedItems,
             ) ||
-            !isEqual(nextProps.extraProps, this.props.extraProps)
+            !isEqual(nextProps.extraProps, this.props.extraProps) ||
+            !isEqual(nextProps.watchToRender, this.props.watchToRender)
         );
     }
 
@@ -334,6 +335,7 @@ Table.defaultProps = {
         page: 1,
         order: '-created_at',
     },
+    watchToRender: null,
 };
 
 Table.propTypes = {
@@ -355,6 +357,7 @@ Table.propTypes = {
     selection: PropTypes.object,
     extraProps: PropTypes.object,
     paramsPrefix: PropTypes.string,
+    watchToRender: PropTypes.any,
 };
 
 export default withStyles(styles)(injectIntl(withRouter(Table)));

@@ -3,6 +3,7 @@ django==3.0.14
 django-cors-headers==3.2.1
 djangorestframework==3.11.2
 pandas==1.0.1
+cython==0.29.23
 pyproj==3.0.1
 geopandas==0.8.0
 numpy==1.18.1
@@ -11,6 +12,7 @@ django-storages==1.9.1
 boto3==1.12.1
 geopy==1.21.0
 Shapely==1.7.0
+unidecode==1.2.0
 
 django-pg-utils==0.1.5
 gpxpy==1.4.0
@@ -67,3 +69,4 @@ json5==0.9.5
 sentry-sdk==0.19.4
 django-lazy-services==0.0.3
 dateparser==1.0.0
+

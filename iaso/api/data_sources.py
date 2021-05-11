@@ -1,5 +1,5 @@
 from .common import ModelViewSet
-from iaso.models import DataSource, OrgUnit, SourceVersion
+from iaso.models import DataSource, OrgUnit, SourceVersion, ExternalCredentials
 from rest_framework import serializers, permissions
 from rest_framework.generics import get_object_or_404
 
@@ -19,12 +19,18 @@ class DataSourceSerializer(serializers.ModelSerializer):
             "url",
             "projects",
             "default_version",
+            "credentials"
         ]
 
     url = serializers.SerializerMethodField()
     versions = serializers.SerializerMethodField()
     default_version = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
+    credentials = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_credentials(obj: DataSource):
+        return obj.credentials.as_dict() if obj.credentials else None
 
     @staticmethod
     def get_url(obj: DataSource):
@@ -43,9 +49,21 @@ class DataSourceSerializer(serializers.ModelSerializer):
         return ([v.as_dict() for v in obj.projects.all()],)
 
     def create(self, validated_data):
-        ds = DataSource(**validated_data)
-        ds.save()
+        # TO-DO use credentials serializer as https://github.com/BLSQ/iaso/blob/development/iaso/api/forms.py
+        credentials = self.context["request"].data["credentials"]
         account = self.context["request"].user.iaso_profile.account
+        ds = DataSource(**validated_data)
+        if credentials:
+            new_credentials = ExternalCredentials()
+            new_credentials.account = account
+            new_credentials.name = credentials["dhis_name"]
+            new_credentials.login = credentials["dhis_login"]
+            new_credentials.password = credentials["dhis_password"]
+            new_credentials.url = credentials["dhis_url"]
+            new_credentials.save()
+            ds.credentials = new_credentials
+
+        ds.save()
         projects = account.project_set.filter(
             id__in=self.context["request"].data["project_ids"]
         )
@@ -55,12 +73,26 @@ class DataSourceSerializer(serializers.ModelSerializer):
         return ds
 
     def update(self, data_source, validated_data):
-        print(self.context["request"].data)
+        credentials = self.context["request"].data["credentials"]
+        account = self.context["request"].user.iaso_profile.account
+
+        if credentials:
+            if data_source.credentials:
+                new_credentials = get_object_or_404(ExternalCredentials, pk=data_source.credentials.pk)
+            else:
+                new_credentials = ExternalCredentials()
+                new_credentials.account = account
+            new_credentials.name = credentials["dhis_name"]
+            new_credentials.login = credentials["dhis_login"]
+            new_credentials.password = credentials["dhis_password"]
+            new_credentials.url = credentials["dhis_url"]
+            new_credentials.save()
+            data_source.credentials = new_credentials
+
         name = validated_data.pop("name", None)
         read_only = validated_data.pop("read_only", None)
         description = validated_data.pop("description", None)
         default_version_id = self.context["request"].data["default_version_id"]
-        account = self.context["request"].user.iaso_profile.account
         projects = account.project_set.filter(
             id__in=self.context["request"].data["project_ids"]
         )

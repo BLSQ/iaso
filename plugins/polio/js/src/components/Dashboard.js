@@ -7,30 +7,41 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
+    IconButton,
     DialogTitle,
     Grid,
-    IconButton,
     makeStyles,
     Tab,
     Tabs,
     Typography,
 } from '@material-ui/core';
-
+import merge from 'lodash.merge';
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 import commonStyles from '../styles/common';
 
 import { TableHeader } from './Table/TableHeader';
 import { TableCell } from './Table/TableCell';
 
-import { DateInput, ResponsibleField, Select, StatusField, TextInput } from './Inputs';
+import {
+    DateInput,
+    ResponsibleField,
+    Select,
+    StatusField,
+    TextInput,
+} from './Inputs';
 
 import { Page } from './Page';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
+import { OrgUnitsLevels } from './Inputs/OrgUnitsSelect';
+import { useSaveCampaign } from '../hooks/useSaveCampaign';
+import { useEffect } from 'react';
+import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -41,8 +52,8 @@ const round_shape = yup.object().shape({
     im_ended_at: yup.date().nullable(),
     lqas_started_at: yup.date().nullable(),
     lqas_ended_at: yup.date().nullable(),
-    target_population: yup.number().nullable().positive().integer(),
-    cost: yup.number().nullable().positive().integer(),
+    target_population: yup.number().nullable().min(0).integer(),
+    cost: yup.number().nullable().min(0).integer(),
 });
 
 const schema = yup.object().shape({
@@ -120,16 +131,18 @@ const RowAction = ({ icon: Icon, onClick }) => {
     );
 };
 
-const PageAction = ({ icon: Icon, onClick }) => {
+const PageAction = ({ icon: Icon, onClick, children }) => {
     const classes = useStyles();
 
     return (
-        <Button variant='contained' color='primary' onClick={onClick}>
+        <Button variant="contained" color="primary" onClick={onClick}>
             <Icon className={classes.buttonIcon} />
-            Create
+            {children}
         </Button>
     );
 };
+
+const defaultToZero = value => (value === '' ? 0 : value);
 
 const BaseInfoForm = () => {
     const classes = useStyles();
@@ -142,17 +155,17 @@ const BaseInfoForm = () => {
                         Enter information about the new outbreak response
                     </Typography>
                 </Grid>
-                <Grid container direction='row' item spacing={2}>
+                <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
                         <Field
-                            label='EPID'
+                            label="EPID"
                             name={'epid'}
                             component={TextInput}
                             className={classes.input}
                         />
 
                         <Field
-                            label='OBR Name'
+                            label="OBR Name"
                             name={'obr_name'}
                             component={TextInput}
                             className={classes.input}
@@ -160,15 +173,15 @@ const BaseInfoForm = () => {
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Field
-                            label='Virus'
-                            name='virus'
+                            label="Virus"
+                            name="virus"
                             className={classes.input}
                             options={polioViruses}
                             component={Select}
                         />
                         <Field
-                            label='Vacines'
-                            name='vacine'
+                            label="Vacines"
+                            name="vacine"
                             options={polioVacines}
                             component={Select}
                         />
@@ -177,14 +190,15 @@ const BaseInfoForm = () => {
                 <Grid item xs={12} md={6}>
                     <Field
                         className={classes.input}
-                        label='Description'
+                        label="Description"
                         name={'description'}
                         component={TextInput}
                     />
-
-                    <TextInput className={classes.input} label='Country' />
-                    <TextInput className={classes.input} label='Province' />
-                    <TextInput label='District' />
+                    <Field
+                        className={classes.input}
+                        name={'initial_org_unit'}
+                        component={OrgUnitsLevels}
+                    />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>
@@ -228,7 +242,7 @@ const DetectionForm = () => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid container direction='row' item spacing={2}>
+                <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
                         <Field
                             name={'detection_status'}
@@ -270,18 +284,15 @@ const DetectionForm = () => {
 const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { values } = useFormikContext();
-    const { round_one = {}, round_two = {} } = values;
 
-    const targetPopulationTotal = useMemo(() => {
-        return (
-            parseInt(round_one.target_population || 0) +
-            parseInt(round_two.target_population || 0)
-        );
-    }, [round_one, round_two]);
+    const targetPopulationTotal =
+        parseInt(defaultToZero(values?.round_one?.target_population ?? 0)) +
+        parseInt(defaultToZero(values?.round_two?.target_population ?? 0));
+
     return (
         <>
             <Grid container spacing={2}>
-                <Grid container direction='row' item spacing={2}>
+                <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
                         <Field
                             name={'risk_assessment_status'}
@@ -333,19 +344,22 @@ const RiskAssessmentForm = () => {
                         fullWidth
                     />
                     <Field
-                        label='Target population Round 1'
+                        label="Target population Round 1"
                         name={'round_one.target_population'}
                         component={TextInput}
                         className={classes.input}
                     />
                     <Field
-                        label='Target population Round 2'
+                        label="Target population Round 2"
                         name={'round_two.target_population'}
                         component={TextInput}
                         className={classes.input}
                     />
                     <Typography>
-                        Vials Requested (computed) {targetPopulationTotal}
+                        Vials Requested{' '}
+                        {Number.isNaN(targetPopulationTotal)
+                            ? 0
+                            : targetPopulationTotal}
                     </Typography>
                 </Grid>
             </Grid>
@@ -357,16 +371,15 @@ const BudgetForm = () => {
     const classes = useStyles();
 
     const { values } = useFormikContext();
-    const { round_one = {}, round_two = {} } = values;
 
-    const totalCost = useMemo(() => {
-        return parseInt(round_one.cost || 0) + parseInt(round_two.cost || 0);
-    }, [round_one, round_two]);
+    const totalCost =
+        parseInt(defaultToZero(values?.round_one?.cost ?? 0)) *
+        parseInt(defaultToZero(values?.round_one?.target_population ?? 0));
 
     return (
         <>
             <Grid container spacing={2}>
-                <Grid container direction='row' item spacing={2}>
+                <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
                         <Field name={'budget_status'} component={StatusField} />
                     </Grid>
@@ -399,26 +412,28 @@ const BudgetForm = () => {
                     />
 
                     <Field
-                        label='No Regret Fund'
+                        label="No Regret Fund"
                         name={'no_regret_fund_amount'}
                         component={TextInput}
                         className={classes.input}
                     />
 
                     <Field
-                        label='Cost Round 1'
+                        label="Cost Round 1"
                         name={'round_one.cost'}
                         component={TextInput}
                         className={classes.input}
                     />
 
                     <Field
-                        label='Cost Round 2'
+                        label="Cost Round 2"
                         name={'round_two.cost'}
                         component={TextInput}
                         className={classes.input}
                     />
-                    <Typography>Cost/Child: ${totalCost} (computed)</Typography>
+                    <Typography>
+                        Cost/Child: ${Number.isNaN(totalCost) ? 0 : totalCost}
+                    </Typography>
                 </Grid>
             </Grid>
         </>
@@ -458,10 +473,10 @@ const Round1Form = () => {
                 />
                 <Box className={classes.round1FormCalculations}>
                     <Typography>
-                        Percentage of districts passing LQAS: 96% (182 passing /
-                        192 received / 200 total)
+                        Percentage of districts passing LQAS: xx% (xxx passing /
+                        xxx received / xx total)
                     </Typography>
-                    <Typography>Percentage of missed children: 10%</Typography>
+                    <Typography>Percentage of missed children: xx%</Typography>
                 </Box>
 
                 <Field
@@ -514,10 +529,10 @@ const Round2Form = () => {
                 />
                 <Box className={classes.round1FormCalculations}>
                     <Typography>
-                        Percentage of districts passing LQAS: 96% (182 passing /
-                        192 received / 200 total)
+                        Percentage of districts passing LQAS: xx% (xxx passing /
+                        xxx received / xxx total)
                     </Typography>
-                    <Typography>Percentage of missed children: 10%</Typography>
+                    <Typography>Percentage of missed children: xx%</Typography>
                 </Box>
 
                 <Field
@@ -558,32 +573,45 @@ const Form = ({ children }) => {
 
     return (
         <Box
-            component='form'
+            component="form"
             className={classes.form}
             noValidate
-            autoComplete='off'
+            autoComplete="off"
         >
             {children}
         </Box>
     );
 };
 
-const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
+const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
+    const { mutate: saveCampaign } = useSaveCampaign();
+
     const classes = useStyles();
+
+    const handleSubmit = (values, helpers) =>
+        saveCampaign(values, {
+            onSuccess: () => {
+                helpers.resetForm();
+                onClose();
+            },
+        });
+
+    const defaultValues = {
+        round_one: {},
+        round_two: {},
+    };
+
+    const initialValues = merge(selectedCampaign, defaultValues);
+
     const formik = useFormik({
-        initialValues: {},
+        initialValues,
+        enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (values, helpers) => {
-            alert(JSON.stringify(values, null, 2));
-        },
+        onSubmit: handleSubmit,
     });
 
-    console.log({
-        values: formik.values,
-    });
-
-    const steps = [
+    const tabs = [
         {
             title: 'Base info',
             form: BaseInfoForm,
@@ -610,32 +638,37 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
         },
     ];
 
-    const [value, setValue] = useState(0);
+    const [selectedTab, setSelectedTab] = useState(0);
 
     const handleChange = (event, newValue) => {
-        setValue(newValue);
+        setSelectedTab(newValue);
     };
 
-    const CurrentForm = steps[value].form;
+    const CurrentForm = tabs[selectedTab].form;
+
+    // default to tab 0 when opening
+    useEffect(() => {
+        setSelectedTab(0);
+    }, [isOpen]);
 
     return (
         <Dialog
             fullWidth
-            maxWidth={'md'}
+            maxWidth={'lg'}
             open={isOpen}
             onBackdropClick={onClose}
-            scroll='body'
+            scroll="body"
         >
             <DialogTitle className={classes.title}>Create campaign</DialogTitle>
             <DialogContent className={classes.content}>
                 <Tabs
-                    value={value}
+                    value={selectedTab}
                     className={classes.tabs}
                     textColor={'primary'}
                     onChange={handleChange}
-                    aria-label='disabled tabs example'
+                    aria-label="disabled tabs example"
                 >
-                    {steps.map(({ title }) => {
+                    {tabs.map(({ title }) => {
                         return <Tab key={title} label={title} />;
                     })}
                 </Tabs>
@@ -646,15 +679,19 @@ const CreateDialog = ({ isOpen, onClose, onCancel, onConfirm }) => {
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
-                <Button onClick={onCancel} color='primary'>
+                <Button
+                    onClick={onClose}
+                    color="primary"
+                    disabled={formik.isSubmitting}
+                >
                     Cancel
                 </Button>
                 <Button
                     onClick={formik.handleSubmit}
-                    color='primary'
+                    color="primary"
                     variant={'contained'}
                     autoFocus
-                    disabled={!formik.isValid}
+                    disabled={!formik.isValid || formik.isSubmitting}
                 >
                     Confirm
                 </Button>
@@ -671,22 +708,110 @@ const PageActions = ({ children }) => {
             container
             className={classes.pageActions}
             spacing={4}
-            justify='flex-end'
-            alignItems='center'
+            justify="flex-end"
+            alignItems="center"
         >
-            <Grid item xs={4} container justify='flex-end' alignItems='center'>
+            <Grid item xs={4} container justify="flex-end" alignItems="center">
                 {children}
             </Grid>
         </Grid>
     );
 };
 
-export const Dashboard = () => {
+const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
     const classes = useStyles();
-    const { data = [] } = useGetCampaigns();
 
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    return (
+        <Dialog fullWidth open={isOpen} onBackdropClick={onClose}>
+            <DialogTitle className={classes.title}>
+                Are you sure you want to delete this campaign?
+            </DialogTitle>
+            <DialogContent className={classes.content}>
+                This operation cannot be undone
+            </DialogContent>
+            <DialogActions className={classes.action}>
+                <Button onClick={onClose} color="primary">
+                    No
+                </Button>
+                <Button onClick={onConfirm} color="primary" autoFocus>
+                    Yes
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+};
 
+export const Dashboard = () => {
+    const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
+    const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] = useState(
+        false,
+    );
+    const [selectedCampaignId, setSelectedCampaignId] = useState();
+
+    const classes = useStyles();
+
+    const { data: campaigns = [], status } = useGetCampaigns();
+    const { mutate: removeCampaign } = useRemoveCampaign();
+
+    const openCreateEditDialog = () => {
+        setIsCreateEditDialogOpen(true);
+    };
+
+    const closeCreateEditDialog = () => {
+        setSelectedCampaignId(undefined);
+        setIsCreateEditDialogOpen(false);
+    };
+
+    const openDeleteConfirmDialog = () => {
+        setIsConfirmDeleteDialogOpen(true);
+    };
+
+    const closeDeleteConfirmDialog = () => {
+        setIsConfirmDeleteDialogOpen(false);
+    };
+
+    const handleDeleteConfirmDialogConfirm = () => {
+        removeCampaign(selectedCampaign.id, {
+            onSuccess: () => {
+                closeDeleteConfirmDialog();
+            },
+        });
+    };
+
+    const handleClickEditRow = id => {
+        setSelectedCampaignId(id);
+        openCreateEditDialog();
+    };
+
+    const handleClickDeleteRow = id => {
+        setSelectedCampaignId(id);
+        openDeleteConfirmDialog();
+    };
+
+    const handleClickCreateButton = () => {
+        setSelectedCampaignId(undefined);
+        openCreateEditDialog();
+    };
+
+    const tableData = campaigns.map(campaign => ({
+        ...campaign,
+        actions: (
+            <>
+                <RowAction
+                    icon={EditIcon}
+                    onClick={() => handleClickEditRow(campaign.id)}
+                />
+                <RowAction
+                    icon={DeleteIcon}
+                    onClick={() => handleClickDeleteRow(campaign.id)}
+                />
+            </>
+        ),
+    }));
+
+    const selectedCampaign = campaigns.find(
+        campaign => campaign.id === selectedCampaignId,
+    );
 
     const columns = useMemo(
         () => [
@@ -714,71 +839,88 @@ export const Dashboard = () => {
         [],
     );
 
-    const tableInstance = useTable({ columns, data });
-
     const {
         getTableProps,
         getTableBodyProps,
         headerGroups,
         rows,
         prepareRow,
-    } = tableInstance;
+    } = useTable({ columns, data: tableData });
 
     return (
         <>
-            <CreateDialog
-                isOpen={isCreateDialogOpen}
-                onCancel={() => setIsCreateDialogOpen(false)}
-                onClose={() => setIsCreateDialogOpen(false)}
-                onConfirm={() => console.log('confirm')}
+            <CreateEditDialog
+                selectedCampaign={selectedCampaign}
+                isOpen={isCreateEditDialogOpen}
+                onClose={closeCreateEditDialog}
+            />
+            <DeleteConfirmDialog
+                isOpen={isConfirmDeleteDialogOpen}
+                onClose={closeDeleteConfirmDialog}
+                onConfirm={handleDeleteConfirmDialogConfirm}
             />
             <Page title={'Campaigns for DRC'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <PageActions>
                         <PageAction
                             icon={AddIcon}
-                            onClick={() => setIsCreateDialogOpen(true)}
-                        />
+                            onClick={handleClickCreateButton}
+                        >
+                            Create
+                        </PageAction>
                     </PageActions>
-                    <table className={classes.table} {...getTableProps()}>
-                        <thead>
-                        {headerGroups.map(headerGroup => (
-                            <tr
-                                className={classes.tableHeader}
-                                {...headerGroup.getHeaderGroupProps()}
-                            >
-                                {headerGroup.headers.map(column => (
-                                    <TableHeader
-                                        {...column.getHeaderProps()}
+                    {status === 'success' && (
+                        <table className={classes.table} {...getTableProps()}>
+                            <thead>
+                                {headerGroups.map(headerGroup => (
+                                    <tr
+                                        className={classes.tableHeader}
+                                        {...headerGroup.getHeaderGroupProps()}
                                     >
-                                        {column.render('Header')}
-                                    </TableHeader>
-                                ))}
-                            </tr>
-                        ))}
-                        </thead>
-                        <tbody {...getTableBodyProps()}>
-                        {rows.map(row => {
-                            prepareRow(row);
-                            return (
-                                <tr
-                                    className={classes.tableRow}
-                                    {...row.getRowProps()}
-                                >
-                                    {row.cells.map(cell => {
-                                        return (
-                                            <TableCell
-                                                {...cell.getCellProps()}
+                                        {headerGroup.headers.map(column => (
+                                            <TableHeader
+                                                {...column.getHeaderProps()}
                                             >
-                                                {cell.render('Cell')}
-                                            </TableCell>
+                                                {column.render('Header')}
+                                            </TableHeader>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </thead>
+                            <tbody {...getTableBodyProps()}>
+                                {rows.length > 0 ? (
+                                    rows.map((row, rowIndex) => {
+                                        prepareRow(row);
+                                        return (
+                                            <tr
+                                                className={classes.tableRow}
+                                                {...row.getRowProps()}
+                                            >
+                                                {row.cells.map(cell => {
+                                                    return (
+                                                        <TableCell
+                                                            isOdd={rowIndex % 2}
+                                                            {...cell.getCellProps()}
+                                                        >
+                                                            {cell.render(
+                                                                'Cell',
+                                                            )}
+                                                        </TableCell>
+                                                    );
+                                                })}
+                                            </tr>
                                         );
-                                    })}
-                                </tr>
-                            );
-                        })}
-                        </tbody>
-                    </table>
+                                    })
+                                ) : (
+                                    <tr>
+                                        <TableCell>
+                                            no campaigns available
+                                        </TableCell>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
                 </Box>
             </Page>
         </>

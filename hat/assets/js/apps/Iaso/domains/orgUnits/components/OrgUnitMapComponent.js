@@ -403,7 +403,7 @@ class OrgUnitMapComponent extends Component {
                         />
                     }
                     filtersOptionComponent={
-                        <Fragment>
+                        <>
                             <SourcesChipsFilterComponent
                                 fitToBounds={() => this.fitToBounds()}
                             />
@@ -413,7 +413,7 @@ class OrgUnitMapComponent extends Component {
                             <FormsChipsFilterComponent
                                 fitToBounds={() => this.fitToBounds()}
                             />
-                        </Fragment>
+                        </>
                     }
                     editOptionComponent={
                         showEditComponent ? (
@@ -445,9 +445,9 @@ class OrgUnitMapComponent extends Component {
                         ) : null
                     }
                     settingsOptionComponent={
-                        <Fragment>
+                        <>
                             <TileSwitch />
-                        </Fragment>
+                        </>
                     }
                 >
                     <Map

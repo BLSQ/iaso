@@ -486,23 +486,31 @@ export const restoreForm = (dispatch, formId) =>
         throw error;
     });
 
-export const createFormVersion = (dispatch, formVersionData, isUpdate) => {
-    const data = { form_id: formVersionData.form_id };
+export const createFormVersion = (dispatch, formVersionData) => {
+    const { data } = formVersionData;
     const fileData = { xls_file: formVersionData.xls_file };
 
     return postRequest('/api/formversions/', data, fileData).catch(error => {
         dispatch(
             enqueueSnackbar(
-                errorSnackBar(
-                    isUpdate ? 'updateFormError' : 'createFormError',
-                    null,
-                    error,
-                ),
+                errorSnackBar('createFormVersionError', null, error),
             ),
         );
         throw error;
     });
 };
+
+export const updateFormVersion = (dispatch, formVersion) =>
+    putRequest(`/api/formversions/${formVersion.id}/`, formVersion).catch(
+        error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('updateFormVersionError', null, error),
+                ),
+            );
+            throw error;
+        },
+    );
 
 export const fetchFormVersions = (dispatch, formId) => {
     const data = { form_id: formId };

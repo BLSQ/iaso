@@ -2,8 +2,10 @@ import React from 'react';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { Tooltip } from '@material-ui/core';
 
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+// eslint-disable-next-line import/no-named-as-default
+// eslint-disable-next-line import/no-named-as-default-member
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
 import { AddTask } from './components/AddTaskComponent';
@@ -69,9 +71,11 @@ const dataSourcesTableColumns = (
                 sortedVersions.length > 0 ? sortedVersions[0].number : 0;
             const addTaskTitle = {
                 id: 'addAskTitle',
-                defaultMessage: `${formatMessage(MESSAGES.addTask)} - Source: ${
-                    settings.original.name
-                } - Version: ${latestVersion + 1}`,
+                defaultMessage: `${formatMessage(
+                    MESSAGES.importFromDhis2,
+                )} - Source: ${settings.original.name} - Version: ${
+                    latestVersion + 1
+                }`,
             };
 
             return (
@@ -102,8 +106,8 @@ const dataSourcesTableColumns = (
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
                                 onClick={openDialog}
-                                icon="add"
-                                tooltipMessage={MESSAGES.addTask}
+                                icon="download"
+                                tooltipMessage={MESSAGES.importFromDhis2}
                             />
                         )}
                         defaultSourceVersion={defaultSourceVersion}

@@ -4,7 +4,6 @@ import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import moment from 'moment';
 import { CirclePicker } from 'react-color';
 
 import { withStyles, FormLabel } from '@material-ui/core';

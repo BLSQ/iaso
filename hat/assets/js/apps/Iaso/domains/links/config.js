@@ -35,9 +35,7 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
         accessor: 'destination__name',
         Cell: settings => (
             <span>
-                {settings.original.destination.name}
-{' '}
-/{' '}
+                {settings.original.destination.name} /{' '}
                 {settings.original.source.name}
             </span>
         ),

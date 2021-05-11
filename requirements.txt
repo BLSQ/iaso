@@ -12,6 +12,7 @@ django-storages==1.9.1
 boto3==1.12.1
 geopy==1.21.0
 Shapely==1.7.0
+unidecode==1.2.0
 
 django-pg-utils==0.1.5
 gpxpy==1.4.0
@@ -68,3 +69,4 @@ json5==0.9.5
 sentry-sdk==0.19.4
 django-lazy-services==0.0.3
 dateparser==1.0.0
+

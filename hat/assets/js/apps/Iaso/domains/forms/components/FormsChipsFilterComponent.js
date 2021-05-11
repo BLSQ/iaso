@@ -32,7 +32,7 @@ export function FormsChipsFilterComponent(props) {
         fitToBounds,
     } = props;
     return (
-        <Fragment>
+        <>
             <Box px={2} className={classes.innerDrawerToolbar} component="div">
                 <Typography variant="subtitle1">
                     <FormattedMessage {...MESSAGES.title} />
@@ -63,7 +63,7 @@ export function FormsChipsFilterComponent(props) {
                 currentItems={currentForms}
                 displayTotal
             />
-        </Fragment>
+        </>
     );
 }
 

@@ -21,6 +21,7 @@
   },
   "rules": {
     "no-tabs": "off",
+    "no-console":["error",{"allow":["warn","error"]}],
     "prettier/prettier": "error",
     "camelcase": "warn",
     "constructor-super": "warn",
@@ -36,6 +37,9 @@
     "jsx-a11y/no-noninteractive-element-interactions": "off",
     "jsx-a11y/no-noninteractive-element-to-interactive-role": "off",
     "react/jsx-one-expression-per-line": "off",
+    "react/jsx-curly-newline":"off",
+    "react/jsx-props-no-spreading":"warn",
+    "react/prop-types":"warn",
     "linebreak-style": "off",
     "max-len": [
       "warn",
@@ -54,7 +58,7 @@
     "no-undef": "warn",
     "no-underscore-dangle": "off",
     "no-unreachable": "warn",
-    "no-unused-vars": "warn",
+    "no-unused-vars": ["error",{"ignoreRestSiblings":true}],
     "react/button-has-type": "off",
     "react/destructuring-assignment": "off",
     "react/forbid-prop-types": [

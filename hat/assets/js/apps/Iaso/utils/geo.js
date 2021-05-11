@@ -46,7 +46,8 @@ const extendDivisionInfo = (division, villages, legend) => {
     // find out the population and number of villages by type
     const population = inDivision.reduce(sum('population'), 0);
     const villagesOfficial = inDivision.reduce(countByType('YES'), 0);
-    const villagesNotOfficial = inDivision.reduce(countByType('NO'), 0);
+    // TODO delete unused var
+    // const villagesNotOfficial = inDivision.reduce(countByType('NO'), 0);
     const villagesOther = inDivision.reduce(countByType('OTHER'), 0);
     const villagesUnknown = inDivision.reduce(countByType('NA'), 0);
 
@@ -132,9 +133,7 @@ const villagesInHighlightBuffer = (map, plotted, highlightBufferSize) => {
 };
 
 const getShape = (type, element, shapes, shapeOptions, zooms, map) => {
-    const newIsLoadingShape = Object.assign({}, element.state.isLoadingShape, {
-        [type]: true,
-    });
+    const newIsLoadingShape = { ...element.state.isLoadingShape, [type]: true };
     element.setState({
         isLoadingShape: newIsLoadingShape,
     });
@@ -143,11 +142,10 @@ const getShape = (type, element, shapes, shapeOptions, zooms, map) => {
         const minZoomTemp = zooms[type];
         shape.addLayer(L.geoJson(response, shapeOptions(type)));
         map.addLayer(shape);
-        const newIsLoadingShapeCallBack = Object.assign(
-            {},
-            element.state.isLoadingShape,
-            { [type]: false },
-        );
+        const newIsLoadingShapeCallBack = {
+            ...element.state.isLoadingShape,
+            [type]: false,
+        };
         element.setState({
             isLoadingShape: newIsLoadingShapeCallBack,
         });

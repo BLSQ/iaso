@@ -86,18 +86,6 @@ class DynamicTabsComponent extends Component {
         };
     }
 
-    setTabsElement(element, index) {
-        const { tabsWidth } = this.state;
-        const newWidth = element.getBoundingClientRect().width;
-        if (newWidth !== tabsWidth[index]) {
-            const newArray = [...tabsWidth];
-            newArray[index] = newWidth;
-            this.setState({
-                tabsWidth: newArray,
-            });
-        }
-    }
-
     handleAddTab() {
         const {
             redirectTo,
@@ -173,6 +161,18 @@ class DynamicTabsComponent extends Component {
         this.setState(newState);
     }
 
+    setTabsElement(element, index) {
+        const { tabsWidth } = this.state;
+        const newWidth = element.getBoundingClientRect().width;
+        if (newWidth !== tabsWidth[index]) {
+            const newArray = [...tabsWidth];
+            newArray[index] = newWidth;
+            this.setState({
+                tabsWidth: newArray,
+            });
+        }
+    }
+
     render() {
         const {
             classes,
@@ -201,12 +201,12 @@ class DynamicTabsComponent extends Component {
                                     <Tooltip
                                         size="small"
                                         title={
-                                            <Fragment>
+                                            <>
                                                 <FormattedMessage
                                                     {...MESSAGES.delete}
                                                 />
                                                 {` ${baseLabel.toLowerCase()}`}
-                                            </Fragment>
+                                            </>
                                         }
                                     >
                                         <IconButton
@@ -283,10 +283,10 @@ class DynamicTabsComponent extends Component {
                     <Tooltip
                         size="small"
                         title={
-                            <Fragment>
+                            <>
                                 <FormattedMessage {...MESSAGES.add} />
                                 {` ${baseLabel.toLowerCase()}`}
-                            </Fragment>
+                            </>
                         }
                     >
                         <IconButton

@@ -49,7 +49,7 @@ class OrgUnitLevelFilterComponent extends Component {
             ).icon;
 
         return (
-            <Fragment>
+            <>
                 <Grid
                     container
                     direction="row"
@@ -82,7 +82,7 @@ class OrgUnitLevelFilterComponent extends Component {
                         </Grid>
                     )}
                 </Grid>
-            </Fragment>
+            </>
         );
     }
 }

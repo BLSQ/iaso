@@ -37,7 +37,7 @@ const ConfirmDialog = ({
     };
 
     return (
-        <Fragment>
+        <>
             <Button
                 variant={btnVariant}
                 color="primary"
@@ -68,7 +68,7 @@ const ConfirmDialog = ({
                     </Button>
                 </DialogActions>
             </Dialog>
-        </Fragment>
+        </>
     );
 };
 

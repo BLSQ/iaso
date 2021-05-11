@@ -22,6 +22,7 @@ export const fetchingMappingVersions = fetching => ({
     payload: fetching,
 });
 
+// TODO refactor to use camelCase
 export const setMappingVersions = ({ mapping_versions, count, pages }) => ({
     type: SET_MAPPING_VERSIONS,
     payload: {

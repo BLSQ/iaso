@@ -106,11 +106,11 @@ class InstancesMap extends Component {
                 <InnerDrawer
                     withTopBorder
                     settingsOptionComponent={
-                        <Fragment>
+                        <>
                             <TileSwitch />
                             <Divider />
                             <ClusterSwitch />
-                        </Fragment>
+                        </>
                     }
                 >
                     <Map

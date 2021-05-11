@@ -107,14 +107,16 @@ export const getPossibleYears = () => {
     return possibleYears;
 };
 
-export const getYears = yearsCount => {
-    const currentYear = new Date().getFullYear();
+export const getYears = (yearsCount, offset = 0, reverse = false) => {
+    const currentYear = new Date().getFullYear() + offset;
     const years = Array(yearsCount)
         .fill()
         .map((y, i) => currentYear - i);
+    if (reverse) {
+        return years.reverse();
+    }
     return years;
 };
-
 export const NormalizeBarChartDatas = (settings, d) => {
     const newDatas = [];
     settings.map((setting, index) => {
@@ -323,3 +325,9 @@ export const isFixedStructure = currentCase =>
     currentCase.user_type !== null &&
     (currentCase.user_type === 'CDTC' ||
         currentCase.user_type === 'fixed_structure');
+
+export const getIntegerArray = size =>
+    Array(size)
+        .fill()
+        .map((y, i) => size - i)
+        .reverse();

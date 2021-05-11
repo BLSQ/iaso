@@ -102,6 +102,7 @@ class Instances extends Component {
             tab: props.params.tab ? props.params.tab : 'list',
             visibleColumns: [],
             forceRefresh: false,
+            labelKeys: [],
         };
     }
 
@@ -134,16 +135,21 @@ class Instances extends Component {
         }
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         const {
             params: { formId, tab },
             fetchFormDetail,
         } = this.props;
-        fetchFormDetail(formId);
+        
         this.fetchInstances(tab !== 'map');
         if (tab === 'map') {
             this.fetchSmallInstances();
         }
+        const formDetails = await fetchFormDetail(formId);
+        const labelKeys = formDetails.label_keys??[];
+        this.setState(state => {
+            return { ...state, labelKeys };
+        });
     }
 
     componentDidUpdate(prevProps) {
@@ -174,11 +180,16 @@ class Instances extends Component {
             (!isEqual(reduxPage.list, prevProps.reduxPage.list) ||
                 tableColumns.length === 0)
         ) {
+            const enrichedParams = { ...params };
+            const columnsWithLabelKeys = `${
+                params.columns
+            },${this.state.labelKeys.join(',')}`;
+            enrichedParams.columns = columnsWithLabelKeys;
             this.changeVisibleColumns(
                 getInstancesVisibleColumns(
                     formatMessage,
                     reduxPage.list[0],
-                    params,
+                    enrichedParams,
                     defaultOrder,
                 ),
             );
@@ -246,7 +257,9 @@ class Instances extends Component {
     }
 
     setForceRefresh(forceRefresh) {
-        this.setState({ forceRefresh });
+        this.setState(state => {
+            return { ...state, forceRefresh };
+        });
     }
 
     handleChangeTab(tab, redirect = true) {
@@ -258,8 +271,8 @@ class Instances extends Component {
             };
             redirectToReplace(baseUrl, newParams);
         }
-        this.setState({
-            tab,
+        this.setState(state => {
+            return { ...state, tab };
         });
     }
 
@@ -327,13 +340,16 @@ class Instances extends Component {
                 .map(c => c.key)
                 .join(','),
         };
-        this.setState({
-            visibleColumns: tempVisibleColumns,
-            tableColumns: getInstancesColumns(
-                formatMessage,
-                tempVisibleColumns,
-                params.showDeleted === 'true',
-            ),
+        this.setState(state => {
+            return {
+                ...state,
+                visibleColumns: tempVisibleColumns,
+                tableColumns: getInstancesColumns(
+                    formatMessage,
+                    tempVisibleColumns,
+                    params.showDeleted === 'true',
+                ),
+            };
         });
 
         redirectToReplace(baseUrl, newParams);

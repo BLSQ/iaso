@@ -172,7 +172,7 @@ class Instances extends Component {
 
         if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
-            if (params.tab === 'map' && !instancesSmall) {
+            if (params.tab !== 'list' && !instancesSmall) {
                 this.fetchSmallInstances();
             }
         }
@@ -531,7 +531,7 @@ class Instances extends Component {
                             <InstancesMap instances={instancesSmall} />
                         </div>
                     )}
-                    {tab === 'files' && (
+                    {!fetching && instancesSmall && tab === 'files' && (
                         <InstancesFilesList
                             files={getInstancesFilesList(instancesSmall)}
                         />

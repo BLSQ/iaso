@@ -5,7 +5,6 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import TreeItem from '@material-ui/lab/TreeItem';
 import _ from 'lodash';
-import PropTypes from 'prop-types';
 import Descriptor from '../descriptor';
 
 import { isMapped, isNeverMapped } from '../question_mappings';

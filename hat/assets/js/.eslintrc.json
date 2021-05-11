@@ -39,6 +39,7 @@
     "react/jsx-one-expression-per-line": "off",
     "react/jsx-curly-newline":"off",
     "react/jsx-props-no-spreading":"warn",
+    "react/prop-types":"warn",
     "linebreak-style": "off",
     "max-len": [
       "warn",

@@ -283,7 +283,8 @@ export class DataSourceDialogComponent extends Component {
                         <InputComponent
                             keyValue="name"
                             onChange={(key, value) =>
-                                this.setFieldValue(key, value)}
+                                this.setFieldValue(key, value)
+                            }
                             value={form.name.value}
                             errors={form.name.errors}
                             type="text"
@@ -335,7 +336,8 @@ export class DataSourceDialogComponent extends Component {
                                 clearable={!form.is_default_source.value}
                                 keyValue="default_version_id"
                                 onChange={(key, value) =>
-                                    this.setFieldValue(key, value)}
+                                    this.setFieldValue(key, value)
+                                }
                                 value={form.default_version_id.value}
                                 errors={form.default_version_id.errors}
                                 type="select"
@@ -354,7 +356,8 @@ export class DataSourceDialogComponent extends Component {
                             <InputComponent
                                 keyValue="read_only"
                                 onChange={(key, value) =>
-                                    this.setFieldValue(key, value)}
+                                    this.setFieldValue(key, value)
+                                }
                                 value={form.read_only.value}
                                 errors={form.read_only.errors}
                                 type="checkbox"
@@ -370,7 +373,8 @@ export class DataSourceDialogComponent extends Component {
                                         !isDataTouched
                                     }
                                     onChange={(key, value) =>
-                                        this.setFieldValue(key, value)}
+                                        this.setFieldValue(key, value)
+                                    }
                                     value={form.is_default_source.value}
                                     errors={form.is_default_source.errors}
                                     type="checkbox"

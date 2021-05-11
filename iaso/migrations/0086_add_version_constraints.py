@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
 CREATE OR REPLACE FUNCTION iaso_group_org_units_same_source_version() RETURNS trigger AS
 $F$
 BEGIN
-    IF (EXISTS (select * from iaso_group_org_units go
+    IF (EXISTS (select 1 from iaso_group_org_units go
             join iaso_group on (iaso_group.id = go.group_id)
             join iaso_orgunit on (iaso_orgunit.id = go.orgunit_id)
             where iaso_orgunit.version_id != iaso_group.source_version_id))

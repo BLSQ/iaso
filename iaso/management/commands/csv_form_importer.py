@@ -108,6 +108,7 @@ class Command(BaseCommand):
 
                                 formula = m.get('formula', None)
                                 t = m.get('type', None)
+                                #print("-%s-" % t, key)
                                 #print(t, t == "select", t== "multiselect")
                                 #print(key, formula, t)
                                 if formula:
@@ -131,7 +132,7 @@ class Command(BaseCommand):
                                     value = row[col_indices[key]]
                                     if value:
                                         value = value.strip()
-                                    #print("SELECT SELECTSELECTSELECTSELECTSELECTSELECT", value)
+                                    #print("SELECT key, value", value)
                                     select_id = m['xls_form_id']
                                     option_map = option_mapping[select_id]
                                     #print("option_map", option_map)
@@ -146,7 +147,7 @@ class Command(BaseCommand):
                                             #print("NOT FOUND", value, d["values"], select)
                                             data[select] = 0
                                 elif t.strip() == "multiselect":
-
+                                    #print("key", key)
                                     # print("MULTISELECT SAMA")
                                     local_mapping = option_mapping[key]
                                     #print("local_mapping", local_mapping)
@@ -154,18 +155,19 @@ class Command(BaseCommand):
                                     # print("option_map", option_map)
                                     # print("option_map", option_map)
                                     value = row[col_indices[key]]
-
+                                    #print("key, value", key, value)
                                     for select, d in local_mapping.items():
                                         # print(select, d)
                                         for v in d["values"]:
+                                            v = v.strip()
                                             if v in value:
                                                 data[select] = 1
                                                 #print("multiselect found ", select)
-                                                # print("1")
+
                                             else:
                                                 data[select] = 0
                                                 #print("multiselect NOT FOUND ", select)
-                                                # print("0")
+
                                     #print("type", t)
                                 else:
                                     #print('key', key, m)

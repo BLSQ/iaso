@@ -51,7 +51,7 @@ export const getShapesBounds = shapes => {
 export const clusterCustomMarker = cluster =>
     L.divIcon({
         html: `<div><span>${cluster.getChildCount()}</span></div>`,
-        className: 'marker-cluster secondary',
+        className: 'marker-cluster primary',
         iconSize: L.point(40, 40, true),
         iconAnchor: [20, 30],
     });

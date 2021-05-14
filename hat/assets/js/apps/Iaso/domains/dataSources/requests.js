@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { postRequestHandler } from '../../utils/requests';
 
-export const sendDhisOuImporterRequest = async (requestBody, dispatch) => {
+export const sendDhisOuImporterRequest = async requestBody => {
     if (requestBody)
         return postRequestHandler({
             url: '/api/dhis2ouimporter/',
             body: requestBody,
             errorKeyMessage: 'dhisouimporterError',
             consoleError: 'DHIS OU Importer',
-            dispatch,
         });
     return null;
 };
@@ -30,14 +28,10 @@ export const sendDhisOuImporterRequest = async (requestBody, dispatch) => {
  */
 
 export const useDhisOuImporterRequest = requestBody => {
-    const dispatch = useDispatch();
     const [result, setResult] = useState(null);
     useEffect(() => {
         const executeRequest = async () => {
-            const response = await sendDhisOuImporterRequest(
-                requestBody,
-                dispatch,
-            );
+            const response = await sendDhisOuImporterRequest(requestBody);
             if (response) setResult(response);
         };
         // TODO add error handling

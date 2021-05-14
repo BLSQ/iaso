@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import {
     getRequest,
     patchRequest,
@@ -10,6 +9,7 @@ import {
 } from '../libs/Api';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { succesfullSnackBar, errorSnackBar } from '../constants/snackBars';
+import { dispatch as storeDispatch } from '../redux/store';
 
 export const fetchOrgUnits = (dispatch, params) =>
     getRequest(`/api/orgunits/?${params}`)
@@ -621,7 +621,6 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
  * @property {string} errorKeyMessage - The message displayed in the error snackbar
  * @property {string} consoleError - the message to embed in the console's error message
  * @property {object=} fileData - object to pass when using multipart mode
- * @property{function} dispatch - redux's dispatch function
  */
 
 /**
@@ -639,11 +638,11 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
 export const getRequestHandler = params =>
     getRequest(params.url)
         .then(data => {
-            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            storeDispatch(enqueueSnackbar(succesfullSnackBar()));
             return data;
         })
         .catch(error => {
-            params.dispatch(
+            storeDispatch(
                 enqueueSnackbar(
                     errorSnackBar(params.errorKeyMessage, null, error),
                 ),
@@ -660,15 +659,14 @@ export const getRequestHandler = params =>
  * @param {handlerParams} params { url: string, body: object, errorKeyMessage: string, consoleError: string, fileData?: object }
  * @returns {object} API response
  */
-
 export const postRequestHandler = params =>
     postRequest(params.url, params.body, params.fileData ?? {})
         .then(data => {
-            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            storeDispatch(enqueueSnackbar(succesfullSnackBar()));
             return data;
         })
         .catch(error => {
-            params.dispatch(
+            storeDispatch(
                 enqueueSnackbar(
                     errorSnackBar(params.errorKeyMessage, null, error),
                 ),
@@ -689,11 +687,11 @@ export const postRequestHandler = params =>
 export const putRequestHandler = params =>
     putRequest(params.url, params.body)
         .then(data => {
-            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            storeDispatch(enqueueSnackbar(succesfullSnackBar()));
             return data;
         })
         .catch(error => {
-            params.dispatch(
+            storeDispatch(
                 enqueueSnackbar(
                     errorSnackBar(params.errorKeyMessage, null, error),
                 ),
@@ -713,11 +711,11 @@ export const putRequestHandler = params =>
 export const patchRequestHandler = params =>
     patchRequest(params.url, params.body)
         .then(data => {
-            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            storeDispatch(enqueueSnackbar(succesfullSnackBar()));
             return data;
         })
         .catch(error => {
-            params.dispatch(
+            storeDispatch(
                 enqueueSnackbar(
                     errorSnackBar(params.errorKeyMessage, null, error),
                 ),
@@ -737,11 +735,11 @@ export const patchRequestHandler = params =>
 export const deleteRequestHandler = params =>
     deleteRequest(params.url)
         .then(data => {
-            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            storeDispatch(enqueueSnackbar(succesfullSnackBar()));
             return data;
         })
         .catch(error => {
-            params.dispatch(
+            storeDispatch(
                 enqueueSnackbar(
                     errorSnackBar(params.errorKeyMessage, null, error),
                 ),
@@ -761,11 +759,11 @@ export const deleteRequestHandler = params =>
 export const restoreRequestHandler = params =>
     restoreRequest(params.url)
         .then(data => {
-            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            storeDispatch(enqueueSnackbar(succesfullSnackBar()));
             return data;
         })
         .catch(error => {
-            params.dispatch(
+            storeDispatch(
                 enqueueSnackbar(
                     errorSnackBar(params.errorKeyMessage, null, error),
                 ),
@@ -791,7 +789,6 @@ export const restoreRequestHandler = params =>
 // TODO confirm trigger with use
 export const makeGetRequestHook = params => {
     return trigger => {
-        const dispatch = useDispatch();
         const [result, setResult] = useState(null);
         useEffect(() => {
             // declaring async function inside useEffect to be able to use async code
@@ -801,13 +798,12 @@ export const makeGetRequestHook = params => {
                         url: params.url,
                         errorKeyMessage: params.errorKeyMessage,
                         consoleError: params.consoleError,
-                        dispatch,
                     });
                     if (response) setResult(response);
                 }
             };
             executeRequest();
-        }, [trigger, dispatch]);
+        }, [trigger]);
         return result;
     };
 };
@@ -823,7 +819,6 @@ export const makeGetRequestHook = params => {
  */
 export const makePostRequestHook = params => {
     return (requestBody, fileData = {}) => {
-        const dispatch = useDispatch();
         const [result, setResult] = useState(null);
         useEffect(() => {
             // declaring async function inside useEffect to be able to use async code
@@ -835,13 +830,12 @@ export const makePostRequestHook = params => {
                         errorKeyMessage: params.errorKeyMessage,
                         consoleError: params.consoleError,
                         fileData,
-                        dispatch,
                     });
                     if (response) setResult(response);
                 }
             };
             executeRequest();
-        }, [requestBody, dispatch]);
+        }, [requestBody]);
         return result;
     };
 };
@@ -858,7 +852,6 @@ export const makePostRequestHook = params => {
 
 export const makePutRequestHook = params => {
     return requestBody => {
-        const dispatch = useDispatch();
         const [result, setResult] = useState(null);
         useEffect(() => {
             // declaring async function inside useEffect to be able to use async code
@@ -869,13 +862,12 @@ export const makePutRequestHook = params => {
                         body: requestBody,
                         errorKeyMessage: params.errorKeyMessage,
                         consoleError: params.consoleError,
-                        dispatch,
                     });
                     if (response) setResult(response);
                 }
             };
             executeRequest();
-        }, [requestBody, dispatch]);
+        }, [requestBody]);
         return result;
     };
 };
@@ -892,7 +884,6 @@ export const makePutRequestHook = params => {
 
 export const makePatchRequestHook = params => {
     return requestBody => {
-        const dispatch = useDispatch();
         const [result, setResult] = useState(null);
         useEffect(() => {
             // declaring async function inside useEffect to be able to use async code
@@ -903,13 +894,12 @@ export const makePatchRequestHook = params => {
                         body: requestBody,
                         errorKeyMessage: params.errorKeyMessage,
                         consoleError: params.consoleError,
-                        dispatch,
                     });
                     if (response) setResult(response);
                 }
             };
             executeRequest();
-        }, [requestBody, dispatch]);
+        }, [requestBody]);
         return result;
     };
 };
@@ -928,7 +918,6 @@ export const makePatchRequestHook = params => {
 // TODO add return value when refactoring to take error management out of components
 export const makeDeleteRequestHook = params => {
     return trigger => {
-        const dispatch = useDispatch();
         useEffect(() => {
             // declaring async function inside useEffect to be able to use async code
             const executeRequest = async () => {
@@ -937,12 +926,11 @@ export const makeDeleteRequestHook = params => {
                         url: params.url,
                         errorKeyMessage: params.errorKeyMessage,
                         consoleError: params.consoleError,
-                        dispatch,
                     });
                 }
             };
             executeRequest();
-        }, [trigger, dispatch]);
+        }, [trigger]);
     };
 };
 
@@ -960,7 +948,6 @@ export const makeDeleteRequestHook = params => {
 // TODO add return value when refactoring to take error management out of components
 export const makeRestoreRequestHook = params => {
     return trigger => {
-        const dispatch = useDispatch();
         useEffect(() => {
             // declaring async function inside useEffect to be able to use async code
             const executeRequest = async () => {
@@ -969,11 +956,10 @@ export const makeRestoreRequestHook = params => {
                         url: params.url,
                         errorKeyMessage: params.errorKeyMessage,
                         consoleError: params.consoleError,
-                        dispatch,
                     });
                 }
             };
             executeRequest();
-        }, [trigger, dispatch]);
+        }, [trigger]);
     };
 };

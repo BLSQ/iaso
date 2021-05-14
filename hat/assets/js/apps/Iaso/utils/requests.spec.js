@@ -14,7 +14,7 @@ import {
 const URL = '/api/test';
 const FAIL_URL = '/api/fail';
 // TODO regroup constant parameters to allow use of spread and save space
-const dispatch = sinon.spy();
+// const dispatch = sinon.spy();
 const ERROR_KEY_MESSAGE = 'error key  message';
 const CONSOLE_ERROR = 'console error';
 const RESPONSE = { data: 'result', status: 200, errors: null };
@@ -30,7 +30,7 @@ const response = requestType => {
 const cleanup = () => {
     nock.cleanAll();
     nock.abortPendingRequests();
-    dispatch.resetHistory();
+    // dispatch.resetHistory();
 };
 
 const sendFailingRequest = async requestMaker => {
@@ -49,7 +49,6 @@ const makeRequest = requestType => async url => {
                 url,
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
-                dispatch,
             });
         case 'post':
             return postRequestHandler({
@@ -57,7 +56,6 @@ const makeRequest = requestType => async url => {
                 body: BODY,
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
-                dispatch,
             });
         case 'put':
             return putRequestHandler({
@@ -65,7 +63,6 @@ const makeRequest = requestType => async url => {
                 body: BODY,
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
-                dispatch,
             });
         case 'patch':
             return patchRequestHandler({
@@ -73,21 +70,18 @@ const makeRequest = requestType => async url => {
                 body: BODY,
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
-                dispatch,
             });
         case 'delete':
             return deleteRequestHandler({
                 url,
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
-                dispatch,
             });
         case 'restore':
             return restoreRequestHandler({
                 url,
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
-                dispatch,
             });
         default:
             throw new Error(
@@ -103,7 +97,6 @@ const makePostRequestWithFileData = async url =>
         errorKeyMessage: ERROR_KEY_MESSAGE,
         consoleError: CONSOLE_ERROR,
         fileData: FILE_DATA,
-        dispatch,
     });
 
 const testRequestOfType = requestType => () => {
@@ -122,11 +115,11 @@ const testRequestOfType = requestType => () => {
                 expect(result).to.deep.equal(response(requestType));
             }
         });
-        it('displays bar', async () => {
-            // TODO make request generator
-            await makeRequest(requestType)(URL);
-            expect(dispatch).to.have.been.called;
-        });
+        // it('displays bar', async () => {
+        //     // TODO make request generator
+        //     await makeRequest(requestType)(URL);
+        //     expect(dispatch).to.have.been.called;
+        // });
     });
     describe('when request fails', () => {
         beforeEach(() => {
@@ -136,16 +129,16 @@ const testRequestOfType = requestType => () => {
             const error = await sendFailingRequest(makeRequest(requestType));
             expect(error.message).to.equal(API_ERROR_MESSAGE);
         });
-        it('displays snack bar', async () => {
-            await sendFailingRequest(makeRequest(requestType));
-            expect(dispatch).to.have.been.called;
-        });
+        // it('displays snack bar', async () => {
+        //     await sendFailingRequest(makeRequest(requestType));
+        //     expect(dispatch).to.have.been.called;
+        // });
     });
 };
 
-describe.only('getRequestHandler', testRequestOfType('get'));
-describe.only('postRequestHandler', testRequestOfType('post'));
-describe.only('putRequestHandler', testRequestOfType('put'));
-describe.only('patchRequestHandler', testRequestOfType('patch'));
-describe.only('deleteRequestHandler', testRequestOfType('delete'));
-describe.only('restoreRequestHandler', testRequestOfType('restore'));
+describe('getRequestHandler', testRequestOfType('get'));
+describe('postRequestHandler', testRequestOfType('post'));
+describe('putRequestHandler', testRequestOfType('put'));
+describe('patchRequestHandler', testRequestOfType('patch'));
+describe('deleteRequestHandler', testRequestOfType('delete'));
+describe('restoreRequestHandler', testRequestOfType('restore'));

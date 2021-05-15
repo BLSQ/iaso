@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
-import { postRequestHandler } from '../../utils/requests';
+import { useCallback } from 'react';
+import { postRequestHandler, useAPI } from '../../utils/requests';
 
 export const sendDhisOuImporterRequest = async requestBody => {
-    if (requestBody)
+    if (requestBody) {
         return postRequestHandler({
-            url: '/api/dhis2ouimporter/',
-            body: requestBody,
+            // url: '/api/dhis2ouimporter/',
+            // body: requestBody,
+            requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
             errorKeyMessage: 'dhisouimporterError',
             consoleError: 'DHIS OU Importer',
         });
+    }
     return null;
 };
 
@@ -27,15 +29,35 @@ export const sendDhisOuImporterRequest = async requestBody => {
  * @returns {Object} request's response
  */
 
+// export const useDhisOuImporterRequest = requestBody => {
+//     const [result, setResult] = useState(null);
+//     useEffect(() => {
+//         const executeRequest = async () => {
+//             const response = await sendDhisOuImporterRequest(requestBody);
+//             if (response) {
+//                 setResult(response);
+//             }
+//         };
+//         // TODO add error handling
+//         executeRequest();
+//     }, [requestBody]);
+//     return result;
+// };
+
+// const request = async requestBody => {
+//     if (requestBody) {
+//         return postRequestHandler({
+//             requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
+//             errorKeyMessage: 'dhisouimporterError',
+//             consoleError: 'DHIS OU Importer',
+//         });
+//     }
+//     return null;
+// };
 export const useDhisOuImporterRequest = requestBody => {
-    const [result, setResult] = useState(null);
-    useEffect(() => {
-        const executeRequest = async () => {
-            const response = await sendDhisOuImporterRequest(requestBody);
-            if (response) setResult(response);
-        };
-        // TODO add error handling
-        executeRequest();
-    }, [requestBody]);
-    return result;
+    const callback = useCallback(
+        async () => sendDhisOuImporterRequest(requestBody),
+        [requestBody, sendDhisOuImporterRequest],
+    );
+    return useAPI(callback)?.data;
 };

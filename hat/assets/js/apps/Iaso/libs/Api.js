@@ -18,8 +18,6 @@ class ApiError extends Error {
     }
 }
 
-export const abortRequest = req.abort;
-
 export const getRequest = url =>
     req
         .get(url)

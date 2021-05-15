@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
     getRequest,
     patchRequest,
@@ -6,7 +6,6 @@ import {
     putRequest,
     deleteRequest,
     restoreRequest,
-    abortRequest,
 } from '../libs/Api';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { succesfullSnackBar, errorSnackBar } from '../constants/snackBars';
@@ -636,9 +635,11 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
  * @param {function} dispatch - a redux dispatch function
  *
  */
-// TODO figure out how to document curryiong with JSDocs
+// currying to allow testing calls to dispatch
+// TODO figure out how to document currying with JSDocs
 const requestHandler = dispatch => request => async params => {
-    request(...(params.requestParams ?? []))
+    const { url, body, fileData } = params.requestParams;
+    return request(url, body, fileData)
         .then(data => {
             if (!params.disableSuccessSnackBar) {
                 dispatch(enqueueSnackbar(succesfullSnackBar()));
@@ -692,15 +693,19 @@ export const restoreRequestHandler = requestHandler(storeDispatch)(
  * @returns {APIHookResponse} - { isLoading: boolean, isError: boolean, data: any }
  */
 // TODO check that default params values are set correctly for all use cases
-export const useAPI = (
-    request,
-    params = { preventTrigger: false, additionalDependencies: [] },
-) => {
+// TODO test: params;trigger ===undefined ; additionalDependencies===undefined
+const defaultHookParams = { preventTrigger: false, additionalDependencies: [] };
+
+export const useAPI = (request, params = defaultHookParams) => {
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isError, setIsError] = useState(false);
+    // useRef to avoid memory leak if user navigates away while async action not completed
+    // credit: https://medium.com/wesionary-team/how-to-fix-memory-leak-issue-in-react-js-using-hook-a5ecbf9becf8
+    const mountedRef = useRef();
 
     useEffect(() => {
+        mountedRef.current = true;
         const executeRequest = async () => {
             if (params.preventTrigger) {
                 return;
@@ -708,15 +713,21 @@ export const useAPI = (
             setIsLoading(true);
             try {
                 const response = await request();
-                setData(response);
-                setIsLoading(false);
+                if (mountedRef.current) {
+                    setData(response);
+                    setIsLoading(false);
+                }
             } catch (e) {
-                setIsLoading(false);
-                setIsError(true);
+                if (mountedRef.current) {
+                    setIsLoading(false);
+                    setIsError(true);
+                }
             }
         };
         executeRequest();
-        return () => abortRequest();
+        return () => {
+            mountedRef.current = false;
+        };
     }, [...(params.additionalDependencies ?? []), request, params.trigger]);
 
     return { data, isLoading, isError };

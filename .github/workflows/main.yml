@@ -100,5 +100,5 @@ jobs:
           SLACK_USERNAME: github-actions-main
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: iaso-dev
-          SLACK_TITLE: Iaso build completed
+          SLACK_TITLE: Iaso CI run failed
         if: failure()

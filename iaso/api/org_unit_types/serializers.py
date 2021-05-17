@@ -1,7 +1,8 @@
 import typing
+from django.db.models import Q
 from rest_framework import serializers
 
-from iaso.models import OrgUnitType, Project
+from iaso.models import OrgUnitType, OrgUnit, Project
 from ..common import TimestampField, DynamicFieldsModelSerializer
 from ..projects.serializers import ProjectSerializer
 
@@ -24,8 +25,9 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
             "sub_unit_type_ids",
             "created_at",
             "updated_at",
+            "units_count",
         ]
-        read_only_fields = ["id", "projects", "sub_unit_types", "created_at", "updated_at"]
+        read_only_fields = ["id", "projects", "sub_unit_types", "created_at", "updated_at", "units_count"]
 
     projects = ProjectSerializer(many=True, read_only=True)
     project_ids = serializers.PrimaryKeyRelatedField(
@@ -37,6 +39,18 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
     )
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+    units_count = serializers.SerializerMethodField(read_only=True)
+
+    def get_units_count(self, obj: OrgUnitType):
+        orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
+            self.context["request"].user,
+            self.context["request"].query_params.get("app_id")
+        ).filter(
+            Q(validated=True)
+            & Q(org_unit_type__id=obj.id)
+        )
+        orgunits_count  = orgUnits.count()
+        return orgunits_count
 
     def get_sub_unit_types(self, obj: OrgUnitType):
         unit_types = obj.sub_unit_types.all()

@@ -148,3 +148,29 @@ describe('putRequestHandler', testRequestOfType('put'));
 describe('patchRequestHandler', testRequestOfType('patch'));
 describe('deleteRequestHandler', testRequestOfType('delete'));
 describe('restoreRequestHandler', testRequestOfType('restore'));
+
+const request = useCallback(async () => {
+    return setTimeout(() => 'data', 1000);
+}, []);
+
+const Component = () => {
+    const { data, isLoading, isError } = useAPI(request);
+    return (
+        <ul>
+            <li>{data}</li>
+            <li>{isLoading}</li>
+            <li>{isError}</li>
+        </ul>
+    );
+};
+
+describe('useAPI', () => {
+    it('makes the request', () => {});
+    it('does not make the request if preventTrigger is true', () => {});
+    it('makes the request when additional dependencies update', () => {});
+    it('returns data', () => {});
+    it('returns correct loading state', () => {});
+    describe('when request fails', () => {
+        it('return correct error and loading state', () => {});
+    });
+});

@@ -135,7 +135,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 201)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.yoda)
@@ -174,7 +174,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 201)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.yoda)
@@ -191,7 +191,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(5, am.Modification.objects.count())
 
         response = self.client.get("/api/tasks/%d/" % data["task"]["id"])
-
         self.assertEqual(response.status_code, 200)
         self.assertValidTaskAndInDB(response.json(), "SUCCESS")
 
@@ -211,7 +210,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 201)
         data = response.json()
         self.assertValidTaskAndInDB(data["task"])
 
@@ -224,10 +223,8 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(len(task_service.queue), 0)
 
         response = self.client.get("/api/tasks/%d/" % data["task"]["id"])
-
         self.assertEqual(response.status_code, 200)
-        body = response.json()
-        self.assertValidTaskAndInDB(body, "KILLED")
+        self.assertValidTaskAndInDB(response.json(), "KILLED")
 
     def assertValidTaskAndInDB(self, task_dict, status="QUEUED", name=None):
         self.assertEqual(task_dict["status"], status)

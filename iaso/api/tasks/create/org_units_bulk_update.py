@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 
 from iaso.api.org_units import HasOrgUnitPermission
@@ -36,4 +36,7 @@ class OrgUnitsBulkUpdate(viewsets.ViewSet):
             validation_status,
             user=user,
         )
-        return Response({"task": TaskSerializer(instance=task).data})
+        return Response(
+            {"task": TaskSerializer(instance=task).data},
+            status=status.HTTP_201_CREATED,
+        )

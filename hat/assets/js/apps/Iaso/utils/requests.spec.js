@@ -163,13 +163,13 @@ const failedRequest = async () => {
 };
 
 const refValue = { current: true };
-const refStub = sinon.stub(React, 'useRef').returns(refValue);
 
 const spyRequest = sinon.spy(successfulRequest);
 const spyFailedRequest = sinon.spy(failedRequest);
 
 class ErrorBoundary extends React.Component {
     componentDidCatch(error, errorInfo) {
+        // eslint-disable-next-line no-console
         console.log('BOUNDARY ERROR', error, errorInfo);
     }
 
@@ -208,18 +208,8 @@ const Component = ({ preventTrigger, additionalDeps, request }) => {
 };
 
 let component;
+let refStub;
 describe('useAPI', () => {
-    describe('when component unmounts', () => {
-        before(() => {
-            refStub.resetHistory();
-            spyRequest.resetHistory();
-            component = mount(<Component request={spyRequest} />);
-        });
-        it('stops updating its internal state', () => {
-            component.unmount();
-            expect(refValue.current).to.equal(false);
-        });
-    });
     describe('default behaviour', () => {
         beforeEach(() => {
             spyRequest.resetHistory();
@@ -280,7 +270,6 @@ describe('useAPI', () => {
             expect(spyRequest).to.have.been.calledTwice;
         });
     });
-
     describe('when request fails', () => {
         before(() => {
             spyRequest.resetHistory();
@@ -297,6 +286,19 @@ describe('useAPI', () => {
             errorTag = component.find('#error').at(0);
             expect(dataTag.props().children).to.equal(null);
             expect(errorTag.props().children).to.equal('Error');
+        });
+    });
+    describe('when component unmounts', () => {
+        before(() => {
+            // useRef needs to be stubbed here, otherwise it will break other tests
+            refStub = sinon.stub(React, 'useRef').returns(refValue);
+            spyRequest.resetHistory();
+            component = mount(<Component request={spyRequest} />);
+        });
+        it('stops updating its internal state', () => {
+            component.unmount();
+            expect(refValue.current).to.equal(false);
+            refStub.restore();
         });
     });
 });

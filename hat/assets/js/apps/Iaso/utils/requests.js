@@ -687,8 +687,7 @@ export const iasoRestoreRequest = requestHandler(storeDispatch)(restoreRequest);
  * @param {any[]} [params.additionalDependencies=[]]
  * @returns {APIHookResponse} - { isLoading: boolean, isError: boolean, data: any }
  */
-// TODO check that default params values are set correctly for all use cases
-// TODO test: params;trigger ===undefined ; additionalDependencies===undefined
+
 const defaultHookParams = { preventTrigger: false, additionalDependencies: [] };
 
 export const useAPI = (request, params = defaultHookParams) => {

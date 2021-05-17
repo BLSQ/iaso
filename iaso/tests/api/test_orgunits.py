@@ -2,12 +2,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.test import tag
 import typing
-import datetime
 
 from iaso import models as m
 from hat.audit import models as am
 from iaso.test import APITestCase
-from iaso.models import Task
 
 
 class OrgUnitAPITestCase(APITestCase):
@@ -386,7 +384,6 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(3, am.Modification.objects.count())
-
 
     def test_org_unit_list_without_auth_or_app_id(self):
         """GET /api/orgunits/ with no auth or app id -> 200 with 0 org unit"""

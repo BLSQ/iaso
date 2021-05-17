@@ -7,6 +7,8 @@ from hat.audit import models as am
 from iaso.test import APITestCase
 from iaso.models import Task
 
+from beanstalk_worker import task_service
+
 
 class OrgUnitsBulkUpdateAPITestCase(APITestCase):
     @classmethod
@@ -114,13 +116,13 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
         )
 
+    @classmethod
+    def setUp(cls):
+        task_service.clear()
+
     @tag("iaso_only")
     def test_org_unit_bulkupdate_task_select_all_but_some(self):
         """POST /orgunits/bulkupdate/ happy path (select all except some)"""
-
-        from beanstalk_worker import task_service
-
-        task_service.clear()
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
@@ -135,15 +137,13 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         data = response.json()
-        self.assertIn("task", data)
-        self.assertEqual(len(task_service.queue), 1)
-
-        task = Task.objects.get(pk=data["task"]["id"])
-        self.assertEqual(task.status, "QUEUED")
-        self.assertEqual(task.name, "org_unit_bulk_update")
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.yoda)
 
+        # Run the task
+        self.assertEqual(len(task_service.queue), 1)
         task_service.run_all()
+        self.assertEqual(len(task_service.queue), 0)
 
         self.jedi_council_corruscant.refresh_from_db()
         self.assertEqual(self.jedi_council_corruscant.validation_status, m.OrgUnit.VALIDATION_REJECTED)
@@ -156,18 +156,14 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(3, am.Modification.objects.count())
 
+        # Task completion status
         response = self.client.get("/api/tasks/%d/" % data["task"]["id"])
-
         self.assertEqual(response.status_code, 200)
-        body = response.json()
-        self.assertEqual(body["status"], "SUCCESS")
+        self.assertValidTaskAndInDB(response.json(), "SUCCESS")
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_task_select_all_with_multiple_searches(self):
         """POST /orgunits/bulkupdate happy path (select all, but with multiple searches)"""
-        from beanstalk_worker import task_service
-
-        task_service.clear()
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/tasks/create/orgunitsbulkupdate/",
@@ -180,16 +176,13 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         data = response.json()
-        self.assertIn("task", data)
-        self.assertEqual(len(task_service.queue), 1)
-
-        # check task
-        task = Task.objects.get(pk=data["task"]["id"])
-        self.assertEqual(task.status, "QUEUED")
-        self.assertEqual(task.name, "org_unit_bulk_update")
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.yoda)
 
+        self.assertEqual(len(task_service.queue), 1)
         task_service.run_all()
+        self.assertEqual(len(task_service.queue), 0)
+
         for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels, self.jedi_council_corruscant]:
             jedi_council.refresh_from_db()
             self.assertIn(self.another_group, jedi_council.groups.all())
@@ -200,17 +193,13 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         response = self.client.get("/api/tasks/%d/" % data["task"]["id"])
 
         self.assertEqual(response.status_code, 200)
-        body = response.json()
-        self.assertEqual(body["status"], "SUCCESS")
+        self.assertValidTaskAndInDB(response.json(), "SUCCESS")
 
     def test_task_kill(self):
         """Launch the task and then kill it
         Note this actually doesn't work if it's killwed while in the transaction part.
         """
 
-        from beanstalk_worker import task_service
-
-        task_service.clear()
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/tasks/create/orgunitsbulkupdate/",
@@ -224,18 +213,27 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 200)
         data = response.json()
-        self.assertIn("task", data)
-        self.assertEqual(len(task_service.queue), 1)
-        self.assertEqual(data["task"]["status"], "QUEUED")
+        self.assertValidTaskAndInDB(data["task"])
 
         task_model = Task.objects.get(id=data["task"]["id"])
         task_model.should_be_killed = True
         task_model.save()
 
+        self.assertEqual(len(task_service.queue), 1)
         task_service.run_all()
+        self.assertEqual(len(task_service.queue), 0)
 
         response = self.client.get("/api/tasks/%d/" % data["task"]["id"])
 
         self.assertEqual(response.status_code, 200)
         body = response.json()
-        self.assertEqual(body["status"], "KILLED")
+        self.assertValidTaskAndInDB(body, "KILLED")
+
+    def assertValidTaskAndInDB(self, task_dict, status="QUEUED", name=None):
+        self.assertEqual(task_dict["status"], status)
+
+        task = Task.objects.get(id=task_dict["id"])
+        self.assertTrue(task)
+        if name:
+            self.assertEqual(task.name, name)
+        return task

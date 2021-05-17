@@ -7,8 +7,7 @@ from iaso.tasks.org_units_bulk_update import org_units_bulk_update
 
 
 class OrgUnitsBulkUpdate(viewsets.ViewSet):
-    """Bulk update OrgUnits
-    """
+    """Bulk update OrgUnits"""
 
     permission_classes = [permissions.IsAuthenticated, HasOrgUnitPermission]
 

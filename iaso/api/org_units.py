@@ -1,21 +1,23 @@
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import viewsets, status, permissions
-from django.contrib.gis.geos import Polygon, MultiPolygon, GEOSGeometry
+from django.contrib.gis.geos import Polygon, GEOSGeometry
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils.translation import gettext as _
-import re
 from iaso.api.common import safe_api_import
+from iaso.api.tasks import TaskSerializer
 from iaso.gpkg import org_units_to_gpkg
-from iaso.models import OrgUnit, OrgUnitType, Instance, Group, Project, BulkOperation, SourceVersion, DataSource, Form
+from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, DataSource, BulkOperation
 from django.contrib.gis.geos import Point
-from django.db import connection
 
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
+
+from iaso.models.org_unit_search import build_org_units_queryset
+from iaso.tasks.org_units_bulk_update import org_units_bulk_update
 from iaso.utils import geojson_queryset
-from django.db import transaction
-from django.db.models import Q, Count, Sum, Case, When
+from django.db.models import Q
 from copy import deepcopy
 from hat.audit import models as audit_models
 from time import gmtime, strftime
@@ -570,6 +572,34 @@ class OrgUnitViewSet(viewsets.ViewSet):
         # id is a kind of placeholder for a future job id
         return Response({"id": 1}, status=status.HTTP_201_CREATED)
 
+    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
+    def bulkupdate_task(self, request):
+        select_all = request.data.get("select_all", None)
+        validation_status = request.data.get("validation_status", None)
+        org_unit_type_id = request.data.get("org_unit_type", None)
+        groups_ids_added = request.data.get("groups_added", None)
+        groups_ids_removed = request.data.get("groups_removed", None)
+        selected_ids = request.data.get("selected_ids", [])
+        unselected_ids = request.data.get("unselected_ids", [])
+        searches = request.data.get("searches", [])
+
+        user = self.request.user
+        app_id = self.request.query_params.get("app_id")
+
+        task = org_units_bulk_update(
+            app_id,
+            select_all,
+            selected_ids,
+            unselected_ids,
+            searches,
+            org_unit_type_id,
+            groups_ids_added,
+            groups_ids_removed,
+            validation_status,
+            user=user,
+        )
+        return Response({"task": TaskSerializer(instance=task).data})
+
 
 def import_data(org_units, user, app_id):
     new_org_units = []
@@ -633,169 +663,3 @@ def import_data(org_units, user, app_id):
             org_unit_db.version = project.account.default_version
             org_unit_db.save()
     return new_org_units
-
-
-def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TODO: move in viewset.get_queryset()
-    validation_status = params.get("validation_status", OrgUnit.VALIDATION_VALID)
-    has_instances = params.get("hasInstances", None)
-    date_from = params.get("dateFrom", None)
-    date_to = params.get("dateTo", None)
-    search = params.get("search", None)
-
-    org_unit_type_id = params.get("orgUnitTypeId", None)
-    source_id = params.get("sourceId", None)
-    with_shape = params.get("withShape", None)
-    with_location = params.get("withLocation", None)
-    parent_id = params.get("parent_id", None)
-    source = params.get("source", None)
-    group = params.get("group", None)
-    version = params.get("version", None)
-    default_version = params.get("defaultVersion", None)
-
-    org_unit_parent_id = params.get("orgUnitParentId", None)
-
-    linked_to = params.get("linkedTo", None)
-    link_validated = params.get("linkValidated", True)
-    link_source = params.get("linkSource", None)
-    link_version = params.get("linkVersion", None)
-
-    if validation_status != "all":
-        queryset = queryset.filter(validation_status=validation_status)
-
-    if search:
-        if search.startswith("ids:"):
-            s = search.replace("ids:", "")
-            try:
-                ids = re.findall("[A-Za-z0-9_-]+", s)
-                queryset = queryset.filter(id__in=ids)
-            except:
-                queryset = queryset.filter(id__in=[])
-                print("Failed parsing ids in search", search)
-        elif search.startswith("refs:"):
-            s = search.replace("refs:", "")
-            try:
-                refs = re.findall("[A-Za-z0-9_-]+", s)
-                queryset = queryset.filter(source_ref__in=refs)
-            except:
-                queryset = queryset.filter(source_ref__in=[])
-                print("Failed parsing refs in search", search)
-        else:
-            queryset = queryset.filter(Q(name__icontains=search) | Q(aliases__contains=[search]))
-
-    if group:
-        queryset = queryset.filter(groups__in=group.split(","))
-
-    if source:
-        queryset = queryset.filter(version__data_source_id=source)
-
-    if version:
-        queryset = queryset.filter(version=version)
-
-    if default_version == "true" and profile is not None:
-        queryset = queryset.filter(version=profile.account.default_version)
-
-    if date_from is not None and date_to is None:
-        queryset = queryset.filter(instance__created_at__gte=date_from)
-
-    if date_from is None and date_to is not None:
-        queryset = queryset.filter(instance__created_at__lte=date_to)
-
-    if date_from is not None and date_to is not None:
-        queryset = queryset.filter(instance__created_at__range=[date_from, date_to])
-
-    if has_instances is not None:
-        if has_instances == "true":
-            ids_with_instances = (
-                Instance.objects.filter(org_unit__isnull=False)
-                .exclude(file="")
-                .exclude(deleted=True)
-                .values_list("org_unit_id", flat=True)
-            )
-            queryset = queryset.filter(id__in=ids_with_instances)
-        if has_instances == "false":
-            ids_with_instances = (
-                Instance.objects.filter(org_unit__isnull=False)
-                .exclude(file="")
-                .exclude(deleted=True)
-                .values_list("org_unit_id", flat=True)
-            )
-            queryset = queryset.exclude(id__in=ids_with_instances)
-        if has_instances == "duplicates":
-            ids_with_duplicate_instances = (
-                Instance.objects.with_status()
-                .filter(org_unit__isnull=False, status=Instance.STATUS_DUPLICATED)
-                .exclude(file="")
-                .exclude(deleted=True)
-                .values_list("org_unit_id", flat=True)
-            )
-            queryset = queryset.filter(id__in=ids_with_duplicate_instances)
-
-    if org_unit_type_id:
-        queryset = queryset.filter(org_unit_type__id__in=org_unit_type_id.split(","))
-
-    if with_shape == "true":
-        queryset = queryset.filter(simplified_geom__isnull=False)
-
-    if with_shape == "false":
-        queryset = queryset.filter(simplified_geom__isnull=True)
-
-    if with_location == "true":
-        queryset = queryset.filter(Q(location__isnull=False))
-
-    if with_location == "false":
-        queryset = queryset.filter(Q(location__isnull=True))
-
-    if parent_id:
-        if parent_id == "0":
-            queryset = queryset.filter(parent__isnull=True)
-        else:
-            queryset = queryset.filter(parent__id=parent_id)
-
-    if org_unit_parent_id:
-        parent = OrgUnit.objects.get(id=org_unit_parent_id)
-        queryset = queryset.hierarchy(parent)
-
-    if linked_to:
-        queryset = queryset.filter(destination_set__destination_id=linked_to)
-        if link_validated != "all":
-            queryset = queryset.filter(destination_set__validated=link_validated)
-
-        if link_source:
-            queryset = queryset.filter(version__data_source_id=link_source)
-        if link_version:
-            queryset = queryset.filter(version_id=link_version)
-
-    if source_id:
-        queryset = queryset.filter(sub_source=source_id)
-
-    queryset = queryset.annotate(
-        instances_count=Count(
-            "instance",
-            filter=(~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True)),
-        )
-    )
-
-    if is_export:
-        annotations = {
-            "form_"
-            + str(frm.id)
-            + "_instances": Sum(
-                Case(
-                    When(
-                        Q(instance__form_id=frm.id)
-                        & ~Q(instance__file="")
-                        & ~Q(instance__device__test_device=True)
-                        & ~Q(instance__deleted=True),
-                        then=1,
-                    ),
-                    default=0,
-                    output_field=IntegerField(),
-                )
-            )
-            for frm in forms
-        }
-        queryset = queryset.annotate(**annotations)
-
-    queryset = queryset.select_related("version__data_source")
-    queryset = queryset.select_related("org_unit_type")
-    return queryset.distinct()

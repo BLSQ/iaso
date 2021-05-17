@@ -237,6 +237,7 @@ class OrgUnit(models.Model):
         # keep track of updated records
         updated_records = []
 
+        # noinspection PyUnresolvedReferences
         base_path = [] if self.parent is None else list(self.parent.path)
         new_path = [*base_path, str(self.pk)]
         path_has_changed = new_path != self.path

@@ -2,8 +2,7 @@
 line-length = 120
 exclude = '''
 /(
-    \.git
-  | \src
-
+    /.git
+  | src\django-webpack-loader
 )/
 '''

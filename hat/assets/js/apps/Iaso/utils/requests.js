@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     getRequest,
     patchRequest,
@@ -697,7 +697,7 @@ export const useAPI = (request, params = defaultHookParams) => {
     const [isError, setIsError] = useState(false);
     // useRef to avoid memory leak if user navigates away while async action not completed
     // credit: https://medium.com/wesionary-team/how-to-fix-memory-leak-issue-in-react-js-using-hook-a5ecbf9becf8
-    const mountedRef = useRef();
+    const mountedRef = React.useRef();
 
     useEffect(() => {
         mountedRef.current = true;

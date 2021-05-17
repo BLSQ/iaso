@@ -162,6 +162,9 @@ const failedRequest = async () => {
     throw new Error('Hook request failed!');
 };
 
+const refValue = { current: true };
+const refStub = sinon.stub(React, 'useRef').returns(refValue);
+
 const spyRequest = sinon.spy(successfulRequest);
 const spyFailedRequest = sinon.spy(failedRequest);
 
@@ -206,6 +209,17 @@ const Component = ({ preventTrigger, additionalDeps, request }) => {
 
 let component;
 describe('useAPI', () => {
+    describe('when component unmounts', () => {
+        before(() => {
+            refStub.resetHistory();
+            spyRequest.resetHistory();
+            component = mount(<Component request={spyRequest} />);
+        });
+        it('stops updating its internal state', () => {
+            component.unmount();
+            expect(refValue.current).to.equal(false);
+        });
+    });
     describe('default behaviour', () => {
         beforeEach(() => {
             spyRequest.resetHistory();

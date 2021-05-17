@@ -102,7 +102,9 @@ class Dhis2APITestCase(APITestCase):
 
     @tag("iaso_only")
     @responses.activate
-    def test_data_element_list_with_auth_and_configured_with_filter_fields_pageSize(self,):
+    def test_data_element_list_with_auth_and_configured_with_filter_fields_pageSize(
+        self,
+    ):
         """GET /dataElements/ with params return filtered"""
 
         self.with_credentials()

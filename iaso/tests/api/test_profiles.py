@@ -12,12 +12,8 @@ class ProfileAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.ghi = m.Account.objects.create(name="Global Health Initiative")
 
-        cls.jane = cls.create_user_with_profile(
-            username="janedoe", account=cls.ghi, permissions=["iaso_forms"]
-        )
-        cls.john = cls.create_user_with_profile(
-            username="johndoe", account=cls.ghi, is_superuser=True
-        )
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=cls.ghi, permissions=["iaso_forms"])
+        cls.john = cls.create_user_with_profile(username="johndoe", account=cls.ghi, is_superuser=True)
         cls.jim = cls.create_user_with_profile(
             username="jim", account=cls.ghi, permissions=["iaso_forms", "iaso_users"]
         )
@@ -31,17 +27,11 @@ class ProfileAPITestCase(APITestCase):
         sw_source = m.DataSource.objects.create(name="Evil Empire")
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
-        cls.jedi_squad = m.OrgUnitType.objects.create(
-            name="Jedi Squad", short_name="Jds"
-        )
-        cls.jedi_council = m.OrgUnitType.objects.create(
-            name="Jedi Council", short_name="Cnc"
-        )
+        cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
+        cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         cls.jedi_council.sub_unit_types.add(cls.jedi_squad)
 
-        cls.mock_multipolygon = MultiPolygon(
-            Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])
-        )
+        cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
         cls.mock_point = Point(x=4, y=50, z=100)
 
         cls.elite_group = m.Group.objects.create(name="Elite councils")
@@ -137,9 +127,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 3)
 
-    def assertValidProfileListData(
-        self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
-    ):
+    def assertValidProfileListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
             list_data=list_data,
             expected_length=expected_length,

@@ -106,9 +106,11 @@ def format_value(data_element, raw_value, orgunit_resolver):
         return str(translated_value)
 
     if data_element_type == "BOOLEAN":
-        if translated_value == "1" or translated_value == "yes" or translated_value == "true":
+        if translated_value == "1" or translated_value == "yes" or translated_value == "true" or translated_value == 1:
             return True
-        elif translated_value == "0" or translated_value == "no" or translated_value == "false":
+        elif (
+            translated_value == "0" or translated_value == "no" or translated_value == "false" or translated_value == 0
+        ):
             return False
         elif translated_value == "":
             return None

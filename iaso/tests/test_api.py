@@ -145,7 +145,7 @@ class BasicAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_insertion_new_field_names(self):
-        """Creating Org Units through the API but using org_unit_type_id and parent_id instead of orgUnitTypeId and parentId """
+        """Creating Org Units through the API but using org_unit_type_id and parent_id instead of orgUnitTypeId and parentId"""
         c = APIClient()
         hospital_unit_type = OrgUnitType.objects.get(name="Hospital")
         uuid = "w5dg2671-aa59-4fb2-a4a0-4af80573e2de"

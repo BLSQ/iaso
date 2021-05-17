@@ -7,7 +7,7 @@ from iaso.models import Mapping
 
 
 class MappingsViewSet(viewsets.ViewSet):
-    """ Mappings API
+    """Mappings API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_mappings" permission
 

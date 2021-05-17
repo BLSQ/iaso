@@ -10,6 +10,10 @@ from django.conf import settings
 from django.db import connection
 from django.utils import timezone
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 
 def json_dump(obj):
     if isinstance(obj, datetime):
@@ -38,7 +42,7 @@ class _TaskServiceBase:
         self.run(data["module"], data["method"], data["task_id"], data["args"], data["kwargs"])
 
     def run(self, module_name, method_name, task_id, args, kwargs):
-        """ run a task, called by the view that receives them from the queue """
+        """run a task, called by the view that receives them from the queue"""
         kwargs["_immediate"] = True
         task = Task.objects.get(id=task_id)
         if task.status == QUEUED:  # ensure a task is only run once
@@ -50,6 +54,10 @@ class _TaskServiceBase:
             assert method._is_task
 
             method(*args, task=task, **kwargs)
+
+            task.refresh_from_db()
+            if task.status == RUNNING:
+                logger.warning(f"Task {task} still in status RUNNING after execution")
 
     def enqueue(self, module_name, method_name, args, kwargs, task_id):
         body = json.dumps(
@@ -68,11 +76,11 @@ class FakeTaskService(_TaskServiceBase):
         return {"result": "recorded into fake queue service"}
 
     def clear(self):
-        """ wipe the test queue """
+        """wipe the test queue"""
         self.queue = []
 
     def run_all(self):
-        """ run everything in the test queue """
+        """run everything in the test queue"""
         # clear on_commit stuff
 
         if connection.in_atomic_block:

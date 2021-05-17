@@ -15,7 +15,7 @@ class FeatureFlagsSerializer(serializers.ModelSerializer):
 
 
 class FeatureFlagViewSet(ModelViewSet):
-    """ Feature flag API
+    """Feature flag API
 
     This API is restricted to authenticated users
 

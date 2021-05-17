@@ -293,7 +293,7 @@ class OrgUnitAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_search(self):
-        """GET /orgunits/ with a search based on name """
+        """GET /orgunits/ with a search based on name"""
 
         self.client.force_authenticate(self.yoda)
 
@@ -307,7 +307,7 @@ class OrgUnitAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_instance_duplicate_search(self):
-        """GET /orgunits/ with a search based on duplicates """
+        """GET /orgunits/ with a search based on duplicates"""
 
         self.client.force_authenticate(self.yoda)
 
@@ -321,7 +321,7 @@ class OrgUnitAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_instance_dates_search(self):
-        """GET /orgunits/ with a search based on dates """
+        """GET /orgunits/ with a search based on dates"""
 
         self.client.force_authenticate(self.yoda)
 

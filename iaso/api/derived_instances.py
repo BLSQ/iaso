@@ -45,7 +45,7 @@ class DerivedInstanceSerializer(serializers.Serializer):
 
 
 class DerivedInstancesViewSet(ModelViewSet):
-    """ Derived instances API
+    """Derived instances API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_completeness" permission
 

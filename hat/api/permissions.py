@@ -20,18 +20,11 @@ class PermissionsViewSet(viewsets.ViewSet):
     def list(self, request):
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
 
-        if (
-            request.user.has_perm("menupermissions.x_management_users")
-            or request.user.is_superuser
-        ):
+        if request.user.has_perm("menupermissions.x_management_users") or request.user.is_superuser:
             perms = Permission.objects
         else:
             perms = request.user.user_permissions
-        perms = (
-            perms.filter(content_type=content_type)
-            .filter(codename__startswith="x_")
-            .order_by("id")
-        )
+        perms = perms.filter(content_type=content_type).filter(codename__startswith="x_").order_by("id")
 
         result = []
         for permission in perms:

@@ -97,9 +97,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             search_index = 0
             base_queryset = queryset
             for search in json.loads(searches):
-                additional_queryset = build_org_units_queryset(base_queryset, search, profile, is_export, forms).annotate(
-                    search_index=Value(search_index, IntegerField())
-                )
+                additional_queryset = build_org_units_queryset(
+                    base_queryset, search, profile, is_export, forms
+                ).annotate(search_index=Value(search_index, IntegerField()))
                 if search_index == 0:
                     queryset = additional_queryset
                 else:
@@ -166,13 +166,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return self.list_to_gpkg(queryset)
         else:
 
-            '''
+            """
             When filtering the org units by group, the values_list will return the groups also filtered.
-            In order to get the all groups independently of filters, we should get the groups 
+            In order to get the all groups independently of filters, we should get the groups
             based on the org_unit FK.
-            '''
-            org_ids = queryset.order_by('pk').values_list('pk', flat=True).distinct()
-            groups = Group.objects.filter(org_units__id__in=list(org_ids)).only('id', 'name').distinct('id')
+            """
+            org_ids = queryset.order_by("pk").values_list("pk", flat=True).distinct()
+            groups = Group.objects.filter(org_units__id__in=list(org_ids)).only("id", "name").distinct("id")
 
             columns = [
                 {"title": "ID", "width": 10},
@@ -202,8 +202,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 columns.append({"title": "Total d'instances", "width": 15})
 
             for group in groups:
-                group.org_units__ids = list(group.org_units.values_list('id', flat=True))
-                columns.append({'title': group.name, 'width': 20})
+                group.org_units__ids = list(group.org_units.values_list("id", flat=True))
+                columns.append({"title": group.name, "width": 20})
 
             parent_field_names = ["parent__" * i + "name" for i in range(1, 5)]
             parent_field_names.extend(["parent__" * i + "source_ref" for i in range(1, 5)])
@@ -220,7 +220,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "location",
                 *parent_field_names,
                 *counts_by_forms,
-                "instances_count"
+                "instances_count",
             )
 
             filename = "org_units"
@@ -242,7 +242,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     *[org_unit.get(field_name) for field_name in parent_field_names],
                     *[org_unit.get(count_field_name) for count_field_name in counts_by_forms],
                     org_unit.get("instances_count"),
-                    *[int(org_unit.get("id") in group.org_units__ids) for group in groups]
+                    *[int(org_unit.get("id") in group.org_units__ids) for group in groups],
                 ]
                 return org_unit_values
 
@@ -722,7 +722,8 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
             queryset = queryset.exclude(id__in=ids_with_instances)
         if has_instances == "duplicates":
             ids_with_duplicate_instances = (
-                Instance.objects.with_status().filter(org_unit__isnull=False, status=Instance.STATUS_DUPLICATED)
+                Instance.objects.with_status()
+                .filter(org_unit__isnull=False, status=Instance.STATUS_DUPLICATED)
                 .exclude(file="")
                 .exclude(deleted=True)
                 .values_list("org_unit_id", flat=True)
@@ -775,7 +776,24 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
     )
 
     if is_export:
-        annotations = {"form_" + str(frm.id) + "_instances":Sum(Case(When(Q(instance__form_id=frm.id) & ~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True), then=1), default=0, output_field=IntegerField())) for frm in forms}
+        annotations = {
+            "form_"
+            + str(frm.id)
+            + "_instances": Sum(
+                Case(
+                    When(
+                        Q(instance__form_id=frm.id)
+                        & ~Q(instance__file="")
+                        & ~Q(instance__device__test_device=True)
+                        & ~Q(instance__deleted=True),
+                        then=1,
+                    ),
+                    default=0,
+                    output_field=IntegerField(),
+                )
+            )
+            for frm in forms
+        }
         queryset = queryset.annotate(**annotations)
 
     queryset = queryset.select_related("version__data_source")

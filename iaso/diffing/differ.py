@@ -3,7 +3,6 @@ from iaso.models import OrgUnit, GroupSet
 from .comparisons import as_field_types, Diff, Comparison
 
 
-
 def index_pyramid(orgunits):
     orgunits_by_source_ref = {}
     for orgunit in orgunits:
@@ -48,7 +47,7 @@ class Differ:
         top_org_unit=None,
         top_org_unit_ref=None,
         org_unit_types=None,
-        org_unit_types_ref=None
+        org_unit_types_ref=None,
     ):
         field_names = ["name", "geometry", "parent"]
         if not ignore_groups:
@@ -57,8 +56,15 @@ class Differ:
         self.iaso_logger.info("will compare the following fields ", field_names)
         field_types = as_field_types(field_names)
 
-        orgunits_dhis2 = self.load_pyramid(version, validation_status=validation_status, top_org_unit=top_org_unit, org_unit_types=org_unit_types)
-        orgunit_refs = self.load_pyramid(version_ref, validation_status=validation_status_ref, top_org_unit=top_org_unit_ref, org_unit_types=org_unit_types_ref)
+        orgunits_dhis2 = self.load_pyramid(
+            version, validation_status=validation_status, top_org_unit=top_org_unit, org_unit_types=org_unit_types
+        )
+        orgunit_refs = self.load_pyramid(
+            version_ref,
+            validation_status=validation_status_ref,
+            top_org_unit=top_org_unit_ref,
+            org_unit_types=org_unit_types_ref,
+        )
         self.iaso_logger.info(
             "comparing ", version_ref, "(", len(orgunits_dhis2), ")", " and ", version, "(", len(orgunit_refs), ")"
         )

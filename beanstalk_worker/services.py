@@ -38,7 +38,7 @@ class _TaskServiceBase:
         self.run(data["module"], data["method"], data["task_id"], data["args"], data["kwargs"])
 
     def run(self, module_name, method_name, task_id, args, kwargs):
-        """ run a task, called by the view that receives them from the queue """
+        """run a task, called by the view that receives them from the queue"""
         kwargs["_immediate"] = True
         task = Task.objects.get(id=task_id)
         if task.status == QUEUED:  # ensure a task is only run once
@@ -68,11 +68,11 @@ class FakeTaskService(_TaskServiceBase):
         return {"result": "recorded into fake queue service"}
 
     def clear(self):
-        """ wipe the test queue """
+        """wipe the test queue"""
         self.queue = []
 
     def run_all(self):
-        """ run everything in the test queue """
+        """run everything in the test queue"""
         # clear on_commit stuff
 
         if connection.in_atomic_block:

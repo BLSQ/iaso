@@ -497,7 +497,6 @@ class DataValueExporterTests(TestCase):
         instance_quality.refresh_from_db()
         self.assertIsNone(instance_quality.last_export_success_at)
 
-
     @responses.activate
     def test_aggregate_export_handle_mapping_errors(self):
         # setup

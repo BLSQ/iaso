@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0080_profile_external_user_id'),
+        ("iaso", "0080_profile_external_user_id"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='instance',
-            name='to_export',
+            model_name="instance",
+            name="to_export",
             field=models.BooleanField(default=False),
         ),
     ]

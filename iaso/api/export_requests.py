@@ -53,7 +53,7 @@ class ExportRequestSerializer(serializers.ModelSerializer):
 
 
 class ExportRequestsViewSet(ModelViewSet):
-    """ Export requests API
+    """Export requests API
 
     This API is restricted to authenticated users
 

@@ -49,7 +49,7 @@ class CompletenessAPITestCase(APITestCase):
         instance.period = period
         instance.form = self.form
         instance.project = self.project
-        instance.file="something_fake"
+        instance.file = "something_fake"
         instance.save()
         return instance
 

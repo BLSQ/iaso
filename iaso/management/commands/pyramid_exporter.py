@@ -38,10 +38,12 @@ class Command(BaseCommand):
         parser.add_argument("--validation_status_ref", type=str, help="Validation status ref", required=False)
         parser.add_argument("--top_org_unit_ref", type=int, help="Top org unit ref id", required=False)
         parser.add_argument("--top_org_unit", type=int, help="Top org unit id", required=False)
-        parser.add_argument("--org_unit_types", type=str, help="Org unit types ids, separated by a comma",
-                            required=False)
-        parser.add_argument("--org_unit_types_ref", type=str, help="Org unit types ids, separated by a comma, for ref",
-                            required=False)
+        parser.add_argument(
+            "--org_unit_types", type=str, help="Org unit types ids, separated by a comma", required=False
+        )
+        parser.add_argument(
+            "--org_unit_types_ref", type=str, help="Org unit types ids, separated by a comma, for ref", required=False
+        )
 
         parser.add_argument("--export", action="store_true", help="really export to dhis2 or only dry run")
         parser.add_argument("--output_csv", type=str, help="A file to output the diff as csv")
@@ -75,9 +77,9 @@ class Command(BaseCommand):
         self.iaso_logger = iaso_logger
         start = time.time()
         if org_unit_types:
-            org_unit_types = [int(i) for i in org_unit_types.split(',')]
+            org_unit_types = [int(i) for i in org_unit_types.split(",")]
         if org_unit_types_ref:
-            org_unit_types_ref = [int(i) for i in org_unit_types_ref.split(',')]
+            org_unit_types_ref = [int(i) for i in org_unit_types_ref.split(",")]
         _source, version = self.load_version(options, "source_name", "version_number")
         _source_ref, version_ref = self.load_version(options, "source_name_ref", "version_number_ref")
         iaso_logger.ok("================= Diffing =================")
@@ -93,7 +95,7 @@ class Command(BaseCommand):
             top_org_unit=top_org_unit,
             top_org_unit_ref=top_org_unit_ref,
             org_unit_types=org_unit_types,
-            org_unit_types_ref=org_unit_types_ref
+            org_unit_types_ref=org_unit_types_ref,
         )
         Dumper(iaso_logger, csv_file_name=file_name).dump(diffs, fields)
         export = options.get("export")
@@ -106,7 +108,7 @@ class Command(BaseCommand):
         end = time.time()
         iaso_logger.ok("processed in %.2f seconds" % (end - start))
 
-    def load_version(self, options, param_source_name, param_version_number, top_org_unit= None, org_unit_types=None):
+    def load_version(self, options, param_source_name, param_version_number, top_org_unit=None, org_unit_types=None):
         source_name = options[param_source_name]
         version_number = options[param_version_number]
         self.iaso_logger.info("loading ", source_name, version_number)

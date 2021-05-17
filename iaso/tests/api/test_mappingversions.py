@@ -167,7 +167,7 @@ class FormsVersionAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_mappingversions_create_ko_non_allowed_datasource(self):
-        """POST /mappingversions/ mapping """
+        """POST /mappingversions/ mapping"""
 
         self.client.force_authenticate(self.yoda)
         formversion = self.create_form_version()
@@ -187,7 +187,7 @@ class FormsVersionAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_mappingversions_create_ko_non_existing_form_version(self):
-        """POST /mappingversions/ mapping """
+        """POST /mappingversions/ mapping"""
 
         self.client.force_authenticate(self.yoda)
 

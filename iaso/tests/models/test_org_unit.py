@@ -64,7 +64,7 @@ class OrgUnitModelTestCase(TestCase):
 
     @tag("iaso_only")
     def test_org_unit_path_does_not_change(self):
-        """Updating the "name" property should not result in path change queries """
+        """Updating the "name" property should not result in path change queries"""
 
         corrusca = m.OrgUnit.objects.create(org_unit_type=self.sector, name="Corrusca Sector")
         corruscant = m.OrgUnit.objects.create(org_unit_type=self.system, parent=corrusca, name="Coruscant System")

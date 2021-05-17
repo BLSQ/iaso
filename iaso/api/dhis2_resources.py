@@ -10,7 +10,7 @@ from iaso.models import DataSource
 
 
 class Dhis2ViewSet(viewsets.ViewSet):
-    """ DHIS2 datasources API
+    """DHIS2 datasources API
 
     This API is restricted to authenticated users (no specific permission check)
 

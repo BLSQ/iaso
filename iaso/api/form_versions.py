@@ -73,14 +73,12 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     def get_form_name(self, form_version):
         return form_version.form.name
 
-
     def get_descriptor(self, form_version):
         return form_version.get_or_save_form_descriptor()
 
     @staticmethod
     def get_mapping_versions(obj: FormVersion):
         return [f.as_dict() for f in obj.mapping_versions.all()]
-
 
     def validate(self, data: typing.MutableMapping):
         #  TO_DO: validate start en end period (is a period and start before end)
@@ -126,8 +124,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         form_version.save()
         return form_version
 
+
 class FormVersionsViewSet(ModelViewSet):
-    """ Form versions API
+    """Form versions API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
 

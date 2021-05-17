@@ -125,7 +125,7 @@ INSTALLED_APPS = [
 ]
 
 if PLUGIN_POLIO_ENABLED:
-    INSTALLED_APPS.append('plugins.polio')
+    INSTALLED_APPS.append("plugins.polio")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -145,7 +145,7 @@ ROOT_URLCONF = "hat.urls"
 # Allow cors for all origins but only for the sync endpoint
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_ALL_ORIGINS = True
-#CORS_URLS_REGEX = r"^/sync/.*$"
+# CORS_URLS_REGEX = r"^/sync/.*$"
 
 
 TEMPLATES = [
@@ -267,7 +267,10 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, "iaso/static"), os.path.join(BASE_DIR, "hat/assets/webpack"), )
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "iaso/static"),
+    os.path.join(BASE_DIR, "hat/assets/webpack"),
+)
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {

@@ -60,7 +60,7 @@ class ProjectsAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/featureflags/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
-        self.assertValidFeatureFlagListData(response.json(),1)
+        self.assertValidFeatureFlagListData(response.json(), 1)
 
     @tag("iaso_only")
     def test_projects_list_paginated(self):

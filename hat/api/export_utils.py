@@ -17,9 +17,7 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row, sub_columns=None):
     formats = {"bold": bold, "percent": wb.add_format({"num_format": "0.00%"})}
 
     advanced = any([1 for cd in col_descs if "format" in cd])
-    max_height = (
-        max([c["title"].count("\n") for c in col_descs]) + 1
-    )  # Nb of lines in titles
+    max_height = max([c["title"].count("\n") for c in col_descs]) + 1  # Nb of lines in titles
     ws.set_row(0, 15 * max_height, bold)  # default height is 15
     ws.freeze_panes(1, 0)
 
@@ -49,10 +47,7 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row, sub_columns=None):
                 cell = xl_rowcol_to_cell(row_num - 1, col_num)
                 # The link format is using a text for the link display. Without specific format, a http link
                 # will still be automatically colored by Excel but will show the full URL instead of a short text.
-                if (
-                    str(column).startswith("http")
-                    and col_descs[col_num].get("format", "") == "link"
-                ):
+                if str(column).startswith("http") and col_descs[col_num].get("format", "") == "link":
                     ws.write_url(cell, str(column), string="Lien")
                 else:
                     ws.write(cell, column)

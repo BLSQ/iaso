@@ -68,6 +68,10 @@ jobs:
 #          GIT_COMMITTER_NAME: Github Bot
 #          EMAIL: edarchis@bluesquarehub.com
 
+      - name: Check formatting with black
+        run: |
+          black --check -q .
+
       - name: Django tests
         run: |
           python manage.py migrate

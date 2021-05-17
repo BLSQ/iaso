@@ -410,12 +410,7 @@ class OrgUnitAPITestCase(APITestCase):
         data = response.json()
         self.assertIn("task", data)
         self.assertEqual(len(task_service.queue), 1)
-        self.assertEqual(
-            task_service.queue[0],
-            '{"module": "iaso.tasks.org_units_bulk_update", "method": "org_units_bulk_update", '
-            '"task_id": 1, "args": [null, true, [], [5, 2], [], null, null, [1], "REJECTED"], '
-            '"kwargs": {}}',
-        )
+
         task = Task.objects.get(pk=data["task"]["id"])
         self.assertEqual(task.status, "QUEUED")
         self.assertEqual(task.name, "org_unit_bulk_update")

@@ -153,18 +153,12 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(task.launcher, self.raccoon)
 
         # Run the task
-        self.assertEqual(len(task_service.queue), 1)
-        task_service.run_all()
-        self.assertEqual(len(task_service.queue), 0)
+        task = self.runAndValidateTask(task, "ERRORED")
+        self.assertEqual(task.result["message"], "No matching org unit found")
 
         for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels, self.jedi_council_corruscant]:
             jedi_council.refresh_from_db()
             self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
-
-        response = self.client.get("/api/tasks/%d/" % data["task"]["id"])
-        self.assertEqual(response.status_code, 200)
-        task = self.assertValidTaskAndInDB(response.json(), "ERRORED")
-        self.assertEqual(task.result["message"], "No matching org unit found")
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_wrong_account(self):
@@ -182,18 +176,14 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(task.launcher, self.raccoon)
 
         # Run the task
-        self.assertEqual(len(task_service.queue), 1)
-        task_service.run_all()
-        self.assertEqual(len(task_service.queue), 0)
+        task = self.runAndValidateTask(task, "ERRORED")
+        self.assertEqual(task.result["message"], "No matching org unit found")
 
         for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels, self.jedi_council_corruscant]:
             jedi_council.refresh_from_db()
             self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
 
-        response = self.client.get("/api/tasks/%d/" % data["task"]["id"])
-        self.assertEqual(response.status_code, 200)
-        task = self.assertValidTaskAndInDB(response.json(), "ERRORED")
-        self.assertEqual(task.result["message"], "No matching org unit found")
+
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_task_select_all_but_some(self):
@@ -216,9 +206,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(task.launcher, self.yoda)
 
         # Run the task
-        self.assertEqual(len(task_service.queue), 1)
-        task_service.run_all()
-        self.assertEqual(len(task_service.queue), 0)
+        self.runAndValidateTask(task, "SUCCESS")
 
         self.jedi_council_corruscant.refresh_from_db()
         self.assertEqual(self.jedi_council_corruscant.validation_status, m.OrgUnit.VALIDATION_REJECTED)
@@ -231,10 +219,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(3, am.Modification.objects.count())
 
-        # Task completion status
-        response = self.client.get("/api/tasks/%d/" % data["task"]["id"])
-        self.assertEqual(response.status_code, 200)
-        self.assertValidTaskAndInDB(response.json(), "SUCCESS")
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_task_select_all_with_multiple_searches(self):
@@ -254,9 +238,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
         self.assertEqual(task.launcher, self.yoda)
 
-        self.assertEqual(len(task_service.queue), 1)
-        task_service.run_all()
-        self.assertEqual(len(task_service.queue), 0)
+        self.runAndValidateTask(task, "SUCCESS")
 
         for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels, self.jedi_council_corruscant]:
             jedi_council.refresh_from_db()
@@ -265,9 +247,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(5, am.Modification.objects.count())
 
-        response = self.client.get("/api/tasks/%d/" % data["task"]["id"])
-        self.assertEqual(response.status_code, 200)
-        self.assertValidTaskAndInDB(response.json(), "SUCCESS")
 
     def test_task_kill(self):
         """Launch the task and then kill it
@@ -289,17 +268,22 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         data = response.json()
         self.assertValidTaskAndInDB(data["task"])
 
-        task_model = Task.objects.get(id=data["task"]["id"])
-        task_model.should_be_killed = True
-        task_model.save()
+        task = Task.objects.get(id=data["task"]["id"])
+        task.should_be_killed = True
+        task.save()
 
+        self.runAndValidateTask(task, "KILLED")
+
+    def runAndValidateTask(self, task, new_status):
+        "Run all task in queue and validate that task is run"
         self.assertEqual(len(task_service.queue), 1)
         task_service.run_all()
         self.assertEqual(len(task_service.queue), 0)
 
-        response = self.client.get("/api/tasks/%d/" % data["task"]["id"])
+        response = self.client.get("/api/tasks/%d/" % task.id)
         self.assertEqual(response.status_code, 200)
-        self.assertValidTaskAndInDB(response.json(), "KILLED")
+        # Task completion status
+        return self.assertValidTaskAndInDB(response.json(), new_status)
 
     def assertValidTaskAndInDB(self, task_dict, status="QUEUED", name=None):
         self.assertEqual(task_dict["status"], status)
@@ -308,4 +292,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertTrue(task)
         if name:
             self.assertEqual(task.name, name)
+
         return task
+

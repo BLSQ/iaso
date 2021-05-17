@@ -246,6 +246,7 @@ def dhis2_ou_importer(
             logger.debug(res_string)
             the_task.status = ERRORED
             the_task.result = {"message": res_string}
+            the_task.save()
             return
     the_task.report_progress_and_stop_if_killed(progress_message="fetching org units")
     orgunits = fetch_orgunits(connection_config)
@@ -262,6 +263,7 @@ def dhis2_ou_importer(
         logger.debug(res_string)
         the_task.status = ERRORED
         the_task.result = {"message": res_string}
+        the_task.save()
         return
     else:
         OrgUnit.objects.filter(version=version).delete()
@@ -315,6 +317,7 @@ def dhis2_ou_importer(
             if not continue_on_error:
                 the_task.status = ERRORED
                 the_task.result = {"message": res_string}
+                the_task.save()
                 raise e
         index += 1
 

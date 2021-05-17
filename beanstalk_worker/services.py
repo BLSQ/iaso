@@ -10,6 +10,10 @@ from django.conf import settings
 from django.db import connection
 from django.utils import timezone
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 
 def json_dump(obj):
     if isinstance(obj, datetime):
@@ -50,6 +54,10 @@ class _TaskServiceBase:
             assert method._is_task
 
             method(*args, task=task, **kwargs)
+
+            task.refresh_from_db()
+            if task.status == RUNNING:
+                logger.warning(f"Task {task} still in status RUNNING after execution")
 
     def enqueue(self, module_name, method_name, args, kwargs, task_id):
         body = json.dumps(

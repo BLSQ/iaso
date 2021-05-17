@@ -25,7 +25,7 @@ class HasProfilePermission(permissions.BasePermission):
 
 
 class ProfilesViewSet(viewsets.ViewSet):
-    """ Profiles API
+    """Profiles API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_users" permission, with one
     exception: GET /api/profiles/me is accessible to any authenticated user.

@@ -37,9 +37,7 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
-        migrations.RenameField(
-            model_name="catch", old_name="location", new_name="endLocation"
-        ),
+        migrations.RenameField(model_name="catch", old_name="location", new_name="endLocation"),
         migrations.RemoveField(model_name="catch", name="distance_to_targets"),
         migrations.RemoveField(model_name="catch", name="elev_change"),
         migrations.RemoveField(model_name="catch", name="elev_diff"),

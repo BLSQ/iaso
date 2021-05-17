@@ -104,8 +104,7 @@ def get_menu(user, active_link):
                 },
                 {
                     "name": "Villages",
-                    "url_key": reverse("dashboard:management_village")
-                    + "/village_official/YES",
+                    "url_key": reverse("dashboard:management_village") + "/village_official/YES",
                     "perms": "x_management_villages",
                 },
                 {
@@ -228,9 +227,7 @@ def get_menu(user, active_link):
         else:
             active_sub_menu_items = []
             for sub_menu_item in sub_menu_items:
-                if not sub_menu_item.get("perms") or user.has_perm(
-                    "menupermissions." + sub_menu_item.get("perms")
-                ):
+                if not sub_menu_item.get("perms") or user.has_perm("menupermissions." + sub_menu_item.get("perms")):
                     if active_link in sub_menu_item["url_key"]:
                         sub_menu_item["active"] = True
                         menu_item["active"] = True

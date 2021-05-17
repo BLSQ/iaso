@@ -37,7 +37,7 @@ class LinkSerializer(serializers.ModelSerializer):
 
 
 class LinkViewSet(viewsets.ViewSet):
-    """ Links API
+    """Links API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_links" permission
 

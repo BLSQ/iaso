@@ -35,14 +35,17 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
         force = attrs["force"]
         source_id = attrs["source_id"]
 
-        existing_version = list(SourceVersion.objects.filter(data_source_id=source_id, number=attrs["source_version_number"]).distinct())
+        existing_version = list(
+            SourceVersion.objects.filter(data_source_id=source_id, number=attrs["source_version_number"]).distinct()
+        )
         if len(existing_version) > 0:
             source_version = SourceVersion.objects.get(data_source_id=source_id, number=attrs["source_version_number"])
             if source_version:
                 version_count = OrgUnit.objects.filter(version=source_version).count()
                 if version_count > 0 and not force:
                     raise serializers.ValidationError(
-                        "This is going to delete %d org units records. Use the force parameter to proceed" % version_count
+                        "This is going to delete %d org units records. Use the force parameter to proceed"
+                        % version_count
                     )
 
         if validated_data["source_id"] not in possible_data_sources:
@@ -64,9 +67,9 @@ class Dhis2OuImporterViewSet(viewsets.ViewSet):
         force = data.get("force", False)
         validate_status = data.get("validate_status", False)
         continue_on_error = data.get("continue_on_error", False)
-        dhis2_url = data.get("dhis2_url",None)
-        dhis2_login = data.get("dhis2_login",None)
-        dhis2_password = data.get("dhis2_password",None)
+        dhis2_url = data.get("dhis2_url", None)
+        dhis2_login = data.get("dhis2_login", None)
+        dhis2_password = data.get("dhis2_password", None)
 
         task = dhis2_ou_importer(
             source_id,

@@ -40,9 +40,7 @@ def change_password(request):
 def home(request: HttpRequest) -> HttpResponse:
     user = request.user
     if user.is_anonymous:
-        return render(
-            request, "dashboard/home.html", {"STATIC_URL": settings.STATIC_URL}
-        )
+        return render(request, "dashboard/home.html", {"STATIC_URL": settings.STATIC_URL})
     else:
         if user.profile.password_reset:
             return redirect("/dashboard/password")

@@ -12,22 +12,16 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="catch",
             name="end_location",
-            field=django.contrib.gis.db.models.fields.PointField(
-                dim=3, null=True, srid=4326
-            ),
+            field=django.contrib.gis.db.models.fields.PointField(dim=3, null=True, srid=4326),
         ),
         migrations.AlterField(
             model_name="catch",
             name="start_location",
-            field=django.contrib.gis.db.models.fields.PointField(
-                dim=3, null=True, srid=4326
-            ),
+            field=django.contrib.gis.db.models.fields.PointField(dim=3, null=True, srid=4326),
         ),
         migrations.AlterField(
             model_name="site",
             name="location",
-            field=django.contrib.gis.db.models.fields.PointField(
-                dim=3, null=True, srid=4326
-            ),
+            field=django.contrib.gis.db.models.fields.PointField(dim=3, null=True, srid=4326),
         ),
     ]

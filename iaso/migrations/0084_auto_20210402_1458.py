@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0083_datasource_default_version'),
+        ("iaso", "0083_datasource_default_version"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='formversion',
-            name='end_period',
+            model_name="formversion",
+            name="end_period",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='formversion',
-            name='start_period',
+            model_name="formversion",
+            name="start_period",
             field=models.TextField(blank=True, null=True),
         ),
     ]

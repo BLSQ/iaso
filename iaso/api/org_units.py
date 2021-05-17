@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils.translation import gettext as _
 from iaso.api.common import safe_api_import
-from iaso.api.tasks import TaskSerializer
 from iaso.gpkg import org_units_to_gpkg
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, DataSource, BulkOperation
 from django.contrib.gis.geos import Point
@@ -15,7 +14,6 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 
 from iaso.models.org_unit_search import build_org_units_queryset
-from iaso.tasks.org_units_bulk_update import org_units_bulk_update
 from iaso.utils import geojson_queryset
 from django.db.models import Q
 from copy import deepcopy
@@ -571,34 +569,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 )
         # id is a kind of placeholder for a future job id
         return Response({"id": 1}, status=status.HTTP_201_CREATED)
-
-    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
-    def bulkupdate_task(self, request):
-        select_all = request.data.get("select_all", None)
-        validation_status = request.data.get("validation_status", None)
-        org_unit_type_id = request.data.get("org_unit_type", None)
-        groups_ids_added = request.data.get("groups_added", None)
-        groups_ids_removed = request.data.get("groups_removed", None)
-        selected_ids = request.data.get("selected_ids", [])
-        unselected_ids = request.data.get("unselected_ids", [])
-        searches = request.data.get("searches", [])
-
-        user = self.request.user
-        app_id = self.request.query_params.get("app_id")
-
-        task = org_units_bulk_update(
-            app_id,
-            select_all,
-            selected_ids,
-            unselected_ids,
-            searches,
-            org_unit_type_id,
-            groups_ids_added,
-            groups_ids_removed,
-            validation_status,
-            user=user,
-        )
-        return Response({"task": TaskSerializer(instance=task).data})
 
 
 def import_data(org_units, user, app_id):

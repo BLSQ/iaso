@@ -24,16 +24,17 @@ class OrgUnitsBulkUpdate(viewsets.ViewSet):
         user = self.request.user
         app_id = self.request.query_params.get("app_id")
 
+        # a=a is a bit redudant but it will allow a bit more verbosity in queue and edit log
         task = org_units_bulk_update(
-            app_id,
-            select_all,
-            selected_ids,
-            unselected_ids,
-            searches,
-            org_unit_type_id,
-            groups_ids_added,
-            groups_ids_removed,
-            validation_status,
+            app_id=app_id,
+            select_all=select_all,
+            selected_ids=selected_ids,
+            unselected_ids=unselected_ids,
+            searches=searches,
+            org_unit_type_id=org_unit_type_id,
+            groups_ids_added=groups_ids_added,
+            groups_ids_removed=groups_ids_removed,
+            validation_status=validation_status,
             user=user,
         )
         return Response(

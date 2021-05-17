@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.test import tag
 
@@ -183,7 +184,110 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             jedi_council.refresh_from_db()
             self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
 
+    @tag("iaso_only")
+    def test_org_unit_bulkupdate_select_some(self):
+        """POST /orgunits/bulkupdate happy path"""
 
+        self.client.force_authenticate(self.yoda)
+        operation_payload = {
+            "select_all": False,
+            "selected_ids": [self.jedi_council_brussels.pk, self.jedi_council_endor.pk],
+            "groups_added": [self.unofficial_group.pk],
+            "validation_status": m.OrgUnit.VALIDATION_REJECTED,
+        }
+        response = self.client.post(f"/api/tasks/create/orgunitsbulkupdate/", data=operation_payload, format="json")
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
+        self.assertEqual(task.launcher, self.yoda)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
+
+        for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels]:
+            jedi_council.refresh_from_db()
+            self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_REJECTED)
+            self.assertIn(self.unofficial_group, jedi_council.groups.all())
+
+        self.jedi_council_corruscant.refresh_from_db()
+        self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_REJECTED)
+        self.assertNotIn(self.unofficial_group, self.jedi_council_corruscant.groups.all())
+
+        self.assertEqual(1, m.BulkOperation.objects.count())
+        self.assertEqual(2, am.Modification.objects.count())
+
+        operation = m.BulkOperation.objects.first()
+        self.assertEqual(ContentType.objects.get_for_model(m.OrgUnit), operation.content_type)
+        # self.assertEqual(operation_payload, operation.json_body)
+        self.assertEqual(self.yoda, operation.user)
+        self.assertEqual(m.BulkOperation.OPERATION_TYPE_UPDATE, operation.operation_type)
+        self.assertEqual(2, operation.operation_count)
+
+        modification_endor = am.Modification.objects.get(object_id=self.jedi_council_endor.pk)
+        self.assertEqual(ContentType.objects.get_for_model(m.OrgUnit), modification_endor.content_type)
+        self.assertEqual(self.yoda, modification_endor.user)
+        self.assertEqual(am.ORG_UNIT_API_BULK, modification_endor.source)
+        self.assertEqual(m.OrgUnit.VALIDATION_VALID, modification_endor.past_value[0]["fields"]["validation_status"])
+        self.assertEqual(m.OrgUnit.VALIDATION_REJECTED, modification_endor.new_value[0]["fields"]["validation_status"])
+
+    @tag("iaso_only")
+    def test_org_unit_bulkupdate_select_all(self):
+        """POST /orgunits/bulkupdate happy path (select all)"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/tasks/create/orgunitsbulkupdate/",
+            data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_VALID},
+            format="json",
+        )
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
+        self.assertEqual(task.launcher, self.yoda)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
+
+        for jedi_council in [self.jedi_council_endor, self.jedi_council_corruscant, self.jedi_council_brussels]:
+            jedi_council.refresh_from_db()
+            self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
+
+        self.assertEqual(1, m.BulkOperation.objects.count())
+        self.assertEqual(5, am.Modification.objects.count())
+
+    @tag("iaso_only")
+    def test_org_unit_bulkupdate_select_all_with_search(self):
+        """POST /orgunits/bulkupdate happy path (select all, but with search)"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/tasks/create/orgunitsbulkupdate/",
+            data={
+                "select_all": True,
+                "validation_status": m.OrgUnit.VALIDATION_REJECTED,
+                "searches": [{"group": f"{self.elite_group.pk}"}],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
+        self.assertEqual(task.launcher, self.yoda)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
+
+        self.jedi_council_corruscant.refresh_from_db()
+        self.assertEqual(self.jedi_council_corruscant.validation_status, m.OrgUnit.VALIDATION_REJECTED)
+
+        for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels]:
+            jedi_council.refresh_from_db()
+            self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
+
+        self.assertEqual(1, m.BulkOperation.objects.count())
+        self.assertEqual(1, am.Modification.objects.count())
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_task_select_all_but_some(self):
@@ -219,7 +323,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(3, am.Modification.objects.count())
 
-
     @tag("iaso_only")
     def test_org_unit_bulkupdate_task_select_all_with_multiple_searches(self):
         """POST /orgunits/bulkupdate happy path (select all, but with multiple searches)"""
@@ -229,7 +332,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             data={
                 "select_all": True,
                 "groups_added": [self.another_group.pk],
-                "searches": [{"validation_status": "all"}, {"validation_status": m.OrgUnit.VALIDATION_REJECTED}],
+                "searches": [{"v1alidation_status": "all"}, {"validation_status": m.OrgUnit.VALIDATION_REJECTED}],
             },
             format="json",
         )
@@ -246,7 +349,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(5, am.Modification.objects.count())
-
 
     def test_task_kill(self):
         """Launch the task and then kill it
@@ -286,7 +388,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         return self.assertValidTaskAndInDB(response.json(), new_status)
 
     def assertValidTaskAndInDB(self, task_dict, status="QUEUED", name=None):
-        self.assertEqual(task_dict["status"], status)
+        self.assertEqual(task_dict["status"], status, task_dict)
 
         task = Task.objects.get(id=task_dict["id"])
         self.assertTrue(task)
@@ -294,4 +396,3 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             self.assertEqual(task.name, name)
 
         return task
-

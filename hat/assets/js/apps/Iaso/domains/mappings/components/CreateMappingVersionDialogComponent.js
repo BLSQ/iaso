@@ -52,7 +52,7 @@ const CreateMappingVersionDialogComponent = ({
         };
         if (mappingType === 'AGGREGATE') {
             payload.dataset = dataset;
-        } else if (mappingType === 'EVENT' || mappingType == 'EVENT_TRACKER') {
+        } else if (mappingType === 'EVENT' || mappingType === 'EVENT_TRACKER') {
             payload.program = dataset;
         }
 
@@ -160,9 +160,11 @@ const CreateMappingVersionDialogComponent = ({
 CreateMappingVersionDialogComponent.propTypes = {
     createMappingRequest: PropTypes.func.isRequired,
     fetchSources: PropTypes.func.isRequired,
-    mappingSources: PropTypes.array.isRequired,
+    mappingSources: PropTypes.array,
 };
-
+CreateMappingVersionDialogComponent.defaultProps = {
+    mappingSources: [],
+};
 const MapStateToProps = state => ({
     mappingSources: state.mappings.mappingSources,
 });

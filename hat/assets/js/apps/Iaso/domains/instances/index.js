@@ -106,7 +106,8 @@ class Instances extends Component {
         };
     }
 
-    componentWillMount() {
+    // eslint-disable-next-line camelcase
+    UNSAFE_componentWillMount() {
         const {
             dispatch,
             params: { formId, columns },
@@ -140,13 +141,13 @@ class Instances extends Component {
             params: { formId, tab },
             fetchFormDetail,
         } = this.props;
-        
+
         this.fetchInstances(tab !== 'map');
         if (tab === 'map') {
             this.fetchSmallInstances();
         }
         const formDetails = await fetchFormDetail(formId);
-        const labelKeys = formDetails.label_keys??[];
+        const labelKeys = formDetails.label_keys ?? [];
         this.setState(state => {
             return { ...state, labelKeys };
         });
@@ -194,6 +195,20 @@ class Instances extends Component {
                 ),
             );
         }
+    }
+
+    handleChangeTab(tab, redirect = true) {
+        if (redirect) {
+            const { redirectToReplace, params } = this.props;
+            const newParams = {
+                ...params,
+                tab,
+            };
+            redirectToReplace(baseUrl, newParams);
+        }
+        this.setState(state => {
+            return { ...state, tab };
+        });
     }
 
     onSearch() {
@@ -259,20 +274,6 @@ class Instances extends Component {
     setForceRefresh(forceRefresh) {
         this.setState(state => {
             return { ...state, forceRefresh };
-        });
-    }
-
-    handleChangeTab(tab, redirect = true) {
-        if (redirect) {
-            const { redirectToReplace, params } = this.props;
-            const newParams = {
-                ...params,
-                tab,
-            };
-            redirectToReplace(baseUrl, newParams);
-        }
-        this.setState(state => {
-            return { ...state, tab };
         });
     }
 

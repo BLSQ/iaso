@@ -1,12 +1,7 @@
-import mapValues from 'lodash/mapValues';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 import { postRequest } from '../../libs/Api';
-import {
-    saveAction,
-    createAction,
-    deleteAction,
-} from '../../redux/actions/formsActions';
+import { saveAction, createAction } from '../../redux/actions/formsActions';
 
 export const SET_ORG_UNITS = 'SET_ORG_UNITS';
 export const SET_ORG_UNITS_LOCATIONS = 'SET_ORG_UNITS_LOCATIONS';

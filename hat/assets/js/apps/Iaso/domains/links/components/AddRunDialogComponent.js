@@ -59,6 +59,18 @@ class AddRunDialogComponent extends Component {
         };
     }
 
+    handleClose(isAccepted) {
+        const { executeRun } = this.props;
+        const runItem = {
+            ...this.state,
+        };
+        delete runItem.open;
+        this.toggleDialog();
+        if (isAccepted) {
+            executeRun(runItem);
+        }
+    }
+
     onChange(key, value) {
         const newState = {
             ...this.state,
@@ -71,18 +83,6 @@ class AddRunDialogComponent extends Component {
         this.setState({
             open: !this.state.open,
         });
-    }
-
-    handleClose(isAccepted) {
-        const { executeRun } = this.props;
-        const runItem = {
-            ...this.state,
-        };
-        delete runItem.open;
-        this.toggleDialog();
-        if (isAccepted) {
-            executeRun(runItem);
-        }
     }
 
     render() {
@@ -101,7 +101,7 @@ class AddRunDialogComponent extends Component {
             versionDestination,
         } = this.state;
         return (
-            <Fragment>
+            <>
                 <Button
                     variant="contained"
                     className={classes.button}
@@ -275,7 +275,7 @@ class AddRunDialogComponent extends Component {
                         </Button>
                     </DialogActions>
                 </Dialog>
-            </Fragment>
+            </>
         );
     }
 }

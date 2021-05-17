@@ -184,7 +184,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         const { orgUnitTypesList } = this.state;
 
         return (
-            <Fragment>
+            <>
                 <Box className={classes.innerDrawerToolbar} component="div">
                     <Typography variant="subtitle1">
                         <FormattedMessage {...MESSAGES.subOrgUnitsType} />
@@ -234,7 +234,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                         />
                     )}
                 </Box>
-            </Fragment>
+            </>
         );
     }
 }

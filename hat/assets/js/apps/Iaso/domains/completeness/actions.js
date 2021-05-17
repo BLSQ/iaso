@@ -38,14 +38,14 @@ export const fetchCompleteness = () => dispatch => {
 export const generateDerivedInstances = derivedrequest => dispatch => {
     dispatch(startFetchingCompleteness());
     postRequest('/api/derivedinstances/', derivedrequest)
-        .then(res =>
+        .then(() =>
             dispatch(
                 enqueueSnackbar(
                     succesfullSnackBar('generateDerivedRequestSuccess'),
                 ),
             ),
         )
-        .then(res => dispatch(fetchCompleteness()))
+        .then(() => dispatch(fetchCompleteness()))
         .catch(err =>
             dispatch(
                 enqueueSnackbar(

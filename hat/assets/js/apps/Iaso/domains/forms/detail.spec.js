@@ -53,10 +53,6 @@ let redirectAction;
 const newName = 'ZELDA';
 const fakeForm = formsFixture.forms[0];
 const formId = '69';
-const newFile = new File([''], 'filename.txt', {
-    type: 'text/plain',
-    lastModified: new Date(),
-});
 
 const resetAndMock = theId => {
     nock.cleanAll();

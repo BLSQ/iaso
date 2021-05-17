@@ -197,7 +197,7 @@ class OrgunitsMap extends Component {
                 <InnerDrawer
                     withTopBorder
                     settingsOptionComponent={
-                        <Fragment>
+                        <>
                             <TileSwitch />
                             <Divider />
                             <ClusterSwitch />
@@ -214,7 +214,7 @@ class OrgunitsMap extends Component {
                                     filters={[locationsLimit()]}
                                 />
                             </Box>
-                        </Fragment>
+                        </>
                     }
                 >
                     <Map

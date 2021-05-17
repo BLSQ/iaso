@@ -4,15 +4,15 @@ import PropTypes from 'prop-types';
 import Typography from '@material-ui/core/Typography';
 
 const ObjectDumper = ({ object }) => {
-    if (object == undefined || object == null) {
+    if (object === undefined || object === null) {
         return <div />;
     }
     return (
         <div style={{ paddingLeft: '20px' }}>
             {Object.keys(object)
                 .filter(field =>
-                    object && object.type == 'repeat'
-                        ? field != 'children'
+                    object && object.type === 'repeat'
+                        ? field !== 'children'
                         : true,
                 )
                 .map(field => (

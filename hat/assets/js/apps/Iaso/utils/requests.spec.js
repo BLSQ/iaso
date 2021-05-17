@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { expect } from 'chai';
 import nock from 'nock';
 
@@ -12,7 +12,7 @@ import {
     putRequest,
     restoreRequest,
 } from '../libs/Api';
-import { requestHandler } from './requests';
+import { requestHandler, useAPI } from './requests';
 
 const URL = '/api/test';
 const FAIL_URL = '/api/fail';
@@ -149,28 +149,140 @@ describe('patchRequestHandler', testRequestOfType('patch'));
 describe('deleteRequestHandler', testRequestOfType('delete'));
 describe('restoreRequestHandler', testRequestOfType('restore'));
 
-const request = useCallback(async () => {
-    return setTimeout(() => 'data', 1000);
-}, []);
+// credit https://stackoverflow.com/questions/51200626/using-a-settimeout-in-a-async-function
+const waitFor = delay => new Promise(resolve => setTimeout(resolve, delay));
 
-const Component = () => {
-    const { data, isLoading, isError } = useAPI(request);
+const successfulRequest = async () => {
+    await waitFor(100);
+    return 'data';
+};
+
+const failedRequest = async () => {
+    await waitFor(100);
+    throw new Error('Hook request failed!');
+};
+
+const spyRequest = sinon.spy(successfulRequest);
+const spyFailedRequest = sinon.spy(failedRequest);
+
+class ErrorBoundary extends React.Component {
+    componentDidCatch(error, errorInfo) {
+        console.log('BOUNDARY ERROR', error, errorInfo);
+    }
+
+    render() {
+        return this.props.children;
+    }
+}
+
+// eslint-disable-next-line react/prop-types
+const Component = ({ preventTrigger, additionalDeps, request }) => {
+    const [additionalDep, setAdditionalDep] = useState('additionalDep');
+    const hookParams =
+        preventTrigger || additionalDeps
+            ? {
+                  preventTrigger: preventTrigger || undefined,
+                  additionalDependencies: additionalDeps
+                      ? [additionalDep]
+                      : undefined,
+              }
+            : undefined;
+    const { data, isLoading, isError } = useAPI(request, hookParams);
+    useEffect(() => {
+        if (additionalDeps && additionalDep !== 'updatedDep') {
+            setAdditionalDep('updatedDep');
+        }
+    }, [additionalDep]);
     return (
-        <ul>
-            <li>{data}</li>
-            <li>{isLoading}</li>
-            <li>{isError}</li>
-        </ul>
+        <ErrorBoundary>
+            <ul>
+                <li id="data">{data}</li>
+                <li id="loading">{isLoading ? 'Loading' : 'Not loading'}</li>
+                <li id="error">{isError ? 'Error' : 'No error'}</li>
+            </ul>
+        </ErrorBoundary>
     );
 };
 
+let component;
 describe('useAPI', () => {
-    it('makes the request', () => {});
-    it('does not make the request if preventTrigger is true', () => {});
-    it('makes the request when additional dependencies update', () => {});
-    it('returns data', () => {});
-    it('returns correct loading state', () => {});
+    describe('default behaviour', () => {
+        beforeEach(() => {
+            spyRequest.resetHistory();
+            component = mount(
+                <Component
+                    preventTrigger={undefined}
+                    additionalDeps={undefined}
+                    request={spyRequest}
+                />,
+            );
+        });
+        it('makes the request', async () => {
+            expect(component.exists()).to.equal(true);
+            expect(spyRequest).to.have.been.called;
+        });
+        it('returns data with correct error state', async () => {
+            let dataTag = component.find('#data').at(0);
+            let errorTag = component.find('#error').at(0);
+            expect(dataTag.props().children).to.equal(null);
+            expect(errorTag.props().children).to.equal('No error');
+            await waitFor(150);
+            component.update();
+            dataTag = component.find('#data').at(0);
+            errorTag = component.find('#error').at(0);
+            expect(dataTag.props().children).to.equal('data');
+            expect(errorTag.props().children).to.equal('No error');
+        });
+        it('returns correct loading state', async () => {
+            let loadingTag = component.find('#loading').at(0);
+            expect(loadingTag.props().children).to.equal('Loading');
+            await waitFor(150);
+            component.update();
+            loadingTag = component.find('#loading').at(0);
+            expect(loadingTag.props().children).to.equal('Not loading');
+        });
+    });
+    describe('when preventTrigger is true', () => {
+        before(() => {
+            spyRequest.resetHistory();
+            component = mount(
+                <Component preventTrigger request={spyRequest} />,
+            );
+        });
+        it('does not make the request', () => {
+            expect(component.exists()).to.equal(true);
+            expect(spyRequest).to.not.have.been.called;
+        });
+    });
+    describe('when additional dependencies are defined', () => {
+        before(() => {
+            spyRequest.resetHistory();
+            component = mount(
+                <Component additionalDeps request={spyRequest} />,
+            );
+        });
+        it('makes the request when additional dependencies update', () => {
+            expect(component.exists()).to.equal(true);
+            expect(spyRequest).to.have.been.calledTwice;
+        });
+    });
+
     describe('when request fails', () => {
-        it('return correct error and loading state', () => {});
+        before(() => {
+            spyRequest.resetHistory();
+            component = mount(<Component request={spyFailedRequest} />);
+        });
+        it('returns correct error state', async () => {
+            let dataTag = component.find('#data').at(0);
+            let errorTag = component.find('#error').at(0);
+            expect(dataTag.props().children).to.equal(null);
+            expect(errorTag.props().children).to.equal('No error');
+            await waitFor(150);
+            component.update();
+            dataTag = component.find('#data').at(0);
+            errorTag = component.find('#error').at(0);
+            expect(dataTag.props().children).to.equal(null);
+            expect(errorTag.props().children).to.equal('Error');
+        });
     });
 });

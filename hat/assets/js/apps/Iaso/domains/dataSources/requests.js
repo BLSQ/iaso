@@ -1,18 +1,5 @@
 import { useCallback } from 'react';
-import { postRequestHandler, useAPI } from '../../utils/requests';
-
-export const sendDhisOuImporterRequest = async requestBody => {
-    if (requestBody) {
-        return postRequestHandler({
-            // url: '/api/dhis2ouimporter/',
-            // body: requestBody,
-            requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
-            errorKeyMessage: 'dhisouimporterError',
-            consoleError: 'DHIS OU Importer',
-        });
-    }
-    return null;
-};
+import { iasoPostRequest, useAPI } from '../../utils/requests';
 
 /**
  *
@@ -29,6 +16,25 @@ export const sendDhisOuImporterRequest = async requestBody => {
  * @returns {Object} request's response
  */
 
+export const sendDhisOuImporterRequest = async requestBody => {
+    if (requestBody) {
+        return iasoPostRequest({
+            requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
+            errorKeyMessage: 'dhisouimporterError',
+            consoleError: 'DHIS OU Importer',
+        });
+    }
+    return null;
+};
+export const useDhisOuImporterRequest = requestBody => {
+    const callback = useCallback(
+        async () => sendDhisOuImporterRequest(requestBody),
+        [requestBody, sendDhisOuImporterRequest],
+    );
+    return useAPI(callback)?.data;
+};
+
+// LEGACY
 // export const useDhisOuImporterRequest = requestBody => {
 //     const [result, setResult] = useState(null);
 //     useEffect(() => {
@@ -54,10 +60,3 @@ export const sendDhisOuImporterRequest = async requestBody => {
 //     }
 //     return null;
 // };
-export const useDhisOuImporterRequest = requestBody => {
-    const callback = useCallback(
-        async () => sendDhisOuImporterRequest(requestBody),
-        [requestBody, sendDhisOuImporterRequest],
-    );
-    return useAPI(callback)?.data;
-};

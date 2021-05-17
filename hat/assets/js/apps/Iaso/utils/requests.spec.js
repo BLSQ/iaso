@@ -1,25 +1,27 @@
+import React, { useCallback } from 'react';
 import { expect } from 'chai';
 import nock from 'nock';
+
 import sinon from 'sinon';
 import { mockRequest, mockRequestError } from '../../../test/utils/requests';
 import {
-    deleteRequestHandler,
-    getRequestHandler,
-    patchRequestHandler,
-    postRequestHandler,
-    putRequestHandler,
-    restoreRequestHandler,
-} from './requests';
+    deleteRequest,
+    getRequest,
+    patchRequest,
+    postRequest,
+    putRequest,
+    restoreRequest,
+} from '../libs/Api';
+import { requestHandler } from './requests';
 
 const URL = '/api/test';
 const FAIL_URL = '/api/fail';
-// TODO regroup constant parameters to allow use of spread and save space
-// const dispatch = sinon.spy();
+const BODY = { data: 'request' };
+const FILE_DATA = {};
+const DISPATCH = sinon.spy();
 const ERROR_KEY_MESSAGE = 'error key  message';
 const CONSOLE_ERROR = 'console error';
 const RESPONSE = { data: 'result', status: 200, errors: null };
-const BODY = { data: 'request' };
-const FILE_DATA = {};
 const API_ERROR_MESSAGE = 'Page not found';
 
 const response = requestType => {
@@ -30,7 +32,7 @@ const response = requestType => {
 const cleanup = () => {
     nock.cleanAll();
     nock.abortPendingRequests();
-    // dispatch.resetHistory();
+    DISPATCH.resetHistory();
 };
 
 const sendFailingRequest = async requestMaker => {
@@ -41,47 +43,49 @@ const sendFailingRequest = async requestMaker => {
     }
 };
 
-// TODO type requestType
-const makeRequest = requestType => async url => {
+const makeRequest = (requestType, disableSnackBar) => async url => {
     switch (requestType) {
         case 'get':
-            return getRequestHandler({
-                url,
+            return requestHandler(DISPATCH)(getRequest)({
+                requestParams: { url },
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
+                disableSuccessSnackBar: disableSnackBar,
             });
         case 'post':
-            return postRequestHandler({
-                url,
-                body: BODY,
+            return requestHandler(DISPATCH)(postRequest)({
+                requestParams: { url, body: BODY },
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
+                disableSuccessSnackBar: disableSnackBar,
             });
         case 'put':
-            return putRequestHandler({
-                url,
-                body: BODY,
+            return requestHandler(DISPATCH)(putRequest)({
+                requestParams: { url, body: BODY },
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
+                disableSuccessSnackBar: disableSnackBar,
             });
         case 'patch':
-            return patchRequestHandler({
-                url,
-                body: BODY,
+            return requestHandler(DISPATCH)(patchRequest)({
+                requestParams: { url, body: BODY },
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
+                disableSuccessSnackBar: disableSnackBar,
             });
         case 'delete':
-            return deleteRequestHandler({
-                url,
+            return requestHandler(DISPATCH)(deleteRequest)({
+                requestParams: { url },
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
+                disableSuccessSnackBar: disableSnackBar,
             });
         case 'restore':
-            return restoreRequestHandler({
-                url,
+            return requestHandler(DISPATCH)(restoreRequest)({
+                requestParams: { url },
                 errorKeyMessage: ERROR_KEY_MESSAGE,
                 consoleError: CONSOLE_ERROR,
+                disableSuccessSnackBar: disableSnackBar,
             });
         default:
             throw new Error(
@@ -90,13 +94,12 @@ const makeRequest = requestType => async url => {
     }
 };
 
-const makePostRequestWithFileData = async url =>
-    postRequestHandler({
-        url,
-        body: BODY,
+const makePostRequestWithFileData = disableSnackBar => async url =>
+    requestHandler(DISPATCH)(postRequest)({
+        requestParams: { url, body: BODY, fileData: FILE_DATA },
         errorKeyMessage: ERROR_KEY_MESSAGE,
         consoleError: CONSOLE_ERROR,
-        fileData: FILE_DATA,
+        disableSuccessSnackBar: disableSnackBar,
     });
 
 const testRequestOfType = requestType => () => {
@@ -115,11 +118,14 @@ const testRequestOfType = requestType => () => {
                 expect(result).to.deep.equal(response(requestType));
             }
         });
-        // it('displays bar', async () => {
-        //     // TODO make request generator
-        //     await makeRequest(requestType)(URL);
-        //     expect(dispatch).to.have.been.called;
-        // });
+        it('displays bar', async () => {
+            await makeRequest(requestType)(URL);
+            expect(DISPATCH).to.have.been.calledOnce;
+        });
+        it('does not display bar if option is toggled off', async () => {
+            await makeRequest(requestType, true)(URL);
+            expect(DISPATCH).not.to.have.been.called;
+        });
     });
     describe('when request fails', () => {
         beforeEach(() => {
@@ -129,10 +135,10 @@ const testRequestOfType = requestType => () => {
             const error = await sendFailingRequest(makeRequest(requestType));
             expect(error.message).to.equal(API_ERROR_MESSAGE);
         });
-        // it('displays snack bar', async () => {
-        //     await sendFailingRequest(makeRequest(requestType));
-        //     expect(dispatch).to.have.been.called;
-        // });
+        it('displays snack bar', async () => {
+            await sendFailingRequest(makeRequest(requestType));
+            expect(DISPATCH).to.have.been.calledOnce;
+        });
     });
 };
 

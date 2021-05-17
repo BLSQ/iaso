@@ -637,7 +637,7 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
  */
 // currying to allow testing calls to dispatch
 // TODO figure out how to document currying with JSDocs
-const requestHandler = dispatch => request => async params => {
+export const requestHandler = dispatch => request => params => {
     const { url, body, fileData } = params.requestParams;
     return request(url, body, fileData)
         .then(data => {
@@ -664,17 +664,12 @@ const requestHandler = dispatch => request => async params => {
  * const putHandler = genericHandler(putRequest);
  * const result = await putHandler(params);
  */
-// TODO rename
-export const getRequestHandler = requestHandler(storeDispatch)(getRequest);
-export const postRequestHandler = requestHandler(storeDispatch)(postRequest);
-export const putRequestHandler = requestHandler(storeDispatch)(putRequest);
-export const patchRequestHandler = requestHandler(storeDispatch)(patchRequest);
-export const deleteRequestHandler = requestHandler(storeDispatch)(
-    deleteRequest,
-);
-export const restoreRequestHandler = requestHandler(storeDispatch)(
-    restoreRequest,
-);
+export const iasoGetRequest = requestHandler(storeDispatch)(getRequest);
+export const iasoPostRequest = requestHandler(storeDispatch)(postRequest);
+export const iasoPutRequest = requestHandler(storeDispatch)(putRequest);
+export const iasoPatchRequest = requestHandler(storeDispatch)(patchRequest);
+export const iasoDeleteRequest = requestHandler(storeDispatch)(deleteRequest);
+export const iasoRestoreRequest = requestHandler(storeDispatch)(restoreRequest);
 
 /**
  *

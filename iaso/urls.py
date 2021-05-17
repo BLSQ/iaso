@@ -40,7 +40,7 @@ from .api.enketo import (
     EnketoSubmissionAPIView,
     enketo_form_download,
     enketo_public_launch,
-    enketo_public_create_url
+    enketo_public_create_url,
 )
 from .api.mappings import MappingsViewSet
 from .api.mapping_versions import MappingVersionsViewSet

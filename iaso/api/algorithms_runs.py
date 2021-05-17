@@ -9,7 +9,7 @@ from iaso.models import AlgorithmRun, DataSource, SourceVersion, MatchingAlgorit
 
 
 class AlgorithmsRunsViewSet(viewsets.ViewSet):
-    """ Algorithms runs API
+    """Algorithms runs API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_links" permission
 

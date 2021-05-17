@@ -120,9 +120,9 @@ Run the following command to create a form:
 
 At this point, if you want to edit forms directly on your machine using Enketo, go to the Enketo setup section of this README (down below).
 
-Once you are done, you can click on the eye for your newly added form, click on "+ Create", tap a letter, then enter, select the org unit, then click "Create instance". 
+Once you are done, you can click on the eye for your newly added form, click on "+ Create", tap a letter, then enter, select the org unit, then click "Create instance".
 
-If Enketo is running and well setup, you can fill the form now. 
+If Enketo is running and well setup, you can fill the form now.
 
 
 9. Create other cool stuff
@@ -275,7 +275,8 @@ If you encounter problems, you can try to rebuild everything from scratch.
 
 Code formatting
 ===============
-We have adopted Black `<https://github.com/psf/black>`__ as our code formatting tool.
+We have adopted Black `<https://github.com/psf/black>`__ as our code formatting tool. Line length is 120.
+
 
 The easiest way to use is is to set it up as a pre-commit hook:
 
@@ -298,6 +299,8 @@ Here is an example of pre-commit-config.yaml:
 ..
 
 Another good way to have it working is to set it up in your code editor. Pycharm, for example, has good support for this.
+
+The pre-commit is not mandatory but Continuous Integration will checks if the formatting is respected!
 
 React Intl
 ===============

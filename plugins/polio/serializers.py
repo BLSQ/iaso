@@ -5,7 +5,7 @@ from .models import Round, Campaign
 class RoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
-        fields = '__all__'
+        fields = "__all__"
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -13,8 +13,8 @@ class CampaignSerializer(serializers.ModelSerializer):
     round_two = RoundSerializer()
 
     def create(self, validated_data):
-        round_one_data = validated_data.pop('round_one')
-        round_two_data = validated_data.pop('round_two')
+        round_one_data = validated_data.pop("round_one")
+        round_two_data = validated_data.pop("round_two")
 
         return Campaign.objects.create(
             **validated_data,
@@ -23,8 +23,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, validated_data):
-        round_one_data = validated_data.pop('round_one')
-        round_two_data = validated_data.pop('round_two')
+        round_one_data = validated_data.pop("round_one")
+        round_two_data = validated_data.pop("round_two")
 
         Round.objects.filter(pk=instance.round_one_id).update(**round_one_data)
         Round.objects.filter(pk=instance.round_two_id).update(**round_two_data)
@@ -33,4 +33,4 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Campaign
-        fields = '__all__'
+        fields = "__all__"

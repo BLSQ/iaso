@@ -613,7 +613,9 @@ class DataValueExporterTests(TestCase):
         self.assertIsNotNone(instance.last_export_success_at)
 
     @responses.activate
-    def test_event_export_works_on_non_existing_tracked_entity_with_related_program(self,):
+    def test_event_export_works_on_non_existing_tracked_entity_with_related_program(
+        self,
+    ):
 
         mapping_version = MappingVersion(
             name="event tracker", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping

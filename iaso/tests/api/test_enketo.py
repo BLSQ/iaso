@@ -75,7 +75,9 @@ class EnketoAPITestCase(APITestCase):
     @tag("iaso_only")
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
-    def test_when_authenticated_edit_url_and_no_enketo_server_should_return_an_error(self,):
+    def test_when_authenticated_edit_url_and_no_enketo_server_should_return_an_error(
+        self,
+    ):
         """GET /api/enketo/edit/{uuid}/"""
         instance = self.form_1.instances.first()
         self.client.force_authenticate(self.yoda)
@@ -110,7 +112,7 @@ class EnketoAPITestCase(APITestCase):
 
         self.assertEqual(
             enketo_contents[0],
-            f'form_id={instance.uuid}&server_url=http://testserver/api/enketo&instance=<PLAN_INT_CAR_FOSA+xmlns:h="http://www.w3.org/1999/xhtml"+xmlns:jr="http://openrosa.org/javarosa"+xmlns:xsd="http://www.w3.org/2001/XMLSchema"+xmlns:ev="http://www.w3.org/2001/xml-events"+xmlns:orx="http://openrosa.org/xforms"+xmlns:odk="http://www.opendatakit.org/xforms"+id="PLAN_CAR_FOSA"+version="1"+iasoInstance="{instance.id}"><formhub><uuid>385689b3b55f4739b80dcba5540c5f87</uuid></formhub><start>2019-12-02T14:07:52.465+01:00</start><end>2019-12-02T14:10:11.380+01:00</end><today>2019-12-02</today><deviceid>358544083104930</deviceid><subscriberid>206300001285696</subscriberid><imei>358544083104930</imei><simserial>8932030000106638166</simserial><phonenumber/><user_name>Tttt</user_name><region>UnCrC8p12UN</region><prefecture>IJoQdfGfYsC</prefecture><district>tSs16aZvMD4</district><sous-prefecture>drMs7e3pDFZ</sous-prefecture><fosa>FeNjVewpswJ</fosa><year>2019</year><quarter>1</quarter><Ident_type_structure>ce</Ident_type_structure><Ident_type_services>serv_prot</Ident_type_services><Ident_type_serv_medical>0</Ident_type_serv_medical><Ident_type_serv_protect>1</Ident_type_serv_protect><Ident_type_serv_jurid>0</Ident_type_serv_jurid><Ident_type_serv_psycho>0</Ident_type_serv_psycho><Ident_type_serv_educ>0</Ident_type_serv_educ><Ident_type_serv_recope>0</Ident_type_serv_recope><Ident_type_serv_club>0</Ident_type_serv_club><Ident_statut>ong</Ident_statut><Ident_eau_courante>1</Ident_eau_courante><Ident_electricite>0</Ident_electricite><Ident_nom_responsable>Chggh</Ident_nom_responsable><Ident_telephone>256</Ident_telephone><fermeture_structure>sam</fermeture_structure><Ident_ferm_lundi>0</Ident_ferm_lundi><Ident_ferm_mardi>0</Ident_ferm_mardi><Ident_ferm_mercredi>0</Ident_ferm_mercredi><Ident_ferm_jeudi>0</Ident_ferm_jeudi><Ident_ferm_vendredi>0</Ident_ferm_vendredi><Ident_ferm_samedi>1</Ident_ferm_samedi><Ident_ferm_dim>0</Ident_ferm_dim><Ident_ferm_aucun>0</Ident_ferm_aucun><Ident_serv_cout>0</Ident_serv_cout><Ident_type_batiment>sem_dur</Ident_type_batiment><imgUrl>1575292156137.jpg</imgUrl><gps>50.8367386+4.40093901+123.56201171875+49.312</gps><meta><instanceID>uuid:7ff9b3b4-9404-4702-bbe4-efe2407aef02</instanceID><editUserID>{self.yoda.id}</editUserID></meta></PLAN_INT_CAR_FOSA>&instance_id=7ff9b3b4-9404-4702-bbe4-efe2407aef02&return_url=http://testserver/api/enketo/edit/uuid-1/'
+            f'form_id={instance.uuid}&server_url=http://testserver/api/enketo&instance=<PLAN_INT_CAR_FOSA+xmlns:h="http://www.w3.org/1999/xhtml"+xmlns:jr="http://openrosa.org/javarosa"+xmlns:xsd="http://www.w3.org/2001/XMLSchema"+xmlns:ev="http://www.w3.org/2001/xml-events"+xmlns:orx="http://openrosa.org/xforms"+xmlns:odk="http://www.opendatakit.org/xforms"+id="PLAN_CAR_FOSA"+version="1"+iasoInstance="{instance.id}"><formhub><uuid>385689b3b55f4739b80dcba5540c5f87</uuid></formhub><start>2019-12-02T14:07:52.465+01:00</start><end>2019-12-02T14:10:11.380+01:00</end><today>2019-12-02</today><deviceid>358544083104930</deviceid><subscriberid>206300001285696</subscriberid><imei>358544083104930</imei><simserial>8932030000106638166</simserial><phonenumber/><user_name>Tttt</user_name><region>UnCrC8p12UN</region><prefecture>IJoQdfGfYsC</prefecture><district>tSs16aZvMD4</district><sous-prefecture>drMs7e3pDFZ</sous-prefecture><fosa>FeNjVewpswJ</fosa><year>2019</year><quarter>1</quarter><Ident_type_structure>ce</Ident_type_structure><Ident_type_services>serv_prot</Ident_type_services><Ident_type_serv_medical>0</Ident_type_serv_medical><Ident_type_serv_protect>1</Ident_type_serv_protect><Ident_type_serv_jurid>0</Ident_type_serv_jurid><Ident_type_serv_psycho>0</Ident_type_serv_psycho><Ident_type_serv_educ>0</Ident_type_serv_educ><Ident_type_serv_recope>0</Ident_type_serv_recope><Ident_type_serv_club>0</Ident_type_serv_club><Ident_statut>ong</Ident_statut><Ident_eau_courante>1</Ident_eau_courante><Ident_electricite>0</Ident_electricite><Ident_nom_responsable>Chggh</Ident_nom_responsable><Ident_telephone>256</Ident_telephone><fermeture_structure>sam</fermeture_structure><Ident_ferm_lundi>0</Ident_ferm_lundi><Ident_ferm_mardi>0</Ident_ferm_mardi><Ident_ferm_mercredi>0</Ident_ferm_mercredi><Ident_ferm_jeudi>0</Ident_ferm_jeudi><Ident_ferm_vendredi>0</Ident_ferm_vendredi><Ident_ferm_samedi>1</Ident_ferm_samedi><Ident_ferm_dim>0</Ident_ferm_dim><Ident_ferm_aucun>0</Ident_ferm_aucun><Ident_serv_cout>0</Ident_serv_cout><Ident_type_batiment>sem_dur</Ident_type_batiment><imgUrl>1575292156137.jpg</imgUrl><gps>50.8367386+4.40093901+123.56201171875+49.312</gps><meta><instanceID>uuid:7ff9b3b4-9404-4702-bbe4-efe2407aef02</instanceID><editUserID>{self.yoda.id}</editUserID></meta></PLAN_INT_CAR_FOSA>&instance_id=7ff9b3b4-9404-4702-bbe4-efe2407aef02&return_url=http://testserver/api/enketo/edit/uuid-1/',
         )
 
     @tag("iaso_only")
@@ -148,7 +150,13 @@ class EnketoAPITestCase(APITestCase):
 
         with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
             instance = self.form_1.instances.first()
-            f = SimpleUploadedFile("file.txt", modified_xml.read().replace("replaceInstanceId", str(instance.id)).replace("REPLACEuserID", str(self.yoda.id)).encode())
+            f = SimpleUploadedFile(
+                "file.txt",
+                modified_xml.read()
+                .replace("replaceInstanceId", str(instance.id))
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode(),
+            )
             response = self.client.post(
                 f"/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}
             )

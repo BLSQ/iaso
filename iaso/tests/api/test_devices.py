@@ -65,7 +65,7 @@ class DevicesAPITestCase(APITestCase):
 
         response_data = response.json()
         self.assertValidDeviceData(response_data)
-        self.assertEquals(self.device_1.imei, response_data['imei'])
+        self.assertEquals(self.device_1.imei, response_data["imei"])
 
     def assertValidDeviceData(self, device_data: typing.Mapping):
         self.assertHasField(device_data, "id", int)
@@ -74,7 +74,6 @@ class DevicesAPITestCase(APITestCase):
         self.assertHasField(device_data, "last_owner", object)
         self.assertHasField(device_data, "created_at", float)
         self.assertHasField(device_data, "updated_at", float)
-
 
     def assertValidDeviceListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(

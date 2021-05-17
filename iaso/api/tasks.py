@@ -45,8 +45,9 @@ class TaskSerializer(serializers.ModelSerializer):
             task.save()
         return task
 
+
 class TaskSourceViewSet(ModelViewSet):
-    """ Task API
+    """Task API
 
     GET /api/tasks/
     GET /api/tasks/<id>
@@ -61,5 +62,5 @@ class TaskSourceViewSet(ModelViewSet):
 
     def get_queryset(self):
         profile = self.request.user.iaso_profile
-        order = self.request.query_params.get("order","created_at").split(",")
+        order = self.request.query_params.get("order", "created_at").split(",")
         return Task.objects.filter(account=profile.account).order_by(*order)

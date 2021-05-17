@@ -12,12 +12,8 @@ IMPORT_TYPE = (("orgUnit", "Org Unit"), ("instance", "Form instance"))
 
 class APIImport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(
-        User, on_delete=CASCADE, null=True
-    )  # Null only when importing from CLI
-    import_type = models.TextField(
-        max_length=25, choices=IMPORT_TYPE, null=True, blank=True
-    )
+    user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
+    import_type = models.TextField(max_length=25, choices=IMPORT_TYPE, null=True, blank=True)
     json_body = JSONField()
     headers = JSONField(null=True, blank=True)
     has_problem = models.BooleanField(default=False)

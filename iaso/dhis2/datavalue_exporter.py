@@ -147,7 +147,10 @@ class AggregateHandler(BaseHandler):
         self.logger.debug("completeDataSetRegistrations response %s" % resp_complete.text)
         export_log = ExportLog()
         export_log.sent = request
-        export_log.received = resp_complete.json()
+        try:
+            export_log.received = resp_complete.json()
+        except:
+            print("problem in making datset complete")
         export_log.url = api.base_url + "/completeDataSetRegistrations"
         export_log.save()
         return export_log
@@ -173,7 +176,6 @@ class AggregateHandler(BaseHandler):
             batched_start = timer()
 
             request = {"dataValues": self.flatten(data)}
-
             resp = api.post("dataValueSets", request).json()
             exception = self.handle_exception({"response": resp}, "transient")
             if exception:
@@ -199,6 +201,7 @@ class AggregateHandler(BaseHandler):
             resp = {}
             try:
                 resp = json.loads(dhis2_exception.description)
+
             except:
                 resp = {"status": "ERROR", "description": "non json response return by server"}
 
@@ -787,6 +790,7 @@ class DataValueExporter:
         skipped = []
         stats = {"exported_count": 0, "errored_count": 0}
         for page in range(1, paginator.num_pages + 1):
+            print(page)
             page_start = timer()
             prefix = "page %d/%d" % (page, paginator.num_pages)
             try:

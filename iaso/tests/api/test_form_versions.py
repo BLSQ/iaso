@@ -111,7 +111,7 @@ class FormsVersionAPITestCase(APITestCase):
             data={
                 "end_period": end_period,
                 "form_id": self.form_2.id,
-                'start_period': start_period,
+                "start_period": start_period,
             },
             format="json",
         )
@@ -348,7 +348,3 @@ class FormsVersionAPITestCase(APITestCase):
         if check_annotated_fields:
             self.assertHasField(form_version_data, "mapped", bool)
             self.assertHasField(form_version_data, "full_name", str)
-
-
-
-

@@ -8,13 +8,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0077_auto_20210125_1528'),
+        ("iaso", "0077_auto_20210125_1528"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='form',
-            name='label_keys',
-            field=django.contrib.postgres.fields.ArrayField(base_field=django.contrib.postgres.fields.citext.CITextField(blank=True, max_length=255), blank=True, null=True, size=100),
+            model_name="form",
+            name="label_keys",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=django.contrib.postgres.fields.citext.CITextField(blank=True, max_length=255),
+                blank=True,
+                null=True,
+                size=100,
+            ),
         ),
     ]

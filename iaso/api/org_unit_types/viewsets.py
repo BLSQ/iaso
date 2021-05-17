@@ -7,7 +7,7 @@ from ..common import ModelViewSet
 
 
 class OrgUnitTypeViewSet(ModelViewSet):
-    """ Org unit types API
+    """Org unit types API
 
     This API is open to anonymous users.
 

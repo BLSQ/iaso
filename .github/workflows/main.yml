@@ -70,7 +70,7 @@ jobs:
 
       - name: Check formatting with black
         run: |
-          black --check -q .
+          black --check .
 
       - name: Django tests
         run: |

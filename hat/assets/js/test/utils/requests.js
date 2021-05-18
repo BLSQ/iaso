@@ -116,3 +116,8 @@ export const mockRequest = (requestType, url, body = []) => {
     }
     response.reply(200, body);
 };
+
+// create timeout to simulate async call
+// credit https://stackoverflow.com/questions/51200626/using-a-settimeout-in-a-async-function
+export const waitFor = delay =>
+    new Promise(resolve => setTimeout(resolve, delay));

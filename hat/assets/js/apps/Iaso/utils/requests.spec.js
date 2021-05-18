@@ -3,7 +3,11 @@ import { expect } from 'chai';
 import nock from 'nock';
 
 import sinon from 'sinon';
-import { mockRequest, mockRequestError } from '../../../test/utils/requests';
+import {
+    mockRequest,
+    mockRequestError,
+    waitFor,
+} from '../../../test/utils/requests';
 import {
     deleteRequest,
     getRequest,
@@ -13,6 +17,7 @@ import {
     restoreRequest,
 } from '../libs/Api';
 import { requestHandler, useAPI } from './requests';
+import { ErrorBoundary } from './ErrorBoundary';
 
 const URL = '/api/test';
 const FAIL_URL = '/api/fail';
@@ -149,10 +154,8 @@ describe('patchRequestHandler', testRequestOfType('patch'));
 describe('deleteRequestHandler', testRequestOfType('delete'));
 describe('restoreRequestHandler', testRequestOfType('restore'));
 
-// credit https://stackoverflow.com/questions/51200626/using-a-settimeout-in-a-async-function
-const waitFor = delay => new Promise(resolve => setTimeout(resolve, delay));
-
 const successfulRequest = async () => {
+    // TODO remove hard coded timeout values
     await waitFor(100);
     return 'data';
 };
@@ -167,14 +170,20 @@ const refValue = { current: true };
 const spyRequest = sinon.spy(successfulRequest);
 const spyFailedRequest = sinon.spy(failedRequest);
 
-class ErrorBoundary extends React.Component {
-    componentDidCatch(error, errorInfo) {
-        // eslint-disable-next-line no-console
-        console.log('BOUNDARY ERROR', error, errorInfo);
+class UpdateableTag {
+    constructor(assign, parent) {
+        this.value = assign();
+        this.updater = assign;
+        this.parent = parent;
     }
 
-    render() {
-        return this.props.children;
+    update() {
+        this.parent.update();
+        this.value = this.updater();
+    }
+
+    current() {
+        return this.value;
     }
 }
 
@@ -209,7 +218,7 @@ const Component = ({ preventTrigger, additionalDeps, request }) => {
 
 let component;
 let refStub;
-describe('useAPI', () => {
+describe.only('useAPI', () => {
     describe('default behaviour', () => {
         beforeEach(() => {
             spyRequest.resetHistory();
@@ -226,16 +235,22 @@ describe('useAPI', () => {
             expect(spyRequest).to.have.been.called;
         });
         it('returns data with correct error state', async () => {
-            let dataTag = component.find('#data').at(0);
-            let errorTag = component.find('#error').at(0);
-            expect(dataTag.props().children).to.equal(null);
-            expect(errorTag.props().children).to.equal('No error');
+            // TODO make function/class to handle refreshing of elements
+            const dataTag = new UpdateableTag(
+                () => component.find('#data').at(0),
+                component,
+            );
+            const errorTag = new UpdateableTag(
+                () => component.find('#error').at(0),
+                component,
+            );
+            expect(dataTag.current().props().children).to.equal(null);
+            expect(errorTag.current().props().children).to.equal('No error');
             await waitFor(150);
-            component.update();
-            dataTag = component.find('#data').at(0);
-            errorTag = component.find('#error').at(0);
-            expect(dataTag.props().children).to.equal('data');
-            expect(errorTag.props().children).to.equal('No error');
+            dataTag.update();
+            errorTag.update();
+            expect(dataTag.current().props().children).to.equal('data');
+            expect(errorTag.current().props().children).to.equal('No error');
         });
         it('returns correct loading state', async () => {
             let loadingTag = component.find('#loading').at(0);
@@ -292,7 +307,6 @@ describe('useAPI', () => {
         before(() => {
             // useRef needs to be stubbed here, otherwise it will break other tests
             refStub = sinon.stub(React, 'useRef').returns(refValue);
-            spyRequest.resetHistory();
             component = mount(<Component request={spyRequest} />);
         });
         it('stops updating its internal state', () => {

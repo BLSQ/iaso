@@ -14,10 +14,11 @@ def get_national_level_preparedness(spreadsheet_id):
     for worksheet in sheet.worksheets():
         try:
             cell = worksheet.find("Summary of National Level Preparedness")
+            print(f"Data found on worksheet: {worksheet.title}")
             overall_scores = worksheet.cell(cell.row, cell.col + 1)
             planning_coordination_financing_score = worksheet.cell(
-                                                                overall_scores.row + 1,
-                                                                overall_scores.col
+                                                        overall_scores.row + 1,
+                                                        overall_scores.col
                                                     )
             training_sias_score = worksheet.cell(
                                             planning_coordination_financing_score.row + 1,
@@ -43,19 +44,21 @@ def get_national_level_preparedness(spreadsheet_id):
                                             adverse_event_score.row + 1,
                                             adverse_event_score.col
                                     )
-        
+
             return {
-                "1.Planning, coordination and financing": planning_coordination_financing_score.value,
+                "1.Planning, coordination and financing":
+                    planning_coordination_financing_score.value,
                 "2.Training for SIAs": training_sias_score.value,
                 "3.Monitoring and Supervision": monitoring_supervision_score.value,
                 "4.Vaccine, cold chain and logistics": vaccine_cold_chain_logistics_score.value,
-                "5.Advocacy, social mobilization and communication": advocacy_social_mob_commu_score.value,
+                "5.Advocacy, social mobilization and communication":
+                    advocacy_social_mob_commu_score.value,
                 "6. Adverse event following Immunization": adverse_event_score.value,
                 "Status of preparedness ": status_score.value,
             }
-        except:
-            pass
-        raise Exception("`Summary of National Level Preparedness` was not found in this document")
+        except gspread.CellNotFound:
+            print(f"No data found on worksheet: {worksheet.title}")
+    raise Exception("`Summary of National Level Preparedness` was not found in this document")
 
 
 if __name__ == '__main__':

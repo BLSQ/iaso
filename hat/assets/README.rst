@@ -190,11 +190,16 @@ See also: `this pull request <https://github.com/BLSQ/iaso/pull/120>`__
 The script ``show-lint-problems`` can be turned into a VSCode task that will show all linter errors in VSCode's PROBLEMS Tab.
 
 Steps to follow:
+
 - Go to Terminal>Configure task
+
 - Select npm: show-lint-problems
+
 - Add ``$eslint-stylish`` to the ``problemMatcher`` array
+
 - Run the task: Terminal>Run Task...> npm: show-lint-problems. 
-IMPORTANT: you need to run the task this way. Running the script directly from the terminal using npm will not enable VS Code to display the problems in the PROBLEMS tab
+  IMPORTANT: you need to run the task this way. Running the script directly from the terminal using npm will not enable VS Code to display the problems in the PROBLEMS tab
+
 - You should be able to see and track the problems through the dedicated tab. 
-CAUTION: if you navigate to a file through the tab, then close the file, it will be removed from the problems list, even if it wasn't changed. This seems to be a problem with using npm through VSCode's tasks
+  CAUTION: if you navigate to a file through the tab, then close the file, it will be removed from the problems list, even if it wasn't changed. This seems to be a problem with using npm through VSCode's tasks
   

@@ -7,6 +7,14 @@ from django.db import models, transaction
 from unidecode import unidecode
 import json
 
+DEFAULT_DATA_DICT = {
+    "name": "Nom",
+    "source_ref": "Référence externe",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "parents": ["parent 4", "parent 3", "parent 2", "parent 1"],
+}
+
 
 def get_or_create(
     unit_dict,
@@ -72,7 +80,7 @@ class Command(BaseCommand):
         parser.add_argument("--org_unit_csv_file", type=str)
         parser.add_argument("--source_name", type=str)
 
-        parser.add_argument("--data_dict", type=str)
+        parser.add_argument("--data_dict", type=str, required=False)
         parser.add_argument("--version_number", type=int)
         parser.add_argument("--project_id", type=int)
         parser.add_argument("--main_org_unit_name", type=str)

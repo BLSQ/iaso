@@ -70,3 +70,5 @@ sentry-sdk==0.19.4
 django-lazy-services==0.0.3
 dateparser==1.0.0
 
+gspread==3.7.0
+oauth2client==4.1.3

@@ -1,11 +1,19 @@
 from rest_framework import serializers
 from .models import Round, Campaign
+from .preparedness.google_sheet import get_national_level_preparedness_by_url
 
 
 class RoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
         fields = "__all__"
+
+
+class PreparednessPreviewSerializer(serializers.Serializer):
+    google_sheet_url = serializers.URLField()
+
+    def to_representation(self, instance):
+        return {"national": get_national_level_preparedness_by_url(instance.get("google_sheet_url"))}
 
 
 class CampaignSerializer(serializers.ModelSerializer):

@@ -8,9 +8,12 @@ creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCO
 client = gspread.authorize(creds)
 
 
-def get_national_level_preparedness(spreadsheet_id):
-    sheet = client.open_by_key(spreadsheet_id)
+def get_national_level_preparedness_by_url(spreadsheet_url):
+    sheet = client.open_by_url(spreadsheet_url)
+    return get_national_level_preparedness(sheet)
 
+
+def get_national_level_preparedness(sheet):
     for worksheet in sheet.worksheets():
         try:
             cell = worksheet.find("Summary of National Level Preparedness")
@@ -33,19 +36,15 @@ def get_national_level_preparedness(spreadsheet_id):
             status_score = worksheet.cell(adverse_event_score.row + 1, adverse_event_score.col)
 
             return {
-                "1.Planning, coordination and financing": planning_coordination_financing_score.value,
-                "2.Training for SIAs": training_sias_score.value,
-                "3.Monitoring and Supervision": monitoring_supervision_score.value,
-                "4.Vaccine, cold chain and logistics": vaccine_cold_chain_logistics_score.value,
-                "5.Advocacy, social mobilization and communication": advocacy_social_mob_commu_score.value,
-                "6. Adverse event following Immunization": adverse_event_score.value,
-                "Status of preparedness ": status_score.value,
+                "planning_score": planning_coordination_financing_score.value,
+                "training_score": training_sias_score.value,
+                "monitoring_score": monitoring_supervision_score.value,
+                "vaccine_score": vaccine_cold_chain_logistics_score.value,
+                "advocacy_score": advocacy_social_mob_commu_score.value,
+                "adverse_score": adverse_event_score.value,
+                "status_score": status_score.value,
             }
 
         except gspread.CellNotFound:
             print(f"No data found on worksheet: {worksheet.title}")
     raise Exception("`Summary of National Level Preparedness` was not found in this document")
-
-
-if __name__ == "__main__":
-    get_national_level_preparedness("1rMMcRd5Nv8-Pgax2CUFwVQrVfBP-HHHrAizK-6xTdZQ")

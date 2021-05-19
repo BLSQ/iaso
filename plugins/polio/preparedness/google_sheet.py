@@ -1,14 +1,24 @@
-from __future__ import print_function
-
+import os
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import base64
+import os
+import json
 
+DIRNAME = os.path.dirname(__file__)
 SCOPES = ["https://spreadsheets.google.com/feeds"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCOPES)
-client = gspread.authorize(creds)
+
+
+def _get_client():
+    encoded_config = os.environ.get("GOOGLE_API_KEY_BASE64")
+    decoded_config = base64.b64decode(encoded_config)
+    data = json.loads(decoded_config)
+    creds = ServiceAccountCredentials.from_json(data, SCOPES)
+    return gspread.authorize(creds)
 
 
 def get_national_level_preparedness_by_url(spreadsheet_url):
+    client = _get_client()
     sheet = client.open_by_url(spreadsheet_url)
     return get_national_level_preparedness(sheet)
 

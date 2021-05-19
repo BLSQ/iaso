@@ -31,6 +31,28 @@ STATUS = [
 ]
 
 
+class Preparedness(models.Model):
+    id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
+    planning_score = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("Planning, coordination and funding")
+    )
+
+    training_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Training for SIAs quality"))
+    monitoring_score = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("Monitoring and Supervision")
+    )
+    vaccine_score = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("Vaccine, cold chain and logistics")
+    )
+    advocacy_score = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("Advocacy, social mobilization and communication")
+    )
+    adverse_score = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("Adverse Event Following Immunization (AEFI)")
+    )
+    status_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Status of preparedness"))
+
+
 class Round(models.Model):
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
@@ -134,6 +156,10 @@ class Campaign(models.Model):
         blank=True,
         verbose_name=_("DG Authorization"),
     )
+
+    # Preparedness
+    spreadsheet_url = models.URLField(null=True, blank=True)
+    preperadness_national_score = models.ForeignKey(Preparedness, null=True, blank=True, on_delete=models.SET_NULL)
 
     # Budget
     budget_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)

@@ -12,7 +12,6 @@ import { fetchAllProjects as fetchAllProjectsAction } from '../../projects/actio
 
 import TopBar from '../../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
-import Filters from './components/Filters';
 import Table from '../../../components/tables/TableComponent';
 import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
 import AddButtonComponent from '../../../components/buttons/AddButtonComponent';

@@ -33,7 +33,7 @@ const SpeedDialInstanceActions = props => {
         setOpen(true);
     };
 
-    const handleClose = action => {
+    const handleClose = () => {
         setOpen(false);
     };
     const handleClick = action => {

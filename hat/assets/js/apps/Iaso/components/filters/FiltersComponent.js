@@ -26,7 +26,7 @@ class FiltersComponent extends React.Component {
         if (callback) {
             callback(value, urlKey);
         } else {
-            const newState = Object.assign({}, this.state, { [urlKey]: value });
+            const newState = { ...this.state, [urlKey]: value };
             this.setState(newState);
             if (launchSearch) {
                 this.onSearch(newState);

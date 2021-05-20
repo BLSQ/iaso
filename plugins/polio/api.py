@@ -9,4 +9,4 @@ class CampaignViewSet(viewsets.ModelViewSet):
 
 
 router = routers.SimpleRouter()
-router.register(r'polio/campaigns', CampaignViewSet)
+router.register(r"polio/campaigns", CampaignViewSet)

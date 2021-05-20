@@ -51,7 +51,7 @@ function TileSwitchComponent(props) {
         intl: { formatMessage },
     } = props;
     return (
-        <Fragment>
+        <>
             <Box px={2} className={classes.innerDrawerToolbar} component="div">
                 <Typography variant="subtitle1">
                     {formatMessage(MESSAGES.layersTitle)}
@@ -92,7 +92,7 @@ function TileSwitchComponent(props) {
                     })}
                 </List>
             </Box>
-        </Fragment>
+        </>
     );
 }
 

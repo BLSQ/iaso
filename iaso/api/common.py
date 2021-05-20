@@ -34,8 +34,8 @@ REQUEST_HEADER_INFO_KEYS = [
 def safe_api_import(key: str, fallback_status=200):
     """This decorator allows to mark api views as "safe imports". This has two effects:
 
-        1. The view will always return a 200 OK status, even if there was an exception while executing it
-        2. The posted data will be saved in a APIImport record
+    1. The view will always return a 200 OK status, even if there was an exception while executing it
+    2. The posted data will be saved in a APIImport record
     """
 
     def decorator(f):
@@ -96,7 +96,7 @@ class HasPermission:
 
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
-    """ A ModelSerializer that
+    """A ModelSerializer that
     - inspects the request to check if a specific field set has been requested through the "fields" query param
     - accepts an additional optional `fields` constructor argument that allows to specify which
       fields should be included if the request does not contain the "fields" query param

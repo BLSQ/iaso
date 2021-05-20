@@ -91,16 +91,12 @@ class Command(BaseCommand):
 
             source, created = DataSource.objects.get_or_create(name=source_name)
             source.projects.add(project_id)
-            version, created = SourceVersion.objects.get_or_create(
-                number=version, data_source=source
-            )
+            version, created = SourceVersion.objects.get_or_create(number=version, data_source=source)
 
             org_unit_dicts = {}
             previous_outs = []
             project = Project.objects.get(id=project_id)
-            main_out = get_or_create_org_unit_type(
-                name=main_org_unit_name, project=project
-            )
+            main_out = get_or_create_org_unit_type(name=main_org_unit_name, project=project)
             print("Creating Org Unit Types")
             data_dict = json.loads(open(data_dict_name, "r").read())
             for parent in data_dict["parents"]:
@@ -133,9 +129,7 @@ class Command(BaseCommand):
 
                     if index == 1:
                         headers = row
-                        col_indices = {
-                            headers[i].strip(): i for i in range(len(headers))
-                        }
+                        col_indices = {headers[i].strip(): i for i in range(len(headers))}
                         print("col_indices", col_indices)
                     else:
                         try:
@@ -143,9 +137,7 @@ class Command(BaseCommand):
                             for parent in data_dict["parents"]:
                                 type = org_unit_dicts[parent]["type"]
                                 name = row[col_indices[parent]]
-                                simplified_name = (
-                                    unidecode(name).lower().replace("neant", "").strip()
-                                )
+                                simplified_name = unidecode(name).lower().replace("neant", "").strip()
                                 if simplified_name:
                                     top = False
                                     if not previous_parent:
@@ -190,9 +182,7 @@ class Command(BaseCommand):
             OrgUnit.objects.bulk_create(leaf_units)
 
             print("computing paths for parents")
-            top_parents = OrgUnit.objects.filter(
-                id__in=[u.id for u in parent_units]
-            ).filter(parent=None)
+            top_parents = OrgUnit.objects.filter(id__in=[u.id for u in parent_units]).filter(parent=None)
             for ou in top_parents:
                 print("computing for", ou)
                 ou.save(force_recalculate=True)
@@ -201,9 +191,7 @@ class Command(BaseCommand):
             # OrgUnit.objects.bulk_update(top_parents, ['path'])
 
             print("computing paths for children")
-            ou_with_parents = OrgUnit.objects.filter(
-                id__in=[u.id for u in leaf_units]
-            ).select_related("parent")
+            ou_with_parents = OrgUnit.objects.filter(id__in=[u.id for u in leaf_units]).select_related("parent")
             index = 0
             for ou in ou_with_parents:
                 if index % 1000 == 0:

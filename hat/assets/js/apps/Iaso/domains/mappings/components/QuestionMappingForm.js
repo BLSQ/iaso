@@ -150,6 +150,7 @@ const Dhis2ProgramDataElementSearch = ({
             }
             label="Search for tracker data element (and combo) by name, code or id"
             onChange={onChange}
+            // TODO find a better way to format/concat theis string
             fields="id,name,programStages[id,name,programStageDataElements[compulsory,code,dataElement[id,name,code,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]]]]"
             mapOptions={mapToMappingProgramElements}
             fetchFromPromise={(
@@ -185,7 +186,7 @@ const QuestionMappingForm = ({
     const [iasoField, setIasoField] = React.useState(iasoFieldOptions[0]);
     const [fieldType, setFieldType] = React.useState(fieldTypeOptions[1]);
 
-    if (indexedQuestions == undefined) {
+    if (indexedQuestions === undefined) {
         return <>Loading...</>;
     }
     const withinRepeatGroup = Descriptor.withinRepeatGroup(
@@ -201,7 +202,7 @@ const QuestionMappingForm = ({
         setNewQuestionMapping(val);
     };
 
-    const mapToMapping = (options, input) => {
+    const mapToMapping = options => {
         const results = [];
 
         options
@@ -237,7 +238,7 @@ const QuestionMappingForm = ({
         ? repeatGroupMapping[0].program_id
         : mapping.derivate_settings.program_id;
 
-    if (question.type == 'repeat') {
+    if (question.type === 'repeat') {
         return (
             <EventTrackerProgramForm
                 dataSourceId={mapping.mapping.data_source.id}
@@ -257,8 +258,7 @@ const QuestionMappingForm = ({
             )}
 
             <div>
-                withinRepeatGroup ? {withinRepeatGroup}
-{' '}
+                withinRepeatGroup ? {withinRepeatGroup}{' '}
                 {JSON.stringify(repeatGroupMapping)}
             </div>
 
@@ -344,7 +344,7 @@ const QuestionMappingForm = ({
                     />
                     {fieldType && (
                         <>
-                            {fieldType.value == 'dataElement' && (
+                            {fieldType.value === 'dataElement' && (
                                 <Dhis2ProgramDataElementSearch
                                     question={question}
                                     onChange={onChange}
@@ -353,7 +353,7 @@ const QuestionMappingForm = ({
                                     programId={programId}
                                 />
                             )}
-                            {fieldType.value == 'trackedEntityAttribute' && (
+                            {fieldType.value === 'trackedEntityAttribute' && (
                                 <Dhis2ProgramTrackedEntityAttributeSearch
                                     question={question}
                                     onChange={onChange}
@@ -404,7 +404,7 @@ const QuestionMappingForm = ({
                                 item = [{ ...newQuestionMapping }];
                                 if (
                                     iasoField &&
-                                    iasoField.value != 'undefined'
+                                    iasoField.value !== 'undefined'
                                 ) {
                                     item = [
                                         {

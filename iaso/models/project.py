@@ -6,7 +6,7 @@ from uuid import uuid4
 
 class ProjectQuerySet(models.QuerySet):
     def get_for_user_and_app_id(self, user: User, app_id: typing.Optional[str]):
-        """ Attempt to find a valid project to which the user has access, and that corresponds to the
+        """Attempt to find a valid project to which the user has access, and that corresponds to the
         provided app_id. If the user is not authenticated, he can still access the project if it does not
         require authentication.
 
@@ -53,7 +53,7 @@ class Project(models.Model):
         return "%s " % (self.name,)
 
     def as_dict(self):
-        return {"id":self.id, "name": self.name, "app_id": self.app_id}
+        return {"id": self.id, "name": self.name, "app_id": self.app_id}
 
     def has_feature(self, feature_code):
         return self.feature_flags.filter(code=feature_code).exists()

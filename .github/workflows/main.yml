@@ -68,6 +68,10 @@ jobs:
 #          GIT_COMMITTER_NAME: Github Bot
 #          EMAIL: edarchis@bluesquarehub.com
 
+      - name: Check formatting with black
+        run: |
+          black --check .
+
       - name: Django tests
         run: |
           python manage.py migrate
@@ -96,5 +100,5 @@ jobs:
           SLACK_USERNAME: github-actions-main
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: iaso-dev
-          SLACK_TITLE: Iaso build completed
+          SLACK_TITLE: Iaso CI run failed
         if: failure()

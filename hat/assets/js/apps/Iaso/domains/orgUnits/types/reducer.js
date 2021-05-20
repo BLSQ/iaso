@@ -1,7 +1,6 @@
 import {
     SET_ORG_UNIT_TYPES,
     SET_ALL_ORG_UNIT_TYPES,
-    SET_CURRENT_ORG_UNIT_TYPE,
     SET_IS_FETCHING_ORG_UNIT_TYPES,
 } from './actions';
 
@@ -31,10 +30,6 @@ export const reducer = (state = orgUnitsTypesInitialState, action = {}) => {
                 ...state,
                 allTypes,
             };
-        }
-        case SET_CURRENT_ORG_UNIT_TYPE: {
-            const current = action.payload;
-            return { ...state, current };
         }
         case SET_IS_FETCHING_ORG_UNIT_TYPES: {
             const fetching = action.payload;

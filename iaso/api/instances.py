@@ -63,7 +63,7 @@ class HasInstancePermission(permissions.BasePermission):
 
 
 class InstancesViewSet(viewsets.ViewSet):
-    """ Instances API
+    """Instances API
 
     Posting instances can be done anonymously (if the project allows it), all other methods are restricted
     to authenticated users having the "menupermissions.iaso_forms" permission.
@@ -278,13 +278,17 @@ class InstancesViewSet(viewsets.ViewSet):
         try:
             instances_query.update(deleted=is_deletion)
         except Exception as e:
-            return Response({
-                "result": "A problem happened while deleting instances"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"result": "A problem happened while deleting instances"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        return Response({
-            "result": "success",
-        }, status=201)
+        return Response(
+            {
+                "result": "success",
+            },
+            status=201,
+        )
+
 
 def import_data(instances, user, app_id):
     project = Project.objects.get_for_user_and_app_id(user, app_id)

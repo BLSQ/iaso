@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polio', '0003_auto_20210505_1620'),
+        ("polio", "0003_auto_20210505_1620"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='campaign',
-            name='detection_status',
-            field=models.CharField(choices=[('PENDING', 'Pending'), ('ONGOING', 'Ongoing'), ('FINISHED', 'Finished')], default='PENDING', max_length=10),
+            model_name="campaign",
+            name="detection_status",
+            field=models.CharField(
+                choices=[("PENDING", "Pending"), ("ONGOING", "Ongoing"), ("FINISHED", "Finished")],
+                default="PENDING",
+                max_length=10,
+            ),
         ),
     ]

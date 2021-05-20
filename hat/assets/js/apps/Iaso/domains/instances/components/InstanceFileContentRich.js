@@ -94,7 +94,7 @@ function getDisplayedValue(descriptor, data) {
             const choice = descriptor.children.find(c => c.name === value);
             return choice !== undefined
                 ? translateLabel(choice.label)
-                : textPlaceholder;
+                : value + ' (choice not found)';
         }
         case 'select_multiple':
         case 'select multiple': {
@@ -103,7 +103,7 @@ function getDisplayedValue(descriptor, data) {
             );
             return choices.length > 0
                 ? choices.map(choice => translateLabel(choice.label)).join(', ')
-                : textPlaceholder;
+                : value + ' (multi choice not found)';
         }
         default:
             return value !== '' ? value : textPlaceholder;

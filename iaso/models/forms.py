@@ -14,8 +14,12 @@ from ..utils import slugify_underscore
 from .. import periods
 from uuid import uuid4
 
-from ..utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel, \
-    IncludeDeletedSoftDeletableManager, OnlyDeletedSoftDeletableManager
+from ..utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    SoftDeletableModel,
+    IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+)
 
 
 class FormQuerySet(models.QuerySet):
@@ -51,6 +55,7 @@ class FormQuerySet(models.QuerySet):
                 return self.none()
 
         return queryset
+
 
 class Form(SoftDeletableModel):
     PERIOD_TYPE_CHOICES = (
@@ -106,7 +111,7 @@ class Form(SoftDeletableModel):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "period_type": self.period_type,
             "single_per_period": self.single_per_period,
-            "label_keys": self.label_keys
+            "label_keys": self.label_keys,
         }
 
         if show_version:
@@ -117,6 +122,7 @@ class Form(SoftDeletableModel):
                     res[field] = getattr(self, field)
 
         return res
+
 
 def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
     path = pathlib.Path(filename)
@@ -135,7 +141,7 @@ class FormVersionQuerySet(models.QuerySet):
 
 class FormVersionManager(models.Manager):
     def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
-        print (kwargs)
+        print(kwargs)
         with transaction.atomic():
             latest_version = self.latest_version(form)
 
@@ -169,7 +175,9 @@ class FormVersion(models.Model):
 
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
-    def get_or_save_form_descriptor(self,):  # TODO: remove me - shoud be populated on create
+    def get_or_save_form_descriptor(
+        self,
+    ):  # TODO: remove me - shoud be populated on create
         if self.form_descriptor:
             json_survey = self.form_descriptor
         elif self.xls_file:

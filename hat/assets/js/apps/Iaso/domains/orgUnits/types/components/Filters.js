@@ -34,7 +34,7 @@ const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
         onSearch();
     };
     return (
-        <Fragment>
+        <>
             <Grid container spacing={4}>
                 <Grid item xs={3}>
                     <FiltersComponent
@@ -66,7 +66,7 @@ const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
                     </Button>
                 </Grid>
             </Grid>
-        </Fragment>
+        </>
     );
 };
 

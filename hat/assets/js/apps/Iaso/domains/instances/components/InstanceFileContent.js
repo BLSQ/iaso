@@ -14,12 +14,11 @@ export default class InstanceFileContent extends Component {
         this.state = { hasError: false };
     }
 
-    static getDerivedStateFromError(error) {
+    static getDerivedStateFromError() {
         return { hasError: true };
     }
 
-    componentDidCatch(error, errorInfo) {
-        // eslint-disable-next-line no-console
+    componentDidCatch(error) {
         console.error(error);
     }
 

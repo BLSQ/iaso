@@ -77,6 +77,7 @@ import { baseUrls } from './constants/urls';
 
 import ProtectedRoute from './domains/users/components/ProtectedRoute';
 
+// eslint-disable-next-line no-unused-vars
 import * as zoomBar from './components/leaflet/zoom-bar'; // don't delete - needed to override leaflet zoombar
 
 export default function iasoApp(element, baseUrl) {

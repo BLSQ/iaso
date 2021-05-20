@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Round, Campaign
-from .preparedness.google_sheet import get_national_level_preparedness_by_url
+from .preparedness.google_sheet import get_national_level_preparedness_by_url, InvalidFormatError
 
 
 class RoundSerializer(serializers.ModelSerializer):
@@ -12,8 +12,14 @@ class RoundSerializer(serializers.ModelSerializer):
 class PreparednessPreviewSerializer(serializers.Serializer):
     google_sheet_url = serializers.URLField()
 
+    def validate(self, attrs):
+        try:
+            return get_national_level_preparedness_by_url(attrs.get("google_sheet_url"))
+        except InvalidFormatError as e:
+            raise serializers.ValidationError(e.args[0])
+
     def to_representation(self, instance):
-        return {"national": get_national_level_preparedness_by_url(instance.get("google_sheet_url"))}
+        return {"national": instance}
 
 
 class CampaignSerializer(serializers.ModelSerializer):

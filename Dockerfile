@@ -39,7 +39,7 @@ RUN pip install --quiet -r requirements.txt
 COPY package.json /opt/app/package.json
 COPY package-lock.json /opt/app/package-lock.json
 
-RUN npm install --loglevel silent
+RUN npm install
 
 ENV PATH /opt/app/node_modules/.bin:$PATH
 

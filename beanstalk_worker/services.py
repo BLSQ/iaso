@@ -88,10 +88,13 @@ class FakeTaskService(_TaskServiceBase):
                 sids, func = connection.run_on_commit.pop(0)
                 func()
 
+        count = len(self.queue)
         while self.queue:
             b = self.queue.pop(0)
 
             self.run_task(b)
+        return count
+
 
     def run_task(self, body):
         with mock.patch("django.conf.settings.BEANSTALK_WORKER", True):

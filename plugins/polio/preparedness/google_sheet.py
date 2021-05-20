@@ -9,6 +9,10 @@ DIRNAME = os.path.dirname(__file__)
 SCOPES = ["https://spreadsheets.google.com/feeds"]
 
 
+class InvalidFormatError(Exception):
+    pass
+
+
 def _get_client():
     encoded_config = os.environ.get("GOOGLE_API_KEY_BASE64")
     decoded_config = base64.b64decode(encoded_config)
@@ -57,4 +61,4 @@ def get_national_level_preparedness(sheet):
 
         except gspread.CellNotFound:
             print(f"No data found on worksheet: {worksheet.title}")
-    raise Exception("`Summary of National Level Preparedness` was not found in this document")
+    raise InvalidFormatError("Summary of National Level Preparedness` was not found in this document")

@@ -1,4 +1,4 @@
-import { Grid, Button } from '@material-ui/core';
+import { Grid, Button, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { CircularProgress } from '@material-ui/core';
 import { TextInput } from '../components/Inputs';
@@ -44,7 +44,9 @@ export const PreparednessForm = () => {
                     <Grid xd={12} item>
                         {isLoading && <CircularProgress />}
                         {isError && (
-                            <div>An error occurred: {error.non_field_errors}</div>
+                            <Typography color="error">
+                                {error.non_field_errors}
+                            </Typography>
                         )}
                     </Grid>
                 </Grid>

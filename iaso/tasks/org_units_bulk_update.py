@@ -57,7 +57,7 @@ def org_units_bulk_update(
     # FIXME Task don't handle rollback properly if task is killed by user or other error
     with transaction.atomic():
         for index, org_unit in enumerate(queryset.iterator()):
-            res_string = "%s sec, processed %i org units" % (time() - start, index)
+            res_string = "%.2f sec, processed %i org units" % (time() - start, index)
             task.report_progress_and_stop_if_killed(progress_message=res_string, end_value=total, progress_value=index)
             OrgUnit.objects.update_single_unit_from_bulk(
                 user,

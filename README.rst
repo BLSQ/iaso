@@ -8,11 +8,18 @@ Iaso is a georegistry and data collection web platform structured around trees o
 
 The main tasks it allows to do are:
 
-- Data collection using [XLSForm](https://xlsform.org/) forms linked to org units through a mobile application.
-- Import, comparison and merging of multiple org. units trees, both through a web application and an API allowing manipulation through data science tools like [Jupyter notebooks](https://jupyter.org/).
+- Data collection using `XLSForm <https://xlsform.org/>`__ forms linked to org units through a mobile application.
+- Import, comparison and merging of multiple org. units trees, both through a web application and an API allowing manipulation through data science tools like `Jupyter notebooks <https://jupyter.org/>`__.
 - Validation of received data for org. units trees and forms.
-- Exports of the org. unit trees and form data, either in csv, xlsx, [GeoPackage](https://www.geopackage.org/) or through an api.
+- Exports of the org. unit trees and form data, either in csv, xlsx, `GeoPackage <https://www.geopackage.org/>`__ or through an api.
 
+
+Structure
+=========
+
+Iaso is composed of a Django app and a React front end. They interact via an API implemented via Django rest framework.
+
+More documentation on the Front End part is in  `hat/assets/README.rst <hat/assets/README.rst>`__
 
 Development environment
 =======================
@@ -277,26 +284,9 @@ Code formatting
 ===============
 We have adopted Black `<https://github.com/psf/black>`__ as our code formatting tool. Line length is 120.
 
-
-The easiest way to use is is to set it up as a pre-commit hook:
-
+The easiest way to use is is to install the pre-commit hook:
 1. Install pre-commit: pip install pre-commit
-2. Add pre-commit to requirements.txt (or requirements-dev.txt)
-3. Define .pre-commit-config.yaml with the hooks you want to include.
-4. Execute pre-commit install to install git hooks in your .git/ directory.
-
-Here is an example of pre-commit-config.yaml:
-
-.. code:: yaml
-
-    repos:
-    -   repo: https://github.com/ambv/black
-        rev: stable
-        hooks:
-        - id: black
-          language_version: python3.6
-
-..
+2. Execute pre-commit install to install git hooks in your .git/ directory.
 
 Another good way to have it working is to set it up in your code editor. Pycharm, for example, has good support for this.
 
@@ -373,5 +363,13 @@ Then, you need to make sure your `.env` file is properly configured.
 Workers
 ======
 
-We use Elastic Beanstalk workers with SQS using a fork of the library [django-beanstalk-worker](https://pypi.org/project/django-beanstalk-worker/)
+To execute task in the background, we use Elastic Beanstalk workers with SQS using a fork of the library
+`django-beanstalk-worker <https://pypi.org/project/django-beanstalk-worker/>`__ from tolomea.
 The endpoint `/api/copy_version/` is a good example of how to create a task and to plug it to the api.
+
+When calling a function with the @task decorator, it will add it to the task queue. You are required to pass it a User objects,
+in addition to the other function's argument, that represent which user is launching the task. At execution time the task
+will receive a `iaso.models.Task` instance in argument that should be used to report progress. It's mandatory for the
+function, at the end of a successful execution to call `task.report_success()` to mark it's proper completion.
+
+In local development you can call the url `tastks/run_all` which will run all tasks in queue.

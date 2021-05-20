@@ -27,7 +27,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "result",
             "status",
             "name",
-            "params",
+            # "params",
             "should_be_killed",
             "progress_message",
         ]

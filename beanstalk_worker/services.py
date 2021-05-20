@@ -95,7 +95,6 @@ class FakeTaskService(_TaskServiceBase):
             self.run_task(b)
         return count
 
-
     def run_task(self, body):
         with mock.patch("django.conf.settings.BEANSTALK_WORKER", True):
             return super().run_task(body)

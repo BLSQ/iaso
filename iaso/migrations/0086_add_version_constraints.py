@@ -4,6 +4,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
     """This migration add a trigger constraint to ensure that we have the same source version
     between OrgUnit and Group."""
+
     dependencies = [
         ("iaso", "0085_merge_20210415_2144"),
     ]

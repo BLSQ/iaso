@@ -681,7 +681,7 @@ export const iasoRestoreRequest = requestHandler(storeDispatch)(restoreRequest);
 
 /**
  *
- * @param {function} request
+ * @param {function} request - IMPORTANT: must be wrapped in useCallback
  * @param {Object} [params={trigger:true,additionalDependencies:[]}]
  * @param {boolean} [params.trigger=true]
  * @param {any[]} [params.additionalDependencies=[]]

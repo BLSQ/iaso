@@ -39,6 +39,7 @@ import { OrgUnitsLevels } from './Inputs/OrgUnitsSelect';
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
+import { PreparednessForm } from '../forms/PreparednessForm';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -586,6 +587,10 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
         {
             title: 'Budget',
             form: BudgetForm,
+        },
+        {
+            title: 'Preparedness',
+            form: PreparednessForm,
         },
         {
             title: 'Round 1',

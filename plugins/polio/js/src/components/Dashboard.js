@@ -76,6 +76,8 @@ const schema = yup.object().shape({
     ag_nopv_group_met_at: yup.date().nullable(),
     dg_authorized_at: yup.date().nullable(),
 
+    spreadsheet_url: yup.string().url().nullable(),
+
     eomg: yup.date().nullable(),
     no_regret_fund_amount: yup.number().nullable().positive().integer(),
 

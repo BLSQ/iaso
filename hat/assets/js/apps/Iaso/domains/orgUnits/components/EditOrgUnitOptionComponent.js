@@ -1,17 +1,14 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { withStyles, Button, Box, Typography } from '@material-ui/core';
 
-import Edit from '@material-ui/icons/Edit';
 import AddLocation from '@material-ui/icons/AddLocation';
 import DeleteIcon from '@material-ui/icons/Delete';
-import Check from '@material-ui/icons/Check';
 
 import PropTypes from 'prop-types';
 
 import commonStyles from '../../../styles/common';
 
-import ShapeSvg from '../../../components/svg/ShapeSvgComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import MESSAGES from '../messages';
@@ -34,14 +31,9 @@ class EditOrgUnitOptionComponent extends Component {
         const {
             orgUnit,
             classes,
-            editLocationEnabled,
             editCatchmentEnabled,
-            toggleEditShape,
             onChangeLocation,
             addMarker,
-            addShape,
-            onDeleteShape,
-            onChangeShape,
         } = this.props;
         const hasMarker =
             Boolean(orgUnit.latitude !== null) &&
@@ -65,7 +57,7 @@ class EditOrgUnitOptionComponent extends Component {
                         </Typography>
                     </Box>
                     {hasMarker && (
-                        <Fragment>
+                        <>
                             <InputComponent
                                 disabled={editCatchmentEnabled}
                                 keyValue="latitude"
@@ -118,10 +110,10 @@ class EditOrgUnitOptionComponent extends Component {
                                 <DeleteIcon className={classes.buttonIcon} />
                                 <FormattedMessage {...MESSAGES.deleteMarker} />
                             </Button>
-                        </Fragment>
+                        </>
                     )}
                     {!orgUnit.geo_json && !hasMarker && (
-                        <Fragment>
+                        <>
                             <Button
                                 disabled={editCatchmentEnabled}
                                 variant="outlined"
@@ -132,7 +124,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 <AddLocation className={classes.buttonIcon} />
                                 <FormattedMessage {...MESSAGES.addLocation} />
                             </Button>
-                        </Fragment>
+                        </>
                     )}
                 </Box>
             </Box>

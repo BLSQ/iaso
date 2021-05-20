@@ -57,6 +57,12 @@ class ProjectDialogComponent extends Component {
         }
     }
 
+    handleChangeTab(tab) {
+        this.setState({
+            tab,
+        });
+    }
+
     onConfirm(closeDialog) {
         const {
             params,
@@ -158,12 +164,6 @@ class ProjectDialogComponent extends Component {
                 errors: [],
             },
         };
-    }
-
-    handleChangeTab(tab) {
-        this.setState({
-            tab,
-        });
     }
 
     render() {

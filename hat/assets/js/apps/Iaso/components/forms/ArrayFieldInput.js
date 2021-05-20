@@ -64,7 +64,8 @@ class ArrayFieldInput extends Component {
         };
     }
 
-    componentWillReceiveProps(newProps) {
+    // eslint-disable-next-line camelcase
+    UNSAFE_componentWillReceiveProps(newProps) {
         this.setState({
             fieldList: addPositionIndex(newProps.fieldList),
         });
@@ -100,9 +101,7 @@ class ArrayFieldInput extends Component {
         return (
             <Grid container spacing={0} className={classes.marginTop}>
                 <Grid item xs={1}>
-                    <span className={classes.label}>{label}
-:
-</span>
+                    <span className={classes.label}>{label}:</span>
                 </Grid>
                 <Grid item xs={11}>
                     <List className={classes.list}>

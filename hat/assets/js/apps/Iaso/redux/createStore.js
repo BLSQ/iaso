@@ -8,14 +8,10 @@ import { routerReducer } from 'react-router-redux';
 
 export default (initialState = {}, reducers = {}, middleWare = []) =>
     _createStore(
-        combineReducers(
-            Object.assign(
-                {
-                    routing: routerReducer,
-                },
-                reducers,
-            ),
-        ),
+        combineReducers({
+            routing: routerReducer,
+            ...reducers,
+        }),
         initialState,
         compose(
             applyMiddleware(...middleWare),

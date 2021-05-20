@@ -23,7 +23,7 @@ class VideosListComponent extends Component {
     render() {
         const { videoList, classes } = this.props;
         return (
-            <Fragment>
+            <>
                 <Grid container spacing={2} className={classes.root}>
                     {videoList.map(file => (
                         <Grid
@@ -37,7 +37,7 @@ class VideosListComponent extends Component {
                         </Grid>
                     ))}
                 </Grid>
-            </Fragment>
+            </>
         );
     }
 }

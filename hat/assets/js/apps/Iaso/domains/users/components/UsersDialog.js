@@ -58,6 +58,12 @@ class UserDialogComponent extends Component {
         }
     }
 
+    handleChangeTab(tab) {
+        this.setState({
+            tab,
+        });
+    }
+
     onConfirm(closeDialog) {
         const {
             params,
@@ -88,7 +94,6 @@ class UserDialogComponent extends Component {
                 fetchUsersProfiles(params);
             })
             .catch(error => {
-                console.log('error', error);
                 if (error.status === 400) {
                     this.setFieldErrors(
                         error.details.errorKey,
@@ -156,12 +161,6 @@ class UserDialogComponent extends Component {
             },
             org_units: { value: get(initialData, 'org_units', []), errors: [] },
         };
-    }
-
-    handleChangeTab(tab) {
-        this.setState({
-            tab,
-        });
     }
 
     render() {

@@ -19,11 +19,7 @@ import muiTheme from '../../../utils/theme';
 
 import injectIntl from '../../../libs/intl/injectIntl';
 
-import {
-    listMenuPermission,
-    userHasOneOfPermissions,
-    userHasPermission,
-} from '../../users/utils';
+import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -61,7 +57,7 @@ function MenuItem(props) {
         paddingLeft: muiTheme.spacing(subMenuLevel * 2),
     };
     return (
-        <Fragment>
+        <>
             <Link className={classes.linkButton} to={!hasSubMenu ? path : ''}>
                 <ListItem
                     style={itemStyle}
@@ -111,7 +107,7 @@ function MenuItem(props) {
                     </List>
                 </Collapse>
             )}
-        </Fragment>
+        </>
     );
 }
 

@@ -61,7 +61,8 @@ class Links extends Component {
         };
     }
 
-    componentWillMount() {
+    // eslint-disable-next-line camelcase
+    UNSAFE_componentWillMount() {
         const { dispatch, fetchUsersProfiles } = this.props;
         fetchUsersProfiles();
         fetchOrgUnitsTypes(dispatch).then(orgUnitTypes =>

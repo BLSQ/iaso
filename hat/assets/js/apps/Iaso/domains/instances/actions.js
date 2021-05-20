@@ -58,7 +58,6 @@ export const fetchEditUrl = (currentInstance, location) => dispatch => {
             window.location.href = resp.edit_url;
         })
         .catch(err => {
-            console.log(err);
             dispatch(
                 enqueueSnackbar(errorSnackBar('fetchEnketoError', null, err)),
             );
@@ -85,7 +84,7 @@ export const fetchInstanceDetail = instanceId => dispatch => {
 export const softDeleteInstance = currentInstance => dispatch => {
     dispatch(setInstancesFetching(true));
     deleteRequest(`/api/instances/${currentInstance.id}`)
-        .then(res => {
+        .then(() => {
             dispatch(fetchInstanceDetail(currentInstance.id));
         })
         .catch(err =>
@@ -101,7 +100,7 @@ export const softDeleteInstance = currentInstance => dispatch => {
 export const restoreInstance = currentInstance => dispatch => {
     dispatch(setInstancesFetching(true));
     patchRequest(`/api/instances/${currentInstance.id}/`, { deleted: false })
-        .then(res => {
+        .then(() => {
             dispatch(fetchInstanceDetail(currentInstance.id));
         })
         .catch(err =>
@@ -118,10 +117,10 @@ export const restoreInstance = currentInstance => dispatch => {
 
 export const reAssignInstance = (currentInstance, payload) => dispatch => {
     dispatch(setInstancesFetching(true));
-
-    if (!payload.period) delete payload.period;
-    patchRequest(`/api/instances/${currentInstance.id}/`, payload)
-        .then(res => {
+    const effectivePayload = { ...payload };
+    if (!payload.period) delete effectivePayload.period;
+    patchRequest(`/api/instances/${currentInstance.id}/`, effectivePayload)
+        .then(() => {
             dispatch(fetchInstanceDetail(currentInstance.id));
         })
         .catch(err =>

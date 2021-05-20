@@ -102,7 +102,7 @@ class OrgUnitPopupComponent extends Component {
                                 }
                             />
                             {!currentOrgUnit.has_geo_json && (
-                                <Fragment>
+                                <>
                                     <PopupItemComponent
                                         label={formatMessage(MESSAGES.latitude)}
                                         value={currentOrgUnit.latitude}
@@ -113,7 +113,7 @@ class OrgUnitPopupComponent extends Component {
                                         )}
                                         value={currentOrgUnit.longitude}
                                     />
-                                </Fragment>
+                                </>
                             )}
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.created_at)}

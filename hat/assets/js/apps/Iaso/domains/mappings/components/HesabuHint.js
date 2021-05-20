@@ -23,16 +23,16 @@ function fetcthDataElementUsedBy(projectDescriptor) {
                         ? 'activity_formula'
                         : 'activity_state';
                     if (state !== 'name' && state !== 'code') {
-                        const deid = activity[state];
+                        const deId = activity[state];
 
-                        if (indicatorsById[deid]) {
+                        if (indicatorsById[deId]) {
                             const deRegex = /[a-zA-Z]{1}[a-zA-Z0-9]{10}/;
-                            const dataelement_ids = indicatorsById[
-                                deid
+                            const dataElementIds = indicatorsById[
+                                deId
                             ].numerator
                                 .split(/#{([a-zA-Z]{1}[a-zA-Z0-9]{10})}/i)
                                 .filter(ex => ex.match(deRegex));
-                            dataelement_ids.forEach(de => {
+                            dataElementIds.forEach(de => {
                                 dataElementsUsedByHesabu.push({
                                     id: de,
                                     activityCode: activity.code,
@@ -41,15 +41,15 @@ function fetcthDataElementUsedBy(projectDescriptor) {
                                     frequency: orbfPackage.frequency,
                                     packageName: orbfPackage.name,
                                     paymentName: paymentRule.name,
-                                    dhis2IndicatorId: deid,
+                                    dhis2IndicatorId: deId,
                                     dhis2IndicatorName:
-                                        indicatorsById[deid].name,
+                                        indicatorsById[deId].name,
                                     hesabu: hesabuType,
                                 });
                             });
                         } else {
                             dataElementsUsedByHesabu.push({
-                                id: deid,
+                                id: deId,
                                 activityCode: activity.code,
                                 activityName: activity.name,
                                 state,
@@ -64,9 +64,9 @@ function fetcthDataElementUsedBy(projectDescriptor) {
             }); // activities
             Object.keys(orbfPackage.formulas).forEach(formulaCode => {
                 const formula = orbfPackage.formulas[formulaCode];
-                const deid = formula.de_id;
+                const deId = formula.de_id;
                 dataElementsUsedByHesabu.push({
-                    id: deid,
+                    id: deId,
                     activityCode: undefined,
                     state: undefined,
                     formulaCode,
@@ -81,9 +81,9 @@ function fetcthDataElementUsedBy(projectDescriptor) {
         }); // packages
         Object.keys(paymentRule.formulas).forEach(formulaCode => {
             const formula = paymentRule.formulas[formulaCode];
-            const deid = formula.de_id;
+            const deId = formula.de_id;
             dataElementsUsedByHesabu.push({
-                id: deid,
+                id: deId,
                 activityCode: undefined,
                 state: undefined,
                 formulaCode,

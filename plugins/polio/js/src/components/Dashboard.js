@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTable } from 'react-table';
 
 import {
@@ -7,10 +7,9 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    IconButton,
     DialogTitle,
     Grid,
-    makeStyles,
+    IconButton,
     Tab,
     Tabs,
     Typography,
@@ -19,8 +18,6 @@ import merge from 'lodash.merge';
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
-
-import commonStyles from '../styles/common';
 
 import { TableHeader } from './Table/TableHeader';
 import { TableCell } from './Table/TableCell';
@@ -40,8 +37,8 @@ import { polioVacines, polioViruses } from '../constants/virus';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { OrgUnitsLevels } from './Inputs/OrgUnitsSelect';
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
-import { useEffect } from 'react';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
+import { useStyles } from '../styles/theme';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -84,44 +81,6 @@ const schema = yup.object().shape({
     round_one: round_shape,
     round_two: round_shape,
 });
-
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    root: {
-        flexGrow: 1,
-    },
-    table: {
-        borderSpacing: 0,
-        width: '100%',
-        border: '1px solid rgba(0,0,0,0.1)',
-    },
-    tableHeader: {
-        display: 'flex',
-        boxShadow: '0 2px 15px 0 rgb(0 0 0 / 15%)',
-    },
-    tableRow: {
-        display: 'flex',
-    },
-    pageActions: {
-        marginBottom: theme.spacing(2),
-    },
-    form: {
-        marginTop: theme.spacing(4),
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-    },
-    round1FormCalculations: {
-        marginTop: theme.spacing(4),
-        marginBottom: theme.spacing(4),
-    },
-    input: {
-        marginBottom: theme.spacing(2),
-    },
-    tabs: {
-        borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
-    },
-}));
 
 const RowAction = ({ icon: Icon, onClick }) => {
     return (

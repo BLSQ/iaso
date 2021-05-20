@@ -13,7 +13,7 @@ def _get_client():
     encoded_config = os.environ.get("GOOGLE_API_KEY_BASE64")
     decoded_config = base64.b64decode(encoded_config)
     data = json.loads(decoded_config)
-    creds = ServiceAccountCredentials.from_json(data, SCOPES)
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(data, SCOPES)
     return gspread.authorize(creds)
 
 

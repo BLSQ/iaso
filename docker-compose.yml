@@ -11,6 +11,8 @@ services:
     ports:
       - "8081:8081"
     volumes: &hat_volumes
+    # Uncomment below line if using local version of bluesquare-components 
+    # - ./../bluesquare-components:/opt/app/bluesquare-components
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
       - ./media:/opt/app/media

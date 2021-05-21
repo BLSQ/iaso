@@ -1,6 +1,11 @@
 from rest_framework import serializers
 from .models import Round, Campaign
-from .preparedness.google_sheet import get_national_level_preparedness_by_url, InvalidFormatError
+from .preparedness.google_sheet import (
+    open_sheet_by_url,
+    get_regional_level_preparedness,
+    get_national_level_preparedness,
+    InvalidFormatError,
+)
 from gspread.exceptions import APIError
 
 
@@ -15,14 +20,18 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         try:
-            return get_national_level_preparedness_by_url(attrs.get("google_sheet_url"))
+            sheet = open_sheet_by_url(attrs.get("google_sheet_url"))
+            return {
+                "national": get_national_level_preparedness(sheet),
+                "regional": get_regional_level_preparedness(sheet),
+            }
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
             raise serializers.ValidationError(e.args[0].get("message"))
 
     def to_representation(self, instance):
-        return {"national": instance}
+        return instance
 
 
 class CampaignSerializer(serializers.ModelSerializer):

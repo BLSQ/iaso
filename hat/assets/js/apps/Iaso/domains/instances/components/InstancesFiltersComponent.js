@@ -75,12 +75,8 @@ class InstancesFiltersComponent extends Component {
     }
 
     onSelectOrgUnit(orgUnit) {
-        const {
-            redirectTo,
-            params,
-            baseUrl,
-            setInstancesFilterUpdated,
-        } = this.props;
+        const { redirectTo, params, baseUrl, setInstancesFilterUpdated } =
+            this.props;
         const parentIds = getOrgUnitParentsIds(orgUnit);
         parentIds.push(orgUnit.id);
         const tempParams = {

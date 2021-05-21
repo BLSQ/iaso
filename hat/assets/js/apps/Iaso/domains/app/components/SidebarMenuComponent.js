@@ -75,14 +75,8 @@ class SidebarMenu extends PureComponent {
     }
 
     render() {
-        const {
-            classes,
-            isOpen,
-            toggleSidebar,
-            location,
-            currentUser,
-            intl,
-        } = this.props;
+        const { classes, isOpen, toggleSidebar, location, currentUser, intl } =
+            this.props;
         const defaultSourceVersion = getDefaultSourceVersion(currentUser);
         return (
             <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>

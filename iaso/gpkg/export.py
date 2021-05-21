@@ -1,5 +1,4 @@
 import typing
-from django.core.files.base import ContentFile
 from django.db.models import QuerySet, Q
 from django.contrib.gis.geos import GEOSGeometry
 import pandas as pd
@@ -60,12 +59,11 @@ def org_units_to_gpkg(queryset: QuerySet) -> bytes:
     # NamedTemporaryFile works but the handle cannot be used to read again. So left the plain uuid thing.
     path = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()))
 
-    i = 1
     for group_key, group in ou_gdf_by_type:
         group = group.drop(columns=["depth", "group_key"])
         layer = group_key.split("-", 1)[1]
-        group.to_file(path, driver="GPKG", layer=layer)
-        i = i + 1
+        # projection is hardcoded, may cause issue if we change internal representation in the future
+        group.to_file(path, driver="GPKG", layer=layer, crs="EPSG:4326")
 
     f = open(path, "rb")
     content = f.read()

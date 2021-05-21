@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AddButton as AddButtonComponent, useSafeIntl, TopBar } from 'bluesquare-components';
+import {
+    AddButton as AddButtonComponent,
+    useSafeIntl,
+    TopBar,
+} from 'bluesquare-components';
 // import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 // import { useSafeIntl } from '../../hooks/intl';
 // import TopBar from '../../components/nav/TopBarComponent';

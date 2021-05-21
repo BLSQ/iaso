@@ -65,11 +65,10 @@ import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import injectIntl from '../../libs/intl/injectIntl';
+import { locationLimitMax } from './constants/orgUnitConstants';
 
 const baseUrl = baseUrls.orgUnits;
 let warningDisplayed = false;
-const locationLimitMax = 3000;
-export { locationLimitMax };
 
 const styles = theme => ({
     ...commonStyles(theme),

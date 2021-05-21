@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import {
     getRequest,
     patchRequest,
@@ -6,9 +7,9 @@ import {
     deleteRequest,
     restoreRequest,
 } from '../libs/Api';
-
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { succesfullSnackBar, errorSnackBar } from '../constants/snackBars';
+import { dispatch as storeDispatch } from '../redux/store';
 
 export const fetchOrgUnits = (dispatch, params) =>
     getRequest(`/api/orgunits/?${params}`)
@@ -518,6 +519,7 @@ export const fetchFormVersions = (dispatch, formId) => {
         dispatch(
             enqueueSnackbar(
                 errorSnackBar(
+                    // @ts-ignore
                     isUpdate ? 'updateFormError' : 'createFormError',
                     null,
                     error,
@@ -614,37 +616,113 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
         });
 
 /**
- * @param {Object} params
- * @param {string} params.url - endpoint's url
- * @param {Object} params.body - request's body
- * @param {string} params.errorKeyMessage - The message displayed in the error snackbar
- * @param {string} params.consoleError - the message to embed in the console's error message
- * @param {function} dispatch - redux's dispatch function
+ * @typedef {Object} handlerParams
+ * @property {queryParams} requestParams - params that will be passed to the API caller
+ * @property {string} errorKeyMessage - The message displayed in the error snackbar
+ * @property {string} consoleError - the message to embed in the console's error message
+ * @property {boolean=} disableSuccessSnackBar - will not display snack bar if true
  */
-export const postRequestHandler = params =>
-    postRequest(params.url, params.body)
+
+/**
+ * @typedef {Object} queryParams
+ * @property {string} url - endpoint's url
+ * @property {Object=} body - request's body
+ * @property {object=} fileData - object to pass when using multipart mode
+ */
+
+/**
+ *
+ * @param {function} dispatch - a redux dispatch function
+ *
+ */
+// currying to allow testing calls to dispatch
+// TODO figure out how to document currying with JSDocs
+export const requestHandler = dispatch => request => params => {
+    const { url, body, fileData } = params.requestParams;
+    return request(url, body, fileData)
         .then(data => {
-            params.dispatch(enqueueSnackbar(succesfullSnackBar()));
+            if (!params.disableSuccessSnackBar) {
+                dispatch(enqueueSnackbar(succesfullSnackBar()));
+            }
             return data;
         })
         .catch(error => {
-            params.dispatch(
+            dispatch(
                 enqueueSnackbar(
                     errorSnackBar(params.errorKeyMessage, null, error),
                 ),
             );
             console.error(
-                `Error while posting ${params.consoleError} :`,
+                `Error with API call ${params.consoleError} :`,
                 error,
             );
             throw error;
         });
+};
+/**
+ * @example const genericHandler = requestHandler(dispatch);
+ * const putHandler = genericHandler(putRequest);
+ * const result = await putHandler(params);
+ */
+export const iasoGetRequest = requestHandler(storeDispatch)(getRequest);
+export const iasoPostRequest = requestHandler(storeDispatch)(postRequest);
+export const iasoPutRequest = requestHandler(storeDispatch)(putRequest);
+export const iasoPatchRequest = requestHandler(storeDispatch)(patchRequest);
+export const iasoDeleteRequest = requestHandler(storeDispatch)(deleteRequest);
+export const iasoRestoreRequest = requestHandler(storeDispatch)(restoreRequest);
 
-export const putRequestHandler = params =>
-    putRequest(params.url, params.body).catch(error => {
-        params.dispatch(
-            enqueueSnackbar(errorSnackBar(params.errorKeyMessage, null, error)),
-        );
-        console.error(`Error while putting ${params.consoleError} :`, error);
-        throw error;
-    });
+/**
+ *
+ * @typedef APIHookResponse
+ * @property {boolean} - isLoading
+ * @property {boolean} - isError
+ * @property {any} - result
+ */
+
+/**
+ *
+ * @param {function} request - IMPORTANT: must be wrapped in useCallback
+ * @param {Object} [params={trigger:true,additionalDependencies:[]}]
+ * @param {boolean} [params.trigger=true]
+ * @param {any[]} [params.additionalDependencies=[]]
+ * @returns {APIHookResponse} - { isLoading: boolean, isError: boolean, data: any }
+ */
+
+const defaultHookParams = { preventTrigger: false, additionalDependencies: [] };
+
+export const useAPI = (request, params = defaultHookParams) => {
+    const [data, setData] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isError, setIsError] = useState(false);
+    // useRef to avoid memory leak if user navigates away while async action not completed
+    // credit: https://medium.com/wesionary-team/how-to-fix-memory-leak-issue-in-react-js-using-hook-a5ecbf9becf8
+    const mountedRef = React.useRef();
+
+    useEffect(() => {
+        mountedRef.current = true;
+        const executeRequest = async () => {
+            if (params.preventTrigger) {
+                return;
+            }
+            setIsLoading(true);
+            try {
+                const response = await request();
+                if (mountedRef.current) {
+                    setData(response);
+                    setIsLoading(false);
+                }
+            } catch (e) {
+                if (mountedRef.current) {
+                    setIsLoading(false);
+                    setIsError(true);
+                }
+            }
+        };
+        executeRequest();
+        return () => {
+            mountedRef.current = false;
+        };
+    }, [...(params.additionalDependencies ?? []), request, params.trigger]);
+
+    return { data, isLoading, isError };
+};

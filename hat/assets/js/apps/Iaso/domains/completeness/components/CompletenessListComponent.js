@@ -17,12 +17,10 @@ function CompletenessListComponent({
     redirectTo,
     onGenerateDerivedInstances,
 }) {
-    const [activePeriodType, setActivePeriodType] = useState(
-        PERIOD_TYPE_QUARTER,
-    );
-    const [activeInstanceStatuses, setActiveInstanceStatuses] = useState(
-        INSTANCE_STATUSES,
-    );
+    const [activePeriodType, setActivePeriodType] =
+        useState(PERIOD_TYPE_QUARTER);
+    const [activeInstanceStatuses, setActiveInstanceStatuses] =
+        useState(INSTANCE_STATUSES);
 
     const groupedCompletenessData = useMemo(
         () => groupCompletenessData(completenessList, activePeriodType),

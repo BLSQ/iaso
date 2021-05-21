@@ -65,9 +65,8 @@ const renderValue = (fieldKey, value, fields, classes) => {
     if (!value || value.toString().length === 0) return textPlaceholder;
     switch (fieldKey) {
         case 'simplified_geom': {
-            const polygonPositions = getPolygonPositionsFromSimplifiedGeom(
-                value,
-            );
+            const polygonPositions =
+                getPolygonPositionsFromSimplifiedGeom(value);
             return (
                 <div className={classes.cellMap}>
                     <PolygonMap polygonPositions={polygonPositions} />
@@ -233,9 +232,10 @@ const LogCompareComponent = ({
                                                 fieldKey === 'catchment') &&
                                             value
                                         ) {
-                                            const polygonPositions = getPolygonPositionsFromSimplifiedGeom(
-                                                value,
-                                            );
+                                            const polygonPositions =
+                                                getPolygonPositionsFromSimplifiedGeom(
+                                                    value,
+                                                );
                                             return (
                                                 <TableRow key={fieldKey}>
                                                     <TableCell

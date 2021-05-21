@@ -372,4 +372,4 @@ in addition to the other function's argument, that represent which user is launc
 will receive a `iaso.models.Task` instance in argument that should be used to report progress. It's mandatory for the
 function, at the end of a successful execution to call `task.report_success()` to mark it's proper completion.
 
-In local development you can call the url `tastks/run_all` which will run all tasks in queue.
+In local development you can call the url `tasks/run_all` which will run all tasks in queue.

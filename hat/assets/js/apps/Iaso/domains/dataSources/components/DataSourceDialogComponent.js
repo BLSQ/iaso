@@ -249,12 +249,8 @@ export class DataSourceDialogComponent extends Component {
     }
 
     render() {
-        const {
-            renderTrigger,
-            projects,
-            titleMessage,
-            initialData,
-        } = this.props;
+        const { renderTrigger, projects, titleMessage, initialData } =
+            this.props;
         const { form, isDataTouched, hasConfirmed } = this.state;
         const projectsIsEmpty = form.project_ids.value.length === 0;
         let allowConfirm = isDataTouched;

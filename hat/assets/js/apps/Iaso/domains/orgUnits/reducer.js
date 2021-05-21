@@ -54,14 +54,8 @@ export const orgUnitsInitialState = {
 export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
     switch (action.type) {
         case SET_ORG_UNITS: {
-            const {
-                list,
-                showPagination,
-                params,
-                count,
-                pages,
-                counts,
-            } = action.payload;
+            const { list, showPagination, params, count, pages, counts } =
+                action.payload;
             return {
                 ...state,
                 orgUnitsPage: {

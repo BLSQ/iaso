@@ -1,18 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { postRequestHandler } from '../../utils/requests';
-
-export const sendDhisOuImporterRequest = async (requestBody, dispatch) => {
-    if (requestBody)
-        return postRequestHandler({
-            url: '/api/dhis2ouimporter/',
-            body: requestBody,
-            errorKeyMessage: 'dhisouimporterError',
-            consoleError: 'DHIS OU Importer',
-            dispatch,
-        });
-    return null;
-};
+import { useCallback } from 'react';
+import { iasoPostRequest, useAPI } from '../../utils/requests';
 
 /**
  *
@@ -29,19 +16,47 @@ export const sendDhisOuImporterRequest = async (requestBody, dispatch) => {
  * @returns {Object} request's response
  */
 
-export const useDhisOuImporterRequest = requestBody => {
-    const dispatch = useDispatch();
-    const [result, setResult] = useState(null);
-    useEffect(() => {
-        const executeRequest = async () => {
-            const response = await sendDhisOuImporterRequest(
-                requestBody,
-                dispatch,
-            );
-            if (response) setResult(response);
-        };
-        // TODO add error handling
-        executeRequest();
-    }, [requestBody]);
-    return result;
+export const sendDhisOuImporterRequest = async requestBody => {
+    if (requestBody) {
+        return iasoPostRequest({
+            requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
+            errorKeyMessage: 'dhisouimporterError',
+            consoleError: 'DHIS OU Importer',
+        });
+    }
+    return null;
 };
+export const useDhisOuImporterRequest = requestBody => {
+    const callback = useCallback(
+        async () => sendDhisOuImporterRequest(requestBody),
+        [requestBody, sendDhisOuImporterRequest],
+    );
+    return useAPI(callback)?.data;
+};
+
+// LEGACY
+// export const useDhisOuImporterRequest = requestBody => {
+//     const [result, setResult] = useState(null);
+//     useEffect(() => {
+//         const executeRequest = async () => {
+//             const response = await sendDhisOuImporterRequest(requestBody);
+//             if (response) {
+//                 setResult(response);
+//             }
+//         };
+//         // TODO add error handling
+//         executeRequest();
+//     }, [requestBody]);
+//     return result;
+// };
+
+// const request = async requestBody => {
+//     if (requestBody) {
+//         return postRequestHandler({
+//             requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
+//             errorKeyMessage: 'dhisouimporterError',
+//             consoleError: 'DHIS OU Importer',
+//         });
+//     }
+//     return null;
+// };

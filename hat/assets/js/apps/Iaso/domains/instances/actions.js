@@ -168,37 +168,37 @@ export const createExportRequest = filterParams => dispatch => {
         .then(() => dispatch(setInstancesFetching(false)));
 };
 
-export const bulkDelete = (
-    selection,
-    filters,
-    isUnDeleteAction,
-    successFn,
-) => dispatch => {
-    dispatch(setInstancesFetching(true));
-    return postRequest('/api/instances/bulkdelete/', {
-        select_all: selection.selectAll,
-        selected_ids: selection.selectedItems.map(i => i.id),
-        unselected_ids: selection.unSelectedItems.map(i => i.id),
-        is_deletion: !isUnDeleteAction,
-        ...filters,
-    })
-        .then(res => {
-            dispatch(
-                enqueueSnackbar(
-                    succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull'),
-                ),
-            );
-            successFn();
-            dispatch(setInstancesFetching(false));
-            return res;
+export const bulkDelete =
+    (selection, filters, isUnDeleteAction, successFn) => dispatch => {
+        dispatch(setInstancesFetching(true));
+        return postRequest('/api/instances/bulkdelete/', {
+            select_all: selection.selectAll,
+            selected_ids: selection.selectedItems.map(i => i.id),
+            unselected_ids: selection.unSelectedItems.map(i => i.id),
+            is_deletion: !isUnDeleteAction,
+            ...filters,
         })
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('saveMultiEditOrgUnitsError', null, error),
-                ),
-            );
-            dispatch(setInstancesFetching(false));
-            throw error;
-        });
-};
+            .then(res => {
+                dispatch(
+                    enqueueSnackbar(
+                        succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull'),
+                    ),
+                );
+                successFn();
+                dispatch(setInstancesFetching(false));
+                return res;
+            })
+            .catch(error => {
+                dispatch(
+                    enqueueSnackbar(
+                        errorSnackBar(
+                            'saveMultiEditOrgUnitsError',
+                            null,
+                            error,
+                        ),
+                    ),
+                );
+                dispatch(setInstancesFetching(false));
+                throw error;
+            });
+    };

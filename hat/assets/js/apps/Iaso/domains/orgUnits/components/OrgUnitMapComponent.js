@@ -336,11 +336,8 @@ class OrgUnitMapComponent extends Component {
     }
 
     useOrgUnitLocation(newOrgUnit) {
-        const {
-            onChangeShape,
-            onChangeLocation,
-            setOrgUnitLocationModified,
-        } = this.props;
+        const { onChangeShape, onChangeLocation, setOrgUnitLocationModified } =
+            this.props;
         if (newOrgUnit.latitude && newOrgUnit.longitude) {
             onChangeLocation({
                 lat: newOrgUnit.latitude,

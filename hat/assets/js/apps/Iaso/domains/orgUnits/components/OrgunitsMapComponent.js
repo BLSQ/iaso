@@ -259,9 +259,8 @@ class OrgunitsMap extends Component {
                         {isClusterActive &&
                             orgUnits.locations.map(
                                 (orgUnitsBySearch, searchIndex) => {
-                                    const color = this.getSearchColor(
-                                        searchIndex,
-                                    );
+                                    const color =
+                                        this.getSearchColor(searchIndex);
                                     if (orgUnitsBySearch.length === 0)
                                         return null;
                                     return (

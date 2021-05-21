@@ -140,13 +140,8 @@ class DynamicTabsComponent extends Component {
     }
 
     handleTabChange(tabIndex) {
-        const {
-            redirectTo,
-            params,
-            paramKey,
-            baseUrl,
-            tabParamKey,
-        } = this.props;
+        const { redirectTo, params, paramKey, baseUrl, tabParamKey } =
+            this.props;
         const newState = {
             ...this.state,
         };

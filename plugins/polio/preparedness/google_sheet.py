@@ -26,7 +26,13 @@ def parse_value(value: str):
         return int(value.replace("%", ""))
     except ValueError:
         return 0
+
+
+def open_sheet_by_url(spreadsheet_url):
     client = _get_client()
+    return client.open_by_url(spreadsheet_url)
+
+
 def _get_scores(worksheet, initial_cell):
     """
     The scores are fetched using [A1 Notation](https://developers.google.com/sheets/api/guides/concepts).
@@ -85,16 +91,20 @@ def get_national_level_preparedness(sheet: gspread.Spreadsheet):
             print(f"No data found on worksheet: {worksheet.title}")
     raise InvalidFormatError("Summary of National Level Preparedness` was not found in this document")
 
-            return {
-                "planning_score": planning_coordination_financing_score.value,
-                "training_score": training_sias_score.value,
-                "monitoring_score": monitoring_supervision_score.value,
-                "vaccine_score": vaccine_cold_chain_logistics_score.value,
-                "advocacy_score": advocacy_social_mob_commu_score.value,
-                "adverse_score": adverse_event_score.value,
-                "status_score": status_score.value,
-            }
+
+def get_regional_level_preparedness(sheet):
+    regions = {}
+
+    for worksheet in sheet.worksheets():
+        try:
+            cell = worksheet.find("Summary of Regional Level Preparedness")
+            print(f"Data found on worksheet: {worksheet.title}")
+            regional_cell = worksheet.cell(cell.row, cell.col + 1)
+            print(f"Processing region {regional_cell.value}")
+            regions[regional_cell.value] = _get_scores(worksheet, cell)
 
         except gspread.CellNotFound:
             print(f"No data found on worksheet: {worksheet.title}")
-    raise InvalidFormatError("Summary of National Level Preparedness` was not found in this document")
+    if not regions:
+        raise InvalidFormatError("Summary of National Level Preparedness` was not found in this document")
+    return regions

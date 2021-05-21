@@ -33,12 +33,8 @@ const OrgUnitForm = ({
     baseUrl,
     onResetOrgUnit,
 }) => {
-    const [
-        formState,
-        setFieldValue,
-        setFieldErrors,
-        setFormState,
-    ] = useFormState(initialFormState(orgUnit));
+    const [formState, setFieldValue, setFieldErrors, setFormState] =
+        useFormState(initialFormState(orgUnit));
 
     const [orgUnitModified, setOrgUnitModified] = React.useState(false);
     const handleSave = () => {

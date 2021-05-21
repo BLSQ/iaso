@@ -206,7 +206,7 @@ Steps to follow:
 Depend on bluesquare-components library
 =======================================
 
-See the `library's README <https://github.com/BLSQ/bluesquare-components/blob/main/README.md>` for the general setup.
+See the `library's README <https://github.com/BLSQ/bluesquare-components/blob/main/README.md>`__ for the general setup.
 
 When depending on a local version of the library:
 

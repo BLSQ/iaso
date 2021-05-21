@@ -7,7 +7,8 @@ import theme from './utils/theme';
 import App from './domains/app';
 import { routeConfigs, getPath } from './constants/routes';
 import ProtectedRoute from './domains/users/components/ProtectedRoute';
-import { store, addRoutes, history } from './redux/store';
+import { store, history } from './redux/store';
+import { addRoutes } from './routing/redirections';
 // eslint-disable-next-line no-unused-vars
 import * as zoomBar from './components/leaflet/zoom-bar'; // don't delete - needed to override leaflet zoombar
 

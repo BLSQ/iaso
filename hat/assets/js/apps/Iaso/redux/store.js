@@ -1,5 +1,4 @@
-import React from 'react';
-import { Redirect, useRouterHistory } from 'react-router';
+import { useRouterHistory } from 'react-router';
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
 import thunk from 'redux-thunk';
 import { createHistory } from 'history';
@@ -60,41 +59,6 @@ import {
     reducer as orgUnitsTypesReducer,
 } from '../domains/orgUnits/types/reducer';
 
-import { getChipColors } from '../constants/chipColors';
-
-import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
-
-import { baseUrls } from '../constants/urls';
-
-const addRoutes = baseRoutes =>
-    baseRoutes.concat([
-        <Redirect path="/" to={baseUrls.forms} />,
-        <Redirect
-            path={baseUrls.orgUnits}
-            to={`${
-                baseUrls.orgUnits
-            }/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all", "color":"${getChipColors(
-                0,
-            ).replace('#', '')}"}]`}
-        />,
-        <Redirect
-            path={baseUrls.mappings}
-            to={`${baseUrls.mappings}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
-        />,
-        <Redirect
-            path={baseUrls.users}
-            to={`${baseUrls.users}/order/user__username/pageSize/20/page/1`}
-        />,
-        <Redirect
-            path={baseUrls.groups}
-            to={`${baseUrls.groups}/order/name/pageSize/20/page/1`}
-        />,
-        <Redirect
-            path={baseUrls.orgUnitTypes}
-            to={`${baseUrls.orgUnitTypes}/order/name/pageSize/20/page/1`}
-        />,
-    ]);
-
 // TODO pass baseUrl without hardcoding it
 let storeHistory = useRouterHistory(createHistory)({
     basename: '/dashboard',
@@ -152,4 +116,4 @@ storeHistory = syncHistoryWithStore(storeHistory, store);
 const history = storeHistory;
 const { dispatch } = store;
 
-export { store, addRoutes, history, dispatch };
+export { store, history, dispatch };

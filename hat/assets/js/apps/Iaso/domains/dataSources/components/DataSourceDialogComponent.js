@@ -145,8 +145,9 @@ export class DataSourceDialogComponent extends Component {
             [fieldName]: { value: fieldValue, errors: [] },
         };
         const isDataTouched = !isEqual(this.initialForm(), newForm);
-        this.setState(_ => {
+        this.setState(state => {
             return {
+                ...state,
                 form: newForm,
                 isDataTouched,
             };
@@ -248,12 +249,8 @@ export class DataSourceDialogComponent extends Component {
     }
 
     render() {
-        const {
-            renderTrigger,
-            projects,
-            titleMessage,
-            initialData,
-        } = this.props;
+        const { renderTrigger, projects, titleMessage, initialData } =
+            this.props;
         const { form, isDataTouched, hasConfirmed } = this.state;
         const projectsIsEmpty = form.project_ids.value.length === 0;
         let allowConfirm = isDataTouched;
@@ -282,7 +279,8 @@ export class DataSourceDialogComponent extends Component {
                         <InputComponent
                             keyValue="name"
                             onChange={(key, value) =>
-                                this.setFieldValue(key, value)}
+                                this.setFieldValue(key, value)
+                            }
                             value={form.name.value}
                             errors={form.name.errors}
                             type="text"
@@ -334,7 +332,8 @@ export class DataSourceDialogComponent extends Component {
                                 clearable={!form.is_default_source.value}
                                 keyValue="default_version_id"
                                 onChange={(key, value) =>
-                                    this.setFieldValue(key, value)}
+                                    this.setFieldValue(key, value)
+                                }
                                 value={form.default_version_id.value}
                                 errors={form.default_version_id.errors}
                                 type="select"
@@ -353,7 +352,8 @@ export class DataSourceDialogComponent extends Component {
                             <InputComponent
                                 keyValue="read_only"
                                 onChange={(key, value) =>
-                                    this.setFieldValue(key, value)}
+                                    this.setFieldValue(key, value)
+                                }
                                 value={form.read_only.value}
                                 errors={form.read_only.errors}
                                 type="checkbox"
@@ -369,7 +369,8 @@ export class DataSourceDialogComponent extends Component {
                                         !isDataTouched
                                     }
                                     onChange={(key, value) =>
-                                        this.setFieldValue(key, value)}
+                                        this.setFieldValue(key, value)
+                                    }
                                     value={form.is_default_source.value}
                                     errors={form.is_default_source.errors}
                                     type="checkbox"

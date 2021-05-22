@@ -63,6 +63,12 @@ class InstancesFilesList extends Component {
         }
     }
 
+    handleChangeTab(tab) {
+        this.setState({
+            tab,
+        });
+    }
+
     setFiles(files) {
         this.setState({
             sortedFiles: files ? sortFilesType(files) : [],
@@ -107,12 +113,6 @@ class InstancesFilesList extends Component {
         this.setState({
             viewerIsOpen: false,
             instanceDetail: fetchDetails ? null : instanceDetail,
-        });
-    }
-
-    handleChangeTab(tab) {
-        this.setState({
-            tab,
         });
     }
 

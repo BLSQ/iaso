@@ -57,7 +57,7 @@ class InnerDrawer extends Component {
         } = this.props;
         const { activeOption } = this.state;
         return (
-            <Fragment>
+            <>
                 <Box
                     borderTop={withTopBorder ? 1 : 0}
                     borderColor="grey.300"
@@ -178,7 +178,7 @@ class InnerDrawer extends Component {
                         </Grid>
                     </Grid>
                 </Box>
-            </Fragment>
+            </>
         );
     }
 }

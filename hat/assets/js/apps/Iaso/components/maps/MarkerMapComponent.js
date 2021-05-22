@@ -63,13 +63,9 @@ class MarkerMap extends Component {
         this.fitToBounds();
     }
 
-    fitToBounds() {
-        const { latitude, longitude } = this.props;
-        const latlng = [L.latLng(latitude, longitude)];
-        const markerBounds = L.latLngBounds(latlng);
-        this.map.leafletElement.fitBounds(markerBounds, {
-            maxZoom: 9,
-            padding: boundsOptions.padding,
+    handleChangeTile(currentTile) {
+        this.setState({
+            currentTile,
         });
     }
 
@@ -79,9 +75,13 @@ class MarkerMap extends Component {
         });
     }
 
-    handleChangeTile(currentTile) {
-        this.setState({
-            currentTile,
+    fitToBounds() {
+        const { latitude, longitude } = this.props;
+        const latlng = [L.latLng(latitude, longitude)];
+        const markerBounds = L.latLngBounds(latlng);
+        this.map.leafletElement.fitBounds(markerBounds, {
+            maxZoom: 9,
+            padding: boundsOptions.padding,
         });
     }
 

@@ -90,12 +90,8 @@ class InstancesMap extends Component {
     }
 
     render() {
-        const {
-            instances,
-            currentTile,
-            isClusterActive,
-            fetching,
-        } = this.props;
+        const { instances, currentTile, isClusterActive, fetching } =
+            this.props;
         if (fetching) return null;
         const bounds = getLatLngBounds(instances);
         if (this.map) {
@@ -106,11 +102,11 @@ class InstancesMap extends Component {
                 <InnerDrawer
                     withTopBorder
                     settingsOptionComponent={
-                        <Fragment>
+                        <>
                             <TileSwitch />
                             <Divider />
                             <ClusterSwitch />
-                        </Fragment>
+                        </>
                     }
                 >
                     <Map

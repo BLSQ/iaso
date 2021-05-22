@@ -34,17 +34,13 @@ const FormVersionsDialogComponent = ({
 }) => {
     const dispatch = useDispatch();
     const intl = useSafeIntl();
-    const [
-        formState,
-        setFieldValue,
-        setFieldErrors,
-        setFormState,
-    ] = useFormState({
-        id: formVersion.id,
-        start_period: formVersion.start_period,
-        end_period: formVersion.end_period,
-        xls_file: formVersion.xls_file,
-    });
+    const [formState, setFieldValue, setFieldErrors, setFormState] =
+        useFormState({
+            id: formVersion.id,
+            start_period: formVersion.start_period,
+            end_period: formVersion.end_period,
+            xls_file: formVersion.xls_file,
+        });
 
     const [periodsErrors, setPeriodsErrors] = useState(
         getPeriodsErrors(

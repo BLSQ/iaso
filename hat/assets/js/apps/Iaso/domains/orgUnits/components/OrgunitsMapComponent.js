@@ -197,7 +197,7 @@ class OrgunitsMap extends Component {
                 <InnerDrawer
                     withTopBorder
                     settingsOptionComponent={
-                        <Fragment>
+                        <>
                             <TileSwitch />
                             <Divider />
                             <ClusterSwitch />
@@ -214,7 +214,7 @@ class OrgunitsMap extends Component {
                                     filters={[locationsLimit()]}
                                 />
                             </Box>
-                        </Fragment>
+                        </>
                     }
                 >
                     <Map
@@ -259,9 +259,8 @@ class OrgunitsMap extends Component {
                         {isClusterActive &&
                             orgUnits.locations.map(
                                 (orgUnitsBySearch, searchIndex) => {
-                                    const color = this.getSearchColor(
-                                        searchIndex,
-                                    );
+                                    const color =
+                                        this.getSearchColor(searchIndex);
                                     if (orgUnitsBySearch.length === 0)
                                         return null;
                                     return (

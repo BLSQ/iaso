@@ -19,7 +19,7 @@ function DownloadButtonsComponent(props) {
     const { csvUrl, xlsxUrl, gpkgUrl, classes } = props;
 
     return (
-        <Fragment>
+        <>
             <Button
                 variant="contained"
                 className={classes.button}
@@ -55,7 +55,7 @@ function DownloadButtonsComponent(props) {
                     GPKG
                 </Button>
             )}
-        </Fragment>
+        </>
     );
 }
 

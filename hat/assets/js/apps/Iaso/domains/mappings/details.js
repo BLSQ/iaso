@@ -124,7 +124,8 @@ class MappingDetails extends Component {
                                     <RecursiveTreeView
                                         formVersion={currentFormVersion}
                                         mappingVersion={currentMappingVersion}
-                                        currentQuestion={currentQuestion}
+                                        // TODO confirm this prop can safely be deleted
+                                        // currentQuestion={currentQuestion}
                                         onQuestionSelected={onQuestionSelected}
                                     />
                                 </Grid>
@@ -164,7 +165,8 @@ class MappingDetails extends Component {
                                         {!isDataElementMappable && (
                                             <DerivedQuestionMappingForm
                                                 key={currentQuestion.name}
-                                                mapping={currentMappingVersion}
+                                                // TODO confirm this can be safely removed
+                                                // mapping={currentMappingVersion}
                                                 question={currentQuestion}
                                                 mappingVersion={
                                                     currentMappingVersion

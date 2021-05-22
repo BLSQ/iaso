@@ -4,7 +4,6 @@ import {
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_SIX_MONTH,
-    MONTHS,
     QUARTERS,
     SEMESTERS,
 } from './constants';

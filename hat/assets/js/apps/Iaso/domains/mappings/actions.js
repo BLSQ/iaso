@@ -22,6 +22,7 @@ export const fetchingMappingVersions = fetching => ({
     payload: fetching,
 });
 
+// TODO refactor to use camelCase
 export const setMappingVersions = ({ mapping_versions, count, pages }) => ({
     type: SET_MAPPING_VERSIONS,
     payload: {
@@ -72,54 +73,58 @@ export const fetchFormVersionDetail = (id, questionName) => dispatch =>
         return dispatch(setCurrentQuestion(indexedQuestions[questionName]));
     });
 
-export const fetchMappingVersionDetail = (
-    mappingVersionId,
-    questionName,
-) => dispatch => {
-    dispatch(fetchingMappingVersions(true));
-    return getRequest(
-        `/api/mappingversions/${mappingVersionId}.json?fields=:all`,
-    )
-        .then(detail => {
-            dispatch(
-                fetchFormVersionDetail(detail.form_version.id, questionName),
-            );
-            dispatch(fetchHesabuDescriptor(detail.mapping.data_source.id));
-            return dispatch(setCurrentMappingVersion(detail));
-        })
-        .catch(err =>
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
-            ),
+export const fetchMappingVersionDetail =
+    (mappingVersionId, questionName) => dispatch => {
+        dispatch(fetchingMappingVersions(true));
+        return getRequest(
+            `/api/mappingversions/${mappingVersionId}.json?fields=:all`,
         )
-        .then(() => {
-            dispatch(fetchingMappingVersions(false));
-        });
-};
+            .then(detail => {
+                dispatch(
+                    fetchFormVersionDetail(
+                        detail.form_version.id,
+                        questionName,
+                    ),
+                );
+                dispatch(fetchHesabuDescriptor(detail.mapping.data_source.id));
+                return dispatch(setCurrentMappingVersion(detail));
+            })
+            .catch(err =>
+                dispatch(
+                    enqueueSnackbar(
+                        errorSnackBar('fetchMappingsError', null, err),
+                    ),
+                ),
+            )
+            .then(() => {
+                dispatch(fetchingMappingVersions(false));
+            });
+    };
 
-export const applyPartialUpdate = (
-    mappingVersionId,
-    questionName,
-    mapping,
-) => dispatch => {
-    dispatch(fetchingMappingVersions(true));
-    return patchRequest(`/api/mappingversions/${mappingVersionId}/`, {
-        question_mappings: {
-            [questionName]: mapping,
-        },
-    })
-        .then(() =>
-            dispatch(fetchMappingVersionDetail(mappingVersionId, questionName)),
-        )
-        .catch(err =>
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
-            ),
-        )
-        .then(() => {
-            dispatch(fetchingMappingVersions(false));
-        });
-};
+export const applyPartialUpdate =
+    (mappingVersionId, questionName, mapping) => dispatch => {
+        dispatch(fetchingMappingVersions(true));
+        return patchRequest(`/api/mappingversions/${mappingVersionId}/`, {
+            question_mappings: {
+                [questionName]: mapping,
+            },
+        })
+            .then(() =>
+                dispatch(
+                    fetchMappingVersionDetail(mappingVersionId, questionName),
+                ),
+            )
+            .catch(err =>
+                dispatch(
+                    enqueueSnackbar(
+                        errorSnackBar('fetchMappingsError', null, err),
+                    ),
+                ),
+            )
+            .then(() => {
+                dispatch(fetchingMappingVersions(false));
+            });
+    };
 
 export const fetchMappingVersions = params => dispatch => {
     dispatch(fetchingMappingVersions(true));

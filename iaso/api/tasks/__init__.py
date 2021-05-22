@@ -16,6 +16,7 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
 
+        # Do not include the params, it can contains sensitive information such as passwords
         fields = [
             "id",
             "created_at",
@@ -27,7 +28,6 @@ class TaskSerializer(serializers.ModelSerializer):
             "result",
             "status",
             "name",
-            # "params",
             "should_be_killed",
             "progress_message",
         ]

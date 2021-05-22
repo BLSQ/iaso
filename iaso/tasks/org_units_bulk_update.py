@@ -5,7 +5,7 @@ from django.db import transaction
 
 from beanstalk_worker import task as task_decorator
 from iaso.models.org_unit_search import build_org_units_queryset
-from iaso.models import Task, OrgUnit, DataSource, BulkOperation
+from iaso.models import Task, OrgUnit, DataSource
 
 
 @task_decorator(task_name="org_unit_bulk_update")
@@ -68,11 +68,4 @@ def org_units_bulk_update(
                 groups_ids_removed=groups_ids_removed,
             )
 
-        BulkOperation.objects.create_for_model_and_params(
-            OrgUnit,
-            params=task.params,
-            user=user,
-            operation_type=BulkOperation.OPERATION_TYPE_UPDATE,
-            operation_count=total,
-        )
         task.report_success(message="%d modified" % total)

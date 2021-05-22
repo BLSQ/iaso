@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from django.utils.translation import gettext as _
 from iaso.api.common import safe_api_import
 from iaso.gpkg import org_units_to_gpkg
-from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, DataSource, BulkOperation
+from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, DataSource
 from django.contrib.gis.geos import Point
 
 from django.core.paginator import Paginator
@@ -507,68 +507,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
         return Response(res)
-
-    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
-    def bulkupdate(self, request):
-        select_all = request.data.get("select_all", None)
-        validation_status = request.data.get("validation_status", None)
-        org_unit_type_id = request.data.get("org_unit_type", None)
-        groups_ids_added = request.data.get("groups_added", None)
-        groups_ids_removed = request.data.get("groups_removed", None)
-        selected_ids = request.data.get("selected_ids", [])
-        unselected_ids = request.data.get("unselected_ids", [])
-        searches = request.data.get("searches", [])
-
-        csv_format = bool(request.query_params.get("csv"))
-        xlsx_format = bool(request.query_params.get("xlsx"))
-        gpkg_format = bool(request.query_params.get("gpkg"))
-        is_export = any([csv_format, xlsx_format, gpkg_format])
-        forms = Form.objects.all()
-
-        # Restrict qs to org units accessible to the authenticated user
-        queryset = self.get_queryset()
-        if not select_all:
-            queryset = queryset.filter(pk__in=selected_ids)
-        else:
-            queryset = queryset.exclude(pk__in=unselected_ids)
-            search_index = 0
-            base_queryset = queryset
-            profile = request.user.iaso_profile
-            for search in searches:
-                additional_queryset = build_org_units_queryset(base_queryset, search, profile, is_export, forms)
-                if search_index == 0:
-                    queryset = additional_queryset
-                else:
-                    queryset = queryset.union(additional_queryset)
-                search_index += 1
-        if queryset.count() > 0:
-            data_sources = DataSource.objects.filter(id__in=queryset.values_list("version__data_source", flat=True))
-            for source in data_sources:
-                if source.read_only:
-                    return Response(
-                        {"message": "Modification on read only source is not allowed"},
-                        status=status.HTTP_401_UNAUTHORIZED,
-                    )
-
-            with transaction.atomic():
-                for org_unit in queryset.iterator():
-                    OrgUnit.objects.update_single_unit_from_bulk(
-                        request.user,
-                        org_unit,
-                        validation_status=validation_status,
-                        org_unit_type_id=org_unit_type_id,
-                        groups_ids_added=groups_ids_added,
-                        groups_ids_removed=groups_ids_removed,
-                    )
-
-                BulkOperation.objects.create_for_model_and_request(
-                    OrgUnit,
-                    request,
-                    operation_type=BulkOperation.OPERATION_TYPE_UPDATE,
-                    operation_count=queryset.count(),
-                )
-        # id is a kind of placeholder for a future job id
-        return Response({"id": 1}, status=status.HTTP_201_CREATED)
 
 
 def import_data(org_units, user, app_id):

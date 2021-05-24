@@ -79,12 +79,8 @@ class OrgUnitsFiltersComponent extends Component {
     }
 
     onChange(value, urlKey) {
-        const {
-            searchIndex,
-            params,
-            orgUnitsLocations,
-            isClusterActive,
-        } = this.props;
+        const { searchIndex, params, orgUnitsLocations, isClusterActive } =
+            this.props;
         if (urlKey !== 'color') {
             this.props.setFiltersUpdated(true);
         } else if (isClusterActive) {

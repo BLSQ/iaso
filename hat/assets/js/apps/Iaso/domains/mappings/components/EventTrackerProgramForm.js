@@ -12,14 +12,10 @@ const EventTrackerProgramForm = ({
     onConfirmedQuestionMapping,
 }) => {
     const [program, setProgram] = React.useState('');
-    const [
-        trackedEntityAttributes,
-        setTrackedEntityAttributes,
-    ] = React.useState([]);
-    const [
-        trackedEntityIdentifier,
-        setTrackedEntityIdentifier,
-    ] = React.useState(null);
+    const [trackedEntityAttributes, setTrackedEntityAttributes] =
+        React.useState([]);
+    const [trackedEntityIdentifier, setTrackedEntityIdentifier] =
+        React.useState(null);
     const [relationshipType, setRelationshipType] = React.useState(null);
     const [proposedNewMapping, setProposedNewMapping] = React.useState(null);
     const trackedEntityAttributeOptions = trackedEntityAttributes.map(a => ({

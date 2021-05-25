@@ -1,13 +1,14 @@
 from rest_framework.test import APIClient
 from unittest import mock
-from iaso.test import APITestCase
+from iaso.test import APITestCase, TestCase
 from iaso.models import Account
 from .preparedness.exceptions import InvalidFormatError
 from .models import Campaign, Preparedness, Round
+from .preparedness.calculator import get_preparedness_score
 import json
 
 
-class PolioTestCase(APITestCase):
+class PolioAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         account = Account.objects.create(name="Global Health Initiative")
@@ -102,3 +103,21 @@ class PolioTestCase(APITestCase):
         response = self.client.put(f"/api/polio/campaigns/{campaign.pk}/", payload, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(campaign.preparedness_set.count(), 1)
+
+
+class CampaignCalculatorTestCase(TestCase):
+    def setUp(self) -> None:
+        with open("./plugins/polio/preparedness/test_data/example1.json", "r") as json_data:
+            self.preparedness_preview = json.load(json_data)
+
+    def test_national_score(self):
+        result = get_preparedness_score(self.preparedness_preview)
+        self.assertEqual(result["national_score"], 93)
+
+    def test_regional_score(self):
+        result = get_preparedness_score(self.preparedness_preview)
+        self.assertEqual(result["regional_score"], 68.4)
+
+    def test_district_score(self):
+        result = get_preparedness_score(self.preparedness_preview)
+        self.assertAlmostEqual(result["district_score"], 56.25)

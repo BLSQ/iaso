@@ -110,4 +110,4 @@ def get_regional_level_preparedness(sheet):
             print(f"No data found on worksheet: {worksheet.title}")
     if not regions:
         raise InvalidFormatError("Summary of National Level Preparedness` was not found in this document")
-    return {"regions": regions, "district": districts}
+    return {"regions": regions, "districts": districts}

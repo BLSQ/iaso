@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 from django.utils.translation import gettext as _
 from uuid import uuid4
 
@@ -29,28 +30,6 @@ STATUS = [
     ("ONGOING", _("Ongoing")),
     ("FINISHED", _("Finished")),
 ]
-
-
-class Preparedness(models.Model):
-    id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
-    planning_score = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Planning, coordination and funding")
-    )
-
-    training_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Training for SIAs quality"))
-    monitoring_score = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Monitoring and Supervision")
-    )
-    vaccine_score = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Vaccine, cold chain and logistics")
-    )
-    advocacy_score = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Advocacy, social mobilization and communication")
-    )
-    adverse_score = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Adverse Event Following Immunization (AEFI)")
-    )
-    status_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Status of preparedness"))
 
 
 class Round(models.Model):
@@ -158,8 +137,16 @@ class Campaign(models.Model):
     )
 
     # Preparedness
-    spreadsheet_url = models.URLField(null=True, blank=True)
-    preperadness_national_score = models.ForeignKey(Preparedness, null=True, blank=True, on_delete=models.SET_NULL)
+    preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
+    preperadness_national_score = models.DecimalField(
+        null=True, blank=True, max_digits=10, decimal_places=2, verbose_name=_("National Score")
+    )
+    preperadness_regional_score = models.DecimalField(
+        null=True, blank=True, max_digits=10, decimal_places=2, verbose_name=_("Regional Score")
+    )
+    preperadness_district_score = models.DecimalField(
+        null=True, blank=True, max_digits=10, decimal_places=2, verbose_name=_("District Score")
+    )
 
     # Budget
     budget_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
@@ -186,3 +173,20 @@ class Campaign(models.Model):
 
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
+
+
+class Preparedness(models.Model):
+    id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    spreadsheet_url = models.URLField(null=True, blank=True)
+
+    national_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("National Score"))
+    regional_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Regional Score"))
+    district_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("District Score"))
+
+    payload = JSONField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.campaign} - {self.created_at}"

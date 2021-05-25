@@ -8,6 +8,8 @@ import PropTypes from 'prop-types';
 
 import EditIcon from '@material-ui/icons/Edit';
 
+import { DynamicTabs } from 'bluesquare-components';
+// import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 import {
     fetchOrgUnitsTypes,
     fetchSources,
@@ -59,8 +61,6 @@ import {
     enqueueSnackbar,
     closeFixedSnackbar,
 } from '../../redux/snackBarsReducer';
-
-import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
@@ -417,7 +417,9 @@ class OrgUnits extends Component {
                     selection={selection}
                 />
                 <TopBar title={formatMessage(MESSAGES.title)}>
-                    <DynamicTabsComponent
+                    <DynamicTabs
+                        deleteMessage={MESSAGES.delete}
+                        addMessage={MESSAGES.add}
                         baseLabel={formatMessage(MESSAGES.search)}
                         params={params}
                         defaultItem={{

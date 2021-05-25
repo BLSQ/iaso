@@ -48,6 +48,10 @@ class CampaignSerializer(serializers.ModelSerializer):
     round_one = RoundSerializer()
     round_two = RoundSerializer()
     preparedness_data = PreparednessSerializer(required=False)
+    last_preparedness = PreparednessSerializer(
+        required=False,
+        allow_null=True,
+    )
 
     def create(self, validated_data):
         round_one_data = validated_data.pop("round_one")
@@ -79,4 +83,5 @@ class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campaign
         fields = "__all__"
+        read_only_fields = ["last_preparedness"]
         extra_kwargs = {"preparedness_data": {"write_only": True}}

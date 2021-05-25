@@ -23,7 +23,7 @@ class PreparednessPreviewSerializer(serializers.Serializer):
             sheet = open_sheet_by_url(attrs.get("google_sheet_url"))
             return {
                 "national": get_national_level_preparedness(sheet),
-                "regional": get_regional_level_preparedness(sheet),
+                **get_regional_level_preparedness(sheet),
             }
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])

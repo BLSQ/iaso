@@ -94,6 +94,7 @@ def get_national_level_preparedness(sheet: gspread.Spreadsheet):
 
 def get_regional_level_preparedness(sheet):
     regions = {}
+    districts = {}
 
     for worksheet in sheet.worksheets():
         try:
@@ -103,8 +104,13 @@ def get_regional_level_preparedness(sheet):
             print(f"Processing region {regional_cell.value}")
             regions[regional_cell.value] = _get_scores(worksheet, cell)
 
+            district = worksheet.cell(regional_cell.row, regional_cell.col + 1)
+            while district.value is not None and bool(district.value.strip()):
+                districts[district.value] = {**_get_scores(worksheet, district), "region": regional_cell.value}
+                district = worksheet.cell(district.row, district.col + 1)
+
         except gspread.CellNotFound:
             print(f"No data found on worksheet: {worksheet.title}")
     if not regions:
         raise InvalidFormatError("Summary of National Level Preparedness` was not found in this document")
-    return regions
+    return {"regions": regions, "district": districts}

@@ -3,6 +3,8 @@ from unittest import mock
 from iaso.test import APITestCase
 from iaso.models import Account
 from .preparedness.google_sheet import InvalidFormatError
+from .models import Campaign, Preparedness, Round
+import json
 
 
 class PolioTestCase(APITestCase):
@@ -36,3 +38,67 @@ class PolioTestCase(APITestCase):
         mock_open_sheet_by_url.assert_called_with(url)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json().get("non_field_errors"), [error_message])
+
+    def test_create_campaign(self):
+        self.assertEqual(Campaign.objects.count(), 0)
+
+        payload = {
+            "obr_name": "obr_name",
+            "detection_status": "PENDING",
+            "round_one": {},
+            "round_two": {},
+        }
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Campaign.objects.count(), 1)
+
+    def test_create_campaign_with_preparedness_data(self):
+        self.assertEqual(Preparedness.objects.count(), 0)
+        preparedness = {
+            "spreadsheet_url": "https://docs.google.com/spreadsheets/d/1",
+            "national_score": 10,
+            "regional_score": 80,
+            "district_score": 70,
+            "payload": json.dumps({}),
+        }
+
+        payload = {
+            "obr_name": "obr_name",
+            "detection_status": "PENDING",
+            "preparedness_data": preparedness,
+            "round_one": {},
+            "round_two": {},
+        }
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Preparedness.objects.count(), 1)
+
+    def test_refresh_preparedness_data(self):
+        self.assertEqual(Preparedness.objects.count(), 0)
+        campaign = Campaign.objects.create(
+            obr_name="obr_name",
+            detection_status="PENDING",
+            round_one=Round.objects.create(),
+            round_two=Round.objects.create(),
+        )
+
+        preparedness = {
+            "spreadsheet_url": "https://docs.google.com/spreadsheets/d/1",
+            "national_score": 10,
+            "regional_score": 80,
+            "district_score": 70,
+            "payload": json.dumps({}),
+        }
+
+        payload = {
+            "obr_name": "obr_name",
+            "detection_status": "PENDING",
+            "preparedness_data": preparedness,
+            "round_one": {},
+            "round_two": {},
+        }
+        response = self.client.put(f"/api/polio/campaigns/{campaign.pk}/", payload, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(campaign.preparedness_set.count(), 1)

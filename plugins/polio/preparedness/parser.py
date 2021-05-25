@@ -1,4 +1,5 @@
 import os
+from plugins.polio.preparedness.exceptions import InvalidFormatError
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import base64
@@ -7,10 +8,6 @@ import json
 
 DIRNAME = os.path.dirname(__file__)
 SCOPES = ["https://spreadsheets.google.com/feeds"]
-
-
-class InvalidFormatError(Exception):
-    pass
 
 
 def _get_client():

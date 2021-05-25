@@ -2,7 +2,7 @@ from rest_framework.test import APIClient
 from unittest import mock
 from iaso.test import APITestCase
 from iaso.models import Account
-from .preparedness.google_sheet import InvalidFormatError
+from .preparedness.exceptions import InvalidFormatError
 from .models import Campaign, Preparedness, Round
 import json
 

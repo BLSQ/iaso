@@ -1,7 +1,7 @@
 from django.db.models import fields
 from rest_framework import serializers
 from .models import Preparedness, Round, Campaign
-from .preparedness.google_sheet import (
+from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
     get_national_level_preparedness,

@@ -1,3 +1,4 @@
+from plugins.polio.preparedness.calculator import get_preparedness_score
 from django.db.models import fields
 from rest_framework import serializers
 from .models import Preparedness, Round, Campaign
@@ -28,10 +29,12 @@ class PreparednessPreviewSerializer(serializers.Serializer):
     def validate(self, attrs):
         try:
             sheet = open_sheet_by_url(attrs.get("google_sheet_url"))
-            return {
+            response = {
                 "national": get_national_level_preparedness(sheet),
                 **get_regional_level_preparedness(sheet),
             }
+            response["totals"] = get_preparedness_score(response)
+            return response
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])
         except APIError as e:

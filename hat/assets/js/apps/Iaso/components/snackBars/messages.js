@@ -253,6 +253,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Selected org unit saved successfully',
         id: 'iaso.snackBar.saveMultiEditOrgUnitsSuccesfull',
     },
+    saveMultiEditOrgUnitsLaunched: {
+        defaultMessage:
+            'The modifications to the org units will take a few minutes to take effect',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsLaunch',
+    },
     saveMultiEditOrgUnitsError: {
         defaultMessage: 'An error occurred while saving selected org units',
         id: 'iaso.snackBar.saveMultiEditOrgUnitsError',

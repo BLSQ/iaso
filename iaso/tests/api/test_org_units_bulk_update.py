@@ -1,14 +1,17 @@
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.test import tag
-import typing
+
 
 from iaso import models as m
 from hat.audit import models as am
 from iaso.test import APITestCase
+from iaso.models import Task
+
+from beanstalk_worker import task_service
 
 
-class OrgUnitAPITestCase(APITestCase):
+class OrgUnitsBulkUpdateAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
@@ -114,18 +117,22 @@ class OrgUnitAPITestCase(APITestCase):
             form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
         )
 
+    @classmethod
+    def setUp(cls):
+        task_service.clear()
+
     @tag("iaso_only")
     def test_org_unit_bulkupdate_not_authenticated(self):
         """POST /orgunits/bulkupdate, no auth -> 403"""
 
         response = self.client.post(
-            f"/api/orgunits/bulkupdate/",
+            f"/api/tasks/create/orgunitsbulkupdate/",
             data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
         self.assertJSONResponse(response, 403)
-        self.assertEqual(0, m.BulkOperation.objects.count())
-        self.assertEqual(0, am.Modification.objects.count())
+
+        self.assertEqual(len(task_service.queue), 0)
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_some_wrong_account(self):
@@ -133,7 +140,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.post(
-            f"/api/orgunits/bulkupdate/",
+            f"/api/tasks/create/orgunitsbulkupdate/",
             data={
                 "select_all": False,
                 "selected_ids": [self.jedi_council_brussels.pk, self.jedi_council_endor.pk],
@@ -142,14 +149,17 @@ class OrgUnitAPITestCase(APITestCase):
             format="json",
         )
         self.assertJSONResponse(response, 201)
-        self.assertValidBulkupdateData(response.json())
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
+        self.assertEqual(task.launcher, self.raccoon)
+
+        # Run the task
+        task = self.runAndValidateTask(task, "ERRORED")
+        self.assertEqual(task.result["message"], "No matching org unit found")
 
         for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels, self.jedi_council_corruscant]:
             jedi_council.refresh_from_db()
             self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
-
-        self.assertEqual(0, m.BulkOperation.objects.count())
-        self.assertEqual(0, am.Modification.objects.count())
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_wrong_account(self):
@@ -157,20 +167,22 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.post(
-            f"/api/orgunits/bulkupdate/",
+            f"/api/tasks/create/orgunitsbulkupdate/",
             data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
-
         self.assertJSONResponse(response, 201)
-        self.assertValidBulkupdateData(response.json())
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
+        self.assertEqual(task.launcher, self.raccoon)
+
+        # Run the task
+        task = self.runAndValidateTask(task, "ERRORED")
+        self.assertEqual(task.result["message"], "No matching org unit found")
 
         for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels, self.jedi_council_corruscant]:
             jedi_council.refresh_from_db()
             self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
-
-        self.assertEqual(0, m.BulkOperation.objects.count())
-        self.assertEqual(0, am.Modification.objects.count())
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_some(self):
@@ -183,9 +195,15 @@ class OrgUnitAPITestCase(APITestCase):
             "groups_added": [self.unofficial_group.pk],
             "validation_status": m.OrgUnit.VALIDATION_REJECTED,
         }
-        response = self.client.post(f"/api/orgunits/bulkupdate/", data=operation_payload, format="json")
+        response = self.client.post(f"/api/tasks/create/orgunitsbulkupdate/", data=operation_payload, format="json")
+
         self.assertJSONResponse(response, 201)
-        self.assertValidBulkupdateData(response.json())
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
+        self.assertEqual(task.launcher, self.yoda)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
 
         for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels]:
             jedi_council.refresh_from_db()
@@ -201,7 +219,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         operation = m.BulkOperation.objects.first()
         self.assertEqual(ContentType.objects.get_for_model(m.OrgUnit), operation.content_type)
-        self.assertEqual(operation_payload, operation.json_body)
+        # self.assertEqual(operation_payload, operation.json_body)
         self.assertEqual(self.yoda, operation.user)
         self.assertEqual(m.BulkOperation.OPERATION_TYPE_UPDATE, operation.operation_type)
         self.assertEqual(2, operation.operation_count)
@@ -219,12 +237,18 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/bulkupdate/",
+            f"/api/tasks/create/orgunitsbulkupdate/",
             data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_VALID},
             format="json",
         )
+
         self.assertJSONResponse(response, 201)
-        self.assertValidBulkupdateData(response.json())
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
+        self.assertEqual(task.launcher, self.yoda)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
 
         for jedi_council in [self.jedi_council_endor, self.jedi_council_corruscant, self.jedi_council_brussels]:
             jedi_council.refresh_from_db()
@@ -239,7 +263,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/bulkupdate/",
+            f"/api/tasks/create/orgunitsbulkupdate/",
             data={
                 "select_all": True,
                 "validation_status": m.OrgUnit.VALIDATION_REJECTED,
@@ -248,7 +272,12 @@ class OrgUnitAPITestCase(APITestCase):
             format="json",
         )
         self.assertJSONResponse(response, 201)
-        self.assertValidBulkupdateData(response.json())
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
+        self.assertEqual(task.launcher, self.yoda)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
 
         self.jedi_council_corruscant.refresh_from_db()
         self.assertEqual(self.jedi_council_corruscant.validation_status, m.OrgUnit.VALIDATION_REJECTED)
@@ -261,108 +290,12 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(1, am.Modification.objects.count())
 
     @tag("iaso_only")
-    def test_org_unit_search_with_ids(self):
-        """GET /orgunits/ with a search based on refs"""
-
-        self.client.force_authenticate(self.yoda)
-
-        response = self.client.get(
-            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","search":"refs%3AF9w3VW1cQmb%2CPvtAI4RUMkr","orgUnitParentId":null}]&limit=50'
-        )
-        self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 2)
-
-    @tag("iaso_only")
-    def test_org_unit_search_with_ref(self):
-        """GET /orgunits/ with a search based on ids"""
-
-        self.client.force_authenticate(self.yoda)
-        endor_id = self.jedi_council_endor.id
-        corr_id = self.jedi_council_corruscant.id
-
-        response = self.client.get(
-            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","search":"ids%3A'
-            + str(endor_id)
-            + "%2C"
-            + str(corr_id)
-            + '","orgUnitParentId":null}]&limit=50'
-        )
-        self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 2)
-
-    @tag("iaso_only")
-    def test_org_unit_search(self):
-        """GET /orgunits/ with a search based on name"""
-
-        self.client.force_authenticate(self.yoda)
-
-        response = self.client.get(
-            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","search":"corr","orgUnitParentId":null}]&limit=50'
-        )
-        self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 1)
-        ou_id = response.json()["orgunits"][0]["id"]
-        self.assertEqual(ou_id, self.jedi_council_corruscant.id)
-
-    @tag("iaso_only")
-    def test_org_unit_instance_duplicate_search(self):
-        """GET /orgunits/ with a search based on duplicates"""
-
-        self.client.force_authenticate(self.yoda)
-
-        response = self.client.get(
-            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","hasInstances":"duplicates","orgUnitParentId":null}]&limit=50'
-        )
-        self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 1)
-        ou_id = response.json()["orgunits"][0]["id"]
-        self.assertEqual(ou_id, self.jedi_council_corruscant.id)
-
-    @tag("iaso_only")
-    def test_org_unit_instance_dates_search(self):
-        """GET /orgunits/ with a search based on dates"""
-
-        self.client.force_authenticate(self.yoda)
-
-        response = self.client.get(
-            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","dateFrom":"2021-02-10 00:00:00","dateTo":"2050-06-26 23:00:00","orgUnitParentId":null}]&limit=50'
-        )
-        self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 1)
-        instances_count = response.json()["orgunits"][0]["instances_count"]
-        self.assertEqual(instances_count, m.Instance.objects.count())
-
-    @tag("iaso_only")
-    def test_org_unit_bulkupdate_select_all_with_multiple_searches(self):
-        """POST /orgunits/bulkupdate happy path (select all, but with multiple searches)"""
-
-        self.client.force_authenticate(self.yoda)
-        response = self.client.post(
-            f"/api/orgunits/bulkupdate/",
-            data={
-                "select_all": True,
-                "groups_added": [self.another_group.pk],
-                "searches": [{"validation_status": "all"}, {"validation_status": m.OrgUnit.VALIDATION_REJECTED}],
-            },
-            format="json",
-        )
-        self.assertJSONResponse(response, 201)
-        self.assertValidBulkupdateData(response.json())
-
-        for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels, self.jedi_council_corruscant]:
-            jedi_council.refresh_from_db()
-            self.assertIn(self.another_group, jedi_council.groups.all())
-
-        self.assertEqual(1, m.BulkOperation.objects.count())
-        self.assertEqual(5, am.Modification.objects.count())
-
-    @tag("iaso_only")
-    def test_org_unit_bulkupdate_select_all_but_some(self):
+    def test_org_unit_bulkupdate_task_select_all_but_some(self):
         """POST /orgunits/bulkupdate/ happy path (select all except some)"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/bulkupdate/",
+            f"/api/tasks/create/orgunitsbulkupdate/",
             data={
                 "select_all": True,
                 "validation_status": m.OrgUnit.VALIDATION_REJECTED,
@@ -372,7 +305,12 @@ class OrgUnitAPITestCase(APITestCase):
             format="json",
         )
         self.assertJSONResponse(response, 201)
-        self.assertValidBulkupdateData(response.json())
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
+        self.assertEqual(task.launcher, self.yoda)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
 
         self.jedi_council_corruscant.refresh_from_db()
         self.assertEqual(self.jedi_council_corruscant.validation_status, m.OrgUnit.VALIDATION_REJECTED)
@@ -385,76 +323,76 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(3, am.Modification.objects.count())
 
-    def test_org_unit_list_without_auth_or_app_id(self):
-        """GET /api/orgunits/ with no auth or app id -> 200 with 0 org unit"""
+    @tag("iaso_only")
+    def test_org_unit_bulkupdate_task_select_all_with_multiple_searches(self):
+        """POST /orgunits/bulkupdate happy path (select all, but with multiple searches)"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/tasks/create/orgunitsbulkupdate/",
+            data={
+                "select_all": True,
+                "groups_added": [self.another_group.pk],
+                "searches": [{"v1alidation_status": "all"}, {"validation_status": m.OrgUnit.VALIDATION_REJECTED}],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
+        self.assertEqual(task.launcher, self.yoda)
 
-        response = self.client.get(f"/api/orgunits/")
-        self.assertJSONResponse(response, 200)
+        self.runAndValidateTask(task, "SUCCESS")
 
-        response_data = response.json()
-        self.assertValidOrgUnitListData(list_data=response_data, expected_length=0)
+        for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels, self.jedi_council_corruscant]:
+            jedi_council.refresh_from_db()
+            self.assertIn(self.another_group, jedi_council.groups.all())
 
-    def test_org_unit_list_ok(self):
-        """GET /api/orgunits/ happy path"""
+        self.assertEqual(1, m.BulkOperation.objects.count())
+        self.assertEqual(5, am.Modification.objects.count())
+
+    def test_task_kill(self):
+        """Launch the task and then kill it
+        Note this actually doesn't work if it's killwed while in the transaction part.
+        """
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/orgunits/")
-        self.assertJSONResponse(response, 200)
+        response = self.client.post(
+            f"/api/tasks/create/orgunitsbulkupdate/",
+            data={
+                "select_all": True,
+                "groups_added": [self.another_group.pk],
+                "searches": [{"validation_status": "all"}, {"validation_status": m.OrgUnit.VALIDATION_REJECTED}],
+            },
+            format="json",
+        )
 
-        response_data = response.json()
-        self.assertValidOrgUnitListData(list_data=response_data, expected_length=5)
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        self.assertValidTaskAndInDB(data["task"])
 
-    def test_org_unit_list_ok_user_has_org_unit_restrictions(self):
-        """GET /api/orgunits/ happy path"""
+        task = Task.objects.get(id=data["task"]["id"])
+        task.should_be_killed = True
+        task.save()
 
-        self.client.force_authenticate(self.luke)
-        response = self.client.get(f"/api/orgunits/")
-        self.assertJSONResponse(response, 200)
+        self.runAndValidateTask(task, "KILLED")
 
-        response_data = response.json()
-        self.assertValidOrgUnitListData(list_data=response_data, expected_length=3)
+    def runAndValidateTask(self, task, new_status):
+        "Run all task in queue and validate that task is run"
+        self.assertEqual(len(task_service.queue), 1)
+        task_service.run_all()
+        self.assertEqual(len(task_service.queue), 0)
 
-    @tag("iaso_only")
-    def test_org_unit_retrieve_without_auth_or_app_id(self):
-        """GET /orgunits/<org_unit_id>/ without auth or app id should result in a 200 empty response"""
+        response = self.client.get("/api/tasks/%d/" % task.id)
+        self.assertEqual(response.status_code, 200)
+        # Task completion status
+        return self.assertValidTaskAndInDB(response.json(), new_status)
 
-        response = self.client.get(f"/api/orgunits/{self.jedi_council_corruscant.id}/")
-        self.assertJSONResponse(response, 404)
+    def assertValidTaskAndInDB(self, task_dict, status="QUEUED", name=None):
+        self.assertEqual(task_dict["status"], status, task_dict)
 
-    @tag("iaso_only")
-    def test_org_unit_retrieve_wrong_user(self):
-        """GET /orgunits/<org_unit_id>/ with user that does not have access to the org unit -> 404"""
+        task = Task.objects.get(id=task_dict["id"])
+        self.assertTrue(task)
+        if name:
+            self.assertEqual(task.name, name)
 
-        self.client.force_authenticate(self.luke)
-        response = self.client.get(f"/api/orgunits/{self.jedi_council_corruscant.id}/")
-        self.assertJSONResponse(response, 404)
-
-    @tag("iaso_only")
-    def test_org_unit_retrieve_ok_1(self):
-        """GET /orgunits/<org_unit_id>/ happy path (user has no restriction)"""
-
-        self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/orgunits/{self.jedi_council_corruscant.id}/")
-        self.assertJSONResponse(response, 200)
-        self.assertValidOrgUnitData(response.json())
-
-    @tag("iaso_only")
-    def test_org_unit_retrieve_ok_2(self):
-        """GET /orgunits/<org_unit_id>/ happy path (user is restricted to a few org units)"""
-
-        self.client.force_authenticate(self.luke)
-        response = self.client.get(f"/api/orgunits/{self.jedi_squad_endor.id}/")
-        self.assertJSONResponse(response, 200)
-        self.assertValidOrgUnitData(response.json())
-
-    def assertValidOrgUnitListData(self, *, list_data: typing.Mapping, expected_length: int):
-        self.assertValidListData(list_data=list_data, results_key="orgUnits", expected_length=expected_length)
-        for org_unit_data in list_data["orgUnits"]:
-            self.assertValidOrgUnitData(org_unit_data)
-
-    def assertValidOrgUnitData(self, org_unit_data: typing.Mapping):
-        self.assertHasField(org_unit_data, "id", int)
-        self.assertHasField(org_unit_data, "name", str)
-
-    def assertValidBulkupdateData(self, bulkupdate_data: typing.Mapping):
-        self.assertHasField(bulkupdate_data, "id", int)
+        return task

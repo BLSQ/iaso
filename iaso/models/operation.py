@@ -1,4 +1,6 @@
 import typing
+
+from django.contrib.auth.models import User
 from django.http import HttpRequest
 from rest_framework.request import Request
 from django.utils.translation import ugettext_lazy as _
@@ -23,6 +25,23 @@ class BulkOperationManager(models.Manager):
             content_type=ContentType.objects.get_for_model(model),
             json_body=json_body,
             user=request.user,
+            operation_type=operation_type,
+            operation_count=operation_count,
+        )
+
+    def create_for_model_and_params(
+        self,
+        model: models.Model,
+        user: User,
+        params: dict,
+        *,
+        operation_type: str,
+        operation_count: int,
+    ):
+        return self.create(
+            content_type=ContentType.objects.get_for_model(model),
+            json_body=params,
+            user=user,
             operation_type=operation_type,
             operation_count=operation_count,
         )

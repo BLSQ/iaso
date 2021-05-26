@@ -3,8 +3,9 @@ import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
+import { DatePicker } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
-import DatePickerComponent from './DatePickerComponent';
+// import DatePickerComponent from './DatePickerComponent';
 
 import { getYears, getIntegerArray } from '../../../utils';
 import { getPeriodPickerString } from '../utils';
@@ -70,8 +71,9 @@ const PeriodPicker = ({
             }
         >
             {periodType === PERIOD_TYPE_DAY && (
-                <DatePickerComponent
+                <DatePicker
                     placeholder={title}
+                    clearMessage={MESSAGES.clear}
                     currentDate={activePeriodString}
                     hasError={hasError}
                     onChange={date =>

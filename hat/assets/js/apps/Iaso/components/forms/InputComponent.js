@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Select from 'react-select';
+import { Select } from 'bluesquare-components';
+// import Select from 'react-select';
 import SearchIcon from '@material-ui/icons/Search';
 import Edit from '@material-ui/icons/Edit';
 import {
@@ -147,17 +148,17 @@ class InputComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectInputValue: '',
+            // selectInputValue: '',
             isFocused: false,
             displayPassword: false,
         };
     }
 
-    onSelectInputChange(selectInputValue) {
-        this.setState({
-            selectInputValue,
-        });
-    }
+    // onSelectInputChange(selectInputValue) {
+    //     this.setState({
+    //         selectInputValue,
+    //     });
+    // }
 
     toggleFocused(isFocused) {
         this.setState({
@@ -193,7 +194,7 @@ class InputComponent extends Component {
             multi,
             uid,
         } = this.props;
-        const { selectInputValue, isFocused, displayPassword } = this.state;
+        const { isFocused, displayPassword } = this.state;
 
         const hasErrors = errors.length > 0;
         let labelText;
@@ -275,43 +276,67 @@ class InputComponent extends Component {
             }
 
             return (
-                <FormControlComponent
+                <Select
                     withMarginTop={withMarginTop}
                     errors={errors}
-                >
-                    <InputLabelComponent
-                        htmlFor={`input-select-${keyValue}`}
-                        label={labelText}
-                        shrink={
-                            (value !== undefined && value !== null) ||
-                            selectInputValue !== ''
-                        }
-                        isFocused={isFocused}
-                        required={required}
-                        error={hasErrors}
-                    />
-                    <div className={selectClassNames.join(' ')}>
-                        <Select
-                            disabled={disabled}
-                            searchable={isSearchable}
-                            multi={multi}
-                            clearable={clearable}
-                            simpleValue
-                            onInputChange={newValue =>
-                                this.onSelectInputChange(newValue)
-                            }
-                            name={keyValue}
-                            value={value}
-                            placeholder=""
-                            onBlur={() => this.toggleFocused(false)}
-                            onFocus={() => this.toggleFocused(true)}
-                            options={translateOptions(options, formatMessage)}
-                            noResultsText={formatMessage(MESSAGES.noOptions)}
-                            onChange={newValue => onChange(keyValue, newValue)}
-                        />
-                    </div>
-                </FormControlComponent>
+                    keyValue={keyValue}
+                    label={labelText}
+                    required={required}
+                    disabled={disabled}
+                    searchable={isSearchable}
+                    clearable={clearable}
+                    isFocused={isFocused}
+                    multi={multi}
+                    value={value}
+                    onBlur={() => this.toggleFocused(false)}
+                    onFocus={() => this.toggleFocused(true)}
+                    noResultsText={formatMessage(MESSAGES.noOptions)}
+                    options={translateOptions(options, formatMessage)}
+                    classNames={selectClassNames}
+                    onChange={(key, newValue) => {
+                        onChange(key, newValue);
+                    }}
+                />
             );
+
+            // return (
+            //     <FormControlComponent
+            //         withMarginTop={withMarginTop}
+            //         errors={errors}
+            //     >
+            //         <InputLabelComponent
+            //             htmlFor={`input-select-${keyValue}`}
+            //             label={labelText}
+            //             shrink={
+            //                 (value !== undefined && value !== null) ||
+            //                 selectInputValue !== ''
+            //             }
+            //             isFocused={isFocused}
+            //             required={required}
+            //             error={hasErrors}
+            //         />
+            //         <div className={selectClassNames.join(' ')}>
+            //             <Select
+            //                 disabled={disabled}
+            //                 searchable={isSearchable}
+            //                 multi={multi}
+            //                 clearable={clearable}
+            //                 simpleValue
+            //                 onInputChange={newValue => {
+            //                     this.onSelectInputChange(newValue);
+            //                 }}
+            //                 name={keyValue}
+            //                 value={value}
+            //                 placeholder=""
+            //                 onBlur={() => this.toggleFocused(false)}
+            //                 onFocus={() => this.toggleFocused(true)}
+            //                 options={translateOptions(options, formatMessage)}
+            //                 noResultsText={formatMessage(MESSAGES.noOptions)}
+            //                 onChange={newValue => onChange(keyValue, newValue)}
+            //             />
+            //         </div>
+            //     </FormControlComponent>
+            // );
         }
         if (type === 'arrayInput') {
             // TODO: implement required, errors...

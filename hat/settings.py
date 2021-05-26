@@ -228,12 +228,18 @@ LOGIN_REDIRECT_URL = "/"
 
 SHARED_DIR = "/opt/shared"
 
+AUTH_CLASSES = [
+    "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
+    "rest_framework_simplejwt.authentication.JWTAuthentication",
+]
+
+if PLUGIN_POLIO_ENABLED:
+    AUTH_CLASSES.append(
+        "rest_framework.authentication.BasicAuthentication",
+    )
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": AUTH_CLASSES,
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": None,

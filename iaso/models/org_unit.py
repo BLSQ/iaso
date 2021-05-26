@@ -172,6 +172,8 @@ class OrgUnit(models.Model):
     custom = models.BooleanField(default=False)
     validated = models.BooleanField(default=True, db_index=True)  # TO DO : remove in a later migration
     validation_status = models.CharField(max_length=25, choices=VALIDATION_STATUS_CHOICES, default=VALIDATION_NEW)
+    # The migration 0086_add_version_constraints add a constraint to ensure that the source version
+    # is the same between the orgunit and the group
     version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.CASCADE)
     parent = models.ForeignKey("OrgUnit", on_delete=models.CASCADE, null=True, blank=True)
     path = PathField(null=True, blank=True, unique=True)

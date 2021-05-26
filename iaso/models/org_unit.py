@@ -10,7 +10,6 @@ from django.contrib.auth.models import User, AnonymousUser
 from django_ltree.fields import PathField
 from django.utils.translation import ugettext_lazy as _
 
-from ..db import ManagerWithBulkUpdate
 from hat.audit import models as audit_models
 from .base import Group, SourceVersion
 from .project import Project
@@ -130,7 +129,7 @@ class OrgUnitQuerySet(models.QuerySet):
         return queryset
 
 
-class OrgUnitManager(ManagerWithBulkUpdate):
+class OrgUnitManager(models.Manager):
     def update_single_unit_from_bulk(
         self, user, org_unit, *, validation_status, org_unit_type_id, groups_ids_added, groups_ids_removed
     ):

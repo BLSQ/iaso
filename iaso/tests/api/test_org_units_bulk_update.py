@@ -214,15 +214,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_REJECTED)
         self.assertNotIn(self.unofficial_group, self.jedi_council_corruscant.groups.all())
 
-        self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(2, am.Modification.objects.count())
-
-        operation = m.BulkOperation.objects.first()
-        self.assertEqual(ContentType.objects.get_for_model(m.OrgUnit), operation.content_type)
-        # self.assertEqual(operation_payload, operation.json_body)
-        self.assertEqual(self.yoda, operation.user)
-        self.assertEqual(m.BulkOperation.OPERATION_TYPE_UPDATE, operation.operation_type)
-        self.assertEqual(2, operation.operation_count)
 
         modification_endor = am.Modification.objects.get(object_id=self.jedi_council_endor.pk)
         self.assertEqual(ContentType.objects.get_for_model(m.OrgUnit), modification_endor.content_type)
@@ -254,7 +246,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             jedi_council.refresh_from_db()
             self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
 
-        self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(5, am.Modification.objects.count())
 
     @tag("iaso_only")
@@ -286,7 +277,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             jedi_council.refresh_from_db()
             self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
 
-        self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(1, am.Modification.objects.count())
 
     @tag("iaso_only")
@@ -320,7 +310,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             jedi_council.refresh_from_db()
             self.assertTrue(jedi_council.validated)
 
-        self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(3, am.Modification.objects.count())
 
     @tag("iaso_only")
@@ -332,7 +321,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             data={
                 "select_all": True,
                 "groups_added": [self.another_group.pk],
-                "searches": [{"v1alidation_status": "all"}, {"validation_status": m.OrgUnit.VALIDATION_REJECTED}],
+                "searches": [{"validation_status": "all"}, {"validation_status": m.OrgUnit.VALIDATION_REJECTED}],
             },
             format="json",
         )
@@ -347,7 +336,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             jedi_council.refresh_from_db()
             self.assertIn(self.another_group, jedi_council.groups.all())
 
-        self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(5, am.Modification.objects.count())
 
     def test_task_kill(self):

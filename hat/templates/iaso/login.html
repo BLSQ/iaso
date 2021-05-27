@@ -35,13 +35,17 @@
         {{ form }}
         <input type="hidden" name="next" value="{{ next }}" />
         <button type="submit" class="button">{% trans 'Login' %}</button>
-      </form>
-      <button id="display-password" onClick="togglePassword()">
+        <button id="display-password">
           <i class="fa fa-eye" id="eye-icon" aria-hidden="true"></i>
-      </button>
+        </button>
+      </form>
+      <footer class="login__footer">
+        <p><a href="{% url 'forgot_password' %}">{% trans 'Forgot password' %}</a></p>
+      </footer>
     </div>
   </div>
   <script>
+      
       function togglePassword() {
         var passwordField = $('#id_password');
         if (passwordField.attr('type') === 'password') {
@@ -52,5 +56,9 @@
           $('#eye-icon').attr('class', 'fa fa-eye');
         }
       }
+      document.getElementById('display-password').addEventListener('click', function(e) {
+        e.preventDefault();
+        togglePassword();
+      })
   </script>
 {% endblock %}

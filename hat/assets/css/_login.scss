@@ -22,7 +22,6 @@
 .login__content {
   width: 100%;
   max-width: 320px;
-  position: relative;
   .errorlist {
     margin-top: 1em;
     font-size: $font-size-s;
@@ -36,6 +35,7 @@
   padding: $padding-unit;
   padding-top: calc(#{$padding-unit} - 1em);
   box-shadow: inset 0 3px 0 0 $blue, 0 0 10px 10px rgba(black, 0.15);
+  position: relative;
   * {
     box-sizing: border-box;
   }
@@ -75,10 +75,10 @@
   padding: 0 0 $padding-unit / 2  $padding-unit / 2;
   font-size: 12px !important;
 }
-$right-icon-position : 45px;
+$right-icon-position : 40px;
 #display-password {
   position: absolute;
-  bottom: 102px;
+  bottom: 100px;
   right: $right-icon-position;
   &.id_new_password1 {
     top: 225px;
@@ -91,4 +91,10 @@ $right-icon-position : 45px;
     bottom: 102px;
     bottom: auto;
   }
+}
+
+.login__footer {
+  color: white;
+  text-align: center;
+  margin-top: $padding-unit/1.5;
 }

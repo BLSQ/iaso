@@ -15,6 +15,7 @@ import { LogoSvg } from '../svg/LogoSvgComponent';
 import { makeStyles } from '@material-ui/core';
 import { menuItems } from '../../constants/menuItems';
 import { SidebarMenuItem } from './SidebarMenuItem';
+import {FormattedMessage, useIntl} from "react-intl";
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -68,10 +69,11 @@ export const SidebarMenu = ({ isDrawerOpened, toggleDrawer }) => {
 
             <List className={classes.list}>
                 {menuItems.map(menuItem => {
+                    console.log(menuItem);
                     return (
                         <SidebarMenuItem
                             menuItem={menuItem}
-                            key={menuItem.label}
+                            key={menuItem.label.id ? menuItem.label.id : menuItem.label}
                         />
                     );
                 })}

@@ -1,29 +1,31 @@
+import MESSAGES from "./messages"
+
 export const menuItems = [
     {
-        label: 'iaso.forms.title',
+        label: MESSAGES.formsTitle,
         icon: 'forms',
         subMenu: [
             {
-                label: 'iaso.label.list',
+                label: MESSAGES.list,
                 // permission: paths.formsPath.permission,
                 path: '/dashboard/forms/list',
                 icon: 'list',
             },
 
             {
-                label: 'iaso.label.dhis2Mappings',
+                label: MESSAGES.dhis2Mappings,
                 // permission: paths.mappingsPath.permission,
                 path: '/dashboard/forms/mappings',
                 icon: 'mappings',
             },
             {
-                label: 'iaso.completeness.title',
+                label: MESSAGES.completeness,
                 // permission: paths.completenessPath.permission,
                 path: '/dashboard/forms/completeness',
                 icon: 'completeness',
             },
             {
-                label: 'iaso.archived.title',
+                label: MESSAGES.archived,
                 // permission: paths.archivedPath.permission,
                 path: '/dashboard/forms/archived',
                 icon: 'archived',
@@ -31,45 +33,45 @@ export const menuItems = [
         ],
     },
     {
-        label: 'iaso.orgUnits.title',
+        label: MESSAGES.orgUnitsTitle,
         icon: 'orgunits',
 
         subMenu: [
             {
-                label: 'iaso.label.list',
+                label: MESSAGES.list,
                 // permission: paths.orgUnitsPath.permission,
                 icon: 'list',
             },
             {
-                label: 'iaso.label.groups',
+                label: MESSAGES.groups,
                 // permission: paths.groupsPath.permission,
                 icon: 'groups',
             },
             {
-                label: "'iaso.orgUnits.orgUnitsTypes'",
+                label: MESSAGES.orgUnitType,
                 // permission: paths.orgUnitTypesPath.permission,
                 icon: 'types',
             },
             {
-                label: 'iaso.orgUnits.dataSources',
+                label: MESSAGES.dataSources,
                 icon: 'sources',
                 subMenu: [
                     {
-                        label: 'iaso.label.list',
+                        label: MESSAGES.list,
                         // permission: paths.dataSourcesPath.permission,
                         icon: 'list',
                     },
                     {
-                        label: 'iaso.matching.title',
+                        label: MESSAGES.matching,
                         icon: 'links',
                         subMenu: [
                             {
-                                label: 'iaso.label.list',
+                                label: MESSAGES.list,
                                 // permission: paths.linksPath.permission,
                                 icon: 'list',
                             },
                             {
-                                label: 'iaso.label.algorithmsRuns',
+                                label: MESSAGES.algorithmsRuns,
                                 // permission: paths.algosPath.permission,
                                 icon: 'runs',
                             },
@@ -80,30 +82,35 @@ export const menuItems = [
         ],
     },
     {
-        label: 'iaso.label.config',
+         label: MESSAGES.config,
         icon: 'settings',
         subMenu: [
             {
-                label: 'iaso.label.tasks',
+                label: MESSAGES.tasks,
                 // permission: paths.tasksPath.permission,
                 icon: 'tasks',
             },
             {
-                label: 'iaso.label.monitoring',
+                label: MESSAGES.monitoring,
                 // permission: paths.devicesPath.permission,
                 icon: 'devices',
             },
             {
-                label: 'iaso.label.projects',
+                label: MESSAGES.projects,
                 // permission: paths.projectsPath.permission,
                 icon: 'projects',
             },
             {
-                label: 'iaso.label.users',
+                label: MESSAGES.users,
                 // permission: paths.usersPath.permission,
                 icon: 'users',
             },
         ],
+    },
+    {
+        label: MESSAGES.polioDashboard,
+        path: '/dashboard/polio',
+        icon: 'list',
     },
 ];
 

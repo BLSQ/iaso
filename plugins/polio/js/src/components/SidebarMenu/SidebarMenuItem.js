@@ -14,6 +14,7 @@ import { List } from '@material-ui/core';
 
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
+import {useIntl} from "react-intl";
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -28,6 +29,7 @@ export const MenuItem = ({
     onExpand,
     subMenuLevel = 0,
 }) => {
+    const intl = useIntl();
     const classes = useStyles();
     const color = expanded ? 'primary' : 'inherit';
     const subMenuIcon = expanded ? (
@@ -54,7 +56,7 @@ export const MenuItem = ({
             <ListItemText
                 primary={
                     <Typography type="body2" color={color}>
-                        {menuItem.label}
+                        {menuItem.label.id ? intl.formatMessage(menuItem.label) : menuItem.label}
                     </Typography>
                 }
             />

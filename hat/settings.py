@@ -275,7 +275,7 @@ else:
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "iaso/static"),
-    os.path.join(BASE_DIR, "plugins/polio/static/polio/static/js"),
+    os.path.join(BASE_DIR, "plugins/polio/static/polio"),
     os.path.join(BASE_DIR, "hat/assets/webpack"),
 )
 

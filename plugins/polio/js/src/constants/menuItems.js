@@ -108,10 +108,18 @@ export const menuItems = [
         ],
     },
     {
-        label: MESSAGES.polioDashboard,
-        path: '/dashboard/polio',
-        icon: 'list',
-    },
+        label: MESSAGES.polio,
+        key: 'polio',
+        icon: 'forms',
+        subMenu: [
+            {
+                label: MESSAGES.dashboard,
+                key: 'polio_dashboard',
+                // permission: paths.formsPath.permission,
+                icon: 'list',
+            },
+        ]
+    }
 ];
 
 export default menuItems;

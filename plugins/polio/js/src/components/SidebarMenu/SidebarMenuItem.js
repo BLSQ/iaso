@@ -56,7 +56,7 @@ export const MenuItem = ({
             <ListItemText
                 primary={
                     <Typography type="body2" color={color}>
-                        {menuItem.label.id ? intl.formatMessage(menuItem.label) : menuItem.label}
+                        {intl.formatMessage(menuItem.label)}
                     </Typography>
                 }
             />

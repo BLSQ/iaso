@@ -5,8 +5,6 @@ module.exports = {
         return config;
     },
     paths: function (paths, env) {
-        console.log(paths, env);
-
         paths.appBuild = path.join(__dirname, '../static/polio');
         return paths;
     },

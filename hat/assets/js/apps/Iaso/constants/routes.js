@@ -79,9 +79,8 @@ export const polioPath = {
     params: [],
     component: props => {
         window.location = '/dashboard/polio/list'
-        return (
-            <></>
-        );
+
+        return <></>;
     },
 };
 

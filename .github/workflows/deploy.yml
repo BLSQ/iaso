@@ -70,7 +70,7 @@ jobs:
           echo committing---------
           git add hat/assets/webpack/
 
-          PLUGIN_POLIO_ENABLED='true' bash ./scripts/enable_plugins.sh
+          SKIP_PREFLIGHT_CHECK=true PLUGIN_POLIO_ENABLED='true' bash ./scripts/enable_plugins.sh
           git add --force plugins/polio/static/
           git add --force plugins/polio/templates/polio/index.html
 

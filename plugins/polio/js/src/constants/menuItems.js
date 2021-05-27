@@ -114,7 +114,8 @@ export const menuItems = [
         subMenu: [
             {
                 label: MESSAGES.dashboard,
-                key: 'polio_dashboard',
+                path: '/dashboard/polio/list',
+                key: 'list',
                 // permission: paths.formsPath.permission,
                 icon: 'list',
             },

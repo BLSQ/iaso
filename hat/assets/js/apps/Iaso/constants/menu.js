@@ -151,7 +151,7 @@ const menuItems = [
         subMenu: [
             {
                 label: MESSAGES.dashboard,
-                key: 'polio_dashboard',
+                key: 'list',
                 permission: paths.formsPath.permission,
                 icon: props => <FormatListBulleted {...props} />,
             },

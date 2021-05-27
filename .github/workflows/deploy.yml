@@ -69,6 +69,11 @@ jobs:
           git diff-index --quiet HEAD || echo "we should commit something 2"
           echo committing---------
           git add hat/assets/webpack/
+
+          PLUGIN_POLIO_ENABLED='true' bash ./scripts/enable_plugins.sh
+          git add --force plugins/polio/static/
+          git add --force plugins/polio/templates/polio/index.html
+
           git diff-index --quiet HEAD || (git checkout -b github/assets-${GITHUB_RUN_NUMBER} && git commit -m "Build assets github action ${GITHUB_RUN_NUMBER}" && git push -u origin) || true
         env:
           GIT_AUTHOR_NAME: Github Bot

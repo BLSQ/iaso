@@ -311,7 +311,6 @@ export class DataSourceDialogComponent extends Component {
                                 clearable
                                 keyValue="project_ids"
                                 onChange={(key, value) => {
-                                    console.log('key', key, 'value', value);
                                     this.setProjects(key, value);
                                 }}
                                 value={form.project_ids.value.join(',')}

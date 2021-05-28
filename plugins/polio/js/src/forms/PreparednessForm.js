@@ -1,17 +1,29 @@
-import { Grid, Button, Typography } from '@material-ui/core';
+import { Button, CircularProgress, Grid, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
-import { CircularProgress } from '@material-ui/core';
 import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import { useGetPreparednessData } from '../hooks/useGetPreparednessData';
 
 export const PreparednessForm = () => {
     const classes = useStyles();
-    const { values } = useFormikContext();
+    const { values, setFieldValue } = useFormikContext();
     const { mutate, isLoading, isError, error } = useGetPreparednessData();
 
     const refreshData = () => {
-        mutate(values.spreadsheet_url);
+        mutate(values.preperadness_spreadsheet_url, {
+            onSuccess: data => {
+                const { totals, ...payload } = data;
+                const { national_score, regional_score, district_score } =
+                    totals;
+                setFieldValue('preparedness_data', {
+                    spreadsheet_url: values.preperadness_spreadsheet_url,
+                    national_score,
+                    district_score,
+                    regional_score,
+                    payload,
+                });
+            },
+        });
     };
 
     return (
@@ -21,14 +33,20 @@ export const PreparednessForm = () => {
                     <Grid xs={12} md={8} item>
                         <Field
                             label="Google Sheet URL"
-                            name={'spreadsheet_url'}
+                            name={'preperadness_spreadsheet_url'}
                             component={TextInput}
                             disabled={isLoading}
                             className={classes.input}
                         />
                     </Grid>
                     <Grid xs={6} md={2} item>
-                        <Button target="_blank" href={values.spreadsheet_url} color="primary">Access data</Button>
+                        <Button
+                            target="_blank"
+                            href={values.spreadsheet_url}
+                            color="primary"
+                        >
+                            Access data
+                        </Button>
                     </Grid>
                     <Grid xs={6} md={2} item>
                         <Button

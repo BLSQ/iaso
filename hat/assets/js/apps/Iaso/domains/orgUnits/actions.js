@@ -134,7 +134,7 @@ export const setFiltersUpdated = filtersUpdated => ({
 
 export const saveMultiEdit = data => dispatch => {
     dispatch(setOrgUnitsListFetching(true));
-    return postRequest('/api/orgunits/bulkupdate/', { ...data })
+    return postRequest('/api/tasks/create/orgunitsbulkupdate/', { ...data })
         .then(res => {
             dispatch(
                 enqueueSnackbar(

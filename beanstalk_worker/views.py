@@ -19,5 +19,6 @@ def cron(request):
 
 @csrf_exempt
 def run_all(request):
-    task_service.run_all()
-    return HttpResponse()
+    count = task_service.run_all()
+
+    return HttpResponse(f"Ran {count} tasks")

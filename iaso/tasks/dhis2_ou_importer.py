@@ -300,7 +300,7 @@ def dhis2_ou_importer(
             map_geometry(row, org_unit)
             org_unit.save()
 
-            res_string = "%s sec, processed %i org units" % (time.time() - start, index)
+            res_string = "%.2f sec, processed %i org units" % (time.time() - start, index)
             the_task.report_progress_and_stop_if_killed(progress_message=res_string, progress_value=index)
 
             # log progress

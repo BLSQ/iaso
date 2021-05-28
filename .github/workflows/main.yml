@@ -1,5 +1,5 @@
-name: CI
-
+name: Automated CI testing
+# This workflow run automatically for every commit on github it checks the syntax and launch the tests.
 on: [push]
 
 jobs:
@@ -96,10 +96,14 @@ jobs:
           DEFAULT_FILE_STORAGE: storages.backends.s3boto3.S3Boto3Storage
 
       - name: slack notification
-        uses: rtCamp/action-slack-notify@v2.0.2
+        uses: rtCamp/action-slack-notify@v2.1.3
         env:
-          SLACK_USERNAME: github-actions-main
+          SLACK_USERNAME: github-actions/main.yml
+          SLACK_ICON_EMOJI: ":robot_face:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: iaso-dev
-          SLACK_TITLE: Iaso CI run failed
+          SLACK_TITLE: Automated CI Testing failed
+          SLACK_COLOR: #FF4500
+          SLACK_FOOTER: "-"
+          MSG_MINIMAL: ref,actions url
         if: failure()

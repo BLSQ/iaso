@@ -85,12 +85,8 @@ const FormDetail = ({ router, params }) => {
     const dispatch = useDispatch();
     const intl = useSafeIntl();
     const classes = useStyles();
-    const [
-        currentForm,
-        setFieldValue,
-        setFieldErrors,
-        setFormState,
-    ] = useFormState(initialFormState(initialData));
+    const [currentForm, setFieldValue, setFieldErrors, setFormState] =
+        useFormState(initialFormState(initialData));
 
     const onConfirm = async () => {
         let isUpdate;

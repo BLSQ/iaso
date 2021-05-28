@@ -158,5 +158,13 @@ class Campaign(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Additional fields
+    district_count = models.IntegerField(null=True, blank=True)
+    budget_submitted_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Budget Submission"),
+    )
+
     def __str__(self):
         return f"{self.epid} {self.obr_name}"

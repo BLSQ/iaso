@@ -11,6 +11,12 @@ class RoundSerializer(serializers.ModelSerializer):
 class CampaignSerializer(serializers.ModelSerializer):
     round_one = RoundSerializer()
     round_two = RoundSerializer()
+    top_level_org_unit_name = serializers.SerializerMethodField()
+
+    def get_top_level_org_unit_name(self, campaign):
+        if campaign.initial_org_unit:
+            return campaign.initial_org_unit.name
+        return ""
 
     def create(self, validated_data):
         round_one_data = validated_data.pop("round_one")

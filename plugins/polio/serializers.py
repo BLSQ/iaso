@@ -51,6 +51,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     preparedness_data = PreparednessSerializer(required=False)
     last_preparedness = PreparednessSerializer(
         required=False,
+        read_only=True,
         allow_null=True,
     )
 

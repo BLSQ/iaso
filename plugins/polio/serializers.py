@@ -21,6 +21,7 @@ class PreparednessSerializer(serializers.ModelSerializer):
     class Meta:
         model = Preparedness
         exclude = ["campaign"]
+        extra_kwargs = {"payload": {"write_only": True}}
 
 
 class PreparednessPreviewSerializer(serializers.Serializer):

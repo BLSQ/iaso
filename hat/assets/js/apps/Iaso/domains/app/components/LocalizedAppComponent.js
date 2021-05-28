@@ -6,10 +6,12 @@ import { useSelector } from 'react-redux';
 // the intl paths get rewritten by webpack depending on the locale
 import fr from '__intl/messages/fr'; // eslint-disable-line
 import en from '__intl/messages/en'; // eslint-disable-line
-
+import frLibrary from '../../../../../../../../node_modules/bluesquare-components/dist/locale/fr.json';
+import enLibrary from '../../../../../../../../node_modules/bluesquare-components/dist/locale/en.json';
+// TODO see if this translation import works in prod
 const messages = {
-    fr,
-    en,
+    fr: { ...fr, ...frLibrary },
+    en: { ...en, ...enLibrary },
 };
 
 export default function LocalizedAppComponent({ children }) {

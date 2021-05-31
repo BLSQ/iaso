@@ -47,6 +47,9 @@ module.exports = {
                 // need to do JSON stringify on all vars here to take effect,
                 // see https://github.com/eHealthAfrica/guinea-connect-universal-app/blob/development/webpack/prod.config.js
                 NODE_ENV: JSON.stringify('production'),
+                PLUGIN_POLIO_ENABLED: JSON.stringify(
+                    process.env.PLUGIN_POLIO_ENABLED,
+                ),
             },
             __LOCALE: JSON.stringify(LOCALE),
         }),

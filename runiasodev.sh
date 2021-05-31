@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+# Use this script if you want to run the IASO (python side) locally outside of Docker
+# you will have to provide the DB
+
 source bin/activate
 export SECRET_KEY="secret"
 export RDS_PORT="5433"

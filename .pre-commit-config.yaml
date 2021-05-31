@@ -1,3 +1,5 @@
+# Configuration for pre-commmit (python) which will install a git commit hook for Black, the code formatter for python
+# see Black section in README
 repos:
 -   repo: https://github.com/ambv/black
     rev: 21.5b1

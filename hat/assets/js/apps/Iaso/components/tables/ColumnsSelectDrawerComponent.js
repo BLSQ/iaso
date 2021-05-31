@@ -17,11 +17,11 @@ import {
 import Close from '@material-ui/icons/Close';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 
+import { injectIntl } from 'bluesquare-components';
 import IconButtonComponent from '../buttons/IconButtonComponent';
 import BlockPlaceholder from '../placeholders/BlockPlaceholder';
 
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const filterResults = (searchString, options) => {
     let displayedOptions = [...options];

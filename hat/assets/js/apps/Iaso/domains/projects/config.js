@@ -1,6 +1,8 @@
 import React from 'react';
-import { textPlaceholder } from '../../constants/uiConstants';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+import {
+    IconButton as IconButtonComponent,
+    textPlaceholder,
+} from 'bluesquare-components';
 import ProjectsDialog from './components/ProjectsDialog';
 
 import MESSAGES from './messages';

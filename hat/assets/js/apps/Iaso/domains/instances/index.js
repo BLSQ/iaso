@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 import moment from 'moment';
 
+import { getTableUrl, commonStyles, injectIntl } from 'bluesquare-components';
 import {
     resetInstances,
     setInstances,
@@ -59,13 +60,9 @@ import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 import SingleTable from '../../components/tables/SingleTable';
 
-import commonStyles from '../../styles/common';
-
-import getTableUrl from '../../utils/tableUtils';
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.instances;
 

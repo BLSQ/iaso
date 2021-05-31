@@ -5,20 +5,22 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
-import commonStyles from '../../styles/common';
-
-import Table from './TableComponent';
-import Filters from './TableFilters';
-import DownloadButtonsComponent from '../buttons/DownloadButtonsComponent';
-import { redirectToReplace } from '../../routing/actions';
-
-import getTableUrl, {
+import {
+    getTableUrl,
+    Table,
     getParamsKey,
     getTableParams,
     tableInitialResult,
     setTableSelection,
     selectionInitialState,
-} from '../../utils/tableUtils';
+    commonStyles,
+} from 'bluesquare-components';
+
+// import Table from './TableComponent';
+import Filters from './TableFilters';
+
+import DownloadButtonsComponent from '../buttons/DownloadButtonsComponent';
+import { redirectToReplace } from '../../routing/actions';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -166,6 +168,9 @@ const SingleTable = ({
                     defaultFiltersUpdated={searchActive}
                     toggleActiveSearch={toggleActiveSearch}
                     extraComponent={searchExtraComponent}
+                    redirectTo={(key, newParams) =>
+                        dispatch(redirectToReplace(key, newParams))
+                    }
                 />
             )}
             {((count > 0 && exportButtons) || extraComponent) && (

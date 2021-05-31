@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import Add from '@material-ui/icons/Add';
 import { withStyles, Button } from '@material-ui/core';
 
+import { useSafeIntl } from 'bluesquare-components';
 import commonStyles from '../../styles/common';
-import { useSafeIntl } from '../../hooks/intl';
 
 import MESSAGES from './messages';
 

@@ -14,7 +14,7 @@ import { baseUrls } from '../../constants/urls';
 
 import tasksTableColumns from './config';
 import MESSAGES from './messages';
-import { useSafeIntl } from '../../hooks/intl';
+import { useSafeIntl } from 'bluesquare-components';
 import { fetchTasks } from '../../utils/requests';
 
 const baseUrl = baseUrls.tasks;

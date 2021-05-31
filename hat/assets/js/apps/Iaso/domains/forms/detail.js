@@ -19,7 +19,7 @@ import {
 
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-import { useSafeIntl } from '../../hooks/intl';
+import { useSafeIntl } from 'bluesquare-components';
 import { useFormState } from '../../hooks/form';
 
 import { baseUrls } from '../../constants/urls';

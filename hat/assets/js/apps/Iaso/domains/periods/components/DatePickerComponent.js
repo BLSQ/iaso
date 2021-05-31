@@ -10,8 +10,8 @@ import {
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
+import { useSafeIntl } from 'bluesquare-components';
 import commonStyles from '../../../styles/common';
-import { useSafeIntl } from '../../../hooks/intl';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({

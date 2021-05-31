@@ -4,8 +4,8 @@ import SpeedDial from '@material-ui/lab/SpeedDial';
 import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import PropTypes from 'prop-types';
 import EditIcon from '@material-ui/icons/Edit';
+import { injectIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const useStyles = makeStyles(theme => ({
     speedDial: {

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Route } from 'react-router';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import theme from './utils/theme';
+import { theme } from 'bluesquare-components';
 import App from './domains/app';
 import { routeConfigs, getPath } from './constants/routes';
 import ProtectedRoute from './domains/users/components/ProtectedRoute';

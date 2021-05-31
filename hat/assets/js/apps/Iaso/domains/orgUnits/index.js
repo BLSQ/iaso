@@ -8,7 +8,15 @@ import PropTypes from 'prop-types';
 
 import EditIcon from '@material-ui/icons/Edit';
 
-import { DynamicTabs } from 'bluesquare-components';
+import {
+    DynamicTabs,
+    createUrl,
+    getTableUrl,
+    selectionInitialState,
+    setTableSelection,
+    commonStyles,
+    injectIntl,
+} from 'bluesquare-components';
 // import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 import {
     fetchOrgUnitsTypes,
@@ -32,7 +40,6 @@ import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
 import { orgUnitsTableColumns } from './config';
 
-import { createUrl } from '../../utils/fetchData';
 import {
     fetchLatestOrgUnitLevelId,
     decodeSearch,
@@ -40,10 +47,6 @@ import {
     encodeUriParams,
     encodeUriSearches,
 } from './utils';
-import getTableUrl, {
-    selectionInitialState,
-    setTableSelection,
-} from '../../utils/tableUtils';
 
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -53,7 +56,6 @@ import OrgunitsMap from './components/OrgunitsMapComponent';
 import OrgUnitsMultiActionsDialog from './components/OrgUnitsMultiActionsDialog';
 import Table from '../../components/tables/TableComponent';
 
-import commonStyles from '../../styles/common';
 import { getChipColors } from '../../constants/chipColors';
 
 import { warningSnackBar } from '../../constants/snackBars';
@@ -64,7 +66,6 @@ import {
 
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 import { locationLimitMax } from './constants/orgUnitConstants';
 
 const baseUrl = baseUrls.orgUnits;

@@ -4,9 +4,8 @@ import { Chip, withStyles } from '@material-ui/core';
 import Add from '@material-ui/icons/Add';
 import Cancel from '@material-ui/icons/Cancel';
 
-import { translateOptions } from '../../utils/intlUtil';
+import { translateOptions, injectIntl } from 'bluesquare-components';
 import commonStyles from '../../styles/common';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

@@ -9,6 +9,8 @@ import {
     Checkbox,
     ArrayFieldInput,
     SearchInput,
+    translateOptions,
+    injectIntl,
 } from 'bluesquare-components';
 // import Select from 'react-select';
 // import SearchIcon from '@material-ui/icons/Search';
@@ -30,8 +32,6 @@ import MESSAGES from '../../domains/forms/messages';
 // import ArrayFieldInput from './ArrayFieldInput';
 // import InputLabelComponent from './InputLabelComponent';
 // import FormControlComponent from './FormControlComponent';
-import { translateOptions } from '../../utils/intlUtil';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const styles = theme => ({
     select: {

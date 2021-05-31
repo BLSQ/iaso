@@ -4,8 +4,7 @@ import { withStyles, Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import mapPopupStyles from '../../../styles/mapPopup';
-import { textPlaceholder } from '../../../constants/uiConstants';
+import { textPlaceholder, mapPopupStyles } from 'bluesquare-components';
 
 const styles = theme => ({
     ...mapPopupStyles(theme),

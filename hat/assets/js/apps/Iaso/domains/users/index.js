@@ -16,14 +16,13 @@ import Table from '../../components/tables/TableComponent';
 import UsersDialog from './components/UsersDialog';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 
-import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
 
 import usersTableColumns from './config';
 import MESSAGES from './messages';
 
 import { redirectTo as redirectToAction } from '../../routing/actions';
-import injectIntl from '../../libs/intl/injectIntl';
+import {injectIntl,commonStyles} from 'bluesquare-components';
 
 const baseUrl = baseUrls.users;
 

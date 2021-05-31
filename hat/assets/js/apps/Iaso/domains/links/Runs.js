@@ -10,6 +10,12 @@ import Autorenew from '@material-ui/icons/Autorenew';
 import PropTypes from 'prop-types';
 
 import {
+    createUrl,
+    injectIntl,
+    commonStyles,
+    TopBar,
+} from 'bluesquare-components';
+import {
     fetchAlgorithms,
     fetchAlgorithmRuns,
     deleteAlgorithmRun,
@@ -23,22 +29,15 @@ import { setSources } from '../orgUnits/actions';
 
 import { runsTableColumns } from './config';
 
-import { createUrl } from '../../utils/fetchData';
-
-import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import AddRunDialogComponent from './components/AddRunDialogComponent';
 import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
 import { runsFilters } from '../../constants/filters';
 
-import commonStyles from '../../styles/common';
-
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
-
-import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.algos;
 

@@ -25,11 +25,9 @@ import MenuItem from './MenuItemComponent';
 import LogoSvg from './LogoSvgComponent';
 import LanguageSwitch from './LanguageSwitchComponent';
 
-import commonStyles from '../../../styles/common';
-
 import menuItems from '../../../constants/menu';
 
-import injectIntl from '../../../libs/intl/injectIntl';
+import {injectIntl,commonStyles} from 'bluesquare-components';
 
 import MESSAGES from './messages';
 

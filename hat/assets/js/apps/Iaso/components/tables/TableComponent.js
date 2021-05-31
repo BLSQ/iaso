@@ -15,14 +15,14 @@ import {
     selectionInitialState,
     getParamsKey,
     getColumnsHeadersInfos,
-} from '../../utils/tableUtils';
+    injectIntl,
+} from 'bluesquare-components';
 
 import { formatThousand } from '../../utils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../constants/customTableTranslations';
 import SelectionSpeedDials from './SelectionSpeedDials';
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 /**
  * Table component, no redux, no fetch, just displaying.

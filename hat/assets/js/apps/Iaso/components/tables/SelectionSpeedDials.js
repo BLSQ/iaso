@@ -7,8 +7,8 @@ import { SpeedDial, SpeedDialAction } from '@material-ui/lab';
 
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 
+import { injectIntl } from 'bluesquare-components';
 import MESSAGES from '../../domains/orgUnits/messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const useStyles = makeStyles(theme => ({
     speedDial: {

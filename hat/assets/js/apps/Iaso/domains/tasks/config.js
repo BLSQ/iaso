@@ -1,7 +1,9 @@
 import React from 'react';
 import Chip from '@material-ui/core/Chip';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
-import { displayDateFromTimestamp } from '../../utils/intlUtil';
+import {
+    IconButton as IconButtonComponent,
+    displayDateFromTimestamp,
+} from 'bluesquare-components';
 import MESSAGES from './messages';
 
 const tasksTableColumns = (formatMessage, killTaskAction) => [

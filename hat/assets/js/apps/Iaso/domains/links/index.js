@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
+import { createUrl, injectIntl } from 'bluesquare-components';
 import {
     fetchOrgUnitsTypes,
     saveLink,
@@ -22,8 +23,6 @@ import { setAlgorithms, setAlgorithmRuns } from './actions';
 
 import { linksTableColumns } from './config';
 
-import { createUrl } from '../../utils/fetchData';
-
 import TopBar from '../../components/nav/TopBarComponent';
 import LinksDetails from './components/LinksDetailsComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -35,7 +34,6 @@ import { baseUrls } from '../../constants/urls';
 import { linksFilters } from '../../constants/filters';
 
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.links;
 

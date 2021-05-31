@@ -8,7 +8,7 @@ import isEqual from 'lodash/isEqual';
 import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import { InnerDrawer } from 'bluesquare-components';
+import { InnerDrawer, injectIntl, commonStyles } from 'bluesquare-components';
 // import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { locationsLimit } from '../../../constants/filters';
 
@@ -32,10 +32,8 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 
 import { fetchOrgUnitDetail } from '../../../utils/requests';
 import { getChipColors } from '../../../constants/chipColors';
-import commonStyles from '../../../styles/common';
 import { getColorsFromParams, decodeSearch } from '../utils';
 import MESSAGES from '../messages';
-import injectIntl from '../../../libs/intl/injectIntl';
 import DrawerMessages from '../../../components/nav/messages';
 
 const boundsOptions = {

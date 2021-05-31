@@ -13,7 +13,7 @@ import LogsDetails from './LogsDetailsComponent';
 import commonStyles from '../../styles/common';
 
 import { baseUrls } from '../../constants/urls';
-import { useSafeIntl } from '../../hooks/intl';
+import { useSafeIntl } from 'bluesquare-components';
 
 const baseUrl = baseUrls.orgUnitDetails;
 

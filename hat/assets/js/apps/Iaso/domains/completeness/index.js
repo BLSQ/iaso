@@ -3,17 +3,15 @@ import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
+import { injectIntl, TopBar, LoadingSpinner } from 'bluesquare-components';
 import {
     fetchCompleteness as fetchCompletenessAction,
     generateDerivedInstances as generateDerivedInstancesAction,
 } from './actions';
 import { redirectTo as redirectToAction } from '../../routing/actions';
-import TopBar from '../../components/nav/TopBarComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import CompletenessListComponent from './components/CompletenessListComponent';
 
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 class Completeness extends Component {
     componentDidMount() {

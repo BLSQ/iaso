@@ -13,6 +13,7 @@ services:
     volumes: &hat_volumes
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
+      - ./beanstalk_worker:/opt/app/beanstalk_worker
       - ./media:/opt/app/media
       - ./plugins:/opt/app/plugins
       - ./scripts:/opt/app/scripts

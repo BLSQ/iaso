@@ -1,6 +1,8 @@
 var path = require('path');
 var webpack = require('webpack');
 var BundleTracker = require('webpack-bundle-tracker');
+const Dotenv = require('dotenv-webpack');
+
 // Switch here for french. This is set to 'en' in dev to not get react-intl warnings
 // remember to switch in webpack.prod.js and
 // django settings as well
@@ -51,6 +53,9 @@ module.exports = {
         }),
         // XLSX
         new webpack.IgnorePlugin(/cptable/),
+        new Dotenv({
+            path: path.resolve(__filename, './../../.env'),
+        }),
     ],
 
     module: {

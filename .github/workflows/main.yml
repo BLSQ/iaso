@@ -45,12 +45,12 @@ jobs:
           npm --version
           pip list
 
-#      - name: npm install (and test)
-#        run: |
-#                npm i
-#                # npm t
-#        env:
-#                CI: true
+      - name: npm install and test
+        run: |
+                npm install
+                npm test
+        env:
+                CI: true
 #
 #      - name: npm build
 #        run: |

@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 # Use this script if you want to run the IASO (python side) locally outside of Docker
-# you will have to provide the DB
+# You can run the database and webpack with django-compose and it will connect to the by default
+# By running:  django-compose up db webpack
+
+# You will need to create a venv locally by running: venv . && pip install -r requirements.txt
 
 source bin/activate
 export SECRET_KEY="secret"

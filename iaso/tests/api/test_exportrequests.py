@@ -70,7 +70,6 @@ class ExportRequestsAPITestCase(APITestCase):
     def uuid(self, number):
         return str(number) + "b7c3954-f69a-4b99-83b1-db73957b32b" + str(number)
 
-    @tag("iaso_only")
     def test_exportrequests_list_without_auth(self):
         """GET /exportrequests/ without auth should result in a 403"""
 
@@ -78,7 +77,6 @@ class ExportRequestsAPITestCase(APITestCase):
         self.assertEqual(403, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
-    @tag("iaso_only")
     def test_exportrequests_list(self):
         """GET /exportrequests/ should return counts"""
 
@@ -109,7 +107,6 @@ class ExportRequestsAPITestCase(APITestCase):
         self.assertEqual(response_data["export_requests"][1]["stats"]["instance_count"], 3)
         self.assertEqual(response_data["export_requests"][1]["params"]["filters"]["period_ids"], "201901,201902")
 
-    @tag("iaso_only")
     def test_exportrequests_create_works(self):
         self.build_instance(self.village_1, self.uuid(1), "201901")
         self.build_instance(self.village_1, self.uuid(2), "201901")
@@ -126,7 +123,6 @@ class ExportRequestsAPITestCase(APITestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
-    @tag("iaso_only")
     def test_exportrequests_create_ko_when_bad_filter(self):
         self.build_instance(self.village_1, self.uuid(1), "201901")
         self.client.force_authenticate(self.user)
@@ -138,7 +134,6 @@ class ExportRequestsAPITestCase(APITestCase):
         response_data = response.json()
         self.assertEqual(response_data["code"], "NothingToExportError")
 
-    @tag("iaso_only")
     def test_exportrequests_create_ko_when_no_version(self):
         instance = self.build_instance(self.village_1, self.uuid(1), "201901")
         instance.json = {"demo": "noversion"}

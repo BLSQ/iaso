@@ -2,7 +2,7 @@ import re
 
 from django.db.models import Q, Count, Sum, Case, When, IntegerField
 
-from iaso.models import OrgUnit, Instance
+from iaso.models import OrgUnit, Instance, DataSource
 
 
 # FIXME Not sure if it's the best place but needed to move it out of circular import
@@ -59,7 +59,11 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
         queryset = queryset.filter(groups__in=group.split(","))
 
     if source:
-        queryset = queryset.filter(version__data_source_id=source)
+        source = DataSource.objects.get(id=source)
+        if source.default_version:
+            queryset = queryset.filter(version=source.default_version)
+        else:
+            queryset = queryset.filter(version__data_source_id=source)
 
     if version:
         queryset = queryset.filter(version=version)

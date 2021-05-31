@@ -48,9 +48,6 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),
-            'process.env.PLUGIN_POLIO_ENABLED': JSON.stringify(
-                process.env.PLUGIN_POLIO_ENABLED,
-            ),
         }),
         // XLSX
         new webpack.IgnorePlugin(/cptable/),

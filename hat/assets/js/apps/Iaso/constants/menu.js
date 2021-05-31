@@ -146,7 +146,7 @@ const menuItems = [
     },
 ];
 
-if (process.env.PLUGIN_POLIO_ENABLED === 'true') {
+if (PLUGIN_POLIO_ENABLED === 'True') {
     menuItems.push({
         label: MESSAGES.polio,
         key: 'polio',

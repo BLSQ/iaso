@@ -408,6 +408,20 @@ const BudgetForm = () => {
                     />
 
                     <Field
+                        label={'Budget Submitted At'}
+                        name={'budget_submitted_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+
+                    <Field
+                        label="District Count"
+                        name={'district_count'}
+                        component={TextInput}
+                        className={classes.input}
+                    />
+
+                    <Field
                         label="No Regret Fund"
                         name={'no_regret_fund_amount'}
                         component={TextInput}

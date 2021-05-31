@@ -79,6 +79,8 @@ const schema = yup.object().shape({
     spreadsheet_url: yup.string().url().nullable(),
 
     eomg: yup.date().nullable(),
+    budget_submitted_at: yup.date().nullable(),
+    district_count: yup.number().nullable().positive().integer(),
     no_regret_fund_amount: yup.number().nullable().positive().integer(),
 
     round_one: round_shape,

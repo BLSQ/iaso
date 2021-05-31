@@ -144,7 +144,10 @@ const menuItems = [
             },
         ],
     },
-    {
+];
+
+if (process.env.PLUGIN_POLIO_ENABLED === 'true') {
+    menuItems.push({
         label: MESSAGES.polio,
         key: 'polio',
         icon: props => <DataSourceIcon {...props} />,
@@ -155,8 +158,8 @@ const menuItems = [
                 permission: paths.formsPath.permission,
                 icon: props => <FormatListBulleted {...props} />,
             },
-        ]
-    }
-];
+        ],
+    });
+}
 
 export default menuItems;

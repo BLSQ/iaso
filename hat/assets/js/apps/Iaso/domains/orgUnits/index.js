@@ -16,6 +16,7 @@ import {
     setTableSelection,
     commonStyles,
     injectIntl,
+    Table,
 } from 'bluesquare-components';
 // import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 import {
@@ -54,7 +55,6 @@ import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
 import OrgUnitsMultiActionsDialog from './components/OrgUnitsMultiActionsDialog';
-import Table from '../../components/tables/TableComponent';
 
 import { getChipColors } from '../../constants/chipColors';
 

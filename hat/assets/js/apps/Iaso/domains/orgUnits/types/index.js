@@ -8,6 +8,7 @@ import {
     TopBar,
     LoadingSpinner,
     commonStyles,
+    Table,
 } from 'bluesquare-components';
 import {
     fetchOrgUnitTypes as fetchOrgUnitTypesAction,
@@ -16,7 +17,6 @@ import {
 } from './actions';
 import { fetchAllProjects as fetchAllProjectsAction } from '../../projects/actions';
 
-import Table from '../../../components/tables/TableComponent';
 import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
 import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
 

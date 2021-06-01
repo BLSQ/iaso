@@ -11,6 +11,7 @@ import {
     commonStyles,
     LoadingSpinner,
     TopBar,
+    Table,
 } from 'bluesquare-components';
 import { redirectTo as redirectToAction } from '../../routing/actions';
 import { fetchMappingVersions as fetchMappingVersionsAction } from './actions';
@@ -18,7 +19,6 @@ import { fetchMappingVersions as fetchMappingVersionsAction } from './actions';
 import mappingsTableColumns from './config';
 
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
-import Table from '../../components/tables/TableComponent';
 
 import { baseUrls } from '../../constants/urls';
 

@@ -8,10 +8,10 @@ import {
     IconButton as IconButtonComponent,
     formatThousand,
     textPlaceholder,
+    HeaderRowIcon,
 } from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
 
-import HeaderRowIcon from '../../components/tables/HeaderRowIconComponent';
 import {
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,

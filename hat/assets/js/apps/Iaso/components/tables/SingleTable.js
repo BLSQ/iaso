@@ -14,10 +14,11 @@ import {
     setTableSelection,
     selectionInitialState,
     commonStyles,
+    TableFilters as Filters,
 } from 'bluesquare-components';
 
 // import Table from './TableComponent';
-import Filters from './TableFilters';
+// import Filters from './TableFilters';
 
 import DownloadButtonsComponent from '../buttons/DownloadButtonsComponent';
 import { redirectToReplace } from '../../routing/actions';

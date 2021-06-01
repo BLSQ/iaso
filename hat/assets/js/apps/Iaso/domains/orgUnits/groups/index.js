@@ -8,6 +8,7 @@ import {
     TopBar,
     LoadingSpinner,
     commonStyles,
+    Table,
 } from 'bluesquare-components';
 import {
     fetchGroups as fetchGroupsAction,
@@ -15,7 +16,6 @@ import {
 } from './actions';
 
 import Filters from './components/Filters';
-import Table from '../../../components/tables/TableComponent';
 import GroupsDialog from './components/GroupsDialog';
 import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
 

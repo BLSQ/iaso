@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { withStyles, Box, Grid } from '@material-ui/core';
 
+import { injectIntl, commonStyles, Table } from 'bluesquare-components';
 import {
     fetchUsersProfiles as fetchUsersProfilesAction,
     deleteUser as deleteUserAction,
@@ -12,7 +13,6 @@ import {
 import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import Filters from './components/Filters';
-import Table from '../../components/tables/TableComponent';
 import UsersDialog from './components/UsersDialog';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 
@@ -22,7 +22,6 @@ import usersTableColumns from './config';
 import MESSAGES from './messages';
 
 import { redirectTo as redirectToAction } from '../../routing/actions';
-import {injectIntl,commonStyles} from 'bluesquare-components';
 
 const baseUrl = baseUrls.users;
 

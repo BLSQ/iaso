@@ -9,13 +9,13 @@ import {
     commonStyles,
     LoadingSpinner,
     TopBar,
+    Table,
 } from 'bluesquare-components';
 import {
     fetchAllApps as fetchAllAppsAction,
     fetchAllFeatureFlags as fetchAllFeatureFlagsAction,
 } from './actions';
 
-import Table from '../../components/tables/TableComponent';
 import ProjectsDialog from './components/ProjectsDialog';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 

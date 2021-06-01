@@ -82,16 +82,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         group = validated_data.pop("group") if "group" in validated_data else None
 
-        if group:
-            org_units = group.pop("org_units") if "org_units" in group else []
-            campaign_group = Group.objects.create(**group)
-            campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
-        else:
-            campaign_group = None
-
         preparedness_data = validated_data.pop("preparedness_data", None)
-
-        group = validated_data.pop("group") if "group" in validated_data else None
 
         if group:
             org_units = group.pop("org_units") if "org_units" in group else []

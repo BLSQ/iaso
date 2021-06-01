@@ -12,8 +12,7 @@ import Button from '@material-ui/core/Button';
 import Add from '@material-ui/icons/Add';
 import Search from '@material-ui/icons/Search';
 import classNames from 'classnames';
-import { createUrl, injectIntl } from 'bluesquare-components';
-import commonStyles from '../../../styles/common';
+import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
 import { getChipColors, chipColors } from '../../../constants/chipColors';
 
 import {

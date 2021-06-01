@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import { createUrl, injectIntl } from 'bluesquare-components';
+import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
 import {
     fetchOrgUnitsTypes,
     saveLink,
@@ -27,8 +27,6 @@ import TopBar from '../../components/nav/TopBarComponent';
 import LinksDetails from './components/LinksDetailsComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
-
-import commonStyles from '../../styles/common';
 
 import { baseUrls } from '../../constants/urls';
 import { linksFilters } from '../../constants/filters';

@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 
 import PropTypes from 'prop-types';
 import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
@@ -12,7 +12,7 @@ import {
     IconButton,
     Typography,
 } from '@material-ui/core';
-import commonStyles from '../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 
 const styles = theme => ({
     ...commonStyles(theme),

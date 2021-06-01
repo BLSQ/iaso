@@ -3,13 +3,12 @@ import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
-import { DatePicker, useSafeIntl } from 'bluesquare-components';
+import { DatePicker, useSafeIntl, commonStyles } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 // import DatePickerComponent from './DatePickerComponent';
 
 import { getYears, getIntegerArray } from '../../../utils';
 import { getPeriodPickerString } from '../utils';
-import commonStyles from '../../../styles/common';
 import { Period } from '../models';
 
 import {

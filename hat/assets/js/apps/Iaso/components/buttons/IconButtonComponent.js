@@ -15,12 +15,11 @@ import StopRoundedIcon from '@material-ui/icons/StopRounded';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import RestoreFromTrash from '@material-ui/icons/RestoreFromTrash';
 
+import { commonStyles } from 'bluesquare-components';
 import XmlSvg from '../svg/XmlSvgComponent';
 import DHIS2Svg from '../svg/DHIS2SvgComponent';
 import OrgUnitSvg from '../svg/OrgUnitSvgComponent';
 import ExcellSvg from '../svg/ExcellSvgComponent';
-
-import commonStyles from '../../styles/common';
 
 const ICON_VARIANTS = {
     delete: Delete,

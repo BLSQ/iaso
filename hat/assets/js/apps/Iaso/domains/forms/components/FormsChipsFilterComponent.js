@@ -6,12 +6,12 @@ import PropTypes from 'prop-types';
 
 import { withStyles, Box, Typography } from '@material-ui/core';
 
+import { commonStyles } from 'bluesquare-components';
 import { setFormsSelected } from '../../orgUnits/actions';
 
 import ChipsFilterComponent from '../../../components/filters/chips/ChipsFilterComponent';
 
 import { fetchInstancesAsLocationsByForm } from '../../../utils/requests';
-import commonStyles from '../../../styles/common';
 
 import MESSAGES from '../messages';
 

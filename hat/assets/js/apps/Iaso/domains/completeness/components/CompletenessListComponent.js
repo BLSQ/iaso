@@ -2,9 +2,9 @@ import React, { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Box, withStyles } from '@material-ui/core';
 
+import { commonStyles } from 'bluesquare-components';
 import CompletenessFiltersComponent from './CompletenessFiltersComponent';
 import CompletenessPeriodComponent from './CompletenessPeriodComponent';
-import commonStyles from '../../../styles/common';
 import { PERIOD_TYPE_QUARTER } from '../../periods/constants';
 import { INSTANCE_STATUSES } from '../../instances/constants';
 import { groupCompletenessData } from '../utils';

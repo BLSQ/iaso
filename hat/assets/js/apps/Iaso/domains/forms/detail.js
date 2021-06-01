@@ -7,6 +7,7 @@ import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
 import isEqual from 'lodash/isEqual';
 
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
 import { redirectToReplace } from '../../routing/actions';
@@ -19,7 +20,6 @@ import {
 
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-import { useSafeIntl } from 'bluesquare-components';
 import { useFormState } from '../../hooks/form';
 
 import { baseUrls } from '../../constants/urls';
@@ -31,8 +31,6 @@ import FormForm from './components/FormFormComponent';
 
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../constants/snackBars';
-
-import commonStyles from '../../styles/common';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

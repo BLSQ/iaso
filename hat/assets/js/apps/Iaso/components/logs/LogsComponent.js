@@ -4,16 +4,15 @@ import { makeStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { fetchLogs } from '../../utils/requests';
 
 import SingleTable from '../tables/SingleTable';
 
 import { orgUnitsLogsColumns } from '../../domains/orgUnits/config';
 import LogsDetails from './LogsDetailsComponent';
-import commonStyles from '../../styles/common';
 
 import { baseUrls } from '../../constants/urls';
-import { useSafeIntl } from 'bluesquare-components';
 
 const baseUrl = baseUrls.orgUnitDetails;
 

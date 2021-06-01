@@ -4,17 +4,16 @@ import { FormattedMessage } from 'react-intl';
 import { makeStyles, Button } from '@material-ui/core';
 import Autorenew from '@material-ui/icons/Autorenew';
 
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { killTask } from './actions';
 
 import SingleTable from '../../components/tables/SingleTable';
 import TopBar from '../../components/nav/TopBarComponent';
 
-import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
 
 import tasksTableColumns from './config';
 import MESSAGES from './messages';
-import { useSafeIntl } from 'bluesquare-components';
 import { fetchTasks } from '../../utils/requests';
 
 const baseUrl = baseUrls.tasks;

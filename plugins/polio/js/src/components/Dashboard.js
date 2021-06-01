@@ -267,13 +267,13 @@ const DetectionForm = () => {
                     <Field
                         label={'PV2 Notification'}
                         fullWidth
-                        name={'pv2_notified_at'}
+                        name={'pv_notified_at'}
                         component={DateInput}
                     />
                     <Field
-                        label={'cVDPV2 Notifiation'}
+                        label={'cVDPV2 Notification'}
                         fullWidth
-                        name={'cvdpv2_notified_at'}
+                        name={'cvdpv_notified_at'}
                         component={DateInput}
                     />
                 </Grid>

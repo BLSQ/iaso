@@ -51,6 +51,7 @@ jobs:
           npm test
         env:
           CI: true
+          PLUGIN_POLIO_ENABLED: true
 
       - name: Check formatting with black
         run: |

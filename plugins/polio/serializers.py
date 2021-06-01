@@ -102,7 +102,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         round_one_data = validated_data.pop("round_one")
         round_two_data = validated_data.pop("round_two")
-        group = validated_data.pop("group")
+        group = validated_data.pop("group") if "group" in validated_data else None
 
         Round.objects.filter(pk=instance.round_one_id).update(**round_one_data)
         Round.objects.filter(pk=instance.round_two_id).update(**round_two_data)

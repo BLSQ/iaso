@@ -19,7 +19,7 @@ services:
       - ./scripts:/opt/app/scripts
       - ./entrypoint.sh:/opt/app/entrypoint.sh
       - ./docs:/opt/app/docs
-      - ./README.rst:/opt/app/README.rst
+        #- ./README.rst:/opt/app/README.rst
       # shared dir between containers
       - ./shared:/opt/shared
       # build scripts for testing prod version

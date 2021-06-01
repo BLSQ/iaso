@@ -79,6 +79,8 @@ const schema = yup.object().shape({
     dg_authorized_at: yup.date().nullable(),
 
     eomg: yup.date().nullable(),
+    budget_submitted_at: yup.date().nullable(),
+    district_count: yup.number().nullable().positive().integer(),
     no_regret_fund_amount: yup.number().nullable().positive().integer(),
 
     round_one: round_shape,
@@ -409,6 +411,20 @@ const BudgetForm = () => {
                         name={'eomg'}
                         component={DateInput}
                         fullWidth
+                    />
+
+                    <Field
+                        label={'Budget Submitted At'}
+                        name={'budget_submitted_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+
+                    <Field
+                        label="District Count"
+                        name={'district_count'}
+                        component={TextInput}
+                        className={classes.input}
                     />
 
                     <Field

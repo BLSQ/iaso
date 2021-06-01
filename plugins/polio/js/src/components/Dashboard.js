@@ -474,7 +474,7 @@ const Round1Form = () => {
                 <Box className={classes.round1FormCalculations}>
                     <Typography>
                         Percentage of districts passing LQAS: xx% (xxx passing /
-                        xxx received / xx total)
+                        xxx received / xxx total)
                     </Typography>
                     <Typography>Percentage of missed children: xx%</Typography>
                 </Box>

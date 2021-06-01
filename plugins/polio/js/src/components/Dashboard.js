@@ -493,6 +493,21 @@ const Round1Form = () => {
                     fullWidth
                 />
             </Grid>
+            <Grid xs={12} md={6} item>
+                <Field
+                    label={'LQAS Start'}
+                    name={'round_one.lqas_started_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+
+                <Field
+                    label={'LQAS End'}
+                    name={'round_one.lqas_ended_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+            </Grid>
         </Grid>
     );
 };

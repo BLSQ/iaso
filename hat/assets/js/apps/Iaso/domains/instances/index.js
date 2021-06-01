@@ -7,7 +7,12 @@ import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 import moment from 'moment';
 
-import { getTableUrl, commonStyles, injectIntl } from 'bluesquare-components';
+import {
+    getTableUrl,
+    commonStyles,
+    injectIntl,
+    ColumnsSelectDrawer,
+} from 'bluesquare-components';
 import {
     resetInstances,
     setInstances,
@@ -54,7 +59,6 @@ import InstancesMap from './components/InstancesMapComponent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import ColumnsSelectDrawerComponent from '../../components/tables/ColumnsSelectDrawerComponent';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
@@ -424,7 +428,7 @@ class Instances extends Component {
                             justify="flex-end"
                             className={classes.selectColmunsContainer}
                         >
-                            <ColumnsSelectDrawerComponent
+                            <ColumnsSelectDrawer
                                 options={visibleColumns}
                                 setOptions={cols =>
                                     this.changeVisibleColumns(cols)

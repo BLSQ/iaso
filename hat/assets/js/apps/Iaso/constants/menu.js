@@ -144,6 +144,19 @@ const menuItems = [
             },
         ],
     },
+    {
+        label: MESSAGES.polio,
+        key: 'polio',
+        icon: props => <DataSourceIcon {...props} />,
+        subMenu: [
+            {
+                label: MESSAGES.dashboard,
+                key: 'list',
+                permission: paths.formsPath.permission,
+                icon: props => <FormatListBulleted {...props} />,
+            },
+        ]
+    }
 ];
 
 export default menuItems;

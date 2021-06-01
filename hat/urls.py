@@ -24,6 +24,6 @@ if settings.BEANSTALK_WORKER or settings.DEBUG:
     urlpatterns.append(url(r"^tasks/", include("beanstalk_worker.urls")))
 
 if settings.PLUGIN_POLIO_ENABLED:
-    urlpatterns.append(url(r"^dashboard/polio/", include("plugins.polio.urls")))
+    urlpatterns.append(url(r"^dashboard/polio/list", include("plugins.polio.urls")))
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

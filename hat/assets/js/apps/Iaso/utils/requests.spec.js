@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import nock from 'nock';
 
 import sinon from 'sinon';
+import { ErrorBoundary } from 'bluesquare-components';
 import {
     mockRequest,
     mockRequestError,
@@ -17,7 +18,6 @@ import {
     restoreRequest,
 } from '../libs/Api';
 import { requestHandler, useAPI } from './requests';
-import { ErrorBoundary } from './ErrorBoundary';
 
 const URL = '/api/test';
 const FAIL_URL = '/api/fail';

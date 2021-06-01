@@ -1,9 +1,9 @@
 import React from 'react';
+import { IconButton } from 'bluesquare-components';
 import tableColumns from './config';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 
 import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
-import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 
 let cols;
 let wrapper;
@@ -79,7 +79,7 @@ describe('Org unit types config', () => {
                     .renderTrigger({ openDialog: () => openDialogSpy() })}
             </div>,
         );
-        button = wrapper.find(IconButtonComponent);
+        button = wrapper.find(IconButton);
 
         expect(button).to.have.lengthOf(1);
         button.props().onClick();

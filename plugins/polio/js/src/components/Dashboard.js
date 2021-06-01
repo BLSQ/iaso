@@ -859,7 +859,7 @@ export const Dashboard = () => {
                 onClose={closeDeleteConfirmDialog}
                 onConfirm={handleDeleteConfirmDialogConfirm}
             />
-            <Page title={'Campaigns for DRC'}>
+            <Page title={'Campaigns'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <PageActions>
                         <PageAction

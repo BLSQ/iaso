@@ -399,16 +399,29 @@ class Link(models.Model):
         }
 
 
+GROUP_DOMAIN = [
+    ("POLIO", _("Polio")),
+]
+
+
+class DefaultGroupManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(domain=None)
+
+
 class Group(models.Model):
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
+    org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="groups")
+    domain = models.CharField(max_length=10, choices=GROUP_DOMAIN, null=True, blank=True)
 
     # The migration 0086_add_version_constraints add a constraint to ensure that the source version
     # is the same between the orgunit and the group
     source_version = models.ForeignKey(SourceVersion, null=True, blank=True, on_delete=models.CASCADE)
-    org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="groups")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DefaultGroupManager()
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)

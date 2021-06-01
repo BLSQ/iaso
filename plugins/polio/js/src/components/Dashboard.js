@@ -285,9 +285,17 @@ const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { values } = useFormikContext();
 
-    const targetPopulationTotal =
-        parseInt(defaultToZero(values?.round_one?.target_population ?? 0)) +
-        parseInt(defaultToZero(values?.round_two?.target_population ?? 0));
+    const wastageRate = 0.26;
+
+    const round1Doses = parseInt(
+        defaultToZero(values?.round_one?.target_population ?? 0),
+    );
+    const round2Doses = parseInt(
+        defaultToZero(values?.round_two?.target_population ?? 0),
+    );
+
+    const vialsRequested =
+        ((round1Doses + round2Doses) / 20) * (1 / (1 - wastageRate));
 
     return (
         <>
@@ -357,9 +365,7 @@ const RiskAssessmentForm = () => {
                     />
                     <Typography>
                         Vials Requested{' '}
-                        {Number.isNaN(targetPopulationTotal)
-                            ? 0
-                            : targetPopulationTotal}
+                        {Number.isNaN(vialsRequested) ? 0 : vialsRequested}
                     </Typography>
                 </Grid>
             </Grid>

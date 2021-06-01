@@ -48,10 +48,10 @@ export const getShapesBounds = shapes => {
     return group.getBounds();
 };
 
-export const clusterCustomMarker = cluster =>
+export const clusterCustomMarker = (cluster, color = "primary") =>
     L.divIcon({
         html: `<div><span>${cluster.getChildCount()}</span></div>`,
-        className: 'marker-cluster primary',
+        className: `marker-cluster ${color}`, 
         iconSize: L.point(40, 40, true),
         iconAnchor: [20, 30],
     });
@@ -76,7 +76,7 @@ export const colorClusterCustomMarker = (cluster, backgroundColor) =>
 const svgString =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34">' +
     '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
-
+^
 const svgColoredString = color =>
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34" fill="${color}">` +
     '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';

@@ -398,6 +398,14 @@ const BudgetForm = () => {
         (calculateRound1 ? round1Population : 0) +
         (calculateRound2 ? round2Population : 0);
 
+    const costRound1PerChild = calculateRound1
+        ? round1Cost / round1Population
+        : 0;
+
+    const costRound2PerChild = calculateRound2
+        ? round2Cost / round2Population
+        : 0;
+
     const totalCostPerChild = totalCost / totalPopulation;
 
     return (
@@ -457,10 +465,18 @@ const BudgetForm = () => {
                     />
 
                     <Typography>
-                        Cost/Child: $
-                        {calculateRound1 || calculateRound2
-                            ? totalCostPerChild
-                            : ' -'}
+                        Cost/Child Round 1: $
+                        {calculateRound1 ? costRound1PerChild : ' -'}
+                    </Typography>
+                    <Typography>
+                        Cost/Child Round 2: $
+                        {calculateRound2 ? costRound2PerChild : ' -'}
+                    </Typography>
+                    <Typography>
+                        Cost/Child Total: $
+                            {calculateRound1 || calculateRound2
+                                ? totalCostPerChild
+                                : ' -'}
                     </Typography>
                 </Grid>
             </Grid>
@@ -786,9 +802,8 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
 
 export const Dashboard = () => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
-    const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] = useState(
-        false,
-    );
+    const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
+        useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
 
     const classes = useStyles();
@@ -882,13 +897,8 @@ export const Dashboard = () => {
         [],
     );
 
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        rows,
-        prepareRow,
-    } = useTable({ columns, data: tableData });
+    const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+        useTable({ columns, data: tableData });
 
     return (
         <>

@@ -18,7 +18,7 @@ services:
       - ./scripts:/opt/app/scripts
       - ./entrypoint.sh:/opt/app/entrypoint.sh
       - ./docs:/opt/app/docs
-      - ./README.rst:/opt/app/README.rst
+      - ./README.md:/opt/app/README.md
       # build scripts for testing prod version
       - ./build_scripts:/opt/app/build_scripts
       # test data

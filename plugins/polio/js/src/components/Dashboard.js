@@ -378,9 +378,27 @@ const BudgetForm = () => {
 
     const { values } = useFormikContext();
 
+    const round1Cost = parseInt(defaultToZero(values?.round_one?.cost ?? 0));
+    const round2Cost = parseInt(defaultToZero(values?.round_two?.cost ?? 0));
+
+    const round1Population = parseInt(
+        defaultToZero(values?.round_one?.target_population ?? 0),
+    );
+    const round2Population = parseInt(
+        defaultToZero(values?.round_two?.target_population ?? 0),
+    );
+
+    const calculateRound1 = round1Cost > 0 && round1Population > 0;
+    const calculateRound2 = round2Cost > 0 && round2Population > 0;
+
     const totalCost =
-        parseInt(defaultToZero(values?.round_one?.cost ?? 0)) *
-        parseInt(defaultToZero(values?.round_one?.target_population ?? 0));
+        (calculateRound1 ? round1Cost : 0) + (calculateRound2 ? round2Cost : 0);
+
+    const totalPopulation =
+        (calculateRound1 ? round1Population : 0) +
+        (calculateRound2 ? round2Population : 0);
+
+    const totalCostPerChild = totalCost / totalPopulation;
 
     return (
         <>
@@ -437,8 +455,12 @@ const BudgetForm = () => {
                         component={TextInput}
                         className={classes.input}
                     />
+
                     <Typography>
-                        Cost/Child: ${Number.isNaN(totalCost) ? 0 : totalCost}
+                        Cost/Child: $
+                        {calculateRound1 || calculateRound2
+                            ? totalCostPerChild
+                            : ' -'}
                     </Typography>
                 </Grid>
             </Grid>

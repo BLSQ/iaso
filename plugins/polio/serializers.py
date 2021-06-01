@@ -2,7 +2,9 @@ from plugins.polio.preparedness.calculator import get_preparedness_score
 from django.db.models import fields
 from rest_framework import serializers
 from iaso.models import Group, OrgUnit
+
 from .models import Round, Campaign
+
 from .models import Preparedness, Round, Campaign
 from .preparedness.parser import (
     open_sheet_by_url,
@@ -77,6 +79,16 @@ class CampaignSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         round_one_data = validated_data.pop("round_one")
         round_two_data = validated_data.pop("round_two")
+
+        group = validated_data.pop("group") if "group" in validated_data else None
+
+        if group:
+            org_units = group.pop("org_units") if "org_units" in group else []
+            campaign_group = Group.objects.create(**group)
+            campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
+        else:
+            campaign_group = None
+
         preparedness_data = validated_data.pop("preparedness_data", None)
 
         group = validated_data.pop("group") if "group" in validated_data else None
@@ -102,10 +114,16 @@ class CampaignSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         round_one_data = validated_data.pop("round_one")
         round_two_data = validated_data.pop("round_two")
-        group = validated_data.pop("group")
+
+        group = validated_data.pop("group") if "group" in validated_data else None
 
         Round.objects.filter(pk=instance.round_one_id).update(**round_one_data)
         Round.objects.filter(pk=instance.round_two_id).update(**round_two_data)
+
+        if group:
+            org_units = group.pop("org_units") if "org_units" in group else []
+            campaign_group = Group.objects.get(pk=instance.group_id)
+            campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
 
         if "preparedness_data" in validated_data:
             Preparedness.objects.create(campaign=instance, **validated_data.pop("preparedness_data"))

@@ -1,33 +1,35 @@
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 from django.utils.translation import gettext as _
 from uuid import uuid4
+from iaso.models import Group
 
 VIRUSES = [
-    ('PV1', _('PV1')),
-    ('PV2', _('PV2')),
-    ('PV3', _('PV3')),
-    ('cVDPV2', _('cVDPV2')),
+    ("PV1", _("PV1")),
+    ("PV2", _("PV2")),
+    ("PV3", _("PV3")),
+    ("cVDPV2", _("cVDPV2")),
 ]
 
 VACINES = [
-    ('mOPV2', _('mOPV2')),
-    ('nOPV2', _('nOPV2')),
-    ('bOPV', _('bOPV')),
+    ("mOPV2", _("mOPV2")),
+    ("nOPV2", _("nOPV2")),
+    ("bOPV", _("bOPV")),
 ]
 
 RESPONSIBLES = [
-    ('WHO', _('WHO')),
-    ('UNICEF', _('UNICEF')),
-    ('NAT', _('National')),
-    ('MOH', _('MOH')),
-    ('PROV', _('PROVINCE')),
-    ('DIST', _('District')),
+    ("WHO", _("WHO")),
+    ("UNICEF", _("UNICEF")),
+    ("NAT", _("National")),
+    ("MOH", _("MOH")),
+    ("PROV", _("PROVINCE")),
+    ("DIST", _("District")),
 ]
 
 STATUS = [
-    ('PENDING', _('Pending')),
-    ('ONGOING', _('Ongoing')),
-    ('FINISHED', _('Finished')),
+    ("PENDING", _("Pending")),
+    ("ONGOING", _("Ongoing")),
+    ("FINISHED", _("Finished")),
 ]
 
 
@@ -46,16 +48,22 @@ class Round(models.Model):
 
 class Campaign(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
-    epid = models.CharField(default="", max_length=255, null=True, blank=True)
+    epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
 
     initial_org_unit = models.ForeignKey(
-        'iaso.orgunit',
+        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
+    )
+
+    group = models.ForeignKey(
+        Group,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="campaigns"
+        related_name="campaigns",
+        default=None,
+        limit_choices_to={"domain", "POLIO"},
     )
 
     onset_at = models.DateField(
@@ -97,13 +105,8 @@ class Campaign(models.Model):
     vacine = models.CharField(max_length=5, choices=VACINES, null=True, blank=True)
 
     # Detection
-    detection_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
-    detection_responsible = models.CharField(
-        max_length=10,
-        choices=RESPONSIBLES,
-        null=True,
-        blank=True
-    )
+    detection_status = models.CharField(default="PENDING", max_length=10, choices=STATUS)
+    detection_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     detection_first_draft_submitted_at = models.DateField(
         null=True,
         blank=True,
@@ -117,12 +120,7 @@ class Campaign(models.Model):
 
     # Risk Assessment
     risk_assessment_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
-    risk_assessment_responsible = models.CharField(
-        max_length=10,
-        choices=RESPONSIBLES,
-        null=True,
-        blank=True
-    )
+    risk_assessment_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     investigation_at = models.DateField(
         null=True,
         blank=True,
@@ -149,14 +147,12 @@ class Campaign(models.Model):
         verbose_name=_("DG Authorization"),
     )
 
+    # Preparedness
+    preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
+
     # Budget
     budget_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
-    budget_responsible = models.CharField(
-        max_length=10,
-        choices=RESPONSIBLES,
-        null=True,
-        blank=True
-    )
+    budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
 
     eomg = models.DateField(
         null=True,
@@ -171,23 +167,31 @@ class Campaign(models.Model):
     )
 
     # Rounds
-    round_one = models.OneToOneField(
-        Round,
-        on_delete=models.PROTECT,
-        related_name="round_one",
-        null=True,
-        blank=True
-    )
-    round_two = models.OneToOneField(
-        Round,
-        on_delete=models.PROTECT,
-        related_name="round_two",
-        null=True,
-        blank=True
-    )
+    round_one = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_one", null=True, blank=True)
+    round_two = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_two", null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
+
+    def last_preparedness(self):
+        return self.preparedness_set.order_by("-created_at").first()
+
+
+class Preparedness(models.Model):
+    id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    spreadsheet_url = models.URLField()
+
+    national_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("National Score"))
+    regional_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Regional Score"))
+    district_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("District Score"))
+
+    payload = JSONField()
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    def __str__(self) -> str:
+        return f"{self.campaign} - {self.created_at}"

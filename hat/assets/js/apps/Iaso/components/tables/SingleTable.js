@@ -5,20 +5,23 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
-import commonStyles from '../../styles/common';
-
-import Table from './TableComponent';
-import Filters from './TableFilters';
-import DownloadButtonsComponent from '../buttons/DownloadButtonsComponent';
-import { redirectToReplace } from '../../routing/actions';
-
-import getTableUrl, {
+import {
+    getTableUrl,
+    Table,
     getParamsKey,
     getTableParams,
     tableInitialResult,
     setTableSelection,
     selectionInitialState,
-} from '../../utils/tableUtils';
+    commonStyles,
+    TableFilters as Filters,
+} from 'bluesquare-components';
+
+// import Table from './TableComponent';
+// import Filters from './TableFilters';
+
+import DownloadButtonsComponent from '../buttons/DownloadButtonsComponent';
+import { redirectToReplace } from '../../routing/actions';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -51,6 +54,7 @@ const SingleTable = ({
     setIsLoading,
     multiSelect,
     selectionActions,
+    watchToRender,
 }) => {
     const [loading, setLoading] = useState(false);
     const [selection, setSelection] = useState(selectionInitialState);
@@ -58,6 +62,7 @@ const SingleTable = ({
     const [firstLoad, setfFrstLoad] = useState(true);
     const [tableResults, setTableResults] = useState(tableInitialResult);
     const [expanded, setExpanded] = useState({});
+    const { list, pages, count } = tableResults;
 
     const dispatch = useDispatch();
     const classes = useStyles();
@@ -125,7 +130,6 @@ const SingleTable = ({
         }
     }, [forceRefresh]);
 
-    const { list, pages, count } = tableResults;
     const { limit } = tableParams;
     let extraProps = {
         loading,
@@ -165,6 +169,9 @@ const SingleTable = ({
                     defaultFiltersUpdated={searchActive}
                     toggleActiveSearch={toggleActiveSearch}
                     extraComponent={searchExtraComponent}
+                    redirectTo={(key, newParams) =>
+                        dispatch(redirectToReplace(key, newParams))
+                    }
                 />
             )}
             {((count > 0 && exportButtons) || extraComponent) && (
@@ -206,6 +213,8 @@ const SingleTable = ({
                             extraComponent,
                     )}
                     paramsPrefix={paramsPrefix}
+                    watchToRender={watchToRender}
+                    params={params}
                 />
             )}
         </Box>
@@ -242,6 +251,7 @@ SingleTable.defaultProps = {
     setIsLoading: true,
     multiSelect: false,
     selectionActions: [],
+    watchToRender: null,
 };
 
 SingleTable.propTypes = {
@@ -257,8 +267,8 @@ SingleTable.propTypes = {
     defaultSorted: PropTypes.array,
     dataKey: PropTypes.string,
     exportButtons: PropTypes.bool,
-    forceRefresh: PropTypes.bool,
     hideGpkg: PropTypes.bool,
+    forceRefresh: PropTypes.bool,
     onForceRefreshDone: PropTypes.func,
     extraComponent: PropTypes.node,
     searchExtraComponent: PropTypes.node,
@@ -271,6 +281,7 @@ SingleTable.propTypes = {
     setIsLoading: PropTypes.bool,
     multiSelect: PropTypes.bool,
     selectionActions: PropTypes.array,
+    watchToRender: PropTypes.any,
 };
 
 export default withRouter(SingleTable);

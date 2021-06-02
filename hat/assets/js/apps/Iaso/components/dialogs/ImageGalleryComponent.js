@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 
 import PropTypes from 'prop-types';
 import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
@@ -12,7 +12,7 @@ import {
     IconButton,
     Typography,
 } from '@material-ui/core';
-import commonStyles from '../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -88,7 +88,7 @@ const ImageGallery = ({
     if (!currentImg) return null;
     const currentImgSrc = currentImg.path;
     return (
-        <Fragment>
+        <>
             <Dialog
                 classes={{
                     paper: classes.paper,
@@ -137,7 +137,7 @@ const ImageGallery = ({
                     <img className={classes.image} alt="" src={currentImgSrc} />
                 </DialogContent>
             </Dialog>
-        </Fragment>
+        </>
     );
 };
 

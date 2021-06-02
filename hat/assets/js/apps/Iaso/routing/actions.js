@@ -1,5 +1,5 @@
 import { push, replace } from 'react-router-redux';
-import { createUrl } from '../utils/fetchData';
+import { createUrl } from 'bluesquare-components';
 
 export function redirectTo(key, params) {
     return dispatch => dispatch(push(`${key}${createUrl(params, '')}`));

@@ -50,7 +50,6 @@ class InstancesAPITestCase(APITestCase):
         )
         cls.project_2.forms.add(cls.form_3)
 
-    @tag("iaso_only")
     def test_mark_instance_as_deleted_ok(self):
         """mark_instance_as_deleted command happy path"""
 
@@ -68,7 +67,6 @@ class InstancesAPITestCase(APITestCase):
             instance.refresh_from_db()
             self.assertFalse(instance.deleted)
 
-    @tag("iaso_only")
     def test_mark_instance_as_deleted_no_force(self):
         """mark_instance_as_deleted command happy path"""
 

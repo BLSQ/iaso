@@ -8,6 +8,12 @@ import isEqual from 'lodash/isEqual';
 import moment from 'moment';
 
 import {
+    getTableUrl,
+    commonStyles,
+    injectIntl,
+    ColumnsSelectDrawer,
+} from 'bluesquare-components';
+import {
     resetInstances,
     setInstances,
     setInstancesSmallDict,
@@ -53,18 +59,14 @@ import InstancesMap from './components/InstancesMapComponent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import ColumnsSelectDrawerComponent from '../../components/tables/ColumnsSelectDrawerComponent';
+import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 import SingleTable from '../../components/tables/SingleTable';
 
-import commonStyles from '../../styles/common';
-
-import getTableUrl from '../../utils/tableUtils';
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.instances;
 
@@ -105,10 +107,12 @@ class Instances extends Component {
             tab: props.params.tab ? props.params.tab : 'list',
             visibleColumns: [],
             forceRefresh: false,
+            labelKeys: [],
         };
     }
 
-    componentWillMount() {
+    // eslint-disable-next-line camelcase
+    UNSAFE_componentWillMount() {
         const {
             dispatch,
             params: { formId, columns },
@@ -137,16 +141,21 @@ class Instances extends Component {
         }
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         const {
             params: { formId, tab },
             fetchFormDetail,
         } = this.props;
-        fetchFormDetail(formId);
+
         this.fetchInstances(tab !== 'map');
         if (tab === 'map') {
             this.fetchSmallInstances();
         }
+        const formDetails = await fetchFormDetail(formId);
+        const labelKeys = formDetails.label_keys ?? [];
+        this.setState(state => {
+            return { ...state, labelKeys };
+        });
     }
 
     componentDidUpdate(prevProps) {
@@ -168,7 +177,7 @@ class Instances extends Component {
 
         if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
-            if (params.tab === 'map' && !instancesSmall) {
+            if (params.tab !== 'list' && !instancesSmall) {
                 this.fetchSmallInstances();
             }
         }
@@ -177,15 +186,34 @@ class Instances extends Component {
             (!isEqual(reduxPage.list, prevProps.reduxPage.list) ||
                 tableColumns.length === 0)
         ) {
+            const enrichedParams = { ...params };
+            const columnsWithLabelKeys = `${
+                params.columns
+            },${this.state.labelKeys.join(',')}`;
+            enrichedParams.columns = columnsWithLabelKeys;
             this.changeVisibleColumns(
                 getInstancesVisibleColumns(
                     formatMessage,
                     reduxPage.list[0],
-                    params,
+                    enrichedParams,
                     defaultOrder,
                 ),
             );
         }
+    }
+
+    handleChangeTab(tab, redirect = true) {
+        if (redirect) {
+            const { redirectToReplace, params } = this.props;
+            const newParams = {
+                ...params,
+                tab,
+            };
+            redirectToReplace(baseUrl, newParams);
+        }
+        this.setState(state => {
+            return { ...state, tab };
+        });
     }
 
     onSearch() {
@@ -249,20 +277,8 @@ class Instances extends Component {
     }
 
     setForceRefresh(forceRefresh) {
-        this.setState({ forceRefresh });
-    }
-
-    handleChangeTab(tab, redirect = true) {
-        if (redirect) {
-            const { redirectToReplace, params } = this.props;
-            const newParams = {
-                ...params,
-                tab,
-            };
-            redirectToReplace(baseUrl, newParams);
-        }
-        this.setState({
-            tab,
+        this.setState(state => {
+            return { ...state, forceRefresh };
         });
     }
 
@@ -330,13 +346,16 @@ class Instances extends Component {
                 .map(c => c.key)
                 .join(','),
         };
-        this.setState({
-            visibleColumns: tempVisibleColumns,
-            tableColumns: getInstancesColumns(
-                formatMessage,
-                tempVisibleColumns,
-                params.showDeleted === 'true',
-            ),
+        this.setState(state => {
+            return {
+                ...state,
+                visibleColumns: tempVisibleColumns,
+                tableColumns: getInstancesColumns(
+                    formatMessage,
+                    tempVisibleColumns,
+                    params.showDeleted === 'true',
+                ),
+            };
         });
 
         redirectToReplace(baseUrl, newParams);
@@ -413,7 +432,7 @@ class Instances extends Component {
                             justify="flex-end"
                             className={classes.selectColmunsContainer}
                         >
-                            <ColumnsSelectDrawerComponent
+                            <ColumnsSelectDrawer
                                 options={visibleColumns}
                                 setOptions={cols =>
                                     this.changeVisibleColumns(cols)
@@ -530,7 +549,7 @@ class Instances extends Component {
                             <InstancesMap instances={instancesSmall} />
                         </div>
                     )}
-                    {tab === 'files' && (
+                    {!fetching && instancesSmall && tab === 'files' && (
                         <InstancesFilesList
                             files={getInstancesFilesList(instancesSmall)}
                         />

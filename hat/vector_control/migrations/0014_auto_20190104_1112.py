@@ -8,9 +8,7 @@ class Migration(migrations.Migration):
     dependencies = [("vector_control", "0013_gpsimport_count")]
 
     operations = [
-        migrations.AlterModelOptions(
-            name="catch", options={"verbose_name_plural": "catches"}
-        ),
+        migrations.AlterModelOptions(name="catch", options={"verbose_name_plural": "catches"}),
         migrations.RemoveField(model_name="catch", name="end_altitude"),
         migrations.RemoveField(model_name="catch", name="start_altitude"),
         migrations.RemoveField(model_name="site", name="altitude"),

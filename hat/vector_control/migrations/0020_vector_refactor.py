@@ -74,9 +74,7 @@ class Migration(migrations.Migration):
                 ("is_reference", models.BooleanField(default=False)),
                 (
                     "location",
-                    django.contrib.gis.db.models.fields.PointField(
-                        dim=3, null=True, srid=4326
-                    ),
+                    django.contrib.gis.db.models.fields.PointField(dim=3, null=True, srid=4326),
                 ),
                 ("ignore", models.BooleanField(default=False)),
             ],

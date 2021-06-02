@@ -25,6 +25,8 @@ export const setIsLoadingForm = isLoading => ({
     payload: isLoading,
 });
 
+// TODO move to requests.js
+// TODO extract labelKeys
 export const fetchFormDetail = formId => dispatch => {
     dispatch(setIsLoadingForm(true));
     return getRequest(`/api/forms/${formId}/`)
@@ -37,7 +39,8 @@ export const fetchFormDetail = formId => dispatch => {
                 enqueueSnackbar(errorSnackBar('fetchFormError', null, err)),
             ),
         )
-        .then(() => {
+        .then(res => {
             dispatch(setIsLoadingForm(false));
+            return res;
         });
 };

@@ -23,35 +23,30 @@ class AppsAPITestCase(APITestCase):
         )
         cls.project_2.feature_flags.set([cls.flag_1, cls.flag_2])
 
-    @tag("iaso_only")
     def test_apps_delete(self):
         """DELETE /apps/<app_id>/ without auth should result in a 405 response"""
 
         response = self.client.delete("/api/apps/org.ghi.p1/")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_apps_list(self):
         """GET /apps/ is not implemented, should result in a 404 response"""
 
         response = self.client.get("/api/apps/")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_apps_retrieve_current_not_found(self):
         """GET /apps/current/?app_id= with wrong app id"""
 
         response = self.client.get(f"/api/apps/current/?app_id=notanappid")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_apps_retrieve_current_no_app_id(self):
         """GET /apps/current/?app_id= without app id"""
 
         response = self.client.get(f"/api/apps/current/")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_apps_retrieve_current_ok_1(self):
         """GET /apps/current/?app_id= happy path"""
 
@@ -62,7 +57,6 @@ class AppsAPITestCase(APITestCase):
         self.assertValidAppData(response_data)
         self.assertEqual([], response_data["feature_flags"])
 
-    @tag("iaso_only")
     def test_apps_retrieve_current_ok_2(self):
         """GET /apps/current/?app_id= happy path (with feature flags)"""
 
@@ -73,14 +67,12 @@ class AppsAPITestCase(APITestCase):
         self.assertValidAppData(response_data)
         self.assertEqual(2, len(response_data["feature_flags"]))
 
-    @tag("iaso_only")
     def test_apps_retrieve_not_found(self):
         """GET /apps/<app_id>/ with wrong app id"""
 
         response = self.client.get("/api/apps/org.nope.nope/")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_apps_retrieve_ok_1(self):
         """GET /apps/<app_id>/ happy path - standard detail endpoint, without ?app_id="""
 
@@ -91,7 +83,6 @@ class AppsAPITestCase(APITestCase):
         self.assertValidAppData(response_data)
         self.assertEqual([], response_data["feature_flags"])
 
-    @tag("iaso_only")
     def test_apps_retrieve_ok_2(self):
         """GET /apps/<app_id>/ happy path (with feature flags) - standard detail endpoint, without ?app_id="""
 
@@ -102,7 +93,6 @@ class AppsAPITestCase(APITestCase):
         self.assertValidAppData(response_data)
         self.assertEqual(2, len(response_data["feature_flags"]))
 
-    @tag("iaso_only")
     def test_app_create_ok_with_auth(self):
         candidated_app = {
             "name": "This is a new app",
@@ -117,7 +107,6 @@ class AppsAPITestCase(APITestCase):
         self.assertValidAppData(response_data)
         self.assertEqual(1, len(response_data["feature_flags"]))
 
-    @tag("iaso_only")
     def test_app_create_ok_with_auth(self):
         candidated_app = {
             "name": "This is a new app",
@@ -138,7 +127,6 @@ class AppsAPITestCase(APITestCase):
         )  # "can't create two apps with the same id"
         self.assertJSONResponse(response, 400)
 
-    @tag("iaso_only")
     def test_app_create_ok_without_feature_flags_with_auth(self):
         candidated_app = {
             "name": "This is a new app",
@@ -152,7 +140,6 @@ class AppsAPITestCase(APITestCase):
         response_data = response.json()
         print("response_data", response_data)
 
-    @tag("iaso_only")
     def test_app_create_auto_commit_require_auth_ok_with_auth(self):
         candidated_app = {
             "name": "This is a new app",
@@ -166,7 +153,6 @@ class AppsAPITestCase(APITestCase):
         response_data = response.json()
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
 
-    @tag("iaso_only")
     def test_app_create_auto_commit_true_when_require_auth_flag_auth_ok(self):
         candidated_app = {
             "name": "This is a new app",
@@ -181,7 +167,6 @@ class AppsAPITestCase(APITestCase):
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
         self.assertEqual(True, response_data["needs_authentication"])
 
-    @tag("iaso_only")
     def test_app_create_without_auth(self):
         candidated_app = {
             "name": "This is a new app",
@@ -193,7 +178,6 @@ class AppsAPITestCase(APITestCase):
         response = self.client.post(f"/api/apps/", candidated_app, format="json")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_app_update_and_commit_require_auth_ok_with_auth(self):
         candidated_app = {
             "name": "This is a newly updated app",
@@ -208,14 +192,12 @@ class AppsAPITestCase(APITestCase):
         self.assertGreaterEqual(2, len(response_data["feature_flags"]))
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
 
-    @tag("iaso_only")
     def test_app_update_OK_without_feature_flags_with_auth(self):
         candidated_app = {"app_id": "self.project_1ddes.app_id", "name": "This is an existing app", "feature_flags": []}
         self.client.force_authenticate(self.yoda)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidated_app, format="json")
         self.assertJSONResponse(response, 200)
 
-    @tag("iaso_only")
     def test_app_update_auto_commit_require_auth_true_when_flag_auth_ok(self):
         candidated_app = {
             "name": "This is a new app",

@@ -12,8 +12,8 @@
             "file": "http://localhost:8081/media/forms/brol_2021033101.xml",
             "created_at": 1617198882.184706,
             "updated_at": 1617375656.73848,
-            "start_period": "202012",
-            "end_period": "202104",
+            "start_period": "20201201",
+            "end_period": null,
             "mapping_versions": []
         },
         {

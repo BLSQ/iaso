@@ -1,10 +1,10 @@
 import React from 'react';
 import Icon from '@material-ui/core/Icon';
 import Tooltip from '@material-ui/core/Tooltip';
+import { getParamsKey } from 'bluesquare-components';
 import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
-import { getParamsKey } from '../utils/tableUtils';
 import { Period } from '../domains/periods/models';
 import { getOrgunitMessage } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';

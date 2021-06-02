@@ -7,7 +7,6 @@ export const DateInput = ({ field, form, ...props }) => {
     return (
         <TextInput
             className={classes.input}
-            displayEmpty
             id="date"
             type="date"
             field={field}

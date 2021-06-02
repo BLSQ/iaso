@@ -4,9 +4,8 @@ import CallMade from '@material-ui/icons/CallMade';
 
 import { withStyles, Button } from '@material-ui/core';
 
-import commonStyles from '../../styles/common';
+import { injectIntl, commonStyles } from 'bluesquare-components';
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

@@ -2,50 +2,108 @@ import React from 'react';
 import nock from 'nock';
 
 import FormVersionsComponent from './FormVersionsComponent';
+import FormVersionsDialog from './FormVersionsDialogComponent';
 import SingleTable from '../../../components/tables/SingleTable';
 import { renderWithStore } from '../../../../../test/utils/redux';
 import { mockGetRequestsList } from '../../../../../test/utils/requests';
 
-const formId = '69';
+const formId = 'ZELDA';
 const requests = [
     {
         url: `/api/formversions/?&limit=10&page=1&order=-created_at&form_id=${formId}`,
         body: {
             form_versions: [],
+            count: 0,
+            pages: 0,
         },
     },
 ];
 
 let connectedWrapper;
 let singleTable;
+let formVersionsDialog;
+
+const cleanAndMock = () => {
+    nock.cleanAll();
+    nock.abortPendingRequests();
+    mockGetRequestsList(requests);
+};
+let setForceRefreshSpy = sinon.spy();
 
 describe('FormVersionsComponent connected component', () => {
     before(() => {
-        nock.cleanAll();
-        nock.abortPendingRequests();
-        mockGetRequestsList(requests);
+        cleanAndMock();
     });
 
     it('mount properly', () => {
         connectedWrapper = mount(
-            renderWithStore(<FormVersionsComponent formId={formId} />),
+            renderWithStore(
+                <FormVersionsComponent
+                    setForceRefresh={() => setForceRefreshSpy()}
+                    formId={formId}
+                />,
+                {
+                    forms: {
+                        current: {
+                            id: formId,
+                        },
+                    },
+                },
+            ),
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });
-    describe('SingleTable', () => {
+
+    describe('FormVersionsDialog', () => {
         it('should render', () => {
-            singleTable = connectedWrapper.find(SingleTable);
-            expect(singleTable).to.have.lengthOf(1);
+            formVersionsDialog = connectedWrapper.find(FormVersionsDialog);
+            expect(formVersionsDialog).to.have.lengthOf(1);
         });
-        it('should render', () => {
-            singleTable = connectedWrapper.find(SingleTable);
-            expect(singleTable).to.have.lengthOf(1);
+        it('should trigger setForceRefresh if trigger onConfirmed', () => {
+            formVersionsDialog.props().onConfirmed();
+            expect(setForceRefreshSpy.calledOnce).to.equal(true);
         });
     });
 
     describe('should connect to api', () => {
         it('and call forms api', () => {
             expect(nock.activeMocks()).to.have.lengthOf(0);
+        });
+    });
+
+    describe('SingleTable', () => {
+        it('should render', () => {
+            singleTable = connectedWrapper.find(SingleTable);
+            expect(singleTable).to.have.lengthOf(1);
+        });
+        it('should trigger setForceRefresh if trigger onForceRefreshDone', () => {
+            setForceRefreshSpy = sinon.spy();
+            singleTable.props().onForceRefreshDone();
+            expect(setForceRefreshSpy.calledOnce).to.equal(true);
+        });
+        it('not render', () => {
+            cleanAndMock();
+            connectedWrapper = mount(
+                renderWithStore(<FormVersionsComponent formId={formId} />, {
+                    forms: {
+                        current: {
+                            id: null,
+                        },
+                    },
+                }),
+            );
+            singleTable = connectedWrapper.find(SingleTable);
+            expect(singleTable).to.have.lengthOf(0);
+            cleanAndMock();
+            connectedWrapper = mount(
+                renderWithStore(<FormVersionsComponent formId={formId} />, {
+                    forms: {
+                        current: null,
+                    },
+                }),
+            );
+            singleTable = connectedWrapper.find(SingleTable);
+            expect(singleTable).to.have.lengthOf(0);
         });
     });
 });

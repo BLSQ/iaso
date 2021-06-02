@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import 'react-leaflet-draw';
+import 'leaflet-draw';
 import { withTheme } from '@material-ui/core/styles';
 
 import { Grid } from '@material-ui/core';
@@ -10,7 +10,7 @@ import { Grid } from '@material-ui/core';
 import L from 'leaflet';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
-
+import { injectIntl } from 'bluesquare-components';
 import setDrawMessages from '../../../utils/map/drawMapMessages';
 import {
     customZoomBar,
@@ -42,7 +42,6 @@ import {
 } from '../../../utils/requests';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
-import injectIntl from '../../../libs/intl/injectIntl';
 import InstancePopupComponent from '../../instances/components/InstancePopupComponent';
 
 const zoom = 5;
@@ -336,11 +335,8 @@ class OrgUnitMapComponent extends Component {
     }
 
     useOrgUnitLocation(newOrgUnit) {
-        const {
-            onChangeShape,
-            onChangeLocation,
-            setOrgUnitLocationModified,
-        } = this.props;
+        const { onChangeShape, onChangeLocation, setOrgUnitLocationModified } =
+            this.props;
         if (newOrgUnit.latitude && newOrgUnit.longitude) {
             onChangeLocation({
                 lat: newOrgUnit.latitude,
@@ -403,7 +399,7 @@ class OrgUnitMapComponent extends Component {
                         />
                     }
                     filtersOptionComponent={
-                        <Fragment>
+                        <>
                             <SourcesChipsFilterComponent
                                 fitToBounds={() => this.fitToBounds()}
                             />
@@ -413,7 +409,7 @@ class OrgUnitMapComponent extends Component {
                             <FormsChipsFilterComponent
                                 fitToBounds={() => this.fitToBounds()}
                             />
-                        </Fragment>
+                        </>
                     }
                     editOptionComponent={
                         showEditComponent ? (
@@ -445,9 +441,9 @@ class OrgUnitMapComponent extends Component {
                         ) : null
                     }
                     settingsOptionComponent={
-                        <Fragment>
+                        <>
                             <TileSwitch />
-                        </Fragment>
+                        </>
                     }
                 >
                     <Map

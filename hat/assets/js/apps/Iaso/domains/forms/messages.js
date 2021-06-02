@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Create form',
         id: 'iaso.forms.create',
     },
+    createFormVersion: {
+        defaultMessage: 'Create version',
+        id: 'iaso.formversions.create',
+    },
     noForm: {
         defaultMessage: 'No form',
         id: 'iaso.orgUnits.forms.noData',
@@ -68,6 +72,10 @@ const MESSAGES = defineMessages({
     deleted_at: {
         id: 'iaso.forms.deleted_at',
         defaultMessage: 'Deleted at',
+    },
+    updateFormVersion: {
+        id: 'iaso.formversions.update',
+        defaultMessage: 'Update version {version_id}',
     },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',

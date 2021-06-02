@@ -23,10 +23,6 @@ class Migration(migrations.Migration):
             name="external_index",
             field=models.IntegerField(null=True),
         ),
-        migrations.AddField(
-            model_name="target", name="uuid", field=models.TextField(null=True)
-        ),
-        migrations.AddField(
-            model_name="target", name="village", field=models.TextField(null=True)
-        ),
+        migrations.AddField(model_name="target", name="uuid", field=models.TextField(null=True)),
+        migrations.AddField(model_name="target", name="village", field=models.TextField(null=True)),
     ]

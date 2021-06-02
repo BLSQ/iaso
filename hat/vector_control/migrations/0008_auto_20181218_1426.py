@@ -8,9 +8,7 @@ class Migration(migrations.Migration):
     dependencies = [("vector_control", "0007_auto_20181218_0936")]
 
     operations = [
-        migrations.RenameField(
-            model_name="site", old_name="first_survey_date", new_name="created_at"
-        ),
+        migrations.RenameField(model_name="site", old_name="first_survey_date", new_name="created_at"),
         migrations.RemoveField(model_name="site", name="count"),
         migrations.RemoveField(model_name="site", name="first_survey"),
         migrations.RemoveField(model_name="site", name="zone"),

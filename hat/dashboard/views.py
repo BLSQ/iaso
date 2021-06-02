@@ -1,5 +1,4 @@
 from copy import copy
-from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, redirect
@@ -14,8 +13,6 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.utils.translation import ugettext as _
 from .utils import is_user_authorized, get_menu
-
-import json
 
 
 @login_required()
@@ -40,9 +37,7 @@ def change_password(request):
 def home(request: HttpRequest) -> HttpResponse:
     user = request.user
     if user.is_anonymous:
-        return render(
-            request, "dashboard/home.html", {"STATIC_URL": settings.STATIC_URL}
-        )
+        return render(request, "dashboard/home.html", {"STATIC_URL": settings.STATIC_URL})
     else:
         if user.profile.password_reset:
             return redirect("/dashboard/password")

@@ -181,3 +181,35 @@ Translations
 Translations are extracted on the first webpack build. Just like the django
 translation strings; translations are downloaded for every `Travis CI <https://travis-ci.com>`__
 build, and uploaded on the ``development`` branch.
+
+Set up VSCode for front-end development
+=======================================
+
+See also: `this pull request <https://github.com/BLSQ/iaso/pull/120>`__
+
+The script ``show-lint-problems`` can be turned into a VSCode task that will show all linter errors in VSCode's PROBLEMS Tab.
+
+Steps to follow:
+
+- Go to Terminal>Configure task
+
+- Select npm: show-lint-problems
+
+- Add ``$eslint-stylish`` to the ``problemMatcher`` array
+
+- Run the task: Terminal>Run Task...> npm: show-lint-problems. 
+  IMPORTANT: you need to run the task this way. Running the script directly from the terminal using npm will not enable VS Code to display the problems in the PROBLEMS tab
+
+- You should be able to see and track the problems through the dedicated tab. 
+  CAUTION: if you navigate to a file through the tab, then close the file, it will be removed from the problems list, even if it wasn't changed. This seems to be a problem with using npm through VSCode's tasks
+
+Depend on bluesquare-components library
+=======================================
+
+See the `library's README <https://github.com/BLSQ/bluesquare-components/blob/main/README.md>`__ for the general setup.
+
+When depending on a local version of the library:
+
+- Your local folder should be on the same level as the iaso folder, so that the path to the tgz file in your package.json is : ../bluesquare-components/bluesquare-components-0.1.0.tgz
+
+- Run ``docker-compose build --build-arg LIBRARY=<name-of-the-library-image>``

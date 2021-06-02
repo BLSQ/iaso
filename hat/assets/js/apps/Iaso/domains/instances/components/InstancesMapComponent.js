@@ -1,9 +1,11 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Map, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-
+import { InnerDrawer, injectIntl } from 'bluesquare-components';
+// import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
+// import injectIntl from '../../../libs/intl/injectIntl';
 import { Grid, Divider } from '@material-ui/core';
 
 import {
@@ -19,7 +21,6 @@ import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import InstancePopupComponent from './InstancePopupComponent';
-import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { warningSnackBar } from '../../../constants/snackBars';
 import {
     enqueueSnackbar,
@@ -27,7 +28,7 @@ import {
 } from '../../../redux/snackBarsReducer';
 
 import { fetchInstanceDetail } from '../../../utils/requests';
-import injectIntl from '../../../libs/intl/injectIntl';
+import DrawerMessages from '../../../components/nav/messages';
 
 const boundsOptions = { padding: [50, 50] };
 
@@ -90,12 +91,8 @@ class InstancesMap extends Component {
     }
 
     render() {
-        const {
-            instances,
-            currentTile,
-            isClusterActive,
-            fetching,
-        } = this.props;
+        const { instances, currentTile, isClusterActive, fetching } =
+            this.props;
         if (fetching) return null;
         const bounds = getLatLngBounds(instances);
         if (this.map) {
@@ -105,13 +102,16 @@ class InstancesMap extends Component {
             <Grid container spacing={0}>
                 <InnerDrawer
                     withTopBorder
-                    settingsOptionComponent={
-                        <Fragment>
-                            <TileSwitch />
-                            <Divider />
-                            <ClusterSwitch />
-                        </Fragment>
-                    }
+                    settingsOption={{
+                        component: (
+                            <>
+                                <TileSwitch />
+                                <Divider />
+                                <ClusterSwitch />
+                            </>
+                        ),
+                        message: DrawerMessages.settings,
+                    }}
                 >
                     <Map
                         ref={ref => {

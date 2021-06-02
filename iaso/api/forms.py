@@ -45,7 +45,7 @@ class FormSerializer(serializers.ModelSerializer):
             "updated_at",
             "deleted_at",
             "derived",
-            "label_keys"
+            "label_keys",
         ]
         read_only_fields = [
             "id",
@@ -107,8 +107,9 @@ class FormSerializer(serializers.ModelSerializer):
 
         return data
 
+
 class FormsViewSet(ModelViewSet):
-    """ Forms API
+    """Forms API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
     having the "menupermissions.iaso_forms" permission.

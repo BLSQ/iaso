@@ -3,11 +3,10 @@ import PropTypes from 'prop-types';
 import { Paper, withStyles, Typography, Grid } from '@material-ui/core';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 
+import { injectIntl, commonStyles } from 'bluesquare-components';
 import { getColumns } from '../config';
-import commonStyles from '../../../styles/common';
 import customTableTranslations from '../../../constants/customTableTranslations';
 import { baseUrls } from '../../../constants/urls';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

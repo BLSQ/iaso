@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import moment from 'moment';
@@ -20,18 +20,19 @@ import {
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
+import {
+    textPlaceholder,
+    injectIntl,
+    commonStyles,
+} from 'bluesquare-components';
 import { getPolygonPositionsFromSimplifiedGeom } from '../../domains/orgUnits/utils';
 
 import PolygonMap from '../maps/PolygonMapComponent';
 import MarkerMap from '../maps/MarkerMapComponent';
 import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
-import commonStyles from '../../styles/common';
-import { textPlaceholder } from '../../constants/uiConstants';
 
 import MESSAGES from '../../domains/forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
-
-import injectIntl from '../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -65,9 +66,8 @@ const renderValue = (fieldKey, value, fields, classes) => {
     if (!value || value.toString().length === 0) return textPlaceholder;
     switch (fieldKey) {
         case 'simplified_geom': {
-            const polygonPositions = getPolygonPositionsFromSimplifiedGeom(
-                value,
-            );
+            const polygonPositions =
+                getPolygonPositionsFromSimplifiedGeom(value);
             return (
                 <div className={classes.cellMap}>
                     <PolygonMap polygonPositions={polygonPositions} />
@@ -194,7 +194,7 @@ const LogCompareComponent = ({
                     <FormattedMessage {...LOG_MESSAGES.noDifference} />
                 )}
                 {!isEqual(l.fields, compareLog[i].fields) && (
-                    <Fragment>
+                    <>
                         <Table className={classes.table}>
                             <TableBody>
                                 {fields.map(field => {
@@ -233,9 +233,10 @@ const LogCompareComponent = ({
                                                 fieldKey === 'catchment') &&
                                             value
                                         ) {
-                                            const polygonPositions = getPolygonPositionsFromSimplifiedGeom(
-                                                value,
-                                            );
+                                            const polygonPositions =
+                                                getPolygonPositionsFromSimplifiedGeom(
+                                                    value,
+                                                );
                                             return (
                                                 <TableRow key={fieldKey}>
                                                     <TableCell
@@ -345,7 +346,7 @@ const LogCompareComponent = ({
                                 />
                             </Grid>
                         </Grid>
-                    </Fragment>
+                    </>
                 )}
             </Paper>
         );

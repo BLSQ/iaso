@@ -1,10 +1,9 @@
 import { TextField } from '@material-ui/core';
 import get from 'lodash.get';
 
-export const TextInput = ({ field = {}, form = {}, ...props }) => {
+export const TextInput = ({ field = {}, form = {}, ...props } = {}) => {
     return (
         <TextField
-            displayEmpty
             InputLabelProps={{
                 shrink: true,
             }}

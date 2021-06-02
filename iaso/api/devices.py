@@ -4,11 +4,13 @@ from rest_framework import serializers, viewsets, permissions
 from rest_framework.response import Response
 from iaso.models import Device, DeviceOwnership, Instance
 
+
 class DeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device
         fields = ["id", "imei", "test_device", "last_owner", "synched_at", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
+
     last_owner = serializers.SerializerMethodField()
     synched_at = serializers.SerializerMethodField()
     created_at = TimestampField(read_only=True)
@@ -24,6 +26,7 @@ class DeviceSerializer(serializers.ModelSerializer):
     def get_last_owner(obj: Device):
         owner = DeviceOwnership.objects.filter(device__id=obj.id).order_by("-created_at").first()
         return owner.user.iaso_profile.as_short_dict() if owner else None
+
 
 class DevicesViewSet(ModelViewSet):
     """Iaso Devices API

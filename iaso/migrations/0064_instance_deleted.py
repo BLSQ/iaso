@@ -7,18 +7,18 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0063_form_uuid'),
+        ("iaso", "0063_form_uuid"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='instancefile',
-            name='deleted',
+            model_name="instancefile",
+            name="deleted",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='form',
-            name='uuid',
+            model_name="form",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, unique=True),
         ),
     ]

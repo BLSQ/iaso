@@ -1,9 +1,12 @@
 import React from 'react';
-import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
+import {
+    IconButton as IconButtonComponent,
+    ColumnText as ColumnTextComponent,
+    displayDateFromTimestamp,
+    formatThousand,
+} from 'bluesquare-components';
 import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import ColumnTextComponent from '../../../components/tables/ColumnTextComponent';
-import { displayDateFromTimestamp } from '../../../utils/intlUtil';
 import MESSAGES from './messages';
 
 const TableColumns = (formatMessage, component) => [
@@ -20,6 +23,16 @@ const TableColumns = (formatMessage, component) => [
         sortable: false,
         Cell: settings => (
             <ColumnTextComponent text={settings.original.short_name} />
+        ),
+    },
+    {
+        Header: formatMessage(MESSAGES.validatedOrgUnitCount),
+        accessor: 'units_count',
+        sortable: false,
+        Cell: settings => (
+            <ColumnTextComponent
+                text={formatThousand(settings.original.units_count)}
+            />
         ),
     },
     {

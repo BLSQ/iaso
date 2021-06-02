@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0083_datasource_default_version'),
+        ("iaso", "0083_datasource_default_version"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='form',
-            name='deleted_at',
+            model_name="form",
+            name="deleted_at",
             field=models.DateTimeField(blank=True, default=None, null=True),
         ),
     ]

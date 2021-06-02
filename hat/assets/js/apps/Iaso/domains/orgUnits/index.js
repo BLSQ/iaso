@@ -9,6 +9,17 @@ import PropTypes from 'prop-types';
 import EditIcon from '@material-ui/icons/Edit';
 
 import {
+    DynamicTabs,
+    createUrl,
+    getTableUrl,
+    selectionInitialState,
+    setTableSelection,
+    commonStyles,
+    injectIntl,
+    Table,
+} from 'bluesquare-components';
+// import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
+import {
     fetchOrgUnitsTypes,
     fetchSources,
     fetchOrgUnitsList,
@@ -30,7 +41,6 @@ import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
 import { orgUnitsTableColumns } from './config';
 
-import { createUrl } from '../../utils/fetchData';
 import {
     fetchLatestOrgUnitLevelId,
     decodeSearch,
@@ -38,10 +48,6 @@ import {
     encodeUriParams,
     encodeUriSearches,
 } from './utils';
-import getTableUrl, {
-    selectionInitialState,
-    setTableSelection,
-} from '../../utils/tableUtils';
 
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -49,9 +55,7 @@ import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
 import OrgUnitsMultiActionsDialog from './components/OrgUnitsMultiActionsDialog';
-import Table from '../../components/tables/TableComponent';
 
-import commonStyles from '../../styles/common';
 import { getChipColors } from '../../constants/chipColors';
 
 import { warningSnackBar } from '../../constants/snackBars';
@@ -60,15 +64,12 @@ import {
     closeFixedSnackbar,
 } from '../../redux/snackBarsReducer';
 
-import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
-
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
+import { locationLimitMax } from './constants/orgUnitConstants';
 
 const baseUrl = baseUrls.orgUnits;
 let warningDisplayed = false;
-export const locationLimitMax = 3000;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -109,7 +110,8 @@ class OrgUnits extends Component {
         };
     }
 
-    componentWillMount() {
+    // eslint-disable-next-line camelcase
+    UNSAFE_componentWillMount() {
         const { dispatch, params, currentUser } = this.props;
         this.props.resetOrgUnitsLevels();
 
@@ -200,6 +202,47 @@ class OrgUnits extends Component {
         dispatch(closeFixedSnackbar('locationLimitWarning'));
     }
 
+    handleTableSelection(selectionType, items = [], totalCount = 0) {
+        const { selection } = this.state;
+        const newSelection = setTableSelection(
+            selection,
+            selectionType,
+            items,
+            totalCount,
+        );
+        this.setState({
+            selection: newSelection,
+        });
+    }
+
+    handleChangeTab(tab, redirect = true) {
+        const { redirectTo, params, filtersUpdated } = this.props;
+        const { listUpdated } = this.state;
+        const newState = {
+            ...this.state,
+            tab,
+        };
+        if (redirect) {
+            const newParams = {
+                ...params,
+                tab,
+            };
+            redirectTo(baseUrl, newParams);
+        }
+
+        if (
+            tab === 'map' &&
+            params.searchActive &&
+            (filtersUpdated || listUpdated)
+        ) {
+            if (listUpdated) {
+                newState.listUpdated = false;
+            }
+            this.fetchOrgUnitsLocations();
+        }
+        this.setState(newState);
+    }
+
     onTabsDeleted() {
         this.props.resetOrgUnits();
         this.props.setFiltersUpdated(true);
@@ -263,47 +306,6 @@ class OrgUnits extends Component {
         this.setState({
             multiActionPopupOpen,
         });
-    }
-
-    handleTableSelection(selectionType, items = [], totalCount = 0) {
-        const { selection } = this.state;
-        const newSelection = setTableSelection(
-            selection,
-            selectionType,
-            items,
-            totalCount,
-        );
-        this.setState({
-            selection: newSelection,
-        });
-    }
-
-    handleChangeTab(tab, redirect = true) {
-        const { redirectTo, params, filtersUpdated } = this.props;
-        const { listUpdated } = this.state;
-        const newState = {
-            ...this.state,
-            tab,
-        };
-        if (redirect) {
-            const newParams = {
-                ...params,
-                tab,
-            };
-            redirectTo(baseUrl, newParams);
-        }
-
-        if (
-            tab === 'map' &&
-            params.searchActive &&
-            (filtersUpdated || listUpdated)
-        ) {
-            if (listUpdated) {
-                newState.listUpdated = false;
-            }
-            this.fetchOrgUnitsLocations();
-        }
-        this.setState(newState);
     }
 
     fetchOrgUnitsLocations() {
@@ -416,7 +418,9 @@ class OrgUnits extends Component {
                     selection={selection}
                 />
                 <TopBar title={formatMessage(MESSAGES.title)}>
-                    <DynamicTabsComponent
+                    <DynamicTabs
+                        deleteMessage={MESSAGES.delete}
+                        addMessage={MESSAGES.add}
                         baseLabel={formatMessage(MESSAGES.search)}
                         params={params}
                         defaultItem={{

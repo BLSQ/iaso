@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import omit from 'lodash/omit';
 import { connect } from 'react-redux';
 import { push, replace } from 'react-router-redux';
@@ -8,6 +8,14 @@ import { withStyles, Box, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
+import {
+    createUrl,
+    injectIntl,
+    commonStyles,
+    // TopBar,
+    LoadingSpinner,
+} from 'bluesquare-components';
+import TopBar from '../../components/nav/TopBarComponent';
 import {
     setCurrentOrgUnit,
     setOrgUnitTypes,
@@ -26,7 +34,6 @@ import { setForms as setFormsAction } from '../forms/actions';
 import formsTableColumns from '../forms/config';
 import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
-import { createUrl } from '../../utils/fetchData';
 import {
     fetchOrgUnitsTypes,
     fetchAssociatedDataSources,
@@ -48,15 +55,11 @@ import {
 } from './utils';
 import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
-import TopBar from '../../components/nav/TopBarComponent';
 import OrgUnitForm from './components/OrgUnitForm';
 import OrgUnitMap from './components/OrgUnitMapComponent';
 import Logs from '../../components/logs/LogsComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import LinksDetails from '../links/components/LinksDetailsComponent';
-
-import commonStyles from '../../styles/common';
 
 import { getChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
@@ -70,7 +73,6 @@ import {
 } from '../../constants/filters';
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
@@ -237,65 +239,6 @@ class OrgUnitDetail extends Component {
         }
     }
 
-    setOrgUnitLocationModified() {
-        this.setState({
-            orgUnitLocationModified: true,
-        });
-    }
-
-    resetCurrentOrgUnit() {
-        this.setState({
-            currentOrgUnit: undefined,
-        });
-    }
-
-    fetchDetail() {
-        const {
-            params: { orgUnitId },
-            dispatch,
-        } = this.props;
-        if (orgUnitId !== '0') {
-            return fetchOrgUnitDetail(dispatch, orgUnitId).then(orgUnit => {
-                const orgUnitTree = getOrgUnitsTree(orgUnit);
-                if (orgUnitTree.length > 0) {
-                    const { redirectTo, params } = this.props;
-                    const levels = orgUnitTree.map(o => o.id);
-                    const newParams = {
-                        ...params,
-                        levels,
-                    };
-                    redirectTo(baseUrl, newParams);
-                }
-                this.props.setCurrentOrgUnit(orgUnit);
-                if (orgUnit.org_unit_type_id) {
-                    fetchForms(
-                        this.props.dispatch,
-                        `/api/forms/?orgUnitTypeId=${orgUnit.org_unit_type_id}`,
-                    ).then(data => {
-                        const forms = [];
-                        data.forms.forEach((f, i) => {
-                            forms.push({
-                                ...f,
-                                color: getChipColors(i, true),
-                            });
-                        });
-                        this.props.setCurrentForms(forms);
-                    });
-                }
-
-                this.setState({
-                    currentOrgUnit: orgUnit,
-                });
-                return orgUnit;
-            });
-        }
-        this.props.setCurrentOrgUnit(initialOrgUnit);
-        this.setState({
-            currentOrgUnit: initialOrgUnit,
-        });
-        return new Promise(resolve => resolve());
-    }
-
     handleChangeTab(tab, redirect = true) {
         if (redirect) {
             const { redirectTo, params } = this.props;
@@ -390,6 +333,65 @@ class OrgUnitDetail extends Component {
         dispatch(setFetchingDetail(false));
     }
 
+    setOrgUnitLocationModified() {
+        this.setState({
+            orgUnitLocationModified: true,
+        });
+    }
+
+    resetCurrentOrgUnit() {
+        this.setState({
+            currentOrgUnit: undefined,
+        });
+    }
+
+    fetchDetail() {
+        const {
+            params: { orgUnitId },
+            dispatch,
+        } = this.props;
+        if (orgUnitId !== '0') {
+            return fetchOrgUnitDetail(dispatch, orgUnitId).then(orgUnit => {
+                const orgUnitTree = getOrgUnitsTree(orgUnit);
+                if (orgUnitTree.length > 0) {
+                    const { redirectTo, params } = this.props;
+                    const levels = orgUnitTree.map(o => o.id);
+                    const newParams = {
+                        ...params,
+                        levels,
+                    };
+                    redirectTo(baseUrl, newParams);
+                }
+                this.props.setCurrentOrgUnit(orgUnit);
+                if (orgUnit.org_unit_type_id) {
+                    fetchForms(
+                        this.props.dispatch,
+                        `/api/forms/?orgUnitTypeId=${orgUnit.org_unit_type_id}`,
+                    ).then(data => {
+                        const forms = [];
+                        data.forms.forEach((f, i) => {
+                            forms.push({
+                                ...f,
+                                color: getChipColors(i, true),
+                            });
+                        });
+                        this.props.setCurrentForms(forms);
+                    });
+                }
+
+                this.setState({
+                    currentOrgUnit: orgUnit,
+                });
+                return orgUnit;
+            });
+        }
+        this.props.setCurrentOrgUnit(initialOrgUnit);
+        this.setState({
+            currentOrgUnit: initialOrgUnit,
+        });
+        return new Promise(resolve => resolve());
+    }
+
     goToRevision(orgUnitRevision) {
         const mappedRevision = {
             ...this.props.currentOrgUnit,
@@ -459,7 +461,7 @@ class OrgUnitDetail extends Component {
         const tabs = ['infos', 'map', 'children', 'links', 'history', 'forms'];
 
         return (
-            <Fragment>
+            <>
                 <TopBar
                     title={title}
                     displayBackButton
@@ -666,7 +668,7 @@ class OrgUnitDetail extends Component {
                         </div>
                     </section>
                 )}
-            </Fragment>
+            </>
         );
     }
 }

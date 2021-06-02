@@ -49,14 +49,13 @@ class CompletenessAPITestCase(APITestCase):
         instance.period = period
         instance.form = self.form
         instance.project = self.project
-        instance.file="something_fake"
+        instance.file = "something_fake"
         instance.save()
         return instance
 
     def uuid(self, number):
         return str(number) + "b7c3954-f69a-4b99-83b1-db73957b32b" + str(number)
 
-    @tag("iaso_only")
     def test_completeness_list_without_auth(self):
         """GET /completeness/ without auth should result in a 403"""
 
@@ -64,7 +63,6 @@ class CompletenessAPITestCase(APITestCase):
         self.assertEqual(403, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
-    @tag("iaso_only")
     def test_completeness_list(self):
         """GET /completeness/ should return counts"""
 

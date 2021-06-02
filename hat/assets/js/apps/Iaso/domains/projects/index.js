@@ -5,24 +5,27 @@ import { connect } from 'react-redux';
 import { withStyles, Box, Grid } from '@material-ui/core';
 
 import {
+    injectIntl,
+    commonStyles,
+    LoadingSpinner,
+    // TopBar,
+    Table,
+} from 'bluesquare-components';
+import {
     fetchAllApps as fetchAllAppsAction,
     fetchAllFeatureFlags as fetchAllFeatureFlagsAction,
 } from './actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
-import Table from '../../components/tables/TableComponent';
 import ProjectsDialog from './components/ProjectsDialog';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 
-import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
 
 import projectsTableColumns from './config';
 import MESSAGES from './messages';
 
 import { redirectTo as redirectToAction } from '../../routing/actions';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.projects;
 

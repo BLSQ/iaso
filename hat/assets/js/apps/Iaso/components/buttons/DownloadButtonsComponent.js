@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 
 import PropTypes from 'prop-types';
 
@@ -19,7 +19,7 @@ function DownloadButtonsComponent(props) {
     const { csvUrl, xlsxUrl, gpkgUrl, classes } = props;
 
     return (
-        <Fragment>
+        <>
             <Button
                 variant="contained"
                 className={classes.button}
@@ -55,7 +55,7 @@ function DownloadButtonsComponent(props) {
                     GPKG
                 </Button>
             )}
-        </Fragment>
+        </>
     );
 }
 

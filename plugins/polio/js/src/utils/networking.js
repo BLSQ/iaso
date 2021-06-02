@@ -9,5 +9,12 @@ export const sendRequest = async (method, path, body) => {
     };
 
     const response = await fetch(path, requestInit);
+
+    if (!response.ok) {
+        throw await response.json();
+    }
+
+    if (response.status === 204) return;
+
     return await response.json();
 };

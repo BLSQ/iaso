@@ -5,12 +5,12 @@ import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
+import { injectIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 import MESSAGES from '../../forms/messages';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const OrgUnitInfosComponent = ({
     orgUnit,

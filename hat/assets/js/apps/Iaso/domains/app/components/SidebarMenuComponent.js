@@ -18,6 +18,7 @@ import {
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import PropTypes from 'prop-types';
 
+import { injectIntl, commonStyles } from 'bluesquare-components';
 import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
 import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
 
@@ -25,11 +26,7 @@ import MenuItem from './MenuItemComponent';
 import LogoSvg from './LogoSvgComponent';
 import LanguageSwitch from './LanguageSwitchComponent';
 
-import commonStyles from '../../../styles/common';
-
 import menuItems from '../../../constants/menu';
-
-import injectIntl from '../../../libs/intl/injectIntl';
 
 import MESSAGES from './messages';
 
@@ -75,14 +72,8 @@ class SidebarMenu extends PureComponent {
     }
 
     render() {
-        const {
-            classes,
-            isOpen,
-            toggleSidebar,
-            location,
-            currentUser,
-            intl,
-        } = this.props;
+        const { classes, isOpen, toggleSidebar, location, currentUser, intl } =
+            this.props;
         const defaultSourceVersion = getDefaultSourceVersion(currentUser);
         return (
             <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>

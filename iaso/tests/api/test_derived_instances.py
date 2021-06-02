@@ -125,7 +125,6 @@ class DerivedInstancesTests(APITestCase):
         derived_form.projects.add(self.project)
         self.survey_form.projects.add(self.project)
 
-    @tag("iaso_only")
     def test_post_derived_instances_without_auth(self):
         """POST /derivedinstances/ without auth should result in a 403"""
 
@@ -133,7 +132,6 @@ class DerivedInstancesTests(APITestCase):
         self.assertEqual(403, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
-    @tag("iaso_only")
     def test_post_derived_instances_with_updated(self):
         self.setup_5_instances()
         self.client.force_authenticate(self.user)
@@ -172,7 +170,6 @@ class DerivedInstancesTests(APITestCase):
             },
         )
 
-    @tag("iaso_only")
     def test_post_derived_instances_with_auth_deleted(self):
         self.setup_5_instances()
         self.client.force_authenticate(self.user)
@@ -186,7 +183,6 @@ class DerivedInstancesTests(APITestCase):
         # the instances should deleted
         self.assertEqual(self.derived_form.instances.all().count(), 0)
 
-    @tag("iaso_only")
     def test_post_derived_instances_with_auth_nullified(self):
         self.setup_5_instances()
         self.client.force_authenticate(self.user)
@@ -215,7 +211,6 @@ class DerivedInstancesTests(APITestCase):
         )
         self.assertEqual(derived_instance.last_export_success_at, None)
 
-    @tag("iaso_only")
     def test_post_derived_instances_with_auth_computes_avg_sum_count(self):
         """POST /derivedinstances/ with auth should result in a 403"""
 

@@ -31,13 +31,8 @@ class GroupDialogComponent extends Component {
     }
 
     onConfirm(closeDialog) {
-        const {
-            params,
-            fetchGroups,
-            saveGroup,
-            createGroup,
-            initialData,
-        } = this.props;
+        const { params, fetchGroups, saveGroup, createGroup, initialData } =
+            this.props;
         const currentGroup = {};
         Object.keys(this.state).forEach(key => {
             currentGroup[key] = this.state[key].value;

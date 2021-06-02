@@ -45,7 +45,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class GroupsViewSet(ModelViewSet):
-    """ Groups API
+    """Groups API
 
     This API is restricted to users having the "menupermissions.iaso_org_units" permission
 

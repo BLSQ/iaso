@@ -3,13 +3,15 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
+import {
+    injectIntl,
+    ExportButton as ExportButtonComponent,
+} from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { createExportRequest as createExportRequestAction } from '../actions';
 
 import MESSAGES from '../messages';
-
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const ExportInstancesDialogComponent = ({
     isInstancesFilterUpdated,
@@ -54,7 +56,7 @@ const ExportInstancesDialogComponent = ({
             <InputComponent
                 clearable
                 keyValue="algoId"
-                onChange={(key, value) => setForceExport(!forceExport)}
+                onChange={() => setForceExport(!forceExport)}
                 value={forceExport}
                 type="checkbox"
                 label={MESSAGES.forceExport}

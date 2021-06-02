@@ -47,7 +47,7 @@ const RecursiveTreeView = props => {
         const neverMapped = isNeverMapped(questionMapping);
 
         const allChidrenMapped =
-            Descriptor.hasChildren(node) && coverage[0] == coverage[1];
+            Descriptor.hasChildren(node) && coverage[0] === coverage[1];
         let className = '';
         if (neverMapped) {
             className = classes.neverMapped;

@@ -6,7 +6,7 @@ import { withStyles, Box, Grid, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import commonStyles from '../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 import { menuHeight } from '../../styles/innerDrawer';
 
 import MESSAGES from './messages';
@@ -57,7 +57,7 @@ class InnerDrawer extends Component {
         } = this.props;
         const { activeOption } = this.state;
         return (
-            <Fragment>
+            <>
                 <Box
                     borderTop={withTopBorder ? 1 : 0}
                     borderColor="grey.300"
@@ -178,7 +178,7 @@ class InnerDrawer extends Component {
                         </Grid>
                     </Grid>
                 </Box>
-            </Fragment>
+            </>
         );
     }
 }

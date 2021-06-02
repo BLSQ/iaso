@@ -125,7 +125,7 @@ INSTALLED_APPS = [
 ]
 
 if PLUGIN_POLIO_ENABLED:
-    INSTALLED_APPS.append('plugins.polio')
+    INSTALLED_APPS.append("plugins.polio")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -136,7 +136,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "hat.users.middleware.ThreadLocalMiddleware",
 ]
 
 ROOT_URLCONF = "hat.urls"
@@ -145,7 +144,7 @@ ROOT_URLCONF = "hat.urls"
 # Allow cors for all origins but only for the sync endpoint
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_ALL_ORIGINS = True
-#CORS_URLS_REGEX = r"^/sync/.*$"
+# CORS_URLS_REGEX = r"^/sync/.*$"
 
 
 TEMPLATES = [
@@ -224,16 +223,19 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 
-# Files
 
-SHARED_DIR = "/opt/shared"
+AUTH_CLASSES = [
+    "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
+    "rest_framework_simplejwt.authentication.JWTAuthentication",
+]
 
+if PLUGIN_POLIO_ENABLED:
+    AUTH_CLASSES.append(
+        "rest_framework.authentication.BasicAuthentication",
+    )
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": AUTH_CLASSES,
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": None,
@@ -267,7 +269,10 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, "iaso/static"), os.path.join(BASE_DIR, "hat/assets/webpack"), )
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "iaso/static"),
+    os.path.join(BASE_DIR, "hat/assets/webpack"),
+)
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
@@ -308,3 +313,13 @@ SSL_ON = (not DEBUG) and (not BEANSTALK_WORKER)
 if SSL_ON:
     SECURE_HSTS_SECONDS = 31_536_000  # 1 year
 SECURE_SSL_REDIRECT = SSL_ON
+
+# Email configuration
+
+DEFAULT_FROM_EMAIL = "Iaso Team <iaso@bluesquare.org>"
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.smtpbucket.com")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_PORT = os.environ.get("EMAIL_PORT", "8025")

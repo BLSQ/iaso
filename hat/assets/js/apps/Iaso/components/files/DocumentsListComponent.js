@@ -23,7 +23,7 @@ class DocumentsListComponent extends Component {
     render() {
         const { docsList, classes } = this.props;
         return (
-            <Fragment>
+            <>
                 <Grid container spacing={2} className={classes.root}>
                     {docsList.map(file => (
                         <Grid
@@ -38,7 +38,7 @@ class DocumentsListComponent extends Component {
                         </Grid>
                     ))}
                 </Grid>
-            </Fragment>
+            </>
         );
     }
 }

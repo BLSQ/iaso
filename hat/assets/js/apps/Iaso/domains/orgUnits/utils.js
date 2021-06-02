@@ -1,6 +1,6 @@
 import React from 'react';
 import orderBy from 'lodash/orderBy';
-import { textPlaceholder } from '../../constants/uiConstants';
+import { textPlaceholder } from 'bluesquare-components';
 import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
 import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
 import { circleColorMarkerOptions } from '../../utils/mapUtils';

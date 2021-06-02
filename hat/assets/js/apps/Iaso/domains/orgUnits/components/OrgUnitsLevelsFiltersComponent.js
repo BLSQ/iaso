@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import OrgUnitLevelFilterComponent from './OrgUnitLevelFilterComponent';
 
 import { fetchOrgUnits } from '../../../utils/requests';
-import { createUrl } from '../../../utils/fetchData';
+import { createUrl } from 'bluesquare-components';
 import { fetchLatestOrgUnitLevelId, decodeSearch } from '../utils';
 
 import { setOrgUnitsLevel } from '../../../redux/orgUnitsLevelsReducer';
@@ -141,12 +141,8 @@ class OrgUnitsLevelsFiltersComponent extends Component {
     }
 
     fetchAllTree() {
-        const {
-            dispatch,
-            showCurrentOrgUnit,
-            currentOrgUnitId,
-            searchIndex,
-        } = this.props;
+        const { dispatch, showCurrentOrgUnit, currentOrgUnitId, searchIndex } =
+            this.props;
         let levels;
         if (searchIndex || searchIndex === 0) {
             const searches = decodeSearch(this.props.params.searches);
@@ -179,12 +175,8 @@ class OrgUnitsLevelsFiltersComponent extends Component {
     }
 
     fetchTree(level) {
-        const {
-            dispatch,
-            showCurrentOrgUnit,
-            currentOrgUnitId,
-            searchIndex,
-        } = this.props;
+        const { dispatch, showCurrentOrgUnit, currentOrgUnitId, searchIndex } =
+            this.props;
         const { levels } = this.state;
         const parentId = levels[level - 1];
         if (parentId) {

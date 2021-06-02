@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 
 import { withStyles, IconButton } from '@material-ui/core';
@@ -30,7 +30,7 @@ function TopBar(props) {
         goBack,
     } = props;
     return (
-        <Fragment>
+        <>
             <AppBar position="relative" color="primary">
                 <Toolbar>
                     {!displayBackButton && (
@@ -59,7 +59,7 @@ function TopBar(props) {
                 </Toolbar>
                 {children}
             </AppBar>
-        </Fragment>
+        </>
     );
 }
 

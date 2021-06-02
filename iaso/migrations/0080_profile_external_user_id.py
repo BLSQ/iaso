@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0079_project_external_token'),
+        ("iaso", "0079_project_external_token"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='external_user_id',
+            model_name="profile",
+            name="external_user_id",
             field=models.CharField(blank=True, max_length=512, null=True),
         ),
     ]

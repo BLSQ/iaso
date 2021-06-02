@@ -1,8 +1,7 @@
 from iaso.models import SourceVersion
 from .common import ModelViewSet
-from iaso.models import DataSource, OrgUnit
+from iaso.models import DataSource
 from rest_framework import serializers, permissions
-from .common import HasPermission
 
 
 class SourceVersionSerializer(serializers.ModelSerializer):
@@ -30,7 +29,7 @@ class SourceVersionSerializer(serializers.ModelSerializer):
 
 
 class SourceVersionViewSet(ModelViewSet):
-    """ Data source API
+    """Data source API
 
     This API is restricted to authenticated users having at least one of the "menupermissions.iaso_mappings",
     "menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions

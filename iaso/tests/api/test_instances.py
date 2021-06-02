@@ -103,20 +103,17 @@ class InstancesAPITestCase(APITestCase):
         sw_source.projects.add(cls.project)
         cls.project.save()
 
-    @tag("iaso_only")
     def test_instance_list_by_form_id_permission_denied_when_anonymous(self):
         """GET /instances/?form_id=form_id"""
         instance = self.form_1.instances.first()
         response = self.client.get(f"/api/instances/{instance.pk}/")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_instance_details_permission_denied_when_anonymous(self):
         """GET /instances/?form_id=form_id"""
         response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_instance_create_anonymous(self):
         """POST /api/instances/ happy path (anonymous)"""
 
@@ -163,7 +160,6 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(self.form_1, last_instance.form)
         self.assertIsNotNone(last_instance.project)
 
-    @tag("iaso_only")
     def test_instance_create_pre_existing(self):
         """POST /api/instances/ with pre-existing, deleted instance"""
 
@@ -204,7 +200,6 @@ class InstancesAPITestCase(APITestCase):
         self.assertTrue(pre_existing_instance.deleted)
         self.assertEqual("Pre-existing name", pre_existing_instance.name)
 
-    @tag("iaso_only")
     def test_instance_create_two_one_is_pre_existing(self):
         """POST /api/instances/ with one pre-existing instance and a new one"""
 
@@ -256,7 +251,6 @@ class InstancesAPITestCase(APITestCase):
         pre_existing_instance.refresh_from_db()
         self.assertEqual("Pre-existing name", pre_existing_instance.name)
 
-    @tag("iaso_only")
     def test_instance_create_after_sync(self):
         """POST /api/instances/ with one pre-existing instance (created by the /sync view, with a filename only)"""
 
@@ -288,7 +282,6 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", pre_existing_instance.file_name)
         self.assertEqual("Mobile app name", pre_existing_instance.name)
 
-    @tag("iaso_only")
     def test_instance_list_by_form_id_ok(self):
         """GET /instances/?form_id=form_id"""
 
@@ -299,7 +292,6 @@ class InstancesAPITestCase(APITestCase):
 
         self.assertValidInstanceListData(response.json(), 4)
 
-    @tag("iaso_only")
     def test_instance_list_by_form_id_ok_soft_deleted(self):
         """GET /instances/?form_id=form_id"""
 
@@ -317,7 +309,6 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 3)
 
-    @tag("iaso_only")
     def test_instance_details_by_id_ok_soft_deleted(self):
         """GET /instances/{instanceid}/"""
 
@@ -330,7 +321,6 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
         self.assertJSONResponse(response, 200)
 
-    @tag("iaso_only")
     def test_soft_delete_an_instance(self):
         """DELETE /instances/{instanceid}/"""
 
@@ -349,7 +339,6 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertTrue(response.json()["deleted"])
 
-    @tag("iaso_only")
     def test_instance_list_by_form_id_and_status_ok(self):
         """GET /instances/?form_id=form_id&status="""
         self.client.force_authenticate(self.yoda)
@@ -374,7 +363,6 @@ class InstancesAPITestCase(APITestCase):
         self.assertHasField(instance_data, "status", str)
         self.assertHasField(instance_data, "correlation_id", str, optional=True)
 
-    @tag("iaso_only")
     def test_instance_patch_org_unit_period(self):
         """PATCH /instances/:pk"""
         self.client.force_authenticate(self.yoda)
@@ -405,7 +393,6 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(new_org_unit.id, modification.new_value[0]["fields"]["org_unit"])
         self.assertEqual(instance_to_patch, modification.content_object)
 
-    @tag("iaso_only")
     def test_instance_patch_org_unit(self):
         """PATCH /instances/:pk"""
         self.client.force_authenticate(self.yoda)
@@ -436,7 +423,6 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(new_org_unit.id, modification.new_value[0]["fields"]["org_unit"])
         self.assertEqual(instance_to_patch, modification.content_object)
 
-    @tag("iaso_only")
     def test_instance_patch_restore(self):
         """PATCH /instances/:pk"""
         self.client.force_authenticate(self.yoda)

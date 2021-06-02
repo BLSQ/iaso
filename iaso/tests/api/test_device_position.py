@@ -32,7 +32,6 @@ class DevicesPositionAPITestCase(APITestCase):
         cls.device_2 = m.Device.objects.create()
         cls.device_2.projects.set([cls.project_2])
 
-    @tag("iaso_only")
     def test_post_ok_no_auth(self):
         """POST /devicesposition/ without auth: should work"""
 
@@ -56,7 +55,6 @@ class DevicesPositionAPITestCase(APITestCase):
         self.assertValidDevicePositionListData(response.json(), 1, with_result_key=False)
         self.assertAPIImport("devicesposition", request_body=devices_position_body, has_problems=False)
 
-    @tag("iaso_only")
     def test_post_ok_no_auth_many(self):
         """POST /devicesposition/ without auth and many positions"""
 
@@ -80,7 +78,6 @@ class DevicesPositionAPITestCase(APITestCase):
         self.assertValidDevicePositionListData(response.json(), 50, with_result_key=False)
         self.assertAPIImport("devicesposition", request_body=devices_position_body, has_problems=False)
 
-    @tag("iaso_only")
     def test_post_ko_no_auth(self):
         """POST /devicesposition/ without auth for "authentication required" project"""
 
@@ -108,7 +105,6 @@ class DevicesPositionAPITestCase(APITestCase):
             exception_contains_string="Could not find project for user",
         )
 
-    @tag("iaso_only")
     def test_post_ok_with_auth(self):
         devices_position_body = [
             {
@@ -129,7 +125,6 @@ class DevicesPositionAPITestCase(APITestCase):
         self.assertJSONResponse(response, 201)
         self.assertValidDevicePositionListData(response.json(), 1, with_result_key=False)
 
-    @tag("iaso_only")
     def test_post_ko_invalid_device_id(self):
         devices_position_body = [
             {

@@ -65,7 +65,7 @@ export function groupCompletenessData(
             `${monthPath}.exported`,
             exported => exported + dataEntry.counts.exported,
         );
-        _.update(groupedCompletenessData, `${monthPath}.period`, p => period);
+        _.update(groupedCompletenessData, `${monthPath}.period`, () => period);
     });
 
     const data = Object.values(groupedCompletenessData)

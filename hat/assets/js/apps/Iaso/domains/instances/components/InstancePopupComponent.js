@@ -16,19 +16,20 @@ import {
 
 import PropTypes from 'prop-types';
 
-import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
+import {
+    injectIntl,
+    commonStyles,
+    mapPopupStyles,
+    LoadingSpinner,
+} from 'bluesquare-components';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import InstanceDetailsInfos from './InstanceDetailsInfos';
 import InstanceDetailsField from './InstanceDetailsField';
-
-import commonStyles from '../../../styles/common';
-import mapPopupStyles from '../../../styles/mapPopup';
 
 import { getOrgUnitsTree } from '../../orgUnits/utils';
 import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from '../messages';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

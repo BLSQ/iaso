@@ -33,6 +33,7 @@ def copy_version(
         logger.debug(res_string)
         the_task.status = ERRORED
         the_task.result = {"message": res_string}
+        the_task.save()
         return
     else:
         OrgUnit.objects.filter(version=destination_version).delete()

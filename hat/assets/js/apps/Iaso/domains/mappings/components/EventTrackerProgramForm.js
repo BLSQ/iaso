@@ -1,5 +1,6 @@
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
+import PropTypes from 'prop-types';
 import Dhis2Search from './Dhis2SearchComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
@@ -11,14 +12,10 @@ const EventTrackerProgramForm = ({
     onConfirmedQuestionMapping,
 }) => {
     const [program, setProgram] = React.useState('');
-    const [
-        trackedEntityAttributes,
-        setTrackedEntityAttributes,
-    ] = React.useState([]);
-    const [
-        trackedEntityIdentifier,
-        setTrackedEntityIdentifier,
-    ] = React.useState(null);
+    const [trackedEntityAttributes, setTrackedEntityAttributes] =
+        React.useState([]);
+    const [trackedEntityIdentifier, setTrackedEntityIdentifier] =
+        React.useState(null);
     const [relationshipType, setRelationshipType] = React.useState(null);
     const [proposedNewMapping, setProposedNewMapping] = React.useState(null);
     const trackedEntityAttributeOptions = trackedEntityAttributes.map(a => ({
@@ -111,6 +108,12 @@ const EventTrackerProgramForm = ({
             </Grid>
         </Grid>
     );
+};
+// TODO verify those types
+EventTrackerProgramForm.propTypes = {
+    dataSourceId: PropTypes.number.isRequired,
+    repeatGroupMapping: PropTypes.any.isRequired,
+    onConfirmedQuestionMapping: PropTypes.func.isRequired,
 };
 
 export default EventTrackerProgramForm;

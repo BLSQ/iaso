@@ -12,7 +12,7 @@ django-storages==1.9.1
 boto3==1.12.1
 geopy==1.21.0
 Shapely==1.7.0
-unidecode==1-2.0
+unidecode==1.2.0
 
 django-pg-utils==0.1.5
 gpxpy==1.4.0
@@ -46,14 +46,14 @@ pyxform==1.1.0
 
 # test and linting
 mypy==0.761
-typed-ast==1.4.1
+typed-ast==1.4.2
 flake8==3.7.9
 flake8-mypy==17.8.0
 mock==4.0.1
 redgreenunittest==0.1.1
 responses==0.12.1
 
-black==18.6b2
+black==21.5b1
 pre-commit==1.14.4
 
 jupyter==1.0.0
@@ -69,3 +69,6 @@ json5==0.9.5
 sentry-sdk==0.19.4
 django-lazy-services==0.0.3
 dateparser==1.0.0
+
+gspread==3.7.0
+oauth2client==4.1.3

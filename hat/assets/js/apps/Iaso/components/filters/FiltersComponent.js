@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { replace } from 'react-router-redux';
 import PropTypes from 'prop-types';
 
-import { createUrl } from '../../utils/fetchData';
+import { createUrl } from 'bluesquare-components';
 
 import InputComponent from '../forms/InputComponent';
 
@@ -26,7 +26,7 @@ class FiltersComponent extends React.Component {
         if (callback) {
             callback(value, urlKey);
         } else {
-            const newState = Object.assign({}, this.state, { [urlKey]: value });
+            const newState = { ...this.state, [urlKey]: value };
             this.setState(newState);
             if (launchSearch) {
                 this.onSearch(newState);

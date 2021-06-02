@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { Tabs, Tab, withStyles } from '@material-ui/core';
 
+import { injectIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 import UsersInfos from './UsersInfos';
@@ -18,7 +19,6 @@ import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
 
 import PermissionsSwitches from './PermissionsSwitches';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     tabs: {
@@ -58,6 +58,12 @@ class UserDialogComponent extends Component {
         }
     }
 
+    handleChangeTab(tab) {
+        this.setState({
+            tab,
+        });
+    }
+
     onConfirm(closeDialog) {
         const {
             params,
@@ -88,7 +94,6 @@ class UserDialogComponent extends Component {
                 fetchUsersProfiles(params);
             })
             .catch(error => {
-                console.log('error', error);
                 if (error.status === 400) {
                     this.setFieldErrors(
                         error.details.errorKey,
@@ -156,12 +161,6 @@ class UserDialogComponent extends Component {
             },
             org_units: { value: get(initialData, 'org_units', []), errors: [] },
         };
-    }
-
-    handleChangeTab(tab) {
-        this.setState({
-            tab,
-        });
     }
 
     render() {

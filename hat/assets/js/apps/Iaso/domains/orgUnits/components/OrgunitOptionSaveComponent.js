@@ -5,7 +5,7 @@ import { withStyles, Button } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import commonStyles from '../../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 
@@ -30,7 +30,7 @@ function OrgunitOptionSaveComponent(props) {
         saveOrgUnit,
     } = props;
     return (
-        <Fragment>
+        <>
             <Button
                 className={classes.button}
                 disabled={!orgUnitLocationModified}
@@ -62,7 +62,7 @@ function OrgunitOptionSaveComponent(props) {
             >
                 <FormattedMessage {...MESSAGES.save} />
             </Button>
-        </Fragment>
+        </>
     );
 }
 

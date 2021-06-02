@@ -1,27 +1,50 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import moment from 'moment';
 import { Grid } from '@material-ui/core';
 import { Link } from 'react-router';
 
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
-import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
-import { textPlaceholder } from '../../constants/uiConstants';
+import {
+    textPlaceholder,
+    IconButton as IconButtonComponent,
+    ColumnText as ColumnTextComponent,
+} from 'bluesquare-components';
+import FormVersionsDialog from './components/FormVersionsDialogComponent';
 import { baseUrls } from '../../constants/urls';
 import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { deleteForm, fetchForms } from '../../utils/requests';
-import { setForms, setIsLoadingForm } from './actions';
 
-export const formVersionsTableColumns = formatMessage => [
+export const formVersionsTableColumns = (
+    formatMessage,
+    setForceRefresh,
+    formId,
+    periodType,
+) => [
     {
         Header: formatMessage(MESSAGES.version),
         accessor: 'version_id',
         Cell: settings => (
             <ColumnTextComponent
                 text={settings.original.version_id || textPlaceholder}
+            />
+        ),
+    },
+    {
+        Header: formatMessage(MESSAGES.startPeriod),
+        accessor: 'start_period',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={settings.original.start_period || textPlaceholder}
+            />
+        ),
+    },
+    {
+        Header: formatMessage(MESSAGES.endPeriod),
+        accessor: 'end_period',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={settings.original.end_period || textPlaceholder}
             />
         ),
     },
@@ -40,6 +63,26 @@ export const formVersionsTableColumns = formatMessage => [
                         tooltipMessage={MESSAGES.xls_form_file}
                     />
                 )}
+                <FormVersionsDialog
+                    renderTrigger={({ openDialog }) => (
+                        <IconButtonComponent
+                            onClick={openDialog}
+                            icon="edit"
+                            tooltipMessage={MESSAGES.edit}
+                        />
+                    )}
+                    onConfirmed={() => setForceRefresh(true)}
+                    formVersion={settings.original}
+                    periodType={periodType}
+                    formId={formId}
+                    titleMessage={{
+                        ...MESSAGES.updateFormVersion,
+                        values: {
+                            version_id: settings.original.version_id,
+                        },
+                    }}
+                    key={settings.original.updated_at}
+                />
             </section>
         ),
     },
@@ -50,6 +93,7 @@ const formsTableColumns = (
     component,
     showEditAction = true,
     showMappingAction = true,
+    deleteForm = null,
 ) => [
     {
         Header: formatMessage(MESSAGES.name),
@@ -200,36 +244,17 @@ const formsTableColumns = (
                             tooltipMessage={MESSAGES.dhis2Mappings}
                         />
                     )}
-                    <DispatchableDeleteDialog form={settings.original} />
+                    <DeleteDialog
+                        titleMessage={MESSAGES.deleteFormTitle}
+                        message={MESSAGES.deleteFormText}
+                        onConfirm={closeDialog =>
+                            deleteForm(settings.original.id).then(closeDialog)
+                        }
+                    />
                 </section>
             );
         },
     },
 ];
-
-const DispatchableDeleteDialog = ({ form }) => {
-    const dispatch = useDispatch();
-
-    return (
-        <DeleteDialog
-            titleMessage={MESSAGES.deleteFormTitle}
-            message={MESSAGES.deleteFormText}
-            onConfirm={() => {
-                deleteForm(dispatch, form.id).then(() => {
-                    dispatch(setIsLoadingForm(true));
-                    fetchForms(
-                        dispatch,
-                        '/api/forms/?&order=instance_updated_at&all=true',
-                    ).then(result => {
-                        dispatch(
-                            setForms(result.forms, result.count, result.pages),
-                        );
-                        dispatch(setIsLoadingForm(false));
-                    });
-                });
-            }}
-        />
-    );
-};
 
 export default formsTableColumns;

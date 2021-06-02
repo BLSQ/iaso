@@ -5,7 +5,7 @@ import moment from 'moment';
 import { withStyles, IconButton } from '@material-ui/core';
 import PlayIcon from '@material-ui/icons/PlayCircleFilled';
 import PauseIcon from '@material-ui/icons/PauseCircleFilled';
-import theme from '../../utils/theme';
+import { theme } from 'bluesquare-components';
 
 const styles = () => ({
     root: {

@@ -9,7 +9,7 @@ from iaso.models import Project, OrgUnitType, OrgUnit, DataSource, SourceVersion
 
 try:  # only in 3.8
     from typing import TypedDict
-except:
+except ImportError:
     TypedDict = type
 
 
@@ -22,10 +22,12 @@ def get_or_create_org_unit_type(name: str, project: Project, depth: int):
 
 
 class PropertyDict(TypedDict):
-    "Layer table has columns: table, ref, parent_ref"
+    """Layer table has columns: table, ref, parent_ref"""
+
     name: str
     parent_ref: str
     ref: str
+    group_refs: str
 
 
 class GeomDict(TypedDict):
@@ -41,13 +43,13 @@ class OrgUnitData(TypedDict):
     type: Optional[OrgUnitType]
 
 
-def convert_to_geography(type: str, coordinates: list):
+def convert_to_geography(geom_type: str, coordinates: list):
     """Convert a geography dict from gpkg/fiona to a geodjango.Geom
 
     it's ${current_year} and I can't believe I still have to do this.
     Shapely normally can do this natively but is not compatible with geography col
     and geodjango don't support geo yay"""
-    geom_type = type.lower()
+    geom_type = geom_type.lower()
     if geom_type == "point":
         # For some reason point in iaso are in 3D
         geom = Point(*coordinates, z=0)
@@ -79,7 +81,7 @@ def create_or_update_orgunit(
 ) -> OrgUnit:
     props = data["properties"]
     geometry = data["geometry"]
-    geom = convert_to_geography(**geometry)
+    geom = convert_to_geography(geometry["type"], geometry["coordinates"])
 
     if not orgunit:
         orgunit = OrgUnit()
@@ -105,14 +107,12 @@ def create_or_update_orgunit(
         # I previously wanted to differentiate the case of empty str vs null but QGIS don't show the difference
         #  in the ui so it's perilous
         orgunit.groups.clear()
-        orgunit.save(skip_calculate_path=True)
     elif props["group_refs"]:
         group_refs = props["group_refs"].split(",")
         group_refs = [ref.strip() for ref in group_refs]
 
         groups = [ref_group[ref] for ref in group_refs if ref]
         orgunit.groups.set(groups)
-        orgunit.save(skip_calculate_path=True)
 
     return orgunit
 

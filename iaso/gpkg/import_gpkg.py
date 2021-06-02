@@ -132,6 +132,8 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
             for row in iter(colx):
                 row["type"] = org_unit_type
                 ref = row["properties"]["ref"]
+                print(layer_name)
+                print(row["properties"])
 
                 existing_ou = ref_ou.get(ref, None)
                 orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status)

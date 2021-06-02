@@ -1,0 +1,20 @@
+FROM node:10.24.1-stretch-slim
+ENV PROJECT_ROOT /opt
+
+WORKDIR /opt/app
+
+RUN apt-get update || : && apt-get install -y \
+    python \
+    build-essential \
+    &&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY package.json .
+COPY package-lock.json .
+
+RUN npm i
+
+ADD hat/ hat/ 
+ADD plugins/ plugins/ 
+ADD entrypoint.sh .
+
+ENTRYPOINT ["./entrypoint.sh"]

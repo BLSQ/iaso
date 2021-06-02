@@ -7,7 +7,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 
 import PropTypes from 'prop-types';
 
-import commonStyles from '../../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 
 import InputComponent from '../../../components/forms/InputComponent';
 

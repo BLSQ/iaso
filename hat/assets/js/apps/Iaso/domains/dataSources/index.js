@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import {
+    AddButton as AddButtonComponent,
+    useSafeIntl,
+    TopBar,
+} from 'bluesquare-components';
+// import AddButtonComponent from '../../components/buttons/AddButtonComponent';
+// import { useSafeIntl } from '../../hooks/intl';
+// import TopBar from '../../components/nav/TopBarComponent';
 import { fetchAllDataSources } from '../../utils/requests';
 import { getDefaultSourceVersion } from './utils';
 
 import SingleTable from '../../components/tables/SingleTable';
-import TopBar from '../../components/nav/TopBarComponent';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
-import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 
 import { baseUrls } from '../../constants/urls';
+import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 
 import dataSourcesTableColumns from './config';
-import { useSafeIntl } from '../../hooks/intl';
+
 import { fetchAllProjects } from '../projects/actions';
 import MESSAGES from './messages';
 
@@ -31,6 +38,7 @@ const DataSources = () => {
             <TopBar
                 title={intl.formatMessage(MESSAGES.dataSources)}
                 displayBackButton={false}
+                toggleSidebar={() => dispatch(toggleSidebarMenu())}
             />
             <SingleTable
                 baseUrl={baseUrl}

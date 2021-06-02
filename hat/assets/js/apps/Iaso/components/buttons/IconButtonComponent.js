@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router';
+// import { Link } from 'react-router';
 import { FormattedMessage } from 'react-intl';
 import { withStyles, IconButton, Tooltip } from '@material-ui/core';
 import Delete from '@material-ui/icons/Delete';
@@ -15,12 +15,11 @@ import StopRoundedIcon from '@material-ui/icons/StopRounded';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import RestoreFromTrash from '@material-ui/icons/RestoreFromTrash';
 
+import { commonStyles, useLink } from 'bluesquare-components';
 import XmlSvg from '../svg/XmlSvgComponent';
 import DHIS2Svg from '../svg/DHIS2SvgComponent';
 import OrgUnitSvg from '../svg/OrgUnitSvgComponent';
 import ExcellSvg from '../svg/ExcellSvgComponent';
-
-import commonStyles from '../../styles/common';
 
 const ICON_VARIANTS = {
     delete: Delete,
@@ -92,6 +91,7 @@ function IconButtonComponent({
             'IconButtonComponent needs either the onClick or the url property',
         );
     }
+    const Link = useLink();
     const icon = ICON_VARIANTS[iconName];
     return (
         <Tooltip

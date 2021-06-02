@@ -20,7 +20,7 @@ import { fetchCurrentUser } from '../../users/actions';
 import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
-import { useSafeIntl } from '../../../hooks/intl';
+import { useSafeIntl } from 'bluesquare-components';
 
 // This wrapper to import translations to project_ids
 const ProjectIds = ({ keyValue, value, onChange, errors, options, label }) => {

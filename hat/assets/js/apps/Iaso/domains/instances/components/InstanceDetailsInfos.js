@@ -2,11 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import get from 'lodash/get';
 
+import { injectIntl } from 'bluesquare-components';
 import InstanceDetailsField from './InstanceDetailsField';
 
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const InstanceDetailsInfos = ({
     currentInstance,

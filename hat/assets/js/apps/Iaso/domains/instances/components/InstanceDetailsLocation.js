@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core';
 
+import { injectIntl } from 'bluesquare-components';
 import MarkerMap from '../../../components/maps/MarkerMapComponent';
 import OrgUnitDisplay from '../../orgUnits/components/OrgUnitDisplay';
 import OrgUnitSourceRefDisplay from '../../orgUnits/components/OrgUnitSourceRefDisplay';
@@ -12,7 +13,6 @@ import InstanceDetailsField from './InstanceDetailsField';
 
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     infosContainer: {

@@ -9,7 +9,7 @@ import {
     DialogContent,
     DialogTitle,
 } from '@material-ui/core';
-import commonStyles from '../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 
 const styles = theme => ({
     ...commonStyles(theme),

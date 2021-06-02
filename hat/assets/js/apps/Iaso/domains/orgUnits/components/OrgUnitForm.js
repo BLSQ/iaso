@@ -4,10 +4,10 @@ import PropTypes from 'prop-types';
 import { withStyles, Button, Grid } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 
+import { commonStyles } from 'bluesquare-components';
 import { useFormState } from '../../../hooks/form';
 import OrgUnitInfos from './OrgUnitInfosComponent';
 import MESSAGES from '../messages';
-import commonStyles from '../../../styles/common';
 
 const initialFormState = orgUnit => ({
     name: orgUnit.name,

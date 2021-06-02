@@ -6,12 +6,14 @@ import { Tooltip } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
-import { formatThousand } from '../../utils';
+import {
+    LoadingSpinner,
+    formatThousand,
+    textPlaceholder,
+} from 'bluesquare-components';
 import getDisplayName from '../../utils/usersUtils';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import StarsComponent from '../../components/stars/StarsComponent';
-import { textPlaceholder } from '../../constants/uiConstants';
 
 import MESSAGES from './messages';
 

@@ -4,9 +4,11 @@ import { Tooltip } from '@material-ui/core';
 
 // eslint-disable-next-line import/no-named-as-default
 // eslint-disable-next-line import/no-named-as-default-member
+import {
+    IconButton as IconButtonComponent,
+    textPlaceholder,
+} from 'bluesquare-components';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
-import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
 import { AddTask } from './components/AddTaskComponent';
 

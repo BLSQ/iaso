@@ -12,7 +12,7 @@ import FormVersionsDialog from './FormVersionsDialogComponent';
 import { baseUrls } from '../../../constants/urls';
 
 import { formVersionsTableColumns } from '../config';
-import { useSafeIntl } from '../../../hooks/intl';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
 

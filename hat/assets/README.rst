@@ -202,4 +202,14 @@ Steps to follow:
 
 - You should be able to see and track the problems through the dedicated tab. 
   CAUTION: if you navigate to a file through the tab, then close the file, it will be removed from the problems list, even if it wasn't changed. This seems to be a problem with using npm through VSCode's tasks
-  
+
+Depend on bluesquare-components library
+=======================================
+
+See the `library's README <https://github.com/BLSQ/bluesquare-components/blob/main/README.md>`__ for the general setup.
+
+When depending on a local version of the library:
+
+- Your local folder should be on the same level as the iaso folder, so that the path to the tgz file in your package.json is : ../bluesquare-components/bluesquare-components-0.1.0.tgz
+
+- Run ``docker-compose build --build-arg LIBRARY=<name-of-the-library-image>``

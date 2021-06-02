@@ -1,4 +1,7 @@
+ARG LIBRARY=scratch
+FROM ${LIBRARY} as library
 FROM python:3.6
+
 
 ################################################################################
 # define variables
@@ -38,8 +41,9 @@ RUN pip install --quiet -r requirements.txt
 # NODE Deps, JS/CSS production build
 COPY package.json /opt/app/package.json
 COPY package-lock.json /opt/app/package-lock.json
+COPY --from=library . /opt/
 
-RUN npm install --loglevel silent
+RUN npm install
 
 ENV PATH /opt/app/node_modules/.bin:$PATH
 

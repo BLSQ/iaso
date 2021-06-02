@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core';
 import { Link } from 'react-router';
 
+import { textPlaceholder } from 'bluesquare-components';
 import { getOrgunitMessage } from '../utils';
-import { textPlaceholder } from '../../../constants/uiConstants';
 
 const styles = () => ({
     link: {

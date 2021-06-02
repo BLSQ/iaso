@@ -72,7 +72,6 @@ class MultiSearchTestCase(TestCase):
             validation_status=OrgUnit.VALIDATION_VALID,
         )
 
-    @tag("iaso_only")
     def test_org_unit_multi_search_as_location(self):
         """Testing the multi search as location"""
         link_client = self.link_client
@@ -86,7 +85,6 @@ class MultiSearchTestCase(TestCase):
 
         self.assertEqual(len(json_response), 2)
 
-    @tag("iaso_only")
     def test_org_unit_multi_search_all(self):
         """Testing the multi search get all"""
         link_client = self.link_client
@@ -98,7 +96,6 @@ class MultiSearchTestCase(TestCase):
 
         self.assertEqual(json_response["count"], 4)
 
-    @tag("iaso_only")
     def test_org_unit_multi_search_as_dict(self):
         """Testing the multi search as dict"""
         link_client = self.link_client
@@ -112,7 +109,6 @@ class MultiSearchTestCase(TestCase):
 
         self.assertEqual(json_response["count"], 2)
 
-    @tag("iaso_only")
     def test_org_unit_multi_search_as_dict_default_version(self):
         """Testing the multi search only default version"""
         link_client = self.link_client

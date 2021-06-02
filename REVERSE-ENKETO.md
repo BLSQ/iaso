@@ -1,3 +1,5 @@
+Enketo is another service, used to present Form to users so they can use them. This document explain how to set it up
+locally and how the connexion between the two works. 
 
 # Install enketo locally
 

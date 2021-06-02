@@ -23,7 +23,6 @@ class CorrelationAPITestCase(APITestCase):
             name="Hydroponic public survey", form_id="sample2", correlatable=True, correlation_field="service"
         )
 
-    @tag("iaso_only")
     def test_correlation_creation_without_correlation_field(self):
         """POST of a form where correlation is not set up"""
         file_name = "land_speeder.xml"
@@ -63,7 +62,6 @@ class CorrelationAPITestCase(APITestCase):
             len(str(instance.id)) + 3, len(str(instance.correlation_id))
         )  # verify that one random number was added
 
-    @tag("iaso_only")
     def test_correlation_creation_with_correlation_field(self):
         """POST of a form where correlation is set up"""
         file_name = "land_speeder_with_service.xml"

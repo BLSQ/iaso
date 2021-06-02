@@ -13,7 +13,6 @@ class OrgUnitModelTestCase(TestCase):
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         cls.jedi_task_force = m.OrgUnitType.objects.create(name="Jedi Task Force", short_name="Jtf")
 
-    @tag("iaso_only")
     def test_org_unit_creation_no_parent_or_parent_has_path(self):
         """Newly created org unit without parents should have a path, and so do new org units
         attached to a parent that has a path."""
@@ -23,7 +22,6 @@ class OrgUnitModelTestCase(TestCase):
         self.assertEqual(str(corrusca.path), str(corrusca.pk))
         self.assertEqual(str(corruscant.path), f"{corrusca.pk}.{corruscant.pk}")
 
-    @tag("iaso_only")
     def test_org_unit_creation_or_update_parent_without_path(self):
         """Created or updated a org unit linked to a pathless parent should not have a path."""
 
@@ -34,7 +32,6 @@ class OrgUnitModelTestCase(TestCase):
         corruscant.save()
         self.assertIsNone(corruscant.path)
 
-    @tag("iaso_only")
     def test_org_unit_update_path_with_children(self):
         """Path should be set for the whole hierarchy"""
 
@@ -64,7 +61,6 @@ class OrgUnitModelTestCase(TestCase):
             str(jedi_council_corruscant.path), f"{corrusca.pk}.{corruscant.pk}.{jedi_council_corruscant.pk}"
         )
 
-    @tag("iaso_only")
     def test_org_unit_path_does_not_change(self):
         """Updating the "name" property should not result in path change queries"""
 
@@ -77,7 +73,6 @@ class OrgUnitModelTestCase(TestCase):
         with self.assertNumQueries(3):
             corrusca.save()
 
-    @tag("iaso_only")
     def test_org_unit_save_skip_calculate_path(self):
         """If skip_calculate_path is set to True, path should be None, and no transaction should be created"""
 
@@ -91,7 +86,6 @@ class OrgUnitModelTestCase(TestCase):
         with self.assertNumQueries(1):
             corrusca.save(skip_calculate_path=True)
 
-    @tag("iaso_only")
     def test_org_unit_path_does_change(self):
         """Changing the parent should trigger a path update"""
 
@@ -107,7 +101,6 @@ class OrgUnitModelTestCase(TestCase):
         with self.assertNumQueries(6):
             corruscant.save()
 
-    @tag("iaso_only")
     def test_org_unit_hierarchy_children_descendants(self):
         """Test manager methods: hierarchy(), children() and descendants()."""
 

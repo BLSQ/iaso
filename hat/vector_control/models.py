@@ -1,16 +1,20 @@
 from django.contrib.auth.models import User
-from django.db.models import Sum
-from django.contrib.gis.db.models.fields import PointField
+
 from django.db import models
-import uuid
 from django.contrib.postgres.fields import JSONField
 
-from django.db.models import CASCADE, SET_NULL
+from django.db.models import CASCADE
 
 IMPORT_TYPE = (("orgUnit", "Org Unit"), ("instance", "Form instance"))
 
 
 class APIImport(models.Model):
+    """This model is used to log API call from the mobile app
+
+    The idea is that the mobile app user may not have great internet connection where they are
+    so in case of import problem we can fix it server side and not ask them to upload again.
+    """
+
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
     import_type = models.TextField(max_length=25, choices=IMPORT_TYPE, null=True, blank=True)

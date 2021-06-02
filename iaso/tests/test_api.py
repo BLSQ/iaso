@@ -37,7 +37,6 @@ class BasicAPITestCase(APITestCase):
         self.project.forms.add(self.form_1)
         self.project.forms.add(self.form_2)
 
-    @tag("iaso_only")
     def test_org_unit_insertion(self):
         """Creating Org Units through the API"""
 
@@ -143,7 +142,6 @@ class BasicAPITestCase(APITestCase):
 
         self.assertIsNone(fifre_model.location)
 
-    @tag("iaso_only")
     def test_org_unit_insertion_new_field_names(self):
         """Creating Org Units through the API but using org_unit_type_id and parent_id instead of orgUnitTypeId and parentId"""
         c = APIClient()
@@ -254,7 +252,6 @@ class BasicAPITestCase(APITestCase):
             exception_contains_string="Could not find project for user",
         )
 
-    @tag("iaso_only")
     def test_instance_insertion(self):
         """Creating Instance Units through the API"""
         c = APIClient()
@@ -333,7 +330,6 @@ class BasicAPITestCase(APITestCase):
             exception_contains_string="Could not find project for user",
         )
 
-    @tag("iaso_only")
     def test_fetch_org_unit_type(self):
         """Fetch Org Unit Types through the API"""
         c = APIClient()
@@ -364,7 +360,6 @@ class BasicAPITestCase(APITestCase):
 
         self.assertTrue(found)
 
-    @tag("iaso_only")
     def test_forms_list_with_app_id(self):
         """GET /forms/ mobile app happy path (no auth but with app id): 2 results"""
 

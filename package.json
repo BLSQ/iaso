@@ -105,7 +105,6 @@
     "extract-react-intl-messages": "^4.1.1",
     "fetch-mock": "^7.3.3",
     "file-loader": "^6.2.0",
-    "husky": "^3.0.0",
     "jsdom": "^15.1.1",
     "lint-staged": "^9.0.1",
     "mini-css-extract-plugin": "^1.6.0",

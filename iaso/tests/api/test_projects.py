@@ -20,14 +20,12 @@ class ProjectsAPITestCase(APITestCase):
         cls.project_1.feature_flags.set([flag])
         m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=ghi)
 
-    @tag("iaso_only")
     def test_projects_list_without_auth(self):
         """GET /projects/ without auth should result in a 403"""
 
         response = self.client.get("/api/projects/")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_projects_list_no_permission(self):
         """GET /projects/ with auth but without the proper permission"""
 
@@ -35,7 +33,6 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get("/api/projects/")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_projects_list_empty_for_user(self):
         """GET /projects/ with a user that has no access to any project"""
 
@@ -44,7 +41,6 @@ class ProjectsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProjectListData(response.json(), 0)
 
-    @tag("iaso_only")
     def test_projects_list_ok(self):
         """GET /projects/ happy path: we expect two results"""
 
@@ -53,7 +49,6 @@ class ProjectsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProjectListData(response.json(), 2)
 
-    @tag("iaso_only")
     def test_feature_flags_list_ok(self):
         """GET /featureflags/ happy path: we expect one result"""
 
@@ -62,7 +57,6 @@ class ProjectsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFeatureFlagListData(response.json(), 1)
 
-    @tag("iaso_only")
     def test_projects_list_paginated(self):
         """GET /projects/ paginated happy path"""
 
@@ -77,7 +71,6 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(response_data["limit"], 1)
         self.assertEqual(response_data["count"], 2)
 
-    @tag("iaso_only")
     def test_feature_flags_list_paginated(self):
         """GET /featureflags/ paginated happy path"""
 
@@ -92,14 +85,12 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(response_data["limit"], 1)
         self.assertEqual(response_data["count"], 1)
 
-    @tag("iaso_only")
     def test_projects_retrieve_without_auth(self):
         """GET /projects/<project_id> without auth should result in a 403"""
 
         response = self.client.get(f"/api/projects/{self.project_1.id}/")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_projects_retrieve_wrong_auth(self):
         """GET /projects/<project_id> with auth of unrelated user should result in a 404"""
 
@@ -107,7 +98,6 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get(f"/api/projects/{self.project_1.id}/")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_projects_retrieve_not_found(self):
         """GET /projects/<project_id>: id does not exist"""
 
@@ -115,7 +105,6 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get(f"/api/projects/292003030/")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_projects_retrieve_ok(self):
         """GET /projects/<project_id> happy path"""
 
@@ -128,7 +117,6 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(1, len(response_data["feature_flags"]))
         self.assertValidFeatureFlagData(response_data["feature_flags"][0])
 
-    @tag("iaso_only")
     def test_projects_create(self):
         """POST /projects/: not authorized for now"""
 
@@ -136,7 +124,6 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.post("/api/projects/", data={}, format="json")
         self.assertJSONResponse(response, 405)
 
-    @tag("iaso_only")
     def test_projects_update(self):
         """PUT /projects/<project_id>: not authorized for now"""
 
@@ -144,7 +131,6 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data={}, format="json")
         self.assertJSONResponse(response, 405)
 
-    @tag("iaso_only")
     def test_projects_delete(self):
         """DELETE /projects/<project_id>: not authorized for now"""
 

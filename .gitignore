@@ -1,7 +1,6 @@
 node_modules
 celerybeat-schedule.db
 .ipynb_checkpoints
-shared
 *.swp
 *~
 privatekey.json

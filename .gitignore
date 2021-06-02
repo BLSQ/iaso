@@ -123,3 +123,7 @@ data
 
 # lint error checking output
 lintErrors.html
+
+# gpkg tempory file
+*.gpkg-shm
+*.gpkg-wal

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import omit from 'lodash/omit';
 import { connect } from 'react-redux';
 import { push, replace } from 'react-router-redux';

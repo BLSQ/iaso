@@ -1,7 +1,7 @@
 import React from 'react';
 import orderBy from 'lodash/orderBy';
 
-import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
+import { ColumnText as ColumnTextComponent } from 'bluesquare-components';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 
 import { baseUrls } from '../../constants/urls';

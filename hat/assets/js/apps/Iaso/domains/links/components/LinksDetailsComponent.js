@@ -15,15 +15,16 @@ import {
 
 import PropTypes from 'prop-types';
 
-import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
+import {
+    injectIntl,
+    commonStyles,
+    LoadingSpinner,
+} from 'bluesquare-components';
 import LinksCompare from './LinksCompareComponent';
-
-import commonStyles from '../../../styles/common';
 
 import { fetchLinkDetail } from '../../../utils/requests';
 
 import MESSAGES from '../messages';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

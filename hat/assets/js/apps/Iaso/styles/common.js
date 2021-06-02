@@ -1,3 +1,4 @@
+// The files is not used anymore in the react app, but Django still uses it
 import mapStyles from './map';
 import reactTable from './reactTable';
 import innerDrawer from './innerDrawer';

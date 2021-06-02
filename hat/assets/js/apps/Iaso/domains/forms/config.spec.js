@@ -1,6 +1,6 @@
+import { IconButton } from 'bluesquare-components';
 import formsTableColumns, { formVersionsTableColumns } from './config';
 import archivedTableColumn from './configArchived';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import FormVersionsDialog from './components/FormVersionsDialogComponent';
 
@@ -65,7 +65,7 @@ describe('Forms config', () => {
                     original: fakeFormVersion,
                 }),
             );
-            xlsButton = wrapper.find(IconButtonComponent);
+            xlsButton = wrapper.find(IconButton);
 
             expect(xlsButton).to.have.lengthOf(1);
             const openStub = sinon.stub(window, 'open');
@@ -156,7 +156,7 @@ describe('Forms config', () => {
                 expect(editIcon).to.have.lengthOf(0);
                 const dhisIcon = wrapper.find('[icon="dhis"]');
                 expect(dhisIcon).to.have.lengthOf(0);
-                expect(wrapper.find(IconButtonComponent)).to.have.lengthOf(1);
+                expect(wrapper.find(IconButton)).to.have.lengthOf(1);
             });
             it('should trigger deleteFormSpy on onConfirm', () => {
                 deleteDialog = wrapper.find(DeleteDialog);

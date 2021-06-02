@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 
+import { useSafeIntl } from 'bluesquare-components';
 import { setForms } from './actions';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
@@ -16,7 +17,6 @@ import SingleTable from '../../components/tables/SingleTable';
 import { deleteForm, restoreForm, fetchForms } from '../../utils/requests';
 
 import MESSAGES from './messages';
-import { useSafeIntl } from '../../hooks/intl';
 
 import { baseUrls } from '../../constants/urls';
 import { formsFilters } from '../../constants/filters';

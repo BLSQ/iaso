@@ -8,6 +8,12 @@ import isEqual from 'lodash/isEqual';
 import moment from 'moment';
 
 import {
+    getTableUrl,
+    commonStyles,
+    injectIntl,
+    ColumnsSelectDrawer,
+} from 'bluesquare-components';
+import {
     resetInstances,
     setInstances,
     setInstancesSmallDict,
@@ -53,19 +59,14 @@ import InstancesMap from './components/InstancesMapComponent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import ColumnsSelectDrawerComponent from '../../components/tables/ColumnsSelectDrawerComponent';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 import SingleTable from '../../components/tables/SingleTable';
 
-import commonStyles from '../../styles/common';
-
-import getTableUrl from '../../utils/tableUtils';
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.instances;
 
@@ -427,7 +428,7 @@ class Instances extends Component {
                             justify="flex-end"
                             className={classes.selectColmunsContainer}
                         >
-                            <ColumnsSelectDrawerComponent
+                            <ColumnsSelectDrawer
                                 options={visibleColumns}
                                 setOptions={cols =>
                                     this.changeVisibleColumns(cols)

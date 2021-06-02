@@ -7,7 +7,7 @@ import { baseUrls } from '../../constants/urls';
 
 import devicesTableColumns from './config';
 import MESSAGES from './messages';
-import { useSafeIntl } from '../../hooks/intl';
+import { useSafeIntl } from 'bluesquare-components';
 import { fetchDevicesAsDict } from '../../utils/requests';
 
 const baseUrl = baseUrls.devices;

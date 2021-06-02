@@ -12,9 +12,10 @@ import {
     createUrl,
     injectIntl,
     commonStyles,
-    TopBar,
+    // TopBar,
     LoadingSpinner,
 } from 'bluesquare-components';
+import TopBar from '../../components/nav/TopBarComponent';
 import {
     setCurrentOrgUnit,
     setOrgUnitTypes,

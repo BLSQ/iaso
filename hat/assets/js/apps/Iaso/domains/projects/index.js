@@ -8,7 +8,7 @@ import {
     injectIntl,
     commonStyles,
     LoadingSpinner,
-    TopBar,
+    // TopBar,
     Table,
 } from 'bluesquare-components';
 import {
@@ -16,6 +16,7 @@ import {
     fetchAllFeatureFlags as fetchAllFeatureFlagsAction,
 } from './actions';
 
+import TopBar from '../../components/nav/TopBarComponent';
 import ProjectsDialog from './components/ProjectsDialog';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 

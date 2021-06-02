@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { withStyles, Box, Grid } from '@material-ui/core';
 import {
     injectIntl,
-    TopBar,
+    // TopBar,
     LoadingSpinner,
     commonStyles,
     Table,
@@ -16,6 +16,7 @@ import {
     deleteOrgUnitType as deleteOrgUnitTypeAction,
 } from './actions';
 import { fetchAllProjects as fetchAllProjectsAction } from '../../projects/actions';
+import TopBar from '../../../components/nav/TopBarComponent';
 
 import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
 import AddButtonComponent from '../../../components/buttons/AddButtonComponent';

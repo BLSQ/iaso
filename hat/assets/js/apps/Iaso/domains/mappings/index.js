@@ -10,12 +10,12 @@ import {
     injectIntl,
     commonStyles,
     LoadingSpinner,
-    TopBar,
+    // TopBar,
     Table,
 } from 'bluesquare-components';
 import { redirectTo as redirectToAction } from '../../routing/actions';
 import { fetchMappingVersions as fetchMappingVersionsAction } from './actions';
-
+import TopBar from '../../components/nav/TopBarComponent';
 import mappingsTableColumns from './config';
 
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';

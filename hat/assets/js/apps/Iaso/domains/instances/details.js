@@ -14,8 +14,9 @@ import {
     commonStyles,
     LoadingSpinner,
     IconButton as IconButtonComponent,
-    TopBar,
+    // TopBar,
 } from 'bluesquare-components';
+import TopBar from '../../components/nav/TopBarComponent';
 import {
     setCurrentInstance as setCurrentInstanceAction,
     fetchInstanceDetail as fetchInstanceDetailAction,

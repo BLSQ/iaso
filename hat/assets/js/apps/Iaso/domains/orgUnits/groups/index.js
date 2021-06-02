@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { withStyles, Box, Grid } from '@material-ui/core';
 import {
     injectIntl,
-    TopBar,
+    // TopBar,
     LoadingSpinner,
     commonStyles,
     Table,
@@ -14,7 +14,7 @@ import {
     fetchGroups as fetchGroupsAction,
     deleteGroup as deleteGroupAction,
 } from './actions';
-
+import TopBar from '../../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
 import GroupsDialog from './components/GroupsDialog';
 import AddButtonComponent from '../../../components/buttons/AddButtonComponent';

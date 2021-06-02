@@ -13,7 +13,7 @@ import {
     createUrl,
     injectIntl,
     commonStyles,
-    TopBar,
+    // TopBar,
 } from 'bluesquare-components';
 import {
     fetchAlgorithms,
@@ -22,6 +22,8 @@ import {
     runAlgorithm,
     fetchSources,
 } from '../../utils/requests';
+
+import TopBar from '../../components/nav/TopBarComponent';
 
 import { setAlgorithms } from './actions';
 

@@ -55,7 +55,6 @@ class InstanceModelTestCase(TestCase):
         cls.project.forms.add(cls.form_2)
         cls.project.save()
 
-    @tag("iaso_only")
     def test_instance_status(self):
         instance_1 = self.create_form_instance(form=self.form_1, period="202001", org_unit=self.jedi_council_coruscant)
         instance_2 = self.create_form_instance(form=self.form_1, period="202002", org_unit=self.jedi_council_coruscant)
@@ -372,7 +371,6 @@ class InstanceModelTestCase(TestCase):
 
         return (alderaan, sluis, dagobah, first_council, second_council, first_academy, second_academy)
 
-    @tag("iaso_only")
     def test_org_unit_soft_delete_no_one(self):
         instance = self.create_form_instance(form=self.form_1, period="202001", org_unit=self.jedi_council_coruscant)
 
@@ -391,7 +389,6 @@ class InstanceModelTestCase(TestCase):
         self.assertFalse(modification.past_value[0]["fields"]["deleted"])
         self.assertTrue(modification.new_value[0]["fields"]["deleted"])
 
-    @tag("iaso_only")
     def test_org_unit_soft_delete_someone(self):
         instance = self.create_form_instance(form=self.form_1, period="202002", org_unit=self.jedi_council_coruscant)
 

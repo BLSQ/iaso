@@ -1,3 +1,5 @@
+from django.db import InternalError, connections
+
 from iaso.test import TestCase
 from django.test import tag
 from iaso import models as m
@@ -11,7 +13,6 @@ class OrgUnitModelTestCase(TestCase):
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         cls.jedi_task_force = m.OrgUnitType.objects.create(name="Jedi Task Force", short_name="Jtf")
 
-    @tag("iaso_only")
     def test_org_unit_creation_no_parent_or_parent_has_path(self):
         """Newly created org unit without parents should have a path, and so do new org units
         attached to a parent that has a path."""
@@ -21,7 +22,6 @@ class OrgUnitModelTestCase(TestCase):
         self.assertEqual(str(corrusca.path), str(corrusca.pk))
         self.assertEqual(str(corruscant.path), f"{corrusca.pk}.{corruscant.pk}")
 
-    @tag("iaso_only")
     def test_org_unit_creation_or_update_parent_without_path(self):
         """Created or updated a org unit linked to a pathless parent should not have a path."""
 
@@ -32,7 +32,6 @@ class OrgUnitModelTestCase(TestCase):
         corruscant.save()
         self.assertIsNone(corruscant.path)
 
-    @tag("iaso_only")
     def test_org_unit_update_path_with_children(self):
         """Path should be set for the whole hierarchy"""
 
@@ -62,7 +61,6 @@ class OrgUnitModelTestCase(TestCase):
             str(jedi_council_corruscant.path), f"{corrusca.pk}.{corruscant.pk}.{jedi_council_corruscant.pk}"
         )
 
-    @tag("iaso_only")
     def test_org_unit_path_does_not_change(self):
         """Updating the "name" property should not result in path change queries"""
 
@@ -75,7 +73,6 @@ class OrgUnitModelTestCase(TestCase):
         with self.assertNumQueries(3):
             corrusca.save()
 
-    @tag("iaso_only")
     def test_org_unit_save_skip_calculate_path(self):
         """If skip_calculate_path is set to True, path should be None, and no transaction should be created"""
 
@@ -89,7 +86,6 @@ class OrgUnitModelTestCase(TestCase):
         with self.assertNumQueries(1):
             corrusca.save(skip_calculate_path=True)
 
-    @tag("iaso_only")
     def test_org_unit_path_does_change(self):
         """Changing the parent should trigger a path update"""
 
@@ -105,7 +101,6 @@ class OrgUnitModelTestCase(TestCase):
         with self.assertNumQueries(6):
             corruscant.save()
 
-    @tag("iaso_only")
     def test_org_unit_hierarchy_children_descendants(self):
         """Test manager methods: hierarchy(), children() and descendants()."""
 
@@ -165,3 +160,62 @@ class OrgUnitModelTestCase(TestCase):
         task_force.refresh_from_db()
 
         return corrusca, corruscant, first_council, second_council, task_force
+
+
+class OrgUnitModelDbTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.sector = m.OrgUnitType.objects.create(name="Sector", short_name="Sec")
+        cls.source = m.DataSource.objects.create(name="source")
+        cls.version1 = m.SourceVersion.objects.create(data_source=cls.source, number=1)
+        cls.version2 = m.SourceVersion.objects.create(data_source=cls.source, number=2)
+
+    def activate_constraints(self):
+        """Active constraints inside the test, so that it raise in real time
+
+        Kind of a hack but need to check the constraints, otherwise django only check them
+        at teardown and we can't catch them.
+
+        This will be automatically reversed in teardown. Only tested with postgres
+        Note that the transaction will be blocked once an error occur
+        """
+        for db_name in reversed(self._databases_names()):
+            if self._should_check_constraints(connections[db_name]):
+                connections[db_name].cursor().execute("SET CONSTRAINTS ALL IMMEDIATE")
+
+    def test_create_same_then_mod_group(self):
+        self.activate_constraints()
+        orgunit = m.OrgUnit.objects.create(org_unit_type=self.sector, name="OrgUnit", version=self.version1)
+        group = m.Group.objects.create(name="group", source_version=self.version1)
+        orgunit.groups.set([group])
+
+        group.source_version = self.version2
+        with self.assertRaisesMessage(
+            InternalError,
+            "Constraint violation iaso_group_org_units_same_source_version_constraint",
+        ):
+            group.save()
+
+    def test_create_same_then_mod_org_unit(self):
+        self.activate_constraints()
+        orgunit = m.OrgUnit.objects.create(org_unit_type=self.sector, name="OrgUnit", version=self.version1)
+        group = m.Group.objects.create(name="group", source_version=self.version1)
+        orgunit.groups.set([group])
+
+        orgunit.version = self.version2
+        with self.assertRaisesMessage(
+            InternalError,
+            "Constraint violation iaso_group_org_units_same_source_version_constraint",
+        ):
+            orgunit.save()
+
+    def test_diff_source_version_fail_at_assign(self):
+        self.activate_constraints()
+        orgunit = m.OrgUnit.objects.create(org_unit_type=self.sector, name="OrgUnit", version=self.version1)
+        group = m.Group.objects.create(name="group", source_version=self.version2)
+
+        with self.assertRaisesMessage(
+            InternalError,
+            "Constraint violation iaso_group_org_units_same_source_version_constraint",
+        ):
+            orgunit.groups.set([group])

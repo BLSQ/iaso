@@ -1,8 +1,5 @@
-Introduction & Settings
-=======================
-
 Introduction
-------------
+============
 
 Iaso is a georegistry and data collection web platform structured around
 trees of organization units (also known a master lists)
@@ -28,7 +25,11 @@ More documentation on the Front End part is in
 [hat/assets/README.rst](hat/assets/README.rst)
 
 Development environment
------------------------
+=======================
+
+Setup
+-----
+
 
 No local setup should be needed apart from:
 
@@ -88,6 +89,7 @@ This will build and download the containers and start them. The
 The web server should be reachable at `http://localhost:8081` (you
 should see a login form).
 
+
 ### 6. Create a superuser
 
 To login to the app or the Django admin, a superuser needs to be created
@@ -119,6 +121,8 @@ docker-compose exec iaso ./manage.py tree_importer --org_unit_csv_file testdata/
 
 You can now login on `http://localhost:8081`
 
+Alternatively to this step and the latter you can import data from DHIS2 see section below.
+
 ### 8. Create a form
 
 Run the following command to create a form:
@@ -140,60 +144,62 @@ If Enketo is running and well setup, you can fill the form now.
 
 You can now start to develop additional features on Iaso!
 
-Run commands on the server
---------------------------
 
-Each docker container uses the same script as entrypoint. The
-`entrypoint.sh` script offers a range of commands to start services or
+### 10. Import data from DHIS2
+
+Alternatively to steps 7-8, you can import data from the DHIS2 demo server (play.dhis2.org).
+
+By running the command
+
+
+``` {.sourceCode .bash}
+docker-compose run iaso manage.py seed_test_data --mode=seed --dhis2version=2.35.3
+```
+
+The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. Type of OrgUnit are not
+handled at the moment
+
+you can then login through <http://127.0.0.1:8081/dashboard> with :
+
+ -   user : testemail2.35.3
+ -   password: testemail2.35.3
+ 
+Run commands inside the docker
+-------------------------------
+
+Each docker container uses the entrypoint.
+
+
+The `entrypoint.sh` script offers a range of commands to start services or
 run commands. The full list of commands can be seen in the script. The
-pattern to run a command is always
+pattern to run a command is
 `docker-compose run <container-name> <entrypoint-command> <...args>`
 
 The following are some examples:
 
-  ------------------------------------------------------------------------
-  Action                       Command
-  ---------------------------- -------------------------------------------
-  Run tests                    `docker-compose exec iaso ./manage.py test`
+* Run tests                    `docker-compose exec iaso ./manage.py test`
+* Create a shell inside the container    `docker-compose run iaso bash`
+* Run a shell command          `docker-compose run iaso eval curl http://google.com`
+* Run Django manage.py         `docker-compose exec iaso ./manage.py help`
+* Launch a python shell        `docker-compose exec iaso ./manage.py shell
+* Launch a postgresql shell    `docker-compose exec iaso ./manage.py dbshell`
+* Create pending ORM migrationfiles `docker-compose exec iaso ./manage.py makemigrations`
+* Apply pending ORM migrations `docker-compose exec iaso ./manage.py migrate`
+* Show ORM migrations          `docker-compose exec iaso ./manage.py showmigrations`
 
-  Create a shell inside the    `docker-compose run iaso bash`
-  container                    
 
-  Run a shell command          `docker-compose run iaso eval curl http://g
-                               oogle.com`
+### docker-compose run VS docker-compose exec
 
-  Run Django manage.py         `docker-compose exec iaso ./manage.py help`
+Run launch a new docker container, Exec launch a command it the existing container.
 
-  Create a python shell        `docker-compose exec iaso ./manage.py shell
-                               `
+So `run` will ensure the dependencies like the database are up before executing. `exec` main advantage is that is faster
+but you the container already running and lauched manually 
 
-  Create a postgresql shell    `docker-compose exec iaso ./manage.py dbshe
-                               ll`
+`run` will launch the entrypoint.sh script but exec will take a bash command to run which is why if you want
+to run the django manage.py you will need to use `run iaso manage` but `exec iaso ./manage.py`
 
-  Create pending ORM migration `docker-compose exec iaso ./manage.py makem
-  files                        igrations`
-
-  Apply pending ORM migrations `docker-compose exec iaso ./manage.py migra
-                               te`
-
-  Show ORM migrations          `docker-compose exec iaso ./manage.py showm
-                               igrations`
-  ------------------------------------------------------------------------
-
-To seed data coming from play.dhis2.org, since the previous commands
-doesn't run in the same container, you need to do a run a docker exec
-command
-
-``` {.sourceCode .bash}
-```
-
-docker exec iaso\_iaso\_1 ./manage.py seed\_test\_data --mode=seed
---dhis2version=2.32.6
-
-you can then login through <http://127.0.0.1:8081/dashboard> with :
-
-> -   user : testemail2.31.8
-> -   password: testemail2.31.8
+Also take care that `run` unless evoked with the `--rm` will leave you with a lot of left over containers that take up
+disk space and need to be cleaned occasionally with `docker-compose rm` to reclaim disk space.
 
 Running Django 3 on Elastic Beanstalk
 -------------------------------------
@@ -229,7 +235,7 @@ geos-3.5.2)
 >
 > sudo ldconfig
 
-Then go to Actions -\> Image -\> Create Image When it's ready, go to the
+Then go to Actions -> Image -> Create Image When it's ready, go to the
 Beanstalk Instance Settings and specify the AMI reference of the image
 we just created.
 
@@ -238,12 +244,11 @@ Containers and services
 
 The list of the main containers:
 
-  Container  Description
-  ---------- -------------------------------------------------------------
-  iaso       [Django](https://www.djangoproject.com/)
-  db         [PostgreSQL](https://www.postgresql.org/) database
+*  iaso       The python backend in [Django](https://www.djangoproject.com/)
+*  webpack    The JS frontend in react
+*  db         [PostgreSQL](https://www.postgresql.org/) database
 
-All of the container definitions for development can be found in the
+All the container definitions for development can be found in the
 `docker-compose.yml`.
 
 > **note**
@@ -263,9 +268,10 @@ docker-compose exec iaso ./manage.py test
 Code reloading
 --------------
 
-In development the Django dev server will restart when it detects a file
-change, either in Python or Javascript.
+In development the servers will reload when it detects a file
+change, either in Python or Javascript. 
 
+If you need to restart everything
 ``` {.sourceCode .shell}
 docker-compose stop && docker-compose start
 ```
@@ -308,15 +314,11 @@ It often blocks the deployment.
 you can test the default message extraction with
 
 ``` {.sourceCode .shell}
-```
-
-\# make sure you commit everything
-
+# make sure you commit everything
 npm run webpack-prod
-
 git clean -n
-
 git clean -f ..
+```
 
 Jupyter Notebook
 ----------------
@@ -363,10 +365,7 @@ Then, you need to make sure your .env file is properly configured.
 ENKETO\_URL should be set to http://192.168.1.15:81 (Replace
 192.168.1.15 by your host)
 
-``` {.sourceCode .shell}
-docker-compose up
-docker exec iaso_iaso_1  ./manage.py seed_test_data --mode=seed --dhis2version=2.32.6
-```
+To seed your DB with typical example forms, see the  Import data from DHIS2
 
 # Workers
 

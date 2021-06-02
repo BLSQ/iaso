@@ -1,8 +1,7 @@
 from iaso.models import SourceVersion
 from .common import ModelViewSet
-from iaso.models import DataSource, OrgUnit
+from iaso.models import DataSource
 from rest_framework import serializers, permissions
-from .common import HasPermission
 
 
 class SourceVersionSerializer(serializers.ModelSerializer):

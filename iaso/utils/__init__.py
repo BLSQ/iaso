@@ -53,11 +53,6 @@ def extract_form_version_id(soup):
     return None
 
 
-def flat_parse_xml_file(file, repeat_groups):
-    soup = as_soup(soup)
-    return flat_parse_xml_soup(soup, repeat_groups)
-
-
 def flat_parse_xml_soup(soup, repeat_groups):
 
     flat_xml_dict = {}

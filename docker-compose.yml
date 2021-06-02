@@ -13,12 +13,13 @@ services:
     volumes: &hat_volumes
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
+      - ./beanstalk_worker:/opt/app/beanstalk_worker
       - ./media:/opt/app/media
       - ./plugins:/opt/app/plugins
       - ./scripts:/opt/app/scripts
       - ./entrypoint.sh:/opt/app/entrypoint.sh
       - ./docs:/opt/app/docs
-      - ./README.rst:/opt/app/README.rst
+        #- ./README.rst:/opt/app/README.rst
       # shared dir between containers
       - ./shared:/opt/shared
       # build scripts for testing prod version
@@ -31,6 +32,7 @@ services:
       - db
     environment: &hat_environment
       PLUGIN_POLIO_ENABLED: ${PLUGIN_POLIO_ENABLED}
+      GOOGLE_API_KEY_BASE64: ${GOOGLE_API_KEY_BASE64}
       IASO_ENVIRONMENT: "development"
       RDS_HOSTNAME: db
       RDS_DB_NAME: iaso

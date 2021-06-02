@@ -214,6 +214,7 @@ const SingleTable = ({
                     )}
                     paramsPrefix={paramsPrefix}
                     watchToRender={watchToRender}
+                    params={params}
                 />
             )}
         </Box>

@@ -1,12 +1,12 @@
-from typing import Optional, Dict, List, Tuple
+import sqlite3
+from typing import Optional, Dict, List, Tuple, Union
 
 import fiona
 from django.contrib.gis.geos import Point, MultiPolygon, Polygon
 from django.db import transaction
 
-from iaso.models import Project, OrgUnitType, OrgUnit, DataSource, SourceVersion
+from iaso.models import Project, OrgUnitType, OrgUnit, DataSource, SourceVersion, Group
 
-TypedDict = type
 try:  # only in 3.8
     from typing import TypedDict
 except:
@@ -60,9 +60,23 @@ def convert_to_geography(type: str, coordinates: list):
     return geom
 
 
+def create_or_update_group(group: Group, ref: str, name: str, version: SourceVersion):
+    if not group:
+        group = Group()
+    group.name = name
+    group.source_ref = ref
+    group.source_version = version
+    group.save()
+    return group
+
+
 def create_or_update_orgunit(
-    orgunit: OrgUnit, data: OrgUnitData, source_version: SourceVersion, validation_status: str
-):
+    orgunit: OrgUnit,
+    data: OrgUnitData,
+    source_version: SourceVersion,
+    validation_status: str,
+    ref_group: Dict[str, Group],
+) -> OrgUnit:
     props = data["properties"]
     geometry = data["geometry"]
     geom = convert_to_geography(**geometry)
@@ -82,13 +96,31 @@ def create_or_update_orgunit(
         orgunit.simplified_geom = geom
 
     orgunit.save(skip_calculate_path=True)
+
+    if "group_refs" not in props:
+        # the column is not here we don't touch the group
+        pass
+    elif not props["group_refs"]:
+        # if it's an empty string or null we will remove all groups presumably
+        # I previously wanted to differentiate the case of empty str vs null but QGIS don't show the difference
+        #  in the ui so it's perilous
+        orgunit.groups.clear()
+        orgunit.save(skip_calculate_path=True)
+    elif props["group_refs"]:
+        group_refs = props["group_refs"].split(",")
+        group_refs = [ref.strip() for ref in group_refs]
+
+        groups = [ref_group[ref] for ref in group_refs if ref]
+        orgunit.groups.set(groups)
+        orgunit.save(skip_calculate_path=True)
+
     return orgunit
 
 
-def get_ref(ou: OrgUnit) -> str:
+def get_ref(inst: Union[OrgUnit, Group]) -> str:
     """We make an artificial ref in case there is none so the gpkg can still refer existing record in iaso, even if
     they don't have a ref"""
-    return ou.source_ref if ou.source_ref else f"iaso#{ou.pk}"
+    return inst.source_ref if inst.source_ref else f"iaso#{inst.pk}"
 
 
 def import_gpkg_file(filename, project_id, source_name, validation_status, version_number):
@@ -104,10 +136,18 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
 
         version, created = SourceVersion.objects.get_or_create(number=version_number, data_source=source)
 
-        # Maybe add a only
-        existing_orgunits = version.orgunit_set.all()
+        # Create and update all the groups and put them in a dict indexed by ref
+        # Do it in sqlite because Fiona is not great with Attributes table (without geom)
+        ref_group: Dict[str, Group] = {get_ref(group): group for group in version.group_set.all()}
+        with sqlite3.connect(filename) as conn:
+            cur = conn.cursor()
+            rows = cur.execute("select ref, name from groups")
+            for ref, name in rows:
+                group = create_or_update_group(ref_group.get(ref), ref, name, version)
+                ref_group[get_ref(group)] = group
 
         # index all existing OrgUnit per ref
+        existing_orgunits = version.orgunit_set.all()  # Maybe add a only?
         ref_ou: Dict[str, OrgUnit] = {}
         for ou in existing_orgunits:
             ref = get_ref(ou)
@@ -134,7 +174,7 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
                 ref = row["properties"]["ref"]
 
                 existing_ou = ref_ou.get(ref, None)
-                orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status)
+                orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group)
                 ref = get_ref(orgunit)  # if ref was null in gpkg
                 ref_ou[ref] = orgunit
 

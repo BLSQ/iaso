@@ -259,7 +259,7 @@ const RiskAssessmentForm = () => {
     );
 
     const vialsRequested =
-        ((round1Doses + round2Doses) / 20) * (1 / (1 - wastageRate));
+      Math.ceil(((round1Doses + round2Doses) / 20) * (1 / (1 - wastageRate)));
 
     return (
         <>
@@ -363,14 +363,14 @@ const BudgetForm = () => {
         (calculateRound2 ? round2Population : 0);
 
     const costRound1PerChild = calculateRound1
-        ? round1Cost / round1Population
+        ? (round1Cost / round1Population).toFixed(2)
         : 0;
 
     const costRound2PerChild = calculateRound2
-        ? round2Cost / round2Population
+        ? (round2Cost / round2Population).toFixed(2)
         : 0;
 
-    const totalCostPerChild = totalCost / totalPopulation;
+    const totalCostPerChild = (totalCost / totalPopulation).toFixed(2);;
 
     return (
         <>

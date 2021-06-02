@@ -22,10 +22,10 @@ def get_or_create_org_unit_type(name: str, project: Project, depth: int):
 
 
 class PropertyDict(TypedDict):
-    "Layer table has columns: table, uuid, parent_uuid"
+    "Layer table has columns: table, ref, parent_ref"
     name: str
-    parent_uuid: str
-    uuid: str
+    parent_ref: str
+    ref: str
 
 
 class GeomDict(TypedDict):
@@ -60,7 +60,9 @@ def convert_to_geography(type: str, coordinates: list):
     return geom
 
 
-def create_or_update_orgunit(orgunit: OrgUnit, data: OrgUnitData, validation_status: str):
+def create_or_update_orgunit(
+    orgunit: OrgUnit, data: OrgUnitData, source_version: SourceVersion, validation_status: str
+):
     props = data["properties"]
     geometry = data["geometry"]
     geom = convert_to_geography(**geometry)
@@ -71,7 +73,8 @@ def create_or_update_orgunit(orgunit: OrgUnit, data: OrgUnitData, validation_sta
     orgunit.name = props["name"]
     orgunit.org_unit_type = data["type"]
     orgunit.validation_status = validation_status
-    orgunit.source_ref = props["uuid"]
+    orgunit.source_ref = props["ref"]
+    orgunit.version = source_version
     if isinstance(geom, Point):
         orgunit.location = geom
     else:
@@ -83,7 +86,7 @@ def create_or_update_orgunit(orgunit: OrgUnit, data: OrgUnitData, validation_sta
 
 
 def get_ref(ou: OrgUnit) -> str:
-    """We make an aritificial ref in case there is none so the gpkg can still refer exisiting record in iaso, even if
+    """We make an artificial ref in case there is none so the gpkg can still refer existing record in iaso, even if
     they don't have a ref"""
     return ou.source_ref if ou.source_ref else f"iaso#{ou.pk}"
 
@@ -91,7 +94,7 @@ def get_ref(ou: OrgUnit) -> str:
 def import_gpkg_file(filename, project_id, source_name, validation_status, version_number):
     # Layer are OrgUnit's Type
     layers_name = fiona.listlayers(filename)
-    layers_name = sorted(layers_name, key=lambda x: int(x.split("-")[1]))
+    # layers_name = sorted(layers_name, key=lambda x: int(x.split("-")[1]))
     with transaction.atomic():
         source, created = DataSource.objects.get_or_create(name=source_name)
         if source.read_only:
@@ -110,30 +113,32 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
             ref = get_ref(ou)
             ref_ou[ref] = ou
 
-        # The child may be created before the parent so we keep a list to update after we have created all
-        # of them
+        # The child may be created before the parent so we keep a list to update after creating them all
         to_update_with_parent: List[Tuple[str, str]] = []
         total_org_unit = 0
 
-        for layer in layers_name:
-            # assume layers are named level-{depth}-{name}
-            _, depth, name = layer.split("-")
+        for layer_name in layers_name:
+            # layers to import must be named level-{depth}-{name}
+            if not layer_name.startswith("level-"):
+                continue
 
+            colx = fiona.open(filename, mode="r", layer=layer_name)
+
+            _, depth, name = layer_name.split("-")
             org_unit_type = get_or_create_org_unit_type(name, project, depth)
 
             # collect all the OrgUnit to create from this layer
-            colx = fiona.open(filename, mode="r", layer=layer)
             row: OrgUnitData
             for row in iter(colx):
                 row["type"] = org_unit_type
-                ref = row["properties"]["uuid"]
+                ref = row["properties"]["ref"]
 
                 existing_ou = ref_ou.get(ref, None)
-                orgunit = create_or_update_orgunit(existing_ou, row, validation_status)
+                orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status)
                 ref = get_ref(orgunit)  # if ref was null in gpkg
                 ref_ou[ref] = orgunit
 
-                parent_ref = row["properties"]["parent_uuid"]
+                parent_ref = row["properties"]["parent_ref"]
                 to_update_with_parent.append((ref, parent_ref))
 
                 total_org_unit += 1
@@ -142,7 +147,7 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
         for ref, parent_ref in to_update_with_parent:
             # print(ref, parent_ref)
             if parent_ref and parent_ref not in ref_ou:
-                raise ValueError(f"Bad GPKG parent {parent_ref} don't exist in source")
+                raise ValueError(f"Bad GPKG parent {parent_ref} don't exist in input or SourceVersion")
 
             ou = ref_ou[ref]
             parent_ou = ref_ou[parent_ref] if parent_ref else None

@@ -55,28 +55,19 @@ case "$1" in
     ./scripts/start_web.sh
   ;;
   "start_dev" )
-    if [ -n "$TEST_PROD" ]; then
-      ./scripts/wait_for_dbs.sh
-      ./scripts/enable_plugins.sh
-      ./manage.py compilemessages -l fr
-      ./manage.py migrate --noinput
-      npm run webpack-prod
-      ./manage.py collectstatic --noinput
-      ./manage.py runserver 0.0.0.0:8081
-    else
-      export DEV_SERVER=true
-      export SHOW_DEBUG_TOOLBAR=true
-      ./scripts/wait_for_dbs.sh
-      ./scripts/enable_plugins.sh
-      ./manage.py migrate --noinput
-      ./manage.py runserver 0.0.0.0:8081
-    fi
+    export DEV_SERVER=true
+    export SHOW_DEBUG_TOOLBAR=true
+    ./scripts/wait_for_dbs.sh
+    ./manage.py migrate --noinput
+    ./manage.py runserver 0.0.0.0:8081
   ;;
   "start_webpack" )
     # We only run this server if not testing prod config
     if [ -n "$TEST_PROD" ]; then
       exit 0
     fi
+
+    ./scripts/enable_plugins.sh
     npm run webpack-server
   ;;
 

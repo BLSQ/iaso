@@ -224,9 +224,6 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 
-# Files
-
-SHARED_DIR = "/opt/shared"
 
 AUTH_CLASSES = [
     "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",

@@ -18,7 +18,6 @@ class OrgUnitTypesAPITestCase(APITestCase):
         cls.org_unit_type_2 = m.OrgUnitType.objects.create(name="Boom", short_name="Bo")
         cls.ead.unit_types.set([cls.org_unit_type_1, cls.org_unit_type_2])
 
-    @tag("iaso_only")
     def test_org_unit_types_list_without_auth_or_app_id(self):
         """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
 
@@ -26,7 +25,6 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(response.json(), 0)
 
-    @tag("iaso_only")
     def test_org_unit_types_list_with_auth(self):
         """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
 
@@ -39,14 +37,12 @@ class OrgUnitTypesAPITestCase(APITestCase):
         for org_unit_type_data in response_data["orgUnitTypes"]:
             self.assertEqual(len(org_unit_type_data["projects"]), 1)
 
-    @tag("iaso_only")
     def test_org_unit_types_retrieve_without_auth_or_app_id(self):
         """GET /orgunittypes/<org_unit_type_id>/ without auth or app id should result in a 200 empty response"""
 
         response = self.client.get(f"/api/orgunittypes/{self.org_unit_type_1.id}/")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_org_unit_types_retrieve_ok(self):
         """GET /orgunittypes/<org_unit_type_id>/ happy path"""
 
@@ -55,14 +51,12 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeData(response.json())
 
-    @tag("iaso_only")
     def test_org_unit_type_create_no_auth(self):
         """POST /orgunittypes/ without auth: 403"""
 
         response = self.client.post("/api/orgunittypes/", data={}, format="json")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_org_unit_type_create_invalid(self):
         """POST /orgunittypes/ without project ids: invalid"""
 
@@ -75,7 +69,6 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertHasError(response.json(), "short_name", "This field is required.")
         self.assertHasError(response.json(), "project_ids", "This list may not be empty.")
 
-    @tag("iaso_only")
     def test_org_unit_type_create_invalid_wrong_project(self):
         """POST /orgunittypes/ without project ids: invalid"""
 
@@ -94,7 +87,6 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "project_ids", "Invalid project ids")
 
-    @tag("iaso_only")
     def test_org_unit_type_create_ok(self):
         """POST /orgunittypes/ with auth: 201 OK"""
 
@@ -116,7 +108,6 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertValidOrgUnitTypeData(org_unit_type_data)
         self.assertEqual(1, len(org_unit_type_data["projects"]))
 
-    @tag("iaso_only")
     def test_org_unit_type_create_with_sub_unit_types_ok(self):
         """POST /orgunittypes/ with auth: 201 OK"""
 
@@ -139,7 +130,6 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertEqual(1, len(org_unit_type_data["projects"]))
         self.assertEqual(2, len(org_unit_type_data["sub_unit_types"]))
 
-    @tag("iaso_only")
     def test_org_unit_type_update_ok(self):
         """PUT /orgunittypes/<org_unit_type_id>: 200 OK"""
 
@@ -158,7 +148,6 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeData(response.json())
 
-    @tag("iaso_only")
     def test_org_unit_type_partial_update_ok(self):
         """PATCH /orgunittypes/<org_unit_type_id>/: 200 OK"""
 
@@ -171,7 +160,6 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.org_unit_type_1.refresh_from_db()
         self.assertEqual("P", self.org_unit_type_1.short_name)
 
-    @tag("iaso_only")
     def test_org_unit_type_delete_ok(self):
         """DELETE /orgunittypes/<org_unit_type_id>: 200 OK"""
 

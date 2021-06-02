@@ -13,7 +13,7 @@ def get_preparedness_score(data):
     district_score = sum(map(get_status_score, districts)) / max(len(districts), 1)
 
     return {
-        "national_score": national_score,
-        "regional_score": regional_score,
-        "district_score": district_score,
+        "national_score": round(national_score, 2),
+        "regional_score": round(regional_score, 2),
+        "district_score": round(district_score, 2),
     }

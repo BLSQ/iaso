@@ -4,25 +4,27 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { withStyles, Box, Grid } from '@material-ui/core';
 import {
+    injectIntl,
+    // TopBar,
+    LoadingSpinner,
+    commonStyles,
+    Table,
+} from 'bluesquare-components';
+import {
     fetchGroups as fetchGroupsAction,
     deleteGroup as deleteGroupAction,
 } from './actions';
-
 import TopBar from '../../../components/nav/TopBarComponent';
-import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
 import Filters from './components/Filters';
-import Table from '../../../components/tables/TableComponent';
 import GroupsDialog from './components/GroupsDialog';
 import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
 
-import commonStyles from '../../../styles/common';
 import { baseUrls } from '../../../constants/urls';
 
 import tableColumns from './config';
 import MESSAGES from './messages';
 
 import { redirectTo as redirectToAction } from '../../../routing/actions';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.groups;
 

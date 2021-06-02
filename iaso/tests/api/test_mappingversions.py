@@ -60,7 +60,6 @@ class FormsVersionAPITestCase(APITestCase):
 
         cls.project.save()
 
-    @tag("iaso_only")
     def test_mappingversions_update(self):
         """PUT /mappingversions/<form_id>: not authorized for now"""
 
@@ -68,7 +67,6 @@ class FormsVersionAPITestCase(APITestCase):
         response = self.client.put(f"/api/mappingversions/33/", data={})
         self.assertJSONResponse(response, 405)
 
-    @tag("iaso_only")
     def test_mappingversions_destroy(self):
         """DELETE /formversions/<form_id>: not authorized for now"""
 
@@ -76,7 +74,6 @@ class FormsVersionAPITestCase(APITestCase):
         response = self.client.delete(f"/api/mappingversions/33/")
         self.assertJSONResponse(response, 405)
 
-    @tag("iaso_only")
     def test_mappingversions_create_ok_first_version(self):
         """POST /mappingversions/ happy path (first version)"""
 
@@ -153,7 +150,6 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.assertEqual(list(mapping_version.json()["question_mappings"].keys()), ["question_1"])
 
-    @tag("iaso_only")
     def test_mappingversions_create_ok_idempotent_version(self):
         """POST /mappingversions/ happy path (first version)"""
 
@@ -165,7 +161,6 @@ class FormsVersionAPITestCase(APITestCase):
         mapping_version2 = self.create_mapping_version(form_version, self.sw_source)
         self.assertEqual(mapping_version2["id"], mapping_version1["id"])
 
-    @tag("iaso_only")
     def test_mappingversions_create_ko_non_allowed_datasource(self):
         """POST /mappingversions/ mapping"""
 
@@ -185,7 +180,6 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.assertEqual(create_response.json(), {"mapping.datasource": ["object doesn't exist"]})
 
-    @tag("iaso_only")
     def test_mappingversions_create_ko_non_existing_form_version(self):
         """POST /mappingversions/ mapping"""
 
@@ -204,7 +198,6 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.assertEqual(create_response.json(), {"form_version": ["object doesn't exist"]})
 
-    @tag("iaso_only")
     def test_mappingversions_create_ko_data_element_id(self):
         """POST /mappingversions/ unhappy path (first version)"""
 
@@ -227,7 +220,6 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.assertEqual(resp.json(), {"question_mappings.question_1": "should have a least an data element id"})
 
-    @tag("iaso_only")
     def test_mappingversions_create_ko_data_element_value_type(self):
         """POST /mappingversions/ unhappy path (first version)"""
 

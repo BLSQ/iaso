@@ -1,5 +1,5 @@
 import React from 'react';
-import { displayDateFromTimestamp } from '../../utils/intlUtil';
+import { displayDateFromTimestamp } from 'bluesquare-components';
 import MESSAGES from './messages';
 
 const devicesTableColumns = formatMessage => [

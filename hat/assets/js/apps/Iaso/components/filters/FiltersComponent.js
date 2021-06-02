@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { replace } from 'react-router-redux';
 import PropTypes from 'prop-types';
 
-import { createUrl } from '../../utils/fetchData';
+import { createUrl } from 'bluesquare-components';
 
 import InputComponent from '../forms/InputComponent';
 

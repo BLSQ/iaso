@@ -136,7 +136,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "hat.users.middleware.ThreadLocalMiddleware",
 ]
 
 ROOT_URLCONF = "hat.urls"
@@ -224,9 +223,6 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 
-# Files
-
-SHARED_DIR = "/opt/shared"
 
 AUTH_CLASSES = [
     "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
@@ -318,3 +314,13 @@ SSL_ON = (not DEBUG) and (not BEANSTALK_WORKER)
 if SSL_ON:
     SECURE_HSTS_SECONDS = 31_536_000  # 1 year
 SECURE_SSL_REDIRECT = SSL_ON
+
+# Email configuration
+
+DEFAULT_FROM_EMAIL = "Iaso Team <iaso@bluesquare.org>"
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.smtpbucket.com")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_PORT = os.environ.get("EMAIL_PORT", "8025")

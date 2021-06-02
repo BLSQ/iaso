@@ -10,7 +10,7 @@ import { Grid } from '@material-ui/core';
 import L from 'leaflet';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
-
+import { injectIntl } from 'bluesquare-components';
 import setDrawMessages from '../../../utils/map/drawMapMessages';
 import {
     customZoomBar,
@@ -42,7 +42,6 @@ import {
 } from '../../../utils/requests';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
-import injectIntl from '../../../libs/intl/injectIntl';
 import InstancePopupComponent from '../../instances/components/InstancePopupComponent';
 
 const zoom = 5;

@@ -3,8 +3,8 @@ import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
 
+import { theme } from 'bluesquare-components';
 import { MESSAGES } from './map/mapUtils';
-import theme from './theme';
 
 export const isValidCoordinate = (latitude, longitude) => {
     if (
@@ -48,10 +48,10 @@ export const getShapesBounds = shapes => {
     return group.getBounds();
 };
 
-export const clusterCustomMarker = cluster =>
+export const clusterCustomMarker = (cluster, color = "primary") =>
     L.divIcon({
         html: `<div><span>${cluster.getChildCount()}</span></div>`,
-        className: 'marker-cluster primary',
+        className: `marker-cluster ${color}`, 
         iconSize: L.point(40, 40, true),
         iconAnchor: [20, 30],
     });

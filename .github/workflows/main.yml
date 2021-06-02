@@ -1,6 +1,6 @@
-name: CI
-
-on: [push]
+name: Automated CI testing
+# This workflow run automatically for every commit on github it checks the syntax and launch the tests.
+on: [ push ]
 
 jobs:
   build:
@@ -24,7 +24,7 @@ jobs:
       - name: Use node.js 10
         uses: actions/setup-node@v1
         with:
-                node-version: 10
+          node-version: 10
 
       - name: Set up Python 3.6
         uses: actions/setup-python@v1
@@ -45,28 +45,12 @@ jobs:
           npm --version
           pip list
 
-#      - name: npm install (and test)
-#        run: |
-#                npm i
-#                # npm t
-#        env:
-#                CI: true
-#
-#      - name: npm build
-#        run: |
-#          echo diff-index echo 1---------
-#          git diff-index --quiet HEAD || echo "we should commit something 1"
-#          rm -f hat/assets/webpack/*
-#          npm run webpack-prod
-#          echo diff-index echo 2---------
-#          git diff-index --quiet HEAD || echo "we should commit something 2"
-#          echo committing---------
-#          git add hat/assets/webpack/
-#          git diff-index --quiet HEAD || (git checkout -b github/assets-${GITHUB_RUN_NUMBER} && git commit -m "Build assets github action ${GITHUB_RUN_NUMBER}" && git push -u origin) || true
-#        env:
-#          GIT_AUTHOR_NAME: Github Bot
-#          GIT_COMMITTER_NAME: Github Bot
-#          EMAIL: edarchis@bluesquarehub.com
+      - name: npm install and test
+        run: |
+          npm install
+          npm test
+        env:
+          CI: true
 
       - name: Check formatting with black
         run: |
@@ -96,10 +80,14 @@ jobs:
           DEFAULT_FILE_STORAGE: storages.backends.s3boto3.S3Boto3Storage
 
       - name: slack notification
-        uses: rtCamp/action-slack-notify@v2.0.2
+        uses: rtCamp/action-slack-notify@v2.1.3
         env:
-          SLACK_USERNAME: github-actions-main
+          SLACK_USERNAME: github-actions/main.yml
+          SLACK_ICON_EMOJI: ":robot_face:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: iaso-dev
-          SLACK_TITLE: Iaso CI run failed
+          SLACK_TITLE: Automated CI Testing failed
+          SLACK_COLOR: #FF4500
+          SLACK_FOOTER: "-"
+          MSG_MINIMAL: ref,actions url
         if: failure()

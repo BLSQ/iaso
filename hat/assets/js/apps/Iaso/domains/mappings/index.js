@@ -6,22 +6,23 @@ import Grid from '@material-ui/core/Grid';
 import isEqual from 'lodash/isEqual';
 
 import { bindActionCreators } from 'redux';
+import {
+    injectIntl,
+    commonStyles,
+    LoadingSpinner,
+    // TopBar,
+    Table,
+} from 'bluesquare-components';
 import { redirectTo as redirectToAction } from '../../routing/actions';
 import { fetchMappingVersions as fetchMappingVersionsAction } from './actions';
-
 import TopBar from '../../components/nav/TopBarComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
-
 import mappingsTableColumns from './config';
 
-import commonStyles from '../../styles/common';
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
-import Table from '../../components/tables/TableComponent';
 
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.mappings;
 

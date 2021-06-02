@@ -2,6 +2,8 @@ import React from 'react';
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
+import { Link } from 'react-router';
+import { LinkProvider } from 'bluesquare-components';
 
 import { currentUserInitialState } from '../../apps/Iaso/redux/currentUserReducer';
 import { formsInitialState } from '../../apps/Iaso/domains/forms/reducer';
@@ -53,6 +55,8 @@ const initialState = {
 
 export const renderWithStore = (component, state = null) => (
     <Provider store={getMockedStore({ ...initialState, ...state })}>
-        {renderWithIntl(component)}
+        <LinkProvider linkComponent={Link}>
+            {renderWithIntl(component)}
+        </LinkProvider>
     </Provider>
 );

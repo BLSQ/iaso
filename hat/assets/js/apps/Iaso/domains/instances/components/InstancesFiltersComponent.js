@@ -10,7 +10,7 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Search from '@material-ui/icons/Search';
 
-import commonStyles from '../../../styles/common';
+import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
 
 import {
     search,
@@ -24,7 +24,6 @@ import {
 } from '../../../constants/filters';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
-import { createUrl } from '../../../utils/fetchData';
 
 import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
 import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
@@ -33,7 +32,6 @@ import { getOrgUnitParentsIds } from '../../orgUnits/utils';
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated as setInstancesFilterAction } from '../actions';
 import MESSAGES from '../messages';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,

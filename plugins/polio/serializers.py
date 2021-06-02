@@ -1,6 +1,7 @@
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from django.db.models import fields
 from rest_framework import serializers
+from iaso.models import Group, OrgUnit
 from .models import Preparedness, Round, Campaign
 from .preparedness.parser import (
     open_sheet_by_url,
@@ -9,6 +10,14 @@ from .preparedness.parser import (
     InvalidFormatError,
 )
 from gspread.exceptions import APIError
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    org_units = serializers.PrimaryKeyRelatedField(many=True, allow_empty=True, queryset=OrgUnit.objects.all())
+
+    class Meta:
+        model = Group
+        fields = ["name", "org_units"]
 
 
 class RoundSerializer(serializers.ModelSerializer):
@@ -21,6 +30,7 @@ class PreparednessSerializer(serializers.ModelSerializer):
     class Meta:
         model = Preparedness
         exclude = ["campaign"]
+        extra_kwargs = {"payload": {"write_only": True}}
 
 
 class PreparednessPreviewSerializer(serializers.Serializer):
@@ -55,21 +65,35 @@ class CampaignSerializer(serializers.ModelSerializer):
             return campaign.initial_org_unit.name
         return ""
 
+    group = GroupSerializer(required=False)
+
     preparedness_data = PreparednessSerializer(required=False)
     last_preparedness = PreparednessSerializer(
         required=False,
+        read_only=True,
         allow_null=True,
     )
 
     def create(self, validated_data):
         round_one_data = validated_data.pop("round_one")
         round_two_data = validated_data.pop("round_two")
+
+        group = validated_data.pop("group") if "group" in validated_data else None
+
+        if group:
+            org_units = group.pop("org_units") if "org_units" in group else []
+            campaign_group = Group.objects.create(**group)
+            campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
+        else:
+            campaign_group = None
+
         preparedness_data = validated_data.pop("preparedness_data", None)
 
         campaign = Campaign.objects.create(
             **validated_data,
             round_one=Round.objects.create(**round_one_data),
-            round_two=Round.objects.create(**round_two_data)
+            round_two=Round.objects.create(**round_two_data),
+            group=campaign_group,
         )
 
         if preparedness_data is not None:
@@ -79,9 +103,15 @@ class CampaignSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         round_one_data = validated_data.pop("round_one")
         round_two_data = validated_data.pop("round_two")
+        group = validated_data.pop("group") if "group" in validated_data else None
 
         Round.objects.filter(pk=instance.round_one_id).update(**round_one_data)
         Round.objects.filter(pk=instance.round_two_id).update(**round_two_data)
+
+        if group:
+            org_units = group.pop("org_units") if "org_units" in group else []
+            campaign_group = Group.objects.get(pk=instance.group_id)
+            campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
 
         if "preparedness_data" in validated_data:
             Preparedness.objects.create(campaign=instance, **validated_data.pop("preparedness_data"))

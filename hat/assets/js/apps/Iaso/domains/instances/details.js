@@ -10,6 +10,14 @@ import { withStyles, Box, Grid } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
 import {
+    injectIntl,
+    commonStyles,
+    LoadingSpinner,
+    IconButton as IconButtonComponent,
+    // TopBar,
+} from 'bluesquare-components';
+import TopBar from '../../components/nav/TopBarComponent';
+import {
     setCurrentInstance as setCurrentInstanceAction,
     fetchInstanceDetail as fetchInstanceDetailAction,
     fetchEditUrl as fetchEditUrlAction,
@@ -19,9 +27,6 @@ import {
 } from './actions';
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
 
-import TopBar from '../../components/nav/TopBarComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 
@@ -37,9 +42,7 @@ import { getInstancesFilesList } from './utils';
 
 import MESSAGES from './messages';
 
-import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

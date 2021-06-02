@@ -2,7 +2,7 @@ from rest_framework import viewsets, permissions, serializers
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 
-from .common import HasPermission, ModelViewSet, TimestampField
+from ..common import HasPermission, ModelViewSet, TimestampField
 from iaso.models import Task
 
 
@@ -16,6 +16,7 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
 
+        # Do not include the params, it can contains sensitive information such as passwords
         fields = [
             "id",
             "created_at",
@@ -27,7 +28,6 @@ class TaskSerializer(serializers.ModelSerializer):
             "result",
             "status",
             "name",
-            "params",
             "should_be_killed",
             "progress_message",
         ]

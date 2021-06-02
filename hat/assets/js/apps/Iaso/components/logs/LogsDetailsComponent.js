@@ -6,14 +6,16 @@ import { withStyles, Container, Grid, Divider } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import LoadingSpinner from '../LoadingSpinnerComponent';
-import LogCompareComponent from './LogCompareComponent';
+import {
+    injectIntl,
+    commonStyles,
+    LoadingSpinner,
+} from 'bluesquare-components';
 
-import commonStyles from '../../styles/common';
+import LogCompareComponent from './LogCompareComponent';
 
 import { fetchLogDetail } from '../../utils/requests';
 
-import injectIntl from '../../libs/intl/injectIntl';
 import MESSAGES from './messages';
 
 const styles = theme => ({

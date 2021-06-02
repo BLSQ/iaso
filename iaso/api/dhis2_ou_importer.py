@@ -2,10 +2,9 @@ from rest_framework.response import Response
 
 from ..tasks.dhis2_ou_importer import dhis2_ou_importer
 from .tasks import TaskSerializer
-from ..models import DataSource, SourceVersion, Task, OrgUnit
+from ..models import DataSource, SourceVersion, OrgUnit
 from rest_framework import viewsets, permissions, serializers
 from .common import HasPermission
-from django.shortcuts import get_object_or_404
 import logging
 
 logger = logging.getLogger(__name__)
@@ -54,6 +53,7 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
         return validated_data
 
 
+# noinspection PyMethodMayBeStatic
 class Dhis2OuImporterViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]
     serializer_class = Dhis2OuImporterSerializer

@@ -1,3 +1,4 @@
+from django.contrib.auth import update_session_auth_hash
 from django.core.exceptions import PermissionDenied
 
 from rest_framework import viewsets, permissions
@@ -103,6 +104,12 @@ class ProfilesViewSet(viewsets.ViewSet):
             permission = get_object_or_404(Permission, codename=permission_codename)
             user.user_permissions.add(permission)
         user.save()
+
+        if password and request.user == user:
+            # update session hash if you changed your own password so you don't get unlogged
+            # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
+            update_session_auth_hash(request, user)
+
         org_units = request.data.get("org_units", [])
         profile.org_units.clear()
         for org_unit in org_units:

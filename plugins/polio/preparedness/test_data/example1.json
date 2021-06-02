@@ -1,0 +1,220 @@
+{
+    "national": {
+        "planning_score": 100,
+        "training_score": 100,
+        "monitoring_score": 100,
+        "vaccine_score": 80,
+        "advocacy_score": 100,
+        "adverse_score": 75,
+        "status_score": 93
+    },
+    "regions": {
+        "NORTHERN": {
+            "planning_score": 75,
+            "training_score": 50,
+            "monitoring_score": 75,
+            "vaccine_score": 88,
+            "advocacy_score": 50,
+            "adverse_score": 100,
+            "status_score": 73
+        },
+        "NORTHWESTERN": {
+            "planning_score": 75,
+            "training_score": 50,
+            "monitoring_score": 0,
+            "vaccine_score": 88,
+            "advocacy_score": 50,
+            "adverse_score": 75,
+            "status_score": 68
+        },
+        "EASTERN": {
+            "planning_score": 67,
+            "training_score": 50,
+            "monitoring_score": 75,
+            "vaccine_score": 88,
+            "advocacy_score": 50,
+            "adverse_score": 75,
+            "status_score": 67
+        },
+        "WESTERN AREA ": {
+            "planning_score": 75,
+            "training_score": 50,
+            "monitoring_score": 50,
+            "vaccine_score": 88,
+            "advocacy_score": 50,
+            "adverse_score": 75,
+            "status_score": 65
+        },
+        "SOUTHERN": {
+            "planning_score": 75,
+            "training_score": 50,
+            "monitoring_score": 75,
+            "vaccine_score": 88,
+            "advocacy_score": 50,
+            "adverse_score": 75,
+            "status_score": 69
+        }
+    },
+    "districts": {
+        "Falaba": {
+            "planning_score": 75,
+            "training_score": 50,
+            "monitoring_score": 75,
+            "vaccine_score": 88,
+            "advocacy_score": 50,
+            "adverse_score": 100,
+            "status_score": 10,
+            "region": "NORTHERN"
+        },
+        "Koinadugu": {
+            "planning_score": 75,
+            "training_score": 50,
+            "monitoring_score": 100,
+            "vaccine_score": 88,
+            "advocacy_score": 100,
+            "adverse_score": 100,
+            "status_score": 20,
+            "region": "NORTHERN"
+        },
+        "Bombali": {
+            "planning_score": 75,
+            "training_score": 50,
+            "monitoring_score": 75,
+            "vaccine_score": 88,
+            "advocacy_score": 100,
+            "adverse_score": 100,
+            "status_score": 30,
+            "region": "NORTHERN"
+        },
+        "Tonkolili": {
+            "planning_score": 0,
+            "training_score": 0,
+            "monitoring_score": 0,
+            "vaccine_score": 0,
+            "advocacy_score": 0,
+            "adverse_score": 0,
+            "status_score": 0,
+            "region": "NORTHERN"
+        },
+        "Karene": {
+            "planning_score": 67,
+            "training_score": 50,
+            "monitoring_score": 75,
+            "vaccine_score": 88,
+            "advocacy_score": 100,
+            "adverse_score": 100,
+            "status_score": 50,
+            "region": "NORTHWESTERN"
+        },
+        "Kambia": {
+            "planning_score": 75,
+            "training_score": 50,
+            "monitoring_score": 50,
+            "vaccine_score": 88,
+            "advocacy_score": 50,
+            "adverse_score": 75,
+            "status_score": 60,
+            "region": "NORTHWESTERN"
+        },
+        "Port Loko": {
+            "planning_score": 0,
+            "training_score": 0,
+            "monitoring_score": 0,
+            "vaccine_score": 0,
+            "advocacy_score": 0,
+            "adverse_score": 0,
+            "status_score": 70,
+            "region": "NORTHWESTERN"
+        },
+        "Kono": {
+            "planning_score": 67,
+            "training_score": 50,
+            "monitoring_score": 75,
+            "vaccine_score": 88,
+            "advocacy_score": 50,
+            "adverse_score": 75,
+            "status_score": 80,
+            "region": "EASTERN"
+        },
+        "Kenema": {
+            "planning_score": 83,
+            "training_score": 100,
+            "monitoring_score": 75,
+            "vaccine_score": 88,
+            "advocacy_score": 100,
+            "adverse_score": 100,
+            "status_score": 90,
+            "region": "EASTERN"
+        },
+        "Kailahun": {
+            "planning_score": 0,
+            "training_score": 0,
+            "monitoring_score": 0,
+            "vaccine_score": 0,
+            "advocacy_score": 0,
+            "adverse_score": 0,
+            "status_score": 100,
+            "region": "EASTERN"
+        },
+        "Western Urban": {
+            "planning_score": 75,
+            "training_score": 50,
+            "monitoring_score": 50,
+            "vaccine_score": 88,
+            "advocacy_score": 50,
+            "adverse_score": 75,
+            "status_score": 90,
+            "region": "WESTERN AREA "
+        },
+        "Western Rural": {
+            "planning_score": 0,
+            "training_score": 0,
+            "monitoring_score": 0,
+            "vaccine_score": 0,
+            "advocacy_score": 0,
+            "adverse_score": 0,
+            "status_score": 80,
+            "region": "WESTERN AREA "
+        },
+        "Bo": {
+            "planning_score": 75,
+            "training_score": 50,
+            "monitoring_score": 75,
+            "vaccine_score": 88,
+            "advocacy_score": 50,
+            "adverse_score": 75,
+            "status_score": 70,
+            "region": "SOUTHERN"
+        },
+        "Bonthe": {
+            "planning_score": 75,
+            "training_score": 50,
+            "monitoring_score": 75,
+            "vaccine_score": 88,
+            "advocacy_score": 100,
+            "adverse_score": 75,
+            "status_score": 60,
+            "region": "SOUTHERN"
+        },
+        "Moyamba": {
+            "planning_score": 67,
+            "training_score": 50,
+            "monitoring_score": 75,
+            "vaccine_score": 75,
+            "advocacy_score": 100,
+            "adverse_score": 75,
+            "status_score": 50,
+            "region": "SOUTHERN"
+        },
+        "Pujehun": {
+            "planning_score": 0,
+            "training_score": 0,
+            "monitoring_score": 0,
+            "vaccine_score": 0,
+            "advocacy_score": 0,
+            "adverse_score": 0,
+            "status_score": 40,
+            "region": "SOUTHERN"
+        }
+    }
+}

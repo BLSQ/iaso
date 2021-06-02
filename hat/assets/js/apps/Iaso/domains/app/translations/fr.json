@@ -421,6 +421,7 @@
     "iaso.snackBar.saveLinkError": "Une erreur est survenue lors de la sauvegarde de la correspondance",
     "iaso.snackBar.saveMultiEditOrgUnitsError": "Une erreur est survenue lors de la sauvegarde de la sélection",
     "iaso.snackBar.saveMultiEditOrgUnitsSuccesfull": "Sélection d'unité d'organisation modifée avec succès",
+    "iaso.snackBar.saveMultiEditOrgUnitsLaunched": "Les modifications sur les unités d'organisations sont en cours et prendrons quelques minutes pour être visibles",
     "iaso.snackBar.saveOrgUnitError": "Une erreur est survenue lors de la sauvegarde de l'unité d'organisation",
     "iaso.snackBar.saveOrgUnitSuccesfull": "Unité d'organisation sauvée avec succès",
     "iaso.snackBar.saveOrgUnitTypeError": "Une erreur est survenue lors de la sauvegarde du type d'unité d'organisation",

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+# This script is used as the entrypoint for docker when used for local dev
+
 show_help() {
   echo """
   Commands

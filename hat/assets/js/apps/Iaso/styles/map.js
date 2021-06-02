@@ -31,6 +31,13 @@ const mapStyles = theme => ({
             backgroundColor: theme.palette.primary.main,
             color: theme.palette.primary.contrastText,
         },
+        '& .marker-cluster.secondary': {
+            backgroundColor: fade(theme.palette.secondary.main, 0.6),
+        },
+        '& .marker-cluster.secondary > div': {
+            backgroundColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.contrastText,
+        },
         '& .marker-custom': {
             zIndex: '500 !important',
         },

@@ -60,7 +60,6 @@ class TokenAPITestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
         return response_data
 
-    @tag("iaso_only")
     def test_acquire_token_and_authenticate(self):
         """Test token authentication"""
 
@@ -75,7 +74,6 @@ class TokenAPITestCase(APITestCase):
 
         self.assertTrue(self.form_2.id in form_ids)
 
-    @tag("iaso_only")
     def test_acquire_token_and_post_instance(self):
         """Test upload to a project that requires authentication"""
         # Unauthenticated case is already tested in test_api
@@ -104,7 +102,6 @@ class TokenAPITestCase(APITestCase):
 
         self.assertTrue(m.Instance.objects.filter(uuid=uuid).first() is not None)
 
-    @tag("iaso_only")
     def test_unauthenticated_post_instance(self):
         """Test unauthenticated upload to a project that requires authentication"""
         # Unauthenticated case is already tested in test_api
@@ -143,7 +140,6 @@ class TokenAPITestCase(APITestCase):
             exception_contains_string="Could not find project for user",
         )
 
-    @tag("iaso_only")
     def test_refresh(self):
         """Test refreshing authentication token"""
         # Unauthenticated case is already tested in test_api
@@ -161,7 +157,6 @@ class TokenAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 200)
 
-    @tag("iaso_only")
     def test_no_token(self):
         """Test invalid authentication tokens"""
         # Unauthenticated case is already tested in test_api
@@ -180,7 +175,6 @@ class TokenAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_acquire_token_and_post_org_unit(self):
         """Test upload to a project that requires authentication"""
         # Unauthenticated case is already tested in test_api
@@ -210,7 +204,6 @@ class TokenAPITestCase(APITestCase):
         self.assertTrue(m.OrgUnit.objects.filter(uuid=uuid).first() is not None)
         self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False, check_auth_header=True)
 
-    @tag("iaso_only")
     def test_unauthenticated_post_org_unit(self):
         """Test upload to a project that requires authentication without token"""
         # Unauthenticated case is already tested in test_api

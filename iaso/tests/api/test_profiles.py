@@ -53,14 +53,12 @@ class ProfileAPITestCase(APITestCase):
         )
         cls.jedi_council_corruscant.groups.set([cls.elite_group])
 
-    @tag("iaso_only")
     def test_profile_me_without_auth(self):
         """GET /profiles/me/ without auth should result in a 403"""
 
         response = self.client.get("/api/profiles/me/")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_profile_me_ok(self):
         """GET /profiles/me/ with auth"""
 
@@ -76,7 +74,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertHasField(response_data, "is_superuser", bool)
         self.assertHasField(response_data, "org_units", list)
 
-    @tag("iaso_only")
     def test_profile_me_superuser_ok(self):
         """GET /profiles/me/ with auth (superuser)"""
 
@@ -87,14 +84,12 @@ class ProfileAPITestCase(APITestCase):
         self.assertValidProfileData(response_data)
         self.assertEqual(response_data["user_name"], "johndoe")
 
-    @tag("iaso_only")
     def test_profile_list_no_auth(self):
         """GET /profiles/ without auth -> 403"""
 
         response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_profile_list_read_only_permissions(self):
         """GET /profiles/ with auth (user has read only permissions)"""
 
@@ -110,7 +105,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(profile_url)
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_profile_list_ok(self):
         """GET /profiles/me/ with auth (user has the right permissions)"""
         self.client.force_authenticate(self.jim)
@@ -118,7 +112,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 3)
 
-    @tag("iaso_only")
     def test_profile_list_superuser_ok(self):
         """GET /profiles/me/ with auth (superuser)"""
 
@@ -138,7 +131,6 @@ class ProfileAPITestCase(APITestCase):
         for profile_data in list_data["profiles"]:
             self.assertValidProfileData(profile_data)
 
-    @tag("iaso_only")
     def test_create_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
         data = {
@@ -151,7 +143,6 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 403)
 
-    @tag("iaso_only")
     def test_create_profile_duplicate_user(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -165,7 +156,6 @@ class ProfileAPITestCase(APITestCase):
         response_data = response.json()
         self.assertEqual(response_data["errorKey"], "user_name")
 
-    @tag("iaso_only")
     def test_create_profile_then_delete(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -200,7 +190,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertQuerysetEqual(m.User.objects.filter(id=user_id), [])
         self.assertQuerysetEqual(m.Profile.objects.filter(id=profile_id), [])
 
-    @tag("iaso_only")
     def test_create_profile_with_org_units_and_perms(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -242,7 +231,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertHasField(project_data, "last_name", str)
         self.assertHasField(project_data, "email", str)
 
-    @tag("iaso_only")
     def test_delete_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
         response = self.client.delete("/api/profiles/1/")

@@ -22,6 +22,7 @@ These layers must be named in the following ways: `level-{depth}-{type_name}`. W
 
 If a OrgUnitType with such a name does not already exist, it will be created. OrgUnitType are case-sensitive, 
 be sure when updating an existing one that the casing and accents matches the targeted OrgUnitType. 
+
 Note that OrgUnit and Group are linked to a particular data source but OrgUnitType are not and are shared between all projects of a tenant.
 
 Each layer table must have the following columns:
@@ -31,18 +32,20 @@ Each layer table must have the following columns:
 * `parent_ref` the reference of the parent OrgUnit may be blank or null or the id of the parent (not the name). [2]
 * `group_refs` a list of groups reference to which the OrgUnit should belong. Represented as string of ref separated by the ',' character. This column is optional, delete it if you don't want to touch group affiliation. *If you keep it empty all groups will be removed from the OrgUnit when updating*. See Group table below.
 
-[1] When updating an element from already existing source, you may want to reference to a parent OrgUnit already existing in Iaso's data source. However this parent OrgUnit may not have a `source_ref` attribute. Instead, you can use the format `iaso#{db_id}` to point to it where `db_id`is the id of the parent in Iaso's database.
 
-[2] It is possible to have OrgUnit without an attached Geometry.
+[1] It is possible to have OrgUnit without an attached Geometry.
+
+[2] When updating an element from an already existing source, you may want to reference a parent OrgUnit existing in Iaso DataSource. However this parent OrgUnit may not have a `source_ref` attribute. Instead, you can use the format `iaso#{db_id}` to point to it where `db_id`is the id of the parent OrgUnit in Iaso's database.
+
 
 ## Group table
 
-An additional table `groups`  must be present, it represents
-the (OrgUnit) Groups to create or update.  This is an Attribute table in gpkg parlance as it doesn't contain a geometry.
+An additional table `groups`  must be present. It represents
+the (OrgUnit linked) Groups to create and/or update.  This is an Attribute table in gpkg parlance as it doesn't contain a geometry.
 
 Mandatory columns:
-* `ref` Reference will be in source_ref
-* `name` Name of the OrgUnit
+* `ref` Reference to the group, will be in source_ref (used in the layer tables as `group_ref`)
+* `name` Name of the Group
 
 Other tables and columns may be present and will be ignored (as long as they don't start with `level-`)
 

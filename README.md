@@ -15,13 +15,46 @@ The main tasks it allows to do are:
 -   Exports of the org. unit trees and form data, either in csv, xlsx,
     [GeoPackage](https://www.geopackage.org/) or through an api.
 
+[Video presentation of IASO](https://fosdem.org/2021/schedule/event/iaso/) at Fosdem 2021, with slides.
+
+Long Intro
+----------
+Iaso is a platform created to support geo-rich data collection efforts, mainly in public health in
+emerging countries. The key feature that it supports is that any survey is linked to an organizational
+unit that is part of a canonical hierarchy. Each one of these org. units can have a location and a
+territory. The mobile data collection tool can be used to enrich this hierarchy with additional GPS
+coordinates, names corrections, etc ... which can then be validated by officials of the organizations
+in question through the web dashboard. This leads to continuous improvements of the geographic references
+available through the routine activities already planned (e.g. locating and registering health facilities while
+investigating malaria cases).
+
+The tool has been used in multiple data collection efforts, notably in the domain of Performance Based Financing
+of health services in D.R. Congo, Niger, Cameroon and Nigeria and is more and more used to compare multiple
+versions of official organisational hierarchies when a canonical one needs to be rebuilt. We are for example
+working on such efforts to rebuild a school map for DRC with the NGO Cordaid. To help for this type of project,
+we provide location selection interfaces, multiple levels of audits and an API open to data scientists for analysis
+and mass edits.
+
+Iaso has been created by the company [Bluesquare](https://bluesquarehub.com/), specialised in software and services
+for public health, and has become open source under the MIT License in November 2020.
+
+Iaso is made of a white labeled Android application using Java/Kotlin, reusing large parts of the ODK projects,
+and a web platform programmed using Python/GeoDjango on top of PostGIS. Frontend is mainly React/Leaflet.
+One of the aims is the ease of integration with other platforms. We already have csv and geopackage imports and
+exports and target easy integration with OSM.
+
 Structure
 ---------
 
-Iaso is composed of a Django app and a React front end. They interact
-via an API implemented via Django rest framework.
+This repository contains Iaso frontend and backend, respectively in Python Django and JS React. They interact
+via an API implemented via Django rest framework, all data is stored in Postgresql or the media/ directory.
 
-More documentation on the Front End part is in
+A companion mobile app for Android allow submitting Form and creating org unit.
+
+Form can also be filled in a web interface via the Enketo companion service. Both Iaso and Enketeo they need to be
+configured to work together. It is possible to run an Enketo service locally, see Enketo section below.
+
+More documentation on the Front End part is present in
 [hat/assets/README.rst](hat/assets/README.rst)
 
 Development environment
@@ -31,14 +64,16 @@ Setup
 -----
 
 
-No local setup should be needed apart from:
+A running local instance for development can be spin up via docker-compose which will install and
+configure all dep in separate container. As such your computer should only need:
 
+-   [git](git)
 -   [docker](https://docs.docker.com/engine/installation/)
 -   [docker-compose](https://docs.docker.com/compose/)
 
-The local dev setup uses **docker-compose** to spin up all necessary
-services. Make sure you have it installed and can connect to the
-**docker daemon**.
+If docker-compose give you trouble make sur it can connect to the
+__docker daemon__.
+
 
 ### 1. Environment variables
 
@@ -55,9 +90,14 @@ to your needs.
 cp .env.dist .env
 ```
 
+> **note**
+>
+> all the commands here need to be run, in the project dictory, where you cloned the repository
+
+
 ### 2. Build the containers
 
-Run in project directory:
+This will build and download the containers.
 
 ``` {.sourceCode .bash}
 docker-compose build
@@ -72,23 +112,21 @@ docker-compose up db
 ### 4. Run migrations
 
 ``` {.sourceCode .bash}
-docker-compose exec iaso ./manage.py migrate
+docker-compose run --rm iaso manage migrate
 ```
 
 ### 5. Start the server
 
-Run in project directory:
+To start all the containers (backend, frontend, db)
 
 ``` {.sourceCode .bash}
 docker-compose up
 ```
 
-This will build and download the containers and start them. The
-`docker-compose.yml` file describes the setup of the containers.
-
 The web server should be reachable at `http://localhost:8081` (you
 should see a login form).
 
+The `docker-compose.yml` file describes the setup of the containers. See section below for a lit
 
 ### 6. Create a superuser
 
@@ -109,14 +147,20 @@ through the Django admin or loaded via fixtures.
 To create the initial account, project and profile, do the following:
 
 ``` {.sourceCode .bash}
-docker exec iaso_iaso_1 ./manage.py create_and_import_data
+docker-compose exec iaso ./manage.py create_and_import_data
 ```
 
 And run the following command to populate your database with a tree of
 org units (these are childcare schools in the West of DRC):
 
 ``` {.sourceCode .bash}
-docker-compose exec iaso ./manage.py tree_importer --org_unit_csv_file testdata/schools.csv --source_name wb_schools_2019 --data_dict testdata/data_dict.json --version_number=1 --project_id=1 --main_org_unit_name maternelle
+docker-compose exec iaso ./manage.py tree_importer \
+    --org_unit_csv_file testdata/schools.csv \
+    --data_dict testdata/data_dict.json \
+    --source_name wb_schools_2019 \
+    --version_number=1 \
+    --project_id=1\
+     --main_org_unit_name maternelle
 ```
 
 You can now login on `http://localhost:8081`
@@ -147,13 +191,13 @@ You can now start to develop additional features on Iaso!
 
 ### 10. Import data from DHIS2
 
-Alternatively to steps 7-8, you can import data from the DHIS2 demo server (play.dhis2.org).
+Alternatively or in addition to steps 7-8, you can import data from the DHIS2 demo server (play.dhis2.org).
 
 By running the command
 
 
 ``` {.sourceCode .bash}
-docker-compose run iaso manage.py seed_test_data --mode=seed --dhis2version=2.35.3
+docker-compose run --rm iaso manage.py seed_test_data --mode=seed --dhis2version=2.35.3
 ```
 
 The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. Type of OrgUnit are not
@@ -187,8 +231,25 @@ The following are some examples:
 * Apply pending ORM migrations `docker-compose exec iaso ./manage.py migrate`
 * Show ORM migrations          `docker-compose exec iaso ./manage.py showmigrations`
 
+Containers and services
+-----------------------
 
-### docker-compose run VS docker-compose exec
+The list of the main containers:
+
+*  iaso       The python backend in [Django](https://www.djangoproject.com/)
+*  webpack    The JS frontend in react
+*  db         [PostgreSQL](https://www.postgresql.org/) database
+
+All the container definitions for development can be found in the
+`docker-compose.yml`.
+
+> **note**
+>
+> Postgresql uses Django ORM models for table configuration and
+> migrations.
+
+
+### note : docker-compose run VS docker-compose exec
 
 Run launch a new docker container, Exec launch a command it the existing container.
 
@@ -200,6 +261,114 @@ to run the django manage.py you will need to use `run iaso manage` but `exec ias
 
 Also take care that `run` unless evoked with the `--rm` will leave you with a lot of left over containers that take up
 disk space and need to be cleaned occasionally with `docker-compose rm` to reclaim disk space.
+
+Enketo
+------
+
+To enable the Enketo editor in your local environment, you will have to
+install our fork of enketo-express:
+
+``` {.sourceCode .shell}
+git clone https://github.com/BLSQ/enketo.git
+cd setup/docker
+docker-compose up
+```
+
+Then, you need to make sure your .env file is properly configured.
+ENKETO_URL should be set to http://192.168.1.15:81 (Replace
+192.168.1.15 by your host)
+
+To seed your DB with typical example forms, see the  Import data from DHIS2 section
+
+Enketo and Iaso will each run separately in their own  docker-compose but still need to communicate together.
+This is done via your host, which is why you will need to change the IP in .env each time your ip change.
+
+TODO: This setup shuold be simplified a bit
+
+Contributing
+============
+
+Code formatting
+---------------
+
+We have adopted Black [](https://github.com/psf/black) as our code
+formatting tool. Line length is 120.
+
+The easiest way to use is is to install the pre-commit hook: 1. Install
+pre-commit: pip install pre-commit 2. Execute pre-commit install to
+install git hooks in your .git/ directory.
+
+Another good way to have it working is to set it up in your code editor.
+Pycharm, for example, has good support for this.
+
+The pre-commit is not mandatory but Continuous Integration will checks
+if the formatting is respected!
+
+Tests and linting
+-----------------
+
+For python, we use django builtin test framework. Tests can be executed with
+
+``` {.sourceCode .bash}
+docker-compose exec iaso ./manage.py test
+```
+
+Code reloading
+--------------
+
+In development the servers will reload when it detects a file
+change, either in Python or Javascript. 
+
+Troubleshooting
+---------------
+
+If you need to restart everything
+``` {.sourceCode .shell}
+docker-compose stop && docker-compose start
+```
+
+If you encounter problems, you can try to rebuild everything from
+scratch.
+
+``` {.sourceCode .shell}
+# kill containers
+docker-compose kill
+# remove `iaso` container
+docker-compose rm -f iaso
+# build containers
+docker-compose build
+# start-up containers
+docker-compose up
+```
+
+
+React Intl
+----------
+
+It often blocks the deployment.
+
+you can test the default message extraction with
+
+``` {.sourceCode .shell}
+# make sure you commit everything
+npm run webpack-prod
+git clean -n
+git clean -f ..
+```
+
+Jupyter Notebook
+----------------
+
+To run a Jupyter Notebook, just copy the env variable from runaisasdev.sh, activate the virtualenv and run
+
+``` {.sourceCode .bash}
+python manage.py shell_plus --notebook
+```
+
+Deployment on AWS Elastic Beanstalk
+====================================
+
+See also [HOW-TO-DEPLOY.md](HOW-TO-DEPLOY.md)
 
 Running Django 3 on Elastic Beanstalk
 -------------------------------------
@@ -239,95 +408,6 @@ Then go to Actions -> Image -> Create Image When it's ready, go to the
 Beanstalk Instance Settings and specify the AMI reference of the image
 we just created.
 
-Containers and services
------------------------
-
-The list of the main containers:
-
-*  iaso       The python backend in [Django](https://www.djangoproject.com/)
-*  webpack    The JS frontend in react
-*  db         [PostgreSQL](https://www.postgresql.org/) database
-
-All the container definitions for development can be found in the
-`docker-compose.yml`.
-
-> **note**
->
-> Postgresql uses Django ORM models for table configuration and
-> migrations.
-
-Tests and linting
------------------
-
-Tests can be executed with
-
-``` {.sourceCode .bash}
-docker-compose exec iaso ./manage.py test
-```
-
-Code reloading
---------------
-
-In development the servers will reload when it detects a file
-change, either in Python or Javascript. 
-
-If you need to restart everything
-``` {.sourceCode .shell}
-docker-compose stop && docker-compose start
-```
-
-If you encounter problems, you can try to rebuild everything from
-scratch.
-
-``` {.sourceCode .shell}
-# kill containers
-docker-compose kill
-# remove `iaso` container
-docker-compose rm -f iaso
-# build containers
-docker-compose build
-# start-up containers
-docker-compose up
-```
-
-Code formatting
----------------
-
-We have adopted Black [](https://github.com/psf/black) as our code
-formatting tool. Line length is 120.
-
-The easiest way to use is is to install the pre-commit hook: 1. Install
-pre-commit: pip install pre-commit 2. Execute pre-commit install to
-install git hooks in your .git/ directory.
-
-Another good way to have it working is to set it up in your code editor.
-Pycharm, for example, has good support for this.
-
-The pre-commit is not mandatory but Continuous Integration will checks
-if the formatting is respected!
-
-React Intl
-----------
-
-It often blocks the deployment.
-
-you can test the default message extraction with
-
-``` {.sourceCode .shell}
-# make sure you commit everything
-npm run webpack-prod
-git clean -n
-git clean -f ..
-```
-
-Jupyter Notebook
-----------------
-
-To run a Jupyter Notebook, just activate the virtualenv and run
-
-``` {.sourceCode .bash}
-python manage.py shell_plus --notebook
-```
 
 Testing S3 uploads in development
 ---------------------------------
@@ -343,29 +423,11 @@ If you need to test s3 storage in development, you have to:
 These are actually exactly the same steps we use on AWS.
 
 ### Testing prod js assets in development
-Run `TEST\_PROD=true docker-compose up`
+Run `TEST_PROD=true docker-compose up`
 
 to have a local environment serving you the production assets (minified
 and with the same compilation option as in production). This can be
 useful to reproduce production only bugs.
-
-Enketo
-------
-
-To enable the Enketo editor in your local environment, you will have to
-install our fork of enketo-express:
-
-``` {.sourceCode .shell}
-git clone https://github.com/BLSQ/enketo.git
-cd setup/docker
-docker-compose up
-```
-
-Then, you need to make sure your .env file is properly configured.
-ENKETO\_URL should be set to http://192.168.1.15:81 (Replace
-192.168.1.15 by your host)
-
-To seed your DB with typical example forms, see the  Import data from DHIS2
 
 # Workers
 
@@ -373,7 +435,7 @@ To seed your DB with typical example forms, see the  Import data from DHIS2
 To execute task in the background, we use Elastic Beanstalk workers with
 SQS using a fork of the library
 [django-beanstalk-worker](https://pypi.org/project/django-beanstalk-worker/)
-from tolomea. The endpoint /api/copy\_version/ is a good example of how
+from tolomea. The endpoint `/api/copy_version/` is a good example of how
 to create a task and to plug it to the api.
 
 When calling a function with the @task decorator, it will add it to the
@@ -382,7 +444,7 @@ the other function's argument, that represent which user is launching
 the task. At execution time the task will receive a iaso.models.Task
 instance in argument that should be used to report progress. It's
 mandatory for the function, at the end of a successful execution to call
-task.report\_success() to mark it's proper completion.
+task.report_success() to mark it's proper completion.
 
-In local development you can call the url tasks/run\_all which will run
+In local development you can call the url `tasks/run_all` which will run
 all tasks in queue.

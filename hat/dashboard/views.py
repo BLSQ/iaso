@@ -97,4 +97,11 @@ def log_detail(request: HttpRequest) -> HttpResponse:
 @login_required(login_url="/login/")
 @require_http_methods(["GET"])
 def iaso(request: HttpRequest) -> HttpResponse:
-    return render(request, "iaso/index.html", {"STATIC_URL": settings.STATIC_URL})
+    return render(
+        request,
+        "iaso/index.html",
+        {
+            "STATIC_URL": settings.STATIC_URL,
+            "PLUGIN_POLIO_ENABLED": settings.PLUGIN_POLIO_ENABLED,
+        },
+    )

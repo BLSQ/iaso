@@ -9,7 +9,7 @@ export const PreparednessForm = () => {
     const classes = useStyles();
     const [preparednessDataTotals, setPreparednessDataTotals] = useState();
     const { values, setFieldValue } = useFormikContext();
-    const { last_preparedness: lastPreparedness, preparedness_data } = values;
+    const { last_preparedness: lastPreparedness } = values;
     const totalSummary = useMemo(
         () => preparednessDataTotals || lastPreparedness,
         [preparednessDataTotals, lastPreparedness],
@@ -22,8 +22,11 @@ export const PreparednessForm = () => {
                 const { totals, ...payload } = data;
 
                 setPreparednessDataTotals(totals);
-                const { national_score, regional_score, district_score } =
-                    totals;
+                const {
+                    national_score,
+                    regional_score,
+                    district_score,
+                } = totals;
                 setFieldValue('preparedness_data', {
                     spreadsheet_url: values.preperadness_spreadsheet_url,
                     national_score,

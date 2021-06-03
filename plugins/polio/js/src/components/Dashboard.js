@@ -25,6 +25,7 @@ import { TableCell } from './Table/TableCell';
 import {
     DateInput,
     ResponsibleField,
+    PaymentField,
     Select,
     StatusField,
     TextInput,
@@ -160,6 +161,12 @@ const BaseInfoForm = () => {
                     />
                     <Field
                         className={classes.input}
+                        label="GPEI Coordinator"
+                        name={'gpei_coordinator'}
+                        component={TextInput}
+                    />
+                    <Field
+                        className={classes.input}
                         name={'initial_org_unit'}
                         component={OrgUnitsLevels}
                     />
@@ -231,13 +238,13 @@ const DetectionForm = () => {
                     <Field
                         label={'PV2 Notification'}
                         fullWidth
-                        name={'pv2_notified_at'}
+                        name={'pv_notified_at'}
                         component={DateInput}
                     />
                     <Field
-                        label={'cVDPV2 Notifiation'}
+                        label={'cVDPV2 Notification'}
                         fullWidth
-                        name={'cvdpv2_notified_at'}
+                        name={'cvdpv_notified_at'}
                         component={DateInput}
                     />
                 </Grid>
@@ -249,9 +256,17 @@ const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { values } = useFormikContext();
 
-    const targetPopulationTotal =
-        parseInt(defaultToZero(values?.round_one?.target_population ?? 0)) +
-        parseInt(defaultToZero(values?.round_two?.target_population ?? 0));
+    const wastageRate = 0.26;
+
+    const round1Doses = parseInt(
+        defaultToZero(values?.round_one?.target_population ?? 0),
+    );
+    const round2Doses = parseInt(
+        defaultToZero(values?.round_two?.target_population ?? 0),
+    );
+
+    const vialsRequested =
+      Math.ceil(((round1Doses + round2Doses) / 20) * (1 / (1 - wastageRate)));
 
     return (
         <>
@@ -267,6 +282,14 @@ const RiskAssessmentForm = () => {
                         <Field
                             name={'risk_assessment_responsible'}
                             component={ResponsibleField}
+                        />
+                    </Grid>
+                    <Grid xs={12} md={6} item>
+                        <Field
+                            label="Verification Score (/20)"
+                            name={'verification_score'}
+                            component={TextInput}
+                            className={classes.input}
                         />
                     </Grid>
                 </Grid>
@@ -321,9 +344,7 @@ const RiskAssessmentForm = () => {
                     />
                     <Typography>
                         Vials Requested{' '}
-                        {Number.isNaN(targetPopulationTotal)
-                            ? 0
-                            : targetPopulationTotal}
+                        {Number.isNaN(vialsRequested) ? 0 : vialsRequested}
                     </Typography>
                 </Grid>
             </Grid>
@@ -336,9 +357,35 @@ const BudgetForm = () => {
 
     const { values } = useFormikContext();
 
+    const round1Cost = parseInt(defaultToZero(values?.round_one?.cost ?? 0));
+    const round2Cost = parseInt(defaultToZero(values?.round_two?.cost ?? 0));
+
+    const round1Population = parseInt(
+        defaultToZero(values?.round_one?.target_population ?? 0),
+    );
+    const round2Population = parseInt(
+        defaultToZero(values?.round_two?.target_population ?? 0),
+    );
+
+    const calculateRound1 = round1Cost > 0 && round1Population > 0;
+    const calculateRound2 = round2Cost > 0 && round2Population > 0;
+
     const totalCost =
-        parseInt(defaultToZero(values?.round_one?.cost ?? 0)) *
-        parseInt(defaultToZero(values?.round_one?.target_population ?? 0));
+        (calculateRound1 ? round1Cost : 0) + (calculateRound2 ? round2Cost : 0);
+
+    const totalPopulation =
+        (calculateRound1 ? round1Population : 0) +
+        (calculateRound2 ? round2Population : 0);
+
+    const costRound1PerChild = calculateRound1
+        ? (round1Cost / round1Population).toFixed(2)
+        : 0;
+
+    const costRound2PerChild = calculateRound2
+        ? (round2Cost / round2Population).toFixed(2)
+        : 0;
+
+    const totalCostPerChild = (totalCost / totalPopulation).toFixed(2);;
 
     return (
         <>
@@ -353,7 +400,14 @@ const BudgetForm = () => {
                             component={ResponsibleField}
                         />
                     </Grid>
+
                 </Grid>
+                <Grid xs={12} md={6} item>
+                        <Field
+                            name={'payment_mode'}
+                            component={PaymentField}
+                        />
+                    </Grid>
                 <Grid item md={6}>
                     <Field
                         label={'1st Draft Submission'}
@@ -409,8 +463,20 @@ const BudgetForm = () => {
                         component={TextInput}
                         className={classes.input}
                     />
+
                     <Typography>
-                        Cost/Child: ${Number.isNaN(totalCost) ? 0 : totalCost}
+                        Cost/Child Round 1: $
+                        {calculateRound1 ? costRound1PerChild : ' -'}
+                    </Typography>
+                    <Typography>
+                        Cost/Child Round 2: $
+                        {calculateRound2 ? costRound2PerChild : ' -'}
+                    </Typography>
+                    <Typography>
+                        Cost/Child Total: $
+                            {calculateRound1 || calculateRound2
+                                ? totalCostPerChild
+                                : ' -'}
                     </Typography>
                 </Grid>
             </Grid>
@@ -452,7 +518,7 @@ const Round1Form = () => {
                 <Box className={classes.round1FormCalculations}>
                     <Typography>
                         Percentage of districts passing LQAS: xx% (xxx passing /
-                        xxx received / xx total)
+                        xxx received / xxx total)
                     </Typography>
                     <Typography>Percentage of missed children: xx%</Typography>
                 </Box>
@@ -467,6 +533,21 @@ const Round1Form = () => {
                 <Field
                     label={'IM End'}
                     name={'round_one.im_ended_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+            </Grid>
+            <Grid xs={12} md={6} item>
+                <Field
+                    label={'LQAS Start'}
+                    name={'round_one.lqas_started_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+
+                <Field
+                    label={'LQAS End'}
+                    name={'round_one.lqas_ended_at'}
                     component={DateInput}
                     fullWidth
                 />
@@ -576,7 +657,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
 
     const defaultValues = {
         round_one: {},
-        round_two: {},
+        round_two: {}
     };
 
     const initialValues = merge(selectedCampaign, defaultValues);
@@ -725,9 +806,8 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
 
 export const Dashboard = () => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
-    const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] = useState(
-        false,
-    );
+    const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
+        useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
 
     const classes = useStyles();
@@ -810,10 +890,6 @@ export const Dashboard = () => {
                 accessor: 'detection_status',
             },
             {
-                Header: 'Duration (days)',
-                accessor: 'duration',
-            },
-            {
                 Header: 'Actions',
                 accessor: 'actions',
             },
@@ -821,13 +897,8 @@ export const Dashboard = () => {
         [],
     );
 
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        rows,
-        prepareRow,
-    } = useTable({ columns, data: tableData });
+    const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+        useTable({ columns, data: tableData });
 
     return (
         <>
@@ -841,7 +912,7 @@ export const Dashboard = () => {
                 onClose={closeDeleteConfirmDialog}
                 onConfirm={handleDeleteConfirmDialogConfirm}
             />
-            <Page title={'Campaigns for DRC'}>
+            <Page title={'Campaigns'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <PageActions>
                         <PageAction

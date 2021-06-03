@@ -6,7 +6,7 @@ from .models import Campaign
 
 
 class CampaignViewSet(viewsets.ModelViewSet):
-    queryset = Campaign.objects.all()
+    queryset = Campaign.objects.all().order_by("-cvdpv_notified_at")
     serializer_class = CampaignSerializer
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)

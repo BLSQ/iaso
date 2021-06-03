@@ -13,7 +13,7 @@ The file will be linked at import to a DataSource and a particular version of it
 When updating an existing source, the gpkg doesn't need to contain the whole source, a subset of the OrgUnit and Group
 to update or create is sufficient.
 
-Obiouvsly it must be a valid GeopPackage, conformant with the [OGC specification](https://www.geopackage.org/spec/)
+Obviously it must be a valid GeopPackage, conformant with the [OGC specification](https://www.geopackage.org/spec/)
 
 ## Layer Tables
 The OrgUnit are organized in layer, each layer represent a different OrgUnit types.
@@ -45,3 +45,7 @@ Mandatory columns:
 
 
 Other tables and columns may be present and will be ignored (as long as they don't start with `level-`)
+
+# Examples
+
+Some example files are present in the `iaso/tests/fixtures/gpkg` folder.

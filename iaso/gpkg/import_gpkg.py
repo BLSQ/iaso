@@ -123,72 +123,71 @@ def get_ref(inst: Union[OrgUnit, Group]) -> str:
     return inst.source_ref if inst.source_ref else f"iaso#{inst.pk}"
 
 
+@transaction.atomic
 def import_gpkg_file(filename, project_id, source_name, validation_status, version_number):
     # Layer are OrgUnit's Type
     layers_name = fiona.listlayers(filename)
-    # layers_name = sorted(layers_name, key=lambda x: int(x.split("-")[1]))
-    with transaction.atomic():
-        source, created = DataSource.objects.get_or_create(name=source_name)
-        if source.read_only:
-            raise Exception("Source is marked read only")
-        source.projects.add(project_id)
-        project = Project.objects.get(id=project_id)
+    source, created = DataSource.objects.get_or_create(name=source_name)
+    if source.read_only:
+        raise Exception("Source is marked read only")
+    source.projects.add(project_id)
+    project = Project.objects.get(id=project_id)
 
-        version, created = SourceVersion.objects.get_or_create(number=version_number, data_source=source)
+    version, created = SourceVersion.objects.get_or_create(number=version_number, data_source=source)
 
-        # Create and update all the groups and put them in a dict indexed by ref
-        # Do it in sqlite because Fiona is not great with Attributes table (without geom)
-        ref_group: Dict[str, Group] = {get_ref(group): group for group in version.group_set.all()}
-        with sqlite3.connect(filename) as conn:
-            cur = conn.cursor()
-            rows = cur.execute("select ref, name from groups")
-            for ref, name in rows:
-                group = create_or_update_group(ref_group.get(ref), ref, name, version)
-                ref_group[get_ref(group)] = group
+    # Create and update all the groups and put them in a dict indexed by ref
+    # Do it in sqlite because Fiona is not great with Attributes table (without geom)
+    ref_group: Dict[str, Group] = {get_ref(group): group for group in version.group_set.all()}
+    with sqlite3.connect(filename) as conn:
+        cur = conn.cursor()
+        rows = cur.execute("select ref, name from groups")
+        for ref, name in rows:
+            group = create_or_update_group(ref_group.get(ref), ref, name, version)
+            ref_group[get_ref(group)] = group
 
-        # index all existing OrgUnit per ref
-        existing_orgunits = version.orgunit_set.all()  # Maybe add a only?
-        ref_ou: Dict[str, OrgUnit] = {}
-        for ou in existing_orgunits:
-            ref = get_ref(ou)
-            ref_ou[ref] = ou
+    # index all existing OrgUnit per ref
+    existing_orgunits = version.orgunit_set.all()  # Maybe add a only?
+    ref_ou: Dict[str, OrgUnit] = {}
+    for ou in existing_orgunits:
+        ref = get_ref(ou)
+        ref_ou[ref] = ou
 
-        # The child may be created before the parent so we keep a list to update after creating them all
-        to_update_with_parent: List[Tuple[str, str]] = []
-        total_org_unit = 0
+    # The child may be created before the parent so we keep a list to update after creating them all
+    to_update_with_parent: List[Tuple[str, str]] = []
+    total_org_unit = 0
 
-        for layer_name in layers_name:
-            # layers to import must be named level-{depth}-{name}
-            if not layer_name.startswith("level-"):
-                continue
+    for layer_name in layers_name:
+        # layers to import must be named level-{depth}-{name}
+        if not layer_name.startswith("level-"):
+            continue
 
-            colx = fiona.open(filename, mode="r", layer=layer_name)
+        colx = fiona.open(filename, mode="r", layer=layer_name)
 
-            _, depth, name = layer_name.split("-")
-            org_unit_type = get_or_create_org_unit_type(name, project, depth)
+        _, depth, name = layer_name.split("-")
+        org_unit_type = get_or_create_org_unit_type(name, project, depth)
 
-            # collect all the OrgUnit to create from this layer
-            row: OrgUnitData
-            for row in iter(colx):
-                row["type"] = org_unit_type
-                ref = row["properties"]["ref"]
+        # collect all the OrgUnit to create from this layer
+        row: OrgUnitData
+        for row in iter(colx):
+            row["type"] = org_unit_type
+            ref = row["properties"]["ref"]
 
-                existing_ou = ref_ou.get(ref, None)
-                orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group)
-                ref = get_ref(orgunit)  # if ref was null in gpkg
-                ref_ou[ref] = orgunit
+            existing_ou = ref_ou.get(ref, None)
+            orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group)
+            ref = get_ref(orgunit)  # if ref was null in gpkg
+            ref_ou[ref] = orgunit
 
-                parent_ref = row["properties"]["parent_ref"]
-                to_update_with_parent.append((ref, parent_ref))
+            parent_ref = row["properties"]["parent_ref"]
+            to_update_with_parent.append((ref, parent_ref))
 
-                total_org_unit += 1
+            total_org_unit += 1
 
-        print(f"OrgUnit updated or created : {total_org_unit}")
-        for ref, parent_ref in to_update_with_parent:
-            if parent_ref and parent_ref not in ref_ou:
-                raise ValueError(f"Bad GPKG parent {parent_ref} for {ou} don't exist in input or SourceVersion")
+    print(f"OrgUnit updated or created : {total_org_unit}")
+    for ref, parent_ref in to_update_with_parent:
+        if parent_ref and parent_ref not in ref_ou:
+            raise ValueError(f"Bad GPKG parent {parent_ref} for {ou} don't exist in input or SourceVersion")
 
-            ou = ref_ou[ref]
-            parent_ou = ref_ou[parent_ref] if parent_ref else None
-            ou.parent = parent_ou
-            ou.save()
+        ou = ref_ou[ref]
+        parent_ou = ref_ou[parent_ref] if parent_ref else None
+        ou.parent = parent_ou
+        ou.save()

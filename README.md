@@ -51,7 +51,7 @@ via an API implemented via Django rest framework, all data is stored in Postgres
 
 A companion mobile app for Android allow submitting Form and creating org unit.
 
-Form can also be filled in a web interface via the Enketo companion service. Both Iaso and Enketeo they need to be
+Form can also be filled in a web interface via the Enketo companion service. Both Iaso and Enketeo need to be
 configured to work together. It is possible to run an Enketo service locally, see Enketo section below.
 
 More documentation on the Front End part is present in

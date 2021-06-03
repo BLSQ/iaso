@@ -8,8 +8,8 @@ from iaso.test import TestCase
 class GPKGImport(TestCase):
     @classmethod
     def setUpTestData(cls):
-        account = m.Account.objects.create(name="a")
-        cls.project = m.Project.objects.create(name="Project 1", account=account, app_id="test_app_id")
+        cls.account = m.Account.objects.create(name="a")
+        cls.project = m.Project.objects.create(name="Project 1", account=cls.account, app_id="test_app_id")
 
     def test_minimal_import(self):
         import_gpkg_file(
@@ -21,6 +21,7 @@ class GPKGImport(TestCase):
         )
         self.assertEqual(m.OrgUnit.objects.all().count(), 3)
         self.assertEqual(m.Group.objects.all().count(), 2)
+        self.assertEqual(m.OrgUnitType.objects.count(), 3)
 
         root = m.OrgUnit.objects.get(parent=None)
         self.assertEqual(root.name, "District Betare Oya")
@@ -86,6 +87,7 @@ class GPKGImport(TestCase):
         )
         self.assertEqual(m.OrgUnit.objects.all().count(), 3)
         self.assertEqual(m.Group.objects.all().count(), 2)
+        self.assertEqual(m.OrgUnitType.objects.count(), 3)
 
         ou.refresh_from_db()
         self.assertEqual(ou.name, "District Betare Oya")
@@ -125,6 +127,7 @@ class GPKGImport(TestCase):
 
         self.assertEqual(m.OrgUnit.objects.all().count(), 5)
         self.assertEqual(m.Group.objects.all().count(), 4)
+        self.assertEqual(m.OrgUnitType.objects.count(), 3)
 
         ou.refresh_from_db()
         self.assertEqual(ou.name, "bla")
@@ -144,7 +147,44 @@ class GPKGImport(TestCase):
             version_number=1,
             validation_status="new",
         )
+        self.assertEqual(m.OrgUnitType.objects.count(), 3)
         self.assertEqual(m.OrgUnit.objects.all().count(), 4)
         self.assertEqual(m.Group.objects.all().count(), 2)
         ou = m.OrgUnit.objects.get(source_ref="empty_geom")
         self.assertEqual(ou.name, "empty_geom")
+
+    def test_import_orgunit_exisiting_orgunit_type(self):
+        out: m.OrgUnitType
+        out = m.OrgUnitType.objects.create(name="AS", depth=100)
+        out.projects.add(self.project)
+        import_gpkg_file(
+            "./iaso/tests/fixtures/gpkg/minimal_simplified.gpkg",
+            project_id=self.project.id,
+            source_name="test",
+            version_number=1,
+            validation_status="new",
+        )
+        self.assertEqual(m.OrgUnitType.objects.count(), 3)
+        self.assertEqual(m.OrgUnit.objects.all().count(), 4)
+        self.assertEqual(m.Group.objects.all().count(), 2)
+
+        out.refresh_from_db()
+        self.assertEqual(out.projects.count(), 1)
+
+    def test_import_orgunit_exisiting_orgunit_type_in_diff_proj(self):
+        other_project = m.Project.objects.create(name="Project 2", account=self.account, app_id="test_app_id2")
+        out = m.OrgUnitType.objects.create(name="AS", depth=100)
+        out.projects.add(other_project)
+        import_gpkg_file(
+            "./iaso/tests/fixtures/gpkg/minimal_simplified.gpkg",
+            project_id=self.project.id,
+            source_name="test",
+            version_number=1,
+            validation_status="new",
+        )
+        self.assertEqual(m.OrgUnitType.objects.count(), 4)
+        self.assertEqual(m.OrgUnit.objects.all().count(), 4)
+        self.assertEqual(m.Group.objects.all().count(), 2)
+
+        out.refresh_from_db()
+        self.assertEqual(out.projects.count(), 1)

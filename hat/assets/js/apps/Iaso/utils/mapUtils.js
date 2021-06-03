@@ -3,8 +3,8 @@ import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
 
+import { theme } from 'bluesquare-components';
 import { MESSAGES } from './map/mapUtils';
-import theme from './theme';
 
 export const isValidCoordinate = (latitude, longitude) => {
     if (

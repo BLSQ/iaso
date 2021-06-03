@@ -7,8 +7,7 @@ import Color from 'color';
 
 import PropTypes from 'prop-types';
 
-import commonStyles from '../../styles/common';
-import { formatThousand } from '../../utils';
+import { commonStyles, formatThousand } from 'bluesquare-components';
 import MESSAGES from './messages';
 
 const styles = theme => ({

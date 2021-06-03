@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
@@ -8,6 +8,8 @@ import isEqual from 'lodash/isEqual';
 import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
+import { InnerDrawer, injectIntl, commonStyles } from 'bluesquare-components';
+// import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { locationsLimit } from '../../../constants/filters';
 
 import {
@@ -26,15 +28,13 @@ import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
 import OrgUnitPopupComponent from './OrgUnitPopupComponent';
-import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 
 import { fetchOrgUnitDetail } from '../../../utils/requests';
 import { getChipColors } from '../../../constants/chipColors';
-import commonStyles from '../../../styles/common';
 import { getColorsFromParams, decodeSearch } from '../utils';
 import MESSAGES from '../messages';
-import injectIntl from '../../../libs/intl/injectIntl';
+import DrawerMessages from '../../../components/nav/messages';
 
 const boundsOptions = {
     padding: [50, 50],
@@ -196,26 +196,31 @@ class OrgunitsMap extends Component {
             <Grid container spacing={0}>
                 <InnerDrawer
                     withTopBorder
-                    settingsOptionComponent={
-                        <>
-                            <TileSwitch />
-                            <Divider />
-                            <ClusterSwitch />
-                            <Divider />
-                            <Box
-                                px={2}
-                                className={classes.innerDrawerToolbar}
-                                component="div"
-                            >
-                                <FiltersComponent
-                                    params={params}
-                                    baseUrl={baseUrl}
-                                    onFilterChanged={() => setFiltersUpdated()}
-                                    filters={[locationsLimit()]}
-                                />
-                            </Box>
-                        </>
-                    }
+                    settingsOption={{
+                        component: (
+                            <>
+                                <TileSwitch />
+                                <Divider />
+                                <ClusterSwitch />
+                                <Divider />
+                                <Box
+                                    px={2}
+                                    className={classes.innerDrawerToolbar}
+                                    component="div"
+                                >
+                                    <FiltersComponent
+                                        params={params}
+                                        baseUrl={baseUrl}
+                                        onFilterChanged={() =>
+                                            setFiltersUpdated()
+                                        }
+                                        filters={[locationsLimit()]}
+                                    />
+                                </Box>
+                            </>
+                        ),
+                        message: DrawerMessages.settings,
+                    }}
                 >
                     <Map
                         ref={ref => {

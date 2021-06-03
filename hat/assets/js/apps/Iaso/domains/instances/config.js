@@ -1,7 +1,7 @@
 import React from 'react';
 import orderBy from 'lodash/orderBy';
 
-import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
+import { ColumnText as ColumnTextComponent } from 'bluesquare-components';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 
 import { baseUrls } from '../../constants/urls';
@@ -30,11 +30,13 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
                         icon="xml"
                         tooltipMessage={MESSAGES.downloadXml}
                     />
-                    <IconButtonComponent
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.org_unit.id}`}
-                        icon="orgUnit"
-                        tooltipMessage={MESSAGES.viewOrgUnit}
-                    />
+                    {settings.original.org_unit && (
+                        <IconButtonComponent
+                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.org_unit.id}`}
+                            icon="orgUnit"
+                            tooltipMessage={MESSAGES.viewOrgUnit}
+                        />
+                    )}
                 </section>
             ),
         },

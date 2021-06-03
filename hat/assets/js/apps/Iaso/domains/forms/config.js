@@ -3,10 +3,12 @@ import moment from 'moment';
 import { Grid } from '@material-ui/core';
 import { Link } from 'react-router';
 
+import {
+    textPlaceholder,
+    IconButton as IconButtonComponent,
+    ColumnText as ColumnTextComponent,
+} from 'bluesquare-components';
 import FormVersionsDialog from './components/FormVersionsDialogComponent';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
-import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
-import { textPlaceholder } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
 import { getOrgUnitParentsIds } from '../orgUnits/utils';
 

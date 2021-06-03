@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { Tabs, Tab, withStyles } from '@material-ui/core';
 
+import { injectIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 import UsersInfos from './UsersInfos';
@@ -18,7 +19,6 @@ import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
 
 import PermissionsSwitches from './PermissionsSwitches';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     tabs: {

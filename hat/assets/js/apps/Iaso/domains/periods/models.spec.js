@@ -1,3 +1,4 @@
+import { textPlaceholder } from 'bluesquare-components';
 import { Period } from './models';
 import {
     PERIOD_TYPE_DAY,
@@ -6,7 +7,6 @@ import {
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
 } from './constants';
-import { textPlaceholder } from '../../constants/uiConstants';
 
 let periodString;
 let expectedPeriod;

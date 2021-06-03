@@ -5,10 +5,10 @@ import { withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
+import { injectIntl } from 'bluesquare-components';
 import { getLatLngBounds, customZoomBar } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const boundsOptions = { padding: [10, 10] };
 

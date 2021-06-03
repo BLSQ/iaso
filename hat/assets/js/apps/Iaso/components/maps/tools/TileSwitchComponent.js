@@ -11,11 +11,10 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 
 import PropTypes from 'prop-types';
+import { injectIntl, commonStyles } from 'bluesquare-components';
 import { setCurrentTile } from '../../../redux/mapReducer';
 
 import tiles from '../../../constants/mapTiles';
-import commonStyles from '../../../styles/common';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 import MESSAGES from '../messages';
 

@@ -1,3 +1,5 @@
+# Configuration for black, which automatically reformat python code.
+# see README for more info
 [tool.black]
 line-length = 120
 exclude = '''

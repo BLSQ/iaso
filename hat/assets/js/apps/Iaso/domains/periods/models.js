@@ -1,5 +1,6 @@
 import _ from 'lodash/fp';
 
+import { textPlaceholder } from 'bluesquare-components';
 import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
@@ -7,7 +8,6 @@ import {
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
 } from './constants';
-import { textPlaceholder } from '../../constants/uiConstants';
 
 export class Period {
     constructor(periodString) {

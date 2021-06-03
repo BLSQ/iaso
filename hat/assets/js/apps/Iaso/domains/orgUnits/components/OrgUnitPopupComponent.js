@@ -17,19 +17,19 @@ import {
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
-import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
+import {
+    textPlaceholder,
+    injectIntl,
+    LoadingSpinner,
+    commonStyles,
+    mapPopupStyles,
+} from 'bluesquare-components';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
-
-import { textPlaceholder } from '../../../constants/uiConstants';
-
-import commonStyles from '../../../styles/common';
-import mapPopupStyles from '../../../styles/mapPopup';
 
 import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from '../messages';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

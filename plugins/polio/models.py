@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.utils.translation import gettext as _
 from uuid import uuid4
+from iaso.models import Group
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -53,6 +54,16 @@ class Campaign(models.Model):
 
     initial_org_unit = models.ForeignKey(
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
+    )
+
+    group = models.ForeignKey(
+        Group,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="campaigns",
+        default=None,
+        limit_choices_to={"domain", "POLIO"},
     )
 
     onset_at = models.DateField(

@@ -12,7 +12,7 @@ import Button from '@material-ui/core/Button';
 import Add from '@material-ui/icons/Add';
 import Search from '@material-ui/icons/Search';
 import classNames from 'classnames';
-import commonStyles from '../../../styles/common';
+import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
 import { getChipColors, chipColors } from '../../../constants/chipColors';
 
 import {
@@ -31,12 +31,9 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
-import { createUrl } from '../../../utils/fetchData';
 import { decodeSearch, encodeUriSearches } from '../utils';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
-
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

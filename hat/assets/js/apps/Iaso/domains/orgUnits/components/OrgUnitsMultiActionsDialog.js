@@ -13,11 +13,13 @@ import {
     withStyles,
 } from '@material-ui/core';
 
+import {
+    selectionInitialState,
+    commonStyles,
+    formatThousand,
+} from 'bluesquare-components';
 import { saveMultiEdit as saveMultiEditAction } from '../actions';
-import { formatThousand } from '../../../utils';
-import { selectionInitialState } from '../../../utils/tableUtils';
 
-import commonStyles from '../../../styles/common';
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';

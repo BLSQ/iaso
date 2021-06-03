@@ -5,10 +5,12 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 import Color from 'color';
+import {
+    IconButton as IconButtonComponent,
+    textPlaceholder,
+} from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import OrgUnitTooltip from './components/OrgUnitTooltip';
-import { textPlaceholder } from '../../constants/uiConstants';
 import getDisplayName from '../../utils/usersUtils';
 import MESSAGES from './messages';
 import { getStatusMessage, getOrgUnitGroups } from './utils';

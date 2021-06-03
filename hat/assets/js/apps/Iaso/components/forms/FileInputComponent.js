@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 
+import { injectIntl } from 'bluesquare-components';
 import FormControlComponent from './FormControlComponent';
 import InputLabelComponent from './InputLabelComponent';
 import MESSAGES from '../../domains/forms/messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 function FileInputComponent({
     intl,

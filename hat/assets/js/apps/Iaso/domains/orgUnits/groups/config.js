@@ -1,12 +1,14 @@
 import React from 'react';
-import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
+import {
+    IconButton as IconButtonComponent,
+    ColumnText as ColumnTextComponent,
+    displayDateFromTimestamp,
+    formatThousand,
+    textPlaceholder,
+} from 'bluesquare-components';
 import GroupsDialog from './components/GroupsDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import ColumnTextComponent from '../../../components/tables/ColumnTextComponent';
-import { displayDateFromTimestamp } from '../../../utils/intlUtil';
-import { formatThousand } from '../../../utils';
 import MESSAGES from './messages';
-import { textPlaceholder } from '../../../constants/uiConstants';
 
 const TableColumns = (formatMessage, component) => [
     {

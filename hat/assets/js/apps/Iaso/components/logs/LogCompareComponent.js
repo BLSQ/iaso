@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import moment from 'moment';
@@ -20,18 +20,19 @@ import {
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
+import {
+    textPlaceholder,
+    injectIntl,
+    commonStyles,
+} from 'bluesquare-components';
 import { getPolygonPositionsFromSimplifiedGeom } from '../../domains/orgUnits/utils';
 
 import PolygonMap from '../maps/PolygonMapComponent';
 import MarkerMap from '../maps/MarkerMapComponent';
 import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
-import commonStyles from '../../styles/common';
-import { textPlaceholder } from '../../constants/uiConstants';
 
 import MESSAGES from '../../domains/forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
-
-import injectIntl from '../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

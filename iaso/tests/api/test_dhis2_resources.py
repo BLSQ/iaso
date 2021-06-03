@@ -40,7 +40,6 @@ class Dhis2APITestCase(APITestCase):
         self.source.credentials = credentials
         self.source.save()
 
-    @tag("iaso_only")
     def test_data_element_list_without_auth(self):
         """GET /dataElements/ without auth should result in a 403"""
 
@@ -48,7 +47,6 @@ class Dhis2APITestCase(APITestCase):
         self.assertEqual(403, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
-    @tag("iaso_only")
     def test_data_element_list_with_auth_but_non_configured_credentials(self):
         """GET /dataElements/ without credentials should return error"""
 
@@ -59,7 +57,6 @@ class Dhis2APITestCase(APITestCase):
         self.assertEqual("application/json", response["Content-Type"])
         self.assertEqual({"error": "No credentials configured"}, response.json())
 
-    @tag("iaso_only")
     def test_data_element_list_with_auth_but_non_configured_source(self):
         """GET /dataElements/ without credentials should return error"""
 
@@ -70,7 +67,6 @@ class Dhis2APITestCase(APITestCase):
         self.assertEqual("application/json", response["Content-Type"])
         self.assertEqual({"error": "Data source not available"}, response.json())
 
-    @tag("iaso_only")
     @responses.activate
     def test_data_element_list_with_auth_and_configured_without_params(self):
         """GET /dataElements/ return a list of first 50 data elements"""
@@ -100,7 +96,6 @@ class Dhis2APITestCase(APITestCase):
         self.assertEqual({"page": 1, "pageCount": 4}, response_json["pager"])
         self.assertEqual([{"id": "aze4a65z", "displayName": "Hello data element"}], response_json["dataElements"])
 
-    @tag("iaso_only")
     @responses.activate
     def test_data_element_list_with_auth_and_configured_with_filter_fields_pageSize(
         self,

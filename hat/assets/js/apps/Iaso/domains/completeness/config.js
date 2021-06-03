@@ -4,10 +4,14 @@ import ErrorOutline from '@material-ui/icons/ErrorOutline';
 import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 import { Link } from 'react-router';
 
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+import {
+    IconButton as IconButtonComponent,
+    formatThousand,
+    textPlaceholder,
+    HeaderRowIcon,
+} from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
 
-import HeaderRowIcon from '../../components/tables/HeaderRowIconComponent';
 import {
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
@@ -15,9 +19,7 @@ import {
     PERIOD_TYPE_YEAR,
     PERIOD_TYPES,
 } from '../periods/constants';
-import { formatThousand } from '../../utils';
 import { INSTANCE_STATUSES } from '../instances/constants';
-import { textPlaceholder } from '../../constants/uiConstants';
 
 import MESSAGES from './messages';
 

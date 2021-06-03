@@ -3,8 +3,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button } from '@material-ui/core';
 
+import { injectIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 function SnackBarButton(props) {
     const {

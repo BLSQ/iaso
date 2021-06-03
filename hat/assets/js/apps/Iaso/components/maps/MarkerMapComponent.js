@@ -9,17 +9,14 @@ import Layers from '@material-ui/icons/Layers';
 
 import PropTypes from 'prop-types';
 
+import { injectIntl, commonStyles } from 'bluesquare-components';
 import { customZoomBar } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
 import MarkerComponent from './markers/MarkerComponent';
 import TileSwitch from './tools/TileSwitchComponent';
 
-import commonStyles from '../../styles/common';
-
 import MESSAGES from './messages';
-
-import injectIntl from '../../libs/intl/injectIntl';
 
 const boundsOptions = { padding: [500, 500] };
 

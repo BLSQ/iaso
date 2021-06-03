@@ -1,7 +1,6 @@
 node_modules
 celerybeat-schedule.db
 .ipynb_checkpoints
-shared
 *.swp
 *~
 privatekey.json
@@ -124,6 +123,6 @@ data
 # lint error checking output
 lintErrors.html
 
-# gpkg tempory file
+# gpkg tempory files
 *.gpkg-shm
 *.gpkg-wal

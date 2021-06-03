@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { FormattedMessage } from 'react-intl';
-import { displayDateFromTimestamp } from '../../utils/intlUtil';
+import { displayDateFromTimestamp } from 'bluesquare-components';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { Period } from '../periods/models';
 import { getOrgunitMessage } from '../orgUnits/utils';

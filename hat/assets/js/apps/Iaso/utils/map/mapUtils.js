@@ -1,8 +1,8 @@
 import L from 'leaflet';
 import { defineMessages } from 'react-intl';
 import moment from 'moment';
+import { isCaseLocalised, formatThousand } from 'bluesquare-components';
 import geoUtils from '../geo';
-import { isCaseLocalised, formatThousand } from '../index';
 
 export const genericMap = mapNode =>
     L.map(mapNode, {

@@ -11,7 +11,7 @@ import Fab from '@material-ui/core/Fab';
 import DeleteIcon from '@material-ui/icons/Delete';
 import Add from '@material-ui/icons/Add';
 
-import commonStyles from '../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 
 import { addPositionIndex, removePositionIndex } from '../../utils';
 

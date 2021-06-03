@@ -112,7 +112,6 @@ class OrgUnitAPITestCase(APITestCase):
             form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
         )
 
-    @tag("iaso_only")
     def test_org_unit_search_with_ids(self):
         """GET /orgunits/ with a search based on refs"""
 
@@ -124,7 +123,6 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 2)
 
-    @tag("iaso_only")
     def test_org_unit_search_with_ref(self):
         """GET /orgunits/ with a search based on ids"""
 
@@ -142,7 +140,6 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 2)
 
-    @tag("iaso_only")
     def test_org_unit_search(self):
         """GET /orgunits/ with a search based on name"""
 
@@ -156,7 +153,6 @@ class OrgUnitAPITestCase(APITestCase):
         ou_id = response.json()["orgunits"][0]["id"]
         self.assertEqual(ou_id, self.jedi_council_corruscant.id)
 
-    @tag("iaso_only")
     def test_org_unit_instance_duplicate_search(self):
         """GET /orgunits/ with a search based on duplicates"""
 
@@ -170,7 +166,6 @@ class OrgUnitAPITestCase(APITestCase):
         ou_id = response.json()["orgunits"][0]["id"]
         self.assertEqual(ou_id, self.jedi_council_corruscant.id)
 
-    @tag("iaso_only")
     def test_org_unit_instance_dates_search(self):
         """GET /orgunits/ with a search based on dates"""
 
@@ -213,14 +208,12 @@ class OrgUnitAPITestCase(APITestCase):
         response_data = response.json()
         self.assertValidOrgUnitListData(list_data=response_data, expected_length=3)
 
-    @tag("iaso_only")
     def test_org_unit_retrieve_without_auth_or_app_id(self):
         """GET /orgunits/<org_unit_id>/ without auth or app id should result in a 200 empty response"""
 
         response = self.client.get(f"/api/orgunits/{self.jedi_council_corruscant.id}/")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_org_unit_retrieve_wrong_user(self):
         """GET /orgunits/<org_unit_id>/ with user that does not have access to the org unit -> 404"""
 
@@ -228,7 +221,6 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.get(f"/api/orgunits/{self.jedi_council_corruscant.id}/")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_org_unit_retrieve_ok_1(self):
         """GET /orgunits/<org_unit_id>/ happy path (user has no restriction)"""
 
@@ -237,7 +229,6 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(response.json())
 
-    @tag("iaso_only")
     def test_org_unit_retrieve_ok_2(self):
         """GET /orgunits/<org_unit_id>/ happy path (user is restricted to a few org units)"""
 

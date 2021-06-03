@@ -29,7 +29,7 @@ Each layer table must have the following columns:
 * `name` The name of the OrgUnit
 * a geometry (can be any name as long as it's referenced as per the GeoPackage spec) [1]
 * `ref` Reference to be used for update and linking the parent (will be in orgunit.source_ref). Must be unique.
-* `parent_ref` the reference of the parent OrgUnit may be blank or null or the id of the parent (not the name). [2]
+* `parent_ref` the reference of the parent OrgUnit may be blank or null or the `ref` of the parent (not the name). [2]
 * `group_refs` a list of groups reference to which the OrgUnit should belong. Represented as string of ref separated by the ',' character. This column is optional, delete it if you don't want to touch group affiliation. *If you keep it empty all groups will be removed from the OrgUnit when updating*. See Group table below.
 
 

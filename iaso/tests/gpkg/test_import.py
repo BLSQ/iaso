@@ -135,3 +135,16 @@ class GPKGImport(TestCase):
         self.assertEqual(ou2.name, "bla2")
         self.assertEqual(ou2.source_ref, "cdd3e94c-3c2a-4ab1-8900-be97f82347de")
         self.assertEqual(ou2.org_unit_type, None)
+
+    def test_import_orgunit_with_nogeo(self):
+        import_gpkg_file(
+            "./iaso/tests/fixtures/gpkg/minimal_simplified.gpkg",
+            project_id=self.project.id,
+            source_name="test",
+            version_number=1,
+            validation_status="new",
+        )
+        self.assertEqual(m.OrgUnit.objects.all().count(), 4)
+        self.assertEqual(m.Group.objects.all().count(), 2)
+        ou = m.OrgUnit.objects.get(source_ref="empty_geom")
+        self.assertEqual(ou.name, "empty_geom")

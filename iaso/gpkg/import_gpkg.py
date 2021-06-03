@@ -81,7 +81,6 @@ def create_or_update_orgunit(
 ) -> OrgUnit:
     props = data["properties"]
     geometry = data["geometry"]
-    geom = convert_to_geography(geometry["type"], geometry["coordinates"])
 
     if not orgunit:
         orgunit = OrgUnit()
@@ -91,11 +90,14 @@ def create_or_update_orgunit(
     orgunit.validation_status = validation_status
     orgunit.source_ref = props["ref"]
     orgunit.version = source_version
-    if isinstance(geom, Point):
-        orgunit.location = geom
-    else:
-        orgunit.geom = geom
-        orgunit.simplified_geom = geom
+
+    if geometry:
+        geom = convert_to_geography(geometry["type"], geometry["coordinates"])
+        if isinstance(geom, Point):
+            orgunit.location = geom
+        else:
+            orgunit.geom = geom
+            orgunit.simplified_geom = geom
 
     orgunit.save(skip_calculate_path=True)
 

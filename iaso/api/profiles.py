@@ -96,6 +96,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.last_name = request.data.get("last_name", "")
         user.username = username
         user.email = request.data.get("email", "")
+        profile.language = request.data.get("language", "")
         if password != "":
             user.set_password(password)
         permissions = request.data.get("permissions", [])
@@ -147,6 +148,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         # as the currently authenticated user
         current_profile = request.user.iaso_profile
         user.profile = Profile.objects.create(user=user, account=current_profile.account)
+        user.profile.language = request.data.get("language", "")
 
         org_units = request.data.get("org_units", [])
         profile = get_object_or_404(Profile, id=user.profile.pk)

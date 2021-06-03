@@ -997,6 +997,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")
     external_user_id = models.CharField(max_length=512, null=True, blank=True)
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
+    language = models.CharField(max_length=512, null=True, blank=True)
 
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
@@ -1014,6 +1015,7 @@ class Profile(models.Model):
             ),
             "is_superuser": self.user.is_superuser,
             "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
+            "language": self.language,
         }
 
     def as_short_dict(self):
@@ -1023,6 +1025,7 @@ class Profile(models.Model):
             "user_name": self.user.username,
             "last_name": self.user.last_name,
             "email": self.user.email,
+            "language": self.language,
         }
 
 

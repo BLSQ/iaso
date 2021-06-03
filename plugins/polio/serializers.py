@@ -65,7 +65,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             return campaign.initial_org_unit.name
         return ""
 
-    group = GroupSerializer(required=False)
+    group = GroupSerializer(required=False, allow_null=True)
 
     preparedness_data = PreparednessSerializer(required=False)
     last_preparedness = PreparednessSerializer(

@@ -114,8 +114,7 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
             last_cell = cell
 
             while last_cell is not None and bool(last_cell.value.strip()):
-                district_list = worksheet.range(last_cell.row, last_cell.col + 1, last_cell.row + 7,
-                                                last_cell.col + 20)
+                district_list = worksheet.range(last_cell.row, last_cell.col + 1, last_cell.row + 7, last_cell.col + 20)
 
                 all_districts = []
                 get_col_f = lambda x: x.col

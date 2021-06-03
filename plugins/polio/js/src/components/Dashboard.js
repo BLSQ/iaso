@@ -25,6 +25,7 @@ import { TableCell } from './Table/TableCell';
 import {
     DateInput,
     ResponsibleField,
+    PaymentField,
     Select,
     StatusField,
     TextInput,
@@ -160,6 +161,12 @@ const BaseInfoForm = () => {
                     />
                     <Field
                         className={classes.input}
+                        label="GPEI Coordinator"
+                        name={'gpei_coordinator'}
+                        component={TextInput}
+                    />
+                    <Field
+                        className={classes.input}
                         name={'initial_org_unit'}
                         component={OrgUnitsLevels}
                     />
@@ -277,6 +284,14 @@ const RiskAssessmentForm = () => {
                             component={ResponsibleField}
                         />
                     </Grid>
+                    <Grid xs={12} md={6} item>
+                        <Field
+                            label="Verification Score (/20)"
+                            name={'verification_score'}
+                            component={TextInput}
+                            className={classes.input}
+                        />
+                    </Grid>
                 </Grid>
                 <Grid item md={6}>
                     <Field
@@ -385,7 +400,14 @@ const BudgetForm = () => {
                             component={ResponsibleField}
                         />
                     </Grid>
+
                 </Grid>
+                <Grid xs={12} md={6} item>
+                        <Field
+                            name={'payment_mode'}
+                            component={PaymentField}
+                        />
+                    </Grid>
                 <Grid item md={6}>
                     <Field
                         label={'1st Draft Submission'}
@@ -636,6 +658,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     const defaultValues = {
         round_one: {},
         round_two: {},
+        group: {'name': "fake_name", org_units: []}
     };
 
     const initialValues = merge(selectedCampaign, defaultValues);

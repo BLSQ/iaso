@@ -26,9 +26,9 @@ particular data source but OrgUnitType are not and are shared between all tenant
 Each layer table must have the following columns:
 * `name` The name of the OrgUnit
 * a geometry (can be any name as long as it's referenced as per the GeoPackage spec) [1]
-* `ref` Reference to be used for update and linking the parent (will be in orgunit.source_ref)
+* `ref` Reference to be used for update and linking the parent (will be in orgunit.source_ref). Must be unique.
 * `parent_ref` the reference of the parent OrgUnit may be blank or null. [2]
-* `group_refs` a list of groups reference to which the OrgUnit should  belong. This column is optional, delete it if you don't want to touch the group, if you keep it empty the OrgUnit will be removed from all group when updating. See Group table below
+* `group_refs` a list of groups reference to which the OrgUnit should belong. Represented as string of ref separated by the ',' character. This column is optional, delete it if you don't want to touch group affiliation as if you keep it empty all groups will be removed from the OrgUnit when updating. See Group table below.
 
 [1] When updating a source and reference to a parent already existing in Iaso but don't have a source_ref, you can use the format `iaso#{db_id}` to point to it.
 

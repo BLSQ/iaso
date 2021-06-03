@@ -4,9 +4,9 @@ import isEqual from 'lodash/isEqual';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
-import { Tabs, Tab, withStyles } from '@material-ui/core';
+import { Tabs, Tab, withStyles, Box } from '@material-ui/core';
 
-import { injectIntl } from 'bluesquare-components';
+import { injectIntl, Radio } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 import UsersInfos from './UsersInfos';
@@ -17,7 +17,7 @@ import {
 } from '../actions';
 import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
-
+import { APP_LOCALES } from '../../app/constants';
 import PermissionsSwitches from './PermissionsSwitches';
 
 const styles = theme => ({
@@ -26,7 +26,7 @@ const styles = theme => ({
     },
     tab: {
         padding: 0,
-        width: 'calc(100% / 3)',
+        width: 'calc(100% / 4)',
         minWidth: 0,
     },
     root: {
@@ -160,6 +160,7 @@ class UserDialogComponent extends Component {
                 errors: [],
             },
             org_units: { value: get(initialData, 'org_units', []), errors: [] },
+            language: { value: get(initialData, 'language', ''), errors: [] },
         };
     }
 
@@ -170,8 +171,13 @@ class UserDialogComponent extends Component {
             initialData,
             classes,
             intl: { formatMessage },
+            // activeUser,
         } = this.props;
         const { user, tab } = this.state;
+        console.log('props', this.props);
+        // console.log('activeUser', activeUser);
+        console.log('user', user);
+        const radioKey = `Radio-${user.user_name.value}`;
         return (
             <ConfirmCancelDialogComponent
                 titleMessage={titleMessage}
@@ -180,7 +186,7 @@ class UserDialogComponent extends Component {
                 confirmMessage={MESSAGES.save}
                 onClosed={() => this.onClosed()}
                 renderTrigger={renderTrigger}
-                maxWidth="xs"
+                maxWidth="sm"
                 dialogProps={{
                     classNames: classes.dialog,
                 }}
@@ -212,6 +218,13 @@ class UserDialogComponent extends Component {
                         }}
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
+                    />
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="locale"
+                        label={formatMessage(MESSAGES.locale)}
                     />
                 </Tabs>
                 <div className={classes.root}>
@@ -247,6 +260,25 @@ class UserDialogComponent extends Component {
                             currentUser={user}
                         />
                     )}
+                    {tab === 'locale' && (
+                        <Radio
+                            name="set_locale"
+                            key={radioKey}
+                            value={user.language.value}
+                            options={APP_LOCALES.map(locale => {
+                                return {
+                                    value: locale.code,
+                                    label: locale.code,
+                                };
+                            })}
+                            onChange={value => {
+                                this.setFieldValue('language', value);
+                            }}
+                        />
+                        // <div>
+                        //     {`Locale Options here for user: ${user.user_name.value}`}{' '}
+                        // </div>
+                    )}
                 </div>
             </ConfirmCancelDialogComponent>
         );
@@ -274,6 +306,7 @@ const MapStateToProps = state => ({
     count: state.users.count,
     pages: state.users.pages,
     fetching: state.users.fetching,
+    // activeUser: state.users.current,
 });
 
 const mapDispatchToProps = dispatch => ({

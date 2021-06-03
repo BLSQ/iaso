@@ -14,10 +14,16 @@ import { redirectTo as redirectToAction } from '../../../routing/actions';
 import { userHasPermission, getFirstAllowedUrl } from '../utils';
 
 import PageError from '../../../components/errors/PageError';
+import { switchLocale } from '../../app/actions';
 
 class ProtectedRoute extends Component {
     componentDidMount() {
         this.props.fetchCurrentUser();
+        // console.log(
+        //     'locale',
+        //     localStorage.getItem('iaso_locale'),
+        //     this.props.currentUser,
+        // );
     }
 
     componentDidUpdate(prevProps) {
@@ -31,6 +37,14 @@ class ProtectedRoute extends Component {
                 if (newBaseUrl) {
                     redirectTo(newBaseUrl, {});
                 }
+            }
+            // Use defined default language if it exists and if the user didn't set it manually
+            if (
+                currentUser?.language
+                // && !localStorage.getItem('iaso_locale')
+            ) {
+                localStorage.setItem('iaso_locale', currentUser.language);
+                this.props.dispatch(switchLocale(currentUser.language));
             }
         }
     }
@@ -75,6 +89,7 @@ ProtectedRoute.propTypes = {
     currentUser: PropTypes.object,
     isRootUrl: PropTypes.bool,
     activeLocale: PropTypes.object.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -90,6 +105,7 @@ const MapDispatchToProps = dispatch => ({
         },
         dispatch,
     ),
+    dispatch,
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ProtectedRoute);

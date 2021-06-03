@@ -455,6 +455,7 @@
     "iaso.tile.arcgis.street": "ArcGIS Street Map",
     "iaso.tile.arcgis.topo": "ArcGIS Topo Map",
     "iaso.tile.osm": "Open Street Map",
+    "iaso.users.dialog.locale": "Langue",
     "iaso.tile.title": "Couches cartographiques",
     "iaso.users.create": "Créer un utilisateur",
     "iaso.users.dialog.deleteUserText": "Etes-vous certain de vouloir effacer cet utilisateur ?",

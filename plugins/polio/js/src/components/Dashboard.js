@@ -657,8 +657,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
 
     const defaultValues = {
         round_one: {},
-        round_two: {},
-        group: {'name': "fake_name", org_units: []}
+        round_two: {}
     };
 
     const initialValues = merge(selectedCampaign, defaultValues);
@@ -889,10 +888,6 @@ export const Dashboard = () => {
             {
                 Header: 'Status',
                 accessor: 'detection_status',
-            },
-            {
-                Header: 'Duration (days)',
-                accessor: 'duration',
             },
             {
                 Header: 'Actions',

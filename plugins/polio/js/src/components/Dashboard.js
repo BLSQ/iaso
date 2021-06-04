@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTable } from 'react-table';
+import {Table,textPlaceholder, IconButton as IconButtonComponent,ColumnText} from 'bluesquare-components';
 
 import {
     Box,
@@ -41,6 +42,7 @@ import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
 import { PreparednessForm } from '../forms/PreparednessForm';
+import MESSAGES from '../constants/messages';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -804,11 +806,12 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
     );
 };
 
-export const Dashboard = () => {
+export const Dashboard = props => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
+    const [selectedCampaign, setSelectedCampaign] =  useState();
 
     const classes = useStyles();
 
@@ -841,11 +844,13 @@ export const Dashboard = () => {
     };
 
     const handleClickEditRow = id => {
+        console.log("Edit row Id", id);
         setSelectedCampaignId(id);
         openCreateEditDialog();
     };
 
     const handleClickDeleteRow = id => {
+        console.log("delete row ID", id);
         setSelectedCampaignId(id);
         openDeleteConfirmDialog();
     };
@@ -855,51 +860,71 @@ export const Dashboard = () => {
         openCreateEditDialog();
     };
 
-    const tableData = campaigns.map(campaign => ({
-        ...campaign,
-        actions: (
-            <>
-                <RowAction
-                    icon={EditIcon}
-                    onClick={() => handleClickEditRow(campaign.id)}
-                />
-                <RowAction
-                    icon={DeleteIcon}
-                    onClick={() => handleClickDeleteRow(campaign.id)}
-                />
-            </>
-        ),
-    }));
+    // const tableData = campaigns.map(campaign => ({
+    //     ...campaign,
+    //     actions: (
+    //         <>
+    //             <RowAction
+    //                 icon={EditIcon}
+    //                 onClick={() => handleClickEditRow(campaign.id)}
+    //             />
+    //             <RowAction
+    //                 icon={DeleteIcon}
+    //                 onClick={() => handleClickDeleteRow(campaign.id)}
+    //             />
+    //         </>
+    //     ),
+    // }));
 
-    const selectedCampaign = campaigns.find(
-        campaign => campaign.id === selectedCampaignId,
-    );
-
-    const columns = useMemo(
-        () => [
+    useEffect(()=>{
+         setSelectedCampaign(campaigns?.results??[].find(
+            campaign => campaign.id === selectedCampaignId));
+    },[campaigns.results,selectedCampaignId])
+ 
+console.log("campaigns", campaigns);
+    const columns=[
             {
                 Header: 'Name',
                 accessor: 'obr_name',
+                Cell:settings => {
+                    return <span>{settings.original.obr_name}</span>}
             },
             {
                 Header: 'cVDPV2 Notification Date',
                 accessor: 'cvdpv2_notified_at',
+                Cell:settings => {
+                    const text = settings?.original?.cvdpv2_notified_at??textPlaceholder;
+                    return <span>{text}</span>}
             },
             {
                 Header: 'Status',
                 accessor: 'detection_status',
+                Cell:settings => {
+                    return <ColumnText text={settings.original.detection_status} />}
             },
             {
                 Header: 'Actions',
-                accessor: 'actions',
-            },
-        ],
-        [],
-    );
+                Cell:settings => {
+                    console.log("cell settings", settings);
+                    return (
+                        <>
+                        <IconButtonComponent
+                        icon="edit"
+                        tooltipMessage={MESSAGES.edit}
+                        onClick={() => handleClickEditRow(settings.original.id)}
+                        />
+                        <IconButtonComponent
+                        icon="delete"
+                        tooltipMessage={MESSAGES.delete}
+                        onClick={() => handleClickDeleteRow(settings.original.id)}/>
+                        </>
+                    );
+                }
+            }
+        ];
 
-    const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-        useTable({ columns, data: tableData });
-
+    // const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+    //     useTable({ columns, data: tableData });
     return (
         <>
             <CreateEditDialog
@@ -923,56 +948,67 @@ export const Dashboard = () => {
                         </PageAction>
                     </PageActions>
                     {status === 'success' && (
-                        <table className={classes.table} {...getTableProps()}>
-                            <thead>
-                                {headerGroups.map(headerGroup => (
-                                    <tr
-                                        className={classes.tableHeader}
-                                        {...headerGroup.getHeaderGroupProps()}
-                                    >
-                                        {headerGroup.headers.map(column => (
-                                            <TableHeader
-                                                {...column.getHeaderProps()}
-                                            >
-                                                {column.render('Header')}
-                                            </TableHeader>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </thead>
-                            <tbody {...getTableBodyProps()}>
-                                {rows.length > 0 ? (
-                                    rows.map((row, rowIndex) => {
-                                        prepareRow(row);
-                                        return (
-                                            <tr
-                                                className={classes.tableRow}
-                                                {...row.getRowProps()}
-                                            >
-                                                {row.cells.map(cell => {
-                                                    return (
-                                                        <TableCell
-                                                            isOdd={rowIndex % 2}
-                                                            {...cell.getCellProps()}
-                                                        >
-                                                            {cell.render(
-                                                                'Cell',
-                                                            )}
-                                                        </TableCell>
-                                                    );
-                                                })}
-                                            </tr>
-                                        );
-                                    })
-                                ) : (
-                                    <tr>
-                                        <TableCell>
-                                            no campaigns available
-                                        </TableCell>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                        <Table
+                        params={{pageSize:2,page:1}}
+                        count={campaigns.count}
+                        pages={2}
+                        baseUrl={'/polio'}
+                        redirectTo={()=>{}}
+                        columns = {columns}
+                        data={campaigns.results}
+                        extraProps={{defaulPageSize:2}}
+                        // defaultSorted{null}
+                        />
+                    //     <table className={classes.table} {...getTableProps()}>
+                    //         <thead>
+                    //             {headerGroups.map(headerGroup => (
+                    //                 <tr
+                    //                     className={classes.tableHeader}
+                    //                     {...headerGroup.getHeaderGroupProps()}
+                    //                 >
+                    //                     {headerGroup.headers.map(column => (
+                    //                         <TableHeader
+                    //                             {...column.getHeaderProps()}
+                    //                         >
+                    //                             {column.render('Header')}
+                    //                         </TableHeader>
+                    //                     ))}
+                    //                 </tr>
+                    //             ))}
+                    //         </thead>
+                    //         <tbody {...getTableBodyProps()}>
+                    //             {rows.length > 0 ? (
+                    //                 rows.map((row, rowIndex) => {
+                    //                     prepareRow(row);
+                    //                     return (
+                    //                         <tr
+                    //                             className={classes.tableRow}
+                    //                             {...row.getRowProps()}
+                    //                         >
+                    //                             {row.cells.map(cell => {
+                    //                                 return (
+                    //                                     <TableCell
+                    //                                         isOdd={rowIndex % 2}
+                    //                                         {...cell.getCellProps()}
+                    //                                     >
+                    //                                         {cell.render(
+                    //                                             'Cell',
+                    //                                         )}
+                    //                                     </TableCell>
+                    //                                 );
+                    //                             })}
+                    //                         </tr>
+                    //                     );
+                    //                 })
+                    //             ) : (
+                    //                 <tr>
+                    //                     <TableCell>
+                    //                         no campaigns available
+                    //                     </TableCell>
+                    //                 </tr>
+                    //             )}
+                    //         </tbody>
+                    //     </table>
                     )}
                 </Box>
             </Page>

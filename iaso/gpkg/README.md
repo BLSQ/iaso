@@ -1,5 +1,8 @@
-GeoPackage Import Format
+Iaso GeoPackage
 ========================
+
+Import format
+-------------
 
 Iaso allow importing OrgUnit, Group and Type from a [GeoPackage](https://www.geopackage.org/) file (gpkg), as long
 as it's formatted according to the specification below.
@@ -49,6 +52,31 @@ Mandatory columns:
 
 Other tables and columns may be present and will be ignored (as long as they don't start with `level-`)
 
-# Examples
+### Problematic input
+
+Don't do those please
+
+* `-` in orgunit type
+* `,` in group_ref
+
+## Examples
 
 Some example files are present in the `iaso/tests/fixtures/gpkg` folder.
+
+
+Export Format
+-------------
+
+The export format is the same as the Import format, with the addition of a few columns for convenience.
+
+These columns are considered read only as any modification will be ignored at import.
+
+* `parent` Name of the parent and its type. e.g. `Pujehun (District)`
+* `uuid` UUID used by Mobile App at creation
+* `group_names` List of group the OrgUnit belong to, separated by `,`. eg  `Case de sante, CS, Rural`
+* `id` The id in the iaso DB
+
+OrgUnit without geographical information are also contained in the export.
+
+Note that if a OrgUnit has both a geom (polygon) and a location (point),
+the geom will be exported as it take priority.

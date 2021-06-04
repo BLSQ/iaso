@@ -1050,17 +1050,7 @@ class ExportRequest(models.Model):
     ended_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return (
-            str(self.id)
-            + " ("
-            + self.status
-            + ") "
-            + str(self.params)
-            + " "
-            + str(self.last_error_message)
-            + " "
-            + str(self.launcher)
-        )
+        return f"{self.id} ({self.status}) {self.params} {self.last_error_message} {self.launcher}"
 
 
 class ExportLog(models.Model):

@@ -181,6 +181,7 @@ class Paginator(pagination.PageNumberPagination):
 
 class ModelViewSet(BaseModelViewSet):
     results_key = None
+    remove_results_key_if_paginated = False
 
     def pagination_class(self):
         return Paginator(self.get_results_key())
@@ -215,7 +216,10 @@ class ModelViewSet(BaseModelViewSet):
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response({self.get_results_key(): serializer.data})
+        if not self.remove_results_key_if_paginated:
+            return Response({self.get_results_key(): serializer.data})
+        else:
+            return Response(serializer.data)
 
     def perform_destroy(self, instance):
         """Handle ProtectedError (prevent deletion of instances when linked to protected models)"""

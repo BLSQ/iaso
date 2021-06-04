@@ -52,7 +52,10 @@ def convert_to_geography(geom_type: str, coordinates: list):
     geom_type = geom_type.lower()
     if geom_type == "point":
         # For some reason point in iaso are in 3D
-        geom = Point(*coordinates, z=0)
+        if len(coordinates) == 2:
+            geom = Point(*coordinates, z=0)
+        else:
+            geom = Point(*coordinates)
     elif geom_type == "polygon":
         geom = MultiPolygon(Polygon(*coordinates))
     elif geom_type == "multipolygon":

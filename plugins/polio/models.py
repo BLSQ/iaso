@@ -160,6 +160,30 @@ class Campaign(models.Model):
     budget_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
 
+    who_disbursed_to_co_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to CO (WHO)"),
+    )
+
+    who_disbursed_to_moh_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to MOH (WHO)"),
+    )
+
+    unicef_disbursed_to_co_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to CO (UNICEF)"),
+    )
+
+    unicef_disbursed_to_moh_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to MOH (UNICEF)"),
+    )
+
     eomg = models.DateField(
         null=True,
         blank=True,

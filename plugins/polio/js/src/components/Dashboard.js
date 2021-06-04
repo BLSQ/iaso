@@ -90,13 +90,13 @@ const schema = yup.object().shape({
     round_two: round_shape,
 });
 
-const RowAction = ({ icon: Icon, onClick }) => {
-    return (
-        <IconButton onClick={onClick}>
-            <Icon />
-        </IconButton>
-    );
-};
+// const RowAction = ({ icon: Icon, onClick }) => {
+//     return (
+//         <IconButton onClick={onClick}>
+//             <Icon />
+//         </IconButton>
+//     );
+// };
 
 const PageAction = ({ icon: Icon, onClick, children }) => {
     const classes = useStyles();
@@ -646,6 +646,7 @@ const Form = ({ children }) => {
 
 const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
+    console.log("CreateEditDialog selectedCampaign", selectedCampaign);
 
     const classes = useStyles();
 
@@ -811,7 +812,7 @@ export const Dashboard = props => {
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
-    const [selectedCampaign, setSelectedCampaign] =  useState();
+    // const [selectedCampaign, setSelectedCampaign] =  useState();
 
     const classes = useStyles();
 
@@ -876,10 +877,9 @@ export const Dashboard = props => {
     //     ),
     // }));
 
-    useEffect(()=>{
-         setSelectedCampaign(campaigns?.results??[].find(
-            campaign => campaign.id === selectedCampaignId));
-    },[campaigns.results,selectedCampaignId])
+    const selectedCampaign = campaigns?.results?.find(
+        campaign => campaign.id === selectedCampaignId,
+    );
  
 console.log("campaigns", campaigns);
     const columns=[
@@ -925,6 +925,7 @@ console.log("campaigns", campaigns);
 
     // const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     //     useTable({ columns, data: tableData });
+    const PAGE_SIZE = 2;
     return (
         <>
             <CreateEditDialog
@@ -949,14 +950,14 @@ console.log("campaigns", campaigns);
                     </PageActions>
                     {status === 'success' && (
                         <Table
-                        params={{pageSize:2,page:1}}
+                        params={{pageSize:PAGE_SIZE,page:1}}
                         count={campaigns.count}
-                        pages={2}
+                        pages={campaigns.count/PAGE_SIZE}
                         baseUrl={'/polio'}
                         redirectTo={()=>{}}
                         columns = {columns}
                         data={campaigns.results}
-                        extraProps={{defaulPageSize:2}}
+                        extraProps={{defaulPageSize:PAGE_SIZE}}
                         // defaultSorted{null}
                         />
                     //     <table className={classes.table} {...getTableProps()}>

@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useTable } from 'react-table';
-import {Table,textPlaceholder, IconButton as IconButtonComponent,ColumnText} from 'bluesquare-components';
+import React, { useEffect, useMemo, useState, useRef,useCallback } from 'react';
+import {Table,textPlaceholder, IconButton as IconButtonComponent,ColumnText, LoadingSpinner} from 'bluesquare-components';
+import 'react-table/react-table.css';
 
 import {
     Box,
@@ -10,18 +10,12 @@ import {
     DialogContent,
     DialogTitle,
     Grid,
-    IconButton,
     Tab,
     Tabs,
     Typography,
 } from '@material-ui/core';
 import merge from 'lodash.merge';
-import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
-import DeleteIcon from '@material-ui/icons/Delete';
-
-import { TableHeader } from './Table/TableHeader';
-import { TableCell } from './Table/TableCell';
 
 import {
     DateInput,
@@ -675,7 +669,7 @@ const Form = ({ children }) => {
 
 const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
-    console.log("CreateEditDialog selectedCampaign", selectedCampaign);
+    // console.log("CreateEditDialog selectedCampaign", selectedCampaign);
 
     const classes = useStyles();
 
@@ -836,30 +830,40 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
     );
 };
 
-export const Dashboard = props => {
+const DEFAULT_PAGE_SIZE = "10", DEFAULT_PAGE = "1", DEFAULT_ORDER = "obr_name";
+const DEFAULT_QUERY = '/api/polio/campaigns/?limit='+DEFAULT_PAGE_SIZE+'&page='+DEFAULT_PAGE+'&order='+DEFAULT_ORDER;
+
+export const Dashboard = () => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
-    // const [selectedCampaign, setSelectedCampaign] =  useState();
-
+    const [page, setPage] = useState(parseInt(DEFAULT_PAGE,10));
+    const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE,10));
+    const [order, setOrder] = useState(DEFAULT_ORDER);
+    const [query,setQuery] = useState(DEFAULT_QUERY);
     const classes = useStyles();
 
-    const { data: campaigns = [], status } = useGetCampaigns();
+    const { data: campaigns = [], status, isLoading, isFetching } = useGetCampaigns(query);
     const { mutate: removeCampaign } = useRemoveCampaign();
 
-    const openCreateEditDialog = () => {
+    useEffect(()=>{
+        const newQuery = '/api/polio/campaigns/?limit='+pageSize.toString()+'&page='+page.toString()+'&order='+order.toString();
+        setQuery(newQuery);
+    },[page,pageSize,order])
+
+    const openCreateEditDialog = useCallback(() => {
         setIsCreateEditDialogOpen(true);
-    };
+    },[setIsCreateEditDialogOpen]);
 
     const closeCreateEditDialog = () => {
         setSelectedCampaignId(undefined);
         setIsCreateEditDialogOpen(false);
     };
 
-    const openDeleteConfirmDialog = () => {
+    const openDeleteConfirmDialog = useCallback(() => {
         setIsConfirmDeleteDialogOpen(true);
-    };
+    },[setIsConfirmDeleteDialogOpen]);
 
     const closeDeleteConfirmDialog = () => {
         setIsConfirmDeleteDialogOpen(false);
@@ -873,45 +877,26 @@ export const Dashboard = props => {
         });
     };
 
-    const handleClickEditRow = id => {
-        console.log("Edit row Id", id);
+    const handleClickEditRow = React.useCallback(id => {
         setSelectedCampaignId(id);
         openCreateEditDialog();
-    };
+    },[openCreateEditDialog,setSelectedCampaignId]);
 
-    const handleClickDeleteRow = id => {
-        console.log("delete row ID", id);
+    const handleClickDeleteRow = React.useCallback(id => {
         setSelectedCampaignId(id);
         openDeleteConfirmDialog();
-    };
+    },[openDeleteConfirmDialog,setSelectedCampaignId]);
 
     const handleClickCreateButton = () => {
         setSelectedCampaignId(undefined);
         openCreateEditDialog();
     };
 
-    // const tableData = campaigns.map(campaign => ({
-    //     ...campaign,
-    //     actions: (
-    //         <>
-    //             <RowAction
-    //                 icon={EditIcon}
-    //                 onClick={() => handleClickEditRow(campaign.id)}
-    //             />
-    //             <RowAction
-    //                 icon={DeleteIcon}
-    //                 onClick={() => handleClickDeleteRow(campaign.id)}
-    //             />
-    //         </>
-    //     ),
-    // }));
-
-    const selectedCampaign = campaigns?.results?.find(
+    const selectedCampaign = campaigns?.campaigns?.find(
         campaign => campaign.id === selectedCampaignId,
     );
  
-console.log("campaigns", campaigns);
-    const columns=[
+    const columns=useMemo(() =>[
             {
                 Header: 'Name',
                 accessor: 'obr_name',
@@ -934,7 +919,6 @@ console.log("campaigns", campaigns);
             {
                 Header: 'Actions',
                 Cell:settings => {
-                    console.log("cell settings", settings);
                     return (
                         <>
                         <IconButtonComponent
@@ -950,11 +934,28 @@ console.log("campaigns", campaigns);
                     );
                 }
             }
-        ];
+        ],[handleClickDeleteRow, handleClickEditRow]);
 
-    // const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    //     useTable({ columns, data: tableData });
-    const PAGE_SIZE = 2;
+    // The naming is aligned with the names in Table
+    const onTableParamsChange = useCallback((baseUrl, newParams) => {
+        if (newParams.page !== page){
+            setPage(newParams.page);
+        }
+        if (newParams.pageSize !== pageSize){
+            setPageSize(newParams.pageSize);
+        }
+        if (newParams.order !== order){
+            setOrder(newParams.order);
+        }
+    },[ page, pageSize, order]);
+
+    const tableParams = useMemo(()=>{
+        return {
+            pageSize,
+            page, 
+            order,
+        }
+    },[pageSize,page,order]);
     return (
         <>
             <CreateEditDialog
@@ -969,6 +970,7 @@ console.log("campaigns", campaigns);
             />
             <Page title={'Campaigns'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
+                    {(isLoading||isFetching) && <LoadingSpinner/>}
                     <PageActions>
                         <PageAction
                             icon={AddIcon}
@@ -979,66 +981,15 @@ console.log("campaigns", campaigns);
                     </PageActions>
                     {status === 'success' && (
                         <Table
-                        params={{pageSize:PAGE_SIZE,page:1}}
+                        params={tableParams}
                         count={campaigns.count}
-                        pages={campaigns.count/PAGE_SIZE}
+                        pages={Math.ceil(campaigns.count/pageSize)}
                         baseUrl={'/polio'}
-                        redirectTo={()=>{}}
+                        redirectTo={onTableParamsChange}
                         columns = {columns}
-                        data={campaigns.results}
-                        extraProps={{defaulPageSize:PAGE_SIZE}}
-                        // defaultSorted{null}
+                        data={campaigns.campaigns}
+                        watchToRender={tableParams}
                         />
-                    //     <table className={classes.table} {...getTableProps()}>
-                    //         <thead>
-                    //             {headerGroups.map(headerGroup => (
-                    //                 <tr
-                    //                     className={classes.tableHeader}
-                    //                     {...headerGroup.getHeaderGroupProps()}
-                    //                 >
-                    //                     {headerGroup.headers.map(column => (
-                    //                         <TableHeader
-                    //                             {...column.getHeaderProps()}
-                    //                         >
-                    //                             {column.render('Header')}
-                    //                         </TableHeader>
-                    //                     ))}
-                    //                 </tr>
-                    //             ))}
-                    //         </thead>
-                    //         <tbody {...getTableBodyProps()}>
-                    //             {rows.length > 0 ? (
-                    //                 rows.map((row, rowIndex) => {
-                    //                     prepareRow(row);
-                    //                     return (
-                    //                         <tr
-                    //                             className={classes.tableRow}
-                    //                             {...row.getRowProps()}
-                    //                         >
-                    //                             {row.cells.map(cell => {
-                    //                                 return (
-                    //                                     <TableCell
-                    //                                         isOdd={rowIndex % 2}
-                    //                                         {...cell.getCellProps()}
-                    //                                     >
-                    //                                         {cell.render(
-                    //                                             'Cell',
-                    //                                         )}
-                    //                                     </TableCell>
-                    //                                 );
-                    //                             })}
-                    //                         </tr>
-                    //                     );
-                    //                 })
-                    //             ) : (
-                    //                 <tr>
-                    //                     <TableCell>
-                    //                         no campaigns available
-                    //                     </TableCell>
-                    //                 </tr>
-                    //             )}
-                    //         </tbody>
-                    //     </table>
                     )}
                 </Box>
             </Page>

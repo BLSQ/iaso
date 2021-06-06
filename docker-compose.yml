@@ -33,7 +33,7 @@ services:
       GOOGLE_API_KEY_BASE64: ${GOOGLE_API_KEY_BASE64}
       IASO_ENVIRONMENT: "development"
       RDS_HOSTNAME: db
-      RDS_DB_NAME: iaso
+      RDS_DB_NAME: ${RDS_DB_NAME:-iaso}
       RDS_USERNAME: postgres
       RDS_PASSWORD: postgres
       DEBUG: "true"

@@ -12,10 +12,10 @@ class CampaignViewSet(ModelViewSet):
     serializer_class = CampaignSerializer
     results_key = "campaigns"
     remove_results_key_if_paginated = True
-    
+
     def list(self, request: Request, *args, **kwargs):
-        print(self.request.GET.get("order",""))
-        order = self.request.GET.get("order","")
+        print(self.request.GET.get("order", ""))
+        order = self.request.GET.get("order", "")
         queryset = self.filter_queryset(self.get_queryset().order_by(order))
 
         page = self.paginate_queryset(queryset)

@@ -57,14 +57,6 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 class CampaignSerializer(serializers.ModelSerializer):
     round_one = RoundSerializer()
     round_two = RoundSerializer()
-    group = GroupSerializer(required=False)
-
-    preparedness_data = PreparednessSerializer(required=False)
-    last_preparedness = PreparednessSerializer(
-        required=False,
-        read_only=True,
-        allow_null=True,
-    )
 
     top_level_org_unit_name = serializers.SerializerMethodField()
 
@@ -72,6 +64,15 @@ class CampaignSerializer(serializers.ModelSerializer):
         if campaign.initial_org_unit:
             return campaign.initial_org_unit.name
         return ""
+
+    group = GroupSerializer(required=False, allow_null=True)
+
+    preparedness_data = PreparednessSerializer(required=False)
+    last_preparedness = PreparednessSerializer(
+        required=False,
+        read_only=True,
+        allow_null=True,
+    )
 
     def create(self, validated_data):
         round_one_data = validated_data.pop("round_one")

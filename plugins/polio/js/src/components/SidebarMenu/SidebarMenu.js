@@ -71,7 +71,7 @@ export const SidebarMenu = ({ isDrawerOpened, toggleDrawer }) => {
                     return (
                         <SidebarMenuItem
                             menuItem={menuItem}
-                            key={menuItem.label}
+                            key={menuItem.label.id}
                         />
                     );
                 })}

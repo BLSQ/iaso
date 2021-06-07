@@ -18,6 +18,7 @@ export const baseUrls = {
     sources: 'orgunits/sources/list',
     tasks: 'settings/tasks',
     devices: 'settings/devices',
+    polio: 'polio/list',
     error401: '401',
     error404: '404',
     error500: '500',

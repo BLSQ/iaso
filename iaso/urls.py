@@ -33,7 +33,7 @@ from .api.export_requests import ExportRequestsViewSet
 from .api.tasks import TaskSourceViewSet
 from .api.accounts import AccountViewSet
 from plugins.router import router as plugins_router
-
+from .views import page
 from .api.enketo import (
     enketo_edit_url,
     enketo_create_url,

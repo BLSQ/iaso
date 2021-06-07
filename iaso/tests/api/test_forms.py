@@ -121,12 +121,19 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(response_data["limit"], 1)
         self.assertEqual(response_data["count"], 2)
 
-    def test_forms_list_csv(self):
+    def test_forms_list_csv_with_flag(self):
         """GET /forms/ csv happy path"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/forms/?csv=1", headers={"Content-Type": "application/json"})
         self.assertFileResponse(response, 200, "text/csv", expected_attachment_filename="forms.csv", streaming=True)
+
+    def test_forms_list_csv_using_header(self):
+        """GET /forms/ csv happy path"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/forms/?format=csv", headers={"Content-Type": "text/csv"})
+        self.assertFileResponse(response, 200, "text/csv; charset=utf-8")
 
     def test_forms_list_xslx(self):
         """GET /forms/ xslx happy path"""

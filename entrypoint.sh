@@ -48,7 +48,8 @@ case "$1" in
     ./scripts/gen_docs.sh
   ;;
   "start" )
-    # ./scripts/enable_plugins.sh
+    export SKIP_PREFLIGHT_CHECK=true
+    ./scripts/enable_plugins.sh
     ./manage.py compilemessages -l fr
     ./manage.py migrate --noinput
     ./manage.py collectstatic --noinput
@@ -56,6 +57,7 @@ case "$1" in
   ;;
   "start_dev" )
     if [ -n "$TEST_PROD" ]; then
+      export SKIP_PREFLIGHT_CHECK=true
       ./scripts/wait_for_dbs.sh
       ./scripts/enable_plugins.sh
       ./manage.py compilemessages -l fr
@@ -66,8 +68,9 @@ case "$1" in
     else
       export DEV_SERVER=true
       export SHOW_DEBUG_TOOLBAR=true
+      export SKIP_PREFLIGHT_CHECK=true
       ./scripts/wait_for_dbs.sh
-    #   ./scripts/enable_plugins.sh
+      ./scripts/enable_plugins.sh
       ./manage.py migrate --noinput
       ./manage.py runserver 0.0.0.0:8081
     fi

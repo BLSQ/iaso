@@ -1,10 +1,8 @@
-"""Exporting to a gpkg  a whole Data source version (OrgUnit hierarchy and Groups)
+"""Exporting to a gpkg a whole Data source version (OrgUnit hierarchy and Groups) see README.md
 
-at the moment we will keep this in parallel with the previous export that took a list of OrgUnit as the
-format is not the same.
 """
 import sqlite3
-import typing
+from typing import Optional
 
 import geopandas as gpd
 from django.contrib.gis.geos import GEOSGeometry
@@ -45,7 +43,7 @@ OUT_COLUMNS = [
 ]
 
 
-def geos_to_shapely(geom: GEOSGeometry) -> typing.Optional[BaseGeometry]:
+def geos_to_shapely(geom: Optional[GEOSGeometry]) -> Optional[BaseGeometry]:
     # Pandas need a shapely geom because it need a object with __geo_interface__ for fiona
     if not geom:
         return None
@@ -56,6 +54,7 @@ def geos_to_shapely(geom: GEOSGeometry) -> typing.Optional[BaseGeometry]:
 def export_org_units_to_gpkg(orgunits: "QuerySet[OrgUnit]", filepath, filter_empty_geom=False) -> bytes:
     """Export the provided org unit queryset in GeoPackage (gpkg) format.
 
+    The file may or may not exists.
     filter_empty_geom is for compat with the old api"""
 
     df = gpd.GeoDataFrame(orgunits.values(*ORG_UNIT_COLUMNS))
@@ -68,16 +67,15 @@ def export_org_units_to_gpkg(orgunits: "QuerySet[OrgUnit]", filepath, filter_emp
         }
     )
     df["parent"] = df["parent__name"] + " (" + df["parent__org_unit_type__name"] + ")"
-    print(df[["id", "name", "parent__source_ref"]])
+    # Calculate alternative parent ref if we have a parent
     df.loc[df["parent__id"].notnull(), "alt_parent_ref"] = df["parent__id"].apply("iaso#{:.0f}".format)
-    print(df[["id", "name", "parent__source_ref"]])
+    # fill parent ref with alternative if we don't have one.
     df["parent_ref"] = df["parent__source_ref"].fillna(df["alt_parent_ref"])
     df["ref"] = df["source_ref"].fillna("iaso#" + df["id"].astype(str))
     df["geography"] = df["geom"].fillna(df["simplified_geom"].fillna(df["location"]))
     df["depth"] = df["depth"].fillna(999)
     df["depth"] = df["depth"].astype(int)
     df["type"] = df["type"].fillna("Unknown")
-    print(df[["id", "name", "parent__source_ref"]])
 
     # Convert django geometry values (GEOS) to shapely models
     df["geography"] = df["geography"].map(geos_to_shapely)
@@ -102,7 +100,6 @@ def export_org_units_to_gpkg(orgunits: "QuerySet[OrgUnit]", filepath, filter_emp
     # Should produce a df like this  where index id is the OrgUnit.id=>
     #                                                group_refs                                        group_names
     # id
-
     # 367989  Oivhk4v2ZVC, f30c3dZKVHA, CmUdnSqK776, CzoGWyy...  CSI TYPE II, Rural, CSI+ CS + infirmerie, CSI ...
     # 367992  CmUdnSqK776, GXDIyF6Hq4m, CzoGWyy6fOl, qVyLsaa...  CSI+ CS + infirmerie, CSI TYPE  I, CSI + CS, P...
     # 368013                           KX9EuY75nGE, cLAexA2XA80                            HD, Groupe des Hopitaux
@@ -120,10 +117,8 @@ def export_org_units_to_gpkg(orgunits: "QuerySet[OrgUnit]", filepath, filter_emp
     ou_gdf_by_type = ou_gdf.groupby("layer_name")
 
     for layer_name, group in ou_gdf_by_type:
-        # keep only the column we want to export and reoder them
+        # keep only the column we want to export and reorder them
         group = group[OUT_COLUMNS]
-        print(f"=={layer_name}")
-        print(group[["name", "ref", "uuid"]])
         # projection is hardcoded, but we use geography column
         group.to_file(filepath, driver="GPKG", layer=layer_name, crs="EPSG:4326")
 
@@ -148,8 +143,9 @@ insert into gpkg_contents(table_name, data_type, identifier) values (
 
 
 def add_group_in_gpkg(filepath: str, groups: "QuerySet[Group]"):
-    """Create the table containing the groups and populate it
+    """Create the table containing the groups and populate it.
 
+    The gpkg must already exists
     also fill it in gpkg_contents as per spec"""
     with sqlite3.connect(filepath) as conn:
         cur = conn.cursor()

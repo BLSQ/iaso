@@ -188,3 +188,47 @@ class GPKGImport(TestCase):
 
         out.refresh_from_db()
         self.assertEqual(out.projects.count(), 1)
+
+
+class GPKGImportSimplifiedGroup(TestCase):
+    """Tests case around minimal_simplified_group.gpk
+
+    to check if we can reference group not existing in the gpkg itself"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = m.Account.objects.create(name="a")
+        cls.project = m.Project.objects.create(name="Project 1", account=cls.account, app_id="test_app_id")
+        version_number = 1
+        cls.source_name = "test source"
+        source = m.DataSource.objects.create(name=cls.source_name)
+        cls.version = m.SourceVersion.objects.create(number=version_number, data_source=source)
+
+    def test_import_orgunit_exisiting_group(self):
+        group = m.Group.objects.create(source_ref="group_not_in_gpkg", source_version=self.version)
+
+        import_gpkg_file(
+            "./iaso/tests/fixtures/gpkg/minimal_simplified_group.gpkg",
+            project_id=self.project.id,
+            source_name=self.source_name,
+            version_number=1,
+            validation_status="new",
+        )
+
+        self.assertEqual(m.OrgUnitType.objects.count(), 3)
+        self.assertEqual(m.OrgUnit.objects.all().count(), 4)
+        self.assertEqual(m.Group.objects.all().count(), 3)
+
+        ou = m.OrgUnit.objects.get(source_ref="3c24c6ca-3012-4d38-abe8-6d620fe1deb8")
+        self.assertEqual(ou.groups.count(), 3)
+
+    def test_import_orgunit_non_exisiting_group(self):
+        # Group is referenced in gpkg but don't exist in gpkg or in source
+        with self.assertRaises(ValueError):
+            import_gpkg_file(
+                "./iaso/tests/fixtures/gpkg/minimal_simplified_group.gpkg",
+                project_id=self.project.id,
+                source_name=self.source_name,
+                version_number=1,
+                validation_status="new",
+            )

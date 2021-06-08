@@ -116,7 +116,10 @@ def create_or_update_orgunit(
         group_refs = props["group_refs"].split(",")
         group_refs = [ref.strip() for ref in group_refs]
 
-        groups = [ref_group[ref] for ref in group_refs if ref]
+        try:
+            groups = [ref_group[ref] for ref in group_refs if ref]
+        except KeyError:
+            raise ValueError(f"Bad GPKG group {group_refs} for {orgunit} don't exist in input or SourceVersion")
         orgunit.groups.set(groups)
 
     return orgunit

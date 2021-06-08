@@ -84,14 +84,6 @@ const schema = yup.object().shape({
     round_two: round_shape,
 });
 
-// const RowAction = ({ icon: Icon, onClick }) => {
-//     return (
-//         <IconButton onClick={onClick}>
-//             <Icon />
-//         </IconButton>
-//     );
-// };
-
 const PageAction = ({ icon: Icon, onClick, children }) => {
     const classes = useStyles();
 
@@ -669,7 +661,6 @@ const Form = ({ children }) => {
 
 const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
-    // console.log("CreateEditDialog selectedCampaign", selectedCampaign);
 
     const classes = useStyles();
 
@@ -830,8 +821,9 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
     );
 };
 
-const DEFAULT_PAGE_SIZE = "10", DEFAULT_PAGE = "1", DEFAULT_ORDER = "obr_name";
-const DEFAULT_QUERY = '/api/polio/campaigns/?limit='+DEFAULT_PAGE_SIZE+'&page='+DEFAULT_PAGE+'&order='+DEFAULT_ORDER;
+const DEFAULT_PAGE_SIZE = "10"
+const DEFAULT_PAGE = "1";
+const DEFAULT_ORDER = "obr_name";
 
 export const Dashboard = () => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
@@ -841,29 +833,23 @@ export const Dashboard = () => {
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE,10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE,10));
     const [order, setOrder] = useState(DEFAULT_ORDER);
-    const [query,setQuery] = useState(DEFAULT_QUERY);
     const classes = useStyles();
 
-    const { data: campaigns = [], status, isLoading, isFetching } = useGetCampaigns(query);
+    const { data: campaigns = [], status, isLoading } = useGetCampaigns(page,pageSize,order);
     const { mutate: removeCampaign } = useRemoveCampaign();
 
-    useEffect(()=>{
-        const newQuery = '/api/polio/campaigns/?limit='+pageSize.toString()+'&page='+page.toString()+'&order='+order.toString();
-        setQuery(newQuery);
-    },[page,pageSize,order])
-
-    const openCreateEditDialog = useCallback(() => {
+    const openCreateEditDialog = () => {
         setIsCreateEditDialogOpen(true);
-    },[setIsCreateEditDialogOpen]);
+    };
 
     const closeCreateEditDialog = () => {
         setSelectedCampaignId(undefined);
         setIsCreateEditDialogOpen(false);
     };
 
-    const openDeleteConfirmDialog = useCallback(() => {
+    const openDeleteConfirmDialog = () => {
         setIsConfirmDeleteDialogOpen(true);
-    },[setIsConfirmDeleteDialogOpen]);
+    };
 
     const closeDeleteConfirmDialog = () => {
         setIsConfirmDeleteDialogOpen(false);
@@ -877,15 +863,15 @@ export const Dashboard = () => {
         });
     };
 
-    const handleClickEditRow = React.useCallback(id => {
+    const handleClickEditRow = id => {
         setSelectedCampaignId(id);
         openCreateEditDialog();
-    },[openCreateEditDialog,setSelectedCampaignId]);
+    };
 
-    const handleClickDeleteRow = React.useCallback(id => {
+    const handleClickDeleteRow = id => {
         setSelectedCampaignId(id);
         openDeleteConfirmDialog();
-    },[openDeleteConfirmDialog,setSelectedCampaignId]);
+    };
 
     const handleClickCreateButton = () => {
         setSelectedCampaignId(undefined);
@@ -970,7 +956,7 @@ export const Dashboard = () => {
             />
             <Page title={'Campaigns'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    {(isLoading||isFetching) && <LoadingSpinner/>}
+                    {(isLoading) && <LoadingSpinner/>}
                     <PageActions>
                         <PageAction
                             icon={AddIcon}

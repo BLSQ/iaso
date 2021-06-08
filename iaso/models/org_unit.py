@@ -91,7 +91,7 @@ class OrgUnitQuerySet(models.QuerySet):
         # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
 
-    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: str):
+    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str]):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 

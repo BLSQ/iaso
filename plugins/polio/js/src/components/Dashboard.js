@@ -41,6 +41,7 @@ import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
 import { PreparednessForm } from '../forms/PreparednessForm';
+import { useGetRegionGeoJson } from '../hooks/useGetRegionGeoJson';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -256,6 +257,8 @@ const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { values } = useFormikContext();
 
+    const { data } = useGetRegionGeoJson(values.initial_org_unit);
+
     const wastageRate = 0.26;
 
     const round1Doses = parseInt(
@@ -265,8 +268,9 @@ const RiskAssessmentForm = () => {
         defaultToZero(values?.round_two?.target_population ?? 0),
     );
 
-    const vialsRequested =
-      Math.ceil(((round1Doses + round2Doses) / 20) * (1 / (1 - wastageRate)));
+    const vialsRequested = Math.ceil(
+        ((round1Doses + round2Doses) / 20) * (1 / (1 - wastageRate)),
+    );
 
     return (
         <>
@@ -348,7 +352,7 @@ const RiskAssessmentForm = () => {
                     </Typography>
                 </Grid>
                 <Grid xs={12} md={6} item>
-                    <MapComponent />
+                    <MapComponent orgUnits={data} />
                 </Grid>
             </Grid>
         </>
@@ -388,7 +392,7 @@ const BudgetForm = () => {
         ? (round2Cost / round2Population).toFixed(2)
         : 0;
 
-    const totalCostPerChild = (totalCost / totalPopulation).toFixed(2);;
+    const totalCostPerChild = (totalCost / totalPopulation).toFixed(2);
 
     return (
         <>
@@ -403,41 +407,40 @@ const BudgetForm = () => {
                             component={ResponsibleField}
                         />
                     </Grid>
-
                 </Grid>
 
-                <Grid xs={12} md={6} item >
-                       <Box mb={2}>
-                           <Field
-                                name={'payment_mode'}
-                                component={PaymentField}
-                                fullWidth
-                            />
-                        </Box>
+                <Grid xs={12} md={6} item>
+                    <Box mb={2}>
                         <Field
-                            label={'Disbursed to CO (WHO)'}
-                            name={'who_disbursed_to_co_at'}
-                            component={DateInput}
+                            name={'payment_mode'}
+                            component={PaymentField}
                             fullWidth
                         />
-                        <Field
-                            label={'Disbursed to MOH (WHO)'}
-                            name={'who_disbursed_to_moh_at'}
-                            component={DateInput}
-                            fullWidth
-                        />
-                        <Field
-                            label={'Disbursed to CO (UNICEF)'}
-                            name={'unicef_disbursed_to_co_at'}
-                            component={DateInput}
-                            fullWidth
-                        />
-                        <Field
-                            label={'Disbursed to MOH (UNICEF)'}
-                            name={'unicef_disbursed_to_moh_at'}
-                            component={DateInput}
-                            fullWidth
-                        />
+                    </Box>
+                    <Field
+                        label={'Disbursed to CO (WHO)'}
+                        name={'who_disbursed_to_co_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'Disbursed to MOH (WHO)'}
+                        name={'who_disbursed_to_moh_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'Disbursed to CO (UNICEF)'}
+                        name={'unicef_disbursed_to_co_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'Disbursed to MOH (UNICEF)'}
+                        name={'unicef_disbursed_to_moh_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
                 </Grid>
 
                 <Grid item md={6}>
@@ -506,9 +509,9 @@ const BudgetForm = () => {
                     </Typography>
                     <Typography>
                         Cost/Child Total: $
-                            {calculateRound1 || calculateRound2
-                                ? totalCostPerChild
-                                : ' -'}
+                        {calculateRound1 || calculateRound2
+                            ? totalCostPerChild
+                            : ' -'}
                     </Typography>
                 </Grid>
             </Grid>
@@ -689,7 +692,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
 
     const defaultValues = {
         round_one: {},
-        round_two: {}
+        round_two: {},
     };
 
     const initialValues = merge(selectedCampaign, defaultValues);

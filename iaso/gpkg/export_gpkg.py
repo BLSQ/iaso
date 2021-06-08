@@ -53,8 +53,10 @@ def geos_to_shapely(geom: GEOSGeometry) -> typing.Optional[BaseGeometry]:
     return shape if not shape.is_empty else None
 
 
-def org_units_to_gpkg(orgunits: "QuerySet[OrgUnit]", filepath, filter_empty_geom=False) -> bytes:
-    """Export the provided org unit queryset in GeoPackage (gpkg) format."""
+def export_org_units_to_gpkg(orgunits: "QuerySet[OrgUnit]", filepath, filter_empty_geom=False) -> bytes:
+    """Export the provided org unit queryset in GeoPackage (gpkg) format.
+
+    filter_empty_geom is for compat with the old api"""
 
     df = gpd.GeoDataFrame(orgunits.values(*ORG_UNIT_COLUMNS))
 
@@ -161,5 +163,5 @@ def export_source_gpkg(filepath: str, source: SourceVersion):
     """Export a whole source to a gpkg according to format in README.md"""
     org_units = source.orgunit_set.all()
     groups = source.group_set.all()
-    org_units_to_gpkg(org_units, filepath)
+    export_org_units_to_gpkg(org_units, filepath)
     add_group_in_gpkg(filepath, groups)

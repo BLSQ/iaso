@@ -70,8 +70,9 @@ class OrgUnitType(models.Model):
         return res
 
 
+# noinspection PyTypeChecker
 class OrgUnitQuerySet(models.QuerySet):
-    def children(self, org_unit: "OrgUnit") -> "Queryset[OrgUnit]":
+    def children(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
         """Only the direct descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
@@ -79,7 +80,7 @@ class OrgUnitQuerySet(models.QuerySet):
 
     def hierarchy(
         self, org_unit: typing.Union[typing.List["OrgUnit"], "OrgUnitQuerySet", "OrgUnit"]
-    ) -> "Queryset[OrgUnit]":
+    ) -> "OrgUnitQuerySet":
         """The OrgunitS and all their descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
@@ -90,7 +91,7 @@ class OrgUnitQuerySet(models.QuerySet):
 
         return self.filter(query)
 
-    def descendants(self, org_unit: "OrgUnit") -> "Queryset[OrgUnit]":
+    def descendants(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
         """All the descendent, org unit or not"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
@@ -98,12 +99,12 @@ class OrgUnitQuerySet(models.QuerySet):
 
     def filter_for_user_and_app_id(
         self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str]
-    ) -> "Queryset[OrgUnit]":
+    ) -> "OrgUnitQuerySet":
         """Restrict to the orgunits the User can see, used mainly in the API"""
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
-        queryset = self.all()
+        queryset: OrgUnitQuerySet = self.all()
 
         if user and user.is_authenticated:
             account = user.iaso_profile.account

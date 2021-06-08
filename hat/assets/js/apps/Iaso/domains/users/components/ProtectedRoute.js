@@ -19,11 +19,6 @@ import { switchLocale } from '../../app/actions';
 class ProtectedRoute extends Component {
     componentDidMount() {
         this.props.fetchCurrentUser();
-        // console.log(
-        //     'locale',
-        //     localStorage.getItem('iaso_locale'),
-        //     this.props.currentUser,
-        // );
     }
 
     componentDidUpdate(prevProps) {

@@ -1,6 +1,5 @@
 import operator
 import typing
-from copy import deepcopy
 from functools import reduce
 from django.db import models, transaction
 from django.contrib.postgres.indexes import GistIndex
@@ -10,8 +9,7 @@ from django.contrib.auth.models import User, AnonymousUser
 from django_ltree.fields import PathField
 from django.utils.translation import ugettext_lazy as _
 
-from hat.audit import models as audit_models
-from .base import Group, SourceVersion
+from .base import SourceVersion
 from .project import Project
 
 
@@ -139,29 +137,7 @@ class OrgUnitQuerySet(models.QuerySet):
 
 
 class OrgUnitManager(models.Manager):
-    def update_single_unit_from_bulk(
-        self, user, org_unit, *, validation_status, org_unit_type_id, groups_ids_added, groups_ids_removed
-    ):
-        """Used within the context of a bulk operation"""
-
-        original_copy = deepcopy(org_unit)
-        if validation_status is not None:
-            org_unit.validation_status = validation_status
-        if org_unit_type_id is not None:
-            org_unit_type = OrgUnitType.objects.get(pk=org_unit_type_id)
-            org_unit.org_unit_type = org_unit_type
-        if groups_ids_added is not None:
-            for group_id in groups_ids_added:
-                group = Group.objects.get(pk=group_id)
-                group.org_units.add(org_unit)
-        if groups_ids_removed is not None:
-            for group_id in groups_ids_removed:
-                group = Group.objects.get(pk=group_id)
-                group.org_units.remove(org_unit)
-
-        org_unit.save()
-
-        audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API_BULK, user=user)
+    pass
 
 
 class OrgUnit(models.Model):

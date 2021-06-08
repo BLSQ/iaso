@@ -1,11 +1,11 @@
-import os
-
 from django.contrib.gis.geos import Point, Polygon, MultiPolygon
 
-from iaso.gpkg.export_gpkg import export_source_gpkg
+from iaso.gpkg.export_gpkg import source_to_gpkg
 from iaso.gpkg.import_gpkg import import_gpkg_file
 from iaso.test import TestCase
 from iaso import models as m
+
+from pathlib import Path
 
 
 class GPKGExport(TestCase):
@@ -39,13 +39,11 @@ class GPKGExport(TestCase):
         ou2.groups.set([group1, group2])
 
     def test_export_import(self):
-        from pathlib import Path
-
         p = Path("/tmp/temporary_test.gpkg")
         if p.exists():
             p.unlink()
 
-        export_source_gpkg("/tmp/temporary_test.gpkg", self.version)
+        source_to_gpkg("/tmp/temporary_test.gpkg", self.version)
         # import in a new version and project
         new_project = m.Project.objects.create(name="Project 2", account=self.account, app_id="test_app_id")
         import_gpkg_file(

@@ -4,7 +4,7 @@ import {
     textPlaceholder,
     IconButton as IconButtonComponent,
     ColumnText,
-    LoadingSpinner
+    LoadingSpinner,
 } from 'bluesquare-components';
 import 'react-table/react-table.css';
 
@@ -259,8 +259,9 @@ const RiskAssessmentForm = () => {
         defaultToZero(values?.round_two?.target_population ?? 0),
     );
 
-    const vialsRequested =
-      Math.ceil(((round1Doses + round2Doses) / 20) * (1 / (1 - wastageRate)));
+    const vialsRequested = Math.ceil(
+        ((round1Doses + round2Doses) / 20) * (1 / (1 - wastageRate)),
+    );
 
     return (
         <>
@@ -379,7 +380,7 @@ const BudgetForm = () => {
         ? (round2Cost / round2Population).toFixed(2)
         : 0;
 
-    const totalCostPerChild = (totalCost / totalPopulation).toFixed(2);;
+    const totalCostPerChild = (totalCost / totalPopulation).toFixed(2);
 
     return (
         <>
@@ -394,41 +395,40 @@ const BudgetForm = () => {
                             component={ResponsibleField}
                         />
                     </Grid>
-
                 </Grid>
 
-                <Grid xs={12} md={6} item >
-                       <Box mb={2}>
-                           <Field
-                                name={'payment_mode'}
-                                component={PaymentField}
-                                fullWidth
-                            />
-                        </Box>
+                <Grid xs={12} md={6} item>
+                    <Box mb={2}>
                         <Field
-                            label={'Disbursed to CO (WHO)'}
-                            name={'who_disbursed_to_co_at'}
-                            component={DateInput}
+                            name={'payment_mode'}
+                            component={PaymentField}
                             fullWidth
                         />
-                        <Field
-                            label={'Disbursed to MOH (WHO)'}
-                            name={'who_disbursed_to_moh_at'}
-                            component={DateInput}
-                            fullWidth
-                        />
-                        <Field
-                            label={'Disbursed to CO (UNICEF)'}
-                            name={'unicef_disbursed_to_co_at'}
-                            component={DateInput}
-                            fullWidth
-                        />
-                        <Field
-                            label={'Disbursed to MOH (UNICEF)'}
-                            name={'unicef_disbursed_to_moh_at'}
-                            component={DateInput}
-                            fullWidth
-                        />
+                    </Box>
+                    <Field
+                        label={'Disbursed to CO (WHO)'}
+                        name={'who_disbursed_to_co_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'Disbursed to MOH (WHO)'}
+                        name={'who_disbursed_to_moh_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'Disbursed to CO (UNICEF)'}
+                        name={'unicef_disbursed_to_co_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'Disbursed to MOH (UNICEF)'}
+                        name={'unicef_disbursed_to_moh_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
                 </Grid>
 
                 <Grid item md={6}>
@@ -497,9 +497,9 @@ const BudgetForm = () => {
                     </Typography>
                     <Typography>
                         Cost/Child Total: $
-                            {calculateRound1 || calculateRound2
-                                ? totalCostPerChild
-                                : ' -'}
+                        {calculateRound1 || calculateRound2
+                            ? totalCostPerChild
+                            : ' -'}
                     </Typography>
                 </Grid>
             </Grid>
@@ -680,7 +680,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
 
     const defaultValues = {
         round_one: {},
-        round_two: {}
+        round_two: {},
     };
 
     const initialValues = merge(selectedCampaign, defaultValues);
@@ -827,21 +827,25 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
     );
 };
 
-const DEFAULT_PAGE_SIZE = 10
+const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
-const DEFAULT_ORDER = "obr_name";
+const DEFAULT_ORDER = 'obr_name';
 
 export const Dashboard = () => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
-    const [page, setPage] = useState(parseInt(DEFAULT_PAGE,10));
-    const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE,10));
+    const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
+    const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
     const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
-    const { data: campaigns = [], status } = useGetCampaigns({page,pageSize,order});
+    const { data: campaigns = [], status } = useGetCampaigns({
+        page,
+        pageSize,
+        order,
+    });
     const { mutate: removeCampaign } = useRemoveCampaign();
 
     const openCreateEditDialog = () => {
@@ -887,67 +891,85 @@ export const Dashboard = () => {
     const selectedCampaign = campaigns?.campaigns?.find(
         campaign => campaign.id === selectedCampaignId,
     );
- 
-    const columns=useMemo(() =>[
+
+    const columns = useMemo(
+        () => [
             {
                 Header: 'Name',
                 accessor: 'obr_name',
-                Cell:settings => {
-                    return <span>{settings.original.obr_name}</span>}
+                Cell: settings => {
+                    return <span>{settings.original.obr_name}</span>;
+                },
             },
             {
                 Header: 'cVDPV2 Notification Date',
                 accessor: 'cvdpv2_notified_at',
-                Cell:settings => {
-                    const text = settings?.original?.cvdpv2_notified_at??textPlaceholder;
-                    return <span>{text}</span>}
+                Cell: settings => {
+                    const text =
+                        settings?.original?.cvdpv2_notified_at ??
+                        textPlaceholder;
+                    return <span>{text}</span>;
+                },
             },
             {
                 Header: 'Status',
                 accessor: 'detection_status',
-                Cell:settings => {
-                    return <ColumnText text={settings.original.detection_status} />}
+                Cell: settings => {
+                    return (
+                        <ColumnText text={settings.original.detection_status} />
+                    );
+                },
             },
             {
                 Header: 'Actions',
-                Cell:settings => {
+                Cell: settings => {
                     return (
                         <>
-                        <IconButtonComponent
-                        icon="edit"
-                        tooltipMessage={MESSAGES.edit}
-                        onClick={() => handleClickEditRow(settings.original.id)}
-                        />
-                        <IconButtonComponent
-                        icon="delete"
-                        tooltipMessage={MESSAGES.delete}
-                        onClick={() => handleClickDeleteRow(settings.original.id)}/>
+                            <IconButtonComponent
+                                icon="edit"
+                                tooltipMessage={MESSAGES.edit}
+                                onClick={() =>
+                                    handleClickEditRow(settings.original.id)
+                                }
+                            />
+                            <IconButtonComponent
+                                icon="delete"
+                                tooltipMessage={MESSAGES.delete}
+                                onClick={() =>
+                                    handleClickDeleteRow(settings.original.id)
+                                }
+                            />
                         </>
                     );
-                }
-            }
-        ],[handleClickDeleteRow, handleClickEditRow]);
+                },
+            },
+        ],
+        [handleClickDeleteRow, handleClickEditRow],
+    );
 
     // The naming is aligned with the names in Table
-    const onTableParamsChange = useCallback((baseUrl, newParams) => {
-        if (newParams.page !== page){
-            setPage(newParams.page);
-        }
-        if (newParams.pageSize !== pageSize){
-            setPageSize(newParams.pageSize);
-        }
-        if (newParams.order !== order){
-            setOrder(newParams.order);
-        }
-    },[ page, pageSize, order]);
+    const onTableParamsChange = useCallback(
+        (baseUrl, newParams) => {
+            if (newParams.page !== page) {
+                setPage(newParams.page);
+            }
+            if (newParams.pageSize !== pageSize) {
+                setPageSize(newParams.pageSize);
+            }
+            if (newParams.order !== order) {
+                setOrder(newParams.order);
+            }
+        },
+        [page, pageSize, order],
+    );
 
-    const tableParams = useMemo(()=>{
+    const tableParams = useMemo(() => {
         return {
             pageSize,
-            page, 
+            page,
             order,
-        }
-    },[pageSize,page,order]);
+        };
+    }, [pageSize, page, order]);
     return (
         <>
             <CreateEditDialog
@@ -962,7 +984,7 @@ export const Dashboard = () => {
             />
             <Page title={'Campaigns'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    {(status==='loading') && <LoadingSpinner/>}
+                    {status === 'loading' && <LoadingSpinner />}
                     <PageActions>
                         <PageAction
                             icon={AddIcon}
@@ -973,14 +995,14 @@ export const Dashboard = () => {
                     </PageActions>
                     {status === 'success' && (
                         <Table
-                        params={tableParams}
-                        count={campaigns.count}
-                        pages={Math.ceil(campaigns.count/pageSize)}
-                        baseUrl={'/polio'}
-                        redirectTo={onTableParamsChange}
-                        columns = {columns}
-                        data={campaigns.campaigns}
-                        watchToRender={tableParams}
+                            params={tableParams}
+                            count={campaigns.count}
+                            pages={Math.ceil(campaigns.count / pageSize)}
+                            baseUrl={'/polio'}
+                            redirectTo={onTableParamsChange}
+                            columns={columns}
+                            data={campaigns.campaigns}
+                            watchToRender={tableParams}
                         />
                     )}
                 </Box>

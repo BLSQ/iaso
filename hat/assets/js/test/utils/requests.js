@@ -92,27 +92,27 @@ export const mockRequestError = (
     });
 };
 
-export const mockRequest = (requestType, url, body = []) => {
+export const mockRequest = (requestType, url, body = [], expectedRequest) => {
     const request = nock(baseUrl);
     let response;
     switch (requestType) {
         case 'get':
-            response = request.get(url, () => true);
+            response = request.get(url, expectedRequest || (() => true));
             break;
         case 'post':
-            response = request.post(url, () => true);
+            response = request.post(url, expectedRequest || (() => true));
             break;
         case 'put':
-            response = request.put(url, () => true);
+            response = request.put(url, expectedRequest || (() => true));
             break;
         case 'patch':
-            response = request.patch(url, () => true);
+            response = request.patch(url, expectedRequest || (() => true));
             break;
         case 'delete':
-            response = request.delete(url, () => true);
+            response = request.delete(url, expectedRequest || (() => true));
             break;
         case 'restore':
-            response = request.patch(url, () => true);
+            response = request.patch(url, expectedRequest || (() => true));
             break;
         default:
             throw new Error(

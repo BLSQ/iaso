@@ -38,12 +38,15 @@ class GPKGExport(TestCase):
         ou.groups.add(group1)
         ou2.groups.set([group1, group2])
 
-    def test_export_import(self):
+    def setUp(self):
+        """Make sure we have a fresh client at the beginning of each test"""
         p = Path("/tmp/temporary_test.gpkg")
         if p.exists():
             p.unlink()
+        self.filename = str(p)
 
-        source_to_gpkg("/tmp/temporary_test.gpkg", self.version)
+    def test_export_import(self):
+        source_to_gpkg(self.filename, self.version)
         # import in a new version and project
         new_project = m.Project.objects.create(name="Project 2", account=self.account, app_id="test_app_id")
         import_gpkg_file(
@@ -82,3 +85,28 @@ class GPKGExport(TestCase):
         self.assertEqual(c2.name, "ou3")
         self.assertEqual(c2.org_unit_type.name, "Unknown")
         self.assertQuerysetEqual(c2.groups.all(), [])
+
+    def test_export_mixed(self):
+        # new type with two orgunit of mixed type geography
+        out3 = m.OrgUnitType.objects.create(name="type3", depth=3)
+
+        polygon = MultiPolygon([Polygon([(0, 0), (0, 1), (2, 1), (1, 0), (0, 0)])])
+        ou4 = m.OrgUnit.objects.create(name="ou4", version=self.version, org_unit_type=out3, geom=polygon)
+        p = Point(x=1, y=3, z=3)
+        ou5 = m.OrgUnit.objects.create(name="ou5", version=self.version, org_unit_type=out3, location=p)
+        source_to_gpkg(self.filename, self.version)
+        new_project = m.Project.objects.create(name="Project 2", account=self.account, app_id="test_app_id")
+
+        import_gpkg_file(
+            "/tmp/temporary_test.gpkg",
+            project_id=new_project.id,
+            source_name=self.source_name,
+            version_number=2,
+            validation_status="new",
+        )
+        v2 = m.SourceVersion.objects.get(data_source__name=self.source_name, number=2)
+        self.assertEqual(v2.orgunit_set.all().count(), 5)
+
+        # The unknown type created because ou3 don't have one
+        self.assertEqual(m.OrgUnitType.objects.filter(projects=new_project).count(), 4)
+        self.assertEqual(v2.group_set.count(), 2)

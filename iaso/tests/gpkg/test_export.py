@@ -1,5 +1,4 @@
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
-from django.core.files.base import ContentFile
 
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.test import TestCase

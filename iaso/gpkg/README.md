@@ -1,6 +1,12 @@
 Iaso GeoPackage
 ========================
 
+GeoPackage (or GPKG) is a file format which can contains multiple layers of geographical information as well
+as accompanying non-geographical data.
+
+It is possible to export data from Iaso as GPKG, modify it and then reimport it or to import entirely fresh data. It is
+is also possible to export data from Iaso instance and reimport it into another.
+
 Import format
 -------------
 

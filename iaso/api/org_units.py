@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils.translation import gettext as _
 from iaso.api.common import safe_api_import
-from iaso.gpkg import org_units_to_gpkg
+from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, DataSource
 from django.contrib.gis.geos import Point
 
@@ -267,7 +267,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def list_to_gpkg(self, queryset):
         queryset = queryset.prefetch_related("parent", "org_unit_type")
 
-        response = HttpResponse(org_units_to_gpkg(queryset), content_type="application/octet-stream")
+        response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
         filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"
 

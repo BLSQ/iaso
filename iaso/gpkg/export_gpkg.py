@@ -1,7 +1,10 @@
 """Exporting to a gpkg a whole Data source version (OrgUnit hierarchy and Groups) see README.md
 
 """
+import os
 import sqlite3
+import tempfile
+import uuid
 from typing import Optional
 
 import geopandas as gpd
@@ -12,23 +15,8 @@ from shapely import wkt
 from shapely.geometry.base import BaseGeometry
 
 from iaso.gpkg.import_gpkg import get_ref
+from iaso.models import Group
 from iaso.models import SourceVersion, OrgUnit
-
-ORG_UNIT_COLUMNS = [
-    "id",
-    "name",
-    "source_ref",
-    "parent__name",
-    "parent__source_ref",
-    "parent__id",
-    "parent__org_unit_type__name",
-    "org_unit_type__name",
-    "org_unit_type__depth",
-    "uuid",
-    "location",
-    "geom",
-    "simplified_geom",
-]
 
 OUT_COLUMNS = [
     "name",
@@ -51,8 +39,27 @@ def geos_to_shapely(geom: Optional[GEOSGeometry]) -> Optional[BaseGeometry]:
     return shape if not shape.is_empty else None
 
 
-def export_org_units_to_gpkg(orgunits: "QuerySet[OrgUnit]", filepath) -> bytes:
+ORG_UNIT_COLUMNS = [
+    "id",
+    "name",
+    "source_ref",
+    "parent__name",
+    "parent__source_ref",
+    "parent__id",
+    "parent__org_unit_type__name",
+    "org_unit_type__name",
+    "org_unit_type__depth",
+    "uuid",
+    "location",
+    "geom",
+    "simplified_geom",
+]
+
+
+def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
     """Export the provided org unit queryset in GeoPackage (gpkg) format.
+
+    Internal, use the other method as it only export orgunit and not group
 
     The file may or may not exists.
     filter_empty_geom is for compat with the old api"""
@@ -113,7 +120,7 @@ def export_org_units_to_gpkg(orgunits: "QuerySet[OrgUnit]", filepath) -> bytes:
     ou_gdf_by_type = ou_gdf.groupby("layer_name")
 
     for layer_name, group in ou_gdf_by_type:
-        # keep only the column we want to export and reorder them
+        # keep only the columns we want to export and reorder them
         group = group[OUT_COLUMNS]
         # projection is hardcoded, but we use geography column
         group.to_file(filepath, driver="GPKG", layer=layer_name, crs="EPSG:4326")
@@ -138,7 +145,7 @@ insert into gpkg_contents(table_name, data_type, identifier) values (
 """
 
 
-def add_group_in_gpkg(filepath: str, groups: "QuerySet[Group]"):
+def add_group_in_gpkg(filepath: str, groups: "QuerySet[Group]") -> None:
     """Create the table containing the groups and populate it.
 
     The gpkg must already exists
@@ -151,9 +158,26 @@ def add_group_in_gpkg(filepath: str, groups: "QuerySet[Group]"):
         cur.execute(INSERT_TABLE_IN_GPKG_CONTENT)
 
 
-def export_source_gpkg(filepath: str, source: SourceVersion):
+def source_to_gpkg(filepath: str, source: SourceVersion) -> None:
     """Export a whole source to a gpkg according to format in README.md"""
     org_units = source.orgunit_set.all()
     groups = source.group_set.all()
-    export_org_units_to_gpkg(org_units, filepath)
+    export_org_units_to_gpkg(filepath, org_units)
     add_group_in_gpkg(filepath, groups)
+
+
+def org_units_to_gpkg_bytes(queryset: "QuerySet[OrgUnit]") -> bytes:
+    """Export OrgUnit queryset in Geopackage (gpkg) format as bytes that can be streamed in response."""
+
+    # Tried to use a mkstemp but it prevents the group.to_file from writing to it and is hard to remove later on
+    # NamedTemporaryFile works but the handle cannot be used to read again. So left the plain uuid thing.
+    filepath = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()))
+    export_org_units_to_gpkg(filepath, queryset)
+    groups = Group.objects.filter(org_units__in=queryset).distinct()
+    add_group_in_gpkg(filepath, groups)
+
+    f = open(filepath, "rb")
+    content = f.read()
+    f.close()
+    os.remove(filepath)
+    return content

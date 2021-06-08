@@ -45,13 +45,28 @@ import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
-    ended_at: yup.date().nullable(),
+    ended_at: yup
+        .date()
+        .nullable()
+        .min(yup.ref('started_at'), "end date can't be before start date"),
     mop_up_started_at: yup.date().nullable(),
-    mop_up_ended_at: yup.date().nullable(),
+    mop_up_ended_at: yup
+        .date()
+        .nullable()
+        .min(
+            yup.ref('mop_up_started_at'),
+            "end date can't be before start date",
+        ),
     im_started_at: yup.date().nullable(),
-    im_ended_at: yup.date().nullable(),
+    im_ended_at: yup
+        .date()
+        .nullable()
+        .min(yup.ref('im_started_at'), "end date can't be before start date"),
     lqas_started_at: yup.date().nullable(),
-    lqas_ended_at: yup.date().nullable(),
+    lqas_ended_at: yup
+        .date()
+        .nullable()
+        .min(yup.ref('lqas_started_at'), "end date can't be before start date"),
     target_population: yup.number().nullable().min(0).integer(),
     cost: yup.number().nullable().min(0).integer(),
 });
@@ -743,9 +758,8 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
 
 export const Dashboard = () => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
-    const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] = useState(
-        false,
-    );
+    const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
+        useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
 
     const classes = useStyles();
@@ -839,13 +853,8 @@ export const Dashboard = () => {
         [],
     );
 
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        rows,
-        prepareRow,
-    } = useTable({ columns, data: tableData });
+    const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+        useTable({ columns, data: tableData });
 
     return (
         <>

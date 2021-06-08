@@ -5,9 +5,11 @@ import UsersDialog from './UsersDialog';
 import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 import MESSAGES from '../messages';
 import { mockRequest } from '../../../../../test/utils/requests';
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 let component;
 let inputComponent;
+let confirmCancelDialogComponent;
 const user = {
     id: 40,
     first_name: '',
@@ -43,7 +45,7 @@ const renderComponent = () => {
     component.update();
 };
 
-describe.only('UsersDialog', () => {
+describe('UsersDialog', () => {
     beforeEach(() => {
         nock.cleanAll();
         nock.abortPendingRequests();
@@ -57,12 +59,17 @@ describe.only('UsersDialog', () => {
     // TODO test the whole API request
     describe('When changing language setting', () => {
         before(() => {
-            mockRequest('patch', '/api/profiles/40');
+            mockRequest('patch', '/api/profiles/40', 'error', user);
         });
         it('sends the new value to the backend', () => {
-            const userInState = component.state('user');
-            component.setState('user', { ...userInState, languae: 'fr' });
-            component.instance().onConfirm();
+            // const userInState = component.state('user');
+            // component.setState('user', { ...userInState, languae: 'fr' });
+            // component.instance().onConfirm();
+            confirmCancelDialogComponent = component.find(
+                ConfirmCancelDialogComponent,
+            );
+            confirmCancelDialogComponent.props().onConfirm(() => null);
+            expect(nock.activeMocks()).to.have.lengthOf(0);
         });
     });
 });

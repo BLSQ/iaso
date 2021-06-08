@@ -28,6 +28,7 @@ class ProtectedRoute extends Component {
                 ? userHasPermission(permission, currentUser)
                 : true;
             if (!isAuthorized && isRootUrl) {
+                // TODO prevent crash if !user
                 const newBaseUrl = getFirstAllowedUrl(permission, currentUser);
                 if (newBaseUrl) {
                     redirectTo(newBaseUrl, {});

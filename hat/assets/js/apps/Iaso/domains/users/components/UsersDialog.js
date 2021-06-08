@@ -4,7 +4,7 @@ import isEqual from 'lodash/isEqual';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
-import { Tabs, Tab, withStyles, Box } from '@material-ui/core';
+import { Tabs, Tab, withStyles } from '@material-ui/core';
 
 import { injectIntl, Radio } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -50,6 +50,7 @@ class UserDialogComponent extends Component {
             user: this.initialUser(),
             tab: 'infos',
         };
+        this.onConfirm = this.onConfirm.bind(this);
     }
 
     componentDidUpdate(prevProps) {
@@ -171,12 +172,8 @@ class UserDialogComponent extends Component {
             initialData,
             classes,
             intl: { formatMessage },
-            // activeUser,
         } = this.props;
         const { user, tab } = this.state;
-        console.log('props', this.props);
-        // console.log('activeUser', activeUser);
-        console.log('user', user);
         const radioKey = `Radio-${user.user_name.value}`;
         return (
             <ConfirmCancelDialogComponent
@@ -275,9 +272,6 @@ class UserDialogComponent extends Component {
                                 this.setFieldValue('language', value);
                             }}
                         />
-                        // <div>
-                        //     {`Locale Options here for user: ${user.user_name.value}`}{' '}
-                        // </div>
                     )}
                 </div>
             </ConfirmCancelDialogComponent>
@@ -306,7 +300,6 @@ const MapStateToProps = state => ({
     count: state.users.count,
     pages: state.users.pages,
     fetching: state.users.fetching,
-    // activeUser: state.users.current,
 });
 
 const mapDispatchToProps = dispatch => ({

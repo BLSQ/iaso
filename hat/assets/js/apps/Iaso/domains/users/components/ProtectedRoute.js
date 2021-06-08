@@ -39,10 +39,7 @@ class ProtectedRoute extends Component {
                 }
             }
             // Use defined default language if it exists and if the user didn't set it manually
-            if (
-                currentUser?.language
-                // && !localStorage.getItem('iaso_locale')
-            ) {
+            if (currentUser?.language && !localStorage.getItem('iaso_locale')) {
                 localStorage.setItem('iaso_locale', currentUser.language);
                 this.props.dispatch(switchLocale(currentUser.language));
             }

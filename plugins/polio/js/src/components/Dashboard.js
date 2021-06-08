@@ -827,8 +827,8 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
     );
 };
 
-const DEFAULT_PAGE_SIZE = "10"
-const DEFAULT_PAGE = "1";
+const DEFAULT_PAGE_SIZE = 10
+const DEFAULT_PAGE = 1;
 const DEFAULT_ORDER = "obr_name";
 
 export const Dashboard = () => {
@@ -841,7 +841,7 @@ export const Dashboard = () => {
     const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
-    const { data: campaigns = [], status, isLoading } = useGetCampaigns(page,pageSize,order);
+    const { data: campaigns = [], status } = useGetCampaigns({page,pageSize,order});
     const { mutate: removeCampaign } = useRemoveCampaign();
 
     const openCreateEditDialog = () => {
@@ -962,7 +962,7 @@ export const Dashboard = () => {
             />
             <Page title={'Campaigns'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    {(isLoading) && <LoadingSpinner/>}
+                    {(status==='loading') && <LoadingSpinner/>}
                     <PageActions>
                         <PageAction
                             icon={AddIcon}

@@ -51,7 +51,7 @@ def geos_to_shapely(geom: Optional[GEOSGeometry]) -> Optional[BaseGeometry]:
     return shape if not shape.is_empty else None
 
 
-def export_org_units_to_gpkg(orgunits: "QuerySet[OrgUnit]", filepath, filter_empty_geom=False) -> bytes:
+def export_org_units_to_gpkg(orgunits: "QuerySet[OrgUnit]", filepath) -> bytes:
     """Export the provided org unit queryset in GeoPackage (gpkg) format.
 
     The file may or may not exists.
@@ -79,10 +79,6 @@ def export_org_units_to_gpkg(orgunits: "QuerySet[OrgUnit]", filepath, filter_emp
 
     # Convert django geometry values (GEOS) to shapely models
     df["geography"] = df["geography"].map(geos_to_shapely)
-
-    # Filter empty geometries
-    if filter_empty_geom:
-        df["geography"] = df["geography"].loc[df["geography"].notnull()]
 
     # Add the groups the orgunit belong to.
     # values will return one line per orgunit - group combination

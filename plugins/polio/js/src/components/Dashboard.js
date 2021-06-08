@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import {Table,textPlaceholder, IconButton as IconButtonComponent,ColumnText, LoadingSpinner} from 'bluesquare-components';
+import {
+    Table,
+    textPlaceholder,
+    IconButton as IconButtonComponent,
+    ColumnText,
+    LoadingSpinner
+} from 'bluesquare-components';
 import 'react-table/react-table.css';
 
 import {

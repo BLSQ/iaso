@@ -73,6 +73,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Polio',
         id: 'iaso.label.polio',
     },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
+    },
+    edit: {
+        id: 'iaso.label.edit',
+        defaultMessage: 'Edit',
+    },
 });
 
 export default MESSAGES;

@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { Tabs, Tab, withStyles } from '@material-ui/core';
 
-import { injectIntl, Radio } from 'bluesquare-components';
+import { injectIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 import UsersInfos from './UsersInfos';
@@ -17,7 +17,6 @@ import {
 } from '../actions';
 import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
-import { APP_LOCALES } from '../../app/constants';
 import PermissionsSwitches from './PermissionsSwitches';
 
 const styles = theme => ({
@@ -174,7 +173,6 @@ class UserDialogComponent extends Component {
             intl: { formatMessage },
         } = this.props;
         const { user, tab } = this.state;
-        const radioKey = `Radio-${user.user_name.value}`;
         return (
             <ConfirmCancelDialogComponent
                 titleMessage={titleMessage}
@@ -216,13 +214,6 @@ class UserDialogComponent extends Component {
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
-                    <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
-                        value="locale"
-                        label={formatMessage(MESSAGES.locale)}
-                    />
                 </Tabs>
                 <div className={classes.root}>
                     {tab === 'infos' && (
@@ -255,22 +246,6 @@ class UserDialogComponent extends Component {
                                 this.setFieldValue('org_units', ouList)
                             }
                             currentUser={user}
-                        />
-                    )}
-                    {tab === 'locale' && (
-                        <Radio
-                            name="set_locale"
-                            key={radioKey}
-                            value={user.language.value}
-                            options={APP_LOCALES.map(locale => {
-                                return {
-                                    value: locale.code,
-                                    label: locale.code,
-                                };
-                            })}
-                            onChange={value => {
-                                this.setFieldValue('language', value);
-                            }}
                         />
                     )}
                 </div>

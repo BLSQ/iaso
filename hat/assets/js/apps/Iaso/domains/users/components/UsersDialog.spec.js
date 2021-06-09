@@ -11,11 +11,12 @@ let component;
 let inputComponent;
 let confirmCancelDialogComponent;
 const user = {
-    id: 40,
+    id: 47,
     first_name: '',
-    user_name: 'son',
+    user_name: 'Agent',
     last_name: '',
     email: '',
+    password: '',
     permissions: [],
     is_superuser: true,
     org_units: [],

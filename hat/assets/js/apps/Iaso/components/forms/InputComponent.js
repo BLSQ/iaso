@@ -223,5 +223,4 @@ InputComponent.propTypes = {
 };
 
 const translated = injectIntl(InputComponent);
-
 export default translated;

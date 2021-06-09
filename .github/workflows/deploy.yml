@@ -57,7 +57,7 @@ jobs:
                 npm i
                 # npm t
         env:
-                CI: true
+                CI: false
 
       - name: npm build
         run: |

@@ -8,11 +8,11 @@ The main tasks it allows accomplishing are:
 
 -   Data collection using [XLSForm](https://xlsform.org/) forms linked
     to org units through a mobile application.
--   Import, comparison and merging of multiple org. units trees, both
+-   Import, comparison and merging of multiple Org Units' trees, both
     through a web application and an API allowing manipulation through
     data science tools like [Jupyter notebooks](https://jupyter.org/).
--   Validation of received data for org. units trees and forms.
--   Exports of the org. unit trees and form data, either in csv, xlsx,
+-   Validation of received data for Org Units' trees and forms.
+-   Exports of the Org Units' trees and form data, either in csv, xlsx,
     [GeoPackage](https://www.geopackage.org/) or through an api.
 
 [Video presentation of IASO](https://fosdem.org/2021/schedule/event/iaso/) at Fosdem 2021, with slides.
@@ -25,10 +25,10 @@ unit that is part of a canonical hierarchy. Each one of these org. units can hav
 territory. The mobile data collection tool can be used to enrich this hierarchy with additional GPS
 coordinates, names corrections, etc ... which can then be validated by officials of the organizations
 in question through the web dashboard. This leads to continuous improvements of the geographic references
-available through the routine activities already planned (e.g. locating and registering health facilities while
-investigating malaria cases).
+available through the routine activities already planned. e.g. locating and registering health facilities while
+investigating malaria cases.
 
-The tool has been used in multiple data collection efforts, notably in the domain of Performance Based Financing
+The tool has been used in multiple data collection efforts. Notably in the domain of Performance Based Financing
 of health services in D.R. Congo, Niger, Cameroon and Nigeria and is more and more used to compare multiple
 versions of official organisational hierarchies when a canonical one needs to be rebuilt (for example
  to rebuild a school map for DRC). To help for this type of project,
@@ -51,7 +51,7 @@ via an API implemented via Django rest framework, all data is stored in Postgres
 
 A companion mobile app for Android allow submitting Form and creating org unit.
 
-Form can also be filled in a web interface via the Enketo companion service. Both Iaso and Enketeo need to be
+Form can also be filled in a web interface via the Enketo companion service. Both Iaso and Enketo need to be
 configured to work together. It is possible to run an Enketo service locally, see Enketo section below.
 
 More documentation on the Front End part is present in
@@ -61,7 +61,7 @@ More documentation on the Front End part is present in
 Data Model / Glossary
 ---------------------
 
-Some terminology in Iaso come from DHIS2 and some from ODK which mean that it can be a bit confusing.
+Some terminology in Iaso come from DHIS2, some from ODK which mean that it can be a bit confusing.
 We will highlight some equivalences that might help you.
 
 This is not (yet) the complete Data Model, but here are the main concepts/model in Iaso:
@@ -72,7 +72,7 @@ This is not (yet) the complete Data Model, but here are the main concepts/model 
 * `DHIS2` is a standard database and web UI in the industry to handle Health Data. Iaso can import and export data to it.
 * `OrgUnit` (DHIS2 terminology) is a Node of the GeoRegistry tree. e.g a particular Country, City or Hospital. each belonging to each other via a `parent` relationship.
    * They can have a type `OrgUnitType` e.g. Country, City, Hospital
-   *  and can belong to multiple `Group`. e.g. Urban Region or Campaign 2017
+   *  and can belong to multiple `Group`, e.g. Urban Region or Campaign 2017
    * DHIS2 has the concept of `Group` but not `Type` so when importing from a DHIS2 Instance all the type will be Unknown and OrgUnit will belong to group like `Clinic`
    * `GroupSet` are Group of group. Used when we export Group to DHIS2
   * OrgUnit may have a position in space, it can be an area, the  `geom` field is then used, or just a Point, the `location` field is then used.
@@ -87,7 +87,7 @@ This is not (yet) the complete Data Model, but here are the main concepts/model 
 * `Form` is the definition of a Form. Which question should be asked and how they are presented. The model contain the meta data, the actual definition is done in a `XSLForm` as an attached file.
     * Form are linked to one or more Project. This is used to know which Form are presented in the Mobile App.
     * Form can have multiple versions
-* `Instance` or Form instance is the `Submission` of a form. A form that has actually be filed by an user.
+* `Instance` or Form instance is the `Submission` of a form. A form that has actually been filed by a user.
     * Instance can be GeoTagged and/or linked to a OrgUnit
     * Note: We are moving to use Submission everywhere in the UI, but it is still in progress. please submit PR.
     * Submission cannot be done via the Iaso UI itself but through Enketo or the Mobile App.
@@ -243,7 +243,7 @@ docker-compose run --rm iaso manage.py seed_test_data --mode=seed --dhis2version
 The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. Type of OrgUnit are not
 handled at the moment
 
-you can then login through <http://127.0.0.1:8081/dashboard> with :
+you can then log in through <http://127.0.0.1:8081/dashboard> with :
 
  -   user : testemail2.35.3
  -   password: testemail2.35.3
@@ -293,8 +293,8 @@ All the container definitions for development can be found in the
 
 Run launch a new docker container, Exec launch a command it the existing container.
 
-So `run` will ensure the dependencies like the database are up before executing. `exec` main advantage is that is faster
-but you the container already running and lauched manually 
+So `run` will ensure the dependencies like the database are up before executing. `exec` main advantage is that it is faster
+but the containers must already be running (launched manually) 
 
 `run` will launch the entrypoint.sh script but exec will take a bash command to run which is why if you want
 to run the django manage.py you will need to use `run iaso manage` but `exec iaso ./manage.py`
@@ -323,7 +323,7 @@ To seed your DB with typical example forms, see the  Import data from DHIS2 sect
 Enketo and Iaso will each run separately in their own  docker-compose but still need to communicate together.
 This is done via your host, which is why you will need to change the IP in .env each time your ip change.
 
-TODO: This setup shuold be simplified a bit
+TODO: This setup should be simplified a bit
 
 Contributing
 ============
@@ -341,7 +341,7 @@ install git hooks in your .git/ directory.
 Another good way to have it working is to set it up in your code editor.
 Pycharm, for example, has good support for this.
 
-The pre-commit is not mandatory but Continuous Integration will checks
+The pre-commit is not mandatory but Continuous Integration will check
 if the formatting is respected!
 
 Tests and linting
@@ -484,7 +484,7 @@ the other function's argument, that represent which user is launching
 the task. At execution time the task will receive a iaso.models.Task
 instance in argument that should be used to report progress. It's
 mandatory for the function, at the end of a successful execution to call
-task.report_success() to mark it's proper completion.
+task.report_success() to mark its proper completion.
 
 In local development you can call the url `tasks/run_all` which will run
 all tasks in queue.

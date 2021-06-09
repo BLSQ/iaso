@@ -61,7 +61,7 @@ jobs:
           python manage.py migrate
           python manage.py test
         env:
-          CI: true
+          CI: false
           IASO_ENVIRONMENT: development
           RDS_DB_NAME: github_actions
           SECRET_KEY: secret

@@ -13,7 +13,7 @@ COPY package.json .
 COPY package-lock.json .
 
 # ci install the exact version of package, compared to install which might a bump minor version
-RUN npm ci
+RUN npm install
 
 ADD hat/ hat/ 
 ADD plugins/ plugins/ 

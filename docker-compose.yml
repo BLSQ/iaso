@@ -5,12 +5,11 @@ services:
     tty: true
     build:
       context: .
-      args:
-        NODE_ENV: ""
     image: iaso
     ports:
       - "8081:8081"
     volumes: &hat_volumes
+      - ./manage.py:/opt/app/manage.py
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
       - ./beanstalk_worker:/opt/app/beanstalk_worker
@@ -30,7 +29,7 @@ services:
       - db
     environment: &hat_environment
       PLUGIN_POLIO_ENABLED: ${PLUGIN_POLIO_ENABLED:-false}
-      GOOGLE_API_KEY_BASE64: ${GOOGLE_API_KEY_BASE64}
+      GOOGLE_API_KEY_BASE64:
       IASO_ENVIRONMENT: "development"
       RDS_HOSTNAME: db
       RDS_DB_NAME: ${RDS_DB_NAME:-iaso}
@@ -72,7 +71,7 @@ services:
   # the webpack dev server
   webpack:
     image: iaso-webpack
-    build: 
+    build:
       context: .
       dockerfile: .docker/webpack/Dockerfile
     depends_on:

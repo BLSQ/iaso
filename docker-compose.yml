@@ -71,9 +71,12 @@ services:
 
   # the webpack dev server
   webpack:
+    image: iaso-webpack
+    build: 
+      context: .
+      dockerfile: .docker/webpack/Dockerfile
     depends_on:
       - iaso
-    image: iaso
     ports:
       - "3000:3000"
     volumes: *hat_volumes

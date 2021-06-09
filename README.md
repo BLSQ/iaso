@@ -215,7 +215,7 @@ Create a file `plugins/polio/js/.env` with the content
 ```env
 SKIP_PREFLIGHT_CHECK=true
 PUBLIC_URL=/static/polio
-APP_ENV=local% ?
+APP_ENV=local%
 ```
 
 in your root .env set

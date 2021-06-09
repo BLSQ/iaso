@@ -56,7 +56,6 @@ case "$1" in
   ;;
   "start_dev" )
     export DEV_SERVER=true
-    export SHOW_DEBUG_TOOLBAR=true
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate --noinput
     ./manage.py runserver 0.0.0.0:8081

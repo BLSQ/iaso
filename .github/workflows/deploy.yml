@@ -57,7 +57,7 @@ jobs:
                 npm i
                 # npm t
         env:
-                CI: false
+                CI: true
 
       - name: npm build
         run: |
@@ -76,6 +76,7 @@ jobs:
 
           git diff-index --quiet HEAD || (git checkout -b github/assets-${GITHUB_RUN_NUMBER} && git commit -m "Build assets github action ${GITHUB_RUN_NUMBER}" && git push -u origin) || true
         env:
+          CI: false
           GIT_AUTHOR_NAME: Github Bot
           GIT_COMMITTER_NAME: Github Bot
           EMAIL: edarchis@bluesquarehub.com

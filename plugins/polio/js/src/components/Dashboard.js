@@ -863,18 +863,18 @@ export const Dashboard = () => {
     });
     const { mutate: removeCampaign } = useRemoveCampaign();
 
-    const openCreateEditDialog = () => {
+    const openCreateEditDialog = useCallback(() => {
         setIsCreateEditDialogOpen(true);
-    };
+    },[setIsCreateEditDialogOpen]);
 
     const closeCreateEditDialog = () => {
         setSelectedCampaignId(undefined);
         setIsCreateEditDialogOpen(false);
     };
 
-    const openDeleteConfirmDialog = () => {
+    const openDeleteConfirmDialog = useCallback(() => {
         setIsConfirmDeleteDialogOpen(true);
-    };
+    },[setIsConfirmDeleteDialogOpen]);
 
     const closeDeleteConfirmDialog = () => {
         setIsConfirmDeleteDialogOpen(false);
@@ -888,15 +888,16 @@ export const Dashboard = () => {
         });
     };
 
-    const handleClickEditRow = id => {
+    const handleClickEditRow = useCallback(id => {
         setSelectedCampaignId(id);
         openCreateEditDialog();
-    };
+    },[setSelectedCampaignId,openCreateEditDialog]);
 
-    const handleClickDeleteRow = id => {
+
+    const handleClickDeleteRow = useCallback(id => {
         setSelectedCampaignId(id);
         openDeleteConfirmDialog();
-    };
+    },[setSelectedCampaignId,openDeleteConfirmDialog]);
 
     const handleClickCreateButton = () => {
         setSelectedCampaignId(undefined);

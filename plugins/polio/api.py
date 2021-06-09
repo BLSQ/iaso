@@ -14,8 +14,7 @@ class CampaignViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
 
     def list(self, request: Request, *args, **kwargs):
-        print(self.request.GET.get("order", ""))
-        order = self.request.GET.get("order", "")
+        order = self.request.GET.get("order", "obr_name")
         queryset = self.filter_queryset(self.get_queryset().order_by(order))
 
         page = self.paginate_queryset(queryset)

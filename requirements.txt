@@ -37,6 +37,7 @@ jsonschema==3.2.0
 xlsxwriter==1.2.7
 beautifulsoup4==4.7.1
 lxml==4.6.3
+djangorestframework-csv==2.1.1
 
 # dhis2 api wrapper
 dhis2.py==2.0.2

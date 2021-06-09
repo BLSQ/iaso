@@ -205,7 +205,7 @@ docker-compose exec iaso ./manage.py tree_importer \
 
 You can now login on `http://localhost:8081`
 
-Alternatively to this step and the latter you can import data from DHIS2 see section below.
+Alternatively to this step and following steps you can import data from DHIS2 see section below.
 
 ### 8. Create a form
 

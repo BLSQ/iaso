@@ -49,8 +49,13 @@ jobs:
         run: |
           npm install
           npm test
-        env:
-          CI: true
+
+      - name: npm build (but don't commit)
+        run: |
+          npm run webpack-prod
+          PUBLIC_URL=https://iaso-campaigns.s3.amazonaws.com/iasostatics/ SKIP_PREFLIGHT_CHECK=true PLUGIN_POLIO_ENABLED='true' bash ./scripts/enable_plugins.sh
+
+
 
       - name: Check formatting with black
         run: |
@@ -61,7 +66,6 @@ jobs:
           python manage.py migrate
           python manage.py test
         env:
-          CI: false
           IASO_ENVIRONMENT: development
           RDS_DB_NAME: github_actions
           SECRET_KEY: secret

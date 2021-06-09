@@ -3,7 +3,7 @@ ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app
 
-RUN apt-get update || : && apt-get install -y \
+RUN apt-get update && apt-get install -y \
     python \
     git \
     build-essential \

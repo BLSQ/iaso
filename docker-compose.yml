@@ -28,11 +28,11 @@ services:
     links: &hat_links
       - db
     environment: &hat_environment
-      PLUGIN_POLIO_ENABLED: ${PLUGIN_POLIO_ENABLED:-false}
+      PLUGIN_POLIO_ENABLED:
       GOOGLE_API_KEY_BASE64:
       IASO_ENVIRONMENT: "development"
       RDS_HOSTNAME: db
-      RDS_DB_NAME: ${RDS_DB_NAME:-iaso}
+      RDS_DB_NAME:
       RDS_USERNAME: postgres
       RDS_PASSWORD: postgres
       DEBUG: "true"
@@ -44,7 +44,7 @@ services:
       PYTHONUNBUFFERED: "true"
       ENKETO_DEV: "true"
       ENKETO_API_TOKEN: AZE78974654azeAZE
-      ENKETO_URL: ${ENKETO_URL}
+      ENKETO_URL:
     # Limit logging in dev to not overflow terminal
     logging: &iaso_logging
       driver: "json-file"

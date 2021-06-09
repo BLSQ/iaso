@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
 COPY package.json .
 COPY package-lock.json .
 
-RUN npm install
+# ci install the exact version of package, compared to install which might a bump minor version
+RUN npm ci
 
 ADD hat/ hat/ 
 ADD plugins/ plugins/ 

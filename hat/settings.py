@@ -229,6 +229,8 @@ AUTH_CLASSES = [
     "rest_framework_simplejwt.authentication.JWTAuthentication",
 ]
 
+
+# Needed for PowerBI, used for the Polio project, which only support support BasicAuth.
 if PLUGIN_POLIO_ENABLED:
     AUTH_CLASSES.append(
         "rest_framework.authentication.BasicAuthentication",

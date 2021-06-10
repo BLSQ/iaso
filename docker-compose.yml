@@ -29,11 +29,11 @@ services:
     links: &hat_links
       - db
     environment: &hat_environment
-      PLUGIN_POLIO_ENABLED: ${PLUGIN_POLIO_ENABLED}
+      PLUGIN_POLIO_ENABLED: ${PLUGIN_POLIO_ENABLED:-false}
       GOOGLE_API_KEY_BASE64: ${GOOGLE_API_KEY_BASE64}
       IASO_ENVIRONMENT: "development"
       RDS_HOSTNAME: db
-      RDS_DB_NAME: iaso
+      RDS_DB_NAME: ${RDS_DB_NAME:-iaso}
       RDS_USERNAME: postgres
       RDS_PASSWORD: postgres
       DEBUG: "true"
@@ -71,9 +71,12 @@ services:
 
   # the webpack dev server
   webpack:
+    image: iaso-webpack
+    build: 
+      context: .
+      dockerfile: .docker/webpack/Dockerfile
     depends_on:
       - iaso
-    image: iaso
     ports:
       - "3000:3000"
     volumes: *hat_volumes

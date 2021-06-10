@@ -171,7 +171,7 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
 
         colx = fiona.open(filename, mode="r", layer=layer_name)
 
-        _, depth, name = layer_name.split("-")
+        _, depth, name = layer_name.split("-", maxsplit=2)
         org_unit_type = get_or_create_org_unit_type(name, project, depth)
 
         # collect all the OrgUnit to create from this layer

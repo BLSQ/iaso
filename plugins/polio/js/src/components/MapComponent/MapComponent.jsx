@@ -1,11 +1,8 @@
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
-import * as L from 'leaflet';
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 
 import 'leaflet/dist/leaflet.css';
 import { useMapContext } from './Context';
-
-const limeOptions = { color: 'gray' };
 
 const InnerMap = ({ onClick }) => {
     const map = useMap();
@@ -21,7 +18,7 @@ const InnerMap = ({ onClick }) => {
                 <GeoJSON
                     key={`${shape.id}`}
                     data={shape.geo_json}
-                    pathOptions={limeOptions}
+                    pathOptions={shape.pathOptions}
                     eventHandlers={{
                         click() {
                             onClick(shape);

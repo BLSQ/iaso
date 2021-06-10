@@ -1,9 +1,12 @@
 import { useQuery } from 'react-query';
 import { sendRequest } from '../utils/networking';
+import { useGetAuthenticatedUser } from './useGetAuthenticatedUser';
 
 export const useGetRegionGeoJson = region => {
+    const { data: user = {}, isFetching } = useGetAuthenticatedUser();
+    const source = user?.account?.default_version?.data_source?.id || '';
     const params = {
-        source: 6,
+        source,
         validation_status: 'all',
         asLocation: true,
         limit: 3000,
@@ -21,7 +24,7 @@ export const useGetRegionGeoJson = region => {
             );
         },
         {
-            enabled: region !== null,
+            enabled: region !== null && isFetching,
         },
     );
 };

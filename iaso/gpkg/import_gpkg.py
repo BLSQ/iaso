@@ -192,10 +192,10 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
 
     print(f"OrgUnit updated or created : {total_org_unit}")
     for ref, parent_ref in to_update_with_parent:
+        ou = ref_ou[ref]
         if parent_ref and parent_ref not in ref_ou:
             raise ValueError(f"Bad GPKG parent {parent_ref} for {ou} don't exist in input or SourceVersion")
 
-        ou = ref_ou[ref]
         parent_ou = ref_ou[parent_ref] if parent_ref else None
         ou.parent = parent_ou
         ou.save()

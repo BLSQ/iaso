@@ -27,7 +27,7 @@ Obviously it must be a valid GeoPackage, conformant with the [OGC specification]
 ## Layer Tables
 The OrgUnit are organized inside GPKG layer(s). Each layer represent a unique OrgUnit type.
 
-These layers must be named in the following ways: `level-{depth}-{type_name}`. Where `depth` is an integer and `type_name` an string.
+These layers must be named in the following ways: `level-{depth}-{type_name}`. Where `depth` is an integer and `type_name` a string.
 
 If a OrgUnitType with such a name does not already exist, it will be created. OrgUnitType are case-sensitive, 
 be sure when updating an existing one that the casing and accents matches the targeted OrgUnitType. 

@@ -30,10 +30,8 @@ const InnerMap = ({ onClick }) => {
     );
 };
 
-export const MapComponent = () => {
+export const MapComponent = ({ onSelectShape }) => {
     const { centeredShape } = useMapContext();
-
-    const onClick = useCallback(arg => console.log(arg), []);
 
     if (!centeredShape) {
         return null;
@@ -51,7 +49,7 @@ export const MapComponent = () => {
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <InnerMap onClick={onClick} />
+            <InnerMap onClick={onSelectShape} />
         </MapContainer>
     );
 };

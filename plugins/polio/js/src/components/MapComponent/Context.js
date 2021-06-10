@@ -18,14 +18,14 @@ export const MapContext = createContext({
 
 export const useMapContext = () => useContext(MapContext);
 
-export const MapContainer = ({ shapes = [] }) => {
+export const MapContainer = ({ shapes = [], onSelectShape }) => {
     const centeredShape = useMemo(() => {
         const firstShape = shapes[0];
         if (firstShape) return L.geoJSON(firstShape.geo_json);
     }, [shapes]);
     return (
         <MapContext.Provider value={{ shapes, centeredShape }}>
-            <MapComponent />
+            <MapComponent onSelectShape={onSelectShape} />
         </MapContext.Provider>
     );
 };

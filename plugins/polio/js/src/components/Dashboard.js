@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTable } from 'react-table';
 
 import {
@@ -253,11 +253,44 @@ const DetectionForm = () => {
         </>
     );
 };
+
+const selectedPathOptions = { color: 'lime' };
+const unselectedPathOptions = { color: 'gray' };
+
 const RiskAssessmentForm = () => {
     const classes = useStyles();
-    const { values } = useFormikContext();
+    const { values, setFieldValue } = useFormikContext();
 
-    const { data } = useGetRegionGeoJson(values.initial_org_unit);
+    const { group = {} } = values;
+    const { data = [] } = useGetRegionGeoJson(values.initial_org_unit);
+
+    const shapes = useMemo(() => {
+        return data.map(shape => ({
+            ...shape,
+            pathOptions: group.org_units.find(org_unit => shape.id === org_unit)
+                ? selectedPathOptions
+                : unselectedPathOptions,
+        }));
+    }, [data, group]);
+
+    const onSelectOrgUnit = useCallback(
+        shape => {
+            var { org_units } = group;
+            const hasFound = org_units.find(org_unit => shape.id === org_unit);
+
+            if (hasFound) {
+                org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
+            } else {
+                org_units.push(shape.id);
+            }
+
+            setFieldValue('group', {
+                ...group,
+                org_units,
+            });
+        },
+        [group],
+    );
 
     const wastageRate = 0.26;
 
@@ -352,7 +385,10 @@ const RiskAssessmentForm = () => {
                     </Typography>
                 </Grid>
                 <Grid xs={12} md={6} item>
-                    <MapContainer shapes={data} />
+                    <MapContainer
+                        shapes={shapes}
+                        onSelectShape={onSelectOrgUnit}
+                    />
                 </Grid>
             </Grid>
         </>
@@ -693,6 +729,10 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     const defaultValues = {
         round_one: {},
         round_two: {},
+        group: {
+            name: 'hidden group',
+            org_units: [],
+        },
     };
 
     const initialValues = merge(selectedCampaign, defaultValues);

@@ -11,8 +11,17 @@ export const useGetRegionGeoJson = region => {
         parent_id: region,
     };
 
-    return useQuery(['geo_json', params], () => {
-        const queryString = new URLSearchParams(params);
-        return sendRequest('GET', `/api/orgunits/?${queryString.toString()}`);
-    });
+    return useQuery(
+        ['geo_json', params],
+        () => {
+            const queryString = new URLSearchParams(params);
+            return sendRequest(
+                'GET',
+                `/api/orgunits/?${queryString.toString()}`,
+            );
+        },
+        {
+            enabled: region !== null,
+        },
+    );
 };

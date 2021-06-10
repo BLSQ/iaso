@@ -136,10 +136,6 @@ class OrgUnitQuerySet(models.QuerySet):
         return queryset
 
 
-class OrgUnitManager(models.Manager):
-    pass
-
-
 class OrgUnit(models.Model):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
@@ -178,7 +174,7 @@ class OrgUnit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()
+    objects = OrgUnitQuerySet.as_manager()
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]

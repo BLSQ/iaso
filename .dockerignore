@@ -69,7 +69,6 @@ db.sqlite3
 
 # data that get mounted
 media/
-testdata/
 
 # Node modules
 node_modules/

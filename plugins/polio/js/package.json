@@ -43,6 +43,7 @@
         "not op_mini all"
     ],
     "devDependencies": {
+        "@types/leaflet": "^1.7.1",
         "react-app-rewired": "^2.1.8"
     },
     "proxy": "http://localhost:8081"

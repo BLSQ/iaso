@@ -18,7 +18,7 @@ import merge from 'lodash.merge';
 import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { MapComponent } from './MapComponent';
+import { MapContainer } from './MapComponent';
 import { TableHeader } from './Table/TableHeader';
 import { TableCell } from './Table/TableCell';
 
@@ -352,7 +352,7 @@ const RiskAssessmentForm = () => {
                     </Typography>
                 </Grid>
                 <Grid xs={12} md={6} item>
-                    <MapComponent orgUnits={data} />
+                    <MapContainer shapes={data} />
                 </Grid>
             </Grid>
         </>

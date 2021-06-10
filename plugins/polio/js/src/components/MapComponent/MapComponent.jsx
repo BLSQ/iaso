@@ -3,23 +3,28 @@ import * as L from 'leaflet';
 import { useEffect, useMemo, useCallback } from 'react';
 
 import 'leaflet/dist/leaflet.css';
+import { useMapContext } from './Context';
 
-const InnerMap = ({ orgUnits, bounds, onClick }) => {
+const limeOptions = { color: 'gray' };
+
+const InnerMap = ({ onClick }) => {
     const map = useMap();
+    const { shapes, centeredShape } = useMapContext();
 
     useEffect(() => {
-        map.fitBounds(bounds);
+        map.fitBounds(centeredShape.getBounds());
     }, []);
 
     return (
         <>
-            {orgUnits.map(orgUnit => (
+            {shapes.map(shape => (
                 <GeoJSON
-                    key={`${orgUnit.id}`}
-                    data={orgUnit.geo_json}
+                    key={`${shape.id}`}
+                    data={shape.geo_json}
+                    pathOptions={limeOptions}
                     eventHandlers={{
                         click() {
-                            onClick(orgUnit);
+                            onClick(shape);
                         },
                     }}
                 />
@@ -28,14 +33,12 @@ const InnerMap = ({ orgUnits, bounds, onClick }) => {
     );
 };
 
-export const MapComponent = ({ orgUnits = [] }) => {
-    const bounds = useMemo(() => {
-        const firstOrgUnit = orgUnits[0];
-        if (firstOrgUnit) return L.geoJSON(firstOrgUnit.geo_json);
-    }, [orgUnits]);
+export const MapComponent = () => {
+    const { centeredShape } = useMapContext();
+
     const onClick = useCallback(arg => console.log(arg), []);
 
-    if (!bounds) {
+    if (!centeredShape) {
         return null;
     }
 
@@ -43,7 +46,7 @@ export const MapComponent = ({ orgUnits = [] }) => {
         <MapContainer
             style={{ height: 500 }}
             center={[0, 0]}
-            bounds={bounds}
+            bounds={centeredShape}
             zoom={5}
             scrollWheelZoom={false}
         >
@@ -51,11 +54,7 @@ export const MapComponent = ({ orgUnits = [] }) => {
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <InnerMap
-                orgUnits={orgUnits}
-                bounds={bounds.getBounds()}
-                onClick={onClick}
-            />
+            <InnerMap onClick={onClick} />
         </MapContainer>
     );
 };

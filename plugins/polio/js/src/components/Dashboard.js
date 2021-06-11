@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTable } from 'react-table';
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
     Table,
     textPlaceholder,

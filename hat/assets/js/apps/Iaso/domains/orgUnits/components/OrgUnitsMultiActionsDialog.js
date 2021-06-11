@@ -64,6 +64,7 @@ const OrgUnitsMultiActionsDialog = ({
     const [orgUnitType, setOrgUnitType] = React.useState(null);
     const [editValidation, setEditValidation] = React.useState(false);
     const [validationStatus, setValidationStatus] = React.useState(null);
+
     const isSaveDisabled = () =>
         (editGroups &&
             groupsAdded.length === 0 &&
@@ -255,9 +256,9 @@ const OrgUnitsMultiActionsDialog = ({
                             <div className={classes.marginLeft}>
                                 <InputComponent
                                     keyValue="isValid"
-                                    onChange={(key, value) =>
-                                        setValidationStatus(value)
-                                    }
+                                    onChange={(key, value) => {
+                                        setValidationStatus(value);
+                                    }}
                                     value={validationStatus}
                                     type="radio"
                                     options={[

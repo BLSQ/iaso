@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 from django.utils.translation import gettext as _
 from uuid import uuid4
 from iaso.models import Group
@@ -155,7 +154,9 @@ class Campaign(models.Model):
     verification_score = models.IntegerField(null=True, blank=True)
     # Preparedness
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
-
+    # Surge recruitment
+    surge_spreadsheet_url = models.URLField(null=True, blank=True)
+    country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
     budget_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
@@ -217,6 +218,9 @@ class Campaign(models.Model):
     def last_preparedness(self):
         return self.preparedness_set.order_by("-created_at").first()
 
+    def last_surge(self):
+        return self.surge_set.order_by("-created_at").first()
+
 
 class Preparedness(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
@@ -227,7 +231,29 @@ class Preparedness(models.Model):
     regional_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Regional Score"))
     district_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("District Score"))
 
-    payload = JSONField()
+    payload = models.JSONField()
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    def __str__(self) -> str:
+        return f"{self.campaign} - {self.created_at}"
+
+
+class Surge(models.Model):
+    id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    spreadsheet_url = models.URLField()
+    surge_country_name = models.CharField(max_length=250, null=True, default=True)
+    who_recruitment = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Recruitment WHO"))
+    who_completed_recruitment = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("Completed for WHO")
+    )
+    unicef_recruitment = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Recruitment UNICEF"))
+    unicef_completed_recruitment = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("Completed for UNICEF")
+    )
+
+    payload = models.JSONField()
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 

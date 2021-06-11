@@ -8,7 +8,12 @@ import isEqual from 'lodash/isEqual';
 import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import { InnerDrawer, injectIntl, commonStyles } from 'bluesquare-components';
+import {
+    InnerDrawer,
+    injectIntl,
+    commonStyles,
+    Comment,
+} from 'bluesquare-components';
 // import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { locationsLimit } from '../../../constants/filters';
 
@@ -215,6 +220,13 @@ class OrgunitsMap extends Component {
                                             setFiltersUpdated()
                                         }
                                         filters={[locationsLimit()]}
+                                    />
+                                </Box>
+                                <Box px={2} component="div">
+                                    <Comment
+                                        author="Son"
+                                        content="Hello, I'm a comment"
+                                        postingTime="just now"
                                     />
                                 </Box>
                             </>

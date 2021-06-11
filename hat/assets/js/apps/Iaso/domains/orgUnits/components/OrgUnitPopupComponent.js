@@ -165,6 +165,14 @@ class OrgUnitPopupComponent extends Component {
                                             />
                                         </Link>
                                     </Button>
+                                    <Button
+                                        className={classes.marginLeft}
+                                        variant="outlined"
+                                        size="small"
+                                        color="primary"
+                                    >
+                                        Add comment
+                                    </Button>
                                 </Grid>
                             </Box>
                         </CardContent>

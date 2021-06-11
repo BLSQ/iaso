@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 from django.utils.translation import gettext as _
 from uuid import uuid4
 from iaso.models import Group
@@ -232,7 +231,7 @@ class Preparedness(models.Model):
     regional_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Regional Score"))
     district_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("District Score"))
 
-    payload = JSONField()
+    payload = models.JSONField()
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
@@ -254,7 +253,7 @@ class Surge(models.Model):
         max_digits=10, decimal_places=2, verbose_name=_("Completed for UNICEF")
     )
 
-    payload = JSONField()
+    payload = models.JSONField()
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 

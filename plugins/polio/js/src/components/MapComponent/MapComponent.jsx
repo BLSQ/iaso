@@ -1,5 +1,5 @@
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 
 import 'leaflet/dist/leaflet.css';
 import { useMapContext } from './Context';
@@ -10,7 +10,7 @@ const InnerMap = ({ onClick }) => {
 
     useEffect(() => {
         map.fitBounds(centeredShape.getBounds());
-    }, []);
+    }, [centeredShape]);
 
     return (
         <>

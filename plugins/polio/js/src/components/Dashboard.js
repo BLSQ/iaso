@@ -23,10 +23,7 @@ import {
 } from '@material-ui/core';
 import merge from 'lodash.merge';
 import AddIcon from '@material-ui/icons/Add';
-import DeleteIcon from '@material-ui/icons/Delete';
 import { MapContainer } from './MapComponent';
-import { TableHeader } from './Table/TableHeader';
-import { TableCell } from './Table/TableCell';
 
 import {
     DateInput,
@@ -303,7 +300,7 @@ const RiskAssessmentForm = () => {
                 org_units,
             });
         },
-        [group],
+        [group, setFieldValue],
     );
 
     const wastageRate = 0.26;

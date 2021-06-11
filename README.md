@@ -326,6 +326,27 @@ This is done via your host, which is why you will need to change the IP in .env 
 
 TODO: This setup should be simplified a bit
 
+Database restore and dump
+-------------------------
+
+To create a copy of your iaso database in a file (dump) you can use:
+```
+docker-compose exec db pg_dump -U postgres iaso  -Fc > iaso.dump
+```
+
+The dumpfile will be created on your host. The `-Fc` meant it will use an optimised Postgres format (which take less place). If you want the plain sql command use `-Fp`
+
+To restore a dump file that you made or that somebody sent you:
+```
+docker-compose exec db psql -U postgres -c "create database iaso5"
+ cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 /dev/stdin
+```
+
+This will put the data in a database called iaso5. You can choose in your .env file which database is used by editing
+the `RDS_DB_NAME` settings.
+
+
+
 Contributing
 ============
 

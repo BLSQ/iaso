@@ -13,6 +13,7 @@ LINKS = _("Correspondances sources")
 USERS = _("Utilisateurs")
 PROJECTS = _("Projets")
 SOURCES = _("Sources")
+TASKS = _("Tâches")
 
 
 class CustomPermissionSupport(models.Model):
@@ -26,6 +27,7 @@ class CustomPermissionSupport(models.Model):
         "iaso_users",
         "iaso_projects",
         "iaso_sources",
+        "iaso_data_tasks",
     ]
 
     class Meta:
@@ -45,4 +47,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_users", USERS),
             ("iaso_projects", PROJECTS),
             ("iaso_sources", SOURCES),
+            ("iaso_data_tasks", TASKS),
         )

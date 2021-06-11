@@ -8,7 +8,6 @@ from django.db import models, transaction
 from django.core.paginator import Paginator
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.contrib.postgres.fields import JSONField
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
@@ -220,7 +219,7 @@ class AlgorithmRun(models.Model):
     ended_at = models.DateTimeField(null=True, blank=True)
     algorithm = models.ForeignKey(MatchingAlgorithm, on_delete=models.CASCADE)
     launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    result = JSONField(null=True, blank=True)
+    result = models.JSONField(null=True, blank=True)
     finished = models.BooleanField(default=False)
     version_1 = models.ForeignKey(
         SourceVersion,
@@ -273,11 +272,11 @@ class Task(models.Model):
     end_value = models.IntegerField(default=0)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    result = JSONField(null=True, blank=True)
+    result = models.JSONField(null=True, blank=True)
     status = models.CharField(choices=STATUS_TYPE_CHOICES, max_length=40, default=QUEUED)
     name = models.TextField()
-    params = JSONField(null=True, blank=True)
-    queue_answer = JSONField(null=True, blank=True)
+    params = models.JSONField(null=True, blank=True)
+    queue_answer = models.JSONField(null=True, blank=True)
     progress_message = models.TextField(null=True, blank=True)
     should_be_killed = models.BooleanField(default=False)
 
@@ -496,7 +495,7 @@ class MappingVersion(models.Model):
         blank=True,
     )
     name = models.TextField()
-    json = JSONField()
+    json = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -760,7 +759,7 @@ class Instance(models.Model):
         related_name="instances",
     )
     project = models.ForeignKey("Project", blank=True, null=True, on_delete=models.DO_NOTHING)
-    json = JSONField(null=True, blank=True)
+    json = models.JSONField(null=True, blank=True)
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
@@ -1031,9 +1030,9 @@ class Profile(models.Model):
 
 class ExportRequest(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
-    params = JSONField(null=True, blank=True)
+    params = models.JSONField(null=True, blank=True)
     launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    result = JSONField(null=True, blank=True)
+    result = models.JSONField(null=True, blank=True)
 
     finished = models.BooleanField(default=False)
 
@@ -1058,8 +1057,8 @@ class ExportRequest(models.Model):
 
 class ExportLog(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
-    sent = JSONField(null=True, blank=True)
-    received = JSONField(null=True, blank=True)
+    sent = models.JSONField(null=True, blank=True)
+    received = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     http_status = models.IntegerField(null=True, blank=True)

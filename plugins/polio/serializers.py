@@ -1,5 +1,6 @@
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from django.db.models import fields
+from django.db.transaction import atomic
 from rest_framework import serializers
 from iaso.models import Group, OrgUnit
 from .models import Preparedness, Round, Campaign
@@ -74,6 +75,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
 
+    @atomic
     def create(self, validated_data):
         round_one_data = validated_data.pop("round_one")
         round_two_data = validated_data.pop("round_two")
@@ -100,6 +102,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             Preparedness.objects.create(campaign=campaign, **preparedness_data)
         return campaign
 
+    @atomic
     def update(self, instance, validated_data):
         round_one_data = validated_data.pop("round_one")
         round_two_data = validated_data.pop("round_two")

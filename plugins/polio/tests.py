@@ -146,7 +146,7 @@ class PolioAPITestCase(APITestCase):
                 "round_one": {},
                 "round_two": {},
                 "obr_name": "campaign with org units",
-                "group": {"name": "hidden group", "org_units": map(lambda org_unit: org_unit.id, self.org_units)},
+                "group": {"name": "hidden group", "org_units": list(map(lambda org_unit: org_unit.id, self.org_units))},
             },
             format="json",
         )
@@ -185,7 +185,7 @@ class PolioAPITestCase(APITestCase):
                 "round_one": {},
                 "round_two": {},
                 "obr_name": "campaign with org units",
-                "group": {"name": "hidden group", "org_units": map(lambda org_unit: org_unit.id, self.org_units)},
+                "group": {"name": "hidden group", "org_units": list(map(lambda org_unit: org_unit.id, self.org_units))},
             },
             format="json",
         )

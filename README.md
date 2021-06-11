@@ -207,6 +207,20 @@ you can then login through <http://127.0.0.1:8081/dashboard> with :
 
  -   user : testemail2.35.3
  -   password: testemail2.35.3
+
+### 11. Activating the Polio plugin
+
+Create a file `plugins/polio/js/.env` with the content
+
+```env
+SKIP_PREFLIGHT_CHECK=true
+PUBLIC_URL=/static/polio
+APP_ENV=local%
+```
+
+in your root .env set
+```PLUGIN_POLIO_ENABLED=true```
+
  
 Run commands inside the docker
 -------------------------------

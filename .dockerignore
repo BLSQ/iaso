@@ -66,6 +66,13 @@ target/
 __pycache__/
 local_settings.py
 db.sqlite3
-media
 
+# data that get mounted
+media/
+
+# Node modules
 node_modules/
+plugins/polio/js/node_modules/
+
+# Beanstalk for aws
+.elasticbeanstalk/

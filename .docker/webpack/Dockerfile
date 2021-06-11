@@ -3,7 +3,7 @@ ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app
 
-RUN apt-get update || : && apt-get install -y \
+RUN apt-get update && apt-get install -y \
     python \
     git \
     build-essential \
@@ -12,7 +12,8 @@ RUN apt-get update || : && apt-get install -y \
 COPY package.json .
 COPY package-lock.json .
 
-RUN npm i
+# ci install the exact version of package, compared to install which might a bump minor version
+RUN npm install
 
 ADD hat/ hat/ 
 ADD plugins/ plugins/ 

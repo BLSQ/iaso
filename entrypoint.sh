@@ -47,16 +47,8 @@ case "$1" in
   "gen_docs" )
     ./scripts/gen_docs.sh
   ;;
-  "start" )
-    ./scripts/enable_plugins.sh
-    ./manage.py compilemessages -l fr
-    ./manage.py migrate --noinput
-    ./manage.py collectstatic --noinput
-    ./scripts/start_web.sh
-  ;;
   "start_dev" )
     export DEV_SERVER=true
-    export SHOW_DEBUG_TOOLBAR=true
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate --noinput
     ./manage.py runserver 0.0.0.0:8081

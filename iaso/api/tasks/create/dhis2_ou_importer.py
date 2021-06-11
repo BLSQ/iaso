@@ -1,10 +1,10 @@
 from rest_framework.response import Response
 
-from ..tasks.dhis2_ou_importer import dhis2_ou_importer
-from .tasks import TaskSerializer
-from ..models import DataSource, SourceVersion, OrgUnit
+from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
+from iaso.api.tasks import TaskSerializer
+from iaso.models import DataSource, SourceVersion, OrgUnit
 from rest_framework import viewsets, permissions, serializers
-from .common import HasPermission
+from iaso.api.common import HasPermission
 import logging
 
 logger = logging.getLogger(__name__)

@@ -323,6 +323,7 @@ class OrgUnit(models.Model):
             res["source"] = self.version.data_source.name if self.version else None
             res["source_id"] = self.version.data_source.id if self.version else None
             res["version"] = self.version.number if self.version else None
+
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
 

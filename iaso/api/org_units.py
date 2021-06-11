@@ -1,28 +1,27 @@
-from django.db import transaction
-from django.utils import timezone
-from rest_framework import viewsets, status, permissions
+import json
+from copy import deepcopy
+from time import gmtime, strftime
+
+from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry
-from rest_framework.response import Response
-from rest_framework.decorators import action
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.db.models import Value, IntegerField, Count
+from django.http import StreamingHttpResponse, HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import gettext as _
+from rest_framework import viewsets, status, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.audit import models as audit_models
 from iaso.api.common import safe_api_import
 from iaso.gpkg import org_units_to_gpkg
-from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, DataSource
-from django.contrib.gis.geos import Point
-
-from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404
-
+from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form
 from iaso.models.org_unit_search import build_org_units_queryset
 from iaso.utils import geojson_queryset
-from django.db.models import Q
-from copy import deepcopy
-from hat.audit import models as audit_models
-from time import gmtime, strftime
-from django.http import StreamingHttpResponse, HttpResponse
-from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
-import json
-from django.db.models import Value, IntegerField
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
@@ -87,7 +86,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "name").split(",")
-
+        order_by_instance_count = "instances_count" in order or "-instances_count" in order
         csv_format = bool(request.query_params.get("csv"))
         xlsx_format = bool(request.query_params.get("xlsx"))
         gpkg_format = bool(request.query_params.get("gpkg"))
@@ -98,10 +97,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
         small_search = request.GET.get("smallSearch", None)
         direct_children = request.GET.get("onlyDirectChildren", False)
 
-        queryset.prefetch_related("group_set")
-
         if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
+
+        # Annotate number of instance per org unit to sort by it
+        annotate_instance_count = order_by_instance_count or is_export
 
         searches = request.GET.get("searches", None)
         counts = []
@@ -114,7 +114,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
             base_queryset = queryset
             for search in json.loads(searches):
                 additional_queryset = build_org_units_queryset(
-                    base_queryset, search, profile, is_export, forms
+                    base_queryset,
+                    search,
+                    profile,
+                    is_export,
+                    forms,
+                    annotate_instance_count,
                 ).annotate(search_index=Value(search_index, IntegerField()))
                 if search_index == 0:
                     queryset = additional_queryset
@@ -132,15 +137,57 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 limit = int(limit)
                 page_offset = int(page_offset)
                 paginator = Paginator(queryset, limit)
-                res = {"count": paginator.count}
-                res["counts"] = counts
+                res = {"count": paginator.count, "counts": counts}
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
+
+                queryset = page.object_list
+                # To improve performance only add instances counts when we already have limited the OrgUnits for faster
+                # queries. Except if already done
+                if not annotate_instance_count:
+                    queryset = queryset.annotate(
+                        instances_count=Count(
+                            "instance",
+                            filter=(
+                                ~Q(instance__file="")
+                                & ~Q(instance__device__test_device=True)
+                                & ~Q(instance__deleted=True)
+                            ),
+                        )
+                    )
+
+                queryset = queryset.prefetch_related("groups")
+                queryset = queryset.prefetch_related("groups__source_version")
+                queryset = queryset.prefetch_related("version")
+                queryset = queryset.prefetch_related("version__data_source")
+                queryset = queryset.prefetch_related("version__data_source__credentials")
+                queryset = queryset.prefetch_related("parent")
+                queryset = queryset.prefetch_related("parent__parent")
+
+                queryset = queryset.prefetch_related("parent__org_unit_type")
+                queryset = queryset.prefetch_related("parent__parent__org_unit_type")
+                queryset = queryset.prefetch_related("parent__parent__parent__org_unit_type")
+
+                queryset = queryset.prefetch_related("parent__version")
+                queryset = queryset.prefetch_related("parent__parent__version")
+                queryset = queryset.prefetch_related("parent__parent__parent__version")
+
+                queryset = queryset.prefetch_related("parent__version__data_source")
+                queryset = queryset.prefetch_related("parent__parent__version__data_source")
+                queryset = queryset.prefetch_related("parent__parent__parent__version__data_source")
+
+                queryset = queryset.prefetch_related("parent__version__data_source__credentials")
+                queryset = queryset.prefetch_related("parent__parent__version__data_source__credentials")
+                queryset = queryset.prefetch_related("parent__parent__parent__version__data_source__credentials")
+
+                queryset = queryset.prefetch_related("org_unit_type")
+                queryset = queryset.prefetch_related("org_unit_type__sub_unit_types")
+
                 if small_search:
-                    res["orgunits"] = map(lambda x: x.as_small_dict(), page.object_list)
+                    res["orgunits"] = map(lambda x: x.as_small_dict(), queryset)
                 else:
-                    res["orgunits"] = map(lambda x: x.as_dict_with_parents(light=False), page.object_list)
+                    res["orgunits"] = map(lambda x: x.as_dict_with_parents(light=False), queryset)
 
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()

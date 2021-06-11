@@ -1,5 +1,7 @@
 import sqlite3
+from copy import deepcopy
 from typing import Optional, Dict, List, Tuple, Union
+from hat.audit import models as audit_models
 
 import fiona
 from django.contrib.gis.geos import Point, MultiPolygon, Polygon
@@ -76,7 +78,7 @@ def create_or_update_group(group: Group, ref: str, name: str, version: SourceVer
 
 
 def create_or_update_orgunit(
-    orgunit: OrgUnit,
+    orgunit: Optional[OrgUnit],
     data: OrgUnitData,
     source_version: SourceVersion,
     validation_status: str,
@@ -87,6 +89,9 @@ def create_or_update_orgunit(
 
     if not orgunit:
         orgunit = OrgUnit()
+    else:
+        # Make a copy so we can do the audit log, otherwise we would edit in place
+        orgunit = deepcopy(orgunit)
 
     orgunit.name = props["name"]
     orgunit.org_unit_type = data["type"]
@@ -150,8 +155,11 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
         cur = conn.cursor()
         rows = cur.execute("select ref, name from groups")
         for ref, name in rows:
+            # Log modification done on group
+            old_group = deepcopy(ref_group.get(ref))
             group = create_or_update_group(ref_group.get(ref), ref, name, version)
             ref_group[get_ref(group)] = group
+            audit_models.log_modification(old_group, group, source=audit_models.GPKG_IMPORT)
 
     # index all existing OrgUnit per ref
     existing_orgunits = version.orgunit_set.all()  # Maybe add a only?
@@ -162,6 +170,7 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
 
     # The child may be created before the parent so we keep a list to update after creating them all
     to_update_with_parent: List[Tuple[str, str]] = []
+    modifications_to_log: List[Tuple[OrgUnit, OrgUnit]] = []
     total_org_unit = 0
 
     for layer_name in layers_name:
@@ -187,6 +196,8 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
 
             parent_ref = row["properties"]["parent_ref"]
             to_update_with_parent.append((ref, parent_ref))
+            # we will log the modification after we set the parent
+            modifications_to_log.append((existing_ou, orgunit))
 
             total_org_unit += 1
 
@@ -199,3 +210,7 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
         parent_ou = ref_ou[parent_ref] if parent_ref else None
         ou.parent = parent_ou
         ou.save()
+
+    for old_ou, new_ou in modifications_to_log:
+        # Possible optimisation, crate a bulk update
+        audit_models.log_modification(old_ou, new_ou, source=audit_models.GPKG_IMPORT)

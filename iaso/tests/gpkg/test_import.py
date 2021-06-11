@@ -3,6 +3,7 @@ from django.contrib.gis.geos import Point
 from iaso import models as m
 from iaso.gpkg.import_gpkg import import_gpkg_file
 from iaso.test import TestCase
+from hat.audit.models import Modification
 
 
 class GPKGImport(TestCase):
@@ -12,6 +13,8 @@ class GPKGImport(TestCase):
         cls.project = m.Project.objects.create(name="Project 1", account=cls.account, app_id="test_app_id")
 
     def test_minimal_import(self):
+        self.assertEqual(0, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(0, Modification.objects.filter(content_type__model="group").count())
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
             project_id=self.project.id,
@@ -22,6 +25,9 @@ class GPKGImport(TestCase):
         self.assertEqual(m.OrgUnit.objects.all().count(), 3)
         self.assertEqual(m.Group.objects.all().count(), 2)
         self.assertEqual(m.OrgUnitType.objects.count(), 3)
+
+        self.assertEqual(3, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(2, Modification.objects.filter(content_type__model="group").count())
 
         root = m.OrgUnit.objects.get(parent=None)
         self.assertEqual(root.name, "District Betare Oya")
@@ -85,9 +91,16 @@ class GPKGImport(TestCase):
             version_number=version_number,
             validation_status="new",
         )
+
         self.assertEqual(m.OrgUnit.objects.all().count(), 3)
         self.assertEqual(m.Group.objects.all().count(), 2)
         self.assertEqual(m.OrgUnitType.objects.count(), 3)
+
+        self.assertEqual(3, Modification.objects.filter(content_type__model="orgunit").count())
+
+        self.assertEqual(
+            2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
+        )
 
         ou.refresh_from_db()
         self.assertEqual(ou.name, "District Betare Oya")
@@ -96,6 +109,13 @@ class GPKGImport(TestCase):
         self.assertEqual(ou.geom.geom_type, "MultiPolygon")
         self.assertQuerysetEqual(ou.groups.all(), [])
 
+        mods = Modification.objects.filter(content_type__model="orgunit")
+        mod = mods.get(object_id=ou.id)
+        old = mod.past_value[0]
+        new = mod.new_value[0]
+        self.assertEqual(old["fields"]["name"], "bla")
+        self.assertEqual(new["fields"]["name"], "District Betare Oya")
+
         g.refresh_from_db()
         self.assertEqual(g.name, "Group B")
 
@@ -103,6 +123,18 @@ class GPKGImport(TestCase):
         self.assertQuerysetEqual(
             ou2.groups.all().order_by("source_ref"), ["<Group: Group A | hey  2 >", "<Group: Group B | hey  2 >"]
         )
+        mod = mods.get(object_id=ou2.id)
+        old = mod.past_value[0]
+        new = mod.new_value[0]
+        self.assertEqual(old["fields"]["name"], "bla2")
+        self.assertEqual(new["fields"]["name"], "CSI de Garga-Sarali")
+
+        ou3 = m.OrgUnit.objects.get(source_ref="cc5421f2-2003-4f01-be4f-5f64463ab456")
+        mod = mods.get(object_id=ou3.id)
+        self.assertEqual(mod.past_value, [])
+        new = mod.new_value[0]
+
+        self.assertEqual(new["fields"]["name"], "AS Tongo Gadima")
 
     def test_minimal_import_dont_modify_if_diff_source(self):
         version_number = 1
@@ -129,6 +161,11 @@ class GPKGImport(TestCase):
         self.assertEqual(m.Group.objects.all().count(), 4)
         self.assertEqual(m.OrgUnitType.objects.count(), 3)
 
+        self.assertEqual(3, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(
+            2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
+        )
+
         ou.refresh_from_db()
         self.assertEqual(ou.name, "bla")
         self.assertEqual(ou.source_ref, "cdd3e94c-3c2a-4ab1-8900-be97f82347de")
@@ -147,9 +184,16 @@ class GPKGImport(TestCase):
             version_number=1,
             validation_status="new",
         )
+
         self.assertEqual(m.OrgUnitType.objects.count(), 3)
         self.assertEqual(m.OrgUnit.objects.all().count(), 4)
         self.assertEqual(m.Group.objects.all().count(), 2)
+
+        self.assertEqual(4, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(
+            2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
+        )
+
         ou = m.OrgUnit.objects.get(source_ref="empty_geom")
         self.assertEqual(ou.name, "empty_geom")
 
@@ -168,6 +212,12 @@ class GPKGImport(TestCase):
         self.assertEqual(m.OrgUnit.objects.all().count(), 4)
         self.assertEqual(m.Group.objects.all().count(), 2)
 
+        self.assertEqual(4, Modification.objects.filter(content_type__model="orgunit").count())
+
+        self.assertEqual(
+            2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
+        )
+
         out.refresh_from_db()
         self.assertEqual(out.projects.count(), 1)
 
@@ -185,6 +235,11 @@ class GPKGImport(TestCase):
         self.assertEqual(m.OrgUnitType.objects.count(), 4)
         self.assertEqual(m.OrgUnit.objects.all().count(), 4)
         self.assertEqual(m.Group.objects.all().count(), 2)
+
+        self.assertEqual(4, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(
+            2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
+        )
 
         out.refresh_from_db()
         self.assertEqual(out.projects.count(), 1)
@@ -218,6 +273,11 @@ class GPKGImportSimplifiedGroup(TestCase):
         self.assertEqual(m.OrgUnitType.objects.count(), 3)
         self.assertEqual(m.OrgUnit.objects.all().count(), 4)
         self.assertEqual(m.Group.objects.all().count(), 3)
+
+        self.assertEqual(4, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(
+            2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
+        )
 
         ou = m.OrgUnit.objects.get(source_ref="3c24c6ca-3012-4d38-abe8-6d620fe1deb8")
         self.assertEqual(ou.groups.count(), 3)

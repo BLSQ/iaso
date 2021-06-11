@@ -49,7 +49,7 @@ Each layer table must have the following columns:
 
 ## Group table
 
-An additional table `groups`  must be present. It represents
+An additional table `groups` must be present. It represents
 the (OrgUnit linked) Groups to create and/or update.  This is an Attribute table in gpkg parlance as it doesn't contain a geometry.
 
 Mandatory columns:
@@ -60,10 +60,9 @@ Other tables and columns may be present and will be ignored (as long as they don
 
 ### Problematic input
 
-Don't do those please
+These input are forbidden:
 
-* `-` in orgunit type
-* `,` in group_ref
+* `,` in group.ref
 
 ## Examples
 
@@ -86,3 +85,23 @@ OrgUnit without geographical information are also contained in the export.
 
 Note that if a OrgUnit has both a geom (polygon) and a location (point),
 the geom will be exported as it take priority.
+
+Contributing
+============
+
+Diffing GPKG file
+-----------------
+
+To view the difference between GPKG file I recommend the use of sqldiff included with sqlite3.
+
+Example usage:
+```
+# cd iaso/tests/fixtures
+# sqldiff gpkg/minimal_simplified.gpkg gpkg/minimal_simplified_group.gpkg
+UPDATE "level-5-FOSA" SET group_refs='group_b, group_a, group_not_in_gpkg' WHERE fid=1;
+```
+
+Or with git, to see the different with current commit:
+```
+git show HEAD:./minimal.gpkg > /tmp/sqldiff.gpkg && sqldiff /tmp/sqldiff.gpkg ./minimal.gpkg
+```

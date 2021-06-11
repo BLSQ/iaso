@@ -1,6 +1,5 @@
 import operator
 import typing
-from copy import deepcopy
 from functools import reduce
 from django.db import models, transaction
 from django.contrib.postgres.indexes import GistIndex
@@ -10,8 +9,7 @@ from django.contrib.auth.models import User, AnonymousUser
 from django_ltree.fields import PathField
 from django.utils.translation import ugettext_lazy as _
 
-from hat.audit import models as audit_models
-from .base import Group, SourceVersion
+from .base import SourceVersion
 from .project import Project
 
 
@@ -70,13 +68,18 @@ class OrgUnitType(models.Model):
         return res
 
 
+# noinspection PyTypeChecker
 class OrgUnitQuerySet(models.QuerySet):
-    def children(self, org_unit):
+    def children(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
+        """Only the direct descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1)
 
-    def hierarchy(self, org_unit):
+    def hierarchy(
+        self, org_unit: typing.Union[typing.List["OrgUnit"], "OrgUnitQuerySet", "OrgUnit"]
+    ) -> "OrgUnitQuerySet":
+        """The OrgunitS and all their descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
         if isinstance(org_unit, (list, models.QuerySet)):
@@ -86,16 +89,20 @@ class OrgUnitQuerySet(models.QuerySet):
 
         return self.filter(query)
 
-    def descendants(self, org_unit):
+    def descendants(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
+        """All the descendent, org unit or not"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
 
-    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: str):
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str]
+    ) -> "OrgUnitQuerySet":
+        """Restrict to the orgunits the User can see, used mainly in the API"""
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
-        queryset = self.all()
+        queryset: OrgUnitQuerySet = self.all()
 
         if user and user.is_authenticated:
             account = user.iaso_profile.account
@@ -127,32 +134,6 @@ class OrgUnitQuerySet(models.QuerySet):
                 return self.none()
 
         return queryset
-
-
-class OrgUnitManager(models.Manager):
-    def update_single_unit_from_bulk(
-        self, user, org_unit, *, validation_status, org_unit_type_id, groups_ids_added, groups_ids_removed
-    ):
-        """Used within the context of a bulk operation"""
-
-        original_copy = deepcopy(org_unit)
-        if validation_status is not None:
-            org_unit.validation_status = validation_status
-        if org_unit_type_id is not None:
-            org_unit_type = OrgUnitType.objects.get(pk=org_unit_type_id)
-            org_unit.org_unit_type = org_unit_type
-        if groups_ids_added is not None:
-            for group_id in groups_ids_added:
-                group = Group.objects.get(pk=group_id)
-                group.org_units.add(org_unit)
-        if groups_ids_removed is not None:
-            for group_id in groups_ids_removed:
-                group = Group.objects.get(pk=group_id)
-                group.org_units.remove(org_unit)
-
-        org_unit.save()
-
-        audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API_BULK, user=user)
 
 
 class OrgUnit(models.Model):
@@ -193,7 +174,7 @@ class OrgUnit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()
+    objects = OrgUnitQuerySet.as_manager()
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]

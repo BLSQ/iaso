@@ -38,26 +38,15 @@ jobs:
            pip install awsebcli --upgrade
            pip install boto3 --upgrade
 
-#      - name: Install GDAL
-#        run: sudo apt install gdal-bin
-#
-#      - name: Install Python dependencies
-#        run: |
-#          python -m pip install --upgrade pip
-#          pip install -r requirements.txt
-
       - name: Environment info
         run: |
           node --version
           npm --version
           pip list
 
-      - name: npm install (and test)
+      - name: npm install
         run: |
-                npm i
-                # npm t
-        env:
-                CI: true
+          npm install
 
       - name: npm build
         run: |
@@ -69,8 +58,14 @@ jobs:
           git diff-index --quiet HEAD || echo "we should commit something 2"
           echo committing---------
           git add hat/assets/webpack/
+
+          PUBLIC_URL=https://iaso-campaigns.s3.amazonaws.com/iasostatics/ SKIP_PREFLIGHT_CHECK=true PLUGIN_POLIO_ENABLED='true' bash ./scripts/enable_plugins.sh
+          git add --force plugins/polio/static/
+          git add --force plugins/polio/templates/polio/index.html
+
           git diff-index --quiet HEAD || (git checkout -b github/assets-${GITHUB_RUN_NUMBER} && git commit -m "Build assets github action ${GITHUB_RUN_NUMBER}" && git push -u origin) || true
         env:
+          CI: false
           GIT_AUTHOR_NAME: Github Bot
           GIT_COMMITTER_NAME: Github Bot
           EMAIL: edarchis@bluesquarehub.com

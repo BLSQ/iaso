@@ -1,5 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useTable } from 'react-table';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import {
+    Table,
+    textPlaceholder,
+    IconButton as IconButtonComponent,
+    ColumnText,
+    LoadingSpinner,
+} from 'bluesquare-components';
+import 'react-table/react-table.css';
 
 import {
     Box,
@@ -9,22 +16,17 @@ import {
     DialogContent,
     DialogTitle,
     Grid,
-    IconButton,
     Tab,
     Tabs,
     Typography,
 } from '@material-ui/core';
 import merge from 'lodash.merge';
-import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
-import DeleteIcon from '@material-ui/icons/Delete';
-
-import { TableHeader } from './Table/TableHeader';
-import { TableCell } from './Table/TableCell';
 
 import {
     DateInput,
     ResponsibleField,
+    PaymentField,
     Select,
     StatusField,
     TextInput,
@@ -40,16 +42,32 @@ import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
 import { PreparednessForm } from '../forms/PreparednessForm';
+import MESSAGES from '../constants/messages';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
-    ended_at: yup.date().nullable(),
+    ended_at: yup
+        .date()
+        .nullable()
+        .min(yup.ref('started_at'), "end date can't be before start date"),
     mop_up_started_at: yup.date().nullable(),
-    mop_up_ended_at: yup.date().nullable(),
+    mop_up_ended_at: yup
+        .date()
+        .nullable()
+        .min(
+            yup.ref('mop_up_started_at'),
+            "end date can't be before start date",
+        ),
     im_started_at: yup.date().nullable(),
-    im_ended_at: yup.date().nullable(),
+    im_ended_at: yup
+        .date()
+        .nullable()
+        .min(yup.ref('im_started_at'), "end date can't be before start date"),
     lqas_started_at: yup.date().nullable(),
-    lqas_ended_at: yup.date().nullable(),
+    lqas_ended_at: yup
+        .date()
+        .nullable()
+        .min(yup.ref('lqas_started_at'), "end date can't be before start date"),
     target_population: yup.number().nullable().min(0).integer(),
     cost: yup.number().nullable().min(0).integer(),
 });
@@ -86,14 +104,6 @@ const schema = yup.object().shape({
     round_one: round_shape,
     round_two: round_shape,
 });
-
-const RowAction = ({ icon: Icon, onClick }) => {
-    return (
-        <IconButton onClick={onClick}>
-            <Icon />
-        </IconButton>
-    );
-};
 
 const PageAction = ({ icon: Icon, onClick, children }) => {
     const classes = useStyles();
@@ -156,6 +166,12 @@ const BaseInfoForm = () => {
                         className={classes.input}
                         label="Description"
                         name={'description'}
+                        component={TextInput}
+                    />
+                    <Field
+                        className={classes.input}
+                        label="GPEI Coordinator"
+                        name={'gpei_coordinator'}
                         component={TextInput}
                     />
                     <Field
@@ -231,13 +247,13 @@ const DetectionForm = () => {
                     <Field
                         label={'PV2 Notification'}
                         fullWidth
-                        name={'pv2_notified_at'}
+                        name={'pv_notified_at'}
                         component={DateInput}
                     />
                     <Field
-                        label={'cVDPV2 Notifiation'}
+                        label={'cVDPV2 Notification'}
                         fullWidth
-                        name={'cvdpv2_notified_at'}
+                        name={'cvdpv_notified_at'}
                         component={DateInput}
                     />
                 </Grid>
@@ -249,9 +265,18 @@ const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { values } = useFormikContext();
 
-    const targetPopulationTotal =
-        parseInt(defaultToZero(values?.round_one?.target_population ?? 0)) +
-        parseInt(defaultToZero(values?.round_two?.target_population ?? 0));
+    const wastageRate = 0.26;
+
+    const round1Doses = parseInt(
+        defaultToZero(values?.round_one?.target_population ?? 0),
+    );
+    const round2Doses = parseInt(
+        defaultToZero(values?.round_two?.target_population ?? 0),
+    );
+
+    const vialsRequested = Math.ceil(
+        ((round1Doses + round2Doses) / 20) * (1 / (1 - wastageRate)),
+    );
 
     return (
         <>
@@ -267,6 +292,14 @@ const RiskAssessmentForm = () => {
                         <Field
                             name={'risk_assessment_responsible'}
                             component={ResponsibleField}
+                        />
+                    </Grid>
+                    <Grid xs={12} md={6} item>
+                        <Field
+                            label="Verification Score (/20)"
+                            name={'verification_score'}
+                            component={TextInput}
+                            className={classes.input}
                         />
                     </Grid>
                 </Grid>
@@ -321,9 +354,7 @@ const RiskAssessmentForm = () => {
                     />
                     <Typography>
                         Vials Requested{' '}
-                        {Number.isNaN(targetPopulationTotal)
-                            ? 0
-                            : targetPopulationTotal}
+                        {Number.isNaN(vialsRequested) ? 0 : vialsRequested}
                     </Typography>
                 </Grid>
             </Grid>
@@ -336,9 +367,35 @@ const BudgetForm = () => {
 
     const { values } = useFormikContext();
 
+    const round1Cost = parseInt(defaultToZero(values?.round_one?.cost ?? 0));
+    const round2Cost = parseInt(defaultToZero(values?.round_two?.cost ?? 0));
+
+    const round1Population = parseInt(
+        defaultToZero(values?.round_one?.target_population ?? 0),
+    );
+    const round2Population = parseInt(
+        defaultToZero(values?.round_two?.target_population ?? 0),
+    );
+
+    const calculateRound1 = round1Cost > 0 && round1Population > 0;
+    const calculateRound2 = round2Cost > 0 && round2Population > 0;
+
     const totalCost =
-        parseInt(defaultToZero(values?.round_one?.cost ?? 0)) *
-        parseInt(defaultToZero(values?.round_one?.target_population ?? 0));
+        (calculateRound1 ? round1Cost : 0) + (calculateRound2 ? round2Cost : 0);
+
+    const totalPopulation =
+        (calculateRound1 ? round1Population : 0) +
+        (calculateRound2 ? round2Population : 0);
+
+    const costRound1PerChild = calculateRound1
+        ? (round1Cost / round1Population).toFixed(2)
+        : 0;
+
+    const costRound2PerChild = calculateRound2
+        ? (round2Cost / round2Population).toFixed(2)
+        : 0;
+
+    const totalCostPerChild = (totalCost / totalPopulation).toFixed(2);
 
     return (
         <>
@@ -354,6 +411,41 @@ const BudgetForm = () => {
                         />
                     </Grid>
                 </Grid>
+
+                <Grid xs={12} md={6} item>
+                    <Box mb={2}>
+                        <Field
+                            name={'payment_mode'}
+                            component={PaymentField}
+                            fullWidth
+                        />
+                    </Box>
+                    <Field
+                        label={'Disbursed to CO (WHO)'}
+                        name={'who_disbursed_to_co_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'Disbursed to MOH (WHO)'}
+                        name={'who_disbursed_to_moh_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'Disbursed to CO (UNICEF)'}
+                        name={'unicef_disbursed_to_co_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={'Disbursed to MOH (UNICEF)'}
+                        name={'unicef_disbursed_to_moh_at'}
+                        component={DateInput}
+                        fullWidth
+                    />
+                </Grid>
+
                 <Grid item md={6}>
                     <Field
                         label={'1st Draft Submission'}
@@ -409,8 +501,20 @@ const BudgetForm = () => {
                         component={TextInput}
                         className={classes.input}
                     />
+
                     <Typography>
-                        Cost/Child: ${Number.isNaN(totalCost) ? 0 : totalCost}
+                        Cost/Child Round 1: $
+                        {calculateRound1 ? costRound1PerChild : ' -'}
+                    </Typography>
+                    <Typography>
+                        Cost/Child Round 2: $
+                        {calculateRound2 ? costRound2PerChild : ' -'}
+                    </Typography>
+                    <Typography>
+                        Cost/Child Total: $
+                        {calculateRound1 || calculateRound2
+                            ? totalCostPerChild
+                            : ' -'}
                     </Typography>
                 </Grid>
             </Grid>
@@ -452,7 +556,7 @@ const Round1Form = () => {
                 <Box className={classes.round1FormCalculations}>
                     <Typography>
                         Percentage of districts passing LQAS: xx% (xxx passing /
-                        xxx received / xx total)
+                        xxx received / xxx total)
                     </Typography>
                     <Typography>Percentage of missed children: xx%</Typography>
                 </Box>
@@ -467,6 +571,21 @@ const Round1Form = () => {
                 <Field
                     label={'IM End'}
                     name={'round_one.im_ended_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+            </Grid>
+            <Grid xs={12} md={6} item>
+                <Field
+                    label={'LQAS Start'}
+                    name={'round_one.lqas_started_at'}
+                    component={DateInput}
+                    fullWidth
+                />
+
+                <Field
+                    label={'LQAS End'}
+                    name={'round_one.lqas_ended_at'}
                     component={DateInput}
                     fullWidth
                 />
@@ -723,30 +842,39 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
     );
 };
 
+const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE = 1;
+const DEFAULT_ORDER = 'obr_name';
+
 export const Dashboard = () => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
-    const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] = useState(
-        false,
-    );
+    const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
+        useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
-
+    const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
+    const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
+    const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
-    const { data: campaigns = [], status } = useGetCampaigns();
+    const { data: campaigns = [], status } = useGetCampaigns({
+        page,
+        pageSize,
+        order,
+    });
     const { mutate: removeCampaign } = useRemoveCampaign();
 
-    const openCreateEditDialog = () => {
+    const openCreateEditDialog = useCallback(() => {
         setIsCreateEditDialogOpen(true);
-    };
+    },[setIsCreateEditDialogOpen]);
 
     const closeCreateEditDialog = () => {
         setSelectedCampaignId(undefined);
         setIsCreateEditDialogOpen(false);
     };
 
-    const openDeleteConfirmDialog = () => {
+    const openDeleteConfirmDialog = useCallback(() => {
         setIsConfirmDeleteDialogOpen(true);
-    };
+    },[setIsConfirmDeleteDialogOpen]);
 
     const closeDeleteConfirmDialog = () => {
         setIsConfirmDeleteDialogOpen(false);
@@ -760,38 +888,23 @@ export const Dashboard = () => {
         });
     };
 
-    const handleClickEditRow = id => {
+    const handleClickEditRow = useCallback(id => {
         setSelectedCampaignId(id);
         openCreateEditDialog();
-    };
+    },[setSelectedCampaignId,openCreateEditDialog]);
 
-    const handleClickDeleteRow = id => {
+
+    const handleClickDeleteRow = useCallback(id => {
         setSelectedCampaignId(id);
         openDeleteConfirmDialog();
-    };
+    },[setSelectedCampaignId,openDeleteConfirmDialog]);
 
     const handleClickCreateButton = () => {
         setSelectedCampaignId(undefined);
         openCreateEditDialog();
     };
 
-    const tableData = campaigns.map(campaign => ({
-        ...campaign,
-        actions: (
-            <>
-                <RowAction
-                    icon={EditIcon}
-                    onClick={() => handleClickEditRow(campaign.id)}
-                />
-                <RowAction
-                    icon={DeleteIcon}
-                    onClick={() => handleClickDeleteRow(campaign.id)}
-                />
-            </>
-        ),
-    }));
-
-    const selectedCampaign = campaigns.find(
+    const selectedCampaign = campaigns?.campaigns?.find(
         campaign => campaign.id === selectedCampaignId,
     );
 
@@ -800,35 +913,79 @@ export const Dashboard = () => {
             {
                 Header: 'Name',
                 accessor: 'obr_name',
+                Cell: settings => {
+                    return <span>{settings.original.obr_name}</span>;
+                },
             },
             {
                 Header: 'cVDPV2 Notification Date',
                 accessor: 'cvdpv2_notified_at',
+                Cell: settings => {
+                    const text =
+                        settings?.original?.cvdpv2_notified_at ??
+                        textPlaceholder;
+                    return <span>{text}</span>;
+                },
             },
             {
                 Header: 'Status',
                 accessor: 'detection_status',
-            },
-            {
-                Header: 'Duration (days)',
-                accessor: 'duration',
+                Cell: settings => {
+                    return (
+                        <ColumnText text={settings.original.detection_status} />
+                    );
+                },
             },
             {
                 Header: 'Actions',
-                accessor: 'actions',
+                Cell: settings => {
+                    return (
+                        <>
+                            <IconButtonComponent
+                                icon="edit"
+                                tooltipMessage={MESSAGES.edit}
+                                onClick={() =>
+                                    handleClickEditRow(settings.original.id)
+                                }
+                            />
+                            <IconButtonComponent
+                                icon="delete"
+                                tooltipMessage={MESSAGES.delete}
+                                onClick={() =>
+                                    handleClickDeleteRow(settings.original.id)
+                                }
+                            />
+                        </>
+                    );
+                },
             },
         ],
-        [],
+        [handleClickDeleteRow, handleClickEditRow],
     );
 
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        rows,
-        prepareRow,
-    } = useTable({ columns, data: tableData });
+    // The naming is aligned with the names in Table
+    const onTableParamsChange = useCallback(
+        (baseUrl, newParams) => {
+            if (newParams.page !== page) {
+                setPage(newParams.page);
+            }
+            if (newParams.pageSize !== pageSize) {
+                setPageSize(newParams.pageSize);
+            }
+            if (newParams.order !== order) {
+                setOrder(newParams.order);
+            }
+        },
+        [page, pageSize, order],
+    );
 
+    const tableParams = useMemo(() => {
+        return {
+            pageSize,
+            page,
+            order,
+        };
+    }, [pageSize, page, order]);
     return (
         <>
             <CreateEditDialog
@@ -841,8 +998,9 @@ export const Dashboard = () => {
                 onClose={closeDeleteConfirmDialog}
                 onConfirm={handleDeleteConfirmDialogConfirm}
             />
-            <Page title={'Campaigns for DRC'}>
+            <Page title={'Campaigns'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
+                    {status === 'loading' && <LoadingSpinner />}
                     <PageActions>
                         <PageAction
                             icon={AddIcon}
@@ -852,56 +1010,16 @@ export const Dashboard = () => {
                         </PageAction>
                     </PageActions>
                     {status === 'success' && (
-                        <table className={classes.table} {...getTableProps()}>
-                            <thead>
-                                {headerGroups.map(headerGroup => (
-                                    <tr
-                                        className={classes.tableHeader}
-                                        {...headerGroup.getHeaderGroupProps()}
-                                    >
-                                        {headerGroup.headers.map(column => (
-                                            <TableHeader
-                                                {...column.getHeaderProps()}
-                                            >
-                                                {column.render('Header')}
-                                            </TableHeader>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </thead>
-                            <tbody {...getTableBodyProps()}>
-                                {rows.length > 0 ? (
-                                    rows.map((row, rowIndex) => {
-                                        prepareRow(row);
-                                        return (
-                                            <tr
-                                                className={classes.tableRow}
-                                                {...row.getRowProps()}
-                                            >
-                                                {row.cells.map(cell => {
-                                                    return (
-                                                        <TableCell
-                                                            isOdd={rowIndex % 2}
-                                                            {...cell.getCellProps()}
-                                                        >
-                                                            {cell.render(
-                                                                'Cell',
-                                                            )}
-                                                        </TableCell>
-                                                    );
-                                                })}
-                                            </tr>
-                                        );
-                                    })
-                                ) : (
-                                    <tr>
-                                        <TableCell>
-                                            no campaigns available
-                                        </TableCell>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                        <Table
+                            params={tableParams}
+                            count={campaigns.count}
+                            pages={Math.ceil(campaigns.count / pageSize)}
+                            baseUrl={'/polio'}
+                            redirectTo={onTableParamsChange}
+                            columns={columns}
+                            data={campaigns.campaigns}
+                            watchToRender={tableParams}
+                        />
                     )}
                 </Box>
             </Page>

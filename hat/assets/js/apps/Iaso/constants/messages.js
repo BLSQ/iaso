@@ -65,6 +65,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Monitoring',
         id: 'iaso.label.monitoring',
     },
+    dashboard: {
+        defaultMessage: 'Dashboard',
+        id: 'iaso.label.dashboard',
+    },
+    polio: {
+        defaultMessage: 'Polio',
+        id: 'iaso.label.polio',
+    },
 });
 
 export default MESSAGES;

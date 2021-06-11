@@ -175,6 +175,7 @@ class InputComponent extends Component {
                         name={keyValue}
                         onChange={newValue => onChange(keyValue, newValue)}
                         options={options}
+                        value={value}
                     />
                 );
             default:
@@ -222,5 +223,4 @@ InputComponent.propTypes = {
 };
 
 const translated = injectIntl(InputComponent);
-
 export default translated;

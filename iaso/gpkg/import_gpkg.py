@@ -1,6 +1,9 @@
 import sqlite3
 from copy import deepcopy
 from typing import Optional, Dict, List, Tuple, Union
+
+from django.contrib.auth.models import User
+
 from hat.audit import models as audit_models
 
 import fiona
@@ -137,15 +140,22 @@ def get_ref(inst: Union[OrgUnit, Group]) -> str:
 
 
 @transaction.atomic
-def import_gpkg_file(filename, project_id, source_name, validation_status, version_number):
-    # Layer are OrgUnit's Type
-    layers_name = fiona.listlayers(filename)
+def import_gpkg_file(filename, project_id, source_name, version_number, validation_status):
+
     source, created = DataSource.objects.get_or_create(name=source_name)
     if source.read_only:
         raise Exception("Source is marked read only")
+    # this will cause issue if another tenant use the same source name as we will attach an existing source
+    # to our project via the tenant.
     source.projects.add(project_id)
     project = Project.objects.get(id=project_id)
+    import_gpkg_file2(filename, project, source, version_number, validation_status, user=None)
 
+
+@transaction.atomic
+def import_gpkg_file2(
+    filename, project: Project, source: SourceVersion, version_number, validation_status, user: Optional[User]
+):
     version, created = SourceVersion.objects.get_or_create(number=version_number, data_source=source)
 
     # Create and update all the groups and put them in a dict indexed by ref
@@ -159,7 +169,7 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
             old_group = deepcopy(ref_group.get(ref))
             group = create_or_update_group(ref_group.get(ref), ref, name, version)
             ref_group[get_ref(group)] = group
-            audit_models.log_modification(old_group, group, source=audit_models.GPKG_IMPORT)
+            audit_models.log_modification(old_group, group, source=audit_models.GPKG_IMPORT, user=user)
 
     # index all existing OrgUnit per ref
     existing_orgunits = version.orgunit_set.all()  # Maybe add a only?
@@ -173,6 +183,8 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
     modifications_to_log: List[Tuple[OrgUnit, OrgUnit]] = []
     total_org_unit = 0
 
+    # Layer are OrgUnit's Type
+    layers_name = fiona.listlayers(filename)
     for layer_name in layers_name:
         # layers to import must be named level-{depth}-{name}
         if not layer_name.startswith("level-"):
@@ -213,4 +225,5 @@ def import_gpkg_file(filename, project_id, source_name, validation_status, versi
 
     for old_ou, new_ou in modifications_to_log:
         # Possible optimisation, crate a bulk update
-        audit_models.log_modification(old_ou, new_ou, source=audit_models.GPKG_IMPORT)
+        audit_models.log_modification(old_ou, new_ou, source=audit_models.GPKG_IMPORT, user=user)
+    return total_org_unit

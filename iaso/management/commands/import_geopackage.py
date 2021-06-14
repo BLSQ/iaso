@@ -19,4 +19,4 @@ class Command(BaseCommand):
         parser.add_argument("--validation_status", type=str, default="NEW")
 
     def handle(self, filename, source_name, version_number, project_id, validation_status, **options):
-        import_gpkg_file(filename, project_id, source_name, validation_status, version_number)
+        import_gpkg_file(filename, project_id, source_name, version_number, validation_status)

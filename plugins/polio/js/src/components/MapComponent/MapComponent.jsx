@@ -10,7 +10,7 @@ const InnerMap = ({ onClick }) => {
 
     useEffect(() => {
         map.fitBounds(centeredShape.getBounds());
-    }, [centeredShape]);
+    }, [map, centeredShape]);
 
     return (
         <>

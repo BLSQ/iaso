@@ -34,8 +34,7 @@ class CampaignViewSet(ModelViewSet):
         user = self.request.user
 
         if user.iaso_profile.org_units.count():
-            org_units = map(lambda org_unit: OrgUnit.objects.hierarchy(org_unit), user.iaso_profile.org_units.all())
-            org_units = list(itertools.chain.from_iterable(org_units))
+            org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
 
             return Campaign.objects.filter(initial_org_unit__in=org_units).order_by("obr_name")
         else:

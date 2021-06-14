@@ -8,12 +8,7 @@ import isEqual from 'lodash/isEqual';
 import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import {
-    InnerDrawer,
-    injectIntl,
-    commonStyles,
-    Comment,
-} from 'bluesquare-components';
+import { InnerDrawer, injectIntl, commonStyles } from 'bluesquare-components';
 // import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { locationsLimit } from '../../../constants/filters';
 
@@ -40,6 +35,7 @@ import { getChipColors } from '../../../constants/chipColors';
 import { getColorsFromParams, decodeSearch } from '../utils';
 import MESSAGES from '../messages';
 import DrawerMessages from '../../../components/nav/messages';
+import { OrgUnitsMapComments } from './OrgUnitsMapComments';
 
 const boundsOptions = {
     padding: [50, 50],
@@ -85,6 +81,7 @@ class OrgunitsMap extends Component {
         super(props);
         this.state = {
             fittedToBounds: false,
+            // comments: [],
         };
     }
 
@@ -222,13 +219,8 @@ class OrgunitsMap extends Component {
                                         filters={[locationsLimit()]}
                                     />
                                 </Box>
-                                <Box px={2} component="div">
-                                    <Comment
-                                        author="Son"
-                                        content="Hello, I'm a comment"
-                                        postingTime="just now"
-                                    />
-                                </Box>
+                                <Divider />
+                                <OrgUnitsMapComments />
                             </>
                         ),
                         message: DrawerMessages.settings,
@@ -340,6 +332,7 @@ class OrgunitsMap extends Component {
 }
 OrgunitsMap.defaultProps = {
     baseUrl: '',
+    // currentSubOrgUnit: null,
 };
 
 OrgunitsMap.propTypes = {

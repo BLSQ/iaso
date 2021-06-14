@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import moment from 'moment';
 import {
     getRequest,
     patchRequest,
@@ -690,7 +691,7 @@ export const iasoRestoreRequest = requestHandler(storeDispatch)(restoreRequest);
 
 const defaultHookParams = { preventTrigger: false, additionalDependencies: [] };
 
-export const useAPI = (request, params = defaultHookParams) => {
+export const useAPI = (request, requestArgs, params = defaultHookParams) => {
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isError, setIsError] = useState(false);
@@ -706,7 +707,7 @@ export const useAPI = (request, params = defaultHookParams) => {
             }
             setIsLoading(true);
             try {
-                const response = await request();
+                const response = await request(requestArgs);
                 if (mountedRef.current) {
                     setData(response);
                     setIsLoading(false);
@@ -722,7 +723,104 @@ export const useAPI = (request, params = defaultHookParams) => {
         return () => {
             mountedRef.current = false;
         };
-    }, [...(params.additionalDependencies ?? []), request, params.trigger]);
+    }, [
+        ...(params.additionalDependencies ?? []),
+        request,
+        params.trigger,
+        requestArgs,
+    ]);
 
-    return { data, isLoading, isError };
+    const result = { data, isLoading, isError };
+    return result;
+};
+
+const waitFor = delay => new Promise(resolve => setTimeout(resolve, delay));
+const data = [
+    {
+        id: 1,
+        dateTime: moment.now().toString(),
+        comment: 'Half-life 3 is totally a thing',
+        object_id: 9,
+        children: null,
+        author: {
+            id: 3,
+            first_name: 'Gordon',
+            last_name: 'Freeman',
+            user_name: 'valve',
+        },
+    },
+    {
+        id: 2,
+        dateTime: moment.now().toString(),
+        comment: "I'm so going to lose that magic sword",
+        object_id: 10,
+        children: null,
+        author: {
+            id: 5,
+            first_name: 'Adol',
+            last_name: 'Christin',
+            user_name: 'Falcomm',
+        },
+    },
+    {
+        id: 3,
+        dateTime: moment.now().toString(),
+        comment: "I'm looking for some Peach",
+        object_id: 11,
+        parent_comment_id: null,
+        children: [
+            {
+                id: 4,
+                dateTime: moment.now().toString(),
+                comment: "We don't do that here",
+                object_id: 12,
+                parent_comment_id: null,
+                children: null,
+                author: {
+                    id: 3,
+                    first_name: 'Gordon',
+                    last_name: 'Freeman',
+                    user_name: 'valve',
+                },
+            },
+        ],
+        author: {
+            id: 6,
+            first_name: 'Doug',
+            last_name: 'Bowser',
+            user_name: 'Koopa',
+        },
+    },
+];
+
+export const mockGetComments = async orgUnit => {
+    if (orgUnit) {
+        await waitFor(1000);
+        const response = {
+            data,
+            count: 3,
+            has_next: false,
+            has_previous: false,
+            limit: 10,
+            page: 1,
+            pages: 1,
+        };
+        return response;
+    }
+    return null;
+};
+
+export const mockPostComment = async comment => {
+    await waitFor(1000);
+    const updatedData = [comment, ...data];
+    const response = {
+        data: updatedData,
+        count: 4,
+        has_next: false,
+        has_previous: false,
+        limit: 10,
+        page: 1,
+        pages: 1,
+    };
+    return response;
 };

@@ -16,8 +16,8 @@ COPY package-lock.json .
 RUN npm install -g npm@7
 RUN npm install
 
-ADD hat/ hat/ 
-ADD plugins/ plugins/ 
+ADD hat/ hat/
+ADD plugins/ plugins/
 ADD entrypoint.sh .
 
 ENTRYPOINT ["./entrypoint.sh"]

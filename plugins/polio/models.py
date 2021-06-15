@@ -28,6 +28,8 @@ RESPONSIBLES = [
 STATUS = [
     ("PENDING", _("Pending")),
     ("ONGOING", _("Ongoing")),
+    ("QUEUED", _("Queued")),
+    ("FAILURE", _("Failed")),
     ("FINISHED", _("Finished")),
 ]
 
@@ -154,6 +156,7 @@ class Campaign(models.Model):
     verification_score = models.IntegerField(null=True, blank=True)
     # Preparedness
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
+    preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=STATUS)
     # Surge recruitment
     surge_spreadsheet_url = models.URLField(null=True, blank=True)
     country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)

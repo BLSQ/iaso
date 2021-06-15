@@ -1,4 +1,4 @@
-FROM node:10.24.1-stretch-slim
+FROM node:14.17.0-stretch-slim
 ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app

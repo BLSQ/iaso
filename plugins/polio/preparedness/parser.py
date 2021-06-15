@@ -95,8 +95,8 @@ def _get_scores(worksheet, initial_cell, manager: QuotaManager = QuotaManager())
 def get_national_level_preparedness(sheet: gspread.Spreadsheet, manager: QuotaManager = QuotaManager()):
     for worksheet in sheet.worksheets():
         try:
-            cell = worksheet.find("Summary of National Level Preparedness")
             manager.increase()
+            cell = worksheet.find("Summary of National Level Preparedness")
             print(f"Data found on worksheet: {worksheet.title}")
             return _get_scores(worksheet, cell, manager)
 
@@ -111,8 +111,8 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet, manager: QuotaMa
 
     for worksheet in sheet.worksheets():
         try:
+            manager.increase(by=2)
             cell = worksheet.find("Summary of Regional Level Preparedness")
-            manager.increase()
             print(f"Data found on worksheet: {worksheet.title}")
 
             all_scores = []

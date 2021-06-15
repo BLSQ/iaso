@@ -2,7 +2,8 @@ from time import sleep
 
 DEFAULT_QUOTA_LIMIT = 60
 THRESHOLD = 0.1
-SLEEP_PERIOD_IN_SECONDS = 60
+INCREASE_SLEEP_PERIOD_IN_SECONDS = 0.5
+SLEEP_PERIOD_IN_SECONDS = 5
 
 
 class QuotaManager:
@@ -14,7 +15,8 @@ class QuotaManager:
 
     def increase(self, by=1):
         self.total_requests += by
+        sleep(INCREASE_SLEEP_PERIOD_IN_SECONDS * by)
         limit = int(self.quota_read_limit - self.quota_read_limit * THRESHOLD)
-        if self.total_requests % limit == 0:
-            print(f"Limit reached. Sleeping for {SLEEP_PERIOD_IN_SECONDS}s")
+        if self.total_requests % limit in range(0, by):
+            print(f"Sleeping extra {SLEEP_PERIOD_IN_SECONDS}s")
             sleep(SLEEP_PERIOD_IN_SECONDS)

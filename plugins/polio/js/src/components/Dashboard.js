@@ -904,7 +904,7 @@ export const Dashboard = () => {
         openCreateEditDialog();
     };
 
-    const selectedCampaign = campaigns?.campaigns?.find(
+    const selectedCampaign = campaigns?.results?.find(
         campaign => campaign.id === selectedCampaignId,
     );
 
@@ -1017,7 +1017,7 @@ export const Dashboard = () => {
                             baseUrl={'/polio'}
                             redirectTo={onTableParamsChange}
                             columns={columns}
-                            data={campaigns.campaigns}
+                            data={campaigns.results}
                             watchToRender={tableParams}
                         />
                     )}

@@ -8,14 +8,15 @@ from rest_framework.decorators import action
 from .models import Campaign
 from iaso.api.common import ModelViewSet
 
+
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = "limit"
     max_page_size = 1000
 
+
 class CampaignViewSet(ModelViewSet):
     serializer_class = CampaignSerializer
-    results_key = "campaigns"
     pagination_class = StandardResultsSetPagination
 
     filter_backends = [filters.OrderingFilter]

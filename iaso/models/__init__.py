@@ -4,3 +4,4 @@ from .forms import Form, FormVersion
 from .org_unit import OrgUnit, OrgUnitType
 from .project import Project
 from .pages import Page
+from .comment import CommentIaso

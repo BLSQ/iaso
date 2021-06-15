@@ -937,10 +937,12 @@ export const Dashboard = () => {
         openCreateEditDialog();
     };
 
-    const handleSearch = event => {
-        // @todo: add debounce with useCallback or something
-        setSearchQuery(event.target.value);
-    };
+    const handleSearch = useCallback(
+        event => {
+            setSearchQuery(event.target.value);
+        },
+        [searchQuery],
+    );
 
     const selectedCampaign = campaigns?.results?.find(
         campaign => campaign.id === selectedCampaignId,

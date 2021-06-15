@@ -24,24 +24,37 @@ class PolioAPITestCase(APITestCase):
         account = Account.objects.create(name="Global Health Initiative", default_version=cls.source_version_1)
         cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
 
-        cls.org_units = []
-        cls.org_units.append(
-            m.OrgUnit.objects.create(
-                org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
-                version=cls.source_version_1,
-                name="Jedi Council A",
-                validation_status=m.OrgUnit.VALIDATION_VALID,
-                source_ref="PvtAI4RUMkr",
-            )
+        cls.org_unit = m.OrgUnit.objects.create(
+            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
+            version=cls.source_version_1,
+            name="Jedi Council A",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
         )
-        cls.org_units.append(
+
+        cls.child_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
+            version=cls.source_version_1,
+            name="Sub Jedi Council A",
+            parent_id=cls.org_unit.id,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+        )
+
+        cls.org_units = [
+            cls.org_unit,
+            cls.child_org_unit,
             m.OrgUnit.objects.create(
                 org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
                 version=cls.source_version_1,
-                name="Jedi Council A",
+                name="Jedi Council B",
                 validation_status=m.OrgUnit.VALIDATION_VALID,
                 source_ref="PvtAI4RUMkr",
-            )
+            ),
+        ]
+
+        cls.luke = cls.create_user_with_profile(
+            username="luke", account=account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
         )
 
     def setUp(self):
@@ -170,7 +183,38 @@ class PolioAPITestCase(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Campaign.objects.get().group.org_units.count(), 2)
+        self.assertEqual(Campaign.objects.get().group.org_units.count(), 3)
+
+    def test_can_only_see_campaigns_within_user_org_units_hierarchy(self):
+        """
+        Ensure a user can only see the campaigns for an org unit (or a descendent of that org unit) that was
+        previously assigned to their profile
+        """
+
+        payload = {
+            "obr_name": "obr_name a",
+            "detection_status": "PENDING",
+            "initial_org_unit": self.org_unit.pk,
+            "round_one": {},
+            "round_two": {},
+        }
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        payload = {
+            "obr_name": "obr_name b",
+            "detection_status": "PENDING",
+            "initial_org_unit": self.child_org_unit.pk,
+            "round_one": {},
+            "round_two": {},
+        }
+        self.client.force_authenticate(self.luke)
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        response = self.client.get("/api/polio/campaigns/", format="json")
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["initial_org_unit"], self.child_org_unit.pk)
 
 
 class CampaignCalculatorTestCase(TestCase):

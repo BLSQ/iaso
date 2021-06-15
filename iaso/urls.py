@@ -15,8 +15,8 @@ from .api.devices_ownership import DevicesOwnershipViewSet
 from .api.devices_position import DevicesPositionViewSet
 from .api.data_sources import DataSourceViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
-from .api.copy_version import CopyVersionViewSet
-from .api.dhis2_ou_importer import Dhis2OuImporterViewSet
+from iaso.api.tasks.create.copy_version import CopyVersionViewSet
+from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.forms import FormsViewSet
@@ -33,7 +33,6 @@ from .api.export_requests import ExportRequestsViewSet
 from .api.tasks import TaskSourceViewSet
 from .api.accounts import AccountViewSet
 from plugins.router import router as plugins_router
-
 from .api.enketo import (
     enketo_edit_url,
     enketo_create_url,
@@ -53,6 +52,8 @@ from .api.permissions import PermissionsViewSet
 from .api.feature_flags import FeatureFlagViewSet
 from iaso import matching
 import pkgutil
+
+from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 
 router = routers.DefaultRouter()
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
@@ -88,6 +89,7 @@ router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
 router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
 router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename="orgunitsbulkupdate")
+router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 
 router.registry.extend(plugins_router.registry)

@@ -72,7 +72,7 @@ export const listMenuPermission = (menuItem, permissions = []) => {
  */
 export const getFirstAllowedUrl = (rootPermission, user) => {
     let newRoot;
-    user.permissions.forEach(p => {
+    user?.permissions.forEach(p => {
         if (!newRoot && p !== rootPermission) {
             newRoot = p;
         }

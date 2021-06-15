@@ -2,6 +2,10 @@ from functools import wraps
 import traceback
 from django.utils import timezone
 from lazy_services import LazyService
+import sentry_sdk
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 task_service = LazyService("BEANSTALK_TASK_SERVICE")
@@ -32,6 +36,8 @@ def task(task_name=""):
                     the_task.ended_at = timezone.now()
                     the_task.result = {"result": ERRORED, "message": str(e), "stack_trace": traceback.format_exc()}
                     the_task.save()
+                    logger.exception(f"Error when running task {the_task.id}: {the_task}")
+                    sentry_sdk.capture_exception(e)
                 return the_task
             else:  # enqueue the task
                 task = Task()

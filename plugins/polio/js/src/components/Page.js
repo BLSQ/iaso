@@ -5,7 +5,8 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import { SidebarMenu } from './SidebarMenu';
+import {SidebarMenu}  from './SidebarMenu';
+import {IntlProvider} from "react-intl";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -26,7 +27,7 @@ export const Page = ({ children, title = 'Polio dashboard' }) => {
     };
 
     return (
-        <>
+        <IntlProvider locale="en" defaultLocale="en">
             <AppBar position="relative" color="primary">
                 <Toolbar>
                     <IconButton
@@ -48,6 +49,6 @@ export const Page = ({ children, title = 'Polio dashboard' }) => {
                 isDrawerOpened={isDrawerOpened}
                 toggleDrawer={toggleDrawer}
             />
-        </>
+        </IntlProvider>
     );
 };

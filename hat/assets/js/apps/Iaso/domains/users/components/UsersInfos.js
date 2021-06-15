@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import InputComponent from '../../../components/forms/InputComponent';
+import { APP_LOCALES } from '../../app/constants';
 
 import MESSAGES from '../messages';
 
@@ -48,6 +49,21 @@ const UsersInfos = ({ setFieldValue, currentUser, initialData }) => (
             type="password"
             label={initialData ? MESSAGES.newPassword : MESSAGES.password}
             required={!initialData}
+        />
+        <InputComponent
+            keyValue="language"
+            onChange={(key, value) => setFieldValue(key, value)}
+            value={currentUser.language.value}
+            errors={currentUser.language.errors}
+            type="select"
+            multi={false}
+            label={MESSAGES.locale}
+            options={APP_LOCALES.map(locale => {
+                return {
+                    value: locale.code,
+                    label: locale.label,
+                };
+            })}
         />
     </>
 );

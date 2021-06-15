@@ -60,3 +60,14 @@ export const renderWithStore = (component, state = null) => (
         </LinkProvider>
     </Provider>
 );
+
+export const mockedStore = state =>
+    getMockedStore({ ...initialState, ...state });
+
+export const renderWithMutableStore = (component, store) => (
+    <Provider store={store}>
+        <LinkProvider linkComponent={Link}>
+            {renderWithIntl(component)}
+        </LinkProvider>
+    </Provider>
+);

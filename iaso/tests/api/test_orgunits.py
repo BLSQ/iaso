@@ -237,6 +237,13 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(response.json())
 
+    def test_can_retrieve_org_units_in_csv_format(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/orgunits/{self.jedi_squad_endor.id}/?format=csv", headers={"Content-Type": "text/csv"}
+        )
+        self.assertFileResponse(response, 200, "text/csv; charset=utf-8")
+
     def assertValidOrgUnitListData(self, *, list_data: typing.Mapping, expected_length: int):
         self.assertValidListData(list_data=list_data, results_key="orgUnits", expected_length=expected_length)
         for org_unit_data in list_data["orgUnits"]:

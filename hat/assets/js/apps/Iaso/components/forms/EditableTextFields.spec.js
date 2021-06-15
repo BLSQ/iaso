@@ -26,23 +26,6 @@ const defaultProps = [
     },
 ];
 
-// const updatedProps = [
-//     {
-//         keyValue: 'keyValue',
-//         type: 'text',
-//         label: { id: 'label', defaultMessage: 'label' },
-//         value: 'BROL',
-//         onChange: onChangeSpy,
-//     },
-//     {
-//         keyValue: 'keyValue2',
-//         type: 'text2',
-//         label: { id: 'label2', defaultMessage: 'label2' },
-//         value: 'value2',
-//         onChange: () => {},
-//     },
-// ];
-
 let component;
 let inputs;
 

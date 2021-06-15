@@ -1,29 +1,31 @@
+import MESSAGES from './messages';
+
 export const menuItems = [
     {
-        label: 'iaso.forms.title',
+        label: MESSAGES.formsTitle,
         icon: 'forms',
         subMenu: [
             {
-                label: 'iaso.label.list',
+                label: MESSAGES.list,
                 // permission: paths.formsPath.permission,
                 path: '/dashboard/forms/list',
                 icon: 'list',
             },
 
             {
-                label: 'iaso.label.dhis2Mappings',
+                label: MESSAGES.dhis2Mappings,
                 // permission: paths.mappingsPath.permission,
                 path: '/dashboard/forms/mappings',
                 icon: 'mappings',
             },
             {
-                label: 'iaso.completeness.title',
+                label: MESSAGES.completeness,
                 // permission: paths.completenessPath.permission,
                 path: '/dashboard/forms/completeness',
                 icon: 'completeness',
             },
             {
-                label: 'iaso.archived.title',
+                label: MESSAGES.archived,
                 // permission: paths.archivedPath.permission,
                 path: '/dashboard/forms/archived',
                 icon: 'archived',
@@ -31,46 +33,52 @@ export const menuItems = [
         ],
     },
     {
-        label: 'iaso.orgUnits.title',
+        label: MESSAGES.orgUnitsTitle,
         icon: 'orgunits',
 
         subMenu: [
             {
-                label: 'iaso.label.list',
+                label: MESSAGES.list,
                 // permission: paths.orgUnitsPath.permission,
+                path: '/dashboard/orgunits/list',
                 icon: 'list',
             },
             {
-                label: 'iaso.label.groups',
+                label: MESSAGES.groups,
                 // permission: paths.groupsPath.permission,
+                path: '/dashboard/orgunits/groups',
                 icon: 'groups',
             },
             {
-                label: "'iaso.orgUnits.orgUnitsTypes'",
+                label: MESSAGES.orgUnitType,
                 // permission: paths.orgUnitTypesPath.permission,
+                path: '/dashboard/orgunits/types',
                 icon: 'types',
             },
             {
-                label: 'iaso.orgUnits.dataSources',
+                label: MESSAGES.dataSources,
                 icon: 'sources',
                 subMenu: [
                     {
-                        label: 'iaso.label.list',
+                        label: MESSAGES.list,
                         // permission: paths.dataSourcesPath.permission,
+                        path: '/dashboard/orgunits/sources/list',
                         icon: 'list',
                     },
                     {
-                        label: 'iaso.matching.title',
+                        label: MESSAGES.matching,
                         icon: 'links',
                         subMenu: [
                             {
-                                label: 'iaso.label.list',
+                                label: MESSAGES.list,
                                 // permission: paths.linksPath.permission,
+                                path: '/dashboard/orgunits/sources/list',
                                 icon: 'list',
                             },
                             {
-                                label: 'iaso.label.algorithmsRuns',
+                                label: MESSAGES.algorithmsRuns,
                                 // permission: paths.algosPath.permission,
+                                path: '/dashboard/orgunits/sources/links/runs',
                                 icon: 'runs',
                             },
                         ],
@@ -80,28 +88,46 @@ export const menuItems = [
         ],
     },
     {
-        label: 'iaso.label.config',
+        label: MESSAGES.config,
         icon: 'settings',
         subMenu: [
             {
-                label: 'iaso.label.tasks',
+                label: MESSAGES.tasks,
                 // permission: paths.tasksPath.permission,
+                path: '/dashboard/settings/tasks',
                 icon: 'tasks',
             },
             {
-                label: 'iaso.label.monitoring',
+                label: MESSAGES.monitoring,
                 // permission: paths.devicesPath.permission,
+                path: '/dashboard/settings/devices',
                 icon: 'devices',
             },
             {
-                label: 'iaso.label.projects',
+                label: MESSAGES.projects,
                 // permission: paths.projectsPath.permission,
+                path: '/dashboard/settings/projects',
                 icon: 'projects',
             },
             {
-                label: 'iaso.label.users',
+                label: MESSAGES.users,
                 // permission: paths.usersPath.permission,
+                path: '/dashboard/settings/users',
                 icon: 'users',
+            },
+        ],
+    },
+    {
+        label: MESSAGES.polio,
+        key: 'polio',
+        icon: 'forms',
+        subMenu: [
+            {
+                label: MESSAGES.dashboard,
+                path: '/dashboard/polio/list',
+                key: 'list',
+                // permission: paths.formsPath.permission,
+                icon: 'list',
             },
         ],
     },

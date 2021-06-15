@@ -93,6 +93,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Add org unit',
         id: 'iaso.orgUnits.add',
     },
+    locale: {
+        defaultMessage: 'Language',
+        id: 'iaso.users.dialog.locale',
+    },
 });
 
 export default MESSAGES;

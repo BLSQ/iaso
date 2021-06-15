@@ -448,3 +448,8 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(self.yoda, modification.user)
         self.assertNotEquals(modification.past_value[0]["fields"]["deleted"], modification.content_object.deleted)
         self.assertEqual(instance_to_patch, modification.content_object)
+
+    def test_can_retrieve_instances_in_csv_format(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/instances/?format=csv", headers={"Content-Type": "text/csv"})
+        self.assertFileResponse(response, 200, "text/csv; charset=utf-8")

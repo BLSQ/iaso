@@ -6,6 +6,10 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { theme } from './styles/theme';
 import reportWebVitals from './reportWebVitals';
+import {Link} from 'react-router-dom';
+import {LinkProvider} from 'bluesquare-components';
+
+
 
 const queryClient = new QueryClient();
 
@@ -14,7 +18,9 @@ ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <MuiThemeProvider theme={theme}>
                 <CssBaseline />
+                <LinkProvider linkComponent={Link}>
                 <App />
+                </LinkProvider>
             </MuiThemeProvider>
         </QueryClientProvider>
     </React.StrictMode>,

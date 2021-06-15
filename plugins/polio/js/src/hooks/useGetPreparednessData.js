@@ -8,3 +8,9 @@ export const useGetPreparednessData = () => {
         }),
     );
 };
+
+export const useSurgeData = () => {
+    return useMutation((body, countryName) =>
+        sendRequest('POST', '/api/polio/campaigns/preview_surge/', body),
+    );
+};

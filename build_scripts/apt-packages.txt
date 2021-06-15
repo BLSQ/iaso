@@ -1,8 +1,5 @@
 curl
 gettext
 gettext-base
-nginx
 postgresql-client
-vim
 libgdal-dev
-dumb-init

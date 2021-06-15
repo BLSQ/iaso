@@ -1,10 +1,12 @@
+import base64
+import json
 import os
-from plugins.polio.preparedness.exceptions import InvalidFormatError
+from typing import List
+from itertools import groupby
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import base64
-import os
-import json
+
+from plugins.polio.preparedness.exceptions import InvalidFormatError
 
 DIRNAME = os.path.dirname(__file__)
 SCOPES = ["https://spreadsheets.google.com/feeds"]
@@ -28,6 +30,34 @@ def parse_value(value: str):
 def open_sheet_by_url(spreadsheet_url):
     client = _get_client()
     return client.open_by_url(spreadsheet_url)
+
+
+def _process_range(range):
+    [
+        planning_coordination_financing_score,
+        training_sias_score,
+        monitoring_supervision_score,
+        vaccine_cold_chain_logistics_score,
+        advocacy_social_mob_commu_score,
+        adverse_event_score,
+        status_score,
+    ] = range
+
+    return {
+        "planning_score": parse_value(planning_coordination_financing_score.value),
+        "training_score": parse_value(training_sias_score.value),
+        "monitoring_score": parse_value(monitoring_supervision_score.value),
+        "vaccine_score": parse_value(vaccine_cold_chain_logistics_score.value),
+        "advocacy_score": parse_value(advocacy_social_mob_commu_score.value),
+        "adverse_score": parse_value(adverse_event_score.value if bool(status_score.value) else "0"),
+        "status_score": parse_value(status_score.value if bool(status_score.value) else adverse_event_score.value),
+    }
+
+
+def _get_district_score(data: tuple):
+    name, *scores = data
+
+    return name.value, _process_range(scores)
 
 
 def _get_scores(worksheet, initial_cell):
@@ -56,25 +86,7 @@ def _get_scores(worksheet, initial_cell):
     last_row = initial_cell.row + 7
     last_col = first_col
 
-    [
-        planning_coordination_financing_score,
-        training_sias_score,
-        monitoring_supervision_score,
-        vaccine_cold_chain_logistics_score,
-        advocacy_social_mob_commu_score,
-        adverse_event_score,
-        status_score,
-    ] = worksheet.range(first_row, first_col, last_row, last_col)
-
-    return {
-        "planning_score": parse_value(planning_coordination_financing_score.value),
-        "training_score": parse_value(training_sias_score.value),
-        "monitoring_score": parse_value(monitoring_supervision_score.value),
-        "vaccine_score": parse_value(vaccine_cold_chain_logistics_score.value),
-        "advocacy_score": parse_value(advocacy_social_mob_commu_score.value),
-        "adverse_score": parse_value(adverse_event_score.value if bool(status_score.value) else "0"),
-        "status_score": parse_value(status_score.value if bool(status_score.value) else adverse_event_score.value),
-    }
+    return _process_range(worksheet.range(first_row, first_col, last_row, last_col))
 
 
 def get_national_level_preparedness(sheet: gspread.Spreadsheet):
@@ -89,7 +101,7 @@ def get_national_level_preparedness(sheet: gspread.Spreadsheet):
     raise InvalidFormatError("Summary of National Level Preparedness` was not found in this document")
 
 
-def get_regional_level_preparedness(sheet):
+def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
     regions = {}
     districts = {}
 
@@ -97,14 +109,30 @@ def get_regional_level_preparedness(sheet):
         try:
             cell = worksheet.find("Summary of Regional Level Preparedness")
             print(f"Data found on worksheet: {worksheet.title}")
-            regional_cell = worksheet.cell(cell.row, cell.col + 1)
-            print(f"Processing region {regional_cell.value}")
-            regions[regional_cell.value] = _get_scores(worksheet, cell)
 
-            district = worksheet.cell(regional_cell.row, regional_cell.col + 1)
-            while district.value is not None and bool(district.value.strip()):
-                districts[district.value] = {**_get_scores(worksheet, district), "region": regional_cell.value}
-                district = worksheet.cell(district.row, district.col + 1)
+            all_scores = []
+            last_cell = cell
+
+            while last_cell is not None and bool(last_cell.value.strip()):
+                district_list = worksheet.range(last_cell.row, last_cell.col + 1, last_cell.row + 7, last_cell.col + 20)
+
+                all_districts = []
+                get_col_f = lambda x: x.col
+                for _, group in groupby(sorted(district_list, key=get_col_f), get_col_f):
+                    all_districts.append(list(group))
+                all_scores += all_districts
+
+                last_district = all_districts[-1]
+                last_cell = last_district[0]
+
+            regional, *district_values = all_scores
+
+            regional_name, regional_score = _get_district_score(regional)
+            regions[regional_name] = regional_score
+
+            for district in district_values:
+                district_name, district_scores = _get_district_score(district)
+                districts[district_name] = {**district_scores, "region": regional_name}
 
         except gspread.CellNotFound:
             print(f"No data found on worksheet: {worksheet.title}")

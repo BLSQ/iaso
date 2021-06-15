@@ -6,7 +6,7 @@
 
 # You will need to create a venv locally by running: venv . && pip install -r requirements.txt
 
-source bin/activate
+#source bin/activate
 export SECRET_KEY="secret"
 export RDS_PORT="5433"
 export RDS_HOSTNAME="localhost"
@@ -16,5 +16,7 @@ export DEV_SERVER="true"
 export RDS_DB_NAME="iaso"
 export USE_S3="false"
 export RDS_PASSWORD="postgres"
+
+source .env
 
 ./manage.py runserver

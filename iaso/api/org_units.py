@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils.translation import gettext as _
 from iaso.api.common import safe_api_import
-from iaso.gpkg import org_units_to_gpkg
+from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, DataSource
 from django.contrib.gis.geos import Point
 
@@ -65,6 +65,22 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
 
     def list(self, request):
+        """Power the almighty Search function, and export
+
+        which all the power should be really specified.
+
+        Can serve theses formats, depending on the combination of GET Parameters:
+         * Simple JSON (default)
+         * Paginated JSON (if a `limit` is passed)
+         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed.
+         * GeoJson with the geo info (if `withShapes` is passed` )
+         * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting
+         * GeoPackage format (if `gpkg` is passed)
+         * Excel XLSX  (if `xslx` is passed)
+         * CSV (if `csv` is passed)
+
+         These parameter can totally conflict and the result is undocumented
+        """
         queryset = self.get_queryset()
 
         forms = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
@@ -267,7 +283,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def list_to_gpkg(self, queryset):
         queryset = queryset.prefetch_related("parent", "org_unit_type")
 
-        response = HttpResponse(org_units_to_gpkg(queryset), content_type="application/octet-stream")
+        response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
         filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"
 

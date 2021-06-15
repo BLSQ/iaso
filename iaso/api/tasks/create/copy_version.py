@@ -1,10 +1,10 @@
 from rest_framework.response import Response
 
-from ..tasks.copy_version import copy_version
-from .tasks import TaskSerializer
-from ..models import DataSource, SourceVersion, Task, OrgUnit
+from iaso.tasks.copy_version import copy_version
+from iaso.api.tasks import TaskSerializer
+from iaso.models import DataSource, SourceVersion, Task, OrgUnit
 from rest_framework import viewsets, permissions, serializers
-from .common import HasPermission
+from iaso.api.common import HasPermission
 from django.shortcuts import get_object_or_404
 import logging
 

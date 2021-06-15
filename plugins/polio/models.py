@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 from django.utils.translation import gettext as _
 from uuid import uuid4
 from iaso.models import Group
@@ -32,6 +31,11 @@ STATUS = [
     ("FINISHED", _("Finished")),
 ]
 
+PAYMENT = [
+    ("DIRECT", _("Direct")),
+    ("DFC", _("DFC")),
+]
+
 
 class Round(models.Model):
     started_at = models.DateField(null=True, blank=True)
@@ -50,6 +54,7 @@ class Campaign(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255)
+    gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     initial_org_unit = models.ForeignKey(
@@ -146,13 +151,39 @@ class Campaign(models.Model):
         blank=True,
         verbose_name=_("DG Authorization"),
     )
-
+    verification_score = models.IntegerField(null=True, blank=True)
     # Preparedness
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
-
+    # Surge recruitment
+    surge_spreadsheet_url = models.URLField(null=True, blank=True)
+    country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
     budget_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
+
+    who_disbursed_to_co_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to CO (WHO)"),
+    )
+
+    who_disbursed_to_moh_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to MOH (WHO)"),
+    )
+
+    unicef_disbursed_to_co_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to CO (UNICEF)"),
+    )
+
+    unicef_disbursed_to_moh_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to MOH (UNICEF)"),
+    )
 
     eomg = models.DateField(
         null=True,
@@ -165,7 +196,7 @@ class Campaign(models.Model):
         null=True,
         blank=True,
     )
-
+    payment_mode = models.CharField(max_length=10, choices=PAYMENT, null=True, blank=True)
     # Rounds
     round_one = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_one", null=True, blank=True)
     round_two = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_two", null=True, blank=True)
@@ -173,11 +204,22 @@ class Campaign(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Additional fields
+    district_count = models.IntegerField(null=True, blank=True)
+    budget_submitted_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Budget Submission"),
+    )
+
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
 
     def last_preparedness(self):
         return self.preparedness_set.order_by("-created_at").first()
+
+    def last_surge(self):
+        return self.surge_set.order_by("-created_at").first()
 
 
 class Preparedness(models.Model):
@@ -189,7 +231,29 @@ class Preparedness(models.Model):
     regional_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Regional Score"))
     district_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("District Score"))
 
-    payload = JSONField()
+    payload = models.JSONField()
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    def __str__(self) -> str:
+        return f"{self.campaign} - {self.created_at}"
+
+
+class Surge(models.Model):
+    id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    spreadsheet_url = models.URLField()
+    surge_country_name = models.CharField(max_length=250, null=True, default=True)
+    who_recruitment = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Recruitment WHO"))
+    who_completed_recruitment = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("Completed for WHO")
+    )
+    unicef_recruitment = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Recruitment UNICEF"))
+    unicef_completed_recruitment = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("Completed for UNICEF")
+    )
+
+    payload = models.JSONField()
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 

@@ -2,7 +2,7 @@ from rest_framework.pagination import PageNumberPagination
 from plugins.polio.serializers import SurgePreviewSerializer
 from iaso.models import OrgUnit
 from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer
-from rest_framework import routers
+from rest_framework import routers, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import Campaign
@@ -18,6 +18,8 @@ class CampaignViewSet(ModelViewSet):
     results_key = "campaigns"
     pagination_class = StandardResultsSetPagination
 
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["obr_name", "cvdpv2_notified_at", "detection_status"]
 
     def get_queryset(self):
         user = self.request.user
@@ -25,9 +27,9 @@ class CampaignViewSet(ModelViewSet):
         if user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
 
-            return Campaign.objects.filter(initial_org_unit__in=org_units).order_by("obr_name")
+            return Campaign.objects.filter(initial_org_unit__in=org_units)
         else:
-            return Campaign.objects.order_by("obr_name")
+            return Campaign.objects.all()
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):

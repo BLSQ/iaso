@@ -37,7 +37,6 @@ class ExportRequestBuilder:
             if selected_ids:
                 instances = instances.filter(pk__in=selected_ids)
 
-
         # add account from Launcher
         if launcher:
             instances = instances.filter(project__account=launcher.iaso_profile.account)

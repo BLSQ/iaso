@@ -11,23 +11,23 @@ import {
     setInstancesFetching,
     setCurrentInstance,
     resetInstances,
-    fetchEditUrl,
-    fetchInstanceDetail,
-    softDeleteInstance,
-    reAssignInstance,
-    createInstance,
-    createExportRequest,
-    bulkDelete,
+    // fetchEditUrl,
+    // fetchInstanceDetail,
+    // softDeleteInstance,
+    // reAssignInstance,
+    // createInstance,
+    // createExportRequest,
+    // bulkDelete,
 } from './actions';
 
-const Api = require('../../libs/Api');
-const snackBarsReducer = require('../../redux/snackBarsReducer');
-const snackBars = require('../../constants/snackBars');
+// const Api = require('../../libs/Api');
+// const snackBarsReducer = require('../../redux/snackBarsReducer');
+// const snackBars = require('../../constants/snackBars');
 
 // const formsActions = require('../../../redux/actions/formsActions');
 
-let actionStub;
-describe.only('Instances actions', () => {
+// let actionStub;
+describe('Instances actions', () => {
     it('should create an action to set instances list', () => {
         const list = ['HYRULE WARRIORS'];
         const payload = {

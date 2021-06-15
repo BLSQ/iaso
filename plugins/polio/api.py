@@ -18,8 +18,8 @@ class StandardResultsSetPagination(PageNumberPagination):
 class CampaignViewSet(ModelViewSet):
     serializer_class = CampaignSerializer
     pagination_class = StandardResultsSetPagination
-
-    filter_backends = [filters.OrderingFilter]
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    search_fields = ["obr_name", "epid"]
     ordering_fields = ["obr_name", "cvdpv2_notified_at", "detection_status"]
 
     def get_queryset(self):

@@ -19,7 +19,11 @@ class Command(BaseCommand):
         campaigns_with_spreadsheet = Campaign.objects.only("id", "preperadness_spreadsheet_url").filter(
             preperadness_spreadsheet_url__isnull=False
         )
+        campaigns_with_spreadsheet.update(preperadness_sync_status="QUEUED")
         for campaign in campaigns_with_spreadsheet:
+            campaign.preperadness_sync_status = "ONGOING"
+            campaign.save()
+
             print(f"Campaign {campaign.pk} refresh started")
             try:
                 sheet = open_sheet_by_url(campaign.preperadness_spreadsheet_url)
@@ -39,9 +43,13 @@ class Command(BaseCommand):
                 )
                 print(f"Campaign {campaign.pk} refreshed")
                 print(f"Requests sent {manager.total_requests}")
+                campaign.preperadness_sync_status = "FINISHED"
+                campaign.save()
             except Exception as e:
                 print(f"Campaign {campaign.pk} refresh failed")
                 print(e)
+                campaign.preperadness_sync_status = "FAILURE"
+                campaign.save()
 
         finished_at = datetime.now()
 

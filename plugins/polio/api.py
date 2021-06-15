@@ -1,34 +1,23 @@
+from rest_framework.pagination import PageNumberPagination
 from plugins.polio.serializers import SurgePreviewSerializer
-import itertools
 from iaso.models import OrgUnit
 from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer
 from rest_framework import routers
 from rest_framework.response import Response
-from rest_framework.request import Request
 from rest_framework.decorators import action
 from .models import Campaign
 from iaso.api.common import ModelViewSet
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "limit"
+    max_page_size = 1000
 
 class CampaignViewSet(ModelViewSet):
     serializer_class = CampaignSerializer
     results_key = "campaigns"
-    remove_results_key_if_paginated = True
+    pagination_class = StandardResultsSetPagination
 
-    def list(self, request: Request, *args, **kwargs):
-        order = self.request.GET.get("order", "obr_name")
-        queryset = self.filter_queryset(self.get_queryset().order_by(order))
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        if not self.remove_results_key_if_paginated:
-            return Response({self.get_results_key(): serializer.data})
-        else:
-            return Response(serializer.data)
 
     def get_queryset(self):
         user = self.request.user

@@ -1,6 +1,6 @@
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.fields import JSONField
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core import serializers
@@ -12,14 +12,15 @@ PATIENT_API = "patient_api"
 ORG_UNIT_API = "org_unit_api"
 ORG_UNIT_API_BULK = "org_unit_api_bulk"
 INSTANCE_API = "instance_api"
+GPKG_IMPORT = "gpkg_import"
 
 
 class Modification(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
-    past_value = JSONField()
-    new_value = JSONField()
+    past_value = models.JSONField()
+    new_value = models.JSONField()
     source = models.TextField()
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -3,7 +3,6 @@ import typing
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
-from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import ArrayField, CITextField
 
@@ -76,7 +75,7 @@ class Form(SoftDeletableModel):
     correlatable = models.BooleanField(default=False)
     # Accumulated list of all the fields that were present at some point in a version of the form. This is used to
     # build a table view of the form answers without having to parse the xml files
-    fields = JSONField(null=True, blank=True)
+    fields = models.JSONField(null=True, blank=True)
     period_type = models.TextField(null=True, blank=True, choices=PERIOD_TYPE_CHOICES)
     single_per_period = models.BooleanField(default=False)
     # The following two fields control the allowed period span (instances can be provided for the period corresponding
@@ -166,7 +165,7 @@ class FormVersion(models.Model):
     # xml file representation
     file = models.FileField(upload_to=_form_version_upload_to)
     xls_file = models.FileField(upload_to=_form_version_upload_to, null=True, blank=True)
-    form_descriptor = JSONField(null=True, blank=True)
+    form_descriptor = models.JSONField(null=True, blank=True)
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

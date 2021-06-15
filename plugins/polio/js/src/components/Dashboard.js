@@ -15,7 +15,11 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    FormControl,
     Grid,
+    InputAdornment,
+    InputLabel,
+    OutlinedInput,
     Tab,
     Tabs,
     Typography,
@@ -43,6 +47,7 @@ import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
 import { PreparednessForm } from '../forms/PreparednessForm';
 import MESSAGES from '../constants/messages';
+import SearchIcon from '@material-ui/icons/Search';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -801,6 +806,26 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     );
 };
 
+const SearchInput = ({ onChange }) => {
+    const classes = useStyles();
+
+    return (
+        <FormControl fullWidth className={classes.margin} variant="outlined">
+            <InputLabel htmlFor="search-campaigns">Search</InputLabel>
+            <OutlinedInput
+                id="search-campaigns"
+                key="search-campaigns-key"
+                startAdornment={
+                    <InputAdornment position="start">
+                        <SearchIcon />
+                    </InputAdornment>
+                }
+                onChange={onChange}
+            />
+        </FormControl>
+    );
+};
+
 const PageActions = ({ children }) => {
     const classes = useStyles();
 
@@ -853,6 +878,7 @@ export const Dashboard = () => {
     const [selectedCampaignId, setSelectedCampaignId] = useState();
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
+    const [searchQuery, setSearchQuery] = useState(undefined);
     const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
@@ -860,12 +886,14 @@ export const Dashboard = () => {
         page,
         pageSize,
         order,
+        searchQuery,
     });
+
     const { mutate: removeCampaign } = useRemoveCampaign();
 
     const openCreateEditDialog = useCallback(() => {
         setIsCreateEditDialogOpen(true);
-    },[setIsCreateEditDialogOpen]);
+    }, [setIsCreateEditDialogOpen]);
 
     const closeCreateEditDialog = () => {
         setSelectedCampaignId(undefined);
@@ -874,7 +902,7 @@ export const Dashboard = () => {
 
     const openDeleteConfirmDialog = useCallback(() => {
         setIsConfirmDeleteDialogOpen(true);
-    },[setIsConfirmDeleteDialogOpen]);
+    }, [setIsConfirmDeleteDialogOpen]);
 
     const closeDeleteConfirmDialog = () => {
         setIsConfirmDeleteDialogOpen(false);
@@ -888,20 +916,30 @@ export const Dashboard = () => {
         });
     };
 
-    const handleClickEditRow = useCallback(id => {
-        setSelectedCampaignId(id);
-        openCreateEditDialog();
-    },[setSelectedCampaignId,openCreateEditDialog]);
+    const handleClickEditRow = useCallback(
+        id => {
+            setSelectedCampaignId(id);
+            openCreateEditDialog();
+        },
+        [setSelectedCampaignId, openCreateEditDialog],
+    );
 
-
-    const handleClickDeleteRow = useCallback(id => {
-        setSelectedCampaignId(id);
-        openDeleteConfirmDialog();
-    },[setSelectedCampaignId,openDeleteConfirmDialog]);
+    const handleClickDeleteRow = useCallback(
+        id => {
+            setSelectedCampaignId(id);
+            openDeleteConfirmDialog();
+        },
+        [setSelectedCampaignId, openDeleteConfirmDialog],
+    );
 
     const handleClickCreateButton = () => {
         setSelectedCampaignId(undefined);
         openCreateEditDialog();
+    };
+
+    const handleSearch = event => {
+        // @todo: add debounce with useCallback or something
+        setSearchQuery(event.target.value);
     };
 
     const selectedCampaign = campaigns?.results?.find(
@@ -1002,6 +1040,7 @@ export const Dashboard = () => {
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     {status === 'loading' && <LoadingSpinner />}
                     <PageActions>
+                        <SearchInput onChange={handleSearch} />
                         <PageAction
                             icon={AddIcon}
                             onClick={handleClickCreateButton}

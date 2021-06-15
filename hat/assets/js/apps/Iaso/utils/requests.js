@@ -774,7 +774,7 @@ const data = [
                 dateTime: moment.now().toString(),
                 comment: "We don't do that here",
                 object_id: 12,
-                parent_comment_id: null,
+                parent_comment_id: 3,
                 children: null,
                 author: {
                     id: 3,
@@ -810,9 +810,29 @@ export const mockGetComments = async orgUnit => {
     return null;
 };
 
-export const mockPostComment = async comment => {
+export const mockPostComment = async (comment, withChildren = false) => {
     await waitFor(1000);
-    const updatedData = [comment, ...data];
+    let updatedData = [];
+    const newComment = {
+        author: {
+            id: 21,
+            first_name: 'Son',
+            last_name: 'Le',
+            user_name: 'superUser',
+        },
+        children: null,
+        dateTime: moment.now().toString(),
+        comment: comment.comment,
+        object_id: 21,
+        parent_comment_id: null,
+    };
+    if (!withChildren) {
+        updatedData = [newComment, ...data];
+    } else {
+        newComment.parent_comment_id = 3;
+        updatedData = [...data];
+        updatedData[2].children.push(newComment);
+    }
     const response = {
         data: updatedData,
         count: 4,

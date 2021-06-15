@@ -43,6 +43,7 @@ import {
 
 import 'leaflet-draw/dist/leaflet.draw.css';
 import InstancePopupComponent from '../../instances/components/InstancePopupComponent';
+import { OrgUnitsMapComments } from './OrgUnitsMapComments';
 
 const zoom = 5;
 const padding = [75, 75];
@@ -100,6 +101,7 @@ class OrgUnitMapComponent extends Component {
             orgUnit,
             setOrgUnitLocationModified,
         } = this.props;
+        this.fetchSubOrgUnitDetail(orgUnit);
         const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
         zoomBar.addTo(this.map.leafletElement);
         setDrawMessages(formatMessage);
@@ -445,6 +447,7 @@ class OrgUnitMapComponent extends Component {
                             <TileSwitch />
                         </>
                     }
+                    commentsOptionComponent={<OrgUnitsMapComments />}
                 >
                     <Map
                         scrollWheelZoom={false}

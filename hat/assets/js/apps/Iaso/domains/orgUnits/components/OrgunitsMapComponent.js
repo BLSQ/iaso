@@ -8,8 +8,8 @@ import isEqual from 'lodash/isEqual';
 import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import { InnerDrawer, injectIntl, commonStyles } from 'bluesquare-components';
-// import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
+import { injectIntl, commonStyles } from 'bluesquare-components';
+import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { locationsLimit } from '../../../constants/filters';
 
 import {
@@ -198,33 +198,28 @@ class OrgunitsMap extends Component {
             <Grid container spacing={0}>
                 <InnerDrawer
                     withTopBorder
-                    settingsOption={{
-                        component: (
-                            <>
-                                <TileSwitch />
-                                <Divider />
-                                <ClusterSwitch />
-                                <Divider />
-                                <Box
-                                    px={2}
-                                    className={classes.innerDrawerToolbar}
-                                    component="div"
-                                >
-                                    <FiltersComponent
-                                        params={params}
-                                        baseUrl={baseUrl}
-                                        onFilterChanged={() =>
-                                            setFiltersUpdated()
-                                        }
-                                        filters={[locationsLimit()]}
-                                    />
-                                </Box>
-                                <Divider />
-                                <OrgUnitsMapComments />
-                            </>
-                        ),
-                        message: DrawerMessages.settings,
-                    }}
+                    settingsOptionComponent={
+                        <>
+                            <TileSwitch />
+                            <Divider />
+                            <ClusterSwitch />
+                            <Divider />
+                            <Box
+                                px={2}
+                                className={classes.innerDrawerToolbar}
+                                component="div"
+                            >
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    onFilterChanged={() => setFiltersUpdated()}
+                                    filters={[locationsLimit()]}
+                                />
+                            </Box>
+                            <Divider />
+                        </>
+                    }
+                    commentsOptionComponent={<OrgUnitsMapComments />}
                 >
                     <Map
                         ref={ref => {

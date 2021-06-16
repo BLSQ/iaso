@@ -640,6 +640,7 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
 // TODO figure out how to document currying with JSDocs
 export const requestHandler = dispatch => request => params => {
     const { url, body, fileData } = params.requestParams;
+    console.log('body', body);
     return request(url, body, fileData)
         .then(data => {
             if (!params.disableSuccessSnackBar) {
@@ -671,6 +672,25 @@ export const iasoPutRequest = requestHandler(storeDispatch)(putRequest);
 export const iasoPatchRequest = requestHandler(storeDispatch)(patchRequest);
 export const iasoDeleteRequest = requestHandler(storeDispatch)(deleteRequest);
 export const iasoRestoreRequest = requestHandler(storeDispatch)(restoreRequest);
+
+export const getComments = async orgUnit => {
+    const result = await iasoGetRequest({
+        disableSuccessSnackBar: true,
+        requestParams: {
+            url: `/api/comments/?object_pk=${orgUnit.id}&content_type=iaso-orgunit&limit=5`,
+        },
+    });
+    console.log('get request result', result);
+    return result;
+};
+
+export const postComment = async comment => {
+    const result = await iasoPostRequest({
+        requestParams: { url: '/api/comments/', body: comment },
+    });
+    console.log('post request result', result);
+    return result;
+};
 
 /**
  *

@@ -2,22 +2,29 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { Comment, CommentsList, AddComment } from 'bluesquare-components';
 import { Box, Typography } from '@material-ui/core';
 import { useSelector } from 'react-redux';
+import moment from 'moment';
 import {
     useAPI,
-    mockGetComments,
+    getComments,
     mockPostComment,
+    postComment,
 } from '../../../utils/requests';
 // import { AddOrgUnitComment } from './AddOrgUnitComment';
 
 const adaptComment = comment => {
-    return {
-        author: `${comment.author.first_name} ${comment.author.last_name}`,
+    const author =
+        comment.user.first_name && comment.user.last_name
+            ? `${comment.user.first_name} ${comment.user.last_name}`
+            : comment.user.username ?? 'Unknown';
+    const result = {
+        author,
         comment: comment.comment,
-        dateTime: comment.dateTime,
+        dateTime: comment.dateTime ?? moment.now().toString(),
         id: comment.id,
-        authorId: comment.author.id,
+        authorId: comment.user.id,
         parentId: comment.parent_comment_id,
     };
+    return result;
 };
 
 const adaptComments = comments => {
@@ -30,17 +37,22 @@ const OrgUnitsMapComments = () => {
     const orgUnit = useSelector(state => state.orgUnits.currentSubOrgUnit);
     // console.log('orgUnit', orgUnit);
     // TODO add Loading state for both API calls
-    const { data: comments = null } = useAPI(mockGetComments, orgUnit);
+    // Saving the lastPostedComment in order to trigger refetch after a POST
+    const [lastPostedComment, setLastPostedComment] = useState(0);
+    const { data: comments = null } = useAPI(getComments, orgUnit, {
+        additionalDependencies: [lastPostedComment],
+    });
+    console.log('results in component', comments);
     const [commentToPost, setCommentToPost] = useState();
-    const [temp, setTemp] = useState(null);
 
     const addReply = useCallback(
         (text, id) => {
             const requestBody = {
-                parent_comment_id: id,
+                parent: id,
                 comment: text,
-                model: 'org_units',
-                object_id: orgUnit.id,
+                content_type: 57,
+                // content_type: 'iaso-orgunits',
+                object_pk: orgUnit.id,
             };
             setCommentToPost(requestBody);
         },
@@ -72,6 +84,7 @@ const OrgUnitsMapComments = () => {
                 key={mainComment.author + mainComment.id + mainComment.dateTime}
                 actionText="Add reply"
                 onAddComment={addReply}
+                parentId={mainComment.id}
             />
         );
     };
@@ -88,9 +101,10 @@ const OrgUnitsMapComments = () => {
         async text => {
             const comment = {
                 comment: text,
-                object_id: orgUnit.id,
-                parent_comment_id: null,
-                model: 'org_units',
+                object_pk: orgUnit.id,
+                parent: null,
+                content_type: 57,
+                // content_type: 'iaso-orgunits',
             };
             setCommentToPost(comment);
         },
@@ -101,16 +115,11 @@ const OrgUnitsMapComments = () => {
         // eslint-disable-next-line consistent-return
         const updateComment = async () => {
             if (!commentToPost) return null;
-            let updatedComment = null;
-            if (commentToPost.parent_comment_id) {
-                updatedComment = await mockPostComment(commentToPost, true);
-            } else {
-                updatedComment = await mockPostComment(commentToPost);
-            }
-            setTemp(updatedComment.data);
+            const postedComment = await postComment(commentToPost);
+            setLastPostedComment(postedComment.id);
         };
         updateComment();
-    }, [commentToPost]);
+    }, [commentToPost, postComment]);
     return (
         <>
             <Box px={2} mb={3} component="div">
@@ -118,7 +127,7 @@ const OrgUnitsMapComments = () => {
                     {orgUnit?.name ?? 'Please select an Org Unit'}
                 </Typography>
                 {orgUnit && <AddComment onConfirm={onConfirm} />}
-                {formatComments(temp ?? comments?.data)}
+                {formatComments(comments?.results)}
             </Box>
         </>
     );

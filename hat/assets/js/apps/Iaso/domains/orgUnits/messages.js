@@ -266,6 +266,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.delete',
         defaultMessage: 'Delete',
     },
+    stopDelete: {
+        id: 'iaso.label.stopDelete',
+        defaultMessage: 'Stop delete',
+    },
     add: {
         id: 'iaso.label.add',
         defaultMessage: 'Add',
@@ -274,21 +278,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.location',
         defaultMessage: 'Location',
     },
-    addShape: {
-        id: 'iaso.map.shape.addShape',
-        defaultMessage: 'Add shape',
-    },
     addLocation: {
         id: 'iaso.map.shape.addLocation',
         defaultMessage: 'Add a location',
-    },
-    editShape: {
-        id: 'iaso.map.shape.edit',
-        defaultMessage: 'Edit shape',
-    },
-    deleteShape: {
-        id: 'iaso.map.shape.delete',
-        defaultMessage: 'Delete shape',
     },
     deleteMarker: {
         id: 'iaso.map.marker.delete',

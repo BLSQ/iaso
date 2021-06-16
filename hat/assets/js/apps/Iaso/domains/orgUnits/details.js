@@ -15,6 +15,7 @@ import {
     // TopBar,
     LoadingSpinner,
 } from 'bluesquare-components';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
     setCurrentOrgUnit,
@@ -63,7 +64,6 @@ import LinksDetails from '../links/components/LinksDetailsComponent';
 
 import { getChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
-
 import MESSAGES from './messages';
 
 import {
@@ -78,6 +78,20 @@ const baseUrl = baseUrls.orgUnitDetails;
 
 const styles = theme => ({
     ...commonStyles(theme),
+    root: {
+        '& path.primary': {
+            fill: fade(theme.palette.primary.main, 0.6),
+            stroke: theme.palette.primary.main,
+            strokeOpacity: 1,
+            strokeWidth: 3,
+        },
+        '& path.secondary': {
+            fill: fade(theme.palette.secondary.main, 0.6),
+            stroke: theme.palette.secondary.main,
+            strokeOpacity: 1,
+            strokeWidth: 3,
+        },
+    },
     hiddenOpacity: {
         position: 'absolute',
         top: '0px',
@@ -253,10 +267,11 @@ class OrgUnitDetail extends Component {
         });
     }
 
-    handleChangeShape(key, value) {
+    handleChangeShape(geoJson, catchment) {
         const currentOrgUnit = {
             ...this.state.currentOrgUnit,
-            [key]: value,
+            geo_json: geoJson,
+            catchment,
         };
         this.setState({
             currentOrgUnit,
@@ -333,9 +348,9 @@ class OrgUnitDetail extends Component {
         dispatch(setFetchingDetail(false));
     }
 
-    setOrgUnitLocationModified() {
+    setOrgUnitLocationModified(orgUnitLocationModified = true) {
         this.setState({
-            orgUnitLocationModified: true,
+            orgUnitLocationModified,
         });
     }
 
@@ -459,9 +474,8 @@ class OrgUnitDetail extends Component {
             }
         }
         const tabs = ['infos', 'map', 'children', 'links', 'history', 'forms'];
-
         return (
-            <>
+            <section className={classes.root}>
                 <TopBar
                     title={title}
                     displayBackButton
@@ -531,8 +545,10 @@ class OrgUnitDetail extends Component {
                         >
                             <Box className={classes.containerFullHeight}>
                                 <OrgUnitMap
-                                    setOrgUnitLocationModified={() =>
-                                        this.setOrgUnitLocationModified()
+                                    setOrgUnitLocationModified={isModified =>
+                                        this.setOrgUnitLocationModified(
+                                            isModified,
+                                        )
                                     }
                                     orgUnitLocationModified={
                                         orgUnitLocationModified
@@ -547,8 +563,11 @@ class OrgUnitDetail extends Component {
                                     onChangeLocation={location => {
                                         this.handleChangeLocation(location);
                                     }}
-                                    onChangeShape={(keyValue, shape) =>
-                                        this.handleChangeShape(keyValue, shape)
+                                    onChangeShape={(geoJson, catchment) =>
+                                        this.handleChangeShape(
+                                            geoJson,
+                                            catchment,
+                                        )
                                     }
                                 />
                             </Box>
@@ -668,7 +687,7 @@ class OrgUnitDetail extends Component {
                         </div>
                     </section>
                 )}
-            </>
+            </section>
         );
     }
 }

@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import viewsets, status, permissions
-from django.contrib.gis.geos import Polygon, GEOSGeometry
+from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils.translation import gettext as _
@@ -320,35 +320,21 @@ class OrgUnitViewSet(viewsets.ViewSet):
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups")
 
-        if False:  # simplified geom shape editing is currently disabled
-            if geo_json and geo_json["features"][0]["geometry"] and geo_json["features"][0]["geometry"]["coordinates"]:
-                if len(geo_json["features"][0]["geometry"]["coordinates"]) == 1:
-                    org_unit.simplified_geom = Polygon(geo_json["features"][0]["geometry"]["coordinates"][0])
-                else:
-                    # DB has a single Polygon, refuse if we have more, or less.
-                    return Response(
-                        "Only one polygon should be saved in the geo_json shape", status=status.HTTP_400_BAD_REQUEST
-                    )
-            elif simplified_geom:
-                org_unit.simplified_geom = simplified_geom
-            else:
-                org_unit.simplified_geom = None
+        if geo_json and geo_json["features"][0]["geometry"] and geo_json["features"][0]["geometry"]["coordinates"]:
+            org_unit.simplified_geom = MultiPolygon(
+                *[Polygon(*coord) for coord in geo_json["features"][0]["geometry"]["coordinates"]]
+            )
+        elif simplified_geom:
+            org_unit.simplified_geom = simplified_geom
+        else:
+            org_unit.simplified_geom = None
 
-        if False:  # catchment shape editing is currently disabled
-            if (
-                catchment
-                and catchment["features"][0]["geometry"]
-                and catchment["features"][0]["geometry"]["coordinates"]
-            ):
-                if len(catchment["features"][0]["geometry"]["coordinates"]) == 1:
-                    org_unit.catchment = Polygon(catchment["features"][0]["geometry"]["coordinates"][0])
-                else:
-                    # DB has a single Polygon, refuse if we have more, or less.
-                    return Response(
-                        "Only one polygon should be saved in the catchment shape", status=status.HTTP_400_BAD_REQUEST
-                    )
-            else:
-                org_unit.catchment = None
+        if catchment and catchment["features"][0]["geometry"] and catchment["features"][0]["geometry"]["coordinates"]:
+            org_unit.catchment = MultiPolygon(
+                *[Polygon(*coord) for coord in catchment["features"][0]["geometry"]["coordinates"]]
+            )
+        else:
+            org_unit.catchment = None
 
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)

@@ -48,10 +48,10 @@ export const getShapesBounds = shapes => {
     return group.getBounds();
 };
 
-export const clusterCustomMarker = (cluster, color = "primary") =>
+export const clusterCustomMarker = (cluster, color = 'primary') =>
     L.divIcon({
         html: `<div><span>${cluster.getChildCount()}</span></div>`,
-        className: `marker-cluster ${color}`, 
+        className: `marker-cluster ${color}`,
         iconSize: L.point(40, 40, true),
         iconAnchor: [20, 30],
     });
@@ -149,9 +149,9 @@ export const addDrawControl = (map, group) => {
             rectangle: false,
         },
         edit: {
-            edit: false,
+            edit: true,
             featureGroup: group,
-            remove: false,
+            remove: true,
         },
     };
 
@@ -162,9 +162,12 @@ export const addDrawControl = (map, group) => {
         featureGroup: group,
     });
     const editHandler = editToolbar.getModeHandlers()[0].handler;
+    const deleteHandler = editToolbar.getModeHandlers()[1].handler;
     editHandler._map = map;
+    deleteHandler._map = map;
     return {
         editHandler,
+        deleteHandler,
         drawControl,
     };
 };
@@ -213,6 +216,6 @@ export const shapeOptions = () => ({
 export const polygonDrawOpiton = (customClass = 'primary') => ({
     shapeOptions: {
         color: theme.palette[customClass].main,
-        className: `${customClass} no-pointer-event`,
+        className: `${customClass}`,
     },
 });

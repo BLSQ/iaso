@@ -40,6 +40,9 @@ USE_X_FORWARDED_HOST = True
 
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
 
+# Default site for django contrib site framework
+SITE_ID = 1
+
 
 # Logging
 

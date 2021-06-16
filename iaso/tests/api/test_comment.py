@@ -49,15 +49,19 @@ class CommentApiTestCase(APITestCase):
 
     def test_post_not_orgunit(self):
         self.client.force_authenticate(self.user)
-        ct = ContentType.objects.get_for_model(m.User)
-        data = {
-            "comment": "comment",
-            "content_type": "iaso-orgunit",
-            "object_pk": 1,
-        }
-
-        response = self.client.post("/api/comments/", data=data, format="json")
-        self.assertEqual(response.status_code, 403, response.content)
+        response = self.client.post(
+            "/api/comments/",
+            format="json",
+            data={
+                "comment": "comment",
+                "content_type": "iaso-group",
+                "object_pk": self.orgunit.pk,
+            },
+        )
+        self.assertEqual(response.status_code, 400, response.content)
+        r = response.json()
+        self.assertIn("non_field_errors", r)
+        self.assertEqual(r["non_field_errors"], ["only comment on OrgUnit are accepted for now"])
 
     def test_setupaccount_post(self):
 

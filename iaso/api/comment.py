@@ -49,7 +49,7 @@ class CommentMiniSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CommentIaso
-        fields = ["id", "user", "comment", "content_type", "object_pk", "site"]
+        fields = ["id", "user", "comment", "content_type", "object_pk", "site", "submit_date"]
         read_only_fields = ["user"]
 
     user = UserSerializer(read_only=True)

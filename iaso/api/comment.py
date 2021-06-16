@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from rest_framework import viewsets, serializers, mixins
@@ -9,6 +10,12 @@ from iaso.models import OrgUnit
 from iaso.models.comment import CommentIaso
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name"]
+
+
 class CommentMiniSerializer(serializers.ModelSerializer):
     """Without the children"""
 
@@ -17,6 +24,8 @@ class CommentMiniSerializer(serializers.ModelSerializer):
         fields = ["id", "user", "comment", "content_type", "object_pk", "site"]
         read_only_fields = ["user"]
 
+    user = UserSerializer(read_only=True)
+
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,12 +33,17 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ["id", "parent", "user", "comment", "children", "content_type", "object_pk", "site"]
         read_only_fields = ["user", "children", "site"]
 
+    children = CommentMiniSerializer(many=True, read_only=True)
+    user = UserSerializer(read_only=True)
+
     def validate(self, attrs):
         if not attrs["content_type"].model_class() == OrgUnit:
             raise ValidationError("only comment on OrgUnit are accepted for now")
-        orgunit = attrs["content_type"].model_class().objects.get(pk=attrs["object_pk"])
+
         # can comment on an orgunit if we have access to it
-        if orgunit not in OrgUnit.objects.filter_for_user_and_app_id(self.context["request"].user):
+        try:
+            OrgUnit.objects.filter_for_user_and_app_id(self.context["request"].user).get(pk=attrs["object_pk"])
+        except OrgUnit.DoesNotExist:
             raise PermissionDenied("User cannot leave comment on this OrgUnit")
 
         if attrs.get("parent"):
@@ -39,8 +53,6 @@ class CommentSerializer(serializers.ModelSerializer):
             if parent.object_pk != attrs["object_pk"] and parent.content_type == attrs["content_type"]:
                 raise ValidationError("Children comment must be the same object as their parent")
         return attrs
-
-    children = CommentMiniSerializer(many=True, read_only=True)
 
 
 class CommentViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericViewSet):

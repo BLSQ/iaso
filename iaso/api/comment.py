@@ -62,7 +62,7 @@ class CommentViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericView
     Only comment on OrgUnit are allowed at the moment.
     Threaded comment are allowed 1 level deep by specifying the parent
 
-    GET /api/comment/?object_pk=<>&content_type=iaso.org
+    GET /api/comment/?object_pk=<>&content_type=iaso-orgunit
     POST /api/comment/
     """
 

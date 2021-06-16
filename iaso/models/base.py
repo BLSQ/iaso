@@ -408,6 +408,11 @@ class DefaultGroupManager(models.Manager):
         return super().get_queryset().filter(domain=None)
 
 
+class DomainGroupManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(domain__isnull=False)
+
+
 class Group(models.Model):
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
@@ -421,6 +426,7 @@ class Group(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = DefaultGroupManager()
+    domain_objects = DomainGroupManager()
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)

@@ -1,15 +1,9 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { Comment, CommentsList, AddComment } from 'bluesquare-components';
+import { Pagination } from '@material-ui/lab';
 import { Box, Typography } from '@material-ui/core';
 import { useSelector } from 'react-redux';
-import moment from 'moment';
-import {
-    useAPI,
-    getComments,
-    mockPostComment,
-    postComment,
-} from '../../../utils/requests';
-// import { AddOrgUnitComment } from './AddOrgUnitComment';
+import { useGetComments, postComment } from '../../../utils/requests';
 
 const adaptComment = comment => {
     const author =
@@ -19,7 +13,7 @@ const adaptComment = comment => {
     const result = {
         author,
         comment: comment.comment,
-        dateTime: comment.dateTime ?? moment.now().toString(),
+        dateTime: comment.submit_date,
         id: comment.id,
         authorId: comment.user.id,
         parentId: comment.parent_comment_id,
@@ -33,16 +27,25 @@ const adaptComments = comments => {
     });
 };
 
+const calculateOffset = (page, pageSize) => {
+    const multiplier = page - 1 > 0 ? page - 1 : 0;
+    return pageSize * multiplier;
+};
+
 const OrgUnitsMapComments = () => {
     const orgUnit = useSelector(state => state.orgUnits.currentSubOrgUnit);
-    // console.log('orgUnit', orgUnit);
     // TODO add Loading state for both API calls
     // Saving the lastPostedComment in order to trigger refetch after a POST
     const [lastPostedComment, setLastPostedComment] = useState(0);
-    const { data: comments = null } = useAPI(getComments, orgUnit, {
-        additionalDependencies: [lastPostedComment],
+    const [offset, setOffset] = useState(null);
+    // eslint-disable-next-line no-unused-vars
+    const [pageSize, setPageSize] = useState(5);
+    const { data: comments } = useGetComments({
+        orgUnitId: orgUnit.id,
+        offset,
+        limit: pageSize,
+        refreshTrigger: lastPostedComment,
     });
-    console.log('results in component', comments);
     const [commentToPost, setCommentToPost] = useState();
 
     const addReply = useCallback(
@@ -50,13 +53,12 @@ const OrgUnitsMapComments = () => {
             const requestBody = {
                 parent: id,
                 comment: text,
-                content_type: 57,
-                // content_type: 'iaso-orgunits',
+                content_type: 'iaso-orgunit',
                 object_pk: orgUnit.id,
             };
             setCommentToPost(requestBody);
         },
-        [mockPostComment, orgUnit],
+        [orgUnit],
     );
     const formatComment = comment => {
         const mainComment = adaptComment(comment);
@@ -103,12 +105,12 @@ const OrgUnitsMapComments = () => {
                 comment: text,
                 object_pk: orgUnit.id,
                 parent: null,
-                content_type: 57,
-                // content_type: 'iaso-orgunits',
+                // content_type: 57,
+                content_type: 'iaso-orgunit',
             };
             setCommentToPost(comment);
         },
-        [mockPostComment, orgUnit],
+        [orgUnit],
     );
 
     useEffect(() => {
@@ -129,6 +131,17 @@ const OrgUnitsMapComments = () => {
                 {orgUnit && <AddComment onConfirm={onConfirm} />}
                 {formatComments(comments?.results)}
             </Box>
+            {comments?.count > 1 && (
+                <Pagination
+                    count={Math.ceil(comments?.count / pageSize)}
+                    hidePrevButton={!comments?.previous}
+                    hideNextButton={!comments?.next}
+                    onChange={(_, page) => {
+                        setOffset(calculateOffset(page, pageSize));
+                    }}
+                    shape="rounded"
+                />
+            )}
         </>
     );
 };

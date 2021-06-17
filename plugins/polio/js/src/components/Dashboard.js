@@ -888,23 +888,28 @@ export const Dashboard = () => {
         });
     };
 
-    const handleClickEditRow = useCallback(id => {
-        setSelectedCampaignId(id);
-        openCreateEditDialog();
-    },[setSelectedCampaignId,openCreateEditDialog]);
+    const handleClickEditRow = useCallback(
+        id => {
+            setSelectedCampaignId(id);
+            openCreateEditDialog();
+        },
+        [setSelectedCampaignId, openCreateEditDialog],
+    );
 
-
-    const handleClickDeleteRow = useCallback(id => {
-        setSelectedCampaignId(id);
-        openDeleteConfirmDialog();
-    },[setSelectedCampaignId,openDeleteConfirmDialog]);
+    const handleClickDeleteRow = useCallback(
+        id => {
+            setSelectedCampaignId(id);
+            openDeleteConfirmDialog();
+        },
+        [setSelectedCampaignId, openDeleteConfirmDialog],
+    );
 
     const handleClickCreateButton = () => {
         setSelectedCampaignId(undefined);
         openCreateEditDialog();
     };
 
-    const selectedCampaign = campaigns?.results?.find(
+    const selectedCampaign = campaigns?.campaigns?.find(
         campaign => campaign.id === selectedCampaignId,
     );
 
@@ -1017,7 +1022,7 @@ export const Dashboard = () => {
                             baseUrl={'/polio'}
                             redirectTo={onTableParamsChange}
                             columns={columns}
-                            data={campaigns.results}
+                            data={campaigns.campaigns}
                             watchToRender={tableParams}
                         />
                     )}

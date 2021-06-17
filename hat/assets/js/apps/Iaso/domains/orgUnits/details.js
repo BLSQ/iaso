@@ -73,6 +73,7 @@ import {
 } from '../../constants/filters';
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
+import { OrgUnitsMapComments } from './components/OrgUnitsMapComments';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
@@ -85,6 +86,14 @@ const styles = theme => ({
         width: '100vw',
         zIndex: '-100',
         opacity: '0',
+    },
+    comments: {
+        overflowY: 'auto',
+        height: '65vh',
+    },
+    commentsWrapper: {
+        width: '60%',
+        margin: 'auto',
     },
 });
 
@@ -458,7 +467,15 @@ class OrgUnitDetail extends Component {
                 }`;
             }
         }
-        const tabs = ['infos', 'map', 'children', 'links', 'history', 'forms'];
+        const tabs = [
+            'infos',
+            'map',
+            'children',
+            'links',
+            'history',
+            'forms',
+            'comments',
+        ];
 
         return (
             <>
@@ -666,6 +683,16 @@ class OrgUnitDetail extends Component {
                                 }
                             />
                         </div>
+                        {tab === 'comments' && (
+                            <div className={classes.commentsWrapper}>
+                                <OrgUnitsMapComments
+                                    className={classes.comments}
+                                    orgUnit={currentOrgUnit}
+                                    maxPages={4}
+                                    // inlineTextAreaButton={false}
+                                />
+                            </div>
+                        )}
                     </section>
                 )}
             </>

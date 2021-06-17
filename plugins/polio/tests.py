@@ -166,7 +166,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         campaign.refresh_from_db()
-        self.assertEqual(campaign.group.org_units.count(), 2)
+        self.assertEqual(campaign.group.org_units.count(), self.org_units.__len__())
 
     def test_can_create_and_update_campaign_with_orgunits_group(self):
         """

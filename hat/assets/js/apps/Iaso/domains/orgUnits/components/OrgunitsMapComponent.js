@@ -34,7 +34,6 @@ import { fetchOrgUnitDetail } from '../../../utils/requests';
 import { getChipColors } from '../../../constants/chipColors';
 import { getColorsFromParams, decodeSearch } from '../utils';
 import MESSAGES from '../messages';
-import DrawerMessages from '../../../components/nav/messages';
 import { OrgUnitsMapComments } from './OrgUnitsMapComments';
 
 const boundsOptions = {
@@ -47,6 +46,10 @@ const styles = theme => ({
         '& section': {
             width: '100%',
         },
+    },
+    commentContainer: {
+        height: '60vh',
+        overflowY: 'auto',
     },
 });
 
@@ -102,6 +105,7 @@ class OrgunitsMap extends Component {
                 );
             });
         }
+        this.props.setCurrentSubOrgUnit(null);
     }
 
     shouldComponentUpdate(nextProps) {
@@ -175,6 +179,7 @@ class OrgunitsMap extends Component {
             baseUrl,
             classes,
             setFiltersUpdated,
+            selectedOrgUnit,
         } = this.props;
         const bounds = getOrgUnitsBounds(orgUnits);
         const orgUnitsTotal = getFullOrgUnits(orgUnits.locations);
@@ -219,7 +224,13 @@ class OrgunitsMap extends Component {
                             <Divider />
                         </>
                     }
-                    commentsOptionComponent={<OrgUnitsMapComments />}
+                    commentsOptionComponent={
+                        <OrgUnitsMapComments
+                            orgUnit={selectedOrgUnit}
+                            className={classes.commentContainer}
+                            maxPages={4}
+                        />
+                    }
                 >
                     <Map
                         ref={ref => {
@@ -327,7 +338,7 @@ class OrgunitsMap extends Component {
 }
 OrgunitsMap.defaultProps = {
     baseUrl: '',
-    // currentSubOrgUnit: null,
+    selectedOrgUnit: null,
 };
 
 OrgunitsMap.propTypes = {
@@ -343,6 +354,7 @@ OrgunitsMap.propTypes = {
     baseUrl: PropTypes.string,
     classes: PropTypes.object.isRequired,
     setFiltersUpdated: PropTypes.func.isRequired,
+    selectedOrgUnit: PropTypes.object,
 };
 
 const MapStateToProps = state => ({
@@ -350,6 +362,7 @@ const MapStateToProps = state => ({
     isClusterActive: state.map.isClusterActive,
     orgUnits: state.orgUnits.orgUnitsLocations,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
+    selectedOrgUnit: state.orgUnits.currentSubOrgUnit,
 });
 
 const MapDispatchToProps = dispatch => ({

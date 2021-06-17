@@ -725,6 +725,7 @@ export const useAPI = (request, requestArgs, params = defaultHookParams) => {
     }, [
         ...(params.additionalDependencies ?? []),
         request,
+        params.preventTrigger,
         params.trigger,
         requestArgs,
     ]);
@@ -752,7 +753,9 @@ export const useGetComments = ({
             }),
         [url, refreshTrigger],
     );
-    const result = useAPI(request);
+    const result = useAPI(request, null, {
+        preventTrigger: Boolean(!orgUnitId),
+    });
     return result;
 };
 

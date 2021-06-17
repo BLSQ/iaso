@@ -1,9 +1,21 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { Comment, CommentsList, AddComment } from 'bluesquare-components';
+import {
+    SingleComment,
+    CommentWithThread,
+    AddComment,
+} from 'bluesquare-components';
 import { Pagination } from '@material-ui/lab';
-import { Box, Typography } from '@material-ui/core';
-import { useSelector } from 'react-redux';
+import { Box, Typography, makeStyles } from '@material-ui/core';
+
+// import { useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
 import { useGetComments, postComment } from '../../../utils/requests';
+
+const styles = {
+    commentsBlock: { marginBottom: '7px' },
+    header: { marginTop: '10px' },
+};
+const useStyles = makeStyles(styles);
 
 const adaptComment = comment => {
     const author =
@@ -32,16 +44,22 @@ const calculateOffset = (page, pageSize) => {
     return pageSize * multiplier;
 };
 
-const OrgUnitsMapComments = () => {
-    const orgUnit = useSelector(state => state.orgUnits.currentSubOrgUnit);
+const OrgUnitsMapComments = ({
+    orgUnit,
+    className,
+    maxPages,
+    inlineTextAreaButton,
+}) => {
+    const classes = useStyles();
+    // const orgUnit = useSelector(state => state.orgUnits.currentSubOrgUnit);
     // TODO add Loading state for both API calls
     // Saving the lastPostedComment in order to trigger refetch after a POST
     const [lastPostedComment, setLastPostedComment] = useState(0);
     const [offset, setOffset] = useState(null);
     // eslint-disable-next-line no-unused-vars
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(maxPages);
     const { data: comments } = useGetComments({
-        orgUnitId: orgUnit.id,
+        orgUnitId: orgUnit?.id,
         offset,
         limit: pageSize,
         refreshTrigger: lastPostedComment,
@@ -54,7 +72,7 @@ const OrgUnitsMapComments = () => {
                 parent: id,
                 comment: text,
                 content_type: 'iaso-orgunit',
-                object_pk: orgUnit.id,
+                object_pk: orgUnit?.id,
             };
             setCommentToPost(requestBody);
         },
@@ -62,9 +80,9 @@ const OrgUnitsMapComments = () => {
     );
     const formatComment = comment => {
         const mainComment = adaptComment(comment);
-        if (!comment.children) {
+        if (!comment.children || comment.children.length === 0) {
             return (
-                <Comment
+                <SingleComment
                     author={mainComment.author}
                     content={mainComment.comment}
                     postingTime={mainComment.dateTime}
@@ -81,7 +99,7 @@ const OrgUnitsMapComments = () => {
         }
         const childrenComments = adaptComments(comment.children);
         return (
-            <CommentsList
+            <CommentWithThread
                 comments={[mainComment, ...childrenComments]}
                 key={mainComment.author + mainComment.id + mainComment.dateTime}
                 actionText="Add reply"
@@ -103,7 +121,7 @@ const OrgUnitsMapComments = () => {
         async text => {
             const comment = {
                 comment: text,
-                object_pk: orgUnit.id,
+                object_pk: orgUnit?.id,
                 parent: null,
                 // content_type: 57,
                 content_type: 'iaso-orgunit',
@@ -122,20 +140,26 @@ const OrgUnitsMapComments = () => {
         };
         updateComment();
     }, [commentToPost, postComment]);
+
     return (
         <>
-            <Box px={2} mb={3} component="div">
-                <Typography variant="h6">
+            <Box px={2} component="div" className={classes.header}>
+                <Typography variant="h5">
                     {orgUnit?.name ?? 'Please select an Org Unit'}
                 </Typography>
-                {orgUnit && <AddComment onConfirm={onConfirm} />}
-                {formatComments(comments?.results)}
+                {orgUnit && (
+                    <AddComment
+                        onConfirm={onConfirm}
+                        inline={inlineTextAreaButton}
+                    />
+                )}
             </Box>
+            <div className={`${className} ${classes.commentsBlock}`}>
+                {formatComments(comments?.results)}
+            </div>
             {comments?.count > 1 && (
                 <Pagination
                     count={Math.ceil(comments?.count / pageSize)}
-                    hidePrevButton={!comments?.previous}
-                    hideNextButton={!comments?.next}
                     onChange={(_, page) => {
                         setOffset(calculateOffset(page, pageSize));
                     }}
@@ -144,6 +168,19 @@ const OrgUnitsMapComments = () => {
             )}
         </>
     );
+};
+
+OrgUnitsMapComments.propTypes = {
+    orgUnit: PropTypes.object,
+    className: PropTypes.string,
+    maxPages: PropTypes.number,
+    inlineTextAreaButton: PropTypes.bool,
+};
+OrgUnitsMapComments.defaultProps = {
+    orgUnit: null,
+    className: '',
+    maxPages: 5,
+    inlineTextAreaButton: true,
 };
 
 export { OrgUnitsMapComments };

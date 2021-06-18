@@ -7,7 +7,7 @@ import {
 import { Pagination } from '@material-ui/lab';
 import { Box, Typography, makeStyles } from '@material-ui/core';
 
-// import { useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useGetComments, postComment } from '../../../utils/requests';
 
@@ -49,9 +49,13 @@ const OrgUnitsMapComments = ({
     className,
     maxPages,
     inlineTextAreaButton,
+    getOrgUnitFromStore,
 }) => {
     const classes = useStyles();
-    // const orgUnit = useSelector(state => state.orgUnits.currentSubOrgUnit);
+    const globalStateOrgUnit = useSelector(
+        state => state.orgUnits.currentSubOrgUnit,
+    );
+    const orgUnitToUse = getOrgUnitFromStore ? globalStateOrgUnit : orgUnit;
     // TODO add Loading state for both API calls
     // Saving the lastPostedComment in order to trigger refetch after a POST
     const [lastPostedComment, setLastPostedComment] = useState(0);
@@ -59,7 +63,7 @@ const OrgUnitsMapComments = ({
     // eslint-disable-next-line no-unused-vars
     const [pageSize, setPageSize] = useState(maxPages);
     const { data: comments } = useGetComments({
-        orgUnitId: orgUnit?.id,
+        orgUnitId: orgUnitToUse?.id,
         offset,
         limit: pageSize,
         refreshTrigger: lastPostedComment,
@@ -72,11 +76,11 @@ const OrgUnitsMapComments = ({
                 parent: id,
                 comment: text,
                 content_type: 'iaso-orgunit',
-                object_pk: orgUnit?.id,
+                object_pk: orgUnitToUse?.id,
             };
             setCommentToPost(requestBody);
         },
-        [orgUnit],
+        [orgUnitToUse],
     );
     const formatComment = comment => {
         const mainComment = adaptComment(comment);
@@ -92,7 +96,6 @@ const OrgUnitsMapComments = ({
                         mainComment.id +
                         mainComment.dateTime
                     }
-                    actionText="Reply"
                     onAddComment={addReply}
                 />
             );
@@ -102,7 +105,6 @@ const OrgUnitsMapComments = ({
             <CommentWithThread
                 comments={[mainComment, ...childrenComments]}
                 key={mainComment.author + mainComment.id + mainComment.dateTime}
-                actionText="Add reply"
                 onAddComment={addReply}
                 parentId={mainComment.id}
             />
@@ -121,14 +123,14 @@ const OrgUnitsMapComments = ({
         async text => {
             const comment = {
                 comment: text,
-                object_pk: orgUnit?.id,
+                object_pk: orgUnitToUse?.id,
                 parent: null,
                 // content_type: 57,
                 content_type: 'iaso-orgunit',
             };
             setCommentToPost(comment);
         },
-        [orgUnit],
+        [orgUnitToUse],
     );
 
     useEffect(() => {
@@ -145,9 +147,9 @@ const OrgUnitsMapComments = ({
         <>
             <Box px={2} component="div" className={classes.header}>
                 <Typography variant="h5">
-                    {orgUnit?.name ?? 'Please select an Org Unit'}
+                    {orgUnitToUse?.name ?? 'Please select an Org Unit'}
                 </Typography>
-                {orgUnit && (
+                {orgUnitToUse && (
                     <AddComment
                         onConfirm={onConfirm}
                         inline={inlineTextAreaButton}
@@ -175,12 +177,14 @@ OrgUnitsMapComments.propTypes = {
     className: PropTypes.string,
     maxPages: PropTypes.number,
     inlineTextAreaButton: PropTypes.bool,
+    getOrgUnitFromStore: PropTypes.bool,
 };
 OrgUnitsMapComments.defaultProps = {
     orgUnit: null,
     className: '',
     maxPages: 5,
     inlineTextAreaButton: true,
+    getOrgUnitFromStore: false,
 };
 
 export { OrgUnitsMapComments };

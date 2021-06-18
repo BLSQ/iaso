@@ -155,10 +155,14 @@ class OrgunitsMap extends Component {
 
     fetchDetail(orgUnit) {
         const { dispatch } = this.props;
-        this.props.setCurrentSubOrgUnit(null);
-        fetchOrgUnitDetail(dispatch, orgUnit.id).then(i =>
-            this.props.setCurrentSubOrgUnit(i),
-        );
+        // Removed this as it seems useless and create UI bugs
+        // this.props.setCurrentSubOrgUnit(null);
+        fetchOrgUnitDetail(dispatch, orgUnit.id)
+            .then(i => this.props.setCurrentSubOrgUnit(i))
+            .catch(e => {
+                console.warn('error fetching Org Unit Detail', e);
+                this.props.setCurrentSubOrgUnit(null);
+            });
     }
 
     fitToBounds() {
@@ -179,7 +183,6 @@ class OrgunitsMap extends Component {
             baseUrl,
             classes,
             setFiltersUpdated,
-            selectedOrgUnit,
         } = this.props;
         const bounds = getOrgUnitsBounds(orgUnits);
         const orgUnitsTotal = getFullOrgUnits(orgUnits.locations);
@@ -226,9 +229,9 @@ class OrgunitsMap extends Component {
                     }
                     commentsOptionComponent={
                         <OrgUnitsMapComments
-                            orgUnit={selectedOrgUnit}
                             className={classes.commentContainer}
                             maxPages={4}
+                            getOrgUnitFromStore
                         />
                     }
                 >
@@ -338,7 +341,6 @@ class OrgunitsMap extends Component {
 }
 OrgunitsMap.defaultProps = {
     baseUrl: '',
-    selectedOrgUnit: null,
 };
 
 OrgunitsMap.propTypes = {
@@ -354,7 +356,6 @@ OrgunitsMap.propTypes = {
     baseUrl: PropTypes.string,
     classes: PropTypes.object.isRequired,
     setFiltersUpdated: PropTypes.func.isRequired,
-    selectedOrgUnit: PropTypes.object,
 };
 
 const MapStateToProps = state => ({
@@ -362,7 +363,6 @@ const MapStateToProps = state => ({
     isClusterActive: state.map.isClusterActive,
     orgUnits: state.orgUnits.orgUnitsLocations,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
-    selectedOrgUnit: state.orgUnits.currentSubOrgUnit,
 });
 
 const MapDispatchToProps = dispatch => ({

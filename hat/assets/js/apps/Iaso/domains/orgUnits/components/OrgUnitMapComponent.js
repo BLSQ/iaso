@@ -109,7 +109,6 @@ class OrgUnitMapComponent extends Component {
             orgUnit,
             setOrgUnitLocationModified,
         } = this.props;
-        this.fetchSubOrgUnitDetail(orgUnit);
         const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
         zoomBar.addTo(this.map.leafletElement);
         setDrawMessages(formatMessage);

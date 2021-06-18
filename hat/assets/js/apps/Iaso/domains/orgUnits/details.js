@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { push, replace } from 'react-router-redux';
 import { bindActionCreators } from 'redux';
 
-import { withStyles, Box, Tabs, Tab } from '@material-ui/core';
+import { withStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -92,8 +92,8 @@ const styles = theme => ({
         height: '65vh',
     },
     commentsWrapper: {
-        width: '60%',
-        margin: 'auto',
+        backgroundColor: 'white',
+        paddingTop: '10px',
     },
 });
 
@@ -476,7 +476,6 @@ class OrgUnitDetail extends Component {
             'forms',
             'comments',
         ];
-
         return (
             <>
                 <TopBar
@@ -570,6 +569,7 @@ class OrgUnitDetail extends Component {
                                 />
                             </Box>
                         </div>
+
                         {tab === 'history' && (
                             <Logs
                                 params={params}
@@ -684,14 +684,19 @@ class OrgUnitDetail extends Component {
                             />
                         </div>
                         {tab === 'comments' && (
-                            <div className={classes.commentsWrapper}>
-                                <OrgUnitsMapComments
-                                    className={classes.comments}
-                                    orgUnit={currentOrgUnit}
-                                    maxPages={4}
-                                    // inlineTextAreaButton={false}
-                                />
-                            </div>
+                            <Grid
+                                container
+                                justify="center"
+                                className={classes.commentsWrapper}
+                            >
+                                <Grid item xs={6}>
+                                    <OrgUnitsMapComments
+                                        className={classes.comments}
+                                        orgUnit={currentOrgUnit}
+                                        maxPages={4}
+                                    />
+                                </Grid>
+                            </Grid>
                         )}
                     </section>
                 )}

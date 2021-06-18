@@ -129,6 +129,8 @@ INSTALLED_APPS = [
     "django_comments",
 ]
 
+COMMENTS_APP = "iaso"
+
 if PLUGIN_POLIO_ENABLED:
     INSTALLED_APPS.append("plugins.polio")
 

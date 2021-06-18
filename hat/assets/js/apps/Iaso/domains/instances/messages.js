@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Export',
         id: 'iaso.label.export',
     },
+    exportSelection: {
+        defaultMessage: 'Export {count} records ',
+        id: 'iaso.label.exportSelection',
+    },
     reAssignInstance: {
         defaultMessage: 'Re-assign instance',
         id: 'iaso.label.reAssignInstance',

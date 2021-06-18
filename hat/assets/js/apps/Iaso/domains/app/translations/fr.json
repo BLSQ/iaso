@@ -155,6 +155,7 @@
     "iaso.label.endPeriod": "Période de fin",
     "iaso.label.execute": "Exécuter",
     "iaso.label.export": "Export",
+    "iaso.label.exportSelection": "Exporter {count} soumissions",
     "iaso.label.exportRequests": "Demandes d'export",
     "iaso.label.featureFlags": "Options",
     "iaso.label.field": "Champ",

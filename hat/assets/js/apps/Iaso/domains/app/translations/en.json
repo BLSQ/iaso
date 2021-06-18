@@ -155,6 +155,7 @@
     "iaso.label.execute": "Execute",
     "iaso.label.export": "Export",
     "iaso.label.exportRequests": "Export requests",
+    "iaso.label.exportSelection": "Export {count} records",
     "iaso.label.featureFlags": "Feature flags",
     "iaso.label.field": "Field",
     "iaso.label.files": "Files",

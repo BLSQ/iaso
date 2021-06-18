@@ -1,6 +1,6 @@
 from django.contrib.gis.geos import Point, Polygon, MultiPolygon
 
-from iaso.gpkg.export_gpkg import source_to_gpkg
+from iaso.gpkg.export_gpkg import source_to_gpkg, org_units_to_gpkg_bytes
 from iaso.gpkg.import_gpkg import import_gpkg_file
 from iaso.test import TestCase
 from iaso import models as m
@@ -110,3 +110,19 @@ class GPKGExport(TestCase):
         # The unknown type created because ou3 don't have one
         self.assertEqual(m.OrgUnitType.objects.filter(projects=new_project).count(), 4)
         self.assertEqual(v2.group_set.count(), 2)
+
+    def test_export_one(self):
+        """We hit a strange pandas crash when exporting a single orgunit without parent"""
+        orgs = m.OrgUnit.objects.filter(name="ou1")
+        self.assertEqual(orgs.count(), 1)
+        out = org_units_to_gpkg_bytes(orgs)
+
+    def test_export_no_parent(self):
+        """Idem all ou without parent"""
+        out = m.OrgUnitType.objects.create(name="type2", depth=2)
+        m.OrgUnit.objects.create(name="bla", org_unit_type=out)
+        m.OrgUnit.objects.create(name="bla2", org_unit_type=out)
+        orgs = m.OrgUnit.objects.filter(org_unit_type=out)
+
+        self.assertEqual(orgs.count(), 2)
+        out = org_units_to_gpkg_bytes(orgs)

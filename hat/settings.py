@@ -40,6 +40,9 @@ USE_X_FORWARDED_HOST = True
 
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
 
+# Default site for django contrib site framework
+SITE_ID = 1
+
 
 # Logging
 
@@ -110,6 +113,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django.contrib.postgres",
+    "django.contrib.sites",  # needed by contrib-comments
     "storages",
     "corsheaders",
     "rest_framework",
@@ -122,7 +126,10 @@ INSTALLED_APPS = [
     "iaso",
     "django_extensions",
     "beanstalk_worker",
+    "django_comments",
 ]
+
+COMMENTS_APP = "iaso"
 
 if PLUGIN_POLIO_ENABLED:
     INSTALLED_APPS.append("plugins.polio")

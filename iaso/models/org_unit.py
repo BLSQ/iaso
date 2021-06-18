@@ -96,7 +96,7 @@ class OrgUnitQuerySet(models.QuerySet):
         return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
 
     def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str]
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
     ) -> "OrgUnitQuerySet":
         """Restrict to the orgunits the User can see, used mainly in the API"""
         if user and user.is_anonymous and app_id is None:

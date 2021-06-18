@@ -1,4 +1,4 @@
-This App is used to log API call in the DB.
+This App is used to log API calls in the DB.
 
 The idea is that the mobile app user may not have great internet connection where they are
 so in case of import problem we can fix it server side and not ask them to upload again.

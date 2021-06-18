@@ -59,7 +59,6 @@ import InstancesMap from './components/InstancesMapComponent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -481,21 +480,6 @@ class Instances extends Component {
                                             )}
                                         />
                                     )}
-                                    {/* <ExportInstancesDialogComponent
-                                        getFilters={() => this.getFilters()}
-                                        renderTrigger={(
-                                            openDialog,
-                                            isInstancesFilterUpdated,
-                                        ) => (
-                                            <ExportButtonComponent
-                                                onClick={openDialog}
-                                                isDisabled={
-                                                    isInstancesFilterUpdated
-                                                }
-                                                batchExport
-                                            />
-                                        )}
-                                    /> */}
                                     <DownloadButtonsComponent
                                         csvUrl={this.getEndpointUrl(
                                             true,

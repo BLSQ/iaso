@@ -113,6 +113,7 @@ INSTALLED_APPS = [
     "storages",
     "corsheaders",
     "rest_framework",
+    "django_filters",
     "webpack_loader",
     "django_ltree",
     "hat.sync",

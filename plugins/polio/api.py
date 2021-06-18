@@ -13,6 +13,7 @@ class CampaignViewSet(ModelViewSet):
     serializer_class = CampaignSerializer
     results_key = "campaigns"
     remove_results_key_if_paginated = True
+    filters.OrderingFilter.ordering_param = "order"
 
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["obr_name", "cvdpv2_notified_at", "detection_status"]

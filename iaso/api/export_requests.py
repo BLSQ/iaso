@@ -37,9 +37,12 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             force_export = self.context["request"].data.get("forceExport", False)
 
             logger.debug("ExportRequest to create", user, validated_data)
-
+            filters = validated_data
+            selection = dict()
+            selection["selected_ids"] = self.context["request"].data.get("selected_ids", None)
+            selection["unselected_ids"] = self.context["request"].data.get("unselected_ids", None)
             return ExportRequestBuilder().build_export_request(
-                filters=validated_data, launcher=user, force_export=force_export
+                filters=validated_data, launcher=user, force_export=force_export, selection=selection
             )
         except Exception as e:
             # warn the client will use this as part of the translation key

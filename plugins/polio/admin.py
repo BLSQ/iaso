@@ -7,6 +7,6 @@ class CampaignAdmin(admin.ModelAdmin):
     list_filter = ["virus", "vacine", "detection_status", "risk_assessment_status", "budget_status"]
 
 
-admin.site.register(Campaign)
+admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(Preparedness)
 admin.site.register(Surge)

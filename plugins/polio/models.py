@@ -31,6 +31,13 @@ STATUS = [
     ("FINISHED", _("Finished")),
 ]
 
+PREPAREDNESS_SYNC_STATUS = [
+    ("QUEUED", _("Queued")),
+    ("ONGOING", _("Ongoing")),
+    ("FAILURE", _("Failed")),
+    ("FINISHED", _("Finished")),
+]
+
 PAYMENT = [
     ("DIRECT", _("Direct")),
     ("DFC", _("DFC")),
@@ -154,6 +161,7 @@ class Campaign(models.Model):
     verification_score = models.IntegerField(null=True, blank=True)
     # Preparedness
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
+    preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
     # Surge recruitment
     surge_spreadsheet_url = models.URLField(null=True, blank=True)
     country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)

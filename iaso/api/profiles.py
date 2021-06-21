@@ -83,7 +83,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
         if pk == "me":
-            profile = get_object_or_404(self.get_queryset(), user__id=request.user.id)
+            profile = request.user.iaso_profile
             return Response(profile.as_dict())
         else:
             profile = get_object_or_404(self.get_queryset(), pk=pk)

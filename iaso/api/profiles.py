@@ -1,5 +1,4 @@
 from django.contrib.auth import update_session_auth_hash
-from django.core.exceptions import PermissionDenied
 
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
@@ -39,7 +38,13 @@ class ProfilesViewSet(viewsets.ViewSet):
     DELETE /api/profiles/<id>
     """
 
+    # FIXME : replace by a model viewset
+
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
+
+    def get_queryset(self):
+        account = self.request.user.iaso_profile.account
+        return Profile.objects.filter(account=account)
 
     def list(self, request):
         limit = request.GET.get("limit", None)
@@ -47,8 +52,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "user__user_name").split(",")
         search = request.GET.get("search", None)
 
-        account = request.user.iaso_profile.account
-        queryset = Profile.objects.filter(account=account)
+        queryset = self.get_queryset()
         if search:
             queryset = queryset.filter(
                 Q(user__username__icontains=search)
@@ -79,14 +83,14 @@ class ProfilesViewSet(viewsets.ViewSet):
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
         if pk == "me":
-            profile = get_object_or_404(Profile, user__id=request.user.id)
+            profile = get_object_or_404(self.get_queryset(), user__id=request.user.id)
             return Response(profile.as_dict())
         else:
-            profile = get_object_or_404(Profile, pk=pk)
+            profile = get_object_or_404(self.get_queryset(), pk=pk)
             return Response(profile.as_dict())
 
     def partial_update(self, request, pk=None):
-        profile = get_object_or_404(Profile, id=pk)
+        profile = get_object_or_404(self.get_queryset(), id=pk)
         username = request.data.get("user_name")
         password = request.data.get("password", "")
         if not username:
@@ -144,6 +148,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user.user_permissions.add(permission)
         if permissions != []:
             user.save()
+
         # Create a iaso profile for the new user and attach it to the same account
         # as the currently authenticated user
         current_profile = request.user.iaso_profile
@@ -160,7 +165,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         return Response(user.profile.as_dict())
 
     def delete(self, request, pk=None):
-        profile = get_object_or_404(Profile, id=pk)
+        profile = get_object_or_404(self.get_queryset(), id=pk)
         user = profile.user
         user.delete()
         profile.delete()

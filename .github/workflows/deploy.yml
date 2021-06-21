@@ -19,6 +19,7 @@ jobs:
 
     steps:
       - name: Deployment of ${{ github.event.inputs.branch }} on ${{ github.event.inputs.environment }}
+        run: echo "Deployment of ${{ github.event.inputs.branch }} on ${{ github.event.inputs.environment }}"
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}

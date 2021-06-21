@@ -22,10 +22,10 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}
 
-      - name: Use node.js 10
+      - name: Use node.js 14
         uses: actions/setup-node@v1
         with:
-                node-version: 10
+                node-version: 14
 
       - name: Set up Python 3.6
         uses: actions/setup-python@v1

@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Deployment of ${{ github.event.inputs.branch }} on ${{ github.event.inputs.environment }}
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}

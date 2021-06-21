@@ -101,6 +101,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.username = username
         user.email = request.data.get("email", "")
         profile.language = request.data.get("language", "")
+        profile.save()
         if password != "":
             user.set_password(password)
         permissions = request.data.get("permissions", [])
@@ -152,8 +153,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         # Create a iaso profile for the new user and attach it to the same account
         # as the currently authenticated user
         current_profile = request.user.iaso_profile
-        user.profile = Profile.objects.create(user=user, account=current_profile.account)
-        user.profile.language = request.data.get("language", "")
+        user.profile = Profile.objects.create(
+            user=user, account=current_profile.account, language=request.data.get("language", "")
+        )
 
         org_units = request.data.get("org_units", [])
         profile = get_object_or_404(Profile, id=user.profile.pk)

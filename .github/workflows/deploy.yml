@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Deployment of ${{ GITHUB_REF }} on ${{ github.event.inputs.environment }}
-        run: echo "Deployment of ${{ GITHUB_REF }} on ${{ github.event.inputs.environment }} :: ${{GITHUB_SHA }}"
+        run: echo "Deployment of ${{ GITHUB_REF }} on ${{ github.event.inputs.environment }} - ${{GITHUB_SHA }}"
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}

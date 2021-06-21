@@ -2,9 +2,49 @@
 import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
-
 import { theme } from 'bluesquare-components';
-import { MESSAGES } from './map/mapUtils';
+import { defineMessages } from 'react-intl';
+
+export const isCoordInsidePolygon = ([x, y], poly) => {
+    let inside = false;
+    for (let ii = 0; ii < poly.getLatLngs().length; ii += 1) {
+        const polyPoints = poly.getLatLngs()[ii];
+        // console.log('polyPoints', polyPoints);
+        for (
+            let i = 0, j = polyPoints.length - 1;
+            i < polyPoints.length;
+            // TODO replace unary with  j = i, i += 1
+            // j = i++
+            j = i, i += 1
+        ) {
+            const xi = polyPoints[i].lat;
+            const yi = polyPoints[i].lng;
+            const xj = polyPoints[j].lat;
+            const yj = polyPoints[j].lng;
+
+            const intersect =
+                yi > y !== yj > y &&
+                x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+            if (intersect) inside = !inside;
+        }
+    }
+
+    return inside;
+};
+export const MESSAGES = defineMessages({
+    'fit-to-bounds': {
+        defaultMessage: 'Center to relevant villages',
+        id: 'map.label.fitToBounds',
+    },
+    'box-zoom-title': {
+        defaultMessage: 'Draw a square on the map to zoom in to an area',
+        id: 'map.label.zoom.box',
+    },
+    'info-zoom-title': {
+        defaultMessage: 'Current zoom level',
+        id: 'map.label.zoom.info',
+    },
+});
 
 export const isValidCoordinate = (latitude, longitude) => {
     if (

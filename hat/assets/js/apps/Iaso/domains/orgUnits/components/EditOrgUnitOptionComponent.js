@@ -62,150 +62,162 @@ class EditOrgUnitOptionComponent extends Component {
                     flexWrap="wrap"
                     flexDirection="column"
                 >
-                    <Box px={0} component="div" mb={2}>
-                        <Typography variant="subtitle1">
-                            <FormattedMessage {...MESSAGES.catchment} />
-                        </Typography>
-                    </Box>
-                    {!editCatchmentEnabled && orgUnit.catchment && (
-                        <Box mb={2}>
-                            <Button
-                                className={classes.button}
-                                disabled={actionDisabled}
-                                variant="outlined"
-                                onClick={() => toggleEditShape('catchment')}
-                                color="secondary"
-                            >
-                                <Edit className={classes.buttonIcon} />
-                                <FormattedMessage {...MESSAGES.edit} />
-                            </Button>
-                        </Box>
-                    )}
-                    {editCatchmentEnabled && orgUnit.catchment && (
-                        <Box mb={2}>
-                            <Button
-                                variant="outlined"
-                                className={classes.button}
-                                onClick={() => {
-                                    toggleEditShape('catchment');
-                                }}
-                                color="secondary"
-                            >
-                                <Check className={classes.buttonIcon} />
-                                <FormattedMessage {...MESSAGES.stopEdit} />
-                            </Button>
-                        </Box>
-                    )}
-                    <Box mb={2}>
-                        <Button
-                            className={classes.button}
-                            disabled={actionDisabled}
-                            variant="outlined"
-                            onClick={() => addShape('catchment')}
-                            color="secondary"
+                    <Box>
+                        <Box
+                            px={0}
+                            component="div"
+                            className={classes.marginTop}
+                            mb={2}
                         >
-                            <ShapeSvg className={classes.buttonIcon} />
-                            <FormattedMessage {...MESSAGES.add} />
-                        </Button>
+                            <Typography variant="subtitle1" color="primary">
+                                <FormattedMessage {...MESSAGES.location} />
+                            </Typography>
+                        </Box>
+                        {!editLocationEnabled && orgUnit.geo_json && (
+                            <Box mb={2}>
+                                <Button
+                                    className={classes.button}
+                                    disabled={actionDisabled}
+                                    variant="outlined"
+                                    onClick={() => toggleEditShape('location')}
+                                    color="primary"
+                                >
+                                    <Edit className={classes.buttonIcon} />
+                                    <FormattedMessage {...MESSAGES.edit} />
+                                </Button>
+                            </Box>
+                        )}
+                        {editLocationEnabled && orgUnit.geo_json && (
+                            <Box mb={2}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => {
+                                        toggleEditShape('location');
+                                    }}
+                                    className={classes.button}
+                                    color="primary"
+                                >
+                                    <Check className={classes.buttonIcon} />
+                                    <FormattedMessage {...MESSAGES.stopEdit} />
+                                </Button>
+                            </Box>
+                        )}
+                        {!hasMarker && (
+                            <Box mb={2}>
+                                <Button
+                                    disabled={actionDisabled}
+                                    variant="outlined"
+                                    className={classes.button}
+                                    onClick={() => addShape('geo_json')}
+                                    color="primary"
+                                >
+                                    <ShapeSvg className={classes.buttonIcon} />
+                                    <FormattedMessage {...MESSAGES.add} />
+                                </Button>
+                            </Box>
+                        )}
+
+                        {orgUnit.geo_json && (
+                            <Box mb={2}>
+                                <Button
+                                    disabled={
+                                        editCatchmentEnabled ||
+                                        editLocationEnabled ||
+                                        deleteCatchmentEnabled
+                                    }
+                                    variant="outlined"
+                                    color="primary"
+                                    className={classes.button}
+                                    onClick={() =>
+                                        toggleDeleteShape('location')
+                                    }
+                                >
+                                    <DeleteIcon
+                                        className={classes.buttonIcon}
+                                    />
+                                    <FormattedMessage
+                                        {...(deleteLocationEnabled
+                                            ? MESSAGES.stopDelete
+                                            : MESSAGES.delete)}
+                                    />
+                                </Button>
+                            </Box>
+                        )}
                     </Box>
-                    {orgUnit.catchment && (
+                    <Box>
+                        <Box px={0} component="div" mb={2}>
+                            <Typography variant="subtitle1" color="secondary">
+                                <FormattedMessage {...MESSAGES.catchment} />
+                            </Typography>
+                        </Box>
+                        {!editCatchmentEnabled && orgUnit.catchment && (
+                            <Box mb={2}>
+                                <Button
+                                    className={classes.button}
+                                    disabled={actionDisabled}
+                                    variant="outlined"
+                                    onClick={() => toggleEditShape('catchment')}
+                                    color="secondary"
+                                >
+                                    <Edit className={classes.buttonIcon} />
+                                    <FormattedMessage {...MESSAGES.edit} />
+                                </Button>
+                            </Box>
+                        )}
+                        {editCatchmentEnabled && orgUnit.catchment && (
+                            <Box mb={2}>
+                                <Button
+                                    variant="outlined"
+                                    className={classes.button}
+                                    onClick={() => {
+                                        toggleEditShape('catchment');
+                                    }}
+                                    color="secondary"
+                                >
+                                    <Check className={classes.buttonIcon} />
+                                    <FormattedMessage {...MESSAGES.stopEdit} />
+                                </Button>
+                            </Box>
+                        )}
                         <Box mb={2}>
                             <Button
                                 className={classes.button}
-                                disabled={
-                                    editCatchmentEnabled ||
-                                    editLocationEnabled ||
-                                    deleteLocationEnabled
-                                }
+                                disabled={actionDisabled}
                                 variant="outlined"
+                                onClick={() => addShape('catchment')}
                                 color="secondary"
-                                onClick={() => toggleDeleteShape('catchment')}
-                            >
-                                <DeleteIcon className={classes.buttonIcon} />
-                                <FormattedMessage
-                                    {...(deleteCatchmentEnabled
-                                        ? MESSAGES.stopDelete
-                                        : MESSAGES.delete)}
-                                />
-                            </Button>
-                        </Box>
-                    )}
-                    <Box
-                        px={0}
-                        component="div"
-                        className={classes.marginTop}
-                        mb={2}
-                    >
-                        <Typography variant="subtitle1">
-                            <FormattedMessage {...MESSAGES.location} />
-                        </Typography>
-                    </Box>
-                    {!editLocationEnabled && orgUnit.geo_json && (
-                        <Box mb={2}>
-                            <Button
-                                className={classes.button}
-                                disabled={actionDisabled}
-                                variant="outlined"
-                                onClick={() => toggleEditShape('location')}
-                                color="primary"
-                            >
-                                <Edit className={classes.buttonIcon} />
-                                <FormattedMessage {...MESSAGES.edit} />
-                            </Button>
-                        </Box>
-                    )}
-                    {editLocationEnabled && orgUnit.geo_json && (
-                        <Box mb={2}>
-                            <Button
-                                variant="outlined"
-                                onClick={() => {
-                                    toggleEditShape('location');
-                                }}
-                                className={classes.button}
-                                color="primary"
-                            >
-                                <Check className={classes.buttonIcon} />
-                                <FormattedMessage {...MESSAGES.stopEdit} />
-                            </Button>
-                        </Box>
-                    )}
-                    {!hasMarker && (
-                        <Box mb={2}>
-                            <Button
-                                disabled={actionDisabled}
-                                variant="outlined"
-                                className={classes.button}
-                                onClick={() => addShape('geo_json')}
-                                color="primary"
                             >
                                 <ShapeSvg className={classes.buttonIcon} />
                                 <FormattedMessage {...MESSAGES.add} />
                             </Button>
                         </Box>
-                    )}
-
-                    {orgUnit.geo_json && (
-                        <Box mb={2}>
-                            <Button
-                                disabled={
-                                    editCatchmentEnabled ||
-                                    editLocationEnabled ||
-                                    deleteCatchmentEnabled
-                                }
-                                variant="outlined"
-                                color="primary"
-                                className={classes.button}
-                                onClick={() => toggleDeleteShape('location')}
-                            >
-                                <DeleteIcon className={classes.buttonIcon} />
-                                <FormattedMessage
-                                    {...(deleteLocationEnabled
-                                        ? MESSAGES.stopDelete
-                                        : MESSAGES.delete)}
-                                />
-                            </Button>
-                        </Box>
-                    )}
+                        {orgUnit.catchment && (
+                            <Box mb={2}>
+                                <Button
+                                    className={classes.button}
+                                    disabled={
+                                        editCatchmentEnabled ||
+                                        editLocationEnabled ||
+                                        deleteLocationEnabled
+                                    }
+                                    variant="outlined"
+                                    color="secondary"
+                                    onClick={() =>
+                                        toggleDeleteShape('catchment')
+                                    }
+                                >
+                                    <DeleteIcon
+                                        className={classes.buttonIcon}
+                                    />
+                                    <FormattedMessage
+                                        {...(deleteCatchmentEnabled
+                                            ? MESSAGES.stopDelete
+                                            : MESSAGES.delete)}
+                                    />
+                                </Button>
+                            </Box>
+                        )}
+                    </Box>
                     {hasMarker && (
                         <>
                             <InputComponent

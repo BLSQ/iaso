@@ -329,6 +329,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             org_unit.simplified_geom = None
 
+        org_unit.geom = org_unit.simplified_geom
+
         if catchment and catchment["features"][0]["geometry"] and catchment["features"][0]["geometry"]["coordinates"]:
             org_unit.catchment = MultiPolygon(
                 *[Polygon(*coord) for coord in catchment["features"][0]["geometry"]["coordinates"]]

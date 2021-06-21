@@ -57,7 +57,7 @@ import {
 import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
 import OrgUnitForm from './components/OrgUnitForm';
-import OrgUnitMap from './components/OrgUnitMapComponent';
+import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
 import Logs from '../../components/logs/LogsComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import LinksDetails from '../links/components/LinksDetailsComponent';
@@ -267,12 +267,12 @@ class OrgUnitDetail extends Component {
         });
     }
 
-    handleChangeShape(geoJson, catchment) {
+    handleChangeShape(geoJson, key) {
         const currentOrgUnit = {
             ...this.state.currentOrgUnit,
-            geo_json: geoJson,
-            catchment,
+            [key]: geoJson,
         };
+        this.setOrgUnitLocationModified(true);
         this.setState({
             currentOrgUnit,
         });
@@ -293,7 +293,7 @@ class OrgUnitDetail extends Component {
         });
     }
 
-    handleSaveOrgUnit(newOrgUnit) {
+    handleSaveOrgUnit(newOrgUnit = {}) {
         // Don't send altitude for now, the interface does not handle it
         const { currentOrgUnit } = this.state;
         let orgUnitPayload = omit(
@@ -557,17 +557,12 @@ class OrgUnitDetail extends Component {
                                     resetOrgUnit={() =>
                                         this.handleResetOrgUnit()
                                     }
-                                    saveOrgUnit={() =>
-                                        this.handleSaveOrgUnit(currentOrgUnit)
-                                    }
+                                    saveOrgUnit={() => this.handleSaveOrgUnit()}
                                     onChangeLocation={location => {
                                         this.handleChangeLocation(location);
                                     }}
-                                    onChangeShape={(geoJson, catchment) =>
-                                        this.handleChangeShape(
-                                            geoJson,
-                                            catchment,
-                                        )
+                                    onChangeShape={(key, geoJson) =>
+                                        this.handleChangeShape(geoJson, key)
                                     }
                                 />
                             </Box>

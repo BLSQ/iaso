@@ -73,6 +73,86 @@ class EditOrgUnitOptionComponent extends Component {
                                 <FormattedMessage {...MESSAGES.location} />
                             </Typography>
                         </Box>
+
+                        {!orgUnit.geo_json && !hasMarker && (
+                            <Box mb={2} mt={2}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => addMarker()}
+                                    className={classes.button}
+                                    color="primary"
+                                >
+                                    <AddLocation
+                                        className={classes.buttonIcon}
+                                    />
+                                    <FormattedMessage
+                                        {...MESSAGES.addLocation}
+                                    />
+                                </Button>
+                            </Box>
+                        )}
+                        {hasMarker && (
+                            <>
+                                <InputComponent
+                                    keyValue="latitude"
+                                    onChange={(key, latitude) => {
+                                        if (latitude) {
+                                            onChangeLocation({
+                                                lat: parseFloat(latitude),
+                                                lng: orgUnit.longitude,
+                                            });
+                                        }
+                                    }}
+                                    value={orgUnit.latitude}
+                                    type="number"
+                                    label={MESSAGES.latitude}
+                                />
+                                <InputComponent
+                                    keyValue="longitude"
+                                    onChange={(key, longitude) =>
+                                        onChangeLocation({
+                                            lat: orgUnit.latitude,
+                                            lng: parseFloat(longitude),
+                                        })
+                                    }
+                                    value={orgUnit.longitude}
+                                    type="number"
+                                    label={MESSAGES.longitude}
+                                />
+                                {/* read-only altitude field until edition is implemented */}
+                                <InputComponent
+                                    disabled
+                                    keyValue="altitude"
+                                    value={
+                                        orgUnit.altitude !== null
+                                            ? orgUnit.altitude
+                                            : 0
+                                    }
+                                    type="number"
+                                    label={MESSAGES.altitude}
+                                />
+                                <Box mb={2} mt={2}>
+                                    <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        className={classes.button}
+                                        onClick={() =>
+                                            onChangeLocation({
+                                                lat: null,
+                                                lng: null,
+                                            })
+                                        }
+                                    >
+                                        <DeleteIcon
+                                            className={classes.buttonIcon}
+                                        />
+                                        <FormattedMessage
+                                            {...MESSAGES.deleteMarker}
+                                        />
+                                    </Button>
+                                </Box>
+                            </>
+                        )}
                         {!editLocationEnabled && orgUnit.geo_json && (
                             <Box mb={2}>
                                 <Button
@@ -116,7 +196,6 @@ class EditOrgUnitOptionComponent extends Component {
                                 </Button>
                             </Box>
                         )}
-
                         {orgUnit.geo_json && (
                             <Box mb={2}>
                                 <Button
@@ -218,81 +297,6 @@ class EditOrgUnitOptionComponent extends Component {
                             </Box>
                         )}
                     </Box>
-                    {hasMarker && (
-                        <>
-                            <InputComponent
-                                keyValue="latitude"
-                                onChange={(key, latitude) => {
-                                    if (latitude) {
-                                        onChangeLocation({
-                                            lat: parseFloat(latitude),
-                                            lng: orgUnit.longitude,
-                                        });
-                                    }
-                                }}
-                                value={orgUnit.latitude}
-                                type="number"
-                                label={MESSAGES.latitude}
-                            />
-                            <InputComponent
-                                keyValue="longitude"
-                                onChange={(key, longitude) =>
-                                    onChangeLocation({
-                                        lat: orgUnit.latitude,
-                                        lng: parseFloat(longitude),
-                                    })
-                                }
-                                value={orgUnit.longitude}
-                                type="number"
-                                label={MESSAGES.longitude}
-                            />
-                            {/* read-only altitude field until edition is implemented */}
-                            <InputComponent
-                                disabled
-                                keyValue="altitude"
-                                value={
-                                    orgUnit.altitude !== null
-                                        ? orgUnit.altitude
-                                        : 0
-                                }
-                                type="number"
-                                label={MESSAGES.altitude}
-                            />
-                            <Box mb={2} mt={2}>
-                                <Button
-                                    variant="outlined"
-                                    color="primary"
-                                    className={classes.button}
-                                    onClick={() =>
-                                        onChangeLocation({
-                                            lat: null,
-                                            lng: null,
-                                        })
-                                    }
-                                >
-                                    <DeleteIcon
-                                        className={classes.buttonIcon}
-                                    />
-                                    <FormattedMessage
-                                        {...MESSAGES.deleteMarker}
-                                    />
-                                </Button>
-                            </Box>
-                        </>
-                    )}
-                    {!orgUnit.geo_json && !hasMarker && (
-                        <Box mb={2} mt={2}>
-                            <Button
-                                variant="outlined"
-                                onClick={() => addMarker()}
-                                className={classes.button}
-                                color="primary"
-                            >
-                                <AddLocation className={classes.buttonIcon} />
-                                <FormattedMessage {...MESSAGES.addLocation} />
-                            </Button>
-                        </Box>
-                    )}
                 </Box>
             </Box>
         );

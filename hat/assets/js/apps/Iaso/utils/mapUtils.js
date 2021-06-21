@@ -253,9 +253,13 @@ export const shapeOptions = () => ({
     },
 });
 
-export const polygonDrawOpiton = (customClass = 'primary') => ({
+export const polygonDrawOption = (
+    customClass = 'primary',
+    extraClass = '',
+) => ({
     shapeOptions: {
         color: theme.palette[customClass].main,
-        className: `${customClass}`,
+        className: `${customClass} ${extraClass}`,
+        pane: 'custom-shape-draw',
     },
 });

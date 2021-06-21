@@ -11,197 +11,46 @@ import { Grid } from '@material-ui/core';
 import L from 'leaflet';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'bluesquare-components';
-import setDrawMessages from '../../../utils/map/drawMapMessages';
 import {
-    customZoomBar,
-    addDrawControl,
     mapOrgUnitByLocation,
     shapeOptions,
-    polygonDrawOpiton,
     colorClusterCustomMarker,
-} from '../../../utils/mapUtils';
-import { getMarkerList } from '../utils';
+} from '../../../../utils/mapUtils';
+import { getMarkerList } from '../../utils';
 
-import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
-import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
-import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
-import OrgunitOptionSaveComponent from './OrgunitOptionSaveComponent';
-import OrgUnitTypeChipsFilterComponent from './OrgUnitTypeChipsFilterComponent';
-import FormsChipsFilterComponent from '../../forms/components/FormsChipsFilterComponent';
-import SourcesChipsFilterComponent from '../../../components/filters/chips/SourcesChipsFilterComponent';
-import MarkerComponent from '../../../components/maps/markers/MarkerComponent';
-import OrgUnitPopupComponent from './OrgUnitPopupComponent';
+import TileSwitch from '../../../../components/maps/tools/TileSwitchComponent';
+import InnerDrawer from '../../../../components/nav/InnerDrawerComponent';
+import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
+import OrgunitOptionSaveComponent from '../OrgunitOptionSaveComponent';
+import OrgUnitTypeChipsFilterComponent from '../OrgUnitTypeChipsFilterComponent';
+import FormsChipsFilterComponent from '../../../forms/components/FormsChipsFilterComponent';
+import SourcesChipsFilterComponent from '../../../../components/filters/chips/SourcesChipsFilterComponent';
+import MarkerComponent from '../../../../components/maps/markers/MarkerComponent';
+import OrgUnitPopupComponent from '../OrgUnitPopupComponent';
 
-import { resetMapReducer } from '../../../redux/mapReducer';
-import { setCurrentSubOrgUnit } from '../actions';
-import { setCurrentInstance } from '../../instances/actions';
+import { resetMapReducer } from '../../../../redux/mapReducer';
+import { setCurrentSubOrgUnit } from '../../actions';
+import { setCurrentInstance } from '../../../instances/actions';
 
 import {
     fetchOrgUnitDetail,
     fetchInstanceDetail,
-} from '../../../utils/requests';
+} from '../../../../utils/requests';
+import MESSAGES from '../../messages';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
-import InstancePopupComponent from '../../instances/components/InstancePopupComponent';
-import MESSAGES from '../messages';
+import InstancePopupComponent from '../../../instances/components/InstancePopupComponent';
 
-const zoom = 5;
-const padding = [75, 75];
+import EditableGroup from './EditableGoup';
 
-const editableFetureGroups = {
-    location: {
-        group: new L.FeatureGroup(),
-        editHandler: null,
-        deleteHandler: null,
-        drawControl: null,
-    },
-    catchment: {
-        group: new L.FeatureGroup(),
-        editHandler: null,
-        deleteHandler: null,
-    },
-};
-
-const addMarker = () => {
-    editableFetureGroups.location.drawControl._toolbars.draw._modes.marker.handler.enable();
-};
-
-const getLayerOptions = keyName => {
-    let options = {
-        className: 'primary',
-        pane: 'custom-shape-locations',
-    };
-    if (keyName !== 'location') {
-        options = {
-            className: 'secondary',
-            pane: 'custom-shape-catchment',
-        };
-    }
-    return options;
-};
-
-const updateShape = (geoJson, key, formatMessage) => {
-    editableFetureGroups[key].group.clearLayers();
-    if (geoJson) {
-        geoJson.eachLayer(layer => {
-            const tempLayer = layer;
-            if (tempLayer.feature.geometry.type === 'MultiPolygon') {
-                tempLayer.feature.geometry.coordinates.forEach(shapeCoords => {
-                    const polygon = {
-                        type: 'Polygon',
-                        coordinates: shapeCoords,
-                    };
-                    L.geoJson(polygon, {
-                        onEachFeature(feature, newLayer) {
-                            L.setOptions(newLayer, getLayerOptions(key));
-                            if (key === 'catchment') {
-                                newLayer.bindTooltip(
-                                    formatMessage(MESSAGES.catchment),
-                                    { sticky: true }, // then add your options
-                                );
-                            }
-                            newLayer.addTo(editableFetureGroups[key].group);
-                        },
-                    });
-                });
-            } else {
-                L.setOptions(tempLayer, getLayerOptions(key));
-                tempLayer.addTo(editableFetureGroups[key].group);
-            }
-        });
-    }
-};
-
-const getGeoJson = group => {
-    if (group.getLayers().length === 0) return null;
-    const geojsonData = group.toGeoJSON();
-    const multiPolygon = {
-        type: 'MultiPolygon',
-        coordinates: [],
-        properties: {},
-    };
-    const { features } = group.toGeoJSON();
-    features.forEach(feature => {
-        multiPolygon.coordinates.push([feature.geometry.coordinates[0]]);
-    });
-    geojsonData.features = [
-        {
-            type: 'Feature',
-            properties: {},
-            geometry: multiPolygon,
-        },
-    ];
-    geojsonData.features[0].geometry = multiPolygon;
-    return geojsonData;
-};
-
-const initMap = (
-    map,
-    formatMessage,
-    setOrgUnitLocationModified,
-    onChangeShape,
-) => {
-    const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
-    zoomBar.addTo(map.leafletElement);
-    setDrawMessages(formatMessage);
-    map.leafletElement.createPane('custom-shape-locations');
-    map.leafletElement.createPane('custom-shape-catchment');
-
-    map.leafletElement.on('draw:created', e => {
-        if (e.layerType === 'polygon') {
-            if (e.layer.options.className.includes('primary')) {
-                e.layer.addTo(editableFetureGroups.location.group);
-                setOrgUnitLocationModified();
-            }
-            if (e.layer.options.className.includes('secondary')) {
-                e.layer.addTo(editableFetureGroups.catchment.group);
-                setOrgUnitLocationModified();
-            }
-
-            onChangeShape(
-                getGeoJson(editableFetureGroups.location.group),
-                getGeoJson(editableFetureGroups.catchment.group),
-            );
-        }
-        if (e.layerType === 'marker') {
-            e.layer.addTo(editableFetureGroups.location.group);
-            this.props.onChangeLocation(e.layer.getLatLng());
-            map.leafletElement.removeLayer(e.layer);
-        }
-    });
-    map.leafletElement.on('draw:editstop', () => {
-        onChangeShape(
-            getGeoJson(editableFetureGroups.location.group),
-            getGeoJson(editableFetureGroups.catchment.group),
-        );
-        setOrgUnitLocationModified();
-    });
-    map.leafletElement.on('draw:deletestop', () => {
-        onChangeShape(
-            getGeoJson(editableFetureGroups.location.group),
-            getGeoJson(editableFetureGroups.catchment.group),
-        );
-        setOrgUnitLocationModified();
-    });
-    const drawGeoJson = addDrawControl(
-        map.leafletElement,
-        editableFetureGroups.location.group,
-    );
-    const drawCatchment = addDrawControl(
-        map.leafletElement,
-        editableFetureGroups.catchment.group,
-    );
-    editableFetureGroups.location.editHandler = drawGeoJson.editHandler;
-    editableFetureGroups.location.deleteHandler = drawGeoJson.deleteHandler;
-    editableFetureGroups.location.drawControl = drawGeoJson.drawControl;
-    editableFetureGroups.catchment.editHandler = drawCatchment.editHandler;
-    editableFetureGroups.catchment.deleteHandler = drawCatchment.deleteHandler;
-};
+import { zoom, padding, resetIndex, setToFront, getGeoJson } from './utils';
 
 class OrgUnitMapComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            locationGroup: new EditableGroup(),
+            catchmentGroup: new EditableGroup(),
             editGeoJson: {
                 location: false,
                 catchment: false,
@@ -218,36 +67,50 @@ class OrgUnitMapComponent extends Component {
         const {
             intl: { formatMessage },
             orgUnit,
-            setOrgUnitLocationModified,
             onChangeShape,
+            onChangeLocation,
         } = this.props;
-        initMap(
-            this.map,
-            formatMessage,
-            setOrgUnitLocationModified,
-            onChangeShape,
-        );
+        const { locationGroup, catchmentGroup } = this.state;
+        let leafletGeoJSON;
+        let catchmentGeoJSON;
         if (this.props.orgUnit.geo_json) {
-            const leafletGeoJSON = L.geoJson(orgUnit.geo_json, shapeOptions);
-            updateShape(leafletGeoJSON, 'location', formatMessage);
+            leafletGeoJSON = L.geoJson(orgUnit.geo_json, shapeOptions);
         }
         if (this.props.orgUnit.catchment) {
-            const catchmentGeoJSON = L.geoJson(orgUnit.catchment, shapeOptions);
-            updateShape(catchmentGeoJSON, 'catchment', formatMessage);
+            catchmentGeoJSON = L.geoJson(orgUnit.catchment, shapeOptions);
         }
+        const map = this.map.leafletElement;
+        map.createPane('custom-shape-draw');
+        locationGroup.initialize({
+            map,
+            groupKey: 'location',
+            onChangeShape: shape => onChangeShape('geo_json', shape),
+            onChangeLocation,
+            geoJson: leafletGeoJSON,
+            classNames: 'primary',
+        });
+        catchmentGroup.initialize({
+            map,
+            groupKey: 'catchment',
+            onChangeShape: shape => onChangeShape('catchment', shape),
+            onChangeLocation,
+            geoJson: catchmentGeoJSON,
+            classNames: 'secondary',
+            tooltipMessage: formatMessage(MESSAGES.catchment),
+        });
     }
 
     componentDidUpdate(prevProps) {
+        const { locationGroup, catchmentGroup } = this.state;
+        const {
+            intl: { formatMessage },
+        } = this.props;
         if (!isEqual(prevProps.orgUnit.geo_json, this.props.orgUnit.geo_json)) {
             const leafletGeoJSON = L.geoJson(
                 this.props.orgUnit.geo_json,
                 shapeOptions,
             );
-            updateShape(
-                leafletGeoJSON,
-                'location',
-                this.props.intl.formatMessage,
-            );
+            locationGroup.updateShape(leafletGeoJSON, 'primary');
         }
         if (
             !isEqual(prevProps.orgUnit.catchment, this.props.orgUnit.catchment)
@@ -256,10 +119,10 @@ class OrgUnitMapComponent extends Component {
                 this.props.orgUnit.catchment,
                 shapeOptions,
             );
-            updateShape(
+            catchmentGroup.updateShape(
                 catchmentGeoJSON,
-                'catchment',
-                this.props.intl.formatMessage,
+                'secondary',
+                formatMessage(MESSAGES.catchment),
             );
         }
         if (
@@ -273,8 +136,10 @@ class OrgUnitMapComponent extends Component {
 
     componentWillUnmount() {
         this.props.resetMapReducer();
-        editableFetureGroups.location.group = new L.FeatureGroup();
-        editableFetureGroups.catchment.group = new L.FeatureGroup();
+        const { locationGroup, catchmentGroup } = this.state;
+        catchmentGroup.clearLayers();
+        locationGroup.clearLayers();
+
         if (this.state.editGeoJson.location) {
             this.toggleEditShape('location');
         }
@@ -286,20 +151,16 @@ class OrgUnitMapComponent extends Component {
     handleReset() {
         const { resetOrgUnit, setOrgUnitLocationModified } = this.props;
         const { editGeoJson, deleteGeoJson } = this.state;
-        const editLocationEnabled = editGeoJson.location;
-        const editCatchmentEnabled = editGeoJson.catchment;
-        const deleteLocationEnabled = deleteGeoJson.location;
-        const deleteCatchmentEnabled = deleteGeoJson.catchment;
-        if (editLocationEnabled) {
+        if (editGeoJson.location) {
             this.toggleEditShape('location');
         }
-        if (editCatchmentEnabled) {
+        if (editGeoJson.catchment) {
             this.toggleEditShape('catchment');
         }
-        if (deleteLocationEnabled) {
+        if (deleteGeoJson.location) {
             this.toggleDeleteShape('location');
         }
-        if (deleteCatchmentEnabled) {
+        if (deleteGeoJson.catchment) {
             this.toggleDeleteShape('catchment');
         }
         setOrgUnitLocationModified(false);
@@ -320,7 +181,7 @@ class OrgUnitMapComponent extends Component {
             sourcesSelected,
             formsSelected,
         } = this.props;
-        const { editGeoJson } = this.state;
+        const { editGeoJson, locationGroup, catchmentGroup } = this.state;
 
         const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(
             orgUnitTypesSelected || [],
@@ -368,10 +229,10 @@ class OrgUnitMapComponent extends Component {
         const locationsBounds = L.latLngBounds(locations);
         const otherBounds = locationsBounds.extend(shapesBounds);
         if (orgUnit.geo_json) {
-            groups.push(editableFetureGroups.location.group);
+            groups.push(locationGroup.group);
         }
         if (orgUnit.catchment) {
-            groups.push(editableFetureGroups.catchment.group);
+            groups.push(catchmentGroup.group);
         }
         const group = new L.FeatureGroup(groups);
         if (orgUnit.latitude && orgUnit.longitude) {
@@ -406,11 +267,24 @@ class OrgUnitMapComponent extends Component {
 
     toggleEditShape(keyValue) {
         const editEnabled = this.state.editGeoJson[keyValue];
-
+        const { onChangeShape } = this.props;
+        const { locationGroup, catchmentGroup } = this.state;
+        if (keyValue === 'location') {
+            locationGroup.toggleEditShape(!editEnabled);
+            if (editEnabled) {
+                onChangeShape('geo_json', getGeoJson(locationGroup.group));
+            }
+        }
+        if (keyValue === 'catchment') {
+            catchmentGroup.toggleEditShape(!editEnabled);
+            if (editEnabled) {
+                onChangeShape('catchment', getGeoJson(catchmentGroup.group));
+            }
+        }
         if (!editEnabled) {
-            editableFetureGroups[keyValue].editHandler.enable();
+            setToFront(this.map.leafletElement, keyValue);
         } else {
-            editableFetureGroups[keyValue].editHandler.disable();
+            resetIndex(this.map.leafletElement);
         }
         this.setState({
             editGeoJson: {
@@ -422,11 +296,25 @@ class OrgUnitMapComponent extends Component {
 
     toggleDeleteShape(keyValue) {
         const deleteEnabled = this.state.deleteGeoJson[keyValue];
+        const { onChangeShape } = this.props;
+        const { locationGroup, catchmentGroup } = this.state;
+        if (keyValue === 'location') {
+            if (deleteEnabled) {
+                onChangeShape('geo_json', getGeoJson(locationGroup.group));
+            }
+            locationGroup.toggleDeleteShape(!deleteEnabled);
+        }
+        if (keyValue === 'catchment') {
+            if (deleteEnabled) {
+                onChangeShape('catchment', getGeoJson(catchmentGroup.group));
+            }
+            catchmentGroup.toggleDeleteShape(!deleteEnabled);
+        }
 
         if (!deleteEnabled) {
-            editableFetureGroups[keyValue].deleteHandler.enable();
+            setToFront(this.map.leafletElement, keyValue);
         } else {
-            editableFetureGroups[keyValue].deleteHandler.disable();
+            resetIndex(this.map.leafletElement);
         }
         this.setState({
             deleteGeoJson: {
@@ -436,13 +324,15 @@ class OrgUnitMapComponent extends Component {
         });
     }
 
-    addShape(shapeType) {
-        new L.Draw.Polygon(
-            this.map.leafletElement,
-            polygonDrawOpiton(
-                shapeType === 'catchment' ? 'secondary' : 'primary',
-            ),
-        ).enable();
+    addShape(keyName) {
+        const { locationGroup, catchmentGroup } = this.state;
+        const map = this.map.leafletElement;
+        if (keyName === 'geo_json') {
+            locationGroup.addShape(map, 'primary');
+        }
+        if (keyName === 'catchment') {
+            catchmentGroup.addShape(map, 'secondary');
+        }
     }
 
     fetchSubOrgUnitDetail(orgUnit) {
@@ -486,11 +376,8 @@ class OrgUnitMapComponent extends Component {
             orgUnitLocationModified,
             theme,
         } = this.props;
-        const { editGeoJson, deleteGeoJson, currentOption } = this.state;
-        const editLocationEnabled = editGeoJson.location;
-        const editCatchmentEnabled = editGeoJson.catchment;
-        const deleteLocationEnabled = deleteGeoJson.location;
-        const deleteCatchmentEnabled = deleteGeoJson.catchment;
+        const { editGeoJson, deleteGeoJson, currentOption, locationGroup } =
+            this.state;
         const hasMarker =
             Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
         if (this.map) {
@@ -506,8 +393,8 @@ class OrgUnitMapComponent extends Component {
             <Grid container spacing={0}>
                 <InnerDrawer
                     setCurrentOption={option => this.setCurrentOption(option)}
-                    settingsDisabled={editLocationEnabled}
-                    filtersDisabled={editLocationEnabled}
+                    settingsDisabled={editGeoJson.location}
+                    filtersDisabled={editGeoJson.location}
                     footerComponent={
                         <OrgunitOptionSaveComponent
                             orgUnit={orgUnit}
@@ -532,17 +419,19 @@ class OrgUnitMapComponent extends Component {
                     editOptionComponent={
                         <EditOrgUnitOptionComponent
                             orgUnit={orgUnit}
-                            editLocationEnabled={editLocationEnabled}
-                            editCatchmentEnabled={editCatchmentEnabled}
-                            deleteLocationEnabled={deleteLocationEnabled}
-                            deleteCatchmentEnabled={deleteCatchmentEnabled}
+                            editLocationEnabled={editGeoJson.location}
+                            editCatchmentEnabled={editGeoJson.catchment}
+                            deleteLocationEnabled={deleteGeoJson.location}
+                            deleteCatchmentEnabled={deleteGeoJson.catchment}
                             toggleEditShape={keyValue =>
                                 this.toggleEditShape(keyValue)
                             }
                             toggleDeleteShape={keyValue =>
                                 this.toggleDeleteShape(keyValue)
                             }
-                            addMarker={() => addMarker()}
+                            addMarker={() =>
+                                locationGroup.toggleDrawMarker(true)
+                            }
                             addShape={shapeType => this.addShape(shapeType)}
                             onChangeLocation={latLong =>
                                 this.props.onChangeLocation(latLong)
@@ -576,7 +465,7 @@ class OrgUnitMapComponent extends Component {
                             }
                             url={currentTile.url}
                         />
-                        {!editLocationEnabled &&
+                        {!editGeoJson.location &&
                             mappedOrgUnitTypesSelected.map(ot =>
                                 ot.orgUnits.shapes.map(o => (
                                     <GeoJSON

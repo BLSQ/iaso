@@ -1,7 +1,9 @@
 import React from 'react';
+import CallMade from '@material-ui/icons/CallMade';
 import instancesTableColumns from './config';
 import MESSAGES from './messages';
 import DeleteDialog from './components/DeleteInstanceDialog';
+import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 
 const NO_VALUE = '/';
 const hasNoValue = value => !value || value === '';
@@ -129,16 +131,38 @@ export const getInstancesFilesList = instances => {
     return filesList;
 };
 
-export const getSelectedActions = (
+export const getSelectionActions = (
     formatMessage,
     filters,
     setForceRefresh,
     isUnDeleteAction = false,
+    classes,
 ) => {
     const label = formatMessage(
         isUnDeleteAction ? MESSAGES.unDeleteInstance : MESSAGES.deleteInstance,
     );
     return [
+        {
+            icon: newSelection => (
+                <ExportInstancesDialogComponent
+                    selection={newSelection}
+                    getFilters={() => filters}
+                    renderTrigger={openDialog => {
+                        const iconDisabled = newSelection.selectCount === 0;
+                        const iconProps = {
+                            className: iconDisabled
+                                ? classes.iconDisabled
+                                : null,
+                            onClick: !iconDisabled ? openDialog : () => null,
+                            disabled: iconDisabled,
+                        };
+                        return <CallMade {...iconProps} />;
+                    }}
+                />
+            ),
+            label: formatMessage(MESSAGES.exportRequest),
+            disabled: false,
+        },
         {
             icon: (newSelection, resetSelection) => (
                 <DeleteDialog

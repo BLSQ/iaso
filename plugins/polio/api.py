@@ -1,10 +1,9 @@
+from rest_framework.pagination import PageNumberPagination
 from plugins.polio.serializers import SurgePreviewSerializer
-import itertools
 from iaso.models import OrgUnit
 from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer
-from rest_framework import routers
+from rest_framework import routers, filters
 from rest_framework.response import Response
-from rest_framework.request import Request
 from rest_framework.decorators import action
 from .models import Campaign
 from iaso.api.common import ModelViewSet
@@ -14,21 +13,10 @@ class CampaignViewSet(ModelViewSet):
     serializer_class = CampaignSerializer
     results_key = "campaigns"
     remove_results_key_if_paginated = True
+    filters.OrderingFilter.ordering_param = "order"
 
-    def list(self, request: Request, *args, **kwargs):
-        order = self.request.GET.get("order", "obr_name")
-        queryset = self.filter_queryset(self.get_queryset().order_by(order))
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        if not self.remove_results_key_if_paginated:
-            return Response({self.get_results_key(): serializer.data})
-        else:
-            return Response(serializer.data)
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["obr_name", "cvdpv2_notified_at", "detection_status"]
 
     def get_queryset(self):
         user = self.request.user
@@ -36,9 +24,9 @@ class CampaignViewSet(ModelViewSet):
         if user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
 
-            return Campaign.objects.filter(initial_org_unit__in=org_units).order_by("obr_name")
+            return Campaign.objects.filter(initial_org_unit__in=org_units)
         else:
-            return Campaign.objects.order_by("obr_name")
+            return Campaign.objects.all()
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):

@@ -45,7 +45,9 @@ export const OrgUnitsSelect = props => {
 export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
     const { data = {} } = useGetAuthenticatedUser();
     const source = data?.account?.default_version?.data_source?.id;
-    const initialOrgUnit = form?.initialValues?.initial_org_unit ?? null;
+    const startOrgUnit = data?.org_units[0].id ?? null;
+    const initialOrgUnit =
+        form?.initialValues?.initial_org_unit ?? startOrgUnit;
 
     const { data: initialState } = useGetAllParentsOrgUnits(initialOrgUnit);
     const [levels, setLevel] = useState([null]);

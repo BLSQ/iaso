@@ -33,7 +33,7 @@ const Logs = ({ goToRevision, logObjectId }) => {
             paramsPrefix="logsParams"
             apiParams={{
                 objectId: logObjectId,
-                source: 'org_unit_api',
+                contentType: 'iaso.orgunit',
             }}
             baseUrl={baseUrl}
             endPointPath="logs"

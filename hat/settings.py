@@ -14,6 +14,7 @@ import os
 import sentry_sdk
 from datetime import timedelta
 
+from sentry_sdk.integrations.django import DjangoIntegration
 
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGIN_POLIO_ENABLED = os.environ.get("PLUGIN_POLIO_ENABLED", "").lower() == "true"
@@ -310,7 +311,7 @@ WEBPACK_LOADER = {
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 
 if SENTRY_URL:
-    sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0)
+    sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0, integrations=[DjangoIntegration()], send_default_pii=True)
 
 # Workers configuration
 

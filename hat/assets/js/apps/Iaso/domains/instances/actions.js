@@ -147,9 +147,20 @@ export const createInstance = (currentForm, payload) => dispatch => {
     });
 };
 
-export const createExportRequest = filterParams => dispatch => {
+export const createExportRequest = (filterParams, selection) => dispatch => {
     dispatch(setInstancesFetching(true));
-    return postRequest('/api/exportrequests/', filterParams)
+    const filters = {
+        ...filterParams,
+    };
+    if (selection) {
+        if (selection.selectedItems && selection.selectedItems.length > 0) {
+            filters.selected_ids = selection.selectedItems.map(i => i.id);
+        }
+        if (selection.unSelectedItems && selection.unSelectedItems.length > 0) {
+            filters.unselected_ids = selection.unSelectedItems.map(i => i.id);
+        }
+    }
+    return postRequest('/api/exportrequests/', filters)
         .then(exportRequest => {
             putRequest(`/api/exportrequests/${exportRequest.id}/`);
             // fire and forget to run the export

@@ -49,7 +49,7 @@ import {
     getInstancesVisibleColumns,
     getInstancesColumns,
     getMetasColumns,
-    getSelectedActions,
+    getSelectionActions,
 } from './utils';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
@@ -59,7 +59,6 @@ import InstancesMap from './components/InstancesMapComponent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -92,6 +91,10 @@ const styles = theme => ({
         paddingRight: theme.spacing(4),
         position: 'relative',
         top: -theme.spacing(2),
+    },
+    iconDisabled: {
+        opacity: 0.3,
+        cursor: 'not-allowed',
     },
 });
 
@@ -477,9 +480,6 @@ class Instances extends Component {
                                             )}
                                         />
                                     )}
-                                    <ExportInstancesDialogComponent
-                                        getFilters={() => this.getFilters()}
-                                    />
                                     <DownloadButtonsComponent
                                         csvUrl={this.getEndpointUrl(
                                             true,
@@ -519,11 +519,12 @@ class Instances extends Component {
                             exportButtons={false}
                             isFullHeight={false}
                             multiSelect
-                            selectionActions={getSelectedActions(
+                            selectionActions={getSelectionActions(
                                 formatMessage,
                                 this.getFilters(),
                                 () => this.setForceRefresh(true),
                                 params.showDeleted === 'true',
+                                classes,
                             )}
                         />
                     )}

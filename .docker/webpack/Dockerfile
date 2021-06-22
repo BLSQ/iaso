@@ -1,4 +1,4 @@
-FROM node:10.24.1-stretch-slim
+FROM node:14.17.0-stretch-slim
 ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app
@@ -13,10 +13,11 @@ COPY package.json .
 COPY package-lock.json .
 
 # ci install the exact version of package, compared to install which might a bump minor version
+RUN npm install -g npm@7
 RUN npm install
 
-ADD hat/ hat/ 
-ADD plugins/ plugins/ 
+ADD hat/ hat/
+ADD plugins/ plugins/
 ADD entrypoint.sh .
 
 ENTRYPOINT ["./entrypoint.sh"]

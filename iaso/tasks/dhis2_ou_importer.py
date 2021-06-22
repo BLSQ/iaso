@@ -153,10 +153,10 @@ def map_geometry(row, org_unit):
 
         try:
             if feature_type == "Polygon" and coordinates:
-                org_unit.geom = MultiPolygon(Polygon(coordinates[0]))
+                org_unit.geom = MultiPolygon(Polygon(*coordinates))
 
             if feature_type == "MultiPolygon" and coordinates:
-                org_unit.geom = MultiPolygon(*[Polygon(i) for i in coordinates[0]])
+                org_unit.geom = MultiPolygon([Polygon(*p) for p in coordinates])
 
             org_unit.simplified_geom = org_unit.geom
 

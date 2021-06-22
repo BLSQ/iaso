@@ -2,6 +2,7 @@
 django==3.1.12
 django-cors-headers==3.2.1
 djangorestframework==3.11.2
+django-filter==2.4.0
 pandas==1.0.1
 cython==0.29.23
 pyproj==3.0.1
@@ -56,7 +57,7 @@ redgreenunittest==0.1.1
 responses==0.12.1
 
 black==21.5b1
-pre-commit==1.14.4
+pre-commit==2.9.2
 
 jupyter==1.0.0
 ipython==7.12.0

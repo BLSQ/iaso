@@ -14,6 +14,7 @@ import os
 import sentry_sdk
 from datetime import timedelta
 
+from sentry_sdk.integrations.django import DjangoIntegration
 
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGIN_POLIO_ENABLED = os.environ.get("PLUGIN_POLIO_ENABLED", "").lower() == "true"
@@ -65,7 +66,7 @@ TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {"default": {"format": "%(asctime)s %(name)s -- %(message)s"}},
+    "formatters": {"default": {"format": "%(levelname)-8s %(asctime)s %(name)s -- %(message)s"}},
     "filters": {"no_static": {"()": "hat.common.log_filter.StaticUrlFilter"}},
     "handlers": {
         "console": {
@@ -76,13 +77,14 @@ LOGGING = {
         }
     },
     "loggers": {
-        "django": {"handlers": ["console"], "level": LOGGING_LEVEL},
-        "hat": {"handlers": ["console"], "level": LOGGING_LEVEL},
-        "rq": {"handlers": ["console"], "level": LOGGING_LEVEL},
-        # 'django.db.backends': {
-        #     'level': 'DEBUG',
-        #     'handlers': ['console', ],
-        # },
+        "django": {"level": LOGGING_LEVEL},
+        "rq": {"level": LOGGING_LEVEL},
+        "hat": {"level": LOGGING_LEVEL},
+        "iaso": {"level": LOGGING_LEVEL},
+        "beanstalk_worker": {"level": LOGGING_LEVEL},
+        #  Uncomment to print all sql query
+        # 'django.db.backends': {'level': 'DEBUG'},
+        "": {"handlers": ["console"]},
     },
 }
 
@@ -94,16 +96,15 @@ if os.path.isdir(AWS_LOG_FOLDER):
         LOGGING["handlers"]["file"] = {
             "class": "logging.FileHandler",
             "level": "DEBUG",
+            "formatter": "default",
             "filename": os.path.join(AWS_LOG_FOLDER, "django.log"),
         }
-        for logger in LOGGING["loggers"].values():
-            logger["handlers"].append("file")
+        LOGGING["loggers"][""]["handlers"].append("file")
         LOGGING["loggers"]["hat"]["level"] = "DEBUG"
     else:
         print(f"WARNING: we seem to be running on AWS but {AWS_LOG_FOLDER} is not writable, check ebextensions")
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -117,6 +118,7 @@ INSTALLED_APPS = [
     "storages",
     "corsheaders",
     "rest_framework",
+    "django_filters",
     "webpack_loader",
     "django_ltree",
     "hat.sync",
@@ -129,6 +131,8 @@ INSTALLED_APPS = [
     "django_comments",
 ]
 
+# needed because we customize the comment model
+# see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
 
 if PLUGIN_POLIO_ENABLED:
@@ -307,7 +311,7 @@ WEBPACK_LOADER = {
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 
 if SENTRY_URL:
-    sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0)
+    sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0, integrations=[DjangoIntegration()], send_default_pii=True)
 
 # Workers configuration
 

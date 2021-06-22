@@ -944,7 +944,7 @@ export const Dashboard = () => {
         [searchQuery],
     );
 
-    const selectedCampaign = campaigns?.results?.find(
+    const selectedCampaign = campaigns?.campaigns?.find(
         campaign => campaign.id === selectedCampaignId,
     );
 
@@ -1058,7 +1058,7 @@ export const Dashboard = () => {
                             baseUrl={'/polio'}
                             redirectTo={onTableParamsChange}
                             columns={columns}
-                            data={campaigns.results}
+                            data={campaigns.campaigns}
                             watchToRender={tableParams}
                         />
                     )}

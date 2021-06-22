@@ -3,6 +3,7 @@ from django.contrib import auth
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from .api.comment import CommentViewSet
 from .api.logs import LogsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.org_units import OrgUnitViewSet
@@ -91,6 +92,7 @@ router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
 router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename="orgunitsbulkupdate")
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
+router.register(r"comments", CommentViewSet, basename="comments")
 
 router.registry.extend(plugins_router.registry)
 

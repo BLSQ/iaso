@@ -1,3 +1,5 @@
+from rest_framework.request import Request
+
 from .common import ModelViewSet, HasPermission
 from iaso.models import Account, SourceVersion
 from rest_framework import serializers, permissions
@@ -28,6 +30,11 @@ class AccountSerializer(serializers.ModelSerializer):
         return account
 
 
+class HasAccountPermission(permissions.BasePermission):
+    def has_object_permission(self, request: Request, view, obj: Account):
+        return request.user.iaso_profile.account == obj
+
+
 class AccountViewSet(ModelViewSet):
     """Account API
 
@@ -36,10 +43,10 @@ class AccountViewSet(ModelViewSet):
     PUT /api/account/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated]
     permission_classes = [
         permissions.IsAuthenticated,
         HasPermission("menupermissions.iaso_sources"),
+        HasAccountPermission,
     ]
     serializer_class = AccountSerializer
     results_key = "accounts"

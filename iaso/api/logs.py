@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
@@ -28,6 +29,7 @@ class LogsViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "created_at").split(",")
         user_ids = request.GET.get("userId", None)
         object_id = request.GET.get("objectId", None)
+        content_type_arg = request.GET.get("contenType", None)
         source = request.GET.get("source", None)
 
         queryset = Modification.objects.all()
@@ -42,6 +44,15 @@ class LogsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(object_id=object_id)
         if source is not None:
             queryset = queryset.filter(source=source)
+
+        if content_type_arg:
+            app_label, model = content_type_arg.split("-")
+            try:
+                content_type = ContentType.objects.get_by_natural_key(app_label, model)
+            except ContentType.DoesNotExist:
+                return queryset.none()
+            else:
+                queryset = queryset.filter(content_type=content_type)
 
         queryset = queryset.order_by(*orders)
 

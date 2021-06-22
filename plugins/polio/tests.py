@@ -214,8 +214,8 @@ class PolioAPITestCase(APITestCase):
 
         response = self.client.get("/api/polio/campaigns/", format="json")
 
-        self.assertEqual(len(response.json()["results"]), 1)
-        self.assertEqual(response.json()["results"][0]["initial_org_unit"], self.child_org_unit.pk)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["initial_org_unit"], self.child_org_unit.pk)
 
 
 class CampaignCalculatorTestCase(TestCase):

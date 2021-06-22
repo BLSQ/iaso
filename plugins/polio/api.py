@@ -9,18 +9,14 @@ from .models import Campaign
 from iaso.api.common import ModelViewSet
 
 
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = "limit"
-    max_page_size = 1000
-
-
 class CampaignViewSet(ModelViewSet):
     serializer_class = CampaignSerializer
-    pagination_class = StandardResultsSetPagination
+    results_key = "campaigns"
+    remove_results_key_if_paginated = True
+    filters.OrderingFilter.ordering_param = "order"
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
-    search_fields = ["obr_name", "epid"]
     ordering_fields = ["obr_name", "cvdpv2_notified_at", "detection_status"]
+    search_fields = ["obr_name", "epid"]
 
     def get_queryset(self):
         user = self.request.user

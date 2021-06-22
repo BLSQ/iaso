@@ -146,14 +146,22 @@ class OrgUnitMapComponent extends Component {
     }
 
     handleReset() {
-        const { resetOrgUnit, setOrgUnitLocationModified, currentUser } =
-            this.props;
+        const { resetOrgUnit, setOrgUnitLocationModified } = this.props;
         const { locationGroup, catchmentGroup } = this.state;
         const map = this.map.leafletElement;
 
         locationGroup.reset(map);
         catchmentGroup.reset(map);
-        this.setState(initialState(currentUser));
+        this.setState({
+            editGeoJson: {
+                location: false,
+                catchment: false,
+            },
+            deleteGeoJson: {
+                location: false,
+                catchment: false,
+            },
+        });
         setOrgUnitLocationModified(false);
         resetOrgUnit();
     }

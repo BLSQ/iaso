@@ -1,4 +1,3 @@
-/* globals STATIC_URL */
 import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
@@ -31,6 +30,7 @@ export const isCoordInsidePolygon = ([x, y], poly) => {
 
     return inside;
 };
+
 export const MESSAGES = defineMessages({
     'fit-to-bounds': {
         defaultMessage: 'Center to relevant villages',
@@ -117,10 +117,6 @@ const svgString =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34">' +
     '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
 
-const svgColoredString = color =>
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34" fill="${color}">` +
-    '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
-
 export const customMarkerOptions = {
     className: 'marker-custom primary',
     html: `<span class="marker_bg"></span><span>
@@ -131,21 +127,7 @@ export const customMarkerOptions = {
     iconAnchor: [12, 32],
 };
 
-export const customColorMarkerOptions = (color, iconName) => ({
-    className: 'marker-custom color',
-    html: `${L.Util.template(svgColoredString(color))}
-    ${
-        iconName
-            ? `<img class="svg-icon" style="background-color:${color}" src="${STATIC_URL}images/${iconName}" />`
-            : '<span class="marker_bg"></span>'
-    }`,
-    iconSize: new L.Point(24, 34),
-    popupAnchor: [-1, -28],
-    iconAnchor: [12, 32],
-});
 export const customMarker = L.divIcon(customMarkerOptions);
-export const colorMarker = (color, iconName) =>
-    L.divIcon(customColorMarkerOptions(color, iconName));
 
 export const circleColorMarkerOptions = color => ({
     className: 'marker-custom color circle-marker',
@@ -164,53 +146,6 @@ export const customZoomBar = (formatMessage, fitToBounds) =>
         fitToBounds: () => fitToBounds(),
         position: 'topleft',
     });
-
-export const getSourceColor = (sourcesList, sourceId) => {
-    let sourceColor = '#3388FF';
-    const source = sourcesList.find(s => s.id === parseInt(sourceId, 10));
-    if (source && source.color) {
-        sourceColor = source.color;
-    }
-    return sourceColor;
-};
-
-export const addDrawControl = (map, group) => {
-    const options = {
-        position: 'topright',
-        draw: {
-            polyline: false,
-            polygon: false,
-            circle: false,
-            marker: {
-                icon: customMarker,
-            },
-            circlemarker: false,
-            featureGroup: group,
-            rectangle: false,
-        },
-        edit: {
-            edit: true,
-            featureGroup: group,
-            remove: true,
-        },
-    };
-
-    const drawControl = new L.Control.Draw(options);
-    map.addControl(drawControl);
-    map.addLayer(group);
-    const editToolbar = new L.EditToolbar({
-        featureGroup: group,
-    });
-    const editHandler = editToolbar.getModeHandlers()[0].handler;
-    const deleteHandler = editToolbar.getModeHandlers()[1].handler;
-    editHandler._map = map;
-    deleteHandler._map = map;
-    return {
-        editHandler,
-        deleteHandler,
-        drawControl,
-    };
-};
 
 export const mapOrgUnitByLocation = orgUnits => {
     const mappedOrgunits = [];
@@ -263,3 +198,6 @@ export const polygonDrawOption = (
         pane: 'custom-shape-draw',
     },
 });
+
+export const getleafletGeoJson = geoJson =>
+    geoJson ? L.geoJson(geoJson, shapeOptions) : null;

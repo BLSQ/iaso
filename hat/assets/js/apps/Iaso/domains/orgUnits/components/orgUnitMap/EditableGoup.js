@@ -2,7 +2,6 @@ import L from 'leaflet';
 import 'leaflet-draw';
 
 import { customMarker, polygonDrawOption } from '../../../../utils/mapUtils';
-import { getGeoJson } from './utils';
 
 class EditableGroup {
     constructor() {
@@ -12,6 +11,8 @@ class EditableGroup {
         this.drawControl = null;
         this.groupKey = '';
         this.paneString = '';
+        this.onChangeLocation = () => null;
+        this.onChangeShape = () => null;
     }
 
     initialize({
@@ -23,18 +24,26 @@ class EditableGroup {
         classNames,
         tooltipMessage,
     }) {
-        this.createPane(map, groupKey);
-        this.addEvents(map, onChangeShape, onChangeLocation);
+        this.createPane(map, groupKey, onChangeShape, onChangeLocation);
+        this.addEvents(map, onChangeShape);
         this.addDrawControl(map);
         if (geoJson) {
             this.updateShape(geoJson, classNames, tooltipMessage);
         }
     }
 
-    createPane(map, groupKey) {
+    createPane(map, groupKey, onChangeShape, onChangeLocation) {
         this.groupKey = groupKey;
+        this.onChangeLocation = onChangeLocation;
+        this.onChangeShape = onChangeShape;
         this.paneString = `custom-shape-${groupKey}`;
+
         map.createPane(this.paneString);
+        const drawPaneString = 'custom-shape-draw';
+        const drawPane = map.getPane(drawPaneString);
+        if (!drawPane) {
+            map.createPane(drawPaneString);
+        }
     }
 
     addShape(map, className) {
@@ -44,10 +53,10 @@ class EditableGroup {
         ).enable();
     }
 
-    addEvents(map, onChangeShape, onChangeLocation) {
+    addEvents(map) {
         map.on('draw:created', e => {
             if (e.layerType === 'marker') {
-                onChangeLocation(e.layer.getLatLng());
+                this.onChangeLocation(e.layer.getLatLng());
                 this.toggleDrawMarker(false);
                 map.removeLayer(e.layer);
             } else if (
@@ -55,7 +64,7 @@ class EditableGroup {
                 e.layer.options.className.includes(this.groupKey)
             ) {
                 e.layer.addTo(this.group);
-                onChangeShape(getGeoJson(this.group));
+                this.onChangeShape(this.getGeoJson());
             }
         });
     }
@@ -104,18 +113,26 @@ class EditableGroup {
         }
     }
 
-    toggleEditShape(editEnabled) {
+    toggleEditShape(map, editEnabled) {
+        const pane = map.getPane(this.paneString);
         if (editEnabled) {
+            pane.style.zIndex = 500;
             this.editHandler.enable();
         } else {
+            this.onChangeShape(this.getGeoJson());
+            pane.style.zIndex = 400;
             this.editHandler.disable();
         }
     }
 
-    toggleDeleteShape(deleteEnabled) {
+    toggleDeleteShape(map, deleteEnabled) {
+        const pane = map.getPane(this.paneString);
         if (deleteEnabled) {
+            pane.style.zIndex = 500;
             this.deleteHandler.enable();
         } else {
+            this.onChangeShape(this.getGeoJson());
+            pane.style.zIndex = 400;
             this.deleteHandler.disable();
         }
     }
@@ -124,11 +141,10 @@ class EditableGroup {
         this.group.clearLayers();
     }
 
-    reset() {
+    reset(map) {
         this.clearLayers();
-        this.editHandler = null;
-        this.deleteHandler = null;
-        this.drawControl = null;
+        this.toggleEditShape(map, false);
+        this.toggleDeleteShape(map, false);
     }
 
     updateShape(geoJson, classNames, tooltipMessage) {
@@ -167,6 +183,29 @@ class EditableGroup {
                 }
             });
         }
+    }
+
+    getGeoJson() {
+        if (this.group.getLayers().length === 0) return null;
+        const geojsonData = this.group.toGeoJSON();
+        const multiPolygon = {
+            type: 'MultiPolygon',
+            coordinates: [],
+            properties: {},
+        };
+        const { features } = this.group.toGeoJSON();
+        features.forEach(feature => {
+            multiPolygon.coordinates.push([feature.geometry.coordinates[0]]);
+        });
+        geojsonData.features = [
+            {
+                type: 'Feature',
+                properties: {},
+                geometry: multiPolygon,
+            },
+        ];
+        geojsonData.features[0].geometry = multiPolygon;
+        return geojsonData;
     }
 }
 export default EditableGroup;

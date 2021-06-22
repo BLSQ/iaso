@@ -236,3 +236,34 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.delete("/api/profiles/1/")
 
         self.assertEqual(response.status_code, 403)
+
+    def test_account_feature_flags_is_included(self):
+        aff = m.AccountFeatureFlag.objects.create(code="shape", name="Can edit shape")
+        self.client.force_authenticate(self.jane)
+
+        # no feature flag at first
+        response = self.client.get("/api/profiles/me/")
+        self.assertJSONResponse(response, 200)
+        response_data = response.json()
+        self.assertIn("account", response_data)
+        print(response_data["account"])
+        self.assertEqual(response_data["account"]["feature_flags"], [])
+
+        # add a feature flags
+        self.ghi.feature_flags.add(aff)
+
+        response = self.client.get("/api/profiles/me/")
+        self.assertJSONResponse(response, 200)
+        response_data = response.json()
+        self.assertIn("account", response_data)
+        print(response_data["account"])
+        self.assertEqual(response_data["account"]["feature_flags"], ["shape"])
+
+        # remove feature flags
+        self.ghi.feature_flags.remove(aff)
+        response = self.client.get("/api/profiles/me/")
+        self.assertJSONResponse(response, 200)
+        response_data = response.json()
+        self.assertIn("account", response_data)
+        print(response_data["account"])
+        self.assertEqual(response_data["account"]["feature_flags"], [])

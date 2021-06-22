@@ -25,10 +25,7 @@ if __name__ == "__main__":
             # probably a terminated environment, just ignore
             print("Exception while browsing", env_name, "ignoring")
             continue
-        tags = {
-            x["Key"]: x["Value"]
-            for x in raw_tags.get("ResourceTags")
-        }
+        tags = {x["Key"]: x["Value"] for x in raw_tags.get("ResourceTags")}
         tag_envs[env_name] = tags
         if "env" in tags and tags["env"].lower() == sys.argv[1].lower():
             target_envs.append(env_name)

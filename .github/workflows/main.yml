@@ -19,9 +19,9 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-       - name: Test of ${{ env.GITHUB_REF }} on ${{ github.event.inputs.environment }}
-         run: echo "Deployment of ${{ env.GITHUB_REF }}"
-
+      - name: Test of ${{ env.GITHUB_REF }} on ${{ github.event.inputs.environment }}
+        run: |
+          echo "Deployment of ${{ env.GITHUB_REF }}"
       - uses: actions/checkout@v2
 
       - name: Use node.js 14
@@ -57,8 +57,6 @@ jobs:
         run: |
           npm run webpack-prod
           PUBLIC_URL=https://iaso-campaigns.s3.amazonaws.com/iasostatics/ SKIP_PREFLIGHT_CHECK=true PLUGIN_POLIO_ENABLED='true' bash ./scripts/enable_plugins.sh
-
-
 
       - name: Check formatting with black
         run: |

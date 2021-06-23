@@ -8,6 +8,8 @@ from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
 from django_ltree.fields import PathField
 from django.utils.translation import ugettext_lazy as _
+from django_ltree.managers import TreeManager
+from django_ltree.models import TreeModel
 
 from .base import SourceVersion
 from .project import Project
@@ -136,7 +138,7 @@ class OrgUnitQuerySet(models.QuerySet):
         return queryset
 
 
-class OrgUnit(models.Model):
+class OrgUnit(TreeModel):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
     VALIDATION_REJECTED = "REJECTED"
@@ -178,6 +180,14 @@ class OrgUnit(models.Model):
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]
+        ordering = ("path",)
+
+    def ancestors(self):
+        return type(self)._default_manager.filter(path__ancestors=self.path)
+
+    def root(self):
+        if len(self.path) > 1:
+            return self.ancestors().exclude(id=self.id).first()
 
     def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):
         """Override default save() to make sure that the path property is calculated and saved,
@@ -304,6 +314,7 @@ class OrgUnit(models.Model):
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,
+            "root": self.root().as_small_dict() if self.root() else None,
             "parent": self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents)
             if self.parent
             else None,

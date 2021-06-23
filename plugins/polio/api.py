@@ -1,4 +1,3 @@
-import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from plugins.polio.serializers import SurgePreviewSerializer
 from iaso.models import OrgUnit
@@ -10,30 +9,19 @@ from .models import Campaign
 from iaso.api.common import ModelViewSet
 
 
-class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
-    pass
-
-
-class CampaignFilterSet(django_filters.FilterSet):
-    countries = NumberInFilter(field_name="initial_org_unit__org_unit_type", lookup_expr="in")
-
-    class Meta:
-        model = Campaign
-        fields = ["countries"]
-
-
 class CampaignViewSet(ModelViewSet):
     serializer_class = CampaignSerializer
-    filterset_class = CampaignFilterSet
     results_key = "campaigns"
     remove_results_key_if_paginated = True
     filters.OrderingFilter.ordering_param = "order"
     filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
     ordering_fields = ["obr_name", "cvdpv2_notified_at", "detection_status"]
-    search_fields = ["obr_name", "epid", "initial_org_unit__name"]
+    search_fields = ["obr_name", "epid"]
 
     def get_queryset(self):
         user = self.request.user
+
+        print(OrgUnit.objects.get(pk=11746).root().name)
 
         if user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())

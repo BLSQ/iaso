@@ -122,7 +122,7 @@ class OrgUnitSerializer(serializers.ModelSerializer):
 class CampaignSerializer(serializers.ModelSerializer):
     round_one = RoundSerializer()
     round_two = RoundSerializer()
-    org_unit = OrgUnitSerializer(source="initial_org_unit")
+    org_unit = OrgUnitSerializer(source="initial_org_unit", read_only=True)
     top_level_org_unit_name = serializers.SerializerMethodField()
 
     def get_top_level_org_unit_name(self, campaign):

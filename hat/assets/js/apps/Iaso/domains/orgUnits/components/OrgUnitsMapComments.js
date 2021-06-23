@@ -1,9 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import {
-    SingleComment,
-    CommentWithThread,
-    AddComment,
-} from 'bluesquare-components';
+import { CommentWithThread, AddComment } from 'bluesquare-components';
 import { Pagination } from '@material-ui/lab';
 import { Box, Typography, makeStyles } from '@material-ui/core';
 
@@ -34,6 +30,7 @@ const adaptComment = comment => {
 };
 
 const adaptComments = comments => {
+    if (!comments) return [];
     return comments.map(comment => {
         return adaptComment(comment);
     });
@@ -84,22 +81,6 @@ const OrgUnitsMapComments = ({
     );
     const formatComment = comment => {
         const mainComment = adaptComment(comment);
-        if (!comment.children || comment.children.length === 0) {
-            return (
-                <SingleComment
-                    author={mainComment.author}
-                    content={mainComment.comment}
-                    postingTime={mainComment.dateTime}
-                    id={mainComment.id}
-                    key={
-                        mainComment.author +
-                        mainComment.id +
-                        mainComment.dateTime
-                    }
-                    onAddComment={addReply}
-                />
-            );
-        }
         const childrenComments = adaptComments(comment.children);
         return (
             <CommentWithThread

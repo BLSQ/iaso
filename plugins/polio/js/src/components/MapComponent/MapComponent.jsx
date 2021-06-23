@@ -9,7 +9,9 @@ const InnerMap = ({ onClick }) => {
     const { shapes, centeredShape } = useMapContext();
 
     useEffect(() => {
-        map.fitBounds(centeredShape.getBounds());
+        if (centeredShape.getBounds().isValid()) {
+            map.fitBounds(centeredShape.getBounds());
+        }
     }, [map, centeredShape]);
 
     return (

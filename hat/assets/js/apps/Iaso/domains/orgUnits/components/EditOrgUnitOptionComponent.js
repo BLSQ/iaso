@@ -256,7 +256,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 <FormattedMessage {...MESSAGES.catchment} />
                             </Typography>
                         </Box>
-                        {!canEditCatchment && orgUnit.catchment && (
+                        {!canEditCatchment && (
                             <Box mb={2}>
                                 <FormattedMessage
                                     {...MESSAGES.editCathcmentDisabled}

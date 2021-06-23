@@ -107,10 +107,22 @@ class SurgePreviewSerializer(serializers.Serializer):
         return instance
 
 
+class OrgUnitSerializer(serializers.ModelSerializer):
+    root = serializers.SerializerMethodField()
+
+    def get_root(self, instance: OrgUnit):
+        root = instance.root()
+        return OrgUnitSerializer(instance=root).data if root else None
+
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "root"]
+
+
 class CampaignSerializer(serializers.ModelSerializer):
     round_one = RoundSerializer()
     round_two = RoundSerializer()
-
+    org_unit = OrgUnitSerializer(source="initial_org_unit")
     top_level_org_unit_name = serializers.SerializerMethodField()
 
     def get_top_level_org_unit_name(self, campaign):

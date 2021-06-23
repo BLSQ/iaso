@@ -272,7 +272,10 @@ const RiskAssessmentForm = () => {
     const { values, setFieldValue } = useFormikContext();
 
     const { group = {} } = values;
-    const { data = [] } = useGetRegionGeoJson(values.initial_org_unit);
+
+    const { data = [] } = useGetRegionGeoJson(
+        values.org_unit?.root?.id || values.org_unit?.id,
+    );
 
     const shapes = useMemo(() => {
         return data.map(shape => ({

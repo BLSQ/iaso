@@ -5,6 +5,8 @@ import { customMarker, polygonDrawOption } from '../../../../utils/mapUtils';
 
 class EditableGroup {
     constructor() {
+        this.frontZindex = 500;
+        this.normalZindex = 400;
         this.group = new L.FeatureGroup();
         this.editHandler = null;
         this.deleteHandler = null;
@@ -24,7 +26,11 @@ class EditableGroup {
         classNames,
         tooltipMessage,
     }) {
-        this.createPane(map, groupKey, onChangeShape, onChangeLocation);
+        this.groupKey = groupKey;
+        this.onChangeLocation = onChangeLocation;
+        this.onChangeShape = onChangeShape;
+        this.paneString = `custom-shape-${groupKey}`;
+        this.createPanes(map, groupKey, onChangeShape, onChangeLocation);
         this.addEvents(map, onChangeShape);
         this.addDrawControl(map);
         if (geoJson) {
@@ -32,12 +38,7 @@ class EditableGroup {
         }
     }
 
-    createPane(map, groupKey, onChangeShape, onChangeLocation) {
-        this.groupKey = groupKey;
-        this.onChangeLocation = onChangeLocation;
-        this.onChangeShape = onChangeShape;
-        this.paneString = `custom-shape-${groupKey}`;
-
+    createPanes(map) {
         map.createPane(this.paneString);
         const drawPaneString = 'custom-shape-draw';
         const drawPane = map.getPane(drawPaneString);
@@ -116,11 +117,11 @@ class EditableGroup {
     toggleEditShape(map, editEnabled) {
         const pane = map.getPane(this.paneString);
         if (editEnabled) {
-            pane.style.zIndex = 500;
+            pane.style.zIndex = this.frontZindex;
             this.editHandler.enable();
         } else {
             this.onChangeShape(this.getGeoJson());
-            pane.style.zIndex = 400;
+            pane.style.zIndex = this.normalZindex;
             this.editHandler.disable();
         }
     }
@@ -128,11 +129,11 @@ class EditableGroup {
     toggleDeleteShape(map, deleteEnabled) {
         const pane = map.getPane(this.paneString);
         if (deleteEnabled) {
-            pane.style.zIndex = 500;
+            pane.style.zIndex = this.frontZindex;
             this.deleteHandler.enable();
         } else {
             this.onChangeShape(this.getGeoJson());
-            pane.style.zIndex = 400;
+            pane.style.zIndex = this.normalZindex;
             this.deleteHandler.disable();
         }
     }

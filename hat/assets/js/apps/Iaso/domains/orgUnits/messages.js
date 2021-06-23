@@ -270,6 +270,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.stopDelete',
         defaultMessage: 'Stop delete',
     },
+    done: {
+        id: 'iaso.label.done',
+        defaultMessage: 'Done',
+    },
     add: {
         id: 'iaso.label.add',
         defaultMessage: 'Add',

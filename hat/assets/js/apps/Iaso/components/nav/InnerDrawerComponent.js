@@ -32,7 +32,7 @@ class InnerDrawer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            activeOption: props.filtersOptionComponent ? 'filters' : 'settings',
+            activeOption: props.filtersOptionComponent ? 'filters' : 'comments',
         };
     }
 
@@ -109,6 +109,19 @@ class InnerDrawer extends Component {
                                         }
                                     />
                                 )}
+                                {commentsOptionComponent && (
+                                    <Tab
+                                        classes={{
+                                            root: classes.innerDrawerTab,
+                                        }}
+                                        value="comments"
+                                        label={
+                                            <FormattedMessage
+                                                {...MESSAGES.comments}
+                                            />
+                                        }
+                                    />
+                                )}
                                 <Tab
                                     classes={{
                                         root: classes.innerDrawerTab,
@@ -130,19 +143,6 @@ class InnerDrawer extends Component {
                                         label={
                                             <FormattedMessage
                                                 {...MESSAGES.edit}
-                                            />
-                                        }
-                                    />
-                                )}
-                                {commentsOptionComponent && (
-                                    <Tab
-                                        classes={{
-                                            root: classes.innerDrawerTab,
-                                        }}
-                                        value="comments"
-                                        label={
-                                            <FormattedMessage
-                                                {...MESSAGES.comments}
                                             />
                                         }
                                     />
@@ -174,14 +174,14 @@ class InnerDrawer extends Component {
                                     </Box>
                                 )}
 
-                                {activeOption === 'settings' && (
-                                    <Box width="100%">
-                                        {settingsOptionComponent}
-                                    </Box>
-                                )}
                                 {activeOption === 'comments' && (
                                     <Box width="100%">
                                         {commentsOptionComponent}
+                                    </Box>
+                                )}
+                                {activeOption === 'settings' && (
+                                    <Box width="100%">
+                                        {settingsOptionComponent}
                                     </Box>
                                 )}
                                 {footerComponent && activeOption === 'edit' && (

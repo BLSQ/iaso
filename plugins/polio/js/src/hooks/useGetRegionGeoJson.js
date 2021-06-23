@@ -24,7 +24,7 @@ export const useGetRegionGeoJson = region => {
             );
         },
         {
-            enabled: region !== null && isFetching,
+            enabled: Boolean(region) && isFetching,
         },
     );
 };

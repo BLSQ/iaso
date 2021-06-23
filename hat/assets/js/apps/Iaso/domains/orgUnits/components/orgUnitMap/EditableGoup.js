@@ -142,7 +142,6 @@ class EditableGroup {
     }
 
     reset(map) {
-        this.clearLayers();
         this.toggleEditShape(map, false);
         this.toggleDeleteShape(map, false);
     }

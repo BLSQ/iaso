@@ -71,12 +71,23 @@ def generate_id_for_dhis_2():
     return first_letter + "".join(other_letters)
 
 
+class AccountFeatureFlag(models.Model):
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
 class Account(models.Model):
     name = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     users = models.ManyToManyField(User, blank=True)
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
+    feature_flags = models.ManyToManyField(AccountFeatureFlag)
 
     def as_dict(self):
         return {
@@ -85,6 +96,7 @@ class Account(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "default_version": self.default_version.as_dict() if self.default_version else None,
+            "feature_flags": [flag.code for flag in self.feature_flags.all()],
         }
 
     def __str__(self):

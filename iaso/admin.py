@@ -31,6 +31,7 @@ from .models import (
     DevicePosition,
     Task,
     Page,
+    AccountFeatureFlag,
 )
 
 
@@ -193,6 +194,7 @@ admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
 admin.site.register(InstanceFile, InstanceFileAdmin)
 admin.site.register(Account)
+admin.site.register(AccountFeatureFlag)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(FeatureFlag, FeatureFlagAdmin)
 admin.site.register(Device)

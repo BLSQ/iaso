@@ -20,7 +20,8 @@ jobs:
 
     steps:
        - name: Test of ${{ env.GITHUB_REF }} on ${{ github.event.inputs.environment }}
-         run: echo "Deployment of ${{ env.GITHUB_REF }} on ${{ github.event.inputs.environment }} - ${{ env.GITHUB_SHA }}"
+         run: echo "Deployment of ${{ env.GITHUB_REF }}"
+
       - uses: actions/checkout@v2
 
       - name: Use node.js 14
@@ -93,7 +94,7 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: iaso-dev
           SLACK_TITLE: Automated CI Testing failed
-          SLACK_COLOR: #FF4500
+          SLACK_COLOR: "#FF4500"
           SLACK_FOOTER: "-"
           MSG_MINIMAL: ref,actions url
         if: failure()

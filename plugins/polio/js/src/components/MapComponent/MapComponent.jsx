@@ -12,7 +12,8 @@ const InnerMap = ({ onClick }) => {
         if (centeredShape.getBounds().isValid()) {
             map.fitBounds(centeredShape.getBounds());
         }
-    }, [map, centeredShape]);
+        map.setZoom(8);
+    }, []);
 
     return (
         <>
@@ -44,7 +45,7 @@ export const MapComponent = ({ onSelectShape }) => {
             style={{ height: 500 }}
             center={[0, 0]}
             bounds={centeredShape}
-            zoom={5}
+            zoom={10}
             scrollWheelZoom={false}
         >
             <TileLayer

@@ -173,7 +173,7 @@ def org_units_to_gpkg_bytes(queryset: "QuerySet[OrgUnit]") -> bytes:
 
     # Tried to use a mkstemp but it prevents the group.to_file from writing to it and is hard to remove later on
     # NamedTemporaryFile works but the handle cannot be used to read again. So left the plain uuid thing.
-    filepath = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()))
+    filepath = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()) + ".gpkg")
     export_org_units_to_gpkg(filepath, queryset)
     groups = Group.objects.filter(org_units__in=queryset).distinct()
     add_group_in_gpkg(filepath, groups)

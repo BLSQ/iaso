@@ -175,7 +175,9 @@ def org_units_to_gpkg_bytes(queryset: "QuerySet[OrgUnit]") -> bytes:
     # NamedTemporaryFile works but the handle cannot be used to read again. So left the plain uuid thing.
     filepath = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()))
     export_org_units_to_gpkg(filepath, queryset)
-    groups = Group.objects.filter(org_units__in=queryset).distinct()
+    # see comment on the tabular export code path, previous version wasn't working with multi search union
+    org_ids = queryset.order_by("pk").values_list("pk", flat=True).distinct()
+    groups = Group.objects.filter(org_units__id__in=list(org_ids)).only("id", "name").distinct("id")
     add_group_in_gpkg(filepath, groups)
 
     f = open(filepath, "rb")

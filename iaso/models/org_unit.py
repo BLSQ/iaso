@@ -180,9 +180,6 @@ class OrgUnit(TreeModel):
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]
 
-    def ancestors(self):
-        return type(self)._default_manager.filter(path__ancestors=self.path)
-
     def root(self):
         if self.path is not None and len(self.path) > 1:
             return self.ancestors().exclude(id=self.id).first()

@@ -26,13 +26,20 @@ const styles = theme => ({
         height: `calc(100vh - ${menuHeight}px)`,
         overflow: 'hidden',
     },
+    innerDrawerTab: {
+        ...commonStyles(theme).innerDrawerTab,
+        minWidth: 60,
+        fontSize: 12,
+        paddingRight: theme.spacing(1),
+        paddingLeft: theme.spacing(1),
+    },
 });
 
 class InnerDrawer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            activeOption: props.filtersOptionComponent ? 'filters' : 'settings',
+            activeOption: props.filtersOptionComponent ? 'filters' : 'comments',
         };
     }
 
@@ -50,10 +57,12 @@ class InnerDrawer extends Component {
             editOptionComponent,
             settingsOptionComponent,
             filtersOptionComponent,
+            commentsOptionComponent,
             settingsDisabled,
             filtersDisabled,
             withTopBorder,
             footerComponent,
+            commentsDisabled,
         } = this.props;
         const { activeOption } = this.state;
         return (
@@ -82,59 +91,71 @@ class InnerDrawer extends Component {
                             lg={3}
                             className={classes.innerDrawerToolContainer}
                         >
-                            {(editOptionComponent ||
-                                filtersOptionComponent) && (
-                                <Tabs
-                                    classes={{
-                                        root: classes.innerDrawerTabs,
-                                    }}
-                                    value={activeOption}
-                                    indicatorColor="primary"
-                                    onChange={(event, newtab) =>
-                                        this.toggleOption(newtab)
-                                    }
-                                >
-                                    {filtersOptionComponent && (
-                                        <Tab
-                                            classes={{
-                                                root: classes.innerDrawerTab,
-                                            }}
-                                            disabled={filtersDisabled}
-                                            value="filters"
-                                            label={
-                                                <FormattedMessage
-                                                    {...MESSAGES.filters}
-                                                />
-                                            }
-                                        />
-                                    )}
+                            <Tabs
+                                classes={{
+                                    root: classes.innerDrawerTabs,
+                                }}
+                                value={activeOption}
+                                indicatorColor="primary"
+                                onChange={(event, newtab) =>
+                                    this.toggleOption(newtab)
+                                }
+                            >
+                                {filtersOptionComponent && (
                                     <Tab
                                         classes={{
                                             root: classes.innerDrawerTab,
                                         }}
-                                        disabled={settingsDisabled}
-                                        value="settings"
+                                        disabled={filtersDisabled}
+                                        value="filters"
                                         label={
                                             <FormattedMessage
-                                                {...MESSAGES.settings}
+                                                {...MESSAGES.filters}
                                             />
                                         }
                                     />
-                                    {editOptionComponent && (
-                                        <Tab
-                                            classes={{
-                                                root: classes.innerDrawerTab,
-                                            }}
-                                            value="edit"
-                                            label={
-                                                <FormattedMessage
-                                                    {...MESSAGES.edit}
-                                                />
-                                            }
+                                )}
+                                {editOptionComponent && (
+                                    <Tab
+                                        classes={{
+                                            root: classes.innerDrawerTab,
+                                        }}
+                                        value="edit"
+                                        label={
+                                            <FormattedMessage
+                                                {...MESSAGES.edit}
+                                            />
+                                        }
+                                    />
+                                )}
+                                {commentsOptionComponent && (
+                                    <Tab
+                                        classes={{
+                                            root: classes.innerDrawerTab,
+                                        }}
+                                        value="comments"
+                                        disabled={commentsDisabled}
+                                        label={
+                                            <FormattedMessage
+                                                {...MESSAGES.comments}
+                                            />
+                                        }
+                                    />
+                                )}
+                                <Tab
+                                    classes={{
+                                        root: classes.innerDrawerTab,
+                                    }}
+                                    disabled={settingsDisabled}
+                                    value="settings"
+                                    label={
+                                        <FormattedMessage
+                                            {...MESSAGES.settings}
                                         />
-                                    )}
-                                </Tabs>
-                            )}
+                                    }
+                                />
+                            </Tabs>
+                            {/* } */}
                             <Box
                                 display="flex"
                                 flexWrap="wrap"
@@ -160,12 +181,17 @@ class InnerDrawer extends Component {
                                     </Box>
                                 )}
 
+                                {activeOption === 'comments' && (
+                                    <Box width="100%">
+                                        {commentsOptionComponent}
+                                    </Box>
+                                )}
                                 {activeOption === 'settings' && (
                                     <Box width="100%">
                                         {settingsOptionComponent}
                                     </Box>
                                 )}
-                                {footerComponent && (
+                                {footerComponent && activeOption === 'edit' && (
                                     <div
                                         className={
                                             classes.innerDrawerFooterContent
@@ -186,10 +212,12 @@ class InnerDrawer extends Component {
 InnerDrawer.defaultProps = {
     children: null,
     editOptionComponent: null,
+    commentsOptionComponent: null,
     filtersOptionComponent: null,
     footerComponent: null,
     settingsDisabled: false,
     filtersDisabled: false,
+    commentsDisabled: false,
     setCurrentOption: () => null,
     withTopBorder: false,
 };
@@ -200,9 +228,11 @@ InnerDrawer.propTypes = {
     settingsOptionComponent: PropTypes.object.isRequired,
     editOptionComponent: PropTypes.object,
     filtersOptionComponent: PropTypes.object,
+    commentsOptionComponent: PropTypes.object,
     footerComponent: PropTypes.object,
     settingsDisabled: PropTypes.bool,
     filtersDisabled: PropTypes.bool,
+    commentsDisabled: PropTypes.bool,
     setCurrentOption: PropTypes.func,
     withTopBorder: PropTypes.bool,
 };

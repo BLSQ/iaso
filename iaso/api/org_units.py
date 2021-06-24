@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import viewsets, status, permissions
-from django.contrib.gis.geos import Polygon, GEOSGeometry
+from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils.translation import gettext as _
@@ -262,9 +262,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 ]
                 return org_unit_values
 
-            queryset.prefetch_related("parent__parent__parent__parent").prefetch_related(
-                "parent__parent__parent"
-            ).prefetch_related("parent__parent").prefetch_related("parent")
+            # Django don't allow prefetch_related after an union
+            # so we will disable the optimisation in that case
+            # which will make it pretty slow. FIXME.
+            if not queryset.query.combinator:
+                queryset.prefetch_related("parent__parent__parent__parent").prefetch_related(
+                    "parent__parent__parent"
+                ).prefetch_related("parent__parent").prefetch_related("parent")
 
             if xlsx_format:
                 filename = filename + ".xlsx"
@@ -281,7 +285,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return response
 
     def list_to_gpkg(self, queryset):
-        queryset = queryset.prefetch_related("parent", "org_unit_type")
+        # Django don't allow prefetch_related after an union
+        # so we will disable the optimisation in that case
+        # which will make it pretty slow. FIXME.
+        if not queryset.query.combinator:
+            queryset = queryset.prefetch_related("parent", "org_unit_type")
 
         response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
         filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
@@ -320,35 +328,23 @@ class OrgUnitViewSet(viewsets.ViewSet):
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups")
 
-        if False:  # simplified geom shape editing is currently disabled
-            if geo_json and geo_json["features"][0]["geometry"] and geo_json["features"][0]["geometry"]["coordinates"]:
-                if len(geo_json["features"][0]["geometry"]["coordinates"]) == 1:
-                    org_unit.simplified_geom = Polygon(geo_json["features"][0]["geometry"]["coordinates"][0])
-                else:
-                    # DB has a single Polygon, refuse if we have more, or less.
-                    return Response(
-                        "Only one polygon should be saved in the geo_json shape", status=status.HTTP_400_BAD_REQUEST
-                    )
-            elif simplified_geom:
-                org_unit.simplified_geom = simplified_geom
-            else:
-                org_unit.simplified_geom = None
+        if geo_json and geo_json["features"][0]["geometry"] and geo_json["features"][0]["geometry"]["coordinates"]:
+            org_unit.simplified_geom = MultiPolygon(
+                *[Polygon(*coord) for coord in geo_json["features"][0]["geometry"]["coordinates"]]
+            )
+        elif simplified_geom:
+            org_unit.simplified_geom = simplified_geom
+        else:
+            org_unit.simplified_geom = None
 
-        if False:  # catchment shape editing is currently disabled
-            if (
-                catchment
-                and catchment["features"][0]["geometry"]
-                and catchment["features"][0]["geometry"]["coordinates"]
-            ):
-                if len(catchment["features"][0]["geometry"]["coordinates"]) == 1:
-                    org_unit.catchment = Polygon(catchment["features"][0]["geometry"]["coordinates"][0])
-                else:
-                    # DB has a single Polygon, refuse if we have more, or less.
-                    return Response(
-                        "Only one polygon should be saved in the catchment shape", status=status.HTTP_400_BAD_REQUEST
-                    )
-            else:
-                org_unit.catchment = None
+        org_unit.geom = org_unit.simplified_geom
+
+        if catchment and catchment["features"][0]["geometry"] and catchment["features"][0]["geometry"]["coordinates"]:
+            org_unit.catchment = MultiPolygon(
+                *[Polygon(*coord) for coord in catchment["features"][0]["geometry"]["coordinates"]]
+            )
+        else:
+            org_unit.catchment = None
 
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)

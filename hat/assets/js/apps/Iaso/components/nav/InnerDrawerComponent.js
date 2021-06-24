@@ -26,6 +26,13 @@ const styles = theme => ({
         height: `calc(100vh - ${menuHeight}px)`,
         overflow: 'hidden',
     },
+    innerDrawerTab: {
+        ...commonStyles(theme).innerDrawerTab,
+        minWidth: 60,
+        fontSize: 12,
+        paddingRight: theme.spacing(1),
+        paddingLeft: theme.spacing(1),
+    },
 });
 
 class InnerDrawer extends Component {

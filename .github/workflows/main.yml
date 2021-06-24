@@ -3,26 +3,10 @@ name: Automated CI testing
 on: [ push ]
 
 jobs:
-  setup:
+  test_js:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: slack notification
-        uses: rtCamp/action-slack-notify@v2.1.3
-        env:
-          SLACK_USERNAME: github-actions/main.yml
-          SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: iaso-dev
-          SLACK_TITLE: Setup for testing failed
-          SLACK_COLOR: "#FF4500"
-          SLACK_FOOTER: "-"
-          MSG_MINIMAL: ref,actions url
-        if: failure()
-  test_js:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
       - name: Use node.js 14
         uses: actions/setup-node@v1
         with:
@@ -52,14 +36,13 @@ jobs:
           SLACK_ICON_EMOJI: ":robot_face:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: iaso-dev
-          SLACK_TITLE: Automated CI Testing failed
+          SLACK_TITLE: JS Test failed
           SLACK_COLOR: "#FF4500"
           SLACK_FOOTER: "-"
           MSG_MINIMAL: ref,actions url
         if: failure()
 
   test_python:
-    needs: setup
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -73,6 +56,7 @@ jobs:
         # needed because the postgres container does not provide a health check
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
+      - uses: actions/checkout@v2
       - name: Set up Python 3.6
         uses: actions/setup-python@v1
         with:

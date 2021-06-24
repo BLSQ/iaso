@@ -88,7 +88,6 @@ const EditOrgUnitOptionComponent = ({
                                     toggleDeleteShape={toggleDeleteShape}
                                     toggleAddShape={toggleAddShape}
                                     addShape={addShape}
-                                    canAdd={!hasMarker}
                                     hasShape={Boolean(orgUnit.geo_json)}
                                     shapeKey="location"
                                 />
@@ -123,7 +122,6 @@ const EditOrgUnitOptionComponent = ({
                             toggleAddShape={toggleAddShape}
                             toggleDeleteShape={toggleDeleteShape}
                             addShape={addShape}
-                            canAdd
                             color="secondary"
                             hasShape={Boolean(orgUnit.catchment)}
                             shapeKey="catchment"

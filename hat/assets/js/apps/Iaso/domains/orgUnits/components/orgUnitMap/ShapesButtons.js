@@ -29,7 +29,6 @@ const EditOrgUnitOptionComponent = ({
     toggleAddShape,
     toggleDeleteShape,
     addShape,
-    canAdd,
     hasShape,
     shapeKey,
     color,
@@ -38,26 +37,24 @@ const EditOrgUnitOptionComponent = ({
     return (
         <>
             <>
-                {canAdd && (
-                    <Box mb={2}>
-                        <Button
-                            disabled={disabled || deleteEnabled || editEnabled}
-                            variant="outlined"
-                            className={classes.button}
-                            onClick={() =>
-                                addEnabled
-                                    ? toggleAddShape(shapeKey)
-                                    : addShape(shapeKey)
-                            }
-                            color={color}
-                        >
-                            <ShapeSvg className={classes.buttonIcon} />
-                            <FormattedMessage
-                                {...(addEnabled ? MESSAGES.done : MESSAGES.add)}
-                            />
-                        </Button>
-                    </Box>
-                )}
+                <Box mb={2}>
+                    <Button
+                        disabled={disabled || deleteEnabled || editEnabled}
+                        variant="outlined"
+                        className={classes.button}
+                        onClick={() =>
+                            addEnabled
+                                ? toggleAddShape(shapeKey)
+                                : addShape(shapeKey)
+                        }
+                        color={color}
+                    >
+                        <ShapeSvg className={classes.buttonIcon} />
+                        <FormattedMessage
+                            {...(addEnabled ? MESSAGES.done : MESSAGES.add)}
+                        />
+                    </Button>
+                </Box>
                 {hasShape && (
                     <>
                         <Box mb={2}>
@@ -115,7 +112,6 @@ EditOrgUnitOptionComponent.propTypes = {
     toggleDeleteShape: PropTypes.func.isRequired,
     toggleAddShape: PropTypes.func.isRequired,
     addShape: PropTypes.func.isRequired,
-    canAdd: PropTypes.bool.isRequired,
     hasShape: PropTypes.bool.isRequired,
     shapeKey: PropTypes.string.isRequired,
     editDisabledMessage: PropTypes.string,

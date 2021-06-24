@@ -1,3 +1,4 @@
+from django.db.models.expressions import RawSQL
 from django_filters.rest_framework import DjangoFilterBackend
 from plugins.polio.serializers import SurgePreviewSerializer
 from iaso.models import OrgUnit
@@ -21,14 +22,21 @@ class CampaignViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        print(OrgUnit.objects.get(pk=11746).root().name)
+        search = self.request.query_params.get("search")
+        if search:
+            org_units = OrgUnit.objects.filter(name__icontains=search, org_unit_type=2, path__isnull=False).only("id")
+            ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
+            raw_sql = RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
+            base_query_set = Campaign.objects.filter(initial_org_unit__path__descendants=raw_sql)
+        else:
+            base_query_set = Campaign.objects
 
         if user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
 
-            return Campaign.objects.filter(initial_org_unit__in=org_units)
+            return base_query_set.filter(initial_org_unit__in=org_units)
         else:
-            return Campaign.objects.all()
+            return base_query_set.all()
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):

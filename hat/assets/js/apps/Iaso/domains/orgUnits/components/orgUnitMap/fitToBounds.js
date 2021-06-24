@@ -8,7 +8,7 @@ const fitToBounds = ({
     orgUnitTypesSelected,
     sourcesSelected,
     formsSelected,
-    editGeoJson,
+    editLocationEnabled,
     locationGroup,
     catchmentGroup,
     map,
@@ -17,7 +17,6 @@ const fitToBounds = ({
         orgUnitTypesSelected || [],
     );
     const mappedSourcesSelected = mapOrgUnitByLocation(sourcesSelected || []);
-    const editLocationEnabled = editGeoJson.location;
 
     const groups = [];
     const locations = [];

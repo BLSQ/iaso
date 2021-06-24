@@ -11,6 +11,7 @@ class EditableGroup {
         this.editHandler = null;
         this.deleteHandler = null;
         this.drawControl = null;
+        this.shapeAdded = null;
         this.groupKey = '';
         this.paneString = '';
         this.onChangeLocation = () => null;
@@ -25,13 +26,14 @@ class EditableGroup {
         geoJson,
         classNames,
         tooltipMessage,
+        onAdd,
     }) {
         this.groupKey = groupKey;
         this.onChangeLocation = onChangeLocation;
         this.onChangeShape = onChangeShape;
         this.paneString = `custom-shape-${groupKey}`;
         this.createPanes(map, groupKey, onChangeShape, onChangeLocation);
-        this.addEvents(map, onChangeShape);
+        this.addEvents(map, onAdd);
         this.addDrawControl(map);
         if (geoJson) {
             this.updateShape(geoJson, classNames, tooltipMessage);
@@ -48,13 +50,14 @@ class EditableGroup {
     }
 
     addShape(map, className) {
-        new L.Draw.Polygon(
+        this.shapeAdded = new L.Draw.Polygon(
             map,
             polygonDrawOption(className, this.groupKey),
-        ).enable();
+        );
+        this.shapeAdded.enable();
     }
 
-    addEvents(map) {
+    addEvents(map, onAdd) {
         map.on('draw:created', e => {
             if (e.layerType === 'marker') {
                 this.onChangeLocation(e.layer.getLatLng());
@@ -65,7 +68,9 @@ class EditableGroup {
                 e.layer.options.className.includes(this.groupKey)
             ) {
                 e.layer.addTo(this.group);
+                this.shapeAdded.disable();
                 this.onChangeShape(this.getGeoJson());
+                onAdd();
             }
         });
     }

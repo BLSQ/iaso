@@ -20,7 +20,7 @@ import { getMarkerList } from '../../utils';
 
 import TileSwitch from '../../../../components/maps/tools/TileSwitchComponent';
 import InnerDrawer from '../../../../components/nav/InnerDrawerComponent';
-import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
+import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../OrgunitOptionSaveComponent';
 import OrgUnitTypeChipsFilterComponent from '../OrgUnitTypeChipsFilterComponent';
 import FormsChipsFilterComponent from '../../../forms/components/FormsChipsFilterComponent';
@@ -52,21 +52,27 @@ const EDIT_CATCHMENT_RIGHT = 'ALLOW_CATCHMENT_EDITION';
 const hasFeatureFlag = (currentUser, featureKey) =>
     Boolean(currentUser?.account?.feature_flags?.includes(featureKey));
 
+const buttonsInitialState = {
+    location: {
+        add: false,
+        edit: false,
+        delete: false,
+    },
+    catchment: {
+        add: false,
+        edit: false,
+        delete: false,
+    },
+};
+
 const initialState = currentUser => {
     return {
         locationGroup: new EditableGroup(),
         catchmentGroup: new EditableGroup(),
         canEditLocation: hasFeatureFlag(currentUser, EDIT_GEO_JSON_RIGHT),
         canEditCatchment: hasFeatureFlag(currentUser, EDIT_CATCHMENT_RIGHT),
-        editGeoJson: {
-            location: false,
-            catchment: false,
-        },
-        deleteGeoJson: {
-            location: false,
-            catchment: false,
-        },
         currentOption: 'filters',
+        ...buttonsInitialState,
     };
 };
 
@@ -95,6 +101,7 @@ class OrgUnitMapComponent extends Component {
             onChangeLocation,
             geoJson: getleafletGeoJson(orgUnit.geo_json),
             classNames: 'primary',
+            onAdd: () => this.toggleAddShape('location'),
         });
         catchmentGroup.initialize({
             map,
@@ -104,6 +111,7 @@ class OrgUnitMapComponent extends Component {
             geoJson: getleafletGeoJson(orgUnit.catchment),
             classNames: 'secondary',
             tooltipMessage: formatMessage(MESSAGES.catchment),
+            onAdd: () => this.toggleAddShape('catchment'),
         });
     }
 
@@ -153,14 +161,7 @@ class OrgUnitMapComponent extends Component {
         locationGroup.reset(map);
         catchmentGroup.reset(map);
         this.setState({
-            editGeoJson: {
-                location: false,
-                catchment: false,
-            },
-            deleteGeoJson: {
-                location: false,
-                catchment: false,
-            },
+            ...buttonsInitialState,
         });
         setOrgUnitLocationModified(false);
         resetOrgUnit();
@@ -180,7 +181,7 @@ class OrgUnitMapComponent extends Component {
             sourcesSelected,
             formsSelected,
         } = this.props;
-        const { editGeoJson, locationGroup, catchmentGroup } = this.state;
+        const { location, locationGroup, catchmentGroup } = this.state;
         fitToBounds({
             padding,
             currentTile,
@@ -188,7 +189,7 @@ class OrgUnitMapComponent extends Component {
             orgUnitTypesSelected,
             sourcesSelected,
             formsSelected,
-            editGeoJson,
+            editLocationEnabled: location.edit,
             locationGroup,
             catchmentGroup,
             map: this.map.leafletElement,
@@ -196,29 +197,45 @@ class OrgUnitMapComponent extends Component {
     }
 
     toggleEditShape(keyName) {
-        const editEnabled = this.state.editGeoJson[keyName];
+        const editEnabled = this.state[keyName].edit;
         const { locationGroup, catchmentGroup } = this.state;
         const map = this.map.leafletElement;
         const group = keyName === 'location' ? locationGroup : catchmentGroup;
         group.toggleEditShape(map, !editEnabled);
         this.setState({
-            editGeoJson: {
-                ...this.state.editGeoJson,
-                [keyName]: !this.state.editGeoJson[keyName],
+            [keyName]: {
+                ...this.state[keyName],
+                edit: !editEnabled,
+            },
+        });
+    }
+
+    toggleAddShape(keyName) {
+        const addEnabled = this.state[keyName].add;
+        const { locationGroup, catchmentGroup } = this.state;
+        if (addEnabled) {
+            const group =
+                keyName === 'location' ? locationGroup : catchmentGroup;
+            group.shapeAdded.disable();
+        }
+        this.setState({
+            [keyName]: {
+                ...this.state[keyName],
+                add: !addEnabled,
             },
         });
     }
 
     toggleDeleteShape(keyName) {
-        const deleteEnabled = this.state.deleteGeoJson[keyName];
+        const deleteEnabled = this.state[keyName].delete;
         const { locationGroup, catchmentGroup } = this.state;
         const map = this.map.leafletElement;
         const group = keyName === 'location' ? locationGroup : catchmentGroup;
         group.toggleDeleteShape(map, !deleteEnabled);
         this.setState({
-            deleteGeoJson: {
-                ...this.state.deleteGeoJson,
-                [keyName]: !this.state.deleteGeoJson[keyName],
+            [keyName]: {
+                ...this.state[keyName],
+                delete: !deleteEnabled,
             },
         });
     }
@@ -226,12 +243,13 @@ class OrgUnitMapComponent extends Component {
     addShape(keyName) {
         const { locationGroup, catchmentGroup } = this.state;
         const map = this.map.leafletElement;
-        if (keyName === 'geo_json') {
+        if (keyName === 'location') {
             locationGroup.addShape(map, 'primary');
         }
         if (keyName === 'catchment') {
             catchmentGroup.addShape(map, 'secondary');
         }
+        this.toggleAddShape(keyName);
     }
 
     fetchSubOrgUnitDetail(orgUnit) {
@@ -276,8 +294,8 @@ class OrgUnitMapComponent extends Component {
             theme,
         } = this.props;
         const {
-            editGeoJson,
-            deleteGeoJson,
+            location,
+            catchment,
             currentOption,
             locationGroup,
             canEditLocation,
@@ -294,12 +312,19 @@ class OrgUnitMapComponent extends Component {
         const mappedSourcesSelected = mapOrgUnitByLocation(
             sourcesSelected || [],
         );
+        const actionBusy =
+            location.edit ||
+            location.delete ||
+            location.add ||
+            catchment.edit ||
+            catchment.delete ||
+            catchment.add;
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
                     setCurrentOption={option => this.setCurrentOption(option)}
-                    settingsDisabled={editGeoJson.location}
-                    filtersDisabled={editGeoJson.location}
+                    settingsDisabled={actionBusy}
+                    filtersDisabled={actionBusy}
                     footerComponent={
                         <OrgunitOptionSaveComponent
                             orgUnit={orgUnit}
@@ -326,15 +351,16 @@ class OrgUnitMapComponent extends Component {
                             orgUnit={orgUnit}
                             canEditLocation={canEditLocation}
                             canEditCatchment={canEditCatchment}
-                            editLocationEnabled={editGeoJson.location}
-                            editCatchmentEnabled={editGeoJson.catchment}
-                            deleteLocationEnabled={deleteGeoJson.location}
-                            deleteCatchmentEnabled={deleteGeoJson.catchment}
+                            locationState={location}
+                            catchmentState={catchment}
                             toggleEditShape={keyValue =>
                                 this.toggleEditShape(keyValue)
                             }
                             toggleDeleteShape={keyValue =>
                                 this.toggleDeleteShape(keyValue)
+                            }
+                            toggleAddShape={keyValue =>
+                                this.toggleAddShape(keyValue)
                             }
                             addMarker={() =>
                                 locationGroup.toggleDrawMarker(true)
@@ -372,7 +398,7 @@ class OrgUnitMapComponent extends Component {
                             }
                             url={currentTile.url}
                         />
-                        {!editGeoJson.location &&
+                        {!location.edit &&
                             mappedOrgUnitTypesSelected.map(ot =>
                                 ot.orgUnits.shapes.map(o => (
                                     <GeoJSON

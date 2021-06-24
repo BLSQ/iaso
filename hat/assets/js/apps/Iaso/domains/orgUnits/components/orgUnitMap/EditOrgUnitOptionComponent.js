@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
-import MarkerButtons from './MarkerButtons';
+import MarkerInputs from './MarkerInputs';
 import ShapesButtons from './ShapesButtons';
 
 import MESSAGES from '../../messages';
@@ -60,7 +60,7 @@ const EditOrgUnitOptionComponent = ({
                             <FormattedMessage {...MESSAGES.location} />
                         </Typography>
                     </Box>
-                    <MarkerButtons
+                    <MarkerInputs
                         orgUnit={orgUnit}
                         onChangeLocation={onChangeLocation}
                         addMarker={addMarker}

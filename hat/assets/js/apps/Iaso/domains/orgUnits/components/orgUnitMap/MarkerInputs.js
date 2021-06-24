@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
         width: '100%',
     },
 }));
-const MarkerButtons = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
+const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
     const classes = useStyles();
     return (
         <>
@@ -46,6 +46,7 @@ const MarkerButtons = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                                     onChangeLocation({
                                         lat: parseFloat(latitude),
                                         lng: orgUnit.longitude,
+                                        alt: orgUnit.altitude,
                                     });
                                 }
                             }}
@@ -59,21 +60,27 @@ const MarkerButtons = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                                 onChangeLocation({
                                     lat: orgUnit.latitude,
                                     lng: parseFloat(longitude),
+                                    alt: orgUnit.altitude,
                                 })
                             }
                             value={orgUnit.longitude}
                             type="number"
                             label={MESSAGES.longitude}
                         />
-                        {/* read-only altitude field until edition is implemented */}
                         <InputComponent
-                            disabled
                             keyValue="altitude"
                             value={
                                 orgUnit.altitude !== null ? orgUnit.altitude : 0
                             }
                             type="number"
                             label={MESSAGES.altitude}
+                            onChange={(key, altitude) =>
+                                onChangeLocation({
+                                    lat: orgUnit.latitude,
+                                    lng: orgUnit.longitude,
+                                    alt: parseFloat(altitude),
+                                })
+                            }
                         />
                         <Box mb={2} mt={2}>
                             <Button
@@ -84,6 +91,7 @@ const MarkerButtons = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                                     onChangeLocation({
                                         lat: null,
                                         lng: null,
+                                        alt: 0,
                                     })
                                 }
                             >
@@ -97,11 +105,11 @@ const MarkerButtons = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
         </>
     );
 };
-MarkerButtons.propTypes = {
+MarkerInputs.propTypes = {
     orgUnit: PropTypes.object.isRequired,
     addMarker: PropTypes.func.isRequired,
     onChangeLocation: PropTypes.func.isRequired,
     hasMarker: PropTypes.bool.isRequired,
 };
 
-export default MarkerButtons;
+export default MarkerInputs;

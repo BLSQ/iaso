@@ -289,17 +289,16 @@ class OrgUnitDetail extends Component {
                 longitude: location.lng
                     ? parseFloat(location.lng.toFixed(8))
                     : null,
+                altitude: location.alt
+                    ? parseFloat(location.alt.toFixed(8))
+                    : null,
             },
         });
     }
 
     handleSaveOrgUnit(newOrgUnit = {}) {
-        // Don't send altitude for now, the interface does not handle it
         const { currentOrgUnit } = this.state;
-        let orgUnitPayload = omit(
-            { ...currentOrgUnit, ...newOrgUnit },
-            'altitude',
-        );
+        let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
         orgUnitPayload = {
             ...orgUnitPayload,
             groups:

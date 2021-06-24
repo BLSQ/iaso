@@ -187,10 +187,6 @@ class OrgUnit(TreeModel):
         return type(self)._default_manager.filter(path__ancestors=self.path)
 
     def root(self):
-        if len(self.path) > 1:
-            return self.ancestors().exclude(id=self.id).first()
-
-    def root(self):
         if self.path is not None and len(self.path) > 1:
             return self.ancestors().exclude(id=self.id).first()
 

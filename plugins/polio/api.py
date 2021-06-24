@@ -20,7 +20,7 @@ class CustomFilterBackend(filters.BaseFilterBackend):
             raw_sql = RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
 
             query = Q(obr_name__icontains=search) | Q(epid__icontains=search)
-            if len(ltree_list) > 0:
+            if len(org_units) > 0:
                 query.add(Q(initial_org_unit__path__descendants=raw_sql), Q.OR)
 
             return queryset.filter(query)

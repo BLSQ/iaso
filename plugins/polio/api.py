@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django_filters.rest_framework import DjangoFilterBackend
 from plugins.polio.serializers import SurgePreviewSerializer
@@ -10,33 +11,40 @@ from .models import Campaign
 from iaso.api.common import ModelViewSet
 
 
+class CustomFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        search = request.query_params.get("search")
+        if search:
+            org_units = OrgUnit.objects.filter(name__icontains=search, org_unit_type=2, path__isnull=False).only("id")
+            ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
+            raw_sql = RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
+
+            query = Q(obr_name__icontains=search) | Q(epid__icontains=search)
+            if len(ltree_list) > 0:
+                query.add(Q(initial_org_unit__path__descendants=raw_sql), Q.OR)
+
+            return queryset.filter(query)
+
+        return queryset
+
+
 class CampaignViewSet(ModelViewSet):
     serializer_class = CampaignSerializer
     results_key = "campaigns"
     remove_results_key_if_paginated = True
     filters.OrderingFilter.ordering_param = "order"
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend]
     ordering_fields = ["obr_name", "cvdpv2_notified_at", "detection_status"]
-    search_fields = ["obr_name", "epid"]
 
     def get_queryset(self):
         user = self.request.user
 
-        search = self.request.query_params.get("search")
-        if search:
-            org_units = OrgUnit.objects.filter(name__icontains=search, org_unit_type=2, path__isnull=False).only("id")
-            ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
-            raw_sql = RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
-            base_query_set = Campaign.objects.filter(initial_org_unit__path__descendants=raw_sql)
-        else:
-            base_query_set = Campaign.objects
-
         if user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
 
-            return base_query_set.filter(initial_org_unit__in=org_units)
+            return Campaign.objects.filter(initial_org_unit__in=org_units)
         else:
-            return base_query_set.all()
+            return Campaign.objects.all()
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):

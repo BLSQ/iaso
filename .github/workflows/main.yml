@@ -20,24 +20,21 @@ jobs:
           MSG_MINIMAL: ref,actions url
         if: failure()
   test_js:
-    needs: build
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - name: Use node.js 14
         uses: actions/setup-node@v1
         with:
           node-version: 14
-
       - name: Environment info
         run: |
           node --version
           npm --version
-
       - name: npm install and test
         run: |
           npm install
           npm test
-
       - name: npm build (but don't commit)
         run: |
           npm run webpack-prod
@@ -60,8 +57,9 @@ jobs:
           SLACK_FOOTER: "-"
           MSG_MINIMAL: ref,actions url
         if: failure()
+
   test_python:
-    needs: build
+    needs: setup
     runs-on: ubuntu-latest
     services:
       postgres:

@@ -4,7 +4,7 @@ import { Box, Typography, makeStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { commonStyles } from 'bluesquare-components';
 
 import MarkerInputs from './MarkerInputs';
 import ShapesButtons from './ShapesButtons';
@@ -32,7 +32,6 @@ const EditOrgUnitOptionComponent = ({
     canEditCatchment,
 }) => {
     const classes = useStyles();
-    const intl = useSafeIntl();
     const hasMarker =
         Boolean(orgUnit.latitude !== null) &&
         Boolean(orgUnit.longitude !== null);
@@ -66,28 +65,36 @@ const EditOrgUnitOptionComponent = ({
                         addMarker={addMarker}
                         hasMarker={hasMarker}
                     />
-
-                    <ShapesButtons
-                        disabled={
-                            catchmentState.edit ||
-                            catchmentState.delete ||
-                            catchmentState.add
-                        }
-                        editEnabled={locationState.edit}
-                        deleteEnabled={locationState.delete}
-                        addEnabled={locationState.add}
-                        hasEditRight={canEditLocation}
-                        toggleEditShape={toggleEditShape}
-                        toggleDeleteShape={toggleDeleteShape}
-                        toggleAddShape={toggleAddShape}
-                        addShape={addShape}
-                        canAdd={!hasMarker}
-                        hasShape={Boolean(orgUnit.geo_json)}
-                        shapeKey="location"
-                        editDisabledMessage={intl.formatMessage({
-                            ...MESSAGES.editLocationDisabled,
-                        })}
-                    />
+                    {!hasMarker && (
+                        <>
+                            {!canEditLocation && orgUnit.geo_json && (
+                                <Box mb={2}>
+                                    <FormattedMessage
+                                        {...MESSAGES.editLocationDisabled}
+                                    />
+                                </Box>
+                            )}
+                            {canEditLocation && (
+                                <ShapesButtons
+                                    disabled={
+                                        catchmentState.edit ||
+                                        catchmentState.delete ||
+                                        catchmentState.add
+                                    }
+                                    editEnabled={locationState.edit}
+                                    deleteEnabled={locationState.delete}
+                                    addEnabled={locationState.add}
+                                    toggleEditShape={toggleEditShape}
+                                    toggleDeleteShape={toggleDeleteShape}
+                                    toggleAddShape={toggleAddShape}
+                                    addShape={addShape}
+                                    canAdd={!hasMarker}
+                                    hasShape={Boolean(orgUnit.geo_json)}
+                                    shapeKey="location"
+                                />
+                            )}
+                        </>
+                    )}
                 </Box>
                 <Box>
                     <Box px={0} component="div" mb={2}>
@@ -95,28 +102,33 @@ const EditOrgUnitOptionComponent = ({
                             <FormattedMessage {...MESSAGES.catchment} />
                         </Typography>
                     </Box>
-                    <ShapesButtons
-                        disabled={
-                            locationState.edit ||
-                            locationState.delete ||
-                            locationState.add
-                        }
-                        editEnabled={catchmentState.edit}
-                        deleteEnabled={catchmentState.delete}
-                        addEnabled={catchmentState.add}
-                        hasEditRight={canEditCatchment}
-                        toggleEditShape={toggleEditShape}
-                        toggleAddShape={toggleAddShape}
-                        toggleDeleteShape={toggleDeleteShape}
-                        addShape={addShape}
-                        canAdd
-                        color="secondary"
-                        hasShape={Boolean(orgUnit.catchment)}
-                        shapeKey="catchment"
-                        editDisabledMessage={intl.formatMessage({
-                            ...MESSAGES.editCatchmentDisabled,
-                        })}
-                    />
+                    {!canEditCatchment && (
+                        <Box mb={2}>
+                            <FormattedMessage
+                                {...MESSAGES.editCatchmentDisabled}
+                            />
+                        </Box>
+                    )}
+                    {canEditCatchment && (
+                        <ShapesButtons
+                            disabled={
+                                locationState.edit ||
+                                locationState.delete ||
+                                locationState.add
+                            }
+                            editEnabled={catchmentState.edit}
+                            deleteEnabled={catchmentState.delete}
+                            addEnabled={catchmentState.add}
+                            toggleEditShape={toggleEditShape}
+                            toggleAddShape={toggleAddShape}
+                            toggleDeleteShape={toggleDeleteShape}
+                            addShape={addShape}
+                            canAdd
+                            color="secondary"
+                            hasShape={Boolean(orgUnit.catchment)}
+                            shapeKey="catchment"
+                        />
+                    )}
                 </Box>
             </Box>
         </Box>

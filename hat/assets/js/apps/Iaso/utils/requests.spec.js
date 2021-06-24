@@ -199,7 +199,7 @@ const Component = ({ preventTrigger, additionalDeps, request }) => {
                       : undefined,
               }
             : undefined;
-    const { data, isLoading, isError } = useAPI(request, hookParams);
+    const { data, isLoading, isError } = useAPI(request, null, hookParams);
     useEffect(() => {
         if (additionalDeps && additionalDep !== 'updatedDep') {
             setAdditionalDep('updatedDep');
@@ -262,7 +262,7 @@ describe('useAPI', () => {
         });
     });
     describe('when preventTrigger is true', () => {
-        before(() => {
+        beforeEach(() => {
             spyRequest.resetHistory();
             component = mount(
                 <Component preventTrigger request={spyRequest} />,

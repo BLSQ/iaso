@@ -4,7 +4,7 @@ import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import isEqual from 'lodash/isEqual';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'leaflet-draw';
-import { withTheme } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 
 import { Grid } from '@material-ui/core';
 
@@ -31,6 +31,7 @@ import setDrawMessages from '../../../../utils/map/drawMapMessages';
 import { resetMapReducer } from '../../../../redux/mapReducer';
 import { setCurrentSubOrgUnit } from '../../actions';
 import { setCurrentInstance } from '../../../instances/actions';
+import { OrgUnitsMapComments } from './OrgUnitsMapComments';
 
 import {
     fetchOrgUnitDetail,
@@ -64,6 +65,15 @@ const buttonsInitialState = {
         delete: false,
     },
 };
+
+// passing the theme to make it accessible through withStyles
+// eslint-disable-next-line no-unused-vars
+const styles = theme => ({
+    commentContainer: {
+        height: '60vh',
+        overflowY: 'auto',
+    },
+});
 
 const initialState = currentUser => {
     return {
@@ -292,6 +302,7 @@ class OrgUnitMapComponent extends Component {
             saveOrgUnit,
             orgUnitLocationModified,
             theme,
+            classes,
         } = this.props;
         const {
             location,
@@ -375,6 +386,13 @@ class OrgUnitMapComponent extends Component {
                         <>
                             <TileSwitch />
                         </>
+                    }
+                    commentsOptionComponent={
+                        <OrgUnitsMapComments
+                            orgUnit={orgUnit}
+                            className={classes.commentContainer}
+                            maxPages={4}
+                        />
                     }
                 >
                     <Map
@@ -533,6 +551,7 @@ OrgUnitMapComponent.propTypes = {
     orgUnitLocationModified: PropTypes.bool.isRequired,
     theme: PropTypes.object.isRequired,
     currentUser: PropTypes.object.isRequired,
+    classes: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -553,4 +572,4 @@ const MapDispatchToProps = dispatch => ({
 export default connect(
     MapStateToProps,
     MapDispatchToProps,
-)(withTheme(injectIntl(OrgUnitMapComponent)));
+)(withStyles(styles, { withTheme: true })(injectIntl(OrgUnitMapComponent)));

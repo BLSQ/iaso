@@ -306,6 +306,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.links',
         defaultMessage: 'Links',
     },
+    comments: {
+        id: 'iaso.label.comments',
+        defaultMessage: 'Comments',
+    },
 });
 
 export default MESSAGES;

@@ -8,8 +8,8 @@ import isEqual from 'lodash/isEqual';
 import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import { InnerDrawer, injectIntl, commonStyles } from 'bluesquare-components';
-// import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
+import { injectIntl, commonStyles } from 'bluesquare-components';
+import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { locationsLimit } from '../../../constants/filters';
 
 import {
@@ -34,7 +34,7 @@ import { fetchOrgUnitDetail } from '../../../utils/requests';
 import { getChipColors } from '../../../constants/chipColors';
 import { getColorsFromParams, decodeSearch } from '../utils';
 import MESSAGES from '../messages';
-import DrawerMessages from '../../../components/nav/messages';
+import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
 
 const boundsOptions = {
     padding: [50, 50],
@@ -46,6 +46,10 @@ const styles = theme => ({
         '& section': {
             width: '100%',
         },
+    },
+    commentContainer: {
+        height: '60vh',
+        overflowY: 'auto',
     },
 });
 
@@ -80,6 +84,7 @@ class OrgunitsMap extends Component {
         super(props);
         this.state = {
             fittedToBounds: false,
+            // comments: [],
         };
     }
 
@@ -100,6 +105,7 @@ class OrgunitsMap extends Component {
                 );
             });
         }
+        this.props.setCurrentSubOrgUnit(null);
     }
 
     shouldComponentUpdate(nextProps) {
@@ -149,10 +155,14 @@ class OrgunitsMap extends Component {
 
     fetchDetail(orgUnit) {
         const { dispatch } = this.props;
-        this.props.setCurrentSubOrgUnit(null);
-        fetchOrgUnitDetail(dispatch, orgUnit.id).then(i =>
-            this.props.setCurrentSubOrgUnit(i),
-        );
+        // Removed this as it seems useless and create UI bugs
+        // this.props.setCurrentSubOrgUnit(null);
+        fetchOrgUnitDetail(dispatch, orgUnit.id)
+            .then(i => this.props.setCurrentSubOrgUnit(i))
+            .catch(e => {
+                console.warn('error fetching Org Unit Detail', e);
+                this.props.setCurrentSubOrgUnit(null);
+            });
     }
 
     fitToBounds() {
@@ -196,31 +206,34 @@ class OrgunitsMap extends Component {
             <Grid container spacing={0}>
                 <InnerDrawer
                     withTopBorder
-                    settingsOption={{
-                        component: (
-                            <>
-                                <TileSwitch />
-                                <Divider />
-                                <ClusterSwitch />
-                                <Divider />
-                                <Box
-                                    px={2}
-                                    className={classes.innerDrawerToolbar}
-                                    component="div"
-                                >
-                                    <FiltersComponent
-                                        params={params}
-                                        baseUrl={baseUrl}
-                                        onFilterChanged={() =>
-                                            setFiltersUpdated()
-                                        }
-                                        filters={[locationsLimit()]}
-                                    />
-                                </Box>
-                            </>
-                        ),
-                        message: DrawerMessages.settings,
-                    }}
+                    settingsOptionComponent={
+                        <>
+                            <TileSwitch />
+                            <Divider />
+                            <ClusterSwitch />
+                            <Divider />
+                            <Box
+                                px={2}
+                                className={classes.innerDrawerToolbar}
+                                component="div"
+                            >
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    onFilterChanged={() => setFiltersUpdated()}
+                                    filters={[locationsLimit()]}
+                                />
+                            </Box>
+                            <Divider />
+                        </>
+                    }
+                    commentsOptionComponent={
+                        <OrgUnitsMapComments
+                            className={classes.commentContainer}
+                            maxPages={4}
+                            getOrgUnitFromStore
+                        />
+                    }
                 >
                     <Map
                         ref={ref => {

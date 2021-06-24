@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     getRequest,
     patchRequest,
@@ -690,7 +690,7 @@ export const iasoRestoreRequest = requestHandler(storeDispatch)(restoreRequest);
 
 const defaultHookParams = { preventTrigger: false, additionalDependencies: [] };
 
-export const useAPI = (request, params = defaultHookParams) => {
+export const useAPI = (request, requestArgs, params = defaultHookParams) => {
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isError, setIsError] = useState(false);
@@ -706,7 +706,7 @@ export const useAPI = (request, params = defaultHookParams) => {
             }
             setIsLoading(true);
             try {
-                const response = await request();
+                const response = await request(requestArgs);
                 if (mountedRef.current) {
                     setData(response);
                     setIsLoading(false);
@@ -722,7 +722,46 @@ export const useAPI = (request, params = defaultHookParams) => {
         return () => {
             mountedRef.current = false;
         };
-    }, [...(params.additionalDependencies ?? []), request, params.trigger]);
+    }, [
+        ...(params.additionalDependencies ?? []),
+        request,
+        params.preventTrigger,
+        params.trigger,
+        requestArgs,
+    ]);
 
-    return { data, isLoading, isError };
+    const result = { data, isLoading, isError };
+    return result;
+};
+
+export const useGetComments = ({
+    orgUnitId,
+    offset,
+    limit,
+    refreshTrigger,
+}) => {
+    const url = offset
+        ? `/api/comments/?object_pk=${orgUnitId}&content_type=iaso-orgunit&limit=${limit}&offset=${offset}`
+        : `/api/comments/?object_pk=${orgUnitId}&content_type=iaso-orgunit&limit=${limit}`;
+    const request = useCallback(
+        async () =>
+            iasoGetRequest({
+                disableSuccessSnackBar: true,
+                requestParams: {
+                    url,
+                },
+            }),
+        [url, refreshTrigger],
+    );
+    const result = useAPI(request, null, {
+        preventTrigger: Boolean(!orgUnitId),
+    });
+    return result;
+};
+
+export const postComment = async comment => {
+    const result = await iasoPostRequest({
+        requestParams: { url: '/api/comments/', body: comment },
+    });
+    return result;
 };

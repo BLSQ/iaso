@@ -111,11 +111,12 @@ export const getColorsFromParams = params => {
     return searches.map(s => s.color);
 };
 
-export const decodeSearch = search => JSON.parse(search);
+export const decodeSearch = search => {
+    return JSON.parse(search);
+};
 
 export const encodeUriSearches = searches => {
     const newSearches = [...searches];
-
     newSearches.forEach((s, i) => {
         Object.keys(s).forEach(key => {
             const value = s[key];

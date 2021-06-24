@@ -21,6 +21,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
+    comments: {
+        id: 'iaso.label.comments',
+        defaultMessage: 'Comments',
+    },
 });
 
 export default MESSAGES;

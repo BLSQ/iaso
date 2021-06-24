@@ -262,9 +262,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 ]
                 return org_unit_values
 
-            queryset.prefetch_related("parent__parent__parent__parent").prefetch_related(
-                "parent__parent__parent"
-            ).prefetch_related("parent__parent").prefetch_related("parent")
+            # Django don't allow prefetch_related after an union
+            # so we will disable the optimisation in that case
+            # which will make it pretty slow. FIXME.
+            if not queryset.query.combinator:
+                queryset.prefetch_related("parent__parent__parent__parent").prefetch_related(
+                    "parent__parent__parent"
+                ).prefetch_related("parent__parent").prefetch_related("parent")
 
             if xlsx_format:
                 filename = filename + ".xlsx"
@@ -281,7 +285,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return response
 
     def list_to_gpkg(self, queryset):
-        queryset = queryset.prefetch_related("parent", "org_unit_type")
+        # Django don't allow prefetch_related after an union
+        # so we will disable the optimisation in that case
+        # which will make it pretty slow. FIXME.
+        if not queryset.query.combinator:
+            queryset = queryset.prefetch_related("parent", "org_unit_type")
 
         response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
         filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"

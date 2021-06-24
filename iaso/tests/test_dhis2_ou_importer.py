@@ -1,12 +1,13 @@
 from io import StringIO
 
-from django.test import TestCase
 from django.core import management
 from os import environ
 import responses
 import json
 
-from iaso.models import OrgUnit, Group, GroupSet
+from iaso.models import OrgUnit, Group, GroupSet, Task, Account, DataSource, SUCCESS
+from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
+from iaso.test import TestCase
 
 
 class CommandTests(TestCase):
@@ -154,3 +155,97 @@ class CommandTests(TestCase):
         self.assertEqual(len(ou_c.geom.coords), 2)
         self.assertEqual(len(ou_c.geom.coords[0]), 2)
         self.assertEqual(len(ou_c.geom.coords[1]), 2)
+
+
+class TaskTests(TestCase):
+    """FIXME this is a copy of the CommandTest adapted for task, we have to keep them in sync"""
+
+    def fixture_json(self, name):
+        with open("./iaso/tests/fixtures/dhis2/" + name + ".json") as json_file:
+            return json.load(json_file)
+
+    @responses.activate
+    def test_import(self):
+        # fixture file based on
+        # https://play.dhis2.org/2.30/api/organisationUnits.json?fields=id%2Cname%2Cpath%2Ccoordinates%2Cgeometry%2Cparent%2CorganisationUnitGroups%5Bid%2Cname%5D&filter=id:in:[ImspTQPwCqd,kJq2mPyFEHo,KXSqt7jv6DU,LOpWauwwghf]
+
+        responses.add(
+            responses.GET,
+            "https://play.dhis2.org/2.30/api/organisationUnits.json"
+            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
+            "&pageSize=500&page=1&totalPages=True",
+            json=self.fixture_json("orgunits"),
+            status=200,
+        )
+
+        responses.add(
+            responses.GET,
+            "https://play.dhis2.org/2.30/api/organisationUnitGroupSets.json"
+            "?paging=false&fields=id,name,organisationUnitGroups[id,name]",
+            json=self.fixture_json("groupsets"),
+            status=200,
+        )
+
+        account = Account.objects.create(name="a")
+        user = self.create_user_with_profile(username="link", account=account)
+        source = DataSource.objects.create(name="play")
+
+        task = Task.objects.create(name="dhis2_ou_importer", launcher=user, account=account)
+        dhis2_ou_importer(
+            source_id=source.id,
+            source_version_number=1,
+            force=False,
+            validate=False,
+            continue_on_error=False,
+            url="https://play.dhis2.org/2.30",
+            login="admin",
+            password="district",
+            task=task,
+            _immediate=True,
+        )
+
+        task.refresh_from_db()
+        self.assertEquals(task.status, SUCCESS)
+        created_orgunits_qs = OrgUnit.objects.order_by("id")
+        created_orgunits = [entry for entry in created_orgunits_qs.values("source_ref", "name")]
+
+        # assert the pyramid imported seem okish
+        self.assertEquals(
+            created_orgunits,
+            [
+                {"name": "Sierra Leone", "source_ref": "ImspTQPwCqd"},
+                {"name": "Kenema", "source_ref": "kJq2mPyFEHo"},
+                {"name": "Gorama Mende", "source_ref": "KXSqt7jv6DU"},
+                {"name": "Bambara Kaima CHP", "source_ref": "LOpWauwwghf"},
+            ],
+        )
+
+        # assert location and geometry and parent relationships
+        healthcenter = created_orgunits_qs.get(name="Bambara Kaima CHP")
+        self.assertEquals(healthcenter.location.wkt, "POINT Z (-11.3596 8.531700000000001 0)")
+        self.assertEquals(healthcenter.parent.name, "Gorama Mende")
+
+        # assert has a simplified geometry
+        zone = created_orgunits_qs.get(name="Gorama Mende")
+        self.assertIn("MULTIPOLYGON (((-11.3596 8.5317", zone.simplified_geom.wkt)
+
+        # assert groups are created and assigned to orgunits
+        group = Group.objects.get(name="CHP")
+        self.assertEquals([entry for entry in group.org_units.values("name")], [{"name": "Bambara Kaima CHP"}])
+
+        groupsets_qs = GroupSet.objects.order_by("id")
+        created_groupsets = [entry for entry in groupsets_qs.values("source_ref", "name")]
+        self.assertEquals(
+            created_groupsets,
+            [
+                {"name": "Area", "source_ref": "uIuxlbV1vRT"},
+                {"name": "Facility Ownership", "source_ref": "Bpx0589u8y0"},
+                {"name": "Facility Type", "source_ref": "J5jldMd8OHv"},
+                {"name": "Location Rural/Urban", "source_ref": "Cbuj0VCyDjL"},
+            ],
+        )
+        facility_type = groupsets_qs.get(name="Facility Type")
+        self.assertEquals([x.name for x in facility_type.groups.all()], ["CHP", "MCHP", "Clinic", "Hospital", "CHC"])
+
+        # assert that path has been generated for all org units
+        self.assertEquals(0, OrgUnit.objects.filter(path=None).count())

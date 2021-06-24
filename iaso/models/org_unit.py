@@ -7,6 +7,7 @@ from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
 from django_ltree.fields import PathField
+from django_ltree.models import TreeModel
 from django.utils.translation import ugettext_lazy as _
 
 from .base import SourceVersion
@@ -136,7 +137,7 @@ class OrgUnitQuerySet(models.QuerySet):
         return queryset
 
 
-class OrgUnit(models.Model):
+class OrgUnit(TreeModel):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
     VALIDATION_REJECTED = "REJECTED"
@@ -178,6 +179,10 @@ class OrgUnit(models.Model):
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]
+
+    def root(self):
+        if self.path is not None and len(self.path) > 1:
+            return self.ancestors().exclude(id=self.id).first()
 
     def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):
         """Override default save() to make sure that the path property is calculated and saved,

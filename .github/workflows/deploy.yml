@@ -18,8 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # - name: Deployment of ${{ github }} on ${{ github.event.inputs.environment }}
-      #   run: echo "Deployment of ${{ GITHUB_REF }} on ${{ github.event.inputs.environment }} - ${{GITHUB_SHA }}"
+      - name: Deployment of ${{ github.event.inputs.branch }} on ${{ github.event.inputs.environment }}
+        run: |
+          export GITHUB_BRANCH=${GITHUB_REF##*heads/}
+          echo $GITHUB_BRANCH
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}

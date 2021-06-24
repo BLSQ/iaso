@@ -24,6 +24,11 @@ jobs:
         run: |
           echo "Deployment of ${{ env.GITHUB_REF }}"
           echo "Deployment of ${{ env.GITHUB_SHA }}"
+          echo "Deployment of $GITHUB_REF"
+          echo "Deployment of $GITHUB_JOB_ID"
+          echo ${GITHUB_REF##*heads/}
+          export GITHUB_BRANCH=${GITHUB_REF##*heads/}
+          echo $GITHUB_BRANCH
       - name: Use node.js 14
         uses: actions/setup-node@v1
         with:

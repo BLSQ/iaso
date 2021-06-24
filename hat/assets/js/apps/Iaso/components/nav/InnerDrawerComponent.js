@@ -55,6 +55,7 @@ class InnerDrawer extends Component {
             filtersDisabled,
             withTopBorder,
             footerComponent,
+            commentsDisabled,
         } = this.props;
         const { activeOption } = this.state;
         return (
@@ -93,8 +94,6 @@ class InnerDrawer extends Component {
                                     this.toggleOption(newtab)
                                 }
                             >
-                                {/* {(editOptionComponent ||
-                                filtersOptionComponent) && ( */}
                                 {filtersOptionComponent && (
                                     <Tab
                                         classes={{
@@ -109,12 +108,26 @@ class InnerDrawer extends Component {
                                         }
                                     />
                                 )}
+                                {editOptionComponent && (
+                                    <Tab
+                                        classes={{
+                                            root: classes.innerDrawerTab,
+                                        }}
+                                        value="edit"
+                                        label={
+                                            <FormattedMessage
+                                                {...MESSAGES.edit}
+                                            />
+                                        }
+                                    />
+                                )}
                                 {commentsOptionComponent && (
                                     <Tab
                                         classes={{
                                             root: classes.innerDrawerTab,
                                         }}
                                         value="comments"
+                                        disabled={commentsDisabled}
                                         label={
                                             <FormattedMessage
                                                 {...MESSAGES.comments}
@@ -134,19 +147,6 @@ class InnerDrawer extends Component {
                                         />
                                     }
                                 />
-                                {editOptionComponent && (
-                                    <Tab
-                                        classes={{
-                                            root: classes.innerDrawerTab,
-                                        }}
-                                        value="edit"
-                                        label={
-                                            <FormattedMessage
-                                                {...MESSAGES.edit}
-                                            />
-                                        }
-                                    />
-                                )}
                             </Tabs>
                             {/* } */}
                             <Box
@@ -210,6 +210,7 @@ InnerDrawer.defaultProps = {
     footerComponent: null,
     settingsDisabled: false,
     filtersDisabled: false,
+    commentsDisabled: false,
     setCurrentOption: () => null,
     withTopBorder: false,
 };
@@ -224,6 +225,7 @@ InnerDrawer.propTypes = {
     footerComponent: PropTypes.object,
     settingsDisabled: PropTypes.bool,
     filtersDisabled: PropTypes.bool,
+    commentsDisabled: PropTypes.bool,
     setCurrentOption: PropTypes.func,
     withTopBorder: PropTypes.bool,
 };

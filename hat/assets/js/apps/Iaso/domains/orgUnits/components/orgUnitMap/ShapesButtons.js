@@ -36,64 +36,60 @@ const EditOrgUnitOptionComponent = ({
     const classes = useStyles();
     return (
         <>
-            <>
-                <Box mb={2}>
-                    <Button
-                        disabled={disabled || deleteEnabled || editEnabled}
-                        variant="outlined"
-                        className={classes.button}
-                        onClick={() =>
-                            addEnabled
-                                ? toggleAddShape(shapeKey)
-                                : addShape(shapeKey)
-                        }
-                        color={color}
-                    >
-                        <ShapeSvg className={classes.buttonIcon} />
-                        <FormattedMessage
-                            {...(addEnabled ? MESSAGES.done : MESSAGES.add)}
-                        />
-                    </Button>
-                </Box>
-                {hasShape && (
-                    <>
-                        <Box mb={2}>
-                            <Button
-                                disabled={
-                                    disabled || deleteEnabled || addEnabled
-                                }
-                                variant="outlined"
-                                color={color}
-                                className={classes.button}
-                                onClick={() => toggleEditShape(shapeKey)}
-                            >
-                                <Edit className={classes.buttonIcon} />
-                                <FormattedMessage
-                                    {...(editEnabled
-                                        ? MESSAGES.done
-                                        : MESSAGES.edit)}
-                                />
-                            </Button>
-                        </Box>
-                        <Box mb={2}>
-                            <Button
-                                disabled={disabled || editEnabled || addEnabled}
-                                variant="outlined"
-                                color={color}
-                                className={classes.button}
-                                onClick={() => toggleDeleteShape(shapeKey)}
-                            >
-                                <DeleteIcon className={classes.buttonIcon} />
-                                <FormattedMessage
-                                    {...(deleteEnabled
-                                        ? MESSAGES.done
-                                        : MESSAGES.delete)}
-                                />
-                            </Button>
-                        </Box>
-                    </>
-                )}
-            </>
+            <Box mb={2}>
+                <Button
+                    disabled={disabled || deleteEnabled || editEnabled}
+                    variant="outlined"
+                    className={classes.button}
+                    onClick={() =>
+                        addEnabled
+                            ? toggleAddShape(shapeKey)
+                            : addShape(shapeKey)
+                    }
+                    color={color}
+                >
+                    <ShapeSvg className={classes.buttonIcon} />
+                    <FormattedMessage
+                        {...(addEnabled ? MESSAGES.done : MESSAGES.add)}
+                    />
+                </Button>
+            </Box>
+            {hasShape && (
+                <>
+                    <Box mb={2}>
+                        <Button
+                            disabled={disabled || deleteEnabled || addEnabled}
+                            variant="outlined"
+                            color={color}
+                            className={classes.button}
+                            onClick={() => toggleEditShape(shapeKey)}
+                        >
+                            <Edit className={classes.buttonIcon} />
+                            <FormattedMessage
+                                {...(editEnabled
+                                    ? MESSAGES.done
+                                    : MESSAGES.edit)}
+                            />
+                        </Button>
+                    </Box>
+                    <Box mb={2}>
+                        <Button
+                            disabled={disabled || editEnabled || addEnabled}
+                            variant="outlined"
+                            color={color}
+                            className={classes.button}
+                            onClick={() => toggleDeleteShape(shapeKey)}
+                        >
+                            <DeleteIcon className={classes.buttonIcon} />
+                            <FormattedMessage
+                                {...(deleteEnabled
+                                    ? MESSAGES.done
+                                    : MESSAGES.delete)}
+                            />
+                        </Button>
+                    </Box>
+                </>
+            )}
         </>
     );
 };

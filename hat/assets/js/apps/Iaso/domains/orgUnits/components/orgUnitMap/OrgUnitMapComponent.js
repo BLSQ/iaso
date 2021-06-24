@@ -336,6 +336,7 @@ class OrgUnitMapComponent extends Component {
                     setCurrentOption={option => this.setCurrentOption(option)}
                     settingsDisabled={actionBusy}
                     filtersDisabled={actionBusy}
+                    commentsDisabled={actionBusy}
                     footerComponent={
                         <OrgunitOptionSaveComponent
                             orgUnit={orgUnit}

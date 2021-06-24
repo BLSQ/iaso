@@ -5,7 +5,7 @@ import { Box, Typography, makeStyles } from '@material-ui/core';
 
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { useGetComments, postComment } from '../../../utils/requests';
+import { useGetComments, postComment } from '../../../../utils/requests';
 
 const styles = {
     commentsBlock: { marginBottom: '7px' },

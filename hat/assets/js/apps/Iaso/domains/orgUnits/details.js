@@ -15,6 +15,7 @@ import {
     // TopBar,
     LoadingSpinner,
 } from 'bluesquare-components';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
     setCurrentOrgUnit,
@@ -56,14 +57,13 @@ import {
 import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
 import OrgUnitForm from './components/OrgUnitForm';
-import OrgUnitMap from './components/OrgUnitMapComponent';
+import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
 import Logs from '../../components/logs/LogsComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import LinksDetails from '../links/components/LinksDetailsComponent';
 
 import { getChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
-
 import MESSAGES from './messages';
 
 import {
@@ -73,12 +73,26 @@ import {
 } from '../../constants/filters';
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
-import { OrgUnitsMapComments } from './components/OrgUnitsMapComments';
+import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
 const styles = theme => ({
     ...commonStyles(theme),
+    root: {
+        '& path.primary': {
+            fill: fade(theme.palette.primary.main, 0.6),
+            stroke: theme.palette.primary.main,
+            strokeOpacity: 1,
+            strokeWidth: 3,
+        },
+        '& path.secondary': {
+            fill: fade(theme.palette.secondary.main, 0.6),
+            stroke: theme.palette.secondary.main,
+            strokeOpacity: 1,
+            strokeWidth: 3,
+        },
+    },
     hiddenOpacity: {
         position: 'absolute',
         top: '0px',
@@ -262,11 +276,12 @@ class OrgUnitDetail extends Component {
         });
     }
 
-    handleChangeShape(key, value) {
+    handleChangeShape(geoJson, key) {
         const currentOrgUnit = {
             ...this.state.currentOrgUnit,
-            [key]: value,
+            [key]: geoJson,
         };
+        this.setOrgUnitLocationModified(true);
         this.setState({
             currentOrgUnit,
         });
@@ -283,17 +298,16 @@ class OrgUnitDetail extends Component {
                 longitude: location.lng
                     ? parseFloat(location.lng.toFixed(8))
                     : null,
+                altitude: location.alt
+                    ? parseFloat(location.alt.toFixed(8))
+                    : null,
             },
         });
     }
 
-    handleSaveOrgUnit(newOrgUnit) {
-        // Don't send altitude for now, the interface does not handle it
+    handleSaveOrgUnit(newOrgUnit = {}) {
         const { currentOrgUnit } = this.state;
-        let orgUnitPayload = omit(
-            { ...currentOrgUnit, ...newOrgUnit },
-            'altitude',
-        );
+        let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
         orgUnitPayload = {
             ...orgUnitPayload,
             groups:
@@ -342,9 +356,9 @@ class OrgUnitDetail extends Component {
         dispatch(setFetchingDetail(false));
     }
 
-    setOrgUnitLocationModified() {
+    setOrgUnitLocationModified(orgUnitLocationModified = true) {
         this.setState({
-            orgUnitLocationModified: true,
+            orgUnitLocationModified,
         });
     }
 
@@ -477,7 +491,7 @@ class OrgUnitDetail extends Component {
             'comments',
         ];
         return (
-            <>
+            <section className={classes.root}>
                 <TopBar
                     title={title}
                     displayBackButton
@@ -547,8 +561,10 @@ class OrgUnitDetail extends Component {
                         >
                             <Box className={classes.containerFullHeight}>
                                 <OrgUnitMap
-                                    setOrgUnitLocationModified={() =>
-                                        this.setOrgUnitLocationModified()
+                                    setOrgUnitLocationModified={isModified =>
+                                        this.setOrgUnitLocationModified(
+                                            isModified,
+                                        )
                                     }
                                     orgUnitLocationModified={
                                         orgUnitLocationModified
@@ -557,14 +573,12 @@ class OrgUnitDetail extends Component {
                                     resetOrgUnit={() =>
                                         this.handleResetOrgUnit()
                                     }
-                                    saveOrgUnit={() =>
-                                        this.handleSaveOrgUnit(currentOrgUnit)
-                                    }
+                                    saveOrgUnit={() => this.handleSaveOrgUnit()}
                                     onChangeLocation={location => {
                                         this.handleChangeLocation(location);
                                     }}
-                                    onChangeShape={(keyValue, shape) =>
-                                        this.handleChangeShape(keyValue, shape)
+                                    onChangeShape={(key, geoJson) =>
+                                        this.handleChangeShape(geoJson, key)
                                     }
                                 />
                             </Box>
@@ -700,7 +714,7 @@ class OrgUnitDetail extends Component {
                         )}
                     </section>
                 )}
-            </>
+            </section>
         );
     }
 }

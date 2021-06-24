@@ -29,7 +29,7 @@ jobs:
           echo ${GITHUB_REF##*heads/}
           export GITHUB_BRANCH=${GITHUB_REF##*heads/}
           echo $GITHUB_BRANCH
-          echo ${{ ${{ github.event.inputs.environment }}
+          echo ${{ github.event.inputs.environment }}
       - name: Use node.js 14
         uses: actions/setup-node@v1
         with:

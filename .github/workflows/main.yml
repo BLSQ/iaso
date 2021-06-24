@@ -42,6 +42,7 @@ jobs:
         run: |
           npm run webpack-prod
       - name: build polio plugin
+        run: |
           bash ./scripts/enable_plugins.sh
         env:
           PUBLIC_URL: https://iaso-campaigns.s3.amazonaws.com/iasostatics/

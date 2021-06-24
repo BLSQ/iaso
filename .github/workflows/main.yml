@@ -98,7 +98,6 @@ jobs:
       - name: Check formatting with black
         run: |
           black --check .
-
       - name: Django tests
         run: |
           python manage.py migrate

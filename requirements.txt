@@ -27,7 +27,7 @@ uwsgi==2.0.18
 # postgresql and sql
 psycopg2-binary==2.8.5
 snaql==0.4.2
-django-ltree==0.5
+django-ltree==0.5.2
 
 # webpack loader
 -e git+https://github.com/BLSQ/django-webpack-loader@e94f76d0f8372193f0b662e2a1aba01a9deffb20#egg=django_webpack_loader

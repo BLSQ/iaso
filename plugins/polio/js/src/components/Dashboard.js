@@ -888,16 +888,21 @@ export const Dashboard = () => {
         });
     };
 
-    const handleClickEditRow = useCallback(id => {
-        setSelectedCampaignId(id);
-        openCreateEditDialog();
-    },[setSelectedCampaignId,openCreateEditDialog]);
+    const handleClickEditRow = useCallback(
+        id => {
+            setSelectedCampaignId(id);
+            openCreateEditDialog();
+        },
+        [setSelectedCampaignId, openCreateEditDialog],
+    );
 
-
-    const handleClickDeleteRow = useCallback(id => {
-        setSelectedCampaignId(id);
-        openDeleteConfirmDialog();
-    },[setSelectedCampaignId,openDeleteConfirmDialog]);
+    const handleClickDeleteRow = useCallback(
+        id => {
+            setSelectedCampaignId(id);
+            openDeleteConfirmDialog();
+        },
+        [setSelectedCampaignId, openDeleteConfirmDialog],
+    );
 
     const handleClickCreateButton = () => {
         setSelectedCampaignId(undefined);

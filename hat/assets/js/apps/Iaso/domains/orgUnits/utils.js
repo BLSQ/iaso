@@ -112,26 +112,11 @@ export const getColorsFromParams = params => {
 };
 
 export const decodeSearch = search => {
-    console.log('search', search);
-    let newStr = search.replace(new RegExp(/(\":\")/, 'g'), '`QUOTE`:`QUOTE`');
-    newStr = newStr.replace(new RegExp(/(\":)/, 'g'), '`QUOTE`:');
-    newStr = newStr.replace(new RegExp(/(\[{\")/, 'g'), '[{`QUOTE`');
-    newStr = newStr.replace(new RegExp(/(\"}\])/, 'g'), '`QUOTE`}]');
-    newStr = newStr.replace(new RegExp(/(\"}\])/, 'g'), '`QUOTE`}]');
-    newStr = newStr.replace(new RegExp(/(\",\")/, 'g'), '`QUOTE`,`QUOTE`');
-    newStr = newStr.replace(new RegExp(/(\", \")/, 'g'), '`QUOTE`,`QUOTE`');
-    newStr = newStr.replace(new RegExp(/(,\")/, 'g'), ',`QUOTE`');
-    newStr = newStr.replace(new RegExp(/(\"},{\")/, 'g'), '`QUOTE`,`QUOTE`');
-    newStr = newStr.replace(new RegExp(/(\")/, 'g'), '');
-    newStr = newStr.replace(new RegExp(/(`QUOTE`)/, 'g'), '"');
-    console.log(newStr);
-
-    return JSON.parse(newStr);
+    return JSON.parse(search);
 };
 
 export const encodeUriSearches = searches => {
     const newSearches = [...searches];
-    console.log('encodeUriSearches', searches);
     newSearches.forEach((s, i) => {
         Object.keys(s).forEach(key => {
             const value = s[key];

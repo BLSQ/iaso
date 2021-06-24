@@ -242,7 +242,7 @@ const EditOrgUnitOptionComponent = ({
                     {!canEditCatchment && (
                         <Box mb={2}>
                             <FormattedMessage
-                                {...MESSAGES.editCathcmentDisabled}
+                                {...MESSAGES.editCatchmentDisabled}
                             />
                         </Box>
                     )}

@@ -290,8 +290,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.map.shape.editLocationDisabled',
         defaultMessage: 'Location edition is disabled on this account',
     },
-    editCathcmentDisabled: {
-        id: 'iaso.map.shape.editCathcmentDisabled',
+    editCatchmentDisabled: {
+        id: 'iaso.map.shape.editCatchmentDisabled',
         defaultMessage: 'Catchment edition is disabled on this account',
     },
     deleteMarker: {

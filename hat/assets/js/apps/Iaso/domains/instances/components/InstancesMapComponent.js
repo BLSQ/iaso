@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Map, TileLayer } from 'react-leaflet';
+import { Map, ScaleControl, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { InnerDrawer, injectIntl } from 'bluesquare-components';
 // import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
@@ -126,6 +126,7 @@ class InstancesMap extends Component {
                         zoomControl={false}
                         keyboard={false}
                     >
+                        <ScaleControl imperial={false} />
                         <TileLayer
                             attribution={
                                 currentTile.attribution

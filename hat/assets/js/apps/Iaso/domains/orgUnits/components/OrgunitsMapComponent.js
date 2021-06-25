@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Map, TileLayer, GeoJSON } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON, Tooltip } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import camelCase from 'lodash/camelCase';
 import isEqual from 'lodash/isEqual';
@@ -272,6 +272,7 @@ class OrgunitsMap extends Component {
                                 onClick={() => this.fetchDetail(o)}
                             >
                                 <OrgUnitPopupComponent />
+                                <Tooltip>{o.name}</Tooltip>
                             </GeoJSON>
                         ))}
                         {isClusterActive &&

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Map, TileLayer, GeoJSON, Tooltip } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON, ScaleControl, Tooltip } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import camelCase from 'lodash/camelCase';
 import isEqual from 'lodash/isEqual';
@@ -247,6 +247,7 @@ class OrgunitsMap extends Component {
                         zoomSnap={0.1}
                         keyboard={false}
                     >
+                        <ScaleControl imperial={false} />
                         <TileLayer
                             attribution={
                                 currentTile.attribution

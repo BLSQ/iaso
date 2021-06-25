@@ -288,24 +288,26 @@ class OrgUnitDetail extends Component {
     }
 
     handleChangeLocation(location) {
-        this.setState({
+        // TODO not sure why, perhaps to remove decimals
+        const convert = pos =>
+            pos !== null ? parseFloat(pos.toFixed(8)) : null;
+
+        const new_state = {
             orgUnitLocationModified: true,
             currentOrgUnit: {
                 ...this.state.currentOrgUnit,
-                latitude:
-                    location.lat !== null
-                        ? parseFloat(location.lat.toFixed(8))
-                        : null,
-                longitude:
-                    location.lng !== null
-                        ? parseFloat(location.lng.toFixed(8))
-                        : null,
-                altitude:
-                    location.alt !== null
-                        ? parseFloat(location.alt.toFixed(8))
-                        : null,
+                latitude: convert(location.lat),
+                longitude: convert(location.lng),
             },
-        });
+        };
+
+        // When moving a marker leaflet remove the alt but we don't want to
+        // remove it from the org state
+        if (location.alt !== undefined) {
+            new_state.currentOrgUnit.altitude = convert(location.lng);
+        }
+
+        this.setState(new_state);
     }
 
     handleSaveOrgUnit(newOrgUnit = {}) {

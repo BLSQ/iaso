@@ -91,7 +91,7 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                                     onChangeLocation({
                                         lat: null,
                                         lng: null,
-                                        alt: 0,
+                                        alt: null,
                                     })
                                 }
                             >

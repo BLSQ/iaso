@@ -114,6 +114,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.emptyProjectsError',
         defaultMessage: 'Please choose at least one project',
     },
+    addTaskTitle: {
+        id: 'iaso.datasources.addAskTitle',
+        defaultMessage: '{title} - Source: {source} - Version: {version}',
+    },
+    gpkgFormFile: {
+        id: 'iaso.datasources.label.gpkgFormFile',
+        defaultMessage: 'Choose file',
+    },
+    versionNumber: {
+        id: 'iaso.datasources.label.versionNumber',
+        defaultMessage: 'Version',
+    },
+    project: {
+        id: 'iaso.datasources.label.project',
+        defaultMessage: 'Project',
+    },
+    geoPkgTitle: {
+        id: 'iaso.datasources.label.geoPkgTitle',
+        defaultMessage: 'Import from GeoPackage',
+    },
+    importGeoPkg: {
+        id: 'iaso.datasources.geoPkg',
+        defaultMessage: 'Import GeoPackage',
+    },
 });
 
 export default MESSAGES;

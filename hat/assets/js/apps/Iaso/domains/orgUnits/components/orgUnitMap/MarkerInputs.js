@@ -45,8 +45,6 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                                 if (latitude) {
                                     onChangeLocation({
                                         lat: parseFloat(latitude),
-                                        lng: orgUnit.longitude,
-                                        alt: orgUnit.altitude,
                                     });
                                 }
                             }}
@@ -58,9 +56,7 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                             keyValue="longitude"
                             onChange={(key, longitude) =>
                                 onChangeLocation({
-                                    lat: orgUnit.latitude,
                                     lng: parseFloat(longitude),
-                                    alt: orgUnit.altitude,
                                 })
                             }
                             value={orgUnit.longitude}
@@ -70,14 +66,12 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                         <InputComponent
                             keyValue="altitude"
                             value={
-                                orgUnit.altitude !== null ? orgUnit.altitude : 0
+                                orgUnit.altitude
                             }
                             type="number"
                             label={MESSAGES.altitude}
                             onChange={(key, altitude) =>
                                 onChangeLocation({
-                                    lat: orgUnit.latitude,
-                                    lng: orgUnit.longitude,
                                     alt: parseFloat(altitude),
                                 })
                             }

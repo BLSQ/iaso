@@ -309,6 +309,10 @@ class OrgunitsMap extends Component {
                                                 PopupComponent={
                                                     OrgUnitPopupComponent
                                                 }
+                                                tooltipProps={e => ({
+                                                    children: [e.name],
+                                                })}
+                                                TooltipComponent={Tooltip}
                                                 isCircle
                                             />
                                         </MarkerClusterGroup>
@@ -330,6 +334,10 @@ class OrgunitsMap extends Component {
                                         items={orgUnitsBySearch}
                                         onMarkerClick={o => this.fetchDetail(o)}
                                         PopupComponent={OrgUnitPopupComponent}
+                                        tooltipProps={e => ({
+                                            children: [e.name],
+                                        })}
+                                        TooltipComponent={Tooltip}
                                         isCircle
                                     />
                                 ),

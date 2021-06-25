@@ -292,15 +292,18 @@ class OrgUnitDetail extends Component {
             orgUnitLocationModified: true,
             currentOrgUnit: {
                 ...this.state.currentOrgUnit,
-                latitude: location.lat
-                    ? parseFloat(location.lat.toFixed(8))
-                    : null,
-                longitude: location.lng
-                    ? parseFloat(location.lng.toFixed(8))
-                    : null,
-                altitude: location.alt
-                    ? parseFloat(location.alt.toFixed(8))
-                    : null,
+                latitude:
+                    location.lat !== null
+                        ? parseFloat(location.lat.toFixed(8))
+                        : null,
+                longitude:
+                    location.lng !== null
+                        ? parseFloat(location.lng.toFixed(8))
+                        : null,
+                altitude:
+                    location.alt !== null
+                        ? parseFloat(location.alt.toFixed(8))
+                        : null,
             },
         });
     }

@@ -18,7 +18,7 @@ import {
     injectIntl,
     Table,
 } from 'bluesquare-components';
-// import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
+
 import {
     fetchOrgUnitsTypes,
     fetchSources,

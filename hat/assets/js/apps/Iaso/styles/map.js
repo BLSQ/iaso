@@ -93,10 +93,14 @@ const mapStyles = theme => ({
         '& path.primary': {
             fill: fade(theme.palette.primary.main, 0.6),
             stroke: theme.palette.primary.main,
+            strokeOpacity: 1,
+            strokeWidth: 3,
         },
         '& path.secondary': {
             fill: fade(theme.palette.secondary.main, 0.6),
             stroke: theme.palette.secondary.main,
+            strokeOpacity: 1,
+            strokeWidth: 3,
         },
         '& path.no-pointer-event': {
             pointerEvents: 'none !important',

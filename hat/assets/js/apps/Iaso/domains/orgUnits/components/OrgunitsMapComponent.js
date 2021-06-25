@@ -34,7 +34,7 @@ import { fetchOrgUnitDetail } from '../../../utils/requests';
 import { getChipColors } from '../../../constants/chipColors';
 import { getColorsFromParams, decodeSearch } from '../utils';
 import MESSAGES from '../messages';
-import { OrgUnitsMapComments } from './OrgUnitsMapComments';
+import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
 
 const boundsOptions = {
     padding: [50, 50],

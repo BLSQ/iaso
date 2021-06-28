@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Map, TileLayer, Polygon } from 'react-leaflet';
+import { Map, TileLayer, Polygon, ScaleControl } from 'react-leaflet';
 
 import { withStyles } from '@material-ui/core';
 
@@ -56,6 +56,7 @@ class PolygonMap extends Component {
                     zoomControl={false}
                     keyboard={false}
                 >
+                    <ScaleControl imperial={false} />
                     <TileLayer
                         attribution={
                             currentTile.attribution

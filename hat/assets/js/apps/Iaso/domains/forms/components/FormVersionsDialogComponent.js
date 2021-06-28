@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid, Typography, Box } from '@material-ui/core';
 
+import { useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
 import PeriodPicker from '../../periods/components/PeriodPickerComponent';
@@ -10,7 +11,6 @@ import PeriodPicker from '../../periods/components/PeriodPickerComponent';
 import MESSAGES from '../messages';
 import { createFormVersion, updateFormVersion } from '../../../utils/requests';
 import { useFormState } from '../../../hooks/form';
-import { useSafeIntl } from 'bluesquare-components';
 import { errorTypes, getPeriodsErrors } from '../../periods/utils';
 
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';

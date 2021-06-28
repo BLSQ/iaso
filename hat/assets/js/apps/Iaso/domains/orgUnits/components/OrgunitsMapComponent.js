@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Map, TileLayer, GeoJSON } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON, ScaleControl, Tooltip } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import camelCase from 'lodash/camelCase';
 import isEqual from 'lodash/isEqual';
@@ -247,6 +247,7 @@ class OrgunitsMap extends Component {
                         zoomSnap={0.1}
                         keyboard={false}
                     >
+                        <ScaleControl imperial={false} />
                         <TileLayer
                             attribution={
                                 currentTile.attribution
@@ -272,6 +273,7 @@ class OrgunitsMap extends Component {
                                 onClick={() => this.fetchDetail(o)}
                             >
                                 <OrgUnitPopupComponent />
+                                <Tooltip>{o.name}</Tooltip>
                             </GeoJSON>
                         ))}
                         {isClusterActive &&
@@ -308,6 +310,10 @@ class OrgunitsMap extends Component {
                                                 PopupComponent={
                                                     OrgUnitPopupComponent
                                                 }
+                                                tooltipProps={e => ({
+                                                    children: [e.name],
+                                                })}
+                                                TooltipComponent={Tooltip}
                                                 isCircle
                                             />
                                         </MarkerClusterGroup>
@@ -329,6 +335,10 @@ class OrgunitsMap extends Component {
                                         items={orgUnitsBySearch}
                                         onMarkerClick={o => this.fetchDetail(o)}
                                         PopupComponent={OrgUnitPopupComponent}
+                                        tooltipProps={e => ({
+                                            children: [e.name],
+                                        })}
+                                        TooltipComponent={Tooltip}
                                         isCircle
                                     />
                                 ),

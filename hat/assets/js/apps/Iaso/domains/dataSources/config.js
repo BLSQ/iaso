@@ -11,6 +11,7 @@ import {
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import MESSAGES from './messages';
 import { AddTask } from './components/AddTaskComponent';
+import { ImportGeoPkgDialog } from './components/ImportGeoPkgDialog';
 
 const dataSourcesTableColumns = (
     formatMessage,
@@ -72,14 +73,15 @@ const dataSourcesTableColumns = (
             const latestVersion =
                 sortedVersions.length > 0 ? sortedVersions[0].number : 0;
             const addTaskTitle = {
-                id: 'addAskTitle',
-                defaultMessage: `${formatMessage(
-                    MESSAGES.importFromDhis2,
-                )} - Source: ${settings.original.name} - Version: ${
-                    latestVersion + 1
-                }`,
+                ...MESSAGES.addTaskTitle,
+                values: {
+                    title: formatMessage(MESSAGES.importFromDhis2),
+                    source: settings.original.name,
+                    version: latestVersion + 1,
+                },
             };
-
+            const defaultVersion =
+                settings.original.default_version?.number ?? null;
             return (
                 <section>
                     <DataSourceDialogComponent
@@ -122,6 +124,20 @@ const dataSourcesTableColumns = (
                                 ? settings.original.credentials
                                 : {}
                         }
+                    />
+                    <ImportGeoPkgDialog
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="globe"
+                                tooltipMessage={MESSAGES.importGeoPkg}
+                            />
+                        )}
+                        titleMessage={MESSAGES.geoPkgTitle}
+                        sourceId={settings.original.id}
+                        sourceName={settings.original.name}
+                        latestVersion={latestVersion}
+                        defaultVersion={defaultVersion}
                     />
                 </section>
             );

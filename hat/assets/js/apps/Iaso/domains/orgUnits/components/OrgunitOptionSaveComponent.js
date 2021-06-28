@@ -18,17 +18,8 @@ const styles = theme => ({
 });
 
 function OrgunitOptionSaveComponent(props) {
-    const {
-        toggleEditShape,
-        orgUnitLocationModified,
-        classes,
-        editLocationEnabled,
-        editCatchmentEnabled,
-        mapShape,
-        orgUnit,
-        resetOrgUnit,
-        saveOrgUnit,
-    } = props;
+    const { orgUnitLocationModified, classes, resetOrgUnit, saveOrgUnit } =
+        props;
     return (
         <>
             <Button
@@ -36,25 +27,13 @@ function OrgunitOptionSaveComponent(props) {
                 disabled={!orgUnitLocationModified}
                 variant="contained"
                 onClick={() => {
-                    if (editLocationEnabled) {
-                        toggleEditShape('location');
-                    }
-                    if (editCatchmentEnabled) {
-                        toggleEditShape('catchment');
-                    }
-                    mapShape(orgUnit.geo_json, 'location');
-                    mapShape(orgUnit.catchment, 'catchment');
                     resetOrgUnit();
                 }}
             >
                 <FormattedMessage {...MESSAGES.cancel} />
             </Button>
             <Button
-                disabled={
-                    !orgUnitLocationModified ||
-                    editLocationEnabled ||
-                    editCatchmentEnabled
-                }
+                disabled={!orgUnitLocationModified}
                 variant="contained"
                 className={classes.button}
                 color="primary"
@@ -69,10 +48,6 @@ function OrgunitOptionSaveComponent(props) {
 OrgunitOptionSaveComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
-    editLocationEnabled: PropTypes.bool.isRequired,
-    editCatchmentEnabled: PropTypes.bool.isRequired,
-    toggleEditShape: PropTypes.func.isRequired,
-    mapShape: PropTypes.func.isRequired,
     resetOrgUnit: PropTypes.func.isRequired,
     orgUnitLocationModified: PropTypes.bool.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,

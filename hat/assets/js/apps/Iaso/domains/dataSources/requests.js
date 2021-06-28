@@ -34,29 +34,26 @@ export const useDhisOuImporterRequest = requestBody => {
     return useAPI(callback)?.data;
 };
 
-// LEGACY
-// export const useDhisOuImporterRequest = requestBody => {
-//     const [result, setResult] = useState(null);
-//     useEffect(() => {
-//         const executeRequest = async () => {
-//             const response = await sendDhisOuImporterRequest(requestBody);
-//             if (response) {
-//                 setResult(response);
-//             }
-//         };
-//         // TODO add error handling
-//         executeRequest();
-//     }, [requestBody]);
-//     return result;
-// };
+const postGeoPkg = async request => {
+    if (request) {
+        const file = { file: request.file };
+        const body = { ...request };
+        delete body.file;
+        return iasoPostRequest({
+            requestParams: {
+                url: '/api/tasks/create/importgpkg/',
+                body,
+                fileData: file,
+            },
+        });
+    }
+    return null;
+};
 
-// const request = async requestBody => {
-//     if (requestBody) {
-//         return postRequestHandler({
-//             requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
-//             errorKeyMessage: 'dhisouimporterError',
-//             consoleError: 'DHIS OU Importer',
-//         });
-//     }
-//     return null;
-// };
+export const useGeoPkgImport = request => {
+    const callback = useCallback(
+        async () => postGeoPkg(request),
+        [request, postGeoPkg],
+    );
+    return useAPI(callback)?.data;
+};

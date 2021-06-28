@@ -90,12 +90,16 @@ const MESSAGES = defineMessages({
         defaultMessage: 'This operation cannot be undone.',
     },
     addOrgUnit: {
-        defaultMessage: 'Add org unit',
+        defaultMessage: 'Search org unit to add',
         id: 'iaso.orgUnits.add',
     },
     locale: {
         defaultMessage: 'Language',
         id: 'iaso.users.dialog.locale',
+    },
+    searchUser: {
+        id: 'iaso.users.filter.searchUser',
+        defaultMessage: 'Search user',
     },
 });
 

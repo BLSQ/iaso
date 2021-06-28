@@ -169,7 +169,7 @@ const OrgUnitSearch = ({
                             color="primary"
                             onClick={handleSearch}
                         >
-                            CLICK
+                            <FormattedMessage {...MESSAGES.search} />
                         </Button>
                     </Box>
 

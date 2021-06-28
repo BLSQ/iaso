@@ -81,7 +81,7 @@ const dataSourcesTableColumns = (
                 },
             };
             const defaultVersion =
-                settings.original.defaultVersion?.number ?? null;
+                settings.original.default_version?.number ?? null;
             return (
                 <section>
                     <DataSourceDialogComponent

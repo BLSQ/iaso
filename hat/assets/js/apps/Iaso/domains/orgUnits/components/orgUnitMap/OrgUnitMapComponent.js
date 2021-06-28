@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { Map, TileLayer, GeoJSON } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON, ScaleControl } from 'react-leaflet';
 import isEqual from 'lodash/isEqual';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'leaflet-draw';
@@ -409,6 +409,7 @@ class OrgUnitMapComponent extends Component {
                         zoomControl={false}
                         keyboard={false}
                     >
+                        <ScaleControl imperial={false} />
                         <TileLayer
                             attribution={
                                 currentTile.attribution

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import L from 'leaflet';
-import { Map, TileLayer, GeoJSON } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON, ScaleControl } from 'react-leaflet';
 
 import { withStyles } from '@material-ui/core';
 
@@ -71,6 +71,7 @@ class GeoJsonMap extends Component {
                     zoomControl={false}
                     zoomSnap={0.1}
                 >
+                    <ScaleControl imperial={false} />
                     <TileLayer
                         attribution={
                             currentTile.attribution

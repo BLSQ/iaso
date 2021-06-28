@@ -26,7 +26,6 @@ const ImportGeoPkgDialog = ({
     latestVersion,
     defaultVersion,
 }) => {
-    console.log('defaultVersion', sourceName, defaultVersion);
     // eslint-disable-next-line no-unused-vars
     const [form, setFormField, _, setFormState] =
         useFormState(initialFormState);

@@ -61,6 +61,18 @@ const extendFilter = (searchParams, filter, onChange, searchIndex) => ({
 });
 
 class OrgUnitsFiltersComponent extends Component {
+    handleSearchFilterChange(value, urlKey) {
+        // Remove the " character to avoid JSON parse to fail in front and back
+        let newValue = value;
+        if (value && value.length > 0) {
+            if (value.slice(-1) === '"') {
+                return null;
+            }
+            newValue = value.replace(new RegExp(/(")/, 'g'), '');
+        }
+        return this.onChange(newValue, urlKey);
+    }
+
     onSearch() {
         const { filtersUpdated, params, redirectTo, onSearch } = this.props;
         const searches = [...decodeSearch(params.searches)];
@@ -137,7 +149,10 @@ class OrgUnitsFiltersComponent extends Component {
                                     searchParams,
                                     search(),
                                     (value, urlKey) =>
-                                        this.onChange(value, urlKey),
+                                        this.handleSearchFilterChange(
+                                            value,
+                                            urlKey,
+                                        ),
                                     searchIndex,
                                 ),
                                 extendFilter(

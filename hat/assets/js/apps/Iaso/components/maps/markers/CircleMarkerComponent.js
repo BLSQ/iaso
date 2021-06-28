@@ -14,6 +14,8 @@ const CircleMarkerComponent = props => {
         onDragend,
         markerProps,
         popupProps,
+        TooltipComponent,
+        tooltipProps,
     } = props;
 
     if (
@@ -32,6 +34,7 @@ const CircleMarkerComponent = props => {
             {...markerProps(item)}
         >
             {PopupComponent && <PopupComponent {...popupProps} />}
+            {TooltipComponent && <TooltipComponent {...tooltipProps(item)} />}
         </CircleMarker>
     );
 };
@@ -43,6 +46,8 @@ CircleMarkerComponent.defaultProps = {
     draggable: false,
     popupProps: {},
     markerProps: () => {},
+    TooltipComponent: undefined,
+    tooltipProps: () => {},
 };
 
 CircleMarkerComponent.propTypes = {
@@ -53,6 +58,8 @@ CircleMarkerComponent.propTypes = {
     draggable: PropTypes.bool,
     popupProps: PropTypes.object,
     markerProps: PropTypes.func,
+    TooltipComponent: PropTypes.elementType,
+    tooltipProps: PropTypes.func,
 };
 
 export default CircleMarkerComponent;

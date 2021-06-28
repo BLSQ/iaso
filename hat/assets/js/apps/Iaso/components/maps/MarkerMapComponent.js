@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Map, TileLayer } from 'react-leaflet';
+import { Map, ScaleControl, TileLayer } from 'react-leaflet';
 import Control from 'react-leaflet-control';
 import { FormattedMessage } from 'react-intl';
 import L from 'leaflet';
@@ -121,6 +121,7 @@ class MarkerMap extends Component {
                     keyboard={false}
                     zoomSnap={0.1}
                 >
+                    <ScaleControl imperial={false} />
                     <TileLayer
                         attribution={
                             currentTile.attribution

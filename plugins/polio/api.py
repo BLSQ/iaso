@@ -1,5 +1,4 @@
 from django.db.models import Q
-from django.db.models.expressions import RawSQL
 from django_filters.rest_framework import DjangoFilterBackend
 from plugins.polio.serializers import SurgePreviewSerializer
 from iaso.models import OrgUnit

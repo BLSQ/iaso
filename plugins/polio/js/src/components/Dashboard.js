@@ -826,7 +826,7 @@ const SearchInput = ({ onChange }) => {
     );
 };
 
-const PageActions = ({ children }) => {
+const PageActions = ({ onSearch, children }) => {
     const classes = useStyles();
 
     return (
@@ -837,6 +837,11 @@ const PageActions = ({ children }) => {
             justify="flex-end"
             alignItems="center"
         >
+            {onSearch && (
+                <Grid item xs={8}>
+                    <SearchInput onChange={onSearch} />
+                </Grid>
+            )}
             <Grid item xs={4} container justify="flex-end" alignItems="center">
                 {children}
             </Grid>
@@ -1038,8 +1043,7 @@ export const Dashboard = () => {
             <Page title={'Campaigns'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     {status === 'loading' && <LoadingSpinner />}
-                    <PageActions>
-                        <SearchInput onChange={handleSearch} />
+                    <PageActions onSearch={handleSearch}>
                         <PageAction
                             icon={AddIcon}
                             onClick={handleClickCreateButton}

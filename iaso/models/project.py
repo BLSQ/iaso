@@ -43,8 +43,6 @@ class Project(models.Model):
     account = models.ForeignKey("Account", on_delete=models.DO_NOTHING, null=True, blank=True)
     app_id = models.TextField(null=True, blank=True)
     needs_authentication = models.BooleanField(default=False)
-    country_org_unit_type = models.ForeignKey('OrgUnitType', null=True, blank=True, related_name='country_org_unit', on_delete=models.SET_NULL)
-    district_org_unit_type = models.ForeignKey('OrgUnitType', null=True, blank=True, related_name='district_org_unit', on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

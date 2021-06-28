@@ -38,6 +38,7 @@ const ImportGeoPkgDialog = ({
 
     const dispatch = useDispatch();
     const allProjects = useSelector(state => state.projects.allProjects);
+    const newVersionNumber = (latestVersion + 1).toString();
 
     const submit = useCallback(() => {
         setAllowConfirm(false);
@@ -147,7 +148,7 @@ const ImportGeoPkgDialog = ({
                     <InputComponent
                         type="radio"
                         keyValue="versionNumber"
-                        value={form.versionNumber.value ?? ''}
+                        value={form.versionNumber.value ?? newVersionNumber}
                         onChange={setFormField}
                         options={[
                             {
@@ -155,9 +156,10 @@ const ImportGeoPkgDialog = ({
                                     ? defaultVersion.toString()
                                     : '',
                                 label: 'Use default version',
+                                disabled: !defaultVersion,
                             },
                             {
-                                value: (latestVersion + 1).toString(),
+                                value: newVersionNumber,
                                 label: 'Create new version',
                             },
                         ]}

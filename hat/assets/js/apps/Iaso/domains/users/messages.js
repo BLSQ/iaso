@@ -45,10 +45,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Search',
         id: 'iaso.search',
     },
-    addOrgnit: {
-        defaultMessage: 'Add org unit',
-        id: 'iaso.orgUnits.add',
-    },
     infos: {
         defaultMessage: 'Infos',
         id: 'iaso.orgUnits.infos',

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("iaso", "0098_auto_20210628_1523"),
+        ("iaso", "0097_add_account_feature_flag_catchment_20210624_0808"),
     ]
 
     operations = [

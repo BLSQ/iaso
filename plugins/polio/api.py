@@ -16,12 +16,12 @@ class CustomFilterBackend(filters.BaseFilterBackend):
         search = request.query_params.get("search")
         if search:
             org_units = OrgUnit.objects.filter(name__icontains=search, org_unit_type=2, path__isnull=False).only("id")
-            ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
-            raw_sql = RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
 
             query = Q(obr_name__icontains=search) | Q(epid__icontains=search)
             if len(org_units) > 0:
-                query.add(Q(initial_org_unit__path__descendants=raw_sql), Q.OR)
+                query.add(
+                    Q(initial_org_unit__path__descendants=OrgUnit.objects.query_for_related_org_units(org_units)), Q.OR
+                )
 
             return queryset.filter(query)
 

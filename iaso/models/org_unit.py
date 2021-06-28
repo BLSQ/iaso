@@ -6,6 +6,7 @@ from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
+from django.db.models.expressions import RawSQL
 from django_ltree.fields import PathField
 from django_ltree.models import TreeModel
 from django.utils.translation import ugettext_lazy as _
@@ -97,6 +98,11 @@ class OrgUnitQuerySet(models.QuerySet):
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
+
+    def query_for_related_org_units(self, org_units) -> "RawSQL":
+        ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
+
+        return RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
 
     def filter_for_user_and_app_id(
         self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None

@@ -195,7 +195,6 @@ class OrgUnit(TreeModel):
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]
-        ordering = ("path",)
 
     def root(self):
         if self.path is not None and len(self.path) > 1:

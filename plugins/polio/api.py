@@ -1,5 +1,5 @@
+from iaso.models.org_unit import OrgUnitType
 from django.db.models import Q
-from django.db.models.expressions import RawSQL
 from django_filters.rest_framework import DjangoFilterBackend
 from plugins.polio.serializers import SurgePreviewSerializer
 from iaso.models import OrgUnit
@@ -15,7 +15,10 @@ class CustomFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         search = request.query_params.get("search")
         if search:
-            org_units = OrgUnit.objects.filter(name__icontains=search, org_unit_type=2, path__isnull=False).only("id")
+            country_types = OrgUnitType.objects.countries().only("id")
+            org_units = OrgUnit.objects.filter(
+                name__icontains=search, org_unit_type__in=country_types, path__isnull=False
+            ).only("id")
 
             query = Q(obr_name__icontains=search) | Q(epid__icontains=search)
             if len(org_units) > 0:

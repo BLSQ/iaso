@@ -1,20 +1,11 @@
-import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
-import { useEffect } from 'react';
+import { Map, TileLayer, GeoJSON } from 'react-leaflet';
+import { useEffect, useRef } from 'react';
 
 import 'leaflet/dist/leaflet.css';
 import { useMapContext } from './Context';
 
 const InnerMap = ({ onClick }) => {
-    const map = useMap();
-    const { shapes, centeredShape } = useMapContext();
-
-    useEffect(() => {
-        if (centeredShape.getBounds().isValid()) {
-            map.fitBounds(centeredShape.getBounds());
-        }
-        map.setZoom(8);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const { shapes } = useMapContext();
 
     return (
         <>
@@ -35,17 +26,29 @@ const InnerMap = ({ onClick }) => {
 };
 
 export const MapComponent = ({ onSelectShape }) => {
+    const map = useRef();
     const { centeredShape } = useMapContext();
+
+    useEffect(() => {
+        if (centeredShape?.getBounds().isValid()) {
+            map.current?.leafletElement.fitBounds(centeredShape.getBounds());
+        }
+        console.log({
+            leafletElement: map.current?.leafletElement,
+        });
+        map.current?.leafletElement.setZoom(8);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [map.current]);
 
     if (!centeredShape) {
         return null;
     }
 
     return (
-        <MapContainer
+        <Map
+            ref={map}
             style={{ height: 500 }}
             center={[0, 0]}
-            bounds={centeredShape}
             zoom={10}
             scrollWheelZoom={false}
         >
@@ -54,6 +57,6 @@ export const MapComponent = ({ onSelectShape }) => {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             <InnerMap onClick={onSelectShape} />
-        </MapContainer>
+        </Map>
     );
 };

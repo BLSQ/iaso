@@ -59,7 +59,7 @@ class CommentMiniSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentIaso
-        fields = ["id", "parent", "user", "comment", "children", "content_type", "object_pk", "site"]
+        fields = ["id", "parent", "user", "comment", "children", "content_type", "object_pk", "site", "submit_date"]
         read_only_fields = ["user", "children", "site"]
 
     children = CommentMiniSerializer(many=True, read_only=True)

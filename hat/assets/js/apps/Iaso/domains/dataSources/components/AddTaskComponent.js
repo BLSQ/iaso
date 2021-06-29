@@ -37,7 +37,6 @@ const AddTask = ({
     const [redirect, setRedirect] = useState(false);
     const [requestBody, setRequestBody] = useState();
     const [closeDialogCallback, setCloseDialogCallback] = useState(null);
-    // TODO find better name than doesn't overlap with hooks naming conventions
     const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(
         !isEqual(sourceCredentials, {}),
     );

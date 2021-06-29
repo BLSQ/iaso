@@ -44,9 +44,8 @@ export const OrgUnitsSelect = props => {
 
 export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
     const { data = {} } = useGetAuthenticatedUser();
-    const { org_units = [] } = data;
     const source = data?.account?.default_version?.data_source?.id;
-    const startOrgUnit = org_units[0]?.id ?? null;
+    const startOrgUnit = data?.org_units?.[0]?.id ?? null;
     const initialOrgUnit =
         form?.initialValues?.initial_org_unit ?? startOrgUnit;
 

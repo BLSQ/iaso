@@ -75,11 +75,11 @@ const MESSAGES = defineMessages({
         id: 'map.draw.label.editTooltip1',
     },
     editTooltip2: {
-        defaultMessage: 'Click on cancel to reset changes',
+        defaultMessage: 'Click on stop to validate changes',
         id: 'map.draw.label.editTooltip2',
     },
     removeTooltip: {
-        defaultMessage: 'Click on a shape o delete it',
+        defaultMessage: 'Click on a shape to delete it',
         id: 'map.draw.label.removeTooltip',
     },
     radius: {

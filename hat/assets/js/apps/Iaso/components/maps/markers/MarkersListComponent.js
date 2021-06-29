@@ -12,10 +12,12 @@ const MarkersListComponent = props => {
         items,
         onMarkerClick,
         PopupComponent,
+        TooltipComponent,
         customMarker,
         popupProps,
         markerProps,
         isCircle,
+        tooltipProps,
     } = props;
 
     return items.map(i => {
@@ -32,6 +34,7 @@ const MarkersListComponent = props => {
                         item={i}
                         onClick={onMarkerClick}
                         PopupComponent={PopupComponent}
+                        TooltipComponent={TooltipComponent}
                         marker={customMarker}
                         popupProps={popupProps}
                         markerProps={markerProps}
@@ -42,8 +45,10 @@ const MarkersListComponent = props => {
                         item={i}
                         onClick={onMarkerClick}
                         PopupComponent={PopupComponent}
+                        TooltipComponent={TooltipComponent}
                         popupProps={popupProps}
                         markerProps={markerProps}
+                        tooltipProps={tooltipProps}
                     />
                 )}
             </Fragment>
@@ -54,9 +59,11 @@ const MarkersListComponent = props => {
 MarkersListComponent.defaultProps = {
     items: [],
     PopupComponent: null,
+    TooltipComponent: undefined,
     customMarker: null,
     popupProps: {},
     markerProps: () => {},
+    tooltipProps: () => {},
     isCircle: false,
 };
 
@@ -64,7 +71,9 @@ MarkersListComponent.propTypes = {
     items: PropTypes.array,
     onMarkerClick: PropTypes.func.isRequired,
     PopupComponent: PropTypes.object,
+    TooltipComponent: PropTypes.elementType,
     customMarker: PropTypes.object,
+    tooltipProps: PropTypes.func,
     popupProps: PropTypes.object,
     markerProps: PropTypes.func,
     isCircle: PropTypes.bool,

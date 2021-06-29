@@ -266,6 +266,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.delete',
         defaultMessage: 'Delete',
     },
+    stopDelete: {
+        id: 'iaso.label.stopDelete',
+        defaultMessage: 'Stop delete',
+    },
+    done: {
+        id: 'iaso.label.done',
+        defaultMessage: 'Done',
+    },
     add: {
         id: 'iaso.label.add',
         defaultMessage: 'Add',
@@ -274,21 +282,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.location',
         defaultMessage: 'Location',
     },
-    addShape: {
-        id: 'iaso.map.shape.addShape',
-        defaultMessage: 'Add shape',
-    },
     addLocation: {
         id: 'iaso.map.shape.addLocation',
         defaultMessage: 'Add a location',
     },
-    editShape: {
-        id: 'iaso.map.shape.edit',
-        defaultMessage: 'Edit shape',
+    editLocationDisabled: {
+        id: 'iaso.map.shape.editLocationDisabled',
+        defaultMessage: 'Location edition is disabled on this account',
     },
-    deleteShape: {
-        id: 'iaso.map.shape.delete',
-        defaultMessage: 'Delete shape',
+    editCatchmentDisabled: {
+        id: 'iaso.map.shape.editCatchmentDisabled',
+        defaultMessage: 'Catchment edition is disabled on this account',
     },
     deleteMarker: {
         id: 'iaso.map.marker.delete',
@@ -301,6 +305,10 @@ const MESSAGES = defineMessages({
     links: {
         id: 'iaso.label.links',
         defaultMessage: 'Links',
+    },
+    comments: {
+        id: 'iaso.label.comments',
+        defaultMessage: 'Comments',
     },
 });
 

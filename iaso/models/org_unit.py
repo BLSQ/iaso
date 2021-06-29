@@ -19,7 +19,7 @@ from .project import Project
 
 class OrgUnitTypeQuerySet(models.QuerySet):
     def countries(self):
-        return self.filter(type="COUNTRY")
+        return self.filter(category="COUNTRY")
 
     def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: str):
         if user and user.is_anonymous and app_id is None:
@@ -41,7 +41,7 @@ class OrgUnitTypeQuerySet(models.QuerySet):
 
 
 class OrgUnitType(models.Model):
-    TYPE = [
+    CATEGORIES = [
         ("COUNTRY", _("Country")),
         ("DISTRICT", _("District")),
     ]
@@ -49,7 +49,7 @@ class OrgUnitType(models.Model):
     short_name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    type = models.CharField(max_length=8, choices=TYPE, null=True, blank=True)
+    category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
 
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)

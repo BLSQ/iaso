@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="orgunittype",
-            name="type",
+            name="category",
             field=models.CharField(
                 blank=True, choices=[("COUNTRY", "Country"), ("DISTRICT", "District")], max_length=8, null=True
             ),

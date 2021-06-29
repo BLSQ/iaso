@@ -31,6 +31,7 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
     link_validated = params.get("linkValidated", True)
     link_source = params.get("linkSource", None)
     link_version = params.get("linkVersion", None)
+    roots_for_user = params.get("rootsForUser", None)
 
     if validation_status != "all":
         queryset = queryset.filter(validation_status=validation_status)
@@ -127,6 +128,12 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
             queryset = queryset.filter(parent__isnull=True)
         else:
             queryset = queryset.filter(parent__id=parent_id)
+
+    if roots_for_user:
+        if profile.org_units:
+            queryset = queryset.filter(id__in=profile.org_units.all())
+        else:
+            queryset = queryset.filter(parent__isnull=True)
 
     if org_unit_parent_id:
         parent = OrgUnit.objects.get(id=org_unit_parent_id)

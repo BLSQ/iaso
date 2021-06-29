@@ -11,7 +11,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14'
-
       - name: Environment info
         run: |
           node --version
@@ -25,9 +24,7 @@ jobs:
           npm run webpack-prod
       - name: build polio plugin
         run: |
-          cd plugins/polio/js
-          npm install
-          SKIP_PREFLIGHT_CHECK=true npm run build
+          bash ./scripts/enable_plugins.sh
         env:
           PUBLIC_URL: https://iaso-campaigns.s3.amazonaws.com/iasostatics/
           SKIP_PREFLIGHT_CHECK: true

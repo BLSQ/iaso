@@ -25,7 +25,9 @@ jobs:
           npm run webpack-prod
       - name: build polio plugin
         run: |
-          bash ./scripts/enable_plugins.sh
+          cd plugins/polio/js
+          npm install
+          SKIP_PREFLIGHT_CHECK=true npm run build
         env:
           PUBLIC_URL: https://iaso-campaigns.s3.amazonaws.com/iasostatics/
           SKIP_PREFLIGHT_CHECK: true

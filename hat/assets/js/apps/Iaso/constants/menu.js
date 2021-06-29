@@ -20,6 +20,8 @@ import * as paths from './routes';
 
 import MESSAGES from './messages';
 
+import pluginsConfigs from '../../../../../../plugins';
+
 // !! remove permission property if the menu has a subMenu !!
 
 const menuItems = [
@@ -162,4 +164,14 @@ if (PLUGIN_POLIO_ENABLED === 'True') {
     });
 }
 
-export default menuItems;
+const plugins = process.env.PLUGINS ? process.env.PLUGINS : [];
+let pluginsMenu = [];
+plugins.forEach(plugin => {
+    const pluginMenuConfig =
+        pluginsConfigs[plugin] && pluginsConfigs[plugin].menu;
+    if (pluginMenuConfig) {
+        pluginsMenu = [...pluginsMenu, ...pluginMenuConfig];
+    }
+});
+
+export default [...menuItems, ...pluginsMenu];

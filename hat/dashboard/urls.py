@@ -17,4 +17,5 @@ urlpatterns = [
     url(r"^401.*$", views.iaso, name="iaso_401"),
     url(r"^404.*$", views.iaso, name="iaso_404"),
     url(r"^500.*$", views.iaso, name="iaso_500"),
+    url(r"^test.*$", views.iaso, name="test_app"),
 ]

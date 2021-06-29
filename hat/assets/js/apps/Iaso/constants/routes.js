@@ -1,3 +1,6 @@
+/* eslint-disable global-require */
+/* eslint-disable import/no-dynamic-require */
+
 import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
@@ -21,6 +24,8 @@ import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
 import { orgUnitFiltersWithPrefix, linksFiltersWithPrefix } from './filters';
+
+import pluginsConfigs from '../../../../../../plugins';
 
 const paginationPathParams = [
     {
@@ -78,7 +83,7 @@ export const polioPath = {
     permission: 'iaso_forms',
     params: [],
     component: props => {
-        window.location = '/dashboard/polio/list'
+        window.location = '/dashboard/polio/list';
 
         return <></>;
     },
@@ -496,28 +501,40 @@ export const page500 = {
     params: [],
 };
 
-export const routeConfigs = [
-    formsPath,
-    archivedPath,
-    formDetailPath,
-    mappingsPath,
-    mappingDetailPath,
-    instancesPath,
-    instanceDetailPath,
-    orgUnitsPath,
-    orgUnitsDetailsPath,
-    linksPath,
-    algosPath,
-    completenessPath,
-    usersPath,
-    projectsPath,
-    dataSourcesPath,
-    tasksPath,
-    devicesPath,
-    groupsPath,
-    orgUnitTypesPath,
-    polioPath,
-    page401,
-    page404,
-    page500,
-];
+export const routeConfigs = () => {
+    let routes = [
+        formsPath,
+        archivedPath,
+        formDetailPath,
+        mappingsPath,
+        mappingDetailPath,
+        instancesPath,
+        instanceDetailPath,
+        orgUnitsPath,
+        orgUnitsDetailsPath,
+        linksPath,
+        algosPath,
+        completenessPath,
+        usersPath,
+        projectsPath,
+        dataSourcesPath,
+        tasksPath,
+        devicesPath,
+        groupsPath,
+        orgUnitTypesPath,
+        polioPath,
+        page401,
+        page404,
+        page500,
+    ];
+    const plugins = process.env.PLUGINS ? process.env.PLUGINS : [];
+
+    plugins.forEach(plugin => {
+        const pluginRouteConfig =
+            pluginsConfigs[plugin] && pluginsConfigs[plugin].routes;
+        if (pluginRouteConfig) {
+            routes = routes.concat(pluginRouteConfig);
+        }
+    });
+    return routes;
+};

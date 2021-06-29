@@ -92,6 +92,7 @@ class SidebarMenu extends PureComponent {
                 <List className={classes.list}>
                     {menuItems.map(menuItem => {
                         const permissionsList = listMenuPermission(menuItem);
+
                         if (
                             userHasOneOfPermissions(
                                 permissionsList,

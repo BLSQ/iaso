@@ -13,6 +13,7 @@ const InnerMap = ({ onClick }) => {
             map.fitBounds(centeredShape.getBounds());
         }
         map.setZoom(8);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

@@ -48,6 +48,7 @@ import { useStyles } from '../styles/theme';
 import { PreparednessForm } from '../forms/PreparednessForm';
 import MESSAGES from '../constants/messages';
 import SearchIcon from '@material-ui/icons/Search';
+import { useDebounce } from 'use-debounce';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -883,7 +884,8 @@ export const Dashboard = () => {
     const [selectedCampaignId, setSelectedCampaignId] = useState();
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
-    const [searchQuery, setSearchQuery] = useState(undefined);
+    const [searchQueryText, setSearchQuery] = useState(undefined);
+    const [searchQuery] = useDebounce(searchQueryText, 500);
     const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 

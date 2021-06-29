@@ -371,8 +371,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
             errors.append({"errorKey": "org_unit_type_id", "errorMessage": _("Org unit type is required")})
 
         if parent_id:
-            parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
-            org_unit.parent = parent_org_unit
+            if parent_id != org_unit.parent_id:
+                # This check is a fix for when a user is restricted to certain org units hierarchy.
+                # When a user want to modify his "root" orgunit, the parent_id is included by the frontend even if
+                # not modified (the field is not present but the front send all fields)
+                #  Since the can't access the parent it 404ed
+                parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
+                org_unit.parent = parent_org_unit
         else:
             org_unit.parent = None
         new_groups = []

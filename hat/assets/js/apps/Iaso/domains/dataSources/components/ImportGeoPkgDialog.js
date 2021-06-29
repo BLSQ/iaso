@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid, Typography } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
@@ -25,6 +25,7 @@ const ImportGeoPkgDialog = ({
     sourceName,
     latestVersion,
     defaultVersion,
+    projects,
 }) => {
     // eslint-disable-next-line no-unused-vars
     const [form, setFormField, _, setFormState] =
@@ -37,7 +38,6 @@ const ImportGeoPkgDialog = ({
     const importedGeoPkg = useGeoPkgImport(requestBody);
 
     const dispatch = useDispatch();
-    const allProjects = useSelector(state => state.projects.allProjects);
     const newVersionNumber = (latestVersion + 1).toString();
 
     const submit = useCallback(() => {
@@ -136,7 +136,7 @@ const ImportGeoPkgDialog = ({
                         value={form.project.value}
                         errors={form.project.errors}
                         labelString={intl.formatMessage(MESSAGES.project)}
-                        options={allProjects.map(project => ({
+                        options={projects.map(project => ({
                             label: project.name,
                             value: project.id,
                         }))}
@@ -173,6 +173,7 @@ const ImportGeoPkgDialog = ({
 ImportGeoPkgDialog.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     titleMessage: PropTypes.object.isRequired,
+    projects: PropTypes.array.isRequired,
     latestVersion: PropTypes.number.isRequired,
     defaultVersion: PropTypes.number,
     sourceId: PropTypes.number.isRequired,

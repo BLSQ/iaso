@@ -370,16 +370,22 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             errors.append({"errorKey": "org_unit_type_id", "errorMessage": _("Org unit type is required")})
 
-        if parent_id:
-            if parent_id != org_unit.parent_id:
-                # This check is a fix for when a user is restricted to certain org units hierarchy.
-                # When a user want to modify his "root" orgunit, the parent_id is included by the frontend even if
-                # not modified (the field is not present but the front send all fields)
-                #  Since the can't access the parent it 404ed
+        if parent_id != org_unit.parent_id:
+            # This check is a fix for when a user is restricted to certain org units hierarchy.
+            # When a user want to modify his "root" orgunit, the parent_id is included by the frontend even if
+            # not modified (the field is not present but the front send all fields)
+            #  Since the can't access the parent it 404ed
+            if parent_id:
                 parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
                 org_unit.parent = parent_org_unit
-        else:
-            org_unit.parent = None
+            else:
+                # User that are restricted to parts of the hierarchy cannot create root orgunit
+                profile = request.user.iaso_profile
+                if profile.org_units:
+                    errors.append(
+                        {"errorKey": "parent_id", "errorMessage": _("You cannot create an Org Unit without a parent")}
+                    )
+                org_unit.parent = None
         new_groups = []
         for group in groups:
             temp_group = get_object_or_404(Group, id=group)
@@ -405,6 +411,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
     def create_org_unit(self, request):
+        """This endpoint is used by the react frontend"""
         errors = []
         org_unit = OrgUnit()
 
@@ -486,6 +493,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
             if org_unit.version_id != parent_org_unit.version_id:
                 errors.append({"errorKey": "parent_id", "errorMessage": _("Parent is not in the same version")})
             org_unit.parent = parent_org_unit
+        else:
+            # User that are restricted to parts of the hierarchy cannot create root orgunit
+            if profile.org_units:
+                errors.append(
+                    {"errorKey": "parent_id", "errorMessage": _("You cannot create an Org Unit without a parent")}
+                )
 
         if not errors:
             org_unit.save()
@@ -508,6 +521,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     @safe_api_import("orgUnit")
     def create(self, _, request):
+        """This endpoint is used by mobile app"""
         new_org_units = import_data(request.data, request.user, request.query_params.get("app_id"))
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
@@ -549,10 +563,8 @@ def import_data(org_units, user, app_id):
             org_unit_db.accuracy = org_unit.get("accuracy", None)
             parent_id = org_unit.get("parentId", None)
             if not parent_id:
-                parent_id = org_unit.get(
-                    "parent_id", None
-                )  # there exist versions of the mobile app in the wild with both parentId and parent_id
-
+                # there exist versions of the mobile app in the wild with both parentId and parent_id
+                parent_id = org_unit.get("parent_id", None)
             if parent_id is not None:
                 if str.isdigit(parent_id):
                     org_unit_db.parent_id = parent_id
@@ -560,9 +572,8 @@ def import_data(org_units, user, app_id):
                     parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
                     org_unit_db.parent_id = parent_org_unit.id
 
-            org_unit_type_id = org_unit.get(
-                "orgUnitTypeId", None
-            )  # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
+            # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
+            org_unit_type_id = org_unit.get("orgUnitTypeId", None)
             if not org_unit_type_id:
                 org_unit_type_id = org_unit.get("org_unit_type_id", None)
             org_unit_db.org_unit_type_id = org_unit_type_id

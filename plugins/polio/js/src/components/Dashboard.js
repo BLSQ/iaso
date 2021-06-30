@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Table,
     textPlaceholder,
@@ -26,6 +26,7 @@ import {
 } from '@material-ui/core';
 import merge from 'lodash.merge';
 import AddIcon from '@material-ui/icons/Add';
+import { MapContainer } from './MapComponent';
 
 import {
     DateInput,
@@ -46,6 +47,7 @@ import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
 import { PreparednessForm } from '../forms/PreparednessForm';
+import { useGetRegionGeoJson } from '../hooks/useGetRegionGeoJson';
 import MESSAGES from '../constants/messages';
 import SearchIcon from '@material-ui/icons/Search';
 import { useDebounce } from 'use-debounce';
@@ -267,9 +269,49 @@ const DetectionForm = () => {
         </>
     );
 };
+
+const selectedPathOptions = { color: 'lime' };
+const unselectedPathOptions = { color: 'gray' };
+
 const RiskAssessmentForm = () => {
     const classes = useStyles();
-    const { values } = useFormikContext();
+    const { values, setFieldValue } = useFormikContext();
+
+    const { group = {} } = values;
+
+    const { data = [] } = useGetRegionGeoJson(
+        values.org_unit?.country_parent?.id ||
+            values.org_unit?.root?.id ||
+            values.org_unit?.id,
+    );
+
+    const shapes = useMemo(() => {
+        return data.map(shape => ({
+            ...shape,
+            pathOptions: group.org_units.find(org_unit => shape.id === org_unit)
+                ? selectedPathOptions
+                : unselectedPathOptions,
+        }));
+    }, [data, group]);
+
+    const onSelectOrgUnit = useCallback(
+        shape => {
+            var { org_units } = group;
+            const hasFound = org_units.find(org_unit => shape.id === org_unit);
+
+            if (hasFound) {
+                org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
+            } else {
+                org_units.push(shape.id);
+            }
+
+            setFieldValue('group', {
+                ...group,
+                org_units,
+            });
+        },
+        [group, setFieldValue],
+    );
 
     const wastageRate = 0.26;
 
@@ -362,6 +404,12 @@ const RiskAssessmentForm = () => {
                         Vials Requested{' '}
                         {Number.isNaN(vialsRequested) ? 0 : vialsRequested}
                     </Typography>
+                </Grid>
+                <Grid xs={12} md={6} item>
+                    <MapContainer
+                        shapes={shapes}
+                        onSelectShape={onSelectOrgUnit}
+                    />
                 </Grid>
             </Grid>
         </>
@@ -702,6 +750,10 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     const defaultValues = {
         round_one: {},
         round_two: {},
+        group: {
+            name: 'hidden group',
+            org_units: [],
+        },
     };
 
     const initialValues = merge(selectedCampaign, defaultValues);

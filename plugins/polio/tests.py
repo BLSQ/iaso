@@ -147,6 +147,27 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(campaign.preparedness_set.count(), 1)
 
+    def test_add_group_to_existing_campaign_without_group(self):
+        """
+        Ensure a group will be created when updating an existing campaign without a group
+        """
+        campaign = Campaign.objects.create()
+
+        response = self.client.put(
+            f"/api/polio/campaigns/" + str(campaign.id) + "/",
+            data={
+                "round_one": {},
+                "round_two": {},
+                "obr_name": "campaign with org units",
+                "group": {"name": "hidden group", "org_units": list(map(lambda org_unit: org_unit.id, self.org_units))},
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        campaign.refresh_from_db()
+        self.assertEqual(campaign.group.org_units.count(), self.org_units.__len__())
+
     def test_can_create_and_update_campaign_with_orgunits_group(self):
         """
         Ensure we can create a new campaign object with org units group
@@ -177,7 +198,7 @@ class PolioAPITestCase(APITestCase):
                 "round_one": {},
                 "round_two": {},
                 "obr_name": "campaign with org units",
-                "group": {"name": "hidden group", "org_units": map(lambda org_unit: org_unit.id, self.org_units)},
+                "group": {"name": "hidden group", "org_units": list(map(lambda org_unit: org_unit.id, self.org_units))},
             },
             format="json",
         )

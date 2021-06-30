@@ -18,14 +18,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deployment of ${{ github.event.inputs.branch }} on ${{ github.event.inputs.environment }}
+      - name: Deployment of ${{ github.ref }} on ${{ github.event.inputs.environment }}
         run: |
           export GITHUB_BRANCH=${GITHUB_REF##*heads/}
           echo $GITHUB_BRANCH
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}
-
+      - name: Slack deployement start
+        uses: rtCamp/action-slack-notify@v2.1.3
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: ${{ github.event.inputs.slack_channel }}
+          SLACK_COLOR: ""
+          SLACK_USERNAME: ${{ github.event.inputs.environment }}
+          SLACK_ICON_EMOJI: ":robot_face:"
+          SLACK_TITLE: Started deployement of  ${{ github.ref }}  on ${{ github.event.inputs.environment }} ...
+          SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+          MSG_MINIMAL: true
       - name: Use node.js 14
         uses: actions/setup-node@v2
         with:
@@ -92,12 +102,32 @@ jobs:
           AWS_DEFAULT_REGION: "eu-central-1"
 #          EB_ENV: ${{ github.event.inputs.environment }}
 
-      - name: slack notification
-        uses: rtCamp/action-slack-notify@v2.0.2
+      - name: Slack deployement success notification
+        uses: rtCamp/action-slack-notify@v2.1.3
         env:
-          SLACK_USERNAME: github-actions-DEPLOY
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: ${{ github.event.inputs.slack_channel }}
-          SLACK_TITLE: Iaso successfully deployed on ${{ github.event.inputs.environment }}
-          SLACK_MESSAGE: Iaso successfully deployed on ${{ github.event.inputs.environment }}
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_USERNAME: ${{ github.event.inputs.environment }}
+          SLACK_ICON_EMOJI: ":robot_face:"
+          SLACK_TITLE: Iaso ${{ github.ref }} successfully deployed on ${{ github.event.inputs.environment }}
+          SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+          SLACK_FOOTER: "-"
+          MSG_MINIMAL: true
         if: success()
+      - name: fail
+        run: |
+          bash -c "exit 10"
+      - name: Slack deployement failure notification
+        uses: rtCamp/action-slack-notify@v2.1.3
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: ${{ github.event.inputs.slack_channel }}
+          SLACK_USERNAME: ${{ github.event.inputs.environment }}
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON_EMOJI: ":robot_face:"
+          SLACK_TITLE: Deployment failure Iaso ${{ github.ref }} - ${{ github.event.inputs.environment }}
+          SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+          SLACK_FOOTER: "-"
+          MSG_MINIMAL: true
+        if: failure()

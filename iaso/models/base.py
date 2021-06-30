@@ -88,6 +88,8 @@ class Account(models.Model):
     users = models.ManyToManyField(User, blank=True)
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField(AccountFeatureFlag)
+    user_manual_url=models.TextField(default="https://docs.google.com/document/d/1qHCRIiYgbZYAKMqxXYOjBGL_nzlSDPhOLykiKXaw8fw/edit")
+    
 
     def as_dict(self):
         return {
@@ -97,6 +99,7 @@ class Account(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "default_version": self.default_version.as_dict() if self.default_version else None,
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
+            "user_manual_url":self.user_manual_url
         }
 
     def __str__(self):

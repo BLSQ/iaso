@@ -280,7 +280,9 @@ const RiskAssessmentForm = () => {
     const { group = {} } = values;
 
     const { data = [] } = useGetRegionGeoJson(
-        values.org_unit?.root?.id || values.org_unit?.id,
+        values.org_unit?.country_parent?.id ||
+            values.org_unit?.root?.id ||
+            values.org_unit?.id,
     );
 
     const shapes = useMemo(() => {

@@ -1,4 +1,3 @@
-from iaso.models.org_unit import OrgUnitType
 import re
 
 from django.db.models import Q, Count, Sum, Case, When, IntegerField
@@ -156,8 +155,7 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
         queryset = queryset.filter(sub_source=source_id)
 
     if org_unit_type_category:
-        types = OrgUnitType.objects.filter(category=org_unit_type_category.upper()).only("id")
-        queryset = queryset.filter(org_unit_type__in=types)
+        queryset = queryset.filter(org_unit_type__category=org_unit_type_category.upper())
 
     queryset = queryset.annotate(
         instances_count=Count(

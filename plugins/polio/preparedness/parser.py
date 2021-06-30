@@ -97,8 +97,15 @@ def get_national_level_preparedness(sheet: gspread.Spreadsheet):
             return _get_scores(worksheet, cell)
 
         except gspread.CellNotFound:
-            print(f"No data found on worksheet: {worksheet.title}")
-    raise InvalidFormatError("Summary of National Level Preparedness` was not found in this document")
+            try:
+                cell = worksheet.find("Résumé du niveau de préparation au niveau national")
+                print(f"Data found on worksheet: {worksheet.title}")
+                return _get_scores(worksheet, cell)
+            except gspread.CellNotFound:
+                print(f"No data found on worksheet: {worksheet.title}")
+    raise InvalidFormatError(
+        "Summary of National Level Preparedness`or Summary of Regional Level Preparedness was not found in this document"
+    )
 
 
 def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
@@ -106,10 +113,18 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
     districts = {}
 
     for worksheet in sheet.worksheets():
+        cell = None
         try:
             cell = worksheet.find("Summary of Regional Level Preparedness")
             print(f"Data found on worksheet: {worksheet.title}")
+        except gspread.CellNotFound:
+            try:
+                cell = worksheet.find("Résumé du niveau de préparation")
+                print(f"Data found on worksheet: {worksheet.title}")
+            except:
+                print(f"No data found on worksheet: {worksheet.title}")
 
+        if cell is not None:
             all_scores = []
             last_cell = cell
 
@@ -134,8 +149,6 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
                 district_name, district_scores = _get_district_score(district)
                 districts[district_name] = {**district_scores, "region": regional_name}
 
-        except gspread.CellNotFound:
-            print(f"No data found on worksheet: {worksheet.title}")
     if not regions:
-        raise InvalidFormatError("Summary of National Level Preparedness` was not found in this document")
+        raise InvalidFormatError("Summary of Regional Level Preparedness` was not found in this document")
     return {"regions": regions, "districts": districts}

@@ -133,9 +133,10 @@ const LogCompareComponent = ({
             fields.push(longitude);
         }
         fields = fields.concat(getArrayfields(fieldsObject).slice(latIndex));
+        const fieldEquals = compareLog[i] && isEqual(l.fields, compareLog[i].fields);
         return (
             <Paper className={classes.paper} key={l.pk}>
-                {!isEqual(l.fields, compareLog[i].fields) && (
+                {!fieldEquals && (
                     <Grid container spacing={0} className={classes.seeAll}>
                         <Grid
                             container
@@ -190,10 +191,10 @@ const LogCompareComponent = ({
                         </Grid>
                     </Grid>
                 )}
-                {isEqual(l.fields, compareLog[i].fields) && !allFields && (
+                {fieldEquals && !allFields && (
                     <FormattedMessage {...LOG_MESSAGES.noDifference} />
                 )}
-                {!isEqual(l.fields, compareLog[i].fields) && (
+                {!fieldEquals && (
                     <>
                         <Table className={classes.table}>
                             <TableBody>

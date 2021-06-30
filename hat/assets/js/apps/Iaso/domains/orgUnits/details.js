@@ -416,6 +416,7 @@ class OrgUnitDetail extends Component {
     }
 
     goToRevision(orgUnitRevision) {
+        // FIXME: Only send the modified fields and do the merge server side
         const mappedRevision = {
             ...this.props.currentOrgUnit,
             ...orgUnitRevision.fields,
@@ -425,6 +426,9 @@ class OrgUnitDetail extends Component {
                 : this.props.currentOrgUnit.aliases,
             id: this.props.currentOrgUnit.id,
         };
+        // Retrieve only the group ids as it's what the API expect
+        const group_ids = mappedRevision.groups.map(g => g.id);
+        mappedRevision.groups = group_ids;
         const { saveOrgUnit } = this.props;
         return saveOrgUnit(mappedRevision).then(currentOrgUnit => {
             this.setState({

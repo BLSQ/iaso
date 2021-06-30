@@ -138,6 +138,7 @@ const dataSourcesTableColumns = (
                         sourceName={settings.original.name}
                         latestVersion={latestVersion}
                         defaultVersion={defaultVersion}
+                        projects={settings.original.projects.flat()}
                     />
                 </section>
             );

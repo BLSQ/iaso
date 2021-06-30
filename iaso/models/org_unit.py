@@ -200,6 +200,10 @@ class OrgUnit(TreeModel):
         if self.path is not None and len(self.path) > 1:
             return self.ancestors().exclude(id=self.id).first()
 
+    def country_ancestors(self):
+        if self.path is not None and len(self.path) > 1:
+            return self.ancestors().filter(org_unit_type__category="COUNTRY")
+
     def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):
         """Override default save() to make sure that the path property is calculated and saved,
         for this org unit and its children.

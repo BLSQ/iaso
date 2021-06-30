@@ -2,15 +2,19 @@ import { Button, CircularProgress, Grid, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
-import { useGetPreparednessData, useSurgeData } from '../hooks/useGetPreparednessData';
+import {
+    useGetPreparednessData,
+    useSurgeData,
+} from '../hooks/useGetPreparednessData';
 import { useMemo, useState } from 'react';
 
 export const PreparednessForm = () => {
     const classes = useStyles();
-    const [preparednessDataTotals, setPreparednessDataTotals,] = useState();
-    const [ surgeDataTotals, setSurgeDataTotals] = useState();
+    const [preparednessDataTotals, setPreparednessDataTotals] = useState();
+    const [surgeDataTotals, setSurgeDataTotals] = useState();
     const { values, setFieldValue } = useFormikContext();
-    const { last_preparedness: lastPreparedness, last_surge: lastSurge } = values;
+    const { last_preparedness: lastPreparedness, last_surge: lastSurge } =
+        values;
     const totalSummary = useMemo(
         () => preparednessDataTotals || lastPreparedness,
         [preparednessDataTotals, lastPreparedness],
@@ -21,18 +25,14 @@ export const PreparednessForm = () => {
     );
     const { mutate, isLoading, isError, error } = useGetPreparednessData();
 
-
     const refreshData = () => {
         mutate(values.preperadness_spreadsheet_url, {
             onSuccess: data => {
                 const { totals, ...payload } = data;
 
                 setPreparednessDataTotals(totals);
-                const {
-                    national_score,
-                    regional_score,
-                    district_score,
-                } = totals;
+                const { national_score, regional_score, district_score } =
+                    totals;
                 setFieldValue('preparedness_data', {
                     spreadsheet_url: values.preperadness_spreadsheet_url,
                     national_score,
@@ -43,33 +43,51 @@ export const PreparednessForm = () => {
             },
         });
     };
-    const { mutate: surgeMutate , isLoading: surgeIsLoading, isError: surgeIsError, error: surgeError } = useSurgeData();
+
+    const isProcessingData = ['QUEUED', 'ONGOING'].includes(
+        values.preperadness_sync_status,
+    );
+
+    const {
+        mutate: surgeMutate,
+        isLoading: surgeIsLoading,
+        isError: surgeIsError,
+        error: surgeError,
+    } = useSurgeData();
     const refreshSurgeData = () => {
-        surgeMutate( { google_sheet_url: values.surge_spreadsheet_url, surge_country_name: values.country_name_in_surge_spreadsheet}, {
-            onSuccess: counters => {
-                setSurgeDataTotals(counters);
-                const {
-                    unicef_completed_recruitment,
-                    unicef_recruitment,
-                    who_completed_recruitment,
-                    who_recruitment
-                } = counters;
-                setFieldValue('surge_data', {
-                    spreadsheet_url: values.surge_spreadsheet_url,
-                    unicef_completed_recruitment,
-                    unicef_recruitment,
-                    who_completed_recruitment,
-                    who_recruitment,
-                    payload: counters
-                });
-                setFieldValue('country_name_in_surge_spreadsheet', values.surge_country_name)
+        surgeMutate(
+            {
+                google_sheet_url: values.surge_spreadsheet_url,
+                surge_country_name: values.country_name_in_surge_spreadsheet,
             },
-        });
+            {
+                onSuccess: counters => {
+                    setSurgeDataTotals(counters);
+                    const {
+                        unicef_completed_recruitment,
+                        unicef_recruitment,
+                        who_completed_recruitment,
+                        who_recruitment,
+                    } = counters;
+                    setFieldValue('surge_data', {
+                        spreadsheet_url: values.surge_spreadsheet_url,
+                        unicef_completed_recruitment,
+                        unicef_recruitment,
+                        who_completed_recruitment,
+                        who_recruitment,
+                        payload: counters,
+                    });
+                    setFieldValue(
+                        'country_name_in_surge_spreadsheet',
+                        values.surge_country_name,
+                    );
+                },
+            },
+        );
     };
     return (
         <>
-
-            <Grid container spacing={2} >
+            <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={8} item>
                         <Field
@@ -93,7 +111,7 @@ export const PreparednessForm = () => {
                         <Button
                             variant="contained"
                             color="primary"
-                            disabled={isLoading}
+                            disabled={isLoading || isProcessingData}
                             onClick={refreshData}
                         >
                             Refresh Preparedness data
@@ -112,6 +130,9 @@ export const PreparednessForm = () => {
                                 )}
                                 {totalSummary && (
                                     <>
+                                        <Typography>
+                                            {`Status: ${values.preperadness_sync_status}`}
+                                        </Typography>
                                         <Typography>
                                             {`National: ${totalSummary.national_score}%`}
                                         </Typography>
@@ -136,7 +157,7 @@ export const PreparednessForm = () => {
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid container spacing={2} >
+            <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={8} item>
                         <Field

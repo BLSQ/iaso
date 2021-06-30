@@ -6,18 +6,17 @@ import { useMapContext } from './Context';
 
 const InnerMap = ({ onClick }) => {
     const { shapes } = useMapContext();
-
     return (
         <>
             {shapes.map(shape => (
                 <GeoJSON
-                    key={`${shape.id}`}
+                    key={`${shape.id}-${shape.pathOptions.color}`}
                     data={shape.geo_json}
-                    pathOptions={shape.pathOptions}
-                    eventHandlers={{
-                        click() {
-                            onClick(shape);
-                        },
+                    onEachFeature={(feature, layer) => {
+                        layer.setStyle(shape.pathOptions);
+                        layer.on({
+                            click: () => onClick(shape),
+                        });
                     }}
                 />
             ))}
@@ -33,9 +32,6 @@ export const MapComponent = ({ onSelectShape }) => {
         if (centeredShape?.getBounds().isValid()) {
             map.current?.leafletElement.fitBounds(centeredShape.getBounds());
         }
-        console.log({
-            leafletElement: map.current?.leafletElement,
-        });
         map.current?.leafletElement.setZoom(8);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [map.current]);

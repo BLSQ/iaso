@@ -23,7 +23,7 @@ export const MESSAGES = defineMessages({
     },
     goToRevisionText: {
         id: 'iaso.logs.goToRevisionText',
-        defaultMessage: 'All fiieds will be replaced',
+        defaultMessage: 'All fields will be replaced',
     },
     goToRevisionChanges: {
         id: 'iaso.logs.goToRevisionChanges',
@@ -31,7 +31,7 @@ export const MESSAGES = defineMessages({
     },
     goToRevisionTextChanges: {
         id: 'iaso.logs.goToRevisionTextChanges',
-        defaultMessage: 'All fiieds will be replaced',
+        defaultMessage: 'Modified fields will be replaced',
     },
     loading: {
         id: 'iaso.label.loading',

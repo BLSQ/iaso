@@ -11,7 +11,7 @@ export const useGetRegionGeoJson = region => {
         asLocation: true,
         limit: 3000,
         order: 'id',
-        org_unit_parent_id: region,
+        orgUnitParentId: region,
         orgUnitTypeCategory: 'DISTRICT',
     };
 

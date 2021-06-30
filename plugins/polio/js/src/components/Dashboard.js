@@ -15,7 +15,11 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    FormControl,
     Grid,
+    InputAdornment,
+    InputLabel,
+    OutlinedInput,
     Tab,
     Tabs,
     Typography,
@@ -43,6 +47,8 @@ import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
 import { PreparednessForm } from '../forms/PreparednessForm';
 import MESSAGES from '../constants/messages';
+import SearchIcon from '@material-ui/icons/Search';
+import { useDebounce } from 'use-debounce';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -801,7 +807,27 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     );
 };
 
-const PageActions = ({ children }) => {
+const SearchInput = ({ onChange }) => {
+    const classes = useStyles();
+
+    return (
+        <FormControl fullWidth className={classes.margin} variant="outlined">
+            <InputLabel htmlFor="search-campaigns">Search</InputLabel>
+            <OutlinedInput
+                id="search-campaigns"
+                key="search-campaigns-key"
+                startAdornment={
+                    <InputAdornment position="start">
+                        <SearchIcon />
+                    </InputAdornment>
+                }
+                onChange={onChange}
+            />
+        </FormControl>
+    );
+};
+
+const PageActions = ({ onSearch, children }) => {
     const classes = useStyles();
 
     return (
@@ -812,6 +838,11 @@ const PageActions = ({ children }) => {
             justify="flex-end"
             alignItems="center"
         >
+            {onSearch && (
+                <Grid item xs={8}>
+                    <SearchInput onChange={onSearch} />
+                </Grid>
+            )}
             <Grid item xs={4} container justify="flex-end" alignItems="center">
                 {children}
             </Grid>
@@ -853,6 +884,8 @@ export const Dashboard = () => {
     const [selectedCampaignId, setSelectedCampaignId] = useState();
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
+    const [searchQueryText, setSearchQuery] = useState(undefined);
+    const [searchQuery] = useDebounce(searchQueryText, 500);
     const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
@@ -860,12 +893,14 @@ export const Dashboard = () => {
         page,
         pageSize,
         order,
+        searchQuery,
     });
+
     const { mutate: removeCampaign } = useRemoveCampaign();
 
     const openCreateEditDialog = useCallback(() => {
         setIsCreateEditDialogOpen(true);
-    },[setIsCreateEditDialogOpen]);
+    }, [setIsCreateEditDialogOpen]);
 
     const closeCreateEditDialog = () => {
         setSelectedCampaignId(undefined);
@@ -874,7 +909,7 @@ export const Dashboard = () => {
 
     const openDeleteConfirmDialog = useCallback(() => {
         setIsConfirmDeleteDialogOpen(true);
-    },[setIsConfirmDeleteDialogOpen]);
+    }, [setIsConfirmDeleteDialogOpen]);
 
     const closeDeleteConfirmDialog = () => {
         setIsConfirmDeleteDialogOpen(false);
@@ -908,6 +943,10 @@ export const Dashboard = () => {
         setSelectedCampaignId(undefined);
         openCreateEditDialog();
     };
+
+    const handleSearch = useCallback(event => {
+        setSearchQuery(event.target.value);
+    }, []);
 
     const selectedCampaign = campaigns?.campaigns?.find(
         campaign => campaign.id === selectedCampaignId,
@@ -1006,7 +1045,7 @@ export const Dashboard = () => {
             <Page title={'Campaigns'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     {status === 'loading' && <LoadingSpinner />}
-                    <PageActions>
+                    <PageActions onSearch={handleSearch}>
                         <PageAction
                             icon={AddIcon}
                             onClick={handleClickCreateButton}

@@ -6,16 +6,19 @@ import { useMapContext } from './Context';
 
 const InnerMap = ({ onClick }) => {
     const { shapes } = useMapContext();
+
     return (
         <>
             {shapes.map(shape => (
                 <GeoJSON
-                    key={`${shape.id}-${shape.pathOptions.color}`}
+                    key={`${shape.id}-${new Date().toISOString()}`}
                     data={shape.geo_json}
                     onEachFeature={(feature, layer) => {
                         layer.setStyle(shape.pathOptions);
                         layer.on({
-                            click: () => onClick(shape),
+                            click() {
+                                onClick(shape);
+                            },
                         });
                     }}
                 />

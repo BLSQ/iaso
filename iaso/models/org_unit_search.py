@@ -130,7 +130,7 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
             queryset = queryset.filter(parent__id=parent_id)
 
     if roots_for_user:
-        if profile.org_units:
+        if profile.org_units.all():
             queryset = queryset.filter(id__in=profile.org_units.all())
         else:
             queryset = queryset.filter(parent__isnull=True)

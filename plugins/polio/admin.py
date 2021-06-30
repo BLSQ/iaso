@@ -1,12 +1,13 @@
 from django.contrib import admin
-from .models import Campaign, Preparedness, Surge
+from .models import Campaign, Preparedness, Surge, Round
 
 
 class CampaignAdmin(admin.ModelAdmin):
-    autocomplete_fields = ["initial_org_unit"]
+    raw_id_fields = ("initial_org_unit",)
     list_filter = ["virus", "vacine", "detection_status", "risk_assessment_status", "budget_status"]
 
 
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(Preparedness)
 admin.site.register(Surge)
+admin.site.register(Round)

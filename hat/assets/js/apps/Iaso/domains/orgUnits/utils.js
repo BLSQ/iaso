@@ -7,9 +7,10 @@ import { circleColorMarkerOptions } from '../../utils/mapUtils';
 import MESSAGES from './messages';
 
 export const getPolygonPositionsFromSimplifiedGeom = field => {
+    // FIXME We should use a proper lib for this
     const positionsArrays = field
-        .split('((')[1]
-        .replace('))', '')
+        .split('(((')[1]
+        .replace(')))', '')
         .replace(/, /gi, ',')
         .split(',');
     const polygonPositions = [];
@@ -65,7 +66,7 @@ export const getSourcesWithoutCurrentSource = (
 export const getOrgunitMessage = (orgUnit, withType) => {
     let message = textPlaceholder;
     if (orgUnit) {
-        message = orgUnit.name;
+        message = `${orgUnit.name} - source: ${orgUnit.source}`;
         if (orgUnit.org_unit_type_name && withType) {
             message += ` (${orgUnit.org_unit_type_name})`;
         }

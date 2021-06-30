@@ -158,7 +158,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             levels,
         });
 
-        return fetchOrgUnits(dispatch, this.buildUrl('&parent_id=0')).then(
+        return fetchOrgUnits(dispatch, this.buildUrl('&rootsForUser=true')).then(
             orgUnits => {
                 this.props.setOrgUnitsLevel(orgUnits, 0, searchIndex);
                 if (levels[0]) {

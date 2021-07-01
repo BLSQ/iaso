@@ -26,6 +26,7 @@ import {
 } from '@material-ui/core';
 import merge from 'lodash.merge';
 import AddIcon from '@material-ui/icons/Add';
+import DownloadIcon from '@material-ui/icons/GetApp';
 import { MapContainer } from './MapComponent';
 
 import {
@@ -941,12 +942,14 @@ export const Dashboard = () => {
     const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
-    const { data: campaigns = [], status } = useGetCampaigns({
+    const { query, exportToCSV } = useGetCampaigns({
         page,
         pageSize,
         order,
         searchQuery,
     });
+
+    const { data: campaigns = [], status } = query;
 
     const { mutate: removeCampaign } = useRemoveCampaign();
 
@@ -1103,6 +1106,9 @@ export const Dashboard = () => {
                             onClick={handleClickCreateButton}
                         >
                             Create
+                        </PageAction>
+                        <PageAction icon={DownloadIcon} onClick={exportToCSV}>
+                            CSV
                         </PageAction>
                     </PageActions>
                     {status === 'success' && (

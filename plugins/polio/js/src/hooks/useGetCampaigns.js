@@ -9,24 +9,29 @@ export const useGetCampaigns = options => {
         search: options.searchQuery,
     };
 
+    const getURL = params => {
+        const filteredParams = Object.entries(params).filter(
+            ([key, value]) => value !== undefined,
+        );
+
+        const queryString = new URLSearchParams(
+            Object.fromEntries(filteredParams),
+        );
+
+        return '/api/polio/campaigns/?' + queryString.toString();
+    };
+
     // adding the params to the queryKey to make sure it fetches when the query changes
-    return useQuery(
-        ['polio', 'campaigns', params],
-        async () => {
-            const filteredParams = Object.entries(params).filter(
-                ([key, value]) => value !== undefined,
-            );
-
-            const queryString = new URLSearchParams(
-                Object.fromEntries(filteredParams),
-            );
-
-            // additional props are WIP
-            return sendRequest(
-                'GET',
-                '/api/polio/campaigns/?' + queryString.toString(),
-            );
-        },
-        { cacheTime: 0, structuralSharing: false },
-    );
+    return {
+        exportToCSV: () =>
+            (window.location.href = `${getURL({ ...params, format: 'csv' })}`),
+        query: useQuery(
+            ['polio', 'campaigns', params],
+            async () => {
+                // additional props are WIP
+                return sendRequest('GET', getURL(params));
+            },
+            { cacheTime: 0, structuralSharing: false },
+        ),
+    };
 };

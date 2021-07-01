@@ -378,7 +378,6 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertNoCreation()
 
     def test_create_org_unit_group_not_in_same_version(self):
-        # returning a 404 is strange but it was the current behaviour
         group = m.Group.objects.create(name="bla")
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
@@ -424,7 +423,6 @@ class OrgUnitAPITestCase(APITestCase):
             }
         )
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        # Should have same version as the default version for the account
         self.assertQuerysetEqual(
             ou.groups.all().order_by("name"), ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"]
         )
@@ -450,7 +448,6 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidOrgUnitData(jr)
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        # Should have same version as the default version for the account
         self.assertQuerysetEqual(ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"])
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, old_ou.name)

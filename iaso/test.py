@@ -55,6 +55,13 @@ class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass
 
 
+def try_json(response):
+    try:
+        return response.json()
+    except:
+        return response.content
+
+
 class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
     def setUp(self):
         """Make sure we have a fresh client at the beginning of each test"""
@@ -63,10 +70,11 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
 
     def assertJSONResponse(self, response: typing.Any, expected_status_code: int):
         self.assertIsInstance(response, Response)
-        self.assertEqual(expected_status_code, response.status_code)
+        self.assertEqual(expected_status_code, response.status_code, try_json(response))
 
         if expected_status_code != 204:
-            self.assertEqual("application/json", response["Content-Type"])
+            self.assertEqual("application/json", response["Content-Type"], try_json(response))
+        return response.json()
 
     def assertFileResponse(
         self,

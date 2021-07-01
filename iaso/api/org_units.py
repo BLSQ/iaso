@@ -381,16 +381,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
             else:
                 # User that are restricted to parts of the hierarchy cannot create root orgunit
                 profile = request.user.iaso_profile
-                if profile.org_units:
+                if profile.org_units.all():
                     errors.append(
                         {"errorKey": "parent_id", "errorMessage": _("You cannot create an Org Unit without a parent")}
                     )
                 org_unit.parent = None
 
         new_groups = []
-        for group in groups:
-            temp_group = get_object_or_404(Group, id=group)
-
+        for group_id in groups:
+            temp_group = get_object_or_404(Group, id=group_id)
             if temp_group.source_version != org_unit.version:
                 errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
                 continue
@@ -501,7 +500,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.parent = parent_org_unit
         else:
             # User that are restricted to parts of the hierarchy cannot create root orgunit
-            if profile.org_units:
+            if profile.org_units.all():
                 errors.append(
                     {"errorKey": "parent_id", "errorMessage": _("You cannot create an Org Unit without a parent")}
                 )
@@ -515,17 +514,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 continue
             new_groups.append(temp_group)
 
-        if not errors:
-            org_unit.save()
-        else:
+        if errors:
             return Response(errors, status=400)
 
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
+        org_unit.save()
         org_unit.groups.set(new_groups)
 
         audit_models.log_modification(None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
-        org_unit.save()
 
         res = org_unit.as_dict_with_parents()
         return Response(res)

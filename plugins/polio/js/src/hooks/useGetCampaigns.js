@@ -24,7 +24,12 @@ export const useGetCampaigns = options => {
     // adding the params to the queryKey to make sure it fetches when the query changes
     return {
         exportToCSV: () =>
-            (window.location.href = `${getURL({ ...params, format: 'csv' })}`),
+            (window.location.href = `${getURL({
+                ...params,
+                limit: undefined,
+                page: undefined,
+                format: 'csv',
+            })}`),
         query: useQuery(
             ['polio', 'campaigns', params],
             async () => {

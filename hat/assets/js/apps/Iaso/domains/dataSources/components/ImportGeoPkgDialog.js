@@ -12,10 +12,12 @@ import MESSAGES from '../messages';
 import { useGeoPkgImport } from '../requests';
 import InputComponent from '../../../components/forms/InputComponent';
 
-const initialFormState = {
-    file: null,
-    project: null,
-    versionNumber: null,
+const initialFormState = versionNumber => {
+    return {
+        file: null,
+        project: null,
+        versionNumber,
+    };
 };
 
 const ImportGeoPkgDialog = ({
@@ -27,9 +29,13 @@ const ImportGeoPkgDialog = ({
     defaultVersion,
     projects,
 }) => {
+    const newVersionNumber = (latestVersion + 1).toString();
     // eslint-disable-next-line no-unused-vars
-    const [form, setFormField, _, setFormState] =
-        useFormState(initialFormState);
+    const [form, setFormField, _, setFormState] = useFormState(
+        initialFormState(
+            defaultVersion ? defaultVersion.toString() : newVersionNumber,
+        ),
+    );
     const intl = useSafeIntl();
     const [allowConfirm, setAllowConfirm] = useState(false);
     const [requestBody, setRequestBody] = useState(null);
@@ -38,7 +44,6 @@ const ImportGeoPkgDialog = ({
     const importedGeoPkg = useGeoPkgImport(requestBody);
 
     const dispatch = useDispatch();
-    const newVersionNumber = (latestVersion + 1).toString();
 
     const submit = useCallback(() => {
         setAllowConfirm(false);
@@ -58,7 +63,11 @@ const ImportGeoPkgDialog = ({
 
     const reset = useCallback(() => {
         setRequestBody(null);
-        setFormState(initialFormState);
+        setFormState(
+            initialFormState(
+                defaultVersion ? defaultVersion.toString() : newVersionNumber,
+            ),
+        );
     }, [setFormState]);
 
     const onConfirm = useCallback(
@@ -148,8 +157,10 @@ const ImportGeoPkgDialog = ({
                     <InputComponent
                         type="radio"
                         keyValue="versionNumber"
-                        value={form.versionNumber.value ?? newVersionNumber}
-                        onChange={setFormField}
+                        value={form.versionNumber.value}
+                        onChange={(keyValue, value) => {
+                            setFormField(keyValue, value);
+                        }}
                         options={[
                             {
                                 value: defaultVersion

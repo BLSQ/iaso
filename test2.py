@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import json
+
 def trim_input(file):
     result = []
     for line in file:
@@ -18,38 +19,41 @@ def generate_diff(keys,source_dict):
             diff.append(key)
     return diff
 
-detected_translations_file = open('./hat/assets/js/apps/Iaso/domains/app/translations/extracted/en.json')
-detected_translations = json.load(detected_translations_file)
-detected_translations_file.close()
-# print(detected_translations)
+def load_json(path_to_file):
+    file=open(path_to_file)
+    result=json.load(file)
+    file.close()
+    return result
 
-existing_translations_file = open('./hat/assets/js/apps/Iaso/domains/app/translations/en.json')
-existing_translations = json.load(existing_translations_file)
-existing_translations_file.close()
+def make_keys_array_from_txt_file(path_to_file):
+    file = open(path_to_file,'r')
+    result = trim_input(file);
+    file.close()
+    return result
+    
 
+detected_translations = load_json('./hat/assets/js/apps/Iaso/domains/app/translations/extracted/en.json')
 
-detected_file = open('./hat/assets/js/apps/Iaso/domains/app/translations/extracted/detectedEnKeys.txt','r') 
-detected_keys = trim_input(detected_file);
-detected_file.close()
-detected_keys.sort()
+detected_keys = make_keys_array_from_txt_file('./hat/assets/js/apps/Iaso/domains/app/translations/extracted/detectedEnKeys.txt') 
 
-existing_keys_file = open('./hat/assets/js/apps/Iaso/domains/app/translations/extracted/existingEnKeys.txt','r')
-existing_keys = trim_input(existing_keys_file)
-existing_keys_file.close()
-existing_keys.sort()
-# print(existing_keys)
+existing_translations = load_json('./hat/assets/js/apps/Iaso/domains/app/translations/en.json')
+
+existing_keys = make_keys_array_from_txt_file('./hat/assets/js/apps/Iaso/domains/app/translations/extracted/existingEnKeys.txt')
+
 unused_keys = generate_diff(existing_keys,detected_translations)
-# print(unused_keys)
+
 missing_keys = generate_diff(detected_keys,existing_translations)
-print("MISSING KEYS:",missing_keys)
 
-with open ('./hat/assets/js/apps/Iaso/domains/app/translations/extracted/missingKeys.txt','w') as output_file:
-    output_file.write("Missing keys: \n")
+with open('./hat/assets/js/apps/Iaso/domains/app/translations/extracted/missingKeys.txt','w') as missing_keys_output_file:
+    missing_keys_output_file.write("Missing keys: \n")
     for key in missing_keys:
-        output_file.write(key+" \n")
+        missing_keys_output_file.write(key+" \n")
 
 
-
+with open('./hat/assets/js/apps/Iaso/domains/app/translations/extracted/unusedKeys.txt','w') as unused_keys_output_file:
+    unused_keys_output_file.write("Unused keys: \n")
+    for key in unused_keys:
+        unused_keys_output_file.write(key+" \n")
 
 
 

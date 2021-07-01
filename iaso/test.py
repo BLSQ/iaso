@@ -74,7 +74,9 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
 
         if expected_status_code != 204:
             self.assertEqual("application/json", response["Content-Type"], try_json(response))
-        return response.json()
+
+        if response.content:
+            return response.json()
 
     def assertFileResponse(
         self,

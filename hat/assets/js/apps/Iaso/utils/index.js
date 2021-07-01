@@ -1,5 +1,6 @@
 import React from 'react';
 import moment from 'moment';
+import pluginsConfigs from '../../../../../../plugins';
 
 export function clone(x) {
     return JSON.parse(JSON.stringify(x));
@@ -331,3 +332,17 @@ export const getIntegerArray = size =>
         .fill()
         .map((y, i) => size - i)
         .reverse();
+
+export const getPlugins = () => {
+    const pluginsKeys = process.env.PLUGINS_KEYS
+        ? process.env.PLUGINS_KEYS
+        : [];
+    const plugins = [];
+    pluginsKeys.forEach(plugin => {
+        const pluginConfig = pluginsConfigs[plugin];
+        if (pluginConfig) {
+            plugins.push(pluginConfig);
+        }
+    });
+    return plugins;
+};

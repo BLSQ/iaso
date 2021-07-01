@@ -22,10 +22,8 @@ import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
-import { capitalize } from '../utils/index';
+import { capitalize, getPlugins } from '../utils/index';
 import { orgUnitFiltersWithPrefix, linksFiltersWithPrefix } from './filters';
-
-import pluginsConfigs from '../../../../../../plugins';
 
 const paginationPathParams = [
     {
@@ -82,7 +80,7 @@ export const polioPath = {
     baseUrl: baseUrls.polio,
     permission: 'iaso_forms',
     params: [],
-    component: props => {
+    component: () => {
         window.location = '/dashboard/polio/list';
 
         return <></>;
@@ -527,14 +525,12 @@ export const routeConfigs = () => {
         page404,
         page500,
     ];
-    const plugins = process.env.PLUGINS ? process.env.PLUGINS : [];
+
+    const plugins = getPlugins();
 
     plugins.forEach(plugin => {
-        const pluginRouteConfig =
-            pluginsConfigs[plugin] && pluginsConfigs[plugin].routes;
-        if (pluginRouteConfig) {
-            routes = routes.concat(pluginRouteConfig);
-        }
+        routes = routes.concat(plugin.routes);
     });
+
     return routes;
 };

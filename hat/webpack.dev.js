@@ -9,14 +9,6 @@ var WEBPACK_URL = 'http://localhost:3000';
 
 const pluginsString = 'test';
 const plugins = pluginsString.split(',');
-// const opluginBasePath = '../../../../../../plugins';
-// plugins.forEach(plugin => {
-//     const pluginRouteConfig =
-//         pluginsConfigs[plugin] && pluginsConfigs[plugin].routes;
-//     if (pluginRouteConfig) {
-//         routes = routes.concat(pluginRouteConfig);
-//     }
-// });
 
 module.exports = {
     context: __dirname,
@@ -59,7 +51,7 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             'process.env': {
-                PLUGINS: JSON.stringify(plugins),
+                PLUGINS_KEYS: JSON.stringify(plugins),
             },
             __LOCALE: JSON.stringify(LOCALE),
         }),

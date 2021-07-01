@@ -17,10 +17,9 @@ import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRoun
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
+import { getPlugins } from '../utils/index';
 
 import MESSAGES from './messages';
-
-import pluginsConfigs from '../../../../../../plugins';
 
 // !! remove permission property if the menu has a subMenu !!
 
@@ -164,14 +163,10 @@ if (PLUGIN_POLIO_ENABLED === 'True') {
     });
 }
 
-const plugins = process.env.PLUGINS ? process.env.PLUGINS : [];
+const plugins = getPlugins();
 let pluginsMenu = [];
 plugins.forEach(plugin => {
-    const pluginMenuConfig =
-        pluginsConfigs[plugin] && pluginsConfigs[plugin].menu;
-    if (pluginMenuConfig) {
-        pluginsMenu = [...pluginsMenu, ...pluginMenuConfig];
-    }
+    pluginsMenu = [...pluginsMenu, ...plugin.menu];
 });
 
 export default [...menuItems, ...pluginsMenu];

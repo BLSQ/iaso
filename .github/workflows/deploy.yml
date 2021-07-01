@@ -115,9 +115,6 @@ jobs:
           SLACK_FOOTER: "-"
           MSG_MINIMAL: true
         if: success()
-      - name: fail
-        run: |
-          bash -c "exit 10"
       - name: Slack deployement failure notification
         uses: rtCamp/action-slack-notify@v2.1.3
         env:

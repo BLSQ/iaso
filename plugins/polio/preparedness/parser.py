@@ -124,7 +124,7 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet, manager: QuotaMa
             print(f"Data found on worksheet: {worksheet.title}")
         except gspread.CellNotFound:
             try:
-                cell = worksheet.find("Résumé du niveau de préparation")
+                cell = worksheet.find("Résumé du niveau de préparation régional")
                 print(f"Data found on worksheet: {worksheet.title}")
             except:
                 print(f"No data found on worksheet: {worksheet.title}")

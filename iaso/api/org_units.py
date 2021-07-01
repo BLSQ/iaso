@@ -1,12 +1,13 @@
+from django.db import transaction
 from django.utils import timezone
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, status, permissions
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils.translation import gettext as _
 from iaso.api.common import safe_api_import
 from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form
+from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, DataSource
 from django.contrib.gis.geos import Point
 
 from django.core.paginator import Paginator
@@ -388,11 +389,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         new_groups = []
         for group in groups:
             temp_group = get_object_or_404(Group, id=group)
-            if temp_group.source_version != org_unit.source:
-                errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
-                continue
             new_groups.append(temp_group)
-
         org_unit.groups.set(new_groups)
         audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
         if not errors:
@@ -513,9 +510,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         new_groups = []
         for group in groups:
             temp_group = get_object_or_404(Group, id=group)
-            if temp_group.source_version != org_unit.source:
-                errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
-                continue
             new_groups.append(temp_group)
         org_unit.groups.set(new_groups)
 

@@ -19,12 +19,11 @@ if __name__ == "__main__":
     tag_envs = {}
     target_envs = []
     for env_name, env_details in eb_envs.items():
-        try:
-            raw_tags = client.list_tags_for_resource(ResourceArn=env_details["EnvironmentArn"])
-        except client.meta.client.exceptions.ResourceNotFoundException:
-            # probably a terminated environment, just ignore
-            print("Exception while browsing", env_name, "ignoring")
+        if env_details["Status"] not in ("Ready", "Updating"):
+            print("Env {} ({}) is not ready for deploy, skipping".format(env_name, env_details["Status"]))
             continue
+        raw_tags = client.list_tags_for_resource(ResourceArn=env_details["EnvironmentArn"])
+
         tags = {x["Key"]: x["Value"] for x in raw_tags.get("ResourceTags")}
         tag_envs[env_name] = tags
         if "env" in tags and tags["env"].lower() == sys.argv[1].lower():

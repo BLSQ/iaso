@@ -59,6 +59,9 @@ export const useStyles = makeStyles(theme => ({
     pageActions: {
         marginBottom: theme.spacing(2),
     },
+    pageAction: {
+        marginRight: theme.spacing(1),
+    },
     form: {
         marginTop: theme.spacing(4),
         display: 'flex',

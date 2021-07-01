@@ -1,5 +1,6 @@
 {
     "iaso.algo.addRun": "Exécuter un algorithme",
+    "iaso.archived.title": "Archives",
     "iaso.area": "Aire de santé",
     "iaso.CDS": "Centre de Santé",
     "iaso.completeness.generateDerivedInstances": "Générer les instances dérivées",
@@ -266,7 +267,6 @@
     "iaso.label.to": "vers",
     "iaso.label.type": "Type",
     "iaso.label.unSelectAll": "Tout désélectionner",
-    "iaso.tooltip.viewUserManual": "Voir le manuel d'utilisation",
     "iaso.label.updated_at": "Modification",
     "iaso.label.useOrgUnitLocation.btn": "Utiliser ces coordonnées",
     "iaso.label.useOrgUnitLocation.message": "N'oubliez pas de sauver pour appliquer les changements",
@@ -466,6 +466,7 @@
     "iaso.tile.arcgis.topo": "ArcGIS Topo Map",
     "iaso.tile.osm": "Open Street Map",
     "iaso.tile.title": "Couches cartographiques",
+    "iaso.tooltip.viewUserManual": "Voir le manuel d'utilisation",
     "iaso.users.create": "Créer un utilisateur",
     "iaso.users.dialog.deleteUserText": "Etes-vous certain de vouloir effacer cet utilisateur ?",
     "iaso.users.dialog.deleteUserTitle": "Cette opération est définitive.",

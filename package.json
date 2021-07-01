@@ -16,7 +16,10 @@
         "webpack-prod": "webpack --config ./hat/webpack.prod.js",
         "webpack-server": "node ./hat/webpack.server.js",
         "dev": "npm run webpack && npm run webpack-server",
-        "extract-iaso-en-messages": "extract-messages --locales=en  --flat --output './hat/assets/js/apps/Iaso/domains/app/translations' './hat/assets/js/apps/Iaso/**/*.js'"
+        "test-py": "python ./test2.py",
+        "extract-iaso-en-messages": "extract-messages --locales=en  --flat --output './hat/assets/js/apps/Iaso/domains/app/translations/extracted' './hat/assets/js/apps/Iaso/**/*.js'",
+        "extract-detected-en-keys": "json -f './hat/assets/js/apps/Iaso/domains/app/translations/extracted/en.json' -k >> './hat/assets/js/apps/Iaso/domains/app/translations/extracted/detectedEnKeys.txt'",
+        "extract-existing-en-keys": "json -f './hat/assets/js/apps/Iaso/domains/app/translations/en.json' -k >> './hat/assets/js/apps/Iaso/domains/app/translations/extracted/existingEnKeys.txt'"
     },
     "repository": {
         "type": "git",
@@ -109,6 +112,7 @@
         "file-loader": "^6.2.0",
         "husky": "^3.0.0",
         "jsdom": "^15.1.1",
+        "json": "^11.0.0",
         "lint-staged": "^9.0.1",
         "mini-css-extract-plugin": "^1.6.0",
         "mocha": "^8.2.0",
@@ -123,6 +127,8 @@
         "sinon": "^9.2.1",
         "sinon-chai": "^3.5.0",
         "style-loader": "^0.23.1",
+        "ts-loader": "^9.2.3",
+        "typescript": "^4.3.4",
         "url-loader": "^4.1.1",
         "webpack": "^5.0.0-rc.6",
         "webpack-bundle-tracker": "^0.4.3",

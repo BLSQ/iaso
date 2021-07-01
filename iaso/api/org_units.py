@@ -386,14 +386,20 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         {"errorKey": "parent_id", "errorMessage": _("You cannot create an Org Unit without a parent")}
                     )
                 org_unit.parent = None
+
         new_groups = []
         for group in groups:
             temp_group = get_object_or_404(Group, id=group)
+
+            if temp_group.source_version != org_unit.version:
+                errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
+                continue
             new_groups.append(temp_group)
-        org_unit.groups.set(new_groups)
-        audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
+
         if not errors:
+            audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
             org_unit.save()
+            org_unit.groups.set(new_groups)
 
             res = org_unit.as_dict_with_parents()
             res["geo_json"] = None
@@ -500,17 +506,22 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     {"errorKey": "parent_id", "errorMessage": _("You cannot create an Org Unit without a parent")}
                 )
 
+        new_groups = []
+        for group in groups:
+            temp_group = get_object_or_404(Group, id=group)
+
+            if temp_group.source_version != org_unit.version:
+                errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
+                continue
+            new_groups.append(temp_group)
+
         if not errors:
             org_unit.save()
         else:
             return Response(errors, status=400)
+
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
-
-        new_groups = []
-        for group in groups:
-            temp_group = get_object_or_404(Group, id=group)
-            new_groups.append(temp_group)
         org_unit.groups.set(new_groups)
 
         audit_models.log_modification(None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)

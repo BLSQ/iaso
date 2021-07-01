@@ -21,7 +21,10 @@ if __name__ == "__main__":
     for env_name, env_details in eb_envs.items():
         try:
             raw_tags = client.list_tags_for_resource(ResourceArn=env_details["EnvironmentArn"])
-        except client.meta.client.exceptions.ResourceNotFoundException:
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
             # probably a terminated environment, just ignore
             print("Exception while browsing", env_name, "ignoring")
             continue

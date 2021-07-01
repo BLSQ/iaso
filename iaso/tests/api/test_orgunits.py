@@ -218,6 +218,18 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidOrgUnitListData(list_data=response_data, expected_length=1)
         self.assertEqual(self.jedi_council_endor.pk, response_data["orgUnits"][0]["id"])
 
+    def test_org_unit_list_roots_ok_user_no_org_unit_restrictions(self):
+        """GET /api/orgunits/?rootsForUser=true"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/orgunits/?rootsForUser=true")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidOrgUnitListData(list_data=response_data, expected_length=3)
+        for orgunit in response_data["orgUnits"]:
+            self.assertEqual(orgunit["parent_id"], None)
+
     def test_org_unit_retrieve_without_auth_or_app_id(self):
         """GET /orgunits/<org_unit_id>/ without auth or app id should result in a 200 empty response"""
 

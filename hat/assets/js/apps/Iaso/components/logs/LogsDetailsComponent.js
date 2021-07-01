@@ -129,6 +129,8 @@ class LogsDetails extends Component {
                                             </h4>
                                             <LogCompareComponent
                                                 log={log.new_value}
+                                                goToRevision={goToRevision}
+
                                             />
                                         </Grid>
                                     </Grid>

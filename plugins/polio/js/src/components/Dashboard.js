@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Table,
     textPlaceholder,
@@ -15,13 +15,18 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    FormControl,
     Grid,
+    InputAdornment,
+    InputLabel,
+    OutlinedInput,
     Tab,
     Tabs,
     Typography,
 } from '@material-ui/core';
 import merge from 'lodash.merge';
 import AddIcon from '@material-ui/icons/Add';
+import { MapContainer } from './MapComponent';
 
 import {
     DateInput,
@@ -42,7 +47,10 @@ import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
 import { PreparednessForm } from '../forms/PreparednessForm';
+import { useGetRegionGeoJson } from '../hooks/useGetRegionGeoJson';
 import MESSAGES from '../constants/messages';
+import SearchIcon from '@material-ui/icons/Search';
+import { useDebounce } from 'use-debounce';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -261,9 +269,49 @@ const DetectionForm = () => {
         </>
     );
 };
+
+const selectedPathOptions = { color: 'lime' };
+const unselectedPathOptions = { color: 'gray' };
+
 const RiskAssessmentForm = () => {
     const classes = useStyles();
-    const { values } = useFormikContext();
+    const { values, setFieldValue } = useFormikContext();
+
+    const { group = {} } = values;
+
+    const { data = [] } = useGetRegionGeoJson(
+        values.org_unit?.country_parent?.id ||
+            values.org_unit?.root?.id ||
+            values.org_unit?.id,
+    );
+
+    const shapes = useMemo(() => {
+        return data.map(shape => ({
+            ...shape,
+            pathOptions: group.org_units.find(org_unit => shape.id === org_unit)
+                ? selectedPathOptions
+                : unselectedPathOptions,
+        }));
+    }, [data, group]);
+
+    const onSelectOrgUnit = useCallback(
+        shape => {
+            var { org_units } = group;
+            const hasFound = org_units.find(org_unit => shape.id === org_unit);
+
+            if (hasFound) {
+                org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
+            } else {
+                org_units.push(shape.id);
+            }
+
+            setFieldValue('group', {
+                ...group,
+                org_units,
+            });
+        },
+        [group, setFieldValue],
+    );
 
     const wastageRate = 0.26;
 
@@ -356,6 +404,12 @@ const RiskAssessmentForm = () => {
                         Vials Requested{' '}
                         {Number.isNaN(vialsRequested) ? 0 : vialsRequested}
                     </Typography>
+                </Grid>
+                <Grid xs={12} md={6} item>
+                    <MapContainer
+                        shapes={shapes}
+                        onSelectShape={onSelectOrgUnit}
+                    />
                 </Grid>
             </Grid>
         </>
@@ -696,6 +750,10 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     const defaultValues = {
         round_one: {},
         round_two: {},
+        group: {
+            name: 'hidden group',
+            org_units: [],
+        },
     };
 
     const initialValues = merge(selectedCampaign, defaultValues);
@@ -801,7 +859,27 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     );
 };
 
-const PageActions = ({ children }) => {
+const SearchInput = ({ onChange }) => {
+    const classes = useStyles();
+
+    return (
+        <FormControl fullWidth className={classes.margin} variant="outlined">
+            <InputLabel htmlFor="search-campaigns">Search</InputLabel>
+            <OutlinedInput
+                id="search-campaigns"
+                key="search-campaigns-key"
+                startAdornment={
+                    <InputAdornment position="start">
+                        <SearchIcon />
+                    </InputAdornment>
+                }
+                onChange={onChange}
+            />
+        </FormControl>
+    );
+};
+
+const PageActions = ({ onSearch, children }) => {
     const classes = useStyles();
 
     return (
@@ -812,6 +890,11 @@ const PageActions = ({ children }) => {
             justify="flex-end"
             alignItems="center"
         >
+            {onSearch && (
+                <Grid item xs={8}>
+                    <SearchInput onChange={onSearch} />
+                </Grid>
+            )}
             <Grid item xs={4} container justify="flex-end" alignItems="center">
                 {children}
             </Grid>
@@ -853,6 +936,8 @@ export const Dashboard = () => {
     const [selectedCampaignId, setSelectedCampaignId] = useState();
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
+    const [searchQueryText, setSearchQuery] = useState(undefined);
+    const [searchQuery] = useDebounce(searchQueryText, 500);
     const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
@@ -860,12 +945,14 @@ export const Dashboard = () => {
         page,
         pageSize,
         order,
+        searchQuery,
     });
+
     const { mutate: removeCampaign } = useRemoveCampaign();
 
     const openCreateEditDialog = useCallback(() => {
         setIsCreateEditDialogOpen(true);
-    },[setIsCreateEditDialogOpen]);
+    }, [setIsCreateEditDialogOpen]);
 
     const closeCreateEditDialog = () => {
         setSelectedCampaignId(undefined);
@@ -874,7 +961,7 @@ export const Dashboard = () => {
 
     const openDeleteConfirmDialog = useCallback(() => {
         setIsConfirmDeleteDialogOpen(true);
-    },[setIsConfirmDeleteDialogOpen]);
+    }, [setIsConfirmDeleteDialogOpen]);
 
     const closeDeleteConfirmDialog = () => {
         setIsConfirmDeleteDialogOpen(false);
@@ -908,6 +995,10 @@ export const Dashboard = () => {
         setSelectedCampaignId(undefined);
         openCreateEditDialog();
     };
+
+    const handleSearch = useCallback(event => {
+        setSearchQuery(event.target.value);
+    }, []);
 
     const selectedCampaign = campaigns?.campaigns?.find(
         campaign => campaign.id === selectedCampaignId,
@@ -1006,7 +1097,7 @@ export const Dashboard = () => {
             <Page title={'Campaigns'}>
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     {status === 'loading' && <LoadingSpinner />}
-                    <PageActions>
+                    <PageActions onSearch={handleSearch}>
                         <PageAction
                             icon={AddIcon}
                             onClick={handleClickCreateButton}

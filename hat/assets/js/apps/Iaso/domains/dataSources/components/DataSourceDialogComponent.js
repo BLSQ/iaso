@@ -330,6 +330,7 @@ export class DataSourceDialogComponent extends Component {
                             <InputComponent
                                 multi={false}
                                 clearable={!form.is_default_source.value}
+                                required={form.is_default_source.value}
                                 keyValue="default_version_id"
                                 onChange={(key, value) =>
                                     this.setFieldValue(key, value)

@@ -1,7 +1,8 @@
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from django.db.models import fields
+from django.db.transaction import atomic
 from rest_framework import serializers
-from iaso.models import Group, OrgUnit
+from iaso.models import Group, OrgUnit, org_unit
 from .models import Preparedness, Round, Campaign, Surge
 from .preparedness.parser import (
     open_sheet_by_url,
@@ -108,15 +109,27 @@ class SurgePreviewSerializer(serializers.Serializer):
 
 
 class OrgUnitSerializer(serializers.ModelSerializer):
+    country_parent = serializers.SerializerMethodField()
     root = serializers.SerializerMethodField()
+
+    def __init__(self, **kwargs):
+        for field in kwargs.pop("hidden_fields", []):
+            self.fields.pop(field)
+        super().__init__(**kwargs)
+
+    def get_country_parent(self, instance: OrgUnit):
+        countries = instance.country_ancestors()
+        if countries is not None and len(countries) > 0:
+            country = countries[0]
+            return OrgUnitSerializer(instance=country, hidden_fields=["country_parent", "root"]).data
 
     def get_root(self, instance: OrgUnit):
         root = instance.root()
-        return OrgUnitSerializer(instance=root).data if root else None
+        return OrgUnitSerializer(instance=root, hidden_fields=["country_parent", "root"]).data if root else None
 
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "root"]
+        fields = ["id", "name", "root", "country_parent"]
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -145,6 +158,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
 
+    @atomic
     def create(self, validated_data):
         round_one_data = validated_data.pop("round_one")
         round_two_data = validated_data.pop("round_two")
@@ -153,7 +167,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         if group:
             org_units = group.pop("org_units") if "org_units" in group else []
-            campaign_group = Group.objects.create(**group)
+            campaign_group = Group.domain_objects.create(**group, domain="POLIO")
             campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
         else:
             campaign_group = None
@@ -174,6 +188,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         return campaign
 
+    @atomic
     def update(self, instance, validated_data):
         round_one_data = validated_data.pop("round_one")
         round_two_data = validated_data.pop("round_two")
@@ -184,8 +199,11 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         if group:
             org_units = group.pop("org_units") if "org_units" in group else []
-            campaign_group = Group.objects.get(pk=instance.group_id)
+            campaign_group, created = Group.domain_objects.get_or_create(
+                pk=instance.group_id, defaults={**group, "domain": "POLIO"}
+            )
             campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
+            instance.group = campaign_group
 
         if "preparedness_data" in validated_data:
             Preparedness.objects.create(campaign=instance, **validated_data.pop("preparedness_data"))
@@ -196,5 +214,5 @@ class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campaign
         fields = "__all__"
-        read_only_fields = ["last_preparedness", "last_surge"]
+        read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status"]
         extra_kwargs = {"preparedness_data": {"write_only": True}}

@@ -396,9 +396,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             new_groups.append(temp_group)
 
         if not errors:
-            audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
             org_unit.save()
             org_unit.groups.set(new_groups)
+            audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
 
             res = org_unit.as_dict_with_parents()
             res["geo_json"] = None

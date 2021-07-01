@@ -19,8 +19,8 @@ if __name__ == "__main__":
     tag_envs = {}
     target_envs = []
     for env_name, env_details in eb_envs.items():
-        if env_details["Status"] != "Ready":
-            print("Env {} ({}) is not ready, skipping".format(env_name, env_details["Status"]))
+        if env_details["Status"] not in ("Ready", "Updating"):
+            print("Env {} ({}) is not ready for deploy, skipping".format(env_name, env_details["Status"]))
             continue
         raw_tags = client.list_tags_for_resource(ResourceArn=env_details["EnvironmentArn"])
 

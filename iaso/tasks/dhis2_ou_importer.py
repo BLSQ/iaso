@@ -90,7 +90,7 @@ def map_org_unit_type(row, org_unit, type_dict, unknown_unit_type):
 
     if org_unit.org_unit_type is None:
         org_unit.org_unit_type = unknown_unit_type
-        logger.debug("unknown type for ", row_without_coordinates(row))
+        logger.warning("unknown type for ", row_without_coordinates(row))
 
 
 def guess_feature_type(coordinates):

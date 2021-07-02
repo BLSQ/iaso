@@ -283,9 +283,12 @@ def dhis2_ou_importer(
     return the_task
 
 
-def import_orgunits_and_groups(api, source, version, validate, continue_on_error, group_type_dict, start, task):
+def import_orgunits_and_groups(
+    api, source, version, validate, continue_on_error, group_type_dict, start, task, update_mode=False
+):
     index = 0
     error_count = 0
+    skip_count = 0
     orgunits = fetch_orgunits(api)
     task.report_progress_and_stop_if_killed(
         progress_value=0, end_value=len(orgunits), progress_message="Importing org units"
@@ -297,7 +300,20 @@ def import_orgunits_and_groups(api, source, version, validate, continue_on_error
 
     group_dict = {}
     unit_dict = {}
+
+    # for cache
+    existing_ou_refs = [ou.source_ref for ou in version.orgunit_set.all()]
+
     for row in orgunits:
+        # In update mode we only create non present OrgUnit but we don't update existing one.
+        # in not update mode the version should be empty, so explode
+        if row["id"].strip() in existing_ou_refs:
+            if update_mode:
+                skip_count += 1
+                continue
+            else:
+                assert False, "not here"
+
         try:
             org_unit = orgunit_from_row(
                 row, source, version, unit_dict, group_dict, group_type_dict, validate, unknown_unit_type

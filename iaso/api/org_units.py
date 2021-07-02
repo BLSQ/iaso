@@ -70,7 +70,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         which all the power should be really specified.
 
         Can serve theses formats, depending on the combination of GET Parameters:
-         * Simple JSON (default)
+         * Simple JSON (default) -> as_dict_for_mobile
          * Paginated JSON (if a `limit` is passed)
          * Paginated JSON with less info (if both `limit` and `smallSearch` is passed.
          * GeoJson with the geo info (if `withShapes` is passed` )

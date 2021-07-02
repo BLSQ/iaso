@@ -10,39 +10,6 @@ def index(request):
     return render(request, "polio/base.html")
 
 
-@login_required
-def lqas(request, slug):
-    """
-    Endpoint used to transform lqas data from existing ODK forms stored in ONA. Very custom to the polio project.
-    """
-    config = get_object_or_404(Config, slug=slug)
-    res = []
-    failure_count = 0
-    for config in config.content:
-        keys = config["keys"]
-        prefix = config["prefix"]
-        response = requests.get(config["url"], auth=(config["login"], config["password"]))
-        forms = response.json()
-
-        for form in forms:
-            try:
-                reduced_form = {}
-                for key in keys.keys():
-                    value = form.get(key, None)
-                    if value is None:
-                        value = form[prefix][0]["%s/%s" % (prefix, key)]
-                    reduced_form[keys[key]] = value
-                    reduced_form["type"] = prefix
-
-                res.append(reduced_form)
-            except Exception as e:
-                print("failed on ", e, form, prefix)
-                failure_count += 1
-    print("parsed:", len(res), "failed:", failure_count)
-
-    return JsonResponse(res, safe=False)
-
-
 # sample Config:
 """
  configs = [

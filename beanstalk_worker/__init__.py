@@ -11,7 +11,7 @@ logger = getLogger(__name__)
 task_service = LazyService("BEANSTALK_TASK_SERVICE")
 
 
-def task(task_name=""):
+def task_decorator(task_name=""):
     def inner_task(func):
         assert func.__name__ == func.__qualname__, f"{func.__qualname__} is not a global"
 

@@ -10,7 +10,7 @@ from iaso.models import (
     ERRORED,
     RUNNING,
 )
-from beanstalk_worker import task
+from beanstalk_worker import task_decorator
 from django.contrib.gis.geos import Point, MultiPolygon, Polygon
 
 import logging
@@ -211,7 +211,7 @@ def load_groupsets(options, version, group_dict):
             group_set.groups.add(group)
 
 
-@task(task_name="dhis2_ou_importer")
+@task_decorator(task_name="dhis2_ou_importer")
 def dhis2_ou_importer(
     source_id, source_version_number, force, validate, continue_on_error, url, login, password, task=None
 ):

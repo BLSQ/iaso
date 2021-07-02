@@ -285,20 +285,12 @@ def dhis2_ou_importer(
     )
     for row in orgunits:
         try:
-            org_unit = OrgUnit()
-            org_unit.name = row["name"].strip()
-            org_unit.sub_source = source.name
-            org_unit.version = version
-            org_unit.source_ref = row["id"].strip()
-            org_unit.validation_status = OrgUnit.VALIDATION_VALID if validate else OrgUnit.VALIDATION_NEW
+            org_unit = orgunit_from_row(row, source, type_dict, unit_dict, unknown_unit_type, validate, version)
 
-            map_org_unit_type(row, org_unit, type_dict, unknown_unit_type)
-            map_parent(row, org_unit, unit_dict)
-            # if dhis2 version < 2.32
-            map_coordinates(row, org_unit)
-            # if dhis2 version >= 2.32
-            map_geometry(row, org_unit)
-            org_unit.save()
+            # org_unit should be saved before filling the groups
+            map_groups(row, org_unit, group_dict, version)
+
+            unit_dict[org_unit.source_ref] = org_unit
 
             res_string = "%.2f sec, processed %i org units" % (time.time() - start, index)
             the_task.report_progress_and_stop_if_killed(progress_message=res_string, progress_value=index)
@@ -307,10 +299,6 @@ def dhis2_ou_importer(
             if index % 100 == 0:
                 logger.debug(res_string)
 
-            # org_unit should be saved before filling the groups
-            map_groups(row, org_unit, group_dict, version)
-
-            unit_dict[org_unit.source_ref] = org_unit
         except Exception as e:
             res_string = "Error %s for row %d" % (e, index), row
             logger.debug(res_string)
@@ -340,3 +328,20 @@ def dhis2_ou_importer(
     logger.debug("********* Finishing import")
 
     return the_task
+
+
+def orgunit_from_row(row, source, type_dict, unit_dict, unknown_unit_type, validate, version):
+    org_unit = OrgUnit()
+    org_unit.name = row["name"].strip()
+    org_unit.sub_source = source.name
+    org_unit.version = version
+    org_unit.source_ref = row["id"].strip()
+    org_unit.validation_status = OrgUnit.VALIDATION_VALID if validate else OrgUnit.VALIDATION_NEW
+    map_org_unit_type(row, org_unit, type_dict, unknown_unit_type)
+    map_parent(row, org_unit, unit_dict)
+    # if dhis2 version < 2.32
+    map_coordinates(row, org_unit)
+    # if dhis2 version >= 2.32
+    map_geometry(row, org_unit)
+    org_unit.save()
+    return org_unit

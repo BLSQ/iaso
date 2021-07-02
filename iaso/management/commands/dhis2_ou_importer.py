@@ -1,6 +1,5 @@
 import csv
 import sys
-import json
 import time
 
 from django.core.management.base import BaseCommand
@@ -12,12 +11,9 @@ from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion
 from .command_logger import CommandLogger
 
 from ...tasks.dhis2_ou_importer import (
-    map_parent,
-    map_org_unit_type,
     map_groups,
-    map_geometry,
-    map_coordinates,
     load_groupsets,
+    orgunit_from_row,
 )
 
 # as geometry/coordinates might be big, increase the field size to its max
@@ -161,29 +157,17 @@ class Command(BaseCommand):
         iaso_logger.ok("about to create orgunits", len(orgunits))
         for row in orgunits:
             try:
-                org_unit = OrgUnit()
-                org_unit.name = row["name"].strip()
-                org_unit.sub_source = source.name
-                org_unit.version = version
-                org_unit.source_ref = row["id"].strip()
-                org_unit.validation_status = OrgUnit.VALIDATION_VALID if validate else OrgUnit.VALIDATION_NEW
-
-                map_org_unit_type(row, org_unit, type_dict, unknown_unit_type)
-                map_parent(row, org_unit, unit_dict)
-                # if dhis2 version < 2.32
-                map_coordinates(row, org_unit)
-                # if dhis2 version >= 2.32
-                map_geometry(row, org_unit)
-                org_unit.save()
-
-                # log progress
-                if index % 100 == 0:
-                    iaso_logger.info("%.2f" % (time.time() - start), "sec, processed", index)
+                org_unit = orgunit_from_row(row, source, type_dict, unit_dict, unknown_unit_type, validate, version)
 
                 # org_unit should be saved before filling the groups
                 map_groups(row, org_unit, group_dict, version)
 
                 unit_dict[org_unit.source_ref] = org_unit
+
+                # log progress
+                if index % 100 == 0:
+                    iaso_logger.info("%.2f" % (time.time() - start), "sec, processed", index)
+
             except Exception as e:
                 iaso_logger.error("Error %s for row %d" % (e, index), row)
                 if not continue_on_error:

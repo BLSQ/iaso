@@ -324,6 +324,10 @@ class Task(models.Model):
         }
 
     def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
+        """Save progress and check if we have been killed
+        Warning: If you are in a transaction/atomic bloc the progress won't be seen from the API
+        since it's local to the connexion.
+        """
         self.refresh_from_db()
         if self.should_be_killed:
             self.status = KILLED

@@ -218,7 +218,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en"
 
-LOCALE_PATHS = ["/var/app/hat/locale/", "hat/locale/"]
+LOCALE_PATHS = ["/var/app/current/hat/locale/", "hat/locale/"]
 
 TIME_ZONE = "UTC"
 

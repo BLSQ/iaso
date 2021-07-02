@@ -1,4 +1,4 @@
-import testAppConfig from './test/config';
+import testAppConfig from './test/js/config';
 
 export default {
     test: testAppConfig,

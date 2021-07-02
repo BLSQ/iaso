@@ -7,7 +7,7 @@ var BundleTracker = require('webpack-bundle-tracker');
 var LOCALE = 'fr';
 var WEBPACK_URL = 'http://localhost:3000';
 
-const pluginsString = 'test';
+const pluginsString = process.env.PLUGINS || '';
 const plugins = pluginsString.split(',');
 
 module.exports = {
@@ -61,6 +61,11 @@ module.exports = {
 
     module: {
         rules: [
+            {
+                test: /\.js$/,
+                enforce: "pre",
+                use: ["source-map-loader"],
+            },
             // we pass the output from babel loader to react-hot loader
             {
                 test: /\.js?$/,

@@ -1,5 +1,5 @@
 import React from 'react';
-import TopBar from '../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import TopBar from '../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';

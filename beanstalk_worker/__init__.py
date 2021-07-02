@@ -30,7 +30,8 @@ def task_decorator(task_name=""):
                     logger.info(f"Running task {the_task}")
                     func(*args, task=the_task, **kwargs)
                 except KilledException as e:
-                    pass
+                    # If it was interrupted in the middle of a transaction the new status was not saved so save it again
+                    the_task.save()
                 except Exception as e:
                     the_task.status = ERRORED
                     the_task.ended_at = timezone.now()

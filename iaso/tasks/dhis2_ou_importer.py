@@ -12,6 +12,8 @@ from iaso.models import (
 from beanstalk_worker import task_decorator
 from django.contrib.gis.geos import Point, MultiPolygon, Polygon
 
+from dhis2 import Api
+
 import logging
 import json
 import time
@@ -23,22 +25,41 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+#  Make a few types around the Dhis2 API format to help dev
+
+
+class DhisGroup(TypedDict):
+    id: str
+    name: str
+
+
+class DhisGeom(TypedDict):
+    """Seems to be a GeoJson"""
+
+    type: str
+    coordinates: list
+
+
+class DhisOrgunit(TypedDict):
+    id: str
+    name: str
+    parent: Optional[str]
+    coordinates: Optional[str]
+    geometry: Optional[DhisGeom]
+    organisationUnitGroups: List[DhisGroup]
+
 
 def get_api(options):
-    from dhis2 import Api
-
-    api = Api(options.get("dhis2_url"), options.get("dhis2_user"), options.get("dhis2_password"))
-
+    api = Api(options["dhis2_url"], options["dhis2_user"], options["dhis2_password"])
     return api
 
 
-def fetch_orgunits(options):
-    api = get_api(options)
-    orgunits = []
+def fetch_orgunits(api: Api) -> List[DhisOrgunit]:
+    orgunits: List[DhisOrgunit] = []
 
     for page in api.get_paged(
         "organisationUnits",
-        page_size=options.get("page_size", 500),
+        page_size=500,
         params={"fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"},
     ):
         orgunits.extend(page["organisationUnits"])
@@ -61,48 +82,26 @@ def map_parent(row, org_unit, unit_dict):
         org_unit.parent = unit_dict[parent_id]
 
 
-def row_without_coordinates(row):
-    """for debug print"""
-    return {i: row[i] for i in row if i != "coordinates" and i != "geometry"}
-
-
-def find_org_unit_type(groups, type_dict):
+def find_org_unit_type(groups, group_type_dict):
     for group in groups:
-        if group["name"] in type_dict:
-            return type_dict[group["name"]]
+        if group["name"] in group_type_dict:
+            return group_type_dict[group["name"]]
 
 
-class DhisGroup(TypedDict):
-    id: str
-
-
-class DhisGeom(TypedDict):
-    """Seems to be a GeoJson"""
-
-    type: str
-    coordinates: list
-
-
-class DhisOrgunit(TypedDict):
-    id: str
-    name: str
-    parent: Optional[str]
-    coordinates: Optional[str]
-    geometry: Optional[DhisGeom]
-    organisationUnitGroups: List[DhisGroup]
-
-
-def orgunit_from_row(row: DhisOrgunit, source, type_dict, unit_dict, group_dict, unknown_unit_type, validate, version):
+def orgunit_from_row(
+    row: DhisOrgunit, source, version, unit_dict, group_dict, group_type_dict, validate, unknown_unit_type
+):
     org_unit = OrgUnit()
     org_unit.name = row["name"].strip()
     org_unit.sub_source = source.name
     org_unit.version = version
     org_unit.source_ref = row["id"].strip()
     org_unit.validation_status = OrgUnit.VALIDATION_VALID if validate else OrgUnit.VALIDATION_NEW
-    org_unit.org_unit_type = find_org_unit_type(row["organisationUnitGroups"], type_dict)
+    org_unit.org_unit_type = find_org_unit_type(row["organisationUnitGroups"], group_type_dict)
     if not org_unit.org_unit_type:
-        logger.warning("unknown type for ", org_unit)
         org_unit.org_unit_type = unknown_unit_type
+        if group_type_dict:
+            logger.warning("unknown type for ", org_unit)
     map_parent(row, org_unit, unit_dict)
     # if dhis2 version < 2.32
     map_coordinates(row, org_unit)
@@ -111,14 +110,14 @@ def orgunit_from_row(row: DhisOrgunit, source, type_dict, unit_dict, group_dict,
     org_unit.save()
 
     # org_unit should be saved before filling the groups
-    for ougroup in row["organisationUnitGroups"]:
-        group = get_or_create_group(ougroup, group_dict, version)
+    for dhis_group in row["organisationUnitGroups"]:
+        group = get_or_create_group(dhis_group, group_dict, version)
         group.org_units.add(org_unit)
     return org_unit
 
 
 def guess_feature_type(coordinates):
-    if coordinates is None:
+    if not coordinates:
         return None
     if coordinates.startswith("[[[["):
         return "MULTI_POLYGON"
@@ -150,12 +149,12 @@ def map_coordinates(row, org_unit):
                 j = json.loads(coordinates)
                 org_unit.geom = MultiPolygon(*[Polygon(i) for i in j[0]])
         except Exception as bad_polygon:
-            logger.debug("failed at importing ", feature_type, coordinates, bad_polygon, row)
+            logger.debug("Failed at importing geo", feature_type, coordinates, bad_polygon, row)
 
         org_unit.simplified_geom = org_unit.geom
 
 
-def map_geometry(row, org_unit):
+def map_geometry(row: DhisOrgunit, org_unit: OrgUnit):
     if "geometry" in row:
         coordinates = row["geometry"]["coordinates"]
         feature_type = row["geometry"]["type"]
@@ -174,10 +173,10 @@ def map_geometry(row, org_unit):
                 logger.warning("Unsupported feature tye")
 
         except Exception as bad_coord:
-            logger.error("failed at importing ", feature_type, coordinates, bad_coord, row)
+            logger.error("Failed at parsing geo ", feature_type, coordinates, bad_coord, row)
 
 
-def get_or_create_group(dhis2_group, group_dict, source_version):
+def get_or_create_group(dhis2_group: DhisGroup, group_dict: Dict[str, Group], source_version: SourceVersion):
     name = dhis2_group["name"]
     if name in group_dict:
         return group_dict[name]
@@ -201,9 +200,8 @@ def get_group_set(dhis2_group_set, group_set_dict, source_version):
     return group_set
 
 
-def load_groupsets(options, version, group_dict):
+def load_groupsets(api: Api, version, group_dict):
     group_set_dict = {}
-    api = get_api(options)
     dhis2_group_sets = api.get(
         "organisationUnitGroupSets", params={"paging": "false", "fields": "id,name,organisationUnitGroups[id,name]"}
     )
@@ -252,66 +250,25 @@ def dhis2_ou_importer(
     password: Optional[str],
     task: Task = None,
 ) -> Task:
-
     the_task = task
-    source = DataSource.objects.get(id=source_id)
-    source_version, _created = SourceVersion.objects.get_or_create(
-        number=int(source_version_number), data_source=source
-    )
     start = time.time()
 
-    logger.debug("source", source)
-    logger.debug("source_version", source_version)
+    source = DataSource.objects.get(id=source_id)
 
     connection_config = get_api_config(url, login, password, source)
+    api = get_api(connection_config)
 
     the_task.report_progress_and_stop_if_killed(progress_message="Fetching org units")
-    orgunits = fetch_orgunits(connection_config)
 
     version, _created = SourceVersion.objects.get_or_create(number=source_version_number, data_source=source)
     if OrgUnit.objects.filter(version=version).count() > 0:
-        raise Exception(f"Version {SourceVersion}is not Empty")
+        raise Exception(f"Version {SourceVersion} is not Empty")
 
-    # Fallback type if we don't find a type
-    unknown_unit_type, _created = OrgUnitType.objects.get_or_create(name=f"{source.name}-{'Unknown'}-{source.id:d}")
-    unknown_unit_type.projects.set(source.projects.all())
-
-    unit_dict = dict()
-    type_dict = {}
-    group_dict = {}
-
-    index = 0
-    error_count = 0
-
-    the_task.report_progress_and_stop_if_killed(
-        progress_value=0, end_value=len(orgunits), progress_message="Importing org units"
+    # name of group to a orgunit type. If a orgunit belong to one of these group it will get that type
+    group_type_dict: Dict[str, OrgUnitType] = {}
+    error_count, unit_dict = import_orgunits_and_groups(
+        api, source, version, validate, continue_on_error, group_type_dict, start, the_task
     )
-
-    for row in orgunits:
-        try:
-            org_unit = orgunit_from_row(
-                row, source, type_dict, unit_dict, group_dict, unknown_unit_type, validate, version
-            )
-            unit_dict[org_unit.source_ref] = org_unit
-
-            # log progress every 100 orgunits
-            if index % 100 == 0:
-                res_string = "%.2f sec, processed %i org units" % (time.time() - start, index)
-                the_task.report_progress_and_stop_if_killed(progress_message=res_string, progress_value=index)
-
-        except Exception as e:
-            logger.exception(f"Error importing row {index:d}: {row}")
-
-            if not continue_on_error:
-                raise e
-            error_count += 1
-        index += 1
-
-    logger.debug(
-        f"Created {index} orgunits",
-    )
-
-    load_groupsets(connection_config, version, group_dict)
 
     end = time.time()
     res_string = f"""Processed {len(unit_dict)} orgunits in {end - start:.2f} seconds
@@ -324,3 +281,43 @@ def dhis2_ou_importer(
 
     the_task.report_success(message=res_string)
     return the_task
+
+
+def import_orgunits_and_groups(api, source, version, validate, continue_on_error, group_type_dict, start, task):
+    index = 0
+    error_count = 0
+    orgunits = fetch_orgunits(api)
+    task.report_progress_and_stop_if_killed(
+        progress_value=0, end_value=len(orgunits), progress_message="Importing org units"
+    )
+
+    # Fallback type if we don't find a type
+    unknown_unit_type, _created = OrgUnitType.objects.get_or_create(name=f"{source.name}-{'Unknown'}-{source.id:d}")
+    unknown_unit_type.projects.set(source.projects.all())
+
+    group_dict = {}
+    unit_dict = {}
+    for row in orgunits:
+        try:
+            org_unit = orgunit_from_row(
+                row, source, version, unit_dict, group_dict, group_type_dict, validate, unknown_unit_type
+            )
+            unit_dict[org_unit.source_ref] = org_unit
+
+        except Exception as e:
+            logger.exception(f"Error importing row {index:d}: {row}")
+            if not continue_on_error:
+                raise e
+            error_count += 1
+
+        # log progress every 100 orgunits
+        if index % 100 == 0:
+            res_string = "%.2f sec, processed %i org units" % (time.time() - start, index)
+            task.report_progress_and_stop_if_killed(
+                progress_message=res_string, progress_value=index, end_value=len(orgunits)
+            )
+
+        index += 1
+    logger.debug(f"Created {index} orgunits")
+    load_groupsets(api, version, group_dict)
+    return error_count, unit_dict

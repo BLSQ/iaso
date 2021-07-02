@@ -205,7 +205,7 @@ class TaskTests(TestCase):
         )
 
         task.refresh_from_db()
-        self.assertEquals(task.status, SUCCESS)
+        self.assertEquals(task.status, SUCCESS, task.result)
         created_orgunits_qs = OrgUnit.objects.order_by("id")
         created_orgunits = [entry for entry in created_orgunits_qs.values("source_ref", "name")]
 

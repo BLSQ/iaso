@@ -7,13 +7,15 @@ import PropTypes from 'prop-types';
 
 import AttachFile from '@material-ui/icons/AttachFile';
 
+import {
+    displayDateFromTimestamp,
+    PdfSvg,
+    TextSvg,
+    WordSvg,
+    ExcellSvg,
+    CsvSvg,
+} from 'bluesquare-components';
 import { getFileName } from '../../utils/filesUtils';
-import PdfSvg from '../svg/PdfSvgComponent';
-import TxtSvg from '../svg/TxtSvgComponent';
-import WordSvg from '../svg/WordSvgComponent';
-import ExcellSvg from '../svg/ExcellSvgComponent';
-import CsvSvg from '../svg/CsvSvgComponent';
-import { displayDateFromTimestamp } from '../../utils/intlUtil';
 
 const styles = theme => ({
     paper: {
@@ -70,7 +72,7 @@ const renderIcon = (file, classes) => {
             return <ExcellSvg color="secondary" className={classes.icon} />;
         }
         case 'txt': {
-            return <TxtSvg color="secondary" className={classes.icon} />;
+            return <TextSvg color="secondary" className={classes.icon} />;
         }
 
         default:

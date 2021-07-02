@@ -30,6 +30,8 @@ from .models import (
     ExportLog,
     DevicePosition,
     Task,
+    Page,
+    AccountFeatureFlag,
 )
 
 
@@ -69,7 +71,11 @@ class FormAdmin(admin.GeoModelAdmin):
         "derived",
         "created_at",
         "updated_at",
+        "deleted_at",
     )
+
+    def get_queryset(self, request):
+        return Form.objects_include_deleted.all()
 
 
 class FormVersionAdmin(admin.GeoModelAdmin):
@@ -164,11 +170,17 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
     def http_requests(self, instance):
         # Write a get-method for a list of module names in the class Profile
         # return HTML string which will be display in the form
-        return format_html_join(
-            mark_safe("<br/><br/>"),
-            "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
-            ((line.id, line.http_status, line.url, line.sent, line.received) for line in instance.export_logs.all()),
-        ) or mark_safe("<span>no logs available.</span>")
+        return (
+            format_html_join(
+                mark_safe("<br/><br/>"),
+                "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
+                (
+                    (line.id, line.http_status, line.url, line.sent, line.received)
+                    for line in instance.export_logs.all()
+                ),
+            )
+            or mark_safe("<span>no logs available.</span>")
+        )
 
 
 class TaskAdmin(admin.ModelAdmin):
@@ -182,6 +194,7 @@ admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
 admin.site.register(InstanceFile, InstanceFileAdmin)
 admin.site.register(Account)
+admin.site.register(AccountFeatureFlag)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(FeatureFlag, FeatureFlagAdmin)
 admin.site.register(Device)
@@ -201,4 +214,5 @@ admin.site.register(ExportRequest, ExportRequestAdmin)
 admin.site.register(ExportStatus, ExportStatusAdmin)
 admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
+admin.site.register(Page)
 admin.site.register(Task, TaskAdmin)

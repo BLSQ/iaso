@@ -1,6 +1,5 @@
 from rest_framework import permissions, serializers
 from django.db.models import Count
-import typing
 
 from iaso.models import Group
 from .common import ModelViewSet, TimestampField, HasPermission
@@ -45,7 +44,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class GroupsViewSet(ModelViewSet):
-    """ Groups API
+    """Groups API
 
     This API is restricted to users having the "menupermissions.iaso_org_units" permission
 

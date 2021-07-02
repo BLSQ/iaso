@@ -4,17 +4,16 @@ import { FormattedMessage } from 'react-intl';
 import { makeStyles, Button } from '@material-ui/core';
 import Autorenew from '@material-ui/icons/Autorenew';
 
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { killTask } from './actions';
 
 import SingleTable from '../../components/tables/SingleTable';
 import TopBar from '../../components/nav/TopBarComponent';
 
-import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
 
 import tasksTableColumns from './config';
 import MESSAGES from './messages';
-import { useSafeIntl } from '../../hooks/intl';
 import { fetchTasks } from '../../utils/requests';
 
 const baseUrl = baseUrls.tasks;
@@ -48,6 +47,7 @@ const Tasks = () => {
                 endPointPath="tasks"
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
+                defaultSorted={[{ id: 'created_at', desc: true }]}
                 exportButtons={false}
                 dataKey="tasks"
                 fetchItems={fetchTasks}

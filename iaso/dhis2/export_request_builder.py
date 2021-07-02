@@ -24,11 +24,18 @@ class ExportRequestBuilder:
         self.form_mappings_cache = {}
 
     @transaction.atomic
-    def build_export_request(self, filters, launcher, force_export=False):
+    def build_export_request(self, filters, launcher, force_export=False, selection=None):
         instances = Instance.objects
-
-        # normal filters
         instances = instances.for_filters(**filters)
+        selected_ids = None
+        unselected_ids = None
+        if selection:
+            selected_ids = selection.get("selected_ids", None)
+            unselected_ids = selection.get("unselected_ids", None)
+            if unselected_ids:
+                instances = instances.exclude(pk__in=unselected_ids)
+            if selected_ids:
+                instances = instances.filter(pk__in=selected_ids)
 
         # add account from Launcher
         if launcher:

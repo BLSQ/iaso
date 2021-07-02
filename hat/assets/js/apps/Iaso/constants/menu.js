@@ -7,6 +7,7 @@ import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
 import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
 import DnsRoundedIcon from '@material-ui/icons/DnsRounded';
 import DoneAll from '@material-ui/icons/DoneAll';
+import Delete from '@material-ui/icons/Delete';
 import Settings from '@material-ui/icons/Settings';
 import GroupWork from '@material-ui/icons/GroupWork';
 import CategoryIcon from '@material-ui/icons/Category';
@@ -44,6 +45,12 @@ const menuItems = [
                 permission: paths.completenessPath.permission,
                 key: 'completeness',
                 icon: props => <DoneAll {...props} />,
+            },
+            {
+                label: MESSAGES.archived,
+                permission: paths.archivedPath.permission,
+                key: 'archived',
+                icon: props => <Delete {...props} />,
             },
         ],
     },
@@ -138,5 +145,21 @@ const menuItems = [
         ],
     },
 ];
+
+if (PLUGIN_POLIO_ENABLED === 'True') {
+    menuItems.push({
+        label: MESSAGES.polio,
+        key: 'polio',
+        icon: props => <DataSourceIcon {...props} />,
+        subMenu: [
+            {
+                label: MESSAGES.dashboard,
+                key: 'list',
+                permission: paths.formsPath.permission,
+                icon: props => <FormatListBulleted {...props} />,
+            },
+        ],
+    });
+}
 
 export default menuItems;

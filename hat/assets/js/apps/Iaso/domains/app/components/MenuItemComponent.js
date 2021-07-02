@@ -14,12 +14,15 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 
 import PropTypes from 'prop-types';
-import commonStyles from '../../../styles/common';
-import muiTheme from '../../../utils/theme';
+import {
+    injectIntl,
+    commonStyles,
+    theme as muiTheme,
+} from 'bluesquare-components';
+// TODO check  that updated import of theme is equivalent
+// import muiTheme from '../../../utils/theme';
 
-import injectIntl from '../../../libs/intl/injectIntl';
-
-import { listMenuPermission, userHasOneOfPermissions, userHasPermission } from '../../users/utils';
+import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -57,7 +60,7 @@ function MenuItem(props) {
         paddingLeft: muiTheme.spacing(subMenuLevel * 2),
     };
     return (
-        <Fragment>
+        <>
             <Link className={classes.linkButton} to={!hasSubMenu ? path : ''}>
                 <ListItem
                     style={itemStyle}
@@ -107,7 +110,7 @@ function MenuItem(props) {
                     </List>
                 </Collapse>
             )}
-        </Fragment>
+        </>
     );
 }
 

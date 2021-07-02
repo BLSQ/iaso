@@ -1,12 +1,16 @@
 import React from 'react';
 import orderBy from 'lodash/orderBy';
-import { textPlaceholder } from '../../constants/uiConstants';
+import { textPlaceholder } from 'bluesquare-components';
+import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
+import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
+import { circleColorMarkerOptions } from '../../utils/mapUtils';
 import MESSAGES from './messages';
 
 export const getPolygonPositionsFromSimplifiedGeom = field => {
+    // FIXME We should use a proper lib for this
     const positionsArrays = field
-        .split('((')[1]
-        .replace('))', '')
+        .split('(((')[1]
+        .replace(')))', '')
         .replace(/, /gi, ',')
         .split(',');
     const polygonPositions = [];
@@ -62,7 +66,7 @@ export const getSourcesWithoutCurrentSource = (
 export const getOrgunitMessage = (orgUnit, withType) => {
     let message = textPlaceholder;
     if (orgUnit) {
-        message = orgUnit.name;
+        message = `${orgUnit.name} - source: ${orgUnit.source}`;
         if (orgUnit.org_unit_type_name && withType) {
             message += ` (${orgUnit.org_unit_type_name})`;
         }
@@ -108,11 +112,12 @@ export const getColorsFromParams = params => {
     return searches.map(s => s.color);
 };
 
-export const decodeSearch = search => JSON.parse(search);
+export const decodeSearch = search => {
+    return JSON.parse(search);
+};
 
 export const encodeUriSearches = searches => {
     const newSearches = [...searches];
-
     newSearches.forEach((s, i) => {
         Object.keys(s).forEach(key => {
             const value = s[key];
@@ -176,4 +181,28 @@ export const getOrgUnitGroups = orgUnit => (
             orgUnit.groups.map(g => g.name).join(', ')}
         {(!orgUnit.groups || orgUnit.groups.length === 0) && textPlaceholder}
     </span>
+);
+
+export const getMarkerList = (
+    locationsList,
+    fetchDetail,
+    color,
+    keyId,
+    PopupComponent = OrgUnitPopupComponent,
+) => (
+    <MarkersListComponent
+        key={keyId}
+        items={locationsList}
+        onMarkerClick={fetchDetail}
+        PopupComponent={PopupComponent}
+        popupProps={{
+            displayUseLocation: true,
+            useLocation: selectedOrgUnit =>
+                this.useOrgUnitLocation(selectedOrgUnit),
+        }}
+        isCircle
+        markerProps={() => ({
+            ...circleColorMarkerOptions(color),
+        })}
+    />
 );

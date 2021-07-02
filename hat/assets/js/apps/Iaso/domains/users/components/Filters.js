@@ -7,17 +7,20 @@ import { connect } from 'react-redux';
 import { Grid, Button, withStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
-import commonStyles from '../../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 import { redirectTo as redirectToAction } from '../../../routing/actions';
-
-import { search } from '../../../constants/filters';
-
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import MESSAGES from '../messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
 });
+
+const filter = {
+    urlKey: 'search',
+    label: MESSAGES.searchUser,
+    type: 'search',
+};
 
 const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
     const [filtersUpdated, setFiltersUpdated] = React.useState(false);
@@ -33,14 +36,14 @@ const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
         onSearch();
     };
     return (
-        <Fragment>
+        <>
             <Grid container spacing={4}>
                 <Grid item xs={3}>
                     <FiltersComponent
                         params={params}
                         baseUrl={baseUrl}
                         onFilterChanged={() => setFiltersUpdated(true)}
-                        filters={[search()]}
+                        filters={[filter]}
                         onEnterPressed={() => handleSearch()}
                     />
                 </Grid>
@@ -65,7 +68,7 @@ const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
                     </Button>
                 </Grid>
             </Grid>
-        </Fragment>
+        </>
     );
 };
 

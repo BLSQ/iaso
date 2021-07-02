@@ -1,11 +1,9 @@
-
 # 0. Make sure everything is there
 
-- run the tests
-- check with team mates
+-   run the tests
+-   check with team mates
 
 For IASO deployment make sure you ran eb init with following info
-
 
 ```
 eb init
@@ -15,6 +13,7 @@ Select an application to use
 4) Iaso
 Do you wish to continue with CodeCommit? (y/N) (default is n): n
 ```
+
 # 1. Prepare assets
 
 To avoid long/failing deployment, we commit the production assets in the repository
@@ -24,6 +23,7 @@ git checkout development
 git pull
 rm hat/assets/webpack/*
 npm run webpack-prod
+./scripts/enable_plugins.sh
 git add hat/assets/webpack/
 git commit -m 'Committing assets'
 git push
@@ -31,7 +31,7 @@ git push
 
 Troubleshooting :
 
- - npm install : might be needed
+-   npm install : might be needed
 
 # 2. Deploy to staging
 
@@ -46,14 +46,13 @@ eb deploy
 
 eb deploy will take of (via container commands see ./.ebextensions/50_container_commands.config)
 
- - deploying
- - copying the resources and putting them in S3
- - running the pending migrations
+-   deploying
+-   copying the resources and putting them in S3
+-   running the pending migrations
 
 Troubleshooting :
 
- - you might need to dig in the [eb activity logs](https://eu-central-1.console.aws.amazon.com/elasticbeanstalk/home?region=eu-central-1#/environment/logs?applicationName=Iaso&environmentId=e-rmmcdsjkkr)
-
+-   you might need to dig in the [eb activity logs](https://eu-central-1.console.aws.amazon.com/elasticbeanstalk/home?region=eu-central-1#/environment/logs?applicationName=Iaso&environmentId=e-rmmcdsjkkr)
 
 # 2. Deploy to production
 
@@ -67,10 +66,9 @@ eb deploy
 
 Check the [production](https://iaso.bluesquare.org)
 
-
 Troubleshooting :
 
- - you might need to dig in the [eb activity logs](https://eu-central-1.console.aws.amazon.com/elasticbeanstalk/home?region=eu-central-1#/environment/dashboard?applicationName=Iaso&environmentId=e-esgyumhrjp)
+-   you might need to dig in the [eb activity logs](https://eu-central-1.console.aws.amazon.com/elasticbeanstalk/home?region=eu-central-1#/environment/dashboard?applicationName=Iaso&environmentId=e-esgyumhrjp)
 
 # 2. Deploy to playground
 
@@ -93,4 +91,4 @@ Obviously, a more stable playground setup would be welcome.
 
 Troubleshooting :
 
-  - UNPROTECTED PRIVATE KEY FILE! : `chmod 600  ~/.ssh/lightsail.pem`
+-   UNPROTECTED PRIVATE KEY FILE! : `chmod 600 ~/.ssh/lightsail.pem`

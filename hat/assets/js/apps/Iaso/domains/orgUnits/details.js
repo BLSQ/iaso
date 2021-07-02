@@ -1,13 +1,22 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import omit from 'lodash/omit';
 import { connect } from 'react-redux';
 import { push, replace } from 'react-router-redux';
 import { bindActionCreators } from 'redux';
 
-import { withStyles, Box, Tabs, Tab } from '@material-ui/core';
+import { withStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
+import {
+    createUrl,
+    injectIntl,
+    commonStyles,
+    // TopBar,
+    LoadingSpinner,
+} from 'bluesquare-components';
+import { fade } from '@material-ui/core/styles/colorManipulator';
+import TopBar from '../../components/nav/TopBarComponent';
 import {
     setCurrentOrgUnit,
     setOrgUnitTypes,
@@ -15,7 +24,6 @@ import {
     setCurrentForms,
     setSources,
     setGroups,
-    setFetching,
     setFetchingDetail,
     saveOrgUnit as saveOrgUnitAction,
     createOrgUnit as createOrgUnitAction,
@@ -27,7 +35,6 @@ import { setForms as setFormsAction } from '../forms/actions';
 import formsTableColumns from '../forms/config';
 import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
-import { createUrl } from '../../utils/fetchData';
 import {
     fetchOrgUnitsTypes,
     fetchAssociatedDataSources,
@@ -49,19 +56,14 @@ import {
 } from './utils';
 import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
-import TopBar from '../../components/nav/TopBarComponent';
 import OrgUnitForm from './components/OrgUnitForm';
-import OrgUnitMap from './components/OrgUnitMapComponent';
+import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
 import Logs from '../../components/logs/LogsComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import LinksDetails from '../links/components/LinksDetailsComponent';
 
-import commonStyles from '../../styles/common';
-
 import { getChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
-
 import MESSAGES from './messages';
 
 import {
@@ -71,12 +73,26 @@ import {
 } from '../../constants/filters';
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
-import injectIntl from '../../libs/intl/injectIntl';
+import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
 const styles = theme => ({
     ...commonStyles(theme),
+    root: {
+        '& path.primary': {
+            fill: fade(theme.palette.primary.main, 0.6),
+            stroke: theme.palette.primary.main,
+            strokeOpacity: 1,
+            strokeWidth: 3,
+        },
+        '& path.secondary': {
+            fill: fade(theme.palette.secondary.main, 0.6),
+            stroke: theme.palette.secondary.main,
+            strokeOpacity: 1,
+            strokeWidth: 3,
+        },
+    },
     hiddenOpacity: {
         position: 'absolute',
         top: '0px',
@@ -84,6 +100,14 @@ const styles = theme => ({
         width: '100vw',
         zIndex: '-100',
         opacity: '0',
+    },
+    comments: {
+        overflowY: 'auto',
+        height: '65vh',
+    },
+    commentsWrapper: {
+        backgroundColor: 'white',
+        paddingTop: '10px',
     },
 });
 
@@ -122,7 +146,6 @@ class OrgUnitDetail extends Component {
             setSelectedSources,
         } = this.props;
         this.props.resetOrgUnitsLevels();
-        dispatch(setFetching(true));
         const promisesArray = [];
         if (this.props.orgUnitTypes.length === 0) {
             promisesArray.push(
@@ -176,10 +199,6 @@ class OrgUnitDetail extends Component {
 
         Promise.all(promisesArray).then(() => {
             this.fetchDetail().then(async currentOrgUnit => {
-                if (this.state.tab !== 'map') {
-                    dispatch(setFetching(false));
-                }
-                dispatch(setFetchingDetail(false));
                 const { links } = await fetchLinks(
                     dispatch,
                     `/api/links/?orgUnitId=${orgUnitId}`,
@@ -205,18 +224,26 @@ class OrgUnitDetail extends Component {
                         selectedSources = selectedSources.concat(linkSources);
                     }
                 });
-                const fullSelectedSources = [];
-                selectedSources.forEach(async (ss, index) => {
-                    const detail = await fetchAssociatedOrgUnits(
-                        dispatch,
-                        ss,
-                        currentOrgUnit,
-                    );
-                    fullSelectedSources.push(detail);
-                    if (index === selectedSources.length - 1) {
-                        setSelectedSources(fullSelectedSources);
+                if (selectedSources.length === 0) {
+                    setSelectedSources([]);
+                } else {
+                    const fullSelectedSources = [];
+
+                    for (let i = 0; i < selectedSources.length; i += 1) {
+                        const ss = selectedSources[i];
+                        // eslint-disable-next-line no-await-in-loop
+                        const detail = await fetchAssociatedOrgUnits(
+                            dispatch,
+                            ss,
+                            currentOrgUnit,
+                        );
+                        fullSelectedSources.push(detail);
+                        if (i === selectedSources.length - 1) {
+                            setSelectedSources(fullSelectedSources);
+                        }
                     }
-                });
+                }
+                dispatch(setFetchingDetail(false));
             });
         });
     }
@@ -235,9 +262,103 @@ class OrgUnitDetail extends Component {
         }
     }
 
-    setOrgUnitLocationModified() {
+    handleChangeTab(tab, redirect = true) {
+        if (redirect) {
+            const { redirectTo, params } = this.props;
+            const newParams = {
+                ...params,
+                tab,
+            };
+            redirectTo(baseUrl, newParams);
+        }
+        this.setState({
+            tab,
+        });
+    }
+
+    handleChangeShape(geoJson, key) {
+        const currentOrgUnit = {
+            ...this.state.currentOrgUnit,
+            [key]: geoJson,
+        };
+        this.setOrgUnitLocationModified(true);
+        this.setState({
+            currentOrgUnit,
+        });
+    }
+
+    handleChangeLocation(location) {
         this.setState({
             orgUnitLocationModified: true,
+            currentOrgUnit: {
+                ...this.state.currentOrgUnit,
+                latitude: location.lat
+                    ? parseFloat(location.lat.toFixed(8))
+                    : null,
+                longitude: location.lng
+                    ? parseFloat(location.lng.toFixed(8))
+                    : null,
+                altitude: location.alt
+                    ? parseFloat(location.alt.toFixed(8))
+                    : null,
+            },
+        });
+    }
+
+    handleSaveOrgUnit(newOrgUnit = {}) {
+        const { currentOrgUnit } = this.state;
+        let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
+        orgUnitPayload = {
+            ...orgUnitPayload,
+            groups:
+                orgUnitPayload.groups.length > 0 && !orgUnitPayload.groups[0].id
+                    ? orgUnitPayload.groups
+                    : orgUnitPayload.groups.map(g => g.id),
+        };
+        const { saveOrgUnit, createOrgUnit, redirectTo, params } = this.props;
+
+        const isNewOrgunit = currentOrgUnit && !currentOrgUnit.id;
+        const savePromise = isNewOrgunit
+            ? createOrgUnit(orgUnitPayload)
+            : saveOrgUnit(orgUnitPayload);
+        return savePromise
+            .then(savedOrgUnit => {
+                this.setState({
+                    orgUnitLocationModified: false,
+                    currentOrgUnit: savedOrgUnit,
+                });
+                this.props.resetOrgUnits();
+                this.props.setCurrentOrgUnit(savedOrgUnit);
+                if (isNewOrgunit) {
+                    redirectTo(baseUrl, {
+                        ...params,
+                        orgUnitId: savedOrgUnit.id,
+                    });
+                }
+                return savedOrgUnit;
+            })
+            .catch(err => {
+                throw err;
+            });
+    }
+
+    async handleResetOrgUnit() {
+        this.props.resetOrgUnitsLevels();
+        const { redirectTo, params, dispatch } = this.props;
+        const newParams = {
+            ...params,
+            levels: null,
+        };
+        redirectTo(baseUrl, newParams);
+
+        dispatch(setFetchingDetail(true));
+        await this.fetchDetail();
+        dispatch(setFetchingDetail(false));
+    }
+
+    setOrgUnitLocationModified(orgUnitLocationModified = true) {
+        this.setState({
+            orgUnitLocationModified,
         });
     }
 
@@ -294,98 +415,8 @@ class OrgUnitDetail extends Component {
         return new Promise(resolve => resolve());
     }
 
-    handleChangeTab(tab, redirect = true) {
-        if (redirect) {
-            const { redirectTo, params } = this.props;
-            const newParams = {
-                ...params,
-                tab,
-            };
-            redirectTo(baseUrl, newParams);
-        }
-        this.setState({
-            tab,
-        });
-    }
-
-    handleChangeShape(key, value) {
-        const currentOrgUnit = {
-            ...this.state.currentOrgUnit,
-            [key]: value,
-        };
-        this.setState({
-            currentOrgUnit,
-        });
-    }
-
-    handleChangeLocation(location) {
-        this.setState({
-            orgUnitLocationModified: true,
-            currentOrgUnit: {
-                ...this.state.currentOrgUnit,
-                latitude: location.lat
-                    ? parseFloat(location.lat.toFixed(8))
-                    : null,
-                longitude: location.lng
-                    ? parseFloat(location.lng.toFixed(8))
-                    : null,
-            },
-        });
-    }
-
-    handleSaveOrgUnit(newOrgUnit) {
-        // Don't send altitude for now, the interface does not handle it
-        const { currentOrgUnit } = this.state;
-        let orgUnitPayload = omit(
-            { ...currentOrgUnit, ...newOrgUnit },
-            'altitude',
-        );
-        orgUnitPayload = {
-            ...orgUnitPayload,
-            groups:
-                orgUnitPayload.groups.length > 0 && !orgUnitPayload.groups[0].id
-                    ? orgUnitPayload.groups
-                    : orgUnitPayload.groups.map(g => g.id),
-        };
-        const { saveOrgUnit, createOrgUnit, redirectTo, params } = this.props;
-
-        const isNewOrgunit = currentOrgUnit && !currentOrgUnit.id;
-        const savePromise = isNewOrgunit
-            ? createOrgUnit(orgUnitPayload)
-            : saveOrgUnit(orgUnitPayload);
-        return savePromise
-            .then(savedOrgUnit => {
-                this.setState({
-                    orgUnitLocationModified: false,
-                    currentOrgUnit: savedOrgUnit,
-                });
-                this.props.resetOrgUnits();
-                this.props.setCurrentOrgUnit(savedOrgUnit);
-                if (isNewOrgunit) {
-                    redirectTo(baseUrl, {
-                        ...params,
-                        orgUnitId: savedOrgUnit.id,
-                    });
-                }
-                return savedOrgUnit;
-            })
-            .catch(err => {
-                throw err;
-            });
-    }
-
-    handleResetOrgUnit() {
-        this.props.resetOrgUnitsLevels();
-        const { redirectTo, params } = this.props;
-        const newParams = {
-            ...params,
-            levels: null,
-        };
-        redirectTo(baseUrl, newParams);
-        this.fetchDetail();
-    }
-
     goToRevision(orgUnitRevision) {
+        // FIXME: Only send the modified fields and do the merge server side
         const mappedRevision = {
             ...this.props.currentOrgUnit,
             ...orgUnitRevision.fields,
@@ -395,6 +426,9 @@ class OrgUnitDetail extends Component {
                 : this.props.currentOrgUnit.aliases,
             id: this.props.currentOrgUnit.id,
         };
+        // Retrieve only the group ids as it's what the API expect
+        const group_ids = mappedRevision.groups.map(g => g.id);
+        mappedRevision.groups = group_ids;
         const { saveOrgUnit } = this.props;
         return saveOrgUnit(mappedRevision).then(currentOrgUnit => {
             this.setState({
@@ -418,7 +452,6 @@ class OrgUnitDetail extends Component {
         const {
             classes,
             fetching,
-            fetchingSubOrgUnits,
             intl: { formatMessage },
             orgUnitTypes,
             groups,
@@ -452,10 +485,17 @@ class OrgUnitDetail extends Component {
                 }`;
             }
         }
-        const tabs = ['infos', 'map', 'children', 'links', 'history', 'forms'];
-
+        const tabs = [
+            'infos',
+            'map',
+            'children',
+            'links',
+            'history',
+            'forms',
+            'comments',
+        ];
         return (
-            <Fragment>
+            <section className={classes.root}>
                 <TopBar
                     title={title}
                     displayBackButton
@@ -491,7 +531,7 @@ class OrgUnitDetail extends Component {
                         </Tabs>
                     )}
                 </TopBar>
-                {(fetching || fetchingSubOrgUnits) && <LoadingSpinner />}
+                {fetching && <LoadingSpinner />}
                 {currentOrgUnit && (
                     <section>
                         {tab === 'infos' && (
@@ -525,8 +565,10 @@ class OrgUnitDetail extends Component {
                         >
                             <Box className={classes.containerFullHeight}>
                                 <OrgUnitMap
-                                    setOrgUnitLocationModified={() =>
-                                        this.setOrgUnitLocationModified()
+                                    setOrgUnitLocationModified={isModified =>
+                                        this.setOrgUnitLocationModified(
+                                            isModified,
+                                        )
                                     }
                                     orgUnitLocationModified={
                                         orgUnitLocationModified
@@ -535,18 +577,17 @@ class OrgUnitDetail extends Component {
                                     resetOrgUnit={() =>
                                         this.handleResetOrgUnit()
                                     }
-                                    saveOrgUnit={() =>
-                                        this.handleSaveOrgUnit(currentOrgUnit)
-                                    }
+                                    saveOrgUnit={() => this.handleSaveOrgUnit()}
                                     onChangeLocation={location => {
                                         this.handleChangeLocation(location);
                                     }}
-                                    onChangeShape={(keyValue, shape) =>
-                                        this.handleChangeShape(keyValue, shape)
+                                    onChangeShape={(key, geoJson) =>
+                                        this.handleChangeShape(geoJson, key)
                                     }
                                 />
                             </Box>
                         </div>
+
                         {tab === 'history' && (
                             <Logs
                                 params={params}
@@ -660,9 +701,24 @@ class OrgUnitDetail extends Component {
                                 }
                             />
                         </div>
+                        {tab === 'comments' && (
+                            <Grid
+                                container
+                                justify="center"
+                                className={classes.commentsWrapper}
+                            >
+                                <Grid item xs={6}>
+                                    <OrgUnitsMapComments
+                                        className={classes.comments}
+                                        orgUnit={currentOrgUnit}
+                                        maxPages={4}
+                                    />
+                                </Grid>
+                            </Grid>
+                        )}
                     </section>
                 )}
-            </Fragment>
+            </section>
         );
     }
 }
@@ -685,7 +741,6 @@ OrgUnitDetail.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     redirectToPush: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
-    fetchingSubOrgUnits: PropTypes.bool.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     resetOrgUnits: PropTypes.func.isRequired,
@@ -710,7 +765,6 @@ OrgUnitDetail.propTypes = {
 
 const MapStateToProps = state => ({
     fetching: state.orgUnits.fetchingDetail,
-    fetchingSubOrgUnits: state.orgUnits.fetchingSubOrgUnits,
     currentOrgUnit: state.orgUnits.current,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     currentForms: state.orgUnits.currentForms,

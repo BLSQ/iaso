@@ -9,8 +9,6 @@ import { renderWithStore } from '../../../../test/utils/redux';
 import {
     mockGetRequestsList,
     mockPostRequest,
-    mockPostRequestError,
-    mockDeleteRequestError,
     mockDeleteRequest,
 } from '../../../../test/utils/requests';
 import formsFixture from './fixtures/forms.json';
@@ -55,56 +53,6 @@ let redirectAction;
 const newName = 'ZELDA';
 const fakeForm = formsFixture.forms[0];
 const formId = '69';
-const newFile = new File([''], 'filename.txt', {
-    type: 'text/plain',
-    lastModified: new Date(),
-});
-const inputsList = [
-    {
-        keyValue: 'period_type',
-        newValue: 'period_type',
-    },
-    {
-        keyValue: 'period_type',
-        newValue: null,
-    },
-    {
-        keyValue: 'periods_before_allowed',
-        newValue: 69,
-    },
-    {
-        keyValue: 'periods_after_allowed',
-        newValue: 69,
-    },
-    {
-        keyValue: 'single_per_period',
-        newValue: true,
-    },
-    {
-        keyValue: 'project_ids',
-        newValue: '69',
-    },
-    {
-        keyValue: 'org_unit_type_ids',
-        newValue: '69',
-    },
-    {
-        keyValue: 'device_field',
-        newValue: 'device_field',
-    },
-    {
-        keyValue: 'location_field',
-        newValue: 'location_field',
-    },
-    {
-        keyValue: 'derived',
-        newValue: true,
-    },
-    {
-        keyValue: 'xls_file',
-        newValue: newFile,
-    },
-];
 
 const resetAndMock = theId => {
     nock.cleanAll();
@@ -204,67 +152,11 @@ describe('Detail form connected component', () => {
             connectedWrapper.update();
             inputName = connectedWrapper.find('[keyValue="name"]').at(0);
             expect(inputName.props().value).to.equal(newName);
-            // mockPostRequest('/api/forms/', { id: 69 });
             mockPostRequest('/api/formversions/', {});
             mockDeleteRequest(`/api/forms/${formId}/`, {});
             const createFormStub = sinon
                 .stub(requestsStub, 'createForm')
                 .returns(new Promise(resolve => resolve({ id: 69 })));
-
-            confirmButton.props().onClick();
-            expect(createFormStub).to.have.been.called;
-
-            sinon.restore();
-            setTimeout(() => {
-                done();
-            }, 100);
-        });
-
-        it('should call delete form on form version creation fail', done => {
-            nock.cleanAll();
-            nock.abortPendingRequests();
-            const confirmButton = connectedWrapper
-                .find('[data-id="form-detail-confirm"]')
-                .at(0);
-            let inputName = connectedWrapper.find('[keyValue="name"]').at(0);
-            inputName.props().onChange('name', newName);
-            connectedWrapper.update();
-            inputName = connectedWrapper.find('[keyValue="name"]').at(0);
-            expect(inputName.props().value).to.equal(newName);
-            // mockPostRequest('/api/forms/', { id: 69 });
-
-            const createFormStub = sinon
-                .stub(requestsStub, 'createForm')
-                .returns(new Promise(resolve => resolve({ id: 69 })));
-            mockPostRequestError('/api/formversions/', {});
-            mockDeleteRequest(`/api/forms/${formId}/`, {});
-
-            confirmButton.props().onClick();
-            expect(createFormStub).to.have.been.called;
-
-            sinon.restore();
-            setTimeout(() => {
-                done();
-            }, 100);
-        });
-        it('should fail silently if delete fail', done => {
-            nock.cleanAll();
-            nock.abortPendingRequests();
-            const confirmButton = connectedWrapper
-                .find('[data-id="form-detail-confirm"]')
-                .at(0);
-            let inputName = connectedWrapper.find('[keyValue="name"]').at(0);
-            inputName.props().onChange('name', newName);
-            connectedWrapper.update();
-            inputName = connectedWrapper.find('[keyValue="name"]').at(0);
-            expect(inputName.props().value).to.equal(newName);
-            // mockPostRequest('/api/forms/', { id: 69 });
-
-            const createFormStub = sinon
-                .stub(requestsStub, 'createForm')
-                .returns(new Promise(resolve => resolve({ id: 69 })));
-            mockPostRequestError('/api/formversions/', {});
-            mockDeleteRequestError(`/api/forms/${formId}/`, {});
 
             confirmButton.props().onClick();
             expect(createFormStub).to.have.been.called;
@@ -314,19 +206,6 @@ describe('Detail form connected component', () => {
             expect(inputName.props().value).to.equal(fakeForm.name);
             expect(connectedWrapper.exists()).to.equal(true);
         });
-        it('on inputs change update input value', () => {
-            inputsList.forEach(i => {
-                let element = connectedWrapper
-                    .find(`[keyValue="${i.keyValue}"]`)
-                    .at(0);
-                element.props().onChange(i.keyValue, i.newValue);
-                connectedWrapper.update();
-                element = connectedWrapper
-                    .find(`[keyValue="${i.keyValue}"]`)
-                    .at(0);
-                expect(element.props().value).to.equal(i.newValue);
-            });
-        });
 
         describe('on confirm', () => {
             beforeEach(() => {
@@ -336,30 +215,6 @@ describe('Detail form connected component', () => {
                 mockDeleteRequest(`/api/forms/${formId}/`, {});
             });
             it('should call update form', done => {
-                const confirmButton = connectedWrapper
-                    .find('[data-id="form-detail-confirm"]')
-                    .at(0);
-
-                const updateFormStub = sinon
-                    .stub(requestsStub, 'updateForm')
-                    .returns(new Promise(resolve => resolve({ id: 69 })));
-                confirmButton.props().onClick();
-                expect(updateFormStub).to.have.been.called;
-                sinon.restore();
-                setTimeout(() => {
-                    done();
-                }, 100);
-            });
-            it('should call update form with a file', done => {
-                let inputName = connectedWrapper
-                    .find('[keyValue="xls_file"]')
-                    .at(0);
-                inputName.props().onChange('xls_file', newFile);
-                connectedWrapper.update();
-                inputName = connectedWrapper
-                    .find('[keyValue="xls_file"]')
-                    .at(0);
-                expect(inputName.props().value).to.equal(newFile);
                 const confirmButton = connectedWrapper
                     .find('[data-id="form-detail-confirm"]')
                     .at(0);

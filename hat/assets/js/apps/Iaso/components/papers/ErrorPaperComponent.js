@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import Warning from '@material-ui/icons/Warning';
 
 import PropTypes from 'prop-types';
-import commonStyles from '../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 
 const styles = theme => ({
     ...commonStyles(theme),

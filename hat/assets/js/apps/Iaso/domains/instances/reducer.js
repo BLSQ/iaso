@@ -27,13 +27,8 @@ export const instancesReducer = (
 ) => {
     switch (action.type) {
         case SET_INSTANCES: {
-            const {
-                list,
-                showPagination,
-                params,
-                count,
-                pages,
-            } = action.payload;
+            const { list, showPagination, params, count, pages } =
+                action.payload;
             return {
                 ...state,
                 instancesPage: {

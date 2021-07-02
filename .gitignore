@@ -1,7 +1,6 @@
 node_modules
 celerybeat-schedule.db
 .ipynb_checkpoints
-shared
 *.swp
 *~
 privatekey.json
@@ -100,6 +99,7 @@ hat/assets/messages/**/*.json
 \.DS_Store
 
 \.vscode/
+\.devcontainer
 
 /pgdata/
 
@@ -114,12 +114,15 @@ data
 
 # dev environment
 .env
-.idea/codeStyles/Project.xml
-.idea/codeStyles/codeStyleConfig.xml
-.idea/inspectionProfiles/profiles_settings.xml
-.idea/libraries/Django_Lib.xml
-.idea/iaso.iml
-.idea/misc.xml
-.idea/modules.xml
-.idea/vcs.xml
+\.idea/*
 
+
+
+\static/
+
+# lint error checking output
+lintErrors.html
+
+# gpkg tempory files
+*.gpkg-shm
+*.gpkg-wal

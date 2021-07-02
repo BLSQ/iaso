@@ -1,7 +1,6 @@
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
-from django.core.files.base import ContentFile
 
-from iaso.gpkg import org_units_to_gpkg
+from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.test import TestCase
 from iaso import models as m
 
@@ -40,6 +39,6 @@ class ExportTestCase(TestCase):
         )
 
     def test_org_units_to_gpkg(self):
-        gpkg_content = org_units_to_gpkg(m.OrgUnit.objects.all())
+        gpkg_content = org_units_to_gpkg_bytes(m.OrgUnit.objects.all())
         self.assertIsInstance(gpkg_content, bytes)
         self.assertGreater(len(gpkg_content), 200)

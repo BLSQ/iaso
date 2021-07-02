@@ -5,7 +5,7 @@ import { withStyles, Box, Chip } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import commonStyles from '../../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 
 import { setFetching } from '../../../domains/orgUnits/actions';
 

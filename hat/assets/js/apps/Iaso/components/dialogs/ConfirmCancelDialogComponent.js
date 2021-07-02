@@ -21,6 +21,9 @@ function RawConfirmCancelActions({
     confirmMessage,
     onCancel,
     cancelMessage,
+    additionalButton,
+    additionalMessage,
+    onAdditionalButtonClick,
 }) {
     return (
         <DialogActions className={classes.action}>
@@ -35,9 +38,23 @@ function RawConfirmCancelActions({
             >
                 <FormattedMessage {...confirmMessage} />
             </Button>
+            {additionalButton && additionalMessage && onAdditionalButtonClick && (
+                <Button
+                    onClick={() => onAdditionalButtonClick(closeDialog)}
+                    color="primary"
+                    disabled={!allowConfirm}
+                >
+                    <FormattedMessage {...additionalMessage} />
+                </Button>
+            )}
         </DialogActions>
     );
 }
+RawConfirmCancelActions.defaultProps = {
+    additionalButton: false,
+    additionalMessage: null,
+    onAdditionalButtonClick: null,
+};
 RawConfirmCancelActions.propTypes = {
     classes: PropTypes.object.isRequired,
     closeDialog: PropTypes.func.isRequired,
@@ -46,6 +63,9 @@ RawConfirmCancelActions.propTypes = {
     confirmMessage: PropTypes.object.isRequired, // TODO: make a message prop type
     onCancel: PropTypes.func.isRequired,
     cancelMessage: PropTypes.object.isRequired, // TODO: make a message prop type
+    additionalButton: PropTypes.bool,
+    additionalMessage: PropTypes.object || null,
+    onAdditionalButtonClick: PropTypes.func || null,
 };
 export const ConfirmCancelActions = withStyles(actionStyles)(
     RawConfirmCancelActions,
@@ -57,6 +77,9 @@ export default function ConfirmCancelDialogComponent({
     confirmMessage,
     onCancel,
     cancelMessage,
+    additionalButton,
+    additionalMessage,
+    onAdditionalButtonClick,
     ...dialogProps
 }) {
     return (
@@ -69,6 +92,9 @@ export default function ConfirmCancelDialogComponent({
                     onCancel={onCancel}
                     cancelMessage={cancelMessage}
                     closeDialog={closeDialog}
+                    additionalButton={additionalButton}
+                    additionalMessage={additionalMessage}
+                    onAdditionalButtonClick={onAdditionalButtonClick}
                 />
             )}
             {...dialogProps}
@@ -82,6 +108,10 @@ ConfirmCancelDialogComponent.defaultProps = {
     cancelMessage: MESSAGES.no,
     maxWidth: 'sm',
     onClosed: () => {},
+    onOpen: () => {},
+    additionalButton: false,
+    additionalMessage: null,
+    onAdditionalButtonClick: null,
 };
 ConfirmCancelDialogComponent.propTypes = {
     allowConfirm: PropTypes.bool,
@@ -91,4 +121,8 @@ ConfirmCancelDialogComponent.propTypes = {
     cancelMessage: PropTypes.object, // TODO: make a message prop type
     maxWidth: PropTypes.string,
     onClosed: PropTypes.func,
+    onOpen: PropTypes.func,
+    additionalButton: PropTypes.bool,
+    additionalMessage: PropTypes.object || null,
+    onAdditionalButtonClick: PropTypes.func || null,
 };

@@ -4,7 +4,6 @@ import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import moment from 'moment';
 import { CirclePicker } from 'react-color';
 
 import { withStyles, FormLabel } from '@material-ui/core';
@@ -13,7 +12,7 @@ import Button from '@material-ui/core/Button';
 import Add from '@material-ui/icons/Add';
 import Search from '@material-ui/icons/Search';
 import classNames from 'classnames';
-import commonStyles from '../../../styles/common';
+import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
 import { getChipColors, chipColors } from '../../../constants/chipColors';
 
 import {
@@ -32,12 +31,9 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
-import { createUrl } from '../../../utils/fetchData';
 import { decodeSearch, encodeUriSearches } from '../utils';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
-
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -65,6 +61,18 @@ const extendFilter = (searchParams, filter, onChange, searchIndex) => ({
 });
 
 class OrgUnitsFiltersComponent extends Component {
+    handleSearchFilterChange(value, urlKey) {
+        // Remove the " character to avoid JSON parse to fail in front and back
+        let newValue = value;
+        if (value && value.length > 0) {
+            if (value.slice(-1) === '"') {
+                return null;
+            }
+            newValue = value.replace(new RegExp(/(")/, 'g'), '');
+        }
+        return this.onChange(newValue, urlKey);
+    }
+
     onSearch() {
         const { filtersUpdated, params, redirectTo, onSearch } = this.props;
         const searches = [...decodeSearch(params.searches)];
@@ -80,12 +88,8 @@ class OrgUnitsFiltersComponent extends Component {
     }
 
     onChange(value, urlKey) {
-        const {
-            searchIndex,
-            params,
-            orgUnitsLocations,
-            isClusterActive,
-        } = this.props;
+        const { searchIndex, params, orgUnitsLocations, isClusterActive } =
+            this.props;
         if (urlKey !== 'color') {
             this.props.setFiltersUpdated(true);
         } else if (isClusterActive) {
@@ -145,7 +149,10 @@ class OrgUnitsFiltersComponent extends Component {
                                     searchParams,
                                     search(),
                                     (value, urlKey) =>
-                                        this.onChange(value, urlKey),
+                                        this.handleSearchFilterChange(
+                                            value,
+                                            urlKey,
+                                        ),
                                     searchIndex,
                                 ),
                                 extendFilter(

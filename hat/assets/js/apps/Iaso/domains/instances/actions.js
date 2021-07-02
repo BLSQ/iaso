@@ -58,7 +58,6 @@ export const fetchEditUrl = (currentInstance, location) => dispatch => {
             window.location.href = resp.edit_url;
         })
         .catch(err => {
-            console.log(err);
             dispatch(
                 enqueueSnackbar(errorSnackBar('fetchEnketoError', null, err)),
             );
@@ -85,7 +84,7 @@ export const fetchInstanceDetail = instanceId => dispatch => {
 export const softDeleteInstance = currentInstance => dispatch => {
     dispatch(setInstancesFetching(true));
     deleteRequest(`/api/instances/${currentInstance.id}`)
-        .then(res => {
+        .then(() => {
             dispatch(fetchInstanceDetail(currentInstance.id));
         })
         .catch(err =>
@@ -101,7 +100,7 @@ export const softDeleteInstance = currentInstance => dispatch => {
 export const restoreInstance = currentInstance => dispatch => {
     dispatch(setInstancesFetching(true));
     patchRequest(`/api/instances/${currentInstance.id}/`, { deleted: false })
-        .then(res => {
+        .then(() => {
             dispatch(fetchInstanceDetail(currentInstance.id));
         })
         .catch(err =>
@@ -118,10 +117,10 @@ export const restoreInstance = currentInstance => dispatch => {
 
 export const reAssignInstance = (currentInstance, payload) => dispatch => {
     dispatch(setInstancesFetching(true));
-
-    if (!payload.period) delete payload.period;
-    patchRequest(`/api/instances/${currentInstance.id}/`, payload)
-        .then(res => {
+    const effectivePayload = { ...payload };
+    if (!payload.period) delete effectivePayload.period;
+    patchRequest(`/api/instances/${currentInstance.id}/`, effectivePayload)
+        .then(() => {
             dispatch(fetchInstanceDetail(currentInstance.id));
         })
         .catch(err =>
@@ -148,9 +147,20 @@ export const createInstance = (currentForm, payload) => dispatch => {
     });
 };
 
-export const createExportRequest = filterParams => dispatch => {
+export const createExportRequest = (filterParams, selection) => dispatch => {
     dispatch(setInstancesFetching(true));
-    return postRequest('/api/exportrequests/', filterParams)
+    const filters = {
+        ...filterParams,
+    };
+    if (selection) {
+        if (selection.selectedItems && selection.selectedItems.length > 0) {
+            filters.selected_ids = selection.selectedItems.map(i => i.id);
+        }
+        if (selection.unSelectedItems && selection.unSelectedItems.length > 0) {
+            filters.unselected_ids = selection.unSelectedItems.map(i => i.id);
+        }
+    }
+    return postRequest('/api/exportrequests/', filters)
         .then(exportRequest => {
             putRequest(`/api/exportrequests/${exportRequest.id}/`);
             // fire and forget to run the export
@@ -169,37 +179,37 @@ export const createExportRequest = filterParams => dispatch => {
         .then(() => dispatch(setInstancesFetching(false)));
 };
 
-export const bulkDelete = (
-    selection,
-    filters,
-    isUnDeleteAction,
-    successFn,
-) => dispatch => {
-    dispatch(setInstancesFetching(true));
-    return postRequest('/api/instances/bulkdelete/', {
-        select_all: selection.selectAll,
-        selected_ids: selection.selectedItems.map(i => i.id),
-        unselected_ids: selection.unSelectedItems.map(i => i.id),
-        is_deletion: !isUnDeleteAction,
-        ...filters,
-    })
-        .then(res => {
-            dispatch(
-                enqueueSnackbar(
-                    succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull'),
-                ),
-            );
-            successFn();
-            dispatch(setInstancesFetching(false));
-            return res;
+export const bulkDelete =
+    (selection, filters, isUnDeleteAction, successFn) => dispatch => {
+        dispatch(setInstancesFetching(true));
+        return postRequest('/api/instances/bulkdelete/', {
+            select_all: selection.selectAll,
+            selected_ids: selection.selectedItems.map(i => i.id),
+            unselected_ids: selection.unSelectedItems.map(i => i.id),
+            is_deletion: !isUnDeleteAction,
+            ...filters,
         })
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('saveMultiEditOrgUnitsError', null, error),
-                ),
-            );
-            dispatch(setInstancesFetching(false));
-            throw error;
-        });
-};
+            .then(res => {
+                dispatch(
+                    enqueueSnackbar(
+                        succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull'),
+                    ),
+                );
+                successFn();
+                dispatch(setInstancesFetching(false));
+                return res;
+            })
+            .catch(error => {
+                dispatch(
+                    enqueueSnackbar(
+                        errorSnackBar(
+                            'saveMultiEditOrgUnitsError',
+                            null,
+                            error,
+                        ),
+                    ),
+                );
+                dispatch(setInstancesFetching(false));
+                throw error;
+            });
+    };

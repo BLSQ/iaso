@@ -189,6 +189,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.createFormError',
         defaultMessage: 'An error occurred while creating a form',
     },
+    createFormVersionError: {
+        id: 'iaso.snackBar.createFormVersionError',
+        defaultMessage: 'An error occurred while creating a form version',
+    },
+    updateFormVersionError: {
+        id: 'iaso.snackBar.updateFormVersionError',
+        defaultMessage: 'An error occurred while updating a form version',
+    },
     updateFormError: {
         id: 'iaso.snackBar.updateFormError',
         defaultMessage: 'An error occurred while updating a form',
@@ -244,6 +252,11 @@ const MESSAGES = defineMessages({
     saveMultiEditOrgUnitsSuccesfull: {
         defaultMessage: 'Selected org unit saved successfully',
         id: 'iaso.snackBar.saveMultiEditOrgUnitsSuccesfull',
+    },
+    saveMultiEditOrgUnitsLaunched: {
+        defaultMessage:
+            'The modifications to the org units will take a few minutes to take effect',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsLaunch',
     },
     saveMultiEditOrgUnitsError: {
         defaultMessage: 'An error occurred while saving selected org units',

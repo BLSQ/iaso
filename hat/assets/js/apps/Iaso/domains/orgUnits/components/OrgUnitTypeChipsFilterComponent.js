@@ -5,9 +5,9 @@ import { withStyles, Box, Chip, Typography } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import commonStyles from '../../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 
-import { setCurrentSubOrgUnitTypesSelected, setFetching } from '../actions';
+import { setCurrentSubOrgUnitTypesSelected } from '../actions';
 
 import { fetchSubOrgUnitsByType } from '../../../utils/requests';
 
@@ -167,14 +167,12 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                 oldOrgUnitsTypes.push(ot);
             }
         });
-        this.props.setFetching(true);
         Promise.all(promisesArray).then(orgUnits => {
             const orgUnitsTypesWithData = oldOrgUnitsTypes.concat(orgUnits);
             this.props.setCurrentSubOrgUnitTypesSelected(
                 orgUnitsTypesWithData,
                 orgUnitTypesList,
             );
-            this.props.setFetching(false);
             if (fitToBounds) {
                 this.props.fitToBounds();
             }
@@ -186,7 +184,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         const { orgUnitTypesList } = this.state;
 
         return (
-            <Fragment>
+            <>
                 <Box className={classes.innerDrawerToolbar} component="div">
                     <Typography variant="subtitle1">
                         <FormattedMessage {...MESSAGES.subOrgUnitsType} />
@@ -236,7 +234,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                         />
                     )}
                 </Box>
-            </Fragment>
+            </>
         );
     }
 }
@@ -251,7 +249,6 @@ OrgUnitTypeChipsFilterComponent.propTypes = {
     currentOrgUnit: PropTypes.object.isRequired,
     orgUnitTypesSelected: PropTypes.array,
     setCurrentSubOrgUnitTypesSelected: PropTypes.func.isRequired,
-    setFetching: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     fitToBounds: PropTypes.func.isRequired,
 };
@@ -274,7 +271,6 @@ const MapDispatchToProps = dispatch => ({
                 orgUnitTypesList,
             ),
         ),
-    setFetching: fetching => dispatch(setFetching(fetching)),
 });
 
 export default connect(

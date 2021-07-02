@@ -9,7 +9,7 @@ import {
     TableHead,
 } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
-import { textPlaceholder } from '../../../constants/uiConstants';
+import { textPlaceholder } from 'bluesquare-components';
 import MESSAGES from '../messages';
 
 const styles = theme => ({

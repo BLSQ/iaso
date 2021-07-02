@@ -15,15 +15,16 @@ import {
 
 import PropTypes from 'prop-types';
 
-import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
+import {
+    injectIntl,
+    commonStyles,
+    LoadingSpinner,
+} from 'bluesquare-components';
 import LinksCompare from './LinksCompareComponent';
-
-import commonStyles from '../../../styles/common';
 
 import { fetchLinkDetail } from '../../../utils/requests';
 
 import MESSAGES from '../messages';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -44,7 +45,8 @@ class LinksDetails extends Component {
         };
     }
 
-    componentWillMount() {
+    // eslint-disable-next-line camelcase
+    UNSAFE_componentWillMount() {
         this.fetchDetail();
     }
 
@@ -76,7 +78,7 @@ class LinksDetails extends Component {
         } = this.props;
         const { link, loading } = this.state;
         return (
-            <Fragment>
+            <>
                 <Divider />
                 <Container maxWidth={false} className={classes.root}>
                     {loading && (
@@ -85,7 +87,7 @@ class LinksDetails extends Component {
                         />
                     )}
                     {link && (
-                        <Fragment>
+                        <>
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>
                                     <LinksCompare
@@ -114,31 +116,31 @@ class LinksDetails extends Component {
                                     onClick={() => validateLink()}
                                 >
                                     {validated && (
-                                        <Fragment>
+                                        <>
                                             <CheckBox
                                                 className={classes.buttonIcon}
                                             />
                                             <FormattedMessage
                                                 {...MESSAGES.validated}
                                             />
-                                        </Fragment>
+                                        </>
                                     )}
                                     {!validated && (
-                                        <Fragment>
+                                        <>
                                             <CheckBoxOutlineBlank
                                                 className={classes.buttonIcon}
                                             />
                                             <FormattedMessage
                                                 {...MESSAGES.notValidated}
                                             />
-                                        </Fragment>
+                                        </>
                                     )}
                                 </Button>
                             </Grid>
-                        </Fragment>
+                        </>
                     )}
                 </Container>
-            </Fragment>
+            </>
         );
     }
 }

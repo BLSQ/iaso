@@ -41,6 +41,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.orgUnit',
         defaultMessage: 'Org units',
     },
+    validatedOrgUnitCount: {
+        id: 'iaso.label.validatedOrgUnitCount',
+        defaultMessage: 'Validated org units',
+    },
     actions: {
         id: 'iaso.label.actions',
         defaultMessage: 'Action(s)',
@@ -72,6 +76,10 @@ const MESSAGES = defineMessages({
     depth: {
         id: 'iaso.orgUnits.depth',
         defaultMessage: 'Depth',
+    },
+    depthInfos: {
+        id: 'iaso.orgUnits.depthInfos',
+        defaultMessage: 'Depth of the type in the hierarchy',
     },
 });
 

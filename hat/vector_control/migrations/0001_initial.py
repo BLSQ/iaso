@@ -110,9 +110,7 @@ class Migration(migrations.Migration):
                 (
                     "tags",
                     django.contrib.postgres.fields.ArrayField(
-                        base_field=django.contrib.postgres.fields.citext.CITextField(
-                            blank=True, max_length=255
-                        ),
+                        base_field=django.contrib.postgres.fields.citext.CITextField(blank=True, max_length=255),
                         blank=True,
                         null=True,
                         size=20,
@@ -219,9 +217,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="catch",
             name="site",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="vector_control.Site"
-            ),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="vector_control.Site"),
         ),
         migrations.AddField(
             model_name="catch",

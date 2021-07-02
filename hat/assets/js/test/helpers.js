@@ -1,3 +1,4 @@
+import React from 'react';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { mount, render, shallow, configure } from 'enzyme';
@@ -19,3 +20,7 @@ mockMessages();
 
 const chai = require('chai');
 chai.use(require('sinon-chai'));
+
+const mock = require('mock-require');
+
+mock('@material-ui/core/Dialog', ({ children }) => <>{children}</>);

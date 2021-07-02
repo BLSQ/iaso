@@ -1,6 +1,8 @@
 import React from 'react';
-import { displayDateFromTimestamp } from '../../utils/intlUtil';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+import {
+    IconButton as IconButtonComponent,
+    displayDateFromTimestamp,
+} from 'bluesquare-components';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 

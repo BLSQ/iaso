@@ -16,6 +16,8 @@ const MarkerComponent = props => {
         marker,
         markerProps,
         popupProps,
+        TooltipComponent,
+        tooltipProps,
     } = props;
     if (
         !item ||
@@ -34,6 +36,7 @@ const MarkerComponent = props => {
             {...markerProps(item)}
         >
             {PopupComponent && <PopupComponent {...popupProps} />}
+            {TooltipComponent && <TooltipComponent {...tooltipProps(item)} />}
         </Marker>
     );
 };
@@ -46,6 +49,8 @@ MarkerComponent.defaultProps = {
     marker: null,
     popupProps: {},
     markerProps: () => {},
+    TooltipComponent: undefined,
+    tooltipProps: () => {},
 };
 
 MarkerComponent.propTypes = {
@@ -57,6 +62,8 @@ MarkerComponent.propTypes = {
     marker: PropTypes.object,
     popupProps: PropTypes.object,
     markerProps: PropTypes.func,
+    TooltipComponent: PropTypes.elementType,
+    tooltipProps: PropTypes.func,
 };
 
 export default MarkerComponent;

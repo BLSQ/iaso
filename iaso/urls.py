@@ -3,6 +3,7 @@ from django.contrib import auth
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from .api.comment import CommentViewSet
 from .api.logs import LogsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.org_units import OrgUnitViewSet
@@ -14,8 +15,10 @@ from .api.devices import DevicesViewSet
 from .api.devices_ownership import DevicesOwnershipViewSet
 from .api.devices_position import DevicesPositionViewSet
 from .api.data_sources import DataSourceViewSet
-from .api.copy_version import CopyVersionViewSet
-from .api.dhis2_ou_importer import Dhis2OuImporterViewSet
+from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
+from iaso.api.tasks.create.copy_version import CopyVersionViewSet
+from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
+from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.forms import FormsViewSet
 from .api.form_versions import FormVersionsViewSet
@@ -30,7 +33,7 @@ from .api.export_requests import ExportRequestsViewSet
 
 from .api.tasks import TaskSourceViewSet
 from .api.accounts import AccountViewSet
-
+from plugins.router import router as plugins_router
 from .api.enketo import (
     enketo_edit_url,
     enketo_create_url,
@@ -38,7 +41,7 @@ from .api.enketo import (
     EnketoSubmissionAPIView,
     enketo_form_download,
     enketo_public_launch,
-    enketo_public_create_url
+    enketo_public_create_url,
 )
 from .api.mappings import MappingsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
@@ -51,8 +54,9 @@ from .api.feature_flags import FeatureFlagViewSet
 from iaso import matching
 import pkgutil
 
-router = routers.DefaultRouter()
+from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 
+router = routers.DefaultRouter()
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
@@ -84,7 +88,14 @@ router.register(r"mobile/orgunits", MobileOrgUnitViewSet, basename="orgunitsmobi
 router.register(r"featureflags", FeatureFlagViewSet, basename="featureflags")
 router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
+router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
+router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename="orgunitsbulkupdate")
+router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
+router.register(r"comments", CommentViewSet, basename="comments")
+
+router.registry.extend(plugins_router.registry)
+
 urlpatterns = [
     url(
         r"^fill/(?P<form_uuid>[a-z0-9-]+)/(?P<org_unit_id>[0-9-]+)/(?P<period>[a-z0-9-]+)?$",

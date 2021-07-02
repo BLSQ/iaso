@@ -1,22 +1,26 @@
 import operator
 import typing
-from copy import deepcopy
 from functools import reduce
 from django.db import models, transaction
 from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
+from django.db.models.expressions import RawSQL
 from django_ltree.fields import PathField
+from django_ltree.models import TreeModel
 from django.utils.translation import ugettext_lazy as _
+from django_ltree.managers import TreeManager
+from django_ltree.models import TreeModel
 
-from ..db import ManagerWithBulkUpdate
-from hat.audit import models as audit_models
-from .base import Group, SourceVersion
+from .base import SourceVersion
 from .project import Project
 
 
 class OrgUnitTypeQuerySet(models.QuerySet):
+    def countries(self):
+        return self.filter(category="COUNTRY")
+
     def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: str):
         if user and user.is_anonymous and app_id is None:
             return self.none()
@@ -37,10 +41,15 @@ class OrgUnitTypeQuerySet(models.QuerySet):
 
 
 class OrgUnitType(models.Model):
+    CATEGORIES = [
+        ("COUNTRY", _("Country")),
+        ("DISTRICT", _("District")),
+    ]
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
 
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
@@ -71,13 +80,18 @@ class OrgUnitType(models.Model):
         return res
 
 
+# noinspection PyTypeChecker
 class OrgUnitQuerySet(models.QuerySet):
-    def children(self, org_unit):
+    def children(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
+        """Only the direct descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1)
 
-    def hierarchy(self, org_unit):
+    def hierarchy(
+        self, org_unit: typing.Union[typing.List["OrgUnit"], "OrgUnitQuerySet", "OrgUnit"]
+    ) -> "OrgUnitQuerySet":
+        """The OrgunitS and all their descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
         if isinstance(org_unit, (list, models.QuerySet)):
@@ -87,16 +101,25 @@ class OrgUnitQuerySet(models.QuerySet):
 
         return self.filter(query)
 
-    def descendants(self, org_unit):
+    def descendants(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
+        """All the descendent, org unit or not"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
 
-    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: str):
+    def query_for_related_org_units(self, org_units) -> "RawSQL":
+        ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
+
+        return RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
+
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
+    ) -> "OrgUnitQuerySet":
+        """Restrict to the orgunits the User can see, used mainly in the API"""
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
-        queryset = self.all()
+        queryset: OrgUnitQuerySet = self.all()
 
         if user and user.is_authenticated:
             account = user.iaso_profile.account
@@ -130,33 +153,7 @@ class OrgUnitQuerySet(models.QuerySet):
         return queryset
 
 
-class OrgUnitManager(ManagerWithBulkUpdate):
-    def update_single_unit_from_bulk(
-        self, user, org_unit, *, validation_status, org_unit_type_id, groups_ids_added, groups_ids_removed
-    ):
-        """Used within the context of a bulk operation"""
-
-        original_copy = deepcopy(org_unit)
-        if validation_status is not None:
-            org_unit.validation_status = validation_status
-        if org_unit_type_id is not None:
-            org_unit_type = OrgUnitType.objects.get(pk=org_unit_type_id)
-            org_unit.org_unit_type = org_unit_type
-        if groups_ids_added is not None:
-            for group_id in groups_ids_added:
-                group = Group.objects.get(pk=group_id)
-                group.org_units.add(org_unit)
-        if groups_ids_removed is not None:
-            for group_id in groups_ids_removed:
-                group = Group.objects.get(pk=group_id)
-                group.org_units.remove(org_unit)
-
-        org_unit.save()
-
-        audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API_BULK, user=user)
-
-
-class OrgUnit(models.Model):
+class OrgUnit(TreeModel):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
     VALIDATION_REJECTED = "REJECTED"
@@ -172,6 +169,8 @@ class OrgUnit(models.Model):
     custom = models.BooleanField(default=False)
     validated = models.BooleanField(default=True, db_index=True)  # TO DO : remove in a later migration
     validation_status = models.CharField(max_length=25, choices=VALIDATION_STATUS_CHOICES, default=VALIDATION_NEW)
+    # The migration 0086_add_version_constraints add a constraint to ensure that the source version
+    # is the same between the orgunit and the group
     version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.CASCADE)
     parent = models.ForeignKey("OrgUnit", on_delete=models.CASCADE, null=True, blank=True)
     path = PathField(null=True, blank=True, unique=True)
@@ -192,10 +191,18 @@ class OrgUnit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()
+    objects = OrgUnitQuerySet.as_manager()
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]
+
+    def root(self):
+        if self.path is not None and len(self.path) > 1:
+            return self.ancestors().exclude(id=self.id).first()
+
+    def country_ancestors(self):
+        if self.path is not None and len(self.path) > 1:
+            return self.ancestors().filter(org_unit_type__category="COUNTRY")
 
     def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):
         """Override default save() to make sure that the path property is calculated and saved,
@@ -237,6 +244,7 @@ class OrgUnit(models.Model):
         # keep track of updated records
         updated_records = []
 
+        # noinspection PyUnresolvedReferences
         base_path = [] if self.parent is None else list(self.parent.path)
         new_path = [*base_path, str(self.pk)]
         path_has_changed = new_path != self.path

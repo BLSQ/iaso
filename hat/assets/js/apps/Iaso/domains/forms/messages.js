@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Create form',
         id: 'iaso.forms.create',
     },
+    createFormVersion: {
+        defaultMessage: 'Create version',
+        id: 'iaso.formversions.create',
+    },
     noForm: {
         defaultMessage: 'No form',
         id: 'iaso.orgUnits.forms.noData',
@@ -65,6 +69,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.update',
         defaultMessage: 'Update form',
     },
+    deleted_at: {
+        id: 'iaso.forms.deleted_at',
+        defaultMessage: 'Deleted at',
+    },
+    updateFormVersion: {
+        id: 'iaso.formversions.update',
+        defaultMessage: 'Update version {version_id}',
+    },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS mappings',
@@ -76,6 +88,10 @@ const MESSAGES = defineMessages({
     deleteFormText: {
         id: 'iaso.forms.dialog.deleteFormText',
         defaultMessage: 'This operation cannot be undone.',
+    },
+    restoreFormTooltip: {
+        defaultMessage: 'Restore form',
+        id: 'iaso.forms.restore.tooltip',
     },
     edit: {
         id: 'iaso.label.edit',

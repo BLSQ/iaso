@@ -4,8 +4,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
 import { FormControl, Grid, Tooltip, IconButton } from '@material-ui/core';
 import Clear from '@material-ui/icons/Clear';
+import { injectIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const useStyles = makeStyles(theme => ({
     formControl: {

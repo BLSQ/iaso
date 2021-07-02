@@ -11,10 +11,13 @@ import {
     ClickAwayListener,
     InputBase,
     Divider,
+    Button,
 } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import { rawTheme } from 'bluesquare-components';
 import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import OrgUnitTooltip from './OrgUnitTooltip';
@@ -93,6 +96,13 @@ const styles = theme => ({
         '-moz-appearance': 'textfield',
         textAlign: 'center',
     },
+    searchBar: {
+        display: 'flex',
+        alignItems: 'center',
+    },
+    searchButton: {
+        marginLeft: '10px',
+    },
 });
 
 const OrgUnitSearch = ({
@@ -143,15 +153,25 @@ const OrgUnitSearch = ({
                     className={classes.container}
                     onFocus={() => setIsSearchActive(true)}
                 >
-                    <InputComponent
-                        disabled={isLoading}
-                        keyValue="orgUnitSearch"
-                        onChange={(key, value) => onChangeSearch(value)}
-                        value={searchValue}
-                        type="search"
-                        label={inputLabelObject}
-                        onEnterPressed={() => handleSearch()}
-                    />
+                    <Box className={classes.searchBar}>
+                        <InputComponent
+                            disabled={isLoading}
+                            keyValue="orgUnitSearch"
+                            onChange={(key, value) => onChangeSearch(value)}
+                            value={searchValue}
+                            type="search"
+                            label={inputLabelObject}
+                            onEnterPressed={() => handleSearch()}
+                        />
+                        <Button
+                            variant="contained"
+                            className={classes.searchButton}
+                            color="primary"
+                            onClick={handleSearch}
+                        >
+                            <FormattedMessage {...MESSAGES.search} />
+                        </Button>
+                    </Box>
 
                     {isLoading && (
                         <div className={classes.loadingContainer}>
@@ -178,24 +198,36 @@ const OrgUnitSearch = ({
                         <Box className={classes.listContainer}>
                             <List className={classes.list}>
                                 {searchResults.map(ou => (
-                                    <OrgUnitTooltip key={ou.id} orgUnit={ou}>
-                                        <ListItem
-                                            button
-                                            onClick={() => handleSelect(ou)}
-                                            className="org-unit-item"
+                                    <ListItem
+                                        key={ou.id}
+                                        button
+                                        onClick={() => handleSelect(ou)}
+                                        className="org-unit-item"
+                                    >
+                                        <ListItemText
+                                            primary={
+                                                <Typography type="body2">
+                                                    {getOrgunitMessage(
+                                                        ou,
+                                                        true,
+                                                    )}
+                                                </Typography>
+                                            }
+                                        />
+                                        <OrgUnitTooltip
+                                            orgUnit={ou}
+                                            enterDelay={0}
+                                            enterNextDelay={0}
                                         >
-                                            <ListItemText
-                                                primary={
-                                                    <Typography type="body2">
-                                                        {getOrgunitMessage(
-                                                            ou,
-                                                            true,
-                                                        )}
-                                                    </Typography>
-                                                }
+                                            <InfoOutlinedIcon
+                                                fontSize="small"
+                                                style={{
+                                                    color: rawTheme.palette
+                                                        .mediumGray.main,
+                                                }}
                                             />
-                                        </ListItem>
-                                    </OrgUnitTooltip>
+                                        </OrgUnitTooltip>
+                                    </ListItem>
                                 ))}
                             </List>
                             <Divider />

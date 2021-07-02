@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { Tabs, Tab, withStyles } from '@material-ui/core';
 
+import { injectIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 import UsersInfos from './UsersInfos';
@@ -16,9 +17,7 @@ import {
 } from '../actions';
 import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
-
 import PermissionsSwitches from './PermissionsSwitches';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     tabs: {
@@ -26,7 +25,7 @@ const styles = theme => ({
     },
     tab: {
         padding: 0,
-        width: 'calc(100% / 3)',
+        width: 'calc(100% / 4)',
         minWidth: 0,
     },
     root: {
@@ -50,12 +49,19 @@ class UserDialogComponent extends Component {
             user: this.initialUser(),
             tab: 'infos',
         };
+        this.onConfirm = this.onConfirm.bind(this);
     }
 
     componentDidUpdate(prevProps) {
         if (!isEqual(prevProps.initialData, this.props.initialData)) {
             this.setInitialState();
         }
+    }
+
+    handleChangeTab(tab) {
+        this.setState({
+            tab,
+        });
     }
 
     onConfirm(closeDialog) {
@@ -88,7 +94,6 @@ class UserDialogComponent extends Component {
                 fetchUsersProfiles(params);
             })
             .catch(error => {
-                console.log('error', error);
                 if (error.status === 400) {
                     this.setFieldErrors(
                         error.details.errorKey,
@@ -155,13 +160,8 @@ class UserDialogComponent extends Component {
                 errors: [],
             },
             org_units: { value: get(initialData, 'org_units', []), errors: [] },
+            language: { value: get(initialData, 'language', ''), errors: [] },
         };
-    }
-
-    handleChangeTab(tab) {
-        this.setState({
-            tab,
-        });
     }
 
     render() {
@@ -181,7 +181,7 @@ class UserDialogComponent extends Component {
                 confirmMessage={MESSAGES.save}
                 onClosed={() => this.onClosed()}
                 renderTrigger={renderTrigger}
-                maxWidth="xs"
+                maxWidth="sm"
                 dialogProps={{
                     classNames: classes.dialog,
                 }}

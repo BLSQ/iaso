@@ -14,15 +14,21 @@ const useStyles = makeStyles(() => ({
     },
 }));
 
-const OrgUnitTooltip = ({ orgUnit, children, domComponent }) => {
+const OrgUnitTooltip = ({
+    orgUnit,
+    children,
+    domComponent,
+    enterDelay,
+    enterNextDelay,
+}) => {
     const classes = useStyles();
     return (
         <Tooltip
             classes={{ tooltip: classes.root }}
             title={<OrgUnitsSmallInfos orgUnit={orgUnit} />}
             arrow
-            enterDelay={500}
-            enterNextDelay={500}
+            enterDelay={enterDelay}
+            enterNextDelay={enterNextDelay}
         >
             {createElement(
                 domComponent,
@@ -35,12 +41,16 @@ const OrgUnitTooltip = ({ orgUnit, children, domComponent }) => {
 OrgUnitTooltip.defaultProps = {
     children: null,
     domComponent: 'section',
+    enterDelay: 500,
+    enterNextDelay: 500,
 };
 
 OrgUnitTooltip.propTypes = {
     orgUnit: PropTypes.object.isRequired,
     children: PropTypes.object,
     domComponent: PropTypes.string,
+    enterDelay: PropTypes.number,
+    enterNextDelay: PropTypes.number,
 };
 
 export default OrgUnitTooltip;

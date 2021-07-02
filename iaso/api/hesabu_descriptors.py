@@ -8,7 +8,7 @@ from iaso.models import DataSource
 
 
 class HesabuDescriptorsViewSet(viewsets.ViewSet):
-    """ Hesabu descriptors API
+    """Hesabu descriptors API
 
     This API is restricted to authenticated users (no specific permission check)
 

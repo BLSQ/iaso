@@ -14,8 +14,10 @@ import os
 import sentry_sdk
 from datetime import timedelta
 
+from sentry_sdk.integrations.django import DjangoIntegration
 
 TESTING = os.environ.get("TESTING", "").lower() == "true"
+PLUGIN_POLIO_ENABLED = os.environ.get("PLUGIN_POLIO_ENABLED", "").lower() == "true"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -39,6 +41,9 @@ USE_X_FORWARDED_HOST = True
 
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
 
+# Default site for django contrib site framework
+SITE_ID = 1
+
 
 # Logging
 
@@ -61,7 +66,7 @@ TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {"default": {"format": "%(asctime)s %(name)s -- %(message)s"}},
+    "formatters": {"default": {"format": "%(levelname)-8s %(asctime)s %(name)s -- %(message)s"}},
     "filters": {"no_static": {"()": "hat.common.log_filter.StaticUrlFilter"}},
     "handlers": {
         "console": {
@@ -72,13 +77,14 @@ LOGGING = {
         }
     },
     "loggers": {
-        "django": {"handlers": ["console"], "level": LOGGING_LEVEL},
-        "hat": {"handlers": ["console"], "level": LOGGING_LEVEL},
-        "rq": {"handlers": ["console"], "level": LOGGING_LEVEL},
-        # 'django.db.backends': {
-        #     'level': 'DEBUG',
-        #     'handlers': ['console', ],
-        # },
+        "django": {"level": LOGGING_LEVEL},
+        "rq": {"level": LOGGING_LEVEL},
+        "hat": {"level": LOGGING_LEVEL},
+        "iaso": {"level": LOGGING_LEVEL},
+        "beanstalk_worker": {"level": LOGGING_LEVEL},
+        #  Uncomment to print all sql query
+        # 'django.db.backends': {'level': 'DEBUG'},
+        "": {"handlers": ["console"]},
     },
 }
 
@@ -90,16 +96,15 @@ if os.path.isdir(AWS_LOG_FOLDER):
         LOGGING["handlers"]["file"] = {
             "class": "logging.FileHandler",
             "level": "DEBUG",
+            "formatter": "default",
             "filename": os.path.join(AWS_LOG_FOLDER, "django.log"),
         }
-        for logger in LOGGING["loggers"].values():
-            logger["handlers"].append("file")
+        LOGGING["loggers"][""]["handlers"].append("file")
         LOGGING["loggers"]["hat"]["level"] = "DEBUG"
     else:
         print(f"WARNING: we seem to be running on AWS but {AWS_LOG_FOLDER} is not writable, check ebextensions")
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -109,6 +114,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django.contrib.postgres",
+    "django.contrib.sites",  # needed by contrib-comments
     "storages",
     "corsheaders",
     "rest_framework",
@@ -121,7 +127,15 @@ INSTALLED_APPS = [
     "iaso",
     "django_extensions",
     "beanstalk_worker",
+    "django_comments",
 ]
+
+# needed because we customize the comment model
+# see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
+COMMENTS_APP = "iaso"
+
+if PLUGIN_POLIO_ENABLED:
+    INSTALLED_APPS.append("plugins.polio")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -132,7 +146,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "hat.users.middleware.ThreadLocalMiddleware",
 ]
 
 ROOT_URLCONF = "hat.urls"
@@ -141,7 +154,7 @@ ROOT_URLCONF = "hat.urls"
 # Allow cors for all origins but only for the sync endpoint
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_ALL_ORIGINS = True
-#CORS_URLS_REGEX = r"^/sync/.*$"
+# CORS_URLS_REGEX = r"^/sync/.*$"
 
 
 TEMPLATES = [
@@ -168,7 +181,7 @@ WSGI_APPLICATION = "hat.wsgi.application"
 
 # Database
 
-DB_NAME = os.environ.get("RDS_DB_NAME", "postgres")
+DB_NAME = os.environ.get("RDS_DB_NAME", "iaso")
 DB_USERNAME = os.environ.get("RDS_USERNAME", "postgres")
 DB_PASSWORD = os.environ.get("RDS_PASSWORD", None)
 DB_HOST = os.environ.get("RDS_HOSTNAME", "db")
@@ -220,20 +233,30 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 
-# Files
 
-SHARED_DIR = "/opt/shared"
+AUTH_CLASSES = [
+    "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
+    "rest_framework_simplejwt.authentication.JWTAuthentication",
+]
 
+
+# Needed for PowerBI, used for the Polio project, which only support support BasicAuth.
+if PLUGIN_POLIO_ENABLED:
+    AUTH_CLASSES.append(
+        "rest_framework.authentication.BasicAuthentication",
+    )
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": AUTH_CLASSES,
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": None,
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+        "rest_framework_csv.renderers.CSVRenderer",
+    ),
 }
 
 SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=3650), "REFRESH_TOKEN_LIFETIME": timedelta(days=3651)}
@@ -263,7 +286,11 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, "iaso/static"), os.path.join(BASE_DIR, "hat/assets/webpack"))
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "iaso/static"),
+    os.path.join(BASE_DIR, "plugins/polio/static/polio"),
+    os.path.join(BASE_DIR, "hat/assets/webpack"),
+)
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
@@ -283,7 +310,7 @@ WEBPACK_LOADER = {
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 
 if SENTRY_URL:
-    sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0)
+    sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0, integrations=[DjangoIntegration()], send_default_pii=True)
 
 # Workers configuration
 
@@ -304,3 +331,13 @@ SSL_ON = (not DEBUG) and (not BEANSTALK_WORKER)
 if SSL_ON:
     SECURE_HSTS_SECONDS = 31_536_000  # 1 year
 SECURE_SSL_REDIRECT = SSL_ON
+
+# Email configuration
+
+DEFAULT_FROM_EMAIL = "Iaso Team <iaso@bluesquare.org>"
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.smtpbucket.com")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_PORT = os.environ.get("EMAIL_PORT", "8025")

@@ -1,13 +1,15 @@
 import React from 'react';
 import Chip from '@material-ui/core/Chip';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
-import { displayDateFromTimestamp } from '../../utils/intlUtil';
+import {
+    IconButton as IconButtonComponent,
+    displayDateFromTimestamp,
+} from 'bluesquare-components';
 import MESSAGES from './messages';
 
 const tasksTableColumns = (formatMessage, killTaskAction) => [
     {
         Header: formatMessage(MESSAGES.status),
-        sortable: false,
+        sortable: true,
         accessor: 'status',
         Cell: settings => {
             const statusCode =
@@ -64,7 +66,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
     },
     {
         Header: formatMessage(MESSAGES.timeCreated),
-        sortable: false,
+        sortable: true,
         accessor: 'created_at',
         Cell: settings => (
             <span>
@@ -74,7 +76,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
     },
     {
         Header: formatMessage(MESSAGES.timeStart),
-        sortable: false,
+        sortable: true,
         accessor: 'started_at',
         Cell: settings => (
             <span>
@@ -87,7 +89,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
     },
     {
         Header: formatMessage(MESSAGES.timeEnd),
-        sortable: false,
+        sortable: true,
         accessor: 'ended_at',
         Cell: settings => (
             <span>

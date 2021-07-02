@@ -86,8 +86,12 @@ class Exporter:
             self.fill_geometry_or_coordinates(to_create.comparison("geometry"), payload)
 
             self.iaso_logger.info("will post ", payload)
-            resp = api.post("organisationUnits", payload)
-            self.iaso_logger.info("received ", resp.json())
+            try:
+                resp = api.post("organisationUnits", payload)
+                self.iaso_logger.info("received ", resp.json())
+            except:
+                print("passing", payload)
+                pass
 
     def fill_geometry_or_coordinates(self, comparison, payload):
         if comparison.after:

@@ -3,7 +3,6 @@ import typing
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
-from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import ArrayField, CITextField
 
@@ -13,6 +12,13 @@ from ..odk import parsing
 from ..utils import slugify_underscore
 from .. import periods
 from uuid import uuid4
+
+from ..utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    SoftDeletableModel,
+    IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+)
 
 
 class FormQuerySet(models.QuerySet):
@@ -50,7 +56,7 @@ class FormQuerySet(models.QuerySet):
         return queryset
 
 
-class Form(models.Model):
+class Form(SoftDeletableModel):
     PERIOD_TYPE_CHOICES = (
         (periods.PERIOD_TYPE_MONTH, _("Month")),
         (periods.PERIOD_TYPE_QUARTER, _("Quarter")),
@@ -69,7 +75,7 @@ class Form(models.Model):
     correlatable = models.BooleanField(default=False)
     # Accumulated list of all the fields that were present at some point in a version of the form. This is used to
     # build a table view of the form answers without having to parse the xml files
-    fields = JSONField(null=True, blank=True)
+    fields = models.JSONField(null=True, blank=True)
     period_type = models.TextField(null=True, blank=True, choices=PERIOD_TYPE_CHOICES)
     single_per_period = models.BooleanField(default=False)
     # The following two fields control the allowed period span (instances can be provided for the period corresponding
@@ -81,7 +87,11 @@ class Form(models.Model):
     uuid = models.UUIDField(default=uuid4, unique=True)
     label_keys = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
-    objects = FormQuerySet.as_manager()
+    objects = DefaultSoftDeletableManager.from_queryset(FormQuerySet)()
+
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(FormQuerySet)()
+
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(FormQuerySet)()
 
     @property
     def latest_version(self):
@@ -100,7 +110,7 @@ class Form(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "period_type": self.period_type,
             "single_per_period": self.single_per_period,
-            "label_keys": self.label_keys
+            "label_keys": self.label_keys,
         }
 
         if show_version:
@@ -130,6 +140,7 @@ class FormVersionQuerySet(models.QuerySet):
 
 class FormVersionManager(models.Manager):
     def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
+        print(kwargs)
         with transaction.atomic():
             latest_version = self.latest_version(form)
 
@@ -154,7 +165,7 @@ class FormVersion(models.Model):
     # xml file representation
     file = models.FileField(upload_to=_form_version_upload_to)
     xls_file = models.FileField(upload_to=_form_version_upload_to, null=True, blank=True)
-    form_descriptor = JSONField(null=True, blank=True)
+    form_descriptor = models.JSONField(null=True, blank=True)
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -163,7 +174,9 @@ class FormVersion(models.Model):
 
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
-    def get_or_save_form_descriptor(self,):  # TODO: remove me - shoud be populated on create
+    def get_or_save_form_descriptor(
+        self,
+    ):  # TODO: remove me - shoud be populated on create
         if self.form_descriptor:
             json_survey = self.form_descriptor
         elif self.xls_file:

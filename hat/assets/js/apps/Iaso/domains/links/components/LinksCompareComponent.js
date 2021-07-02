@@ -61,7 +61,7 @@ const LinksCompare = ({ link, compareLink, classes, title, validated }) => {
                 <FormattedMessage {...MESSAGES.noDifference} />
             )}
             {!isEqual(link, compareLink) && (
-                <Fragment>
+                <>
                     <Table className={classes.table}>
                         <TableBody>
                             {Object.keys(link).map(key => {
@@ -84,7 +84,7 @@ const LinksCompare = ({ link, compareLink, classes, title, validated }) => {
                             })}
                         </TableBody>
                     </Table>
-                </Fragment>
+                </>
             )}
         </Paper>
     );

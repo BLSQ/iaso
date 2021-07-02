@@ -1,0 +1,7 @@
+{
+    "name": "Nom Ecole",
+    "parents": [ "ProvincePoliAdmin", "Proved", "Sproved"],
+    "longitude": "GPS_longitude",
+    "latitude": "GPS_latitude",
+    "source_ref": "Numero SECOPE"
+}

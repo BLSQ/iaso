@@ -1,0 +1,7 @@
+{
+    "name": "Nom Ecole",
+    "parents": ["Country", "ProvincePoliAdmin", "Proved", "Sproved"],
+    "longitude": "GPS_longitude",
+    "latitude": "GPS_latitude",
+    "source_ref": "source_ref"
+}

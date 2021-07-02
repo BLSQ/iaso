@@ -13,11 +13,13 @@ import {
     withStyles,
 } from '@material-ui/core';
 
+import {
+    selectionInitialState,
+    commonStyles,
+    formatThousand,
+} from 'bluesquare-components';
 import { saveMultiEdit as saveMultiEditAction } from '../actions';
-import { formatThousand } from '../../../utils';
-import { selectionInitialState } from '../../../utils/tableUtils';
 
-import commonStyles from '../../../styles/common';
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
@@ -62,6 +64,7 @@ const OrgUnitsMultiActionsDialog = ({
     const [orgUnitType, setOrgUnitType] = React.useState(null);
     const [editValidation, setEditValidation] = React.useState(false);
     const [validationStatus, setValidationStatus] = React.useState(null);
+
     const isSaveDisabled = () =>
         (editGroups &&
             groupsAdded.length === 0 &&
@@ -253,9 +256,9 @@ const OrgUnitsMultiActionsDialog = ({
                             <div className={classes.marginLeft}>
                                 <InputComponent
                                     keyValue="isValid"
-                                    onChange={(key, value) =>
-                                        setValidationStatus(value)
-                                    }
+                                    onChange={(key, value) => {
+                                        setValidationStatus(value);
+                                    }}
                                     value={validationStatus}
                                     type="radio"
                                     options={[

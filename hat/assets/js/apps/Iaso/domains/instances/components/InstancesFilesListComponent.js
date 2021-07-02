@@ -6,6 +6,7 @@ import { Grid, withStyles, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
+import { injectIntl } from 'bluesquare-components';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
@@ -16,7 +17,6 @@ import InstancePopover from './InstancePopoverComponent';
 import { sortFilesType } from '../../../utils/filesUtils';
 import { fetchInstanceDetail } from '../../../utils/requests';
 import MESSAGES from '../messages';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const minTabHeight = 'calc(100vh - 500px)';
 
@@ -63,6 +63,12 @@ class InstancesFilesList extends Component {
         }
     }
 
+    handleChangeTab(tab) {
+        this.setState({
+            tab,
+        });
+    }
+
     setFiles(files) {
         this.setState({
             sortedFiles: files ? sortFilesType(files) : [],
@@ -107,12 +113,6 @@ class InstancesFilesList extends Component {
         this.setState({
             viewerIsOpen: false,
             instanceDetail: fetchDetails ? null : instanceDetail,
-        });
-    }
-
-    handleChangeTab(tab) {
-        this.setState({
-            tab,
         });
     }
 

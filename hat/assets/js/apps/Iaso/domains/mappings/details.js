@@ -5,6 +5,7 @@ import { bindActionCreators } from 'redux';
 import { Grid, Box, withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
+import { commonStyles } from 'bluesquare-components';
 import {
     setCurrentMappingVersion as setCurrentMappingVersionAction,
     fetchMappingVersionDetail as fetchMappingVersionDetailAction,
@@ -20,7 +21,6 @@ import RecursiveTreeView from './components/RecursiveTreeView';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
 import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
-import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
 
 import Descriptor from './descriptor';
@@ -124,7 +124,8 @@ class MappingDetails extends Component {
                                     <RecursiveTreeView
                                         formVersion={currentFormVersion}
                                         mappingVersion={currentMappingVersion}
-                                        currentQuestion={currentQuestion}
+                                        // TODO confirm this prop can safely be deleted
+                                        // currentQuestion={currentQuestion}
                                         onQuestionSelected={onQuestionSelected}
                                     />
                                 </Grid>
@@ -164,7 +165,8 @@ class MappingDetails extends Component {
                                         {!isDataElementMappable && (
                                             <DerivedQuestionMappingForm
                                                 key={currentQuestion.name}
-                                                mapping={currentMappingVersion}
+                                                // TODO confirm this can be safely removed
+                                                // mapping={currentMappingVersion}
                                                 question={currentQuestion}
                                                 mappingVersion={
                                                     currentMappingVersion

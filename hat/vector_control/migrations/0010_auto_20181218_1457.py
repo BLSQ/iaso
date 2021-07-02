@@ -8,22 +8,10 @@ class Migration(migrations.Migration):
     dependencies = [("vector_control", "0009_auto_20181218_1438")]
 
     operations = [
-        migrations.RenameField(
-            model_name="catch", old_name="endAccuracy", new_name="end_accuracy"
-        ),
-        migrations.RenameField(
-            model_name="catch", old_name="endAltitude", new_name="end_altitude"
-        ),
-        migrations.RenameField(
-            model_name="catch", old_name="endLocation", new_name="end_location"
-        ),
-        migrations.RenameField(
-            model_name="catch", old_name="startAccuracy", new_name="start_accuracy"
-        ),
-        migrations.RenameField(
-            model_name="catch", old_name="startAltitude", new_name="start_altitude"
-        ),
-        migrations.RenameField(
-            model_name="catch", old_name="startLocation", new_name="start_location"
-        ),
+        migrations.RenameField(model_name="catch", old_name="endAccuracy", new_name="end_accuracy"),
+        migrations.RenameField(model_name="catch", old_name="endAltitude", new_name="end_altitude"),
+        migrations.RenameField(model_name="catch", old_name="endLocation", new_name="end_location"),
+        migrations.RenameField(model_name="catch", old_name="startAccuracy", new_name="start_accuracy"),
+        migrations.RenameField(model_name="catch", old_name="startAltitude", new_name="start_altitude"),
+        migrations.RenameField(model_name="catch", old_name="startLocation", new_name="start_location"),
     ]

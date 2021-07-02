@@ -7,13 +7,15 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0082_exportrequest_continue_on_error'),
+        ("iaso", "0082_exportrequest_continue_on_error"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='datasource',
-            name='default_version',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='iaso.SourceVersion'),
+            model_name="datasource",
+            name="default_version",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.SourceVersion"
+            ),
         ),
     ]

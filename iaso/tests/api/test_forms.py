@@ -4,6 +4,7 @@ from django.test import tag
 from django.utils.timezone import now
 
 from iaso import models as m
+from iaso.models import Form
 from iaso.test import APITestCase
 
 
@@ -58,7 +59,6 @@ class FormsAPITestCase(APITestCase):
         cls.project_1.forms.add(cls.form_2)
         cls.project_1.save()
 
-    @tag("iaso_only")
     def test_forms_list_without_auth(self):
         """GET /forms/ without auth: 0 result"""
 
@@ -67,7 +67,6 @@ class FormsAPITestCase(APITestCase):
 
         self.assertValidFormListData(response.json(), 0)
 
-    @tag("iaso_only")
     def test_forms_list_empty_for_user(self):
         """GET /forms/ with a user that has no access to any form"""
 
@@ -77,7 +76,6 @@ class FormsAPITestCase(APITestCase):
 
         self.assertValidFormListData(response.json(), 0)
 
-    @tag("iaso_only")
     def test_forms_list_ok(self):
         """GET /forms/ web app happy path: we expect two results"""
 
@@ -86,7 +84,6 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
 
-    @tag("iaso_only")
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""
 
@@ -101,7 +98,6 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 1)
 
-    @tag("iaso_only")
     def test_forms_list_date_to_inclusive(self):
         """GET /forms/ web app happy path: to_date should be inclusive"""
 
@@ -111,7 +107,6 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
 
-    @tag("iaso_only")
     def test_forms_list_paginated(self):
         """GET /forms/ paginated happy path"""
 
@@ -126,15 +121,20 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(response_data["limit"], 1)
         self.assertEqual(response_data["count"], 2)
 
-    @tag("iaso_only")
-    def test_forms_list_csv(self):
+    def test_forms_list_csv_with_flag(self):
         """GET /forms/ csv happy path"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/forms/?csv=1", headers={"Content-Type": "application/json"})
         self.assertFileResponse(response, 200, "text/csv", expected_attachment_filename="forms.csv", streaming=True)
 
-    @tag("iaso_only")
+    def test_forms_list_csv_using_header(self):
+        """GET /forms/ csv happy path"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/forms/?format=csv", headers={"Content-Type": "text/csv"})
+        self.assertFileResponse(response, 200, "text/csv; charset=utf-8")
+
     def test_forms_list_xslx(self):
         """GET /forms/ xslx happy path"""
 
@@ -147,14 +147,12 @@ class FormsAPITestCase(APITestCase):
             expected_attachment_filename="forms.xlsx",
         )
 
-    @tag("iaso_only")
     def test_forms_retrieve_without_auth(self):
         """GET /forms/<form_id> without auth should result in a 404"""
 
         response = self.client.get(f"/api/forms/{self.form_1.id}/")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_forms_retrieve_wrong_auth(self):
         """GET /forms/<form_id> with auth of unrelated user should result in a 404"""
 
@@ -162,7 +160,6 @@ class FormsAPITestCase(APITestCase):
         response = self.client.get(f"/api/forms/{self.form_1.id}/")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_forms_retrieve_not_found(self):
         """GET /forms/<form_id>: id does not exist"""
 
@@ -170,7 +167,6 @@ class FormsAPITestCase(APITestCase):
         response = self.client.get(f"/api/forms/292003030/")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_forms_retrieve_ok_1(self):
         """GET /forms/<form_id> happy path (simple form)"""
 
@@ -179,7 +175,6 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFormData(response.json())
 
-    @tag("iaso_only")
     def test_forms_retrieve_ok_2(self):
         """GET /forms/<form_id> happy path (more complex form, additional fields)"""
 
@@ -191,7 +186,6 @@ class FormsAPITestCase(APITestCase):
         self.assertValidFullFormData(form_data)
         self.assertEqual(1, form_data["instances_count"])
 
-    @tag("iaso_only")
     def test_forms_create_ok(self):
         """POST /forms/ happy path"""
 
@@ -214,7 +208,6 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(1, form.projects.count())
         self.assertEqual(2, form.org_unit_types.count())
 
-    @tag("iaso_only")
     def test_forms_create_ok_extended(self):
         """POST /forms/ happy path (more fields)"""
 
@@ -243,14 +236,12 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(response_data["periods_before_allowed"], 2)
         self.assertEqual(response_data["periods_after_allowed"], 10)
 
-    @tag("iaso_only")
     def test_forms_create_without_auth(self):
         """POST /forms/ without auth: 403"""
 
         response = self.client.post(f"/api/forms/", data={"name": "test form"}, format="json")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_forms_create_wrong_permission(self):
         """POST /forms/ with auth but not the proper permission: 403"""
 
@@ -258,7 +249,6 @@ class FormsAPITestCase(APITestCase):
         response = self.client.post(f"/api/forms/", data={"name": "test form"}, format="json")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_forms_create_invalid_1(self):
         """POST /forms/ with a lot of missing/invalid data"""
 
@@ -275,7 +265,6 @@ class FormsAPITestCase(APITestCase):
         self.assertHasError(response_data, "project_ids")
         self.assertHasError(response_data, "org_unit_type_ids")
 
-    @tag("iaso_only")
     def test_forms_create_invalid_2(self):
         """POST /forms/ specific check for allow_empty"""
 
@@ -286,7 +275,6 @@ class FormsAPITestCase(APITestCase):
         response_data = response.json()
         self.assertHasError(response_data, "project_ids")
 
-    @tag("iaso_only")
     def test_forms_create_invalid_3(self):
         """POST /forms/ with wrong values for None period type"""
 
@@ -311,7 +299,6 @@ class FormsAPITestCase(APITestCase):
         self.assertHasError(response_data, "periods_before_allowed")
         self.assertHasError(response_data, "periods_after_allowed")
 
-    @tag("iaso_only")
     def test_forms_create_wrong_project(self):
         """POST /forms/ - user has no access to the project"""
 
@@ -331,7 +318,6 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "project_ids", "Invalid project ids")
 
-    @tag("iaso_only")
     def test_forms_create_wrong_org_unit_types(self):
         """POST /forms/ - mismatch between project and org unit types"""
 
@@ -351,7 +337,6 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "org_unit_type_ids", "Invalid org unit type ids")
 
-    @tag("iaso_only")
     def test_forms_update_ok(self):
         """PUT /forms/<form_id>: happy path (validation is already covered by create tests)"""
 
@@ -385,7 +370,6 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(2, form.projects.count())
         self.assertEqual(1, form.org_unit_types.count())
 
-    @tag("iaso_only")
     def test_forms_destroy_ok(self):
         """DELETE /forms/<form_id> happy path"""
 
@@ -393,15 +377,38 @@ class FormsAPITestCase(APITestCase):
         response = self.client.delete(f"/api/forms/{self.form_1.id}/", format="json")
         self.assertJSONResponse(response, 204)
 
-    @tag("iaso_only")
+        self.assertIsNotNone(Form.objects_only_deleted.get(pk=self.form_1.id))
+        self.assertFalse(Form.objects.filter(pk=self.form_1.id).exists())
+
     def test_forms_destroy_with_instances(self):
         """DELETE /forms/<form_id> form has instance: cannot be deleted"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f"/api/forms/{self.form_2.id}/", format="json")
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, 204)
 
-    @tag("iaso_only")
+    def test_forms_can_restore_deleted_form(self):
+        """PATCH /forms/<form_id>/?only_deleted=1"""
+        self.form_1.delete()
+
+        self.assertIsNotNone(Form.objects_only_deleted.get(pk=self.form_1.id))
+        self.assertFalse(Form.objects.filter(pk=self.form_1.id).exists())
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/forms/{self.form_1.id}/?only_deleted=1",
+            format="json",
+            HTTP_ACCEPT="application/json",
+            data={
+                "deleted_at": None,
+            },
+        )
+
+        self.assertJSONResponse(response, 200)
+
+        self.assertIsNotNone(Form.objects.get(pk=self.form_1.id))
+        self.assertFalse(Form.objects_only_deleted.filter(pk=self.form_1.id).exists())
+
     def test_forms_destroy_wrong_auth(self):
         """DELETE /forms/<form_id> with user that cannot access form -> 404"""
 
@@ -409,7 +416,6 @@ class FormsAPITestCase(APITestCase):
         response = self.client.delete(f"/api/forms/{self.form_1.id}/", format="json")
         self.assertJSONResponse(response, 404)
 
-    @tag("iaso_only")
     def test_forms_destroy_no_auth(self):
         """DELETE /forms/<form_id> without auth -> 403"""
 

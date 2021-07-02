@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Map, TileLayer } from 'react-leaflet';
+import { Map, ScaleControl, TileLayer } from 'react-leaflet';
 import Control from 'react-leaflet-control';
 import { FormattedMessage } from 'react-intl';
 import L from 'leaflet';
@@ -9,17 +9,14 @@ import Layers from '@material-ui/icons/Layers';
 
 import PropTypes from 'prop-types';
 
+import { injectIntl, commonStyles } from 'bluesquare-components';
 import { customZoomBar } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
 import MarkerComponent from './markers/MarkerComponent';
 import TileSwitch from './tools/TileSwitchComponent';
 
-import commonStyles from '../../styles/common';
-
 import MESSAGES from './messages';
-
-import injectIntl from '../../libs/intl/injectIntl';
 
 const boundsOptions = { padding: [500, 500] };
 
@@ -63,13 +60,9 @@ class MarkerMap extends Component {
         this.fitToBounds();
     }
 
-    fitToBounds() {
-        const { latitude, longitude } = this.props;
-        const latlng = [L.latLng(latitude, longitude)];
-        const markerBounds = L.latLngBounds(latlng);
-        this.map.leafletElement.fitBounds(markerBounds, {
-            maxZoom: 9,
-            padding: boundsOptions.padding,
+    handleChangeTile(currentTile) {
+        this.setState({
+            currentTile,
         });
     }
 
@@ -79,9 +72,13 @@ class MarkerMap extends Component {
         });
     }
 
-    handleChangeTile(currentTile) {
-        this.setState({
-            currentTile,
+    fitToBounds() {
+        const { latitude, longitude } = this.props;
+        const latlng = [L.latLng(latitude, longitude)];
+        const markerBounds = L.latLngBounds(latlng);
+        this.map.leafletElement.fitBounds(markerBounds, {
+            maxZoom: 9,
+            padding: boundsOptions.padding,
         });
     }
 
@@ -124,6 +121,7 @@ class MarkerMap extends Component {
                     keyboard={false}
                     zoomSnap={0.1}
                 >
+                    <ScaleControl imperial={false} />
                     <TileLayer
                         attribution={
                             currentTile.attribution

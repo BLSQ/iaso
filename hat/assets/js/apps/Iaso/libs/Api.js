@@ -64,9 +64,23 @@ export const deleteRequest = url =>
     req
         .delete(url)
         .set('Content-Type', 'application/json')
+        .set('ACCEPT', 'application/json')
         .then(() => true)
         .catch(error => {
             console.error(`Error when deleting ${url}: ${error}`);
+            throw error;
+        });
+
+export const restoreRequest = url =>
+    req
+        .patch(url)
+        .set('Content-Type', 'application/json')
+        .send({
+            deleted_at: null,
+        })
+        .then(() => true)
+        .catch(error => {
+            console.error(`Error when restoring ${url}: ${error}`);
             throw error;
         });
 

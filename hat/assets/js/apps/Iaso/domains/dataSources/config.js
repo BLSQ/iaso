@@ -1,10 +1,17 @@
 import React from 'react';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { Tooltip } from '@material-ui/core';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+
+// eslint-disable-next-line import/no-named-as-default
+// eslint-disable-next-line import/no-named-as-default-member
+import {
+    IconButton as IconButtonComponent,
+    textPlaceholder,
+} from 'bluesquare-components';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
-import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
+import { AddTask } from './components/AddTaskComponent';
+import { ImportGeoPkgDialog } from './components/ImportGeoPkgDialog';
 
 const dataSourcesTableColumns = (
     formatMessage,
@@ -59,27 +66,83 @@ const dataSourcesTableColumns = (
         Header: formatMessage(MESSAGES.actions),
         resizable: false,
         sortable: false,
-        Cell: settings => (
-            <section>
-                <DataSourceDialogComponent
-                    renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
-                            onClick={openDialog}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
-                        />
-                    )}
-                    initialData={{
-                        ...settings.original,
-                        projects: settings.original.projects.flat(),
-                    }}
-                    defaultSourceVersion={defaultSourceVersion}
-                    titleMessage={MESSAGES.updateDataSource}
-                    key={settings.original.updated_at}
-                    onSuccess={() => setForceRefresh(true)}
-                />
-            </section>
-        ),
+        Cell: settings => {
+            const sortedVersions = settings.original.versions.sort(
+                (v1, v2) => v2.number - v1.number,
+            );
+            const latestVersion =
+                sortedVersions.length > 0 ? sortedVersions[0].number : 0;
+            const addTaskTitle = {
+                ...MESSAGES.addTaskTitle,
+                values: {
+                    title: formatMessage(MESSAGES.importFromDhis2),
+                    source: settings.original.name,
+                    version: latestVersion + 1,
+                },
+            };
+            const defaultVersion =
+                settings.original.default_version?.number ?? null;
+            return (
+                <section>
+                    <DataSourceDialogComponent
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="edit"
+                                tooltipMessage={MESSAGES.edit}
+                            />
+                        )}
+                        initialData={{
+                            ...settings.original,
+                            projects: settings.original.projects.flat(),
+                        }}
+                        defaultSourceVersion={defaultSourceVersion}
+                        titleMessage={MESSAGES.updateDataSource}
+                        key={settings.original.updated_at}
+                        onSuccess={() => setForceRefresh(true)}
+                        sourceCredentials={
+                            settings.original.credentials
+                                ? settings.original.credentials
+                                : {}
+                        }
+                    />
+                    <AddTask
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="download"
+                                tooltipMessage={MESSAGES.importFromDhis2}
+                            />
+                        )}
+                        defaultSourceVersion={defaultSourceVersion}
+                        titleMessage={addTaskTitle}
+                        key={`${settings.original.updated_at} ${settings.original.id} addTask`}
+                        sourceId={settings.original.id}
+                        sourceVersion={latestVersion + 1}
+                        sourceCredentials={
+                            settings.original.credentials
+                                ? settings.original.credentials
+                                : {}
+                        }
+                    />
+                    <ImportGeoPkgDialog
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="globe"
+                                tooltipMessage={MESSAGES.importGeoPkg}
+                            />
+                        )}
+                        titleMessage={MESSAGES.geoPkgTitle}
+                        sourceId={settings.original.id}
+                        sourceName={settings.original.name}
+                        latestVersion={latestVersion}
+                        defaultVersion={defaultVersion}
+                        projects={settings.original.projects.flat()}
+                    />
+                </section>
+            );
+        },
     },
 ];
 export default dataSourcesTableColumns;

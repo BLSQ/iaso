@@ -50,7 +50,6 @@ class MultiTenantTestCase(APITestCase):
 
         OrgUnit.objects.create(name="Tatooine", org_unit_type=unit_type_2)
 
-    @tag("iaso_only")
     def test_org_unit_access(self):
         """Checking access to org units based on account"""
         yoda_client = self.yoda_client
@@ -92,7 +91,6 @@ class MultiTenantTestCase(APITestCase):
         response = yoda_client.get("/api/orgunits/%s/" % coruscant_id, accept="application/json")
         self.assertEqual(response.status_code, 200)  # yoda authorized to see Star Wars data
 
-    @tag("iaso_only")
     def test_instance_access(self):
         """Checking access to org units based on account"""
 
@@ -209,7 +207,6 @@ class MultiTenantTestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 0)
 
-    @tag("iaso_only")
     def test_source_access(self):
         response = self.raccoon_client.get("/api/datasources/", accept="application/json")
         content = json.loads(response.content)
@@ -218,7 +215,6 @@ class MultiTenantTestCase(APITestCase):
         content = json.loads(response.content)
         self.assertEqual(len(content["sources"]), 1)
 
-    @tag("iaso_only")
     def test_profile_access(self):
         response = self.raccoon_client.get("/api/profiles/", accept="application/json")
         content = json.loads(response.content)
@@ -228,7 +224,6 @@ class MultiTenantTestCase(APITestCase):
         content = json.loads(response.content)
         self.assertEqual(len(content["profiles"]), 1)
 
-    @tag("iaso_only")
     def test_version_access(self):
         response = APIClient().get("/api/sourceversions/", accept="application/json")
         self.assertEqual(response.status_code, 403)

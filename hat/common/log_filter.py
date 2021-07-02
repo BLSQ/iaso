@@ -3,6 +3,8 @@ from django.conf import settings
 
 
 class StaticUrlFilter(logging.Filter):
+    """Used in our logging configuration to not print static request in dev"""
+
     # Filter out request that start with the static url
     def filter(self, record):  # type: ignore
         if record.module == "basehttp":

@@ -7,13 +7,13 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0078_form_label_keys'),
+        ("iaso", "0078_form_label_keys"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='external_token',
+            model_name="project",
+            name="external_token",
             field=models.UUIDField(default=uuid.uuid4, null=True),
         ),
     ]

@@ -33,4 +33,4 @@ fi
 # probably not needed because we copied the config
 #eb init "${eb_application_name}" --region "${AWS_DEFAULT_REGION}" --platform "${eb_platform}"
 
-eb deploy "${EB_ENV_WEB}" && eb deplob "${EB_ENV_WORKER}"
+eb deploy "${EB_ENV_WEB}" && eb deploy "${EB_ENV_WORKER}"

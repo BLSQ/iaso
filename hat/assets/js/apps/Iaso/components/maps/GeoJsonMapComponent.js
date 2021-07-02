@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import L from 'leaflet';
-import { Map, TileLayer, GeoJSON } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON, ScaleControl } from 'react-leaflet';
 
 import { withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
+import { injectIntl, commonStyles } from 'bluesquare-components';
 import { customZoomBar } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
-import commonStyles from '../../styles/common';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const boundsOptions = { padding: [20, 20] };
 
@@ -72,6 +71,7 @@ class GeoJsonMap extends Component {
                     zoomControl={false}
                     zoomSnap={0.1}
                 >
+                    <ScaleControl imperial={false} />
                     <TileLayer
                         attribution={
                             currentTile.attribution

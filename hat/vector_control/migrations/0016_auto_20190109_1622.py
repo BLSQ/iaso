@@ -12,8 +12,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="target",
             name="location",
-            field=django.contrib.gis.db.models.fields.PointField(
-                dim=3, null=True, srid=4326
-            ),
+            field=django.contrib.gis.db.models.fields.PointField(dim=3, null=True, srid=4326),
         )
     ]

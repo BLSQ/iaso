@@ -1,6 +1,8 @@
 import React from 'react';
-import { textPlaceholder } from '../../constants/uiConstants';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+import {
+    IconButton as IconButtonComponent,
+    textPlaceholder,
+} from 'bluesquare-components';
 import UsersDialog from './components/UsersDialog';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 

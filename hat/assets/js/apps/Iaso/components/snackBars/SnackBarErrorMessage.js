@@ -4,10 +4,9 @@ import { Button, Tooltip, makeStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
+import { injectIntl, commonStyles } from 'bluesquare-components';
 import MESSAGES from './messages';
-import commonStyles from '../../styles/common';
 import { closeFixedSnackbar } from '../../redux/snackBarsReducer';
-import injectIntl from '../../libs/intl/injectIntl';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

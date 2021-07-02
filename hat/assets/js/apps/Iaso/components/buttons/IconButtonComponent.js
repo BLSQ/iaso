@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router';
+// import { Link } from 'react-router';
 import { FormattedMessage } from 'react-intl';
 import { withStyles, IconButton, Tooltip } from '@material-ui/core';
 import Delete from '@material-ui/icons/Delete';
@@ -12,18 +12,21 @@ import History from '@material-ui/icons/History';
 import Map from '@material-ui/icons/Map';
 import CachedRoundedIcon from '@material-ui/icons/CachedRounded';
 import StopRoundedIcon from '@material-ui/icons/StopRounded';
+import GetAppIcon from '@material-ui/icons/GetApp';
+import RestoreFromTrash from '@material-ui/icons/RestoreFromTrash';
+
+import { commonStyles, useLink } from 'bluesquare-components';
 import XmlSvg from '../svg/XmlSvgComponent';
 import DHIS2Svg from '../svg/DHIS2SvgComponent';
 import OrgUnitSvg from '../svg/OrgUnitSvgComponent';
 import ExcellSvg from '../svg/ExcellSvgComponent';
-
-import commonStyles from '../../styles/common';
 
 const ICON_VARIANTS = {
     delete: Delete,
     'filter-list': FilterList,
     'call-merge': CallMerge,
     'remove-red-eye': RemoveRedEye,
+    'restore-from-trash': RestoreFromTrash,
     edit: Edit,
     history: History,
     map: Map,
@@ -33,6 +36,7 @@ const ICON_VARIANTS = {
     refresh: CachedRoundedIcon,
     stop: StopRoundedIcon,
     xls: ExcellSvg,
+    download: GetAppIcon,
 };
 
 const styles = theme => ({
@@ -87,6 +91,7 @@ function IconButtonComponent({
             'IconButtonComponent needs either the onClick or the url property',
         );
     }
+    const Link = useLink();
     const icon = ICON_VARIANTS[iconName];
     return (
         <Tooltip

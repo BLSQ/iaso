@@ -73,6 +73,35 @@ export const formsPath = {
     isRootUrl: true,
 };
 
+export const polioPath = {
+    baseUrl: baseUrls.polio,
+    permission: 'iaso_forms',
+    params: [],
+    component: props => {
+        window.location = '/dashboard/polio/list'
+
+        return <></>;
+    },
+};
+
+export const archivedPath = {
+    baseUrl: baseUrls.archived,
+    permission: 'iaso_forms',
+    params: [
+        ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'searchActive',
+        },
+    ],
+    component: props => <Forms {...props} showOnlyDeleted />,
+    isRootUrl: true,
+};
+
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
     permission: 'iaso_forms',
@@ -469,6 +498,7 @@ export const page500 = {
 
 export const routeConfigs = [
     formsPath,
+    archivedPath,
     formDetailPath,
     mappingsPath,
     mappingDetailPath,
@@ -486,6 +516,7 @@ export const routeConfigs = [
     devicesPath,
     groupsPath,
     orgUnitTypesPath,
+    polioPath,
     page401,
     page404,
     page500,

@@ -8,11 +8,11 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Info from '@material-ui/icons/InfoOutlined';
 
+import { injectIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 
 import { getOrgUnitsTree } from '../../orgUnits/utils';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 const useStyles = makeStyles(theme => ({
     popoverPaper: {

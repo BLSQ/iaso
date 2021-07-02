@@ -13,6 +13,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Version',
         id: 'iaso.label.version',
     },
+    userManual: {
+        defaultMessage: 'User manual',
+        id: 'iaso.label.userManual',
+    },
+    viewUserManual: {
+        defaultMessage: 'View user manual',
+        id: 'iaso.tooltip.viewUserManual',
+    },
 });
 
 export default MESSAGES;

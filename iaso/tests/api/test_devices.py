@@ -17,14 +17,12 @@ class DevicesAPITestCase(APITestCase):
         cls.device_2 = m.Device.objects.create(imei="EEEFFFGGGHHH")
         cls.device_1.projects.add(project)
 
-    @tag("iaso_only")
     def test_devices_list_without_auth(self):
         """GET /devices/ without auth should result in a 403"""
 
         response = self.client.get("/api/devices/")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_devices_list_no_permission(self):
         """GET /devices/ with auth but without the proper permission"""
 
@@ -32,7 +30,6 @@ class DevicesAPITestCase(APITestCase):
         response = self.client.get("/api/devices/")
         self.assertJSONResponse(response, 403)
 
-    @tag("iaso_only")
     def test_devices_list_with_permission(self):
         """GET /devices/ with auth and the proper permission"""
 
@@ -40,7 +37,6 @@ class DevicesAPITestCase(APITestCase):
         response = self.client.get("/api/devices/")
         self.assertJSONResponse(response, 200)
 
-    @tag("iaso_only")
     def test_devices_list_paginated(self):
         """GET /devices/ paginated happy path"""
 
@@ -55,7 +51,6 @@ class DevicesAPITestCase(APITestCase):
         self.assertEqual(response_data["limit"], 1)
         self.assertEqual(response_data["count"], 1)
 
-    @tag("iaso_only")
     def test_devices_retrieve_ok(self):
         """GET /devices/<device_id> happy path"""
 
@@ -65,7 +60,7 @@ class DevicesAPITestCase(APITestCase):
 
         response_data = response.json()
         self.assertValidDeviceData(response_data)
-        self.assertEquals(self.device_1.imei, response_data['imei'])
+        self.assertEquals(self.device_1.imei, response_data["imei"])
 
     def assertValidDeviceData(self, device_data: typing.Mapping):
         self.assertHasField(device_data, "id", int)
@@ -74,7 +69,6 @@ class DevicesAPITestCase(APITestCase):
         self.assertHasField(device_data, "last_owner", object)
         self.assertHasField(device_data, "created_at", float)
         self.assertHasField(device_data, "updated_at", float)
-
 
     def assertValidDeviceListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(

@@ -6,7 +6,7 @@ export const SET_FORMS = 'SET_FORMS';
 export const SET_CURRENT_FORM = 'SET_CURRENT_FORM';
 export const SET_IS_LOADING_FORM = 'SET_IS_LOADING_FORM';
 
-export const setForms = (list, count, pages) => ({
+export const setForms = (list, count = 0, pages = 0) => ({
     type: SET_FORMS,
     payload: {
         list,
@@ -25,6 +25,8 @@ export const setIsLoadingForm = isLoading => ({
     payload: isLoading,
 });
 
+// TODO move to requests.js
+// TODO extract labelKeys
 export const fetchFormDetail = formId => dispatch => {
     dispatch(setIsLoadingForm(true));
     return getRequest(`/api/forms/${formId}/`)
@@ -37,7 +39,8 @@ export const fetchFormDetail = formId => dispatch => {
                 enqueueSnackbar(errorSnackBar('fetchFormError', null, err)),
             ),
         )
-        .then(() => {
+        .then(res => {
             dispatch(setIsLoadingForm(false));
+            return res;
         });
 };

@@ -2,8 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Grid, withStyles, Typography } from '@material-ui/core';
 
-import commonStyles from '../../../styles/common';
-import { textPlaceholder } from '../../../constants/uiConstants';
+import { textPlaceholder, commonStyles } from 'bluesquare-components';
 
 const styles = theme => ({
     ...commonStyles(theme),

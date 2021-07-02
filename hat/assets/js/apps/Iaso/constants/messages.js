@@ -17,6 +17,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Completeness',
         id: 'iaso.completeness.title',
     },
+    archived: {
+        defaultMessage: 'Archived',
+        id: 'iaso.archived.title',
+    },
     orgUnitsTitle: {
         defaultMessage: 'Org units',
         id: 'iaso.orgUnits.title',
@@ -60,6 +64,14 @@ const MESSAGES = defineMessages({
     monitoring: {
         defaultMessage: 'Monitoring',
         id: 'iaso.label.monitoring',
+    },
+    dashboard: {
+        defaultMessage: 'Dashboard',
+        id: 'iaso.label.dashboard',
+    },
+    polio: {
+        defaultMessage: 'Polio',
+        id: 'iaso.label.polio',
     },
 });
 

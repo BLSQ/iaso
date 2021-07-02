@@ -5,12 +5,12 @@ import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import { withStyles, Box, Typography } from '@material-ui/core';
 
+import { commonStyles } from 'bluesquare-components';
 import { setSourcesSelected } from '../../../domains/orgUnits/actions';
 
 import ChipsFilterComponent from './ChipsFilterComponent';
 
 import { fetchAssociatedOrgUnits } from '../../../utils/requests';
-import commonStyles from '../../../styles/common';
 
 import { getSourcesWithoutCurrentSource } from '../../../domains/orgUnits/utils';
 
@@ -38,7 +38,7 @@ function SourcesChipsFilterComponent(props) {
         currentOrgUnit.source_id,
     );
     return (
-        <Fragment>
+        <>
             <Box px={2} className={classes.innerDrawerToolbar} component="div">
                 <Typography variant="subtitle1">
                     <FormattedMessage {...MESSAGES.sources} />
@@ -68,7 +68,7 @@ function SourcesChipsFilterComponent(props) {
                 selectedItems={sourcesSelected}
                 currentItems={sources}
             />
-        </Fragment>
+        </>
     );
 }
 

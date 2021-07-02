@@ -3,10 +3,10 @@ import Grid from '@material-ui/core/Grid';
 
 import PropTypes from 'prop-types';
 
+import { injectIntl } from 'bluesquare-components';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 
 import { orgUnitLevel, status } from '../../../constants/filters';
-import injectIntl from '../../../libs/intl/injectIntl';
 
 class OrgUnitLevelFilterComponent extends Component {
     render() {
@@ -49,7 +49,7 @@ class OrgUnitLevelFilterComponent extends Component {
             ).icon;
 
         return (
-            <Fragment>
+            <>
                 <Grid
                     container
                     direction="row"
@@ -82,7 +82,7 @@ class OrgUnitLevelFilterComponent extends Component {
                         </Grid>
                     )}
                 </Grid>
-            </Fragment>
+            </>
         );
     }
 }

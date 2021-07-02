@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, defineMessages } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -12,7 +12,12 @@ import { redirectTo as redirectToAction } from '../../routing/actions';
 
 import FiltersComponent from '../filters/FiltersComponent';
 
-import MESSAGES from './messages';
+const MESSAGES = defineMessages({
+    search: {
+        id: 'iaso.label.textSearch',
+        defaultMessage: 'Search',
+    },
+});
 
 const styles = theme => ({
     ...commonStyles(theme),

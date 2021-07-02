@@ -7,8 +7,7 @@ import Color from 'color';
 
 import PropTypes from 'prop-types';
 
-import commonStyles from '../../styles/common';
-import { formatThousand } from '../../utils';
+import { commonStyles, formatThousand } from 'bluesquare-components';
 import MESSAGES from './messages';
 
 const styles = theme => ({
@@ -86,18 +85,6 @@ class DynamicTabsComponent extends Component {
         };
     }
 
-    setTabsElement(element, index) {
-        const { tabsWidth } = this.state;
-        const newWidth = element.getBoundingClientRect().width;
-        if (newWidth !== tabsWidth[index]) {
-            const newArray = [...tabsWidth];
-            newArray[index] = newWidth;
-            this.setState({
-                tabsWidth: newArray,
-            });
-        }
-    }
-
     handleAddTab() {
         const {
             redirectTo,
@@ -152,13 +139,8 @@ class DynamicTabsComponent extends Component {
     }
 
     handleTabChange(tabIndex) {
-        const {
-            redirectTo,
-            params,
-            paramKey,
-            baseUrl,
-            tabParamKey,
-        } = this.props;
+        const { redirectTo, params, paramKey, baseUrl, tabParamKey } =
+            this.props;
         const newState = {
             ...this.state,
         };
@@ -171,6 +153,18 @@ class DynamicTabsComponent extends Component {
         newParams[paramKey] = JSON.stringify(newItems);
         redirectTo(baseUrl, newParams);
         this.setState(newState);
+    }
+
+    setTabsElement(element, index) {
+        const { tabsWidth } = this.state;
+        const newWidth = element.getBoundingClientRect().width;
+        if (newWidth !== tabsWidth[index]) {
+            const newArray = [...tabsWidth];
+            newArray[index] = newWidth;
+            this.setState({
+                tabsWidth: newArray,
+            });
+        }
     }
 
     render() {
@@ -201,12 +195,12 @@ class DynamicTabsComponent extends Component {
                                     <Tooltip
                                         size="small"
                                         title={
-                                            <Fragment>
+                                            <>
                                                 <FormattedMessage
                                                     {...MESSAGES.delete}
                                                 />
                                                 {` ${baseLabel.toLowerCase()}`}
-                                            </Fragment>
+                                            </>
                                         }
                                     >
                                         <IconButton
@@ -283,10 +277,10 @@ class DynamicTabsComponent extends Component {
                     <Tooltip
                         size="small"
                         title={
-                            <Fragment>
+                            <>
                                 <FormattedMessage {...MESSAGES.add} />
                                 {` ${baseLabel.toLowerCase()}`}
-                            </Fragment>
+                            </>
                         }
                     >
                         <IconButton

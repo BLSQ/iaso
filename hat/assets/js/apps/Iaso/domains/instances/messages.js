@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Export',
         id: 'iaso.label.export',
     },
+    exportSelection: {
+        defaultMessage: 'Export {count} records ',
+        id: 'iaso.label.exportSelection',
+    },
     reAssignInstance: {
         defaultMessage: 'Re-assign instance',
         id: 'iaso.label.reAssignInstance',
@@ -282,19 +286,19 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.instanceCreationDialogTitle',
     },
     deleteInstance: {
-        defaultMessage: 'Delete isntance(s)',
+        defaultMessage: 'Delete instance(s)',
         id: 'iaso.instance.delete',
     },
     unDeleteInstance: {
-        defaultMessage: 'Mark isntance(s) as not deleted',
+        defaultMessage: 'Mark instance(s) as not deleted',
         id: 'iaso.instance.undelete',
     },
     deleteInstanceCount: {
-        defaultMessage: 'Delete {count} isntance(s)',
+        defaultMessage: 'Delete {count} instance(s)',
         id: 'iaso.instance.deleteCount',
     },
     unDeleteInstanceCount: {
-        defaultMessage: 'Mark {count} isntance(s) as not deleted',
+        defaultMessage: 'Mark {count} instance(s) as not deleted',
         id: 'iaso.instance.unDeleteCount',
     },
     deleteInstanceWarning: {

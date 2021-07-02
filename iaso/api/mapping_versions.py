@@ -165,7 +165,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 
 
 class MappingVersionsViewSet(ModelViewSet):
-    """ Mapping versions API
+    """Mapping versions API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_mappings" permission
 

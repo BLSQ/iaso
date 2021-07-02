@@ -1,5 +1,6 @@
 export const baseUrls = {
     forms: 'forms/list',
+    archived: 'forms/archived',
     formDetail: 'forms/detail',
     mappings: 'forms/mappings',
     mappingDetail: 'forms/mapping',
@@ -17,6 +18,7 @@ export const baseUrls = {
     sources: 'orgunits/sources/list',
     tasks: 'settings/tasks',
     devices: 'settings/devices',
+    polio: 'polio/list',
     error401: '401',
     error404: '404',
     error500: '500',

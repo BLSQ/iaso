@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { withSnackbar } from 'notistack';
+import { injectIntl } from 'bluesquare-components';
 import { removeSnackbar } from '../../redux/snackBarsReducer';
 import SnackBarButton from './SnackBarButton';
 import SnackBarErrorMessage from './SnackBarErrorMessage';
-import injectIntl from '../../libs/intl/injectIntl';
 
 import MESSAGES from './messages';
 

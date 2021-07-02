@@ -249,3 +249,6 @@ class TaskTests(TestCase):
 
         # assert that path has been generated for all org units
         self.assertEquals(0, OrgUnit.objects.filter(path=None).count())
+
+
+# TODO add test for update mode

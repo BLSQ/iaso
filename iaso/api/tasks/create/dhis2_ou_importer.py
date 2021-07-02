@@ -21,6 +21,8 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
     continue_on_error = serializers.BooleanField(required=False, default=False)
 
     def validate(self, attrs):
+        # FIXME Make a validation that we either have all url login and password or that we have
+        # it on the object
 
         validated_data = super().validate(attrs)
         request = self.context["request"]

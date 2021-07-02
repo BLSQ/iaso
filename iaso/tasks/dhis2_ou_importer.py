@@ -238,6 +238,8 @@ def get_api_config(
     return connection_config
 
 
+# TODO add update_mode parameter
+# TODO : remove force
 @task_decorator(task_name="dhis2_ou_importer")
 def dhis2_ou_importer(
     source_id: int,
@@ -271,6 +273,7 @@ def dhis2_ou_importer(
     )
 
     end = time.time()
+    # TODO add skipped count
     res_string = f"""Processed {len(unit_dict)} orgunits in {end - start:.2f} seconds
         Orgunits with point: {len([p for p in unit_dict.values() if p.location])},
         Orgunits with polygon: { len([p for p in unit_dict.values() if p.geom])}

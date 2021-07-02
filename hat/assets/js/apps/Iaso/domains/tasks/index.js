@@ -47,6 +47,7 @@ const Tasks = () => {
                 endPointPath="tasks"
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
+                defaultSorted={[{ id: 'created_at', desc: true }]}
                 exportButtons={false}
                 dataKey="tasks"
                 fetchItems={fetchTasks}

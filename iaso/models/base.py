@@ -292,6 +292,9 @@ class Task(models.Model):
     progress_message = models.TextField(null=True, blank=True)
     should_be_killed = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
         return "%s - %s - %s -%s" % (
             self.name,

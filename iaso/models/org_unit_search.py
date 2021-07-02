@@ -31,6 +31,9 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
     link_validated = params.get("linkValidated", True)
     link_source = params.get("linkSource", None)
     link_version = params.get("linkVersion", None)
+    roots_for_user = params.get("rootsForUser", None)
+
+    org_unit_type_category = params.get("orgUnitTypeCategory", None)
 
     if validation_status != "all":
         queryset = queryset.filter(validation_status=validation_status)
@@ -128,6 +131,12 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
         else:
             queryset = queryset.filter(parent__id=parent_id)
 
+    if roots_for_user:
+        if profile.org_units.all():
+            queryset = queryset.filter(id__in=profile.org_units.all())
+        else:
+            queryset = queryset.filter(parent__isnull=True)
+
     if org_unit_parent_id:
         parent = OrgUnit.objects.get(id=org_unit_parent_id)
         queryset = queryset.hierarchy(parent)
@@ -144,6 +153,9 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
 
     if source_id:
         queryset = queryset.filter(sub_source=source_id)
+
+    if org_unit_type_category:
+        queryset = queryset.filter(org_unit_type__category=org_unit_type_category.upper())
 
     queryset = queryset.annotate(
         instances_count=Count(

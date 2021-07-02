@@ -34,7 +34,7 @@ const requests = [
         },
     },
     {
-        url: `/api/orgunits/?&parent_id=0&defaultVersion=true&validation_status=all`,
+        url: `/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all`,
         body: {
             orgunits: [],
         },

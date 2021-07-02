@@ -1,7 +1,7 @@
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
-from django.test import tag
 import typing
 
+from hat.audit.models import Modification
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -9,7 +9,7 @@ from iaso.test import APITestCase
 class OrgUnitAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        star_wars = m.Account.objects.create(name="Star Wars")
+        cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
         marvel = m.Account.objects.create(name="MCU")
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
@@ -30,7 +30,7 @@ class OrgUnitAPITestCase(APITestCase):
         cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
         cls.mock_point = Point(x=4, y=50, z=100)
 
-        cls.elite_group = m.Group.objects.create(name="Elite councils")
+        cls.elite_group = m.Group.objects.create(name="Elite councils", source_version=sw_version_1)
         cls.unofficial_group = m.Group.objects.create(name="Unofficial Jedi councils")
         cls.another_group = m.Group.objects.create(name="Another group")
 
@@ -208,6 +208,29 @@ class OrgUnitAPITestCase(APITestCase):
         response_data = response.json()
         self.assertValidOrgUnitListData(list_data=response_data, expected_length=3)
 
+    def test_org_unit_list_roots_ok_user_has_org_unit_restrictions(self):
+        """GET /api/orgunits/?rootsForUser=true"""
+
+        self.client.force_authenticate(self.luke)
+        response = self.client.get(f"/api/orgunits/?rootsForUser=true")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidOrgUnitListData(list_data=response_data, expected_length=1)
+        self.assertEqual(self.jedi_council_endor.pk, response_data["orgUnits"][0]["id"])
+
+    def test_org_unit_list_roots_ok_user_no_org_unit_restrictions(self):
+        """GET /api/orgunits/?rootsForUser=true"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/orgunits/?rootsForUser=true")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidOrgUnitListData(list_data=response_data, expected_length=3)
+        for orgunit in response_data["orgUnits"]:
+            self.assertEqual(orgunit["parent_id"], None)
+
     def test_org_unit_retrieve_without_auth_or_app_id(self):
         """GET /orgunits/<org_unit_id>/ without auth or app id should result in a 200 empty response"""
 
@@ -225,7 +248,7 @@ class OrgUnitAPITestCase(APITestCase):
         """GET /orgunits/<org_unit_id>/ happy path (user has no restriction)"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/orgunits/{self.jedi_council_corruscant.id}/")
+        response = self.client.get(f"/api/orgunits/{self.jedi_squad_endor.id}/")
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(response.json())
 
@@ -252,3 +275,224 @@ class OrgUnitAPITestCase(APITestCase):
     def assertValidOrgUnitData(self, org_unit_data: typing.Mapping):
         self.assertHasField(org_unit_data, "id", int)
         self.assertHasField(org_unit_data, "name", str)
+
+    def setUp(self):
+        self.old_counts = self.counts()
+
+    def counts(self) -> dict:
+        return {
+            m.OrgUnit: m.OrgUnit.objects.count(),
+            m.OrgUnitType: m.OrgUnitType.objects.count(),
+            Modification: Modification.objects.count(),
+        }
+
+    def assertNoCreation(self):
+        self.assertEqual(self.old_counts, self.counts())
+
+    def assertCreated(self, createds: dict):
+        new_counts = self.counts()
+        diff = {}
+
+        for model in new_counts.keys():
+            diff[model] = new_counts[model] - self.old_counts[model]
+
+        self.assertDictContainsSubset(createds, diff)
+
+    def test_create_org_unit(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={
+                "id": None,
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [],
+                "sub_source": "",
+                "status": False,
+                "aliases": ["my alias"],
+                "validation_status": "NEW",
+                "parent_id": "",
+                "source_ref": "",
+                "creation_source": "dashboard",
+            },
+        )
+        self.assertJSONResponse(response, 200)
+        json = response.json()
+        self.assertValidOrgUnitData(json)
+        self.assertCreated(
+            {
+                m.OrgUnit: 1,
+            }
+        )
+
+    def test_create_org_unit_minimal(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+            },
+        )
+
+        jr = self.assertJSONResponse(response, 200)
+
+        self.assertValidOrgUnitData(jr)
+        self.assertCreated(
+            {
+                m.OrgUnit: 1,
+            }
+        )
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        # Should have same version as the default version for the account
+        self.assertEqual(ou.version, self.star_wars.default_version)
+
+    def test_create_org_unit_fail_on_parent_not_found(self):
+        # returning a 404 is strange but it was the current behaviour
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "parent_id": 41867,
+            },
+        )
+        self.assertJSONResponse(response, 404)
+        # we didn't create any new orgunit
+        self.assertNoCreation()
+
+    def test_create_org_unit_fail_on_group_not_found(self):
+        # returning a 404 is strange but it was the current behaviour
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [34]},
+        )
+        self.assertJSONResponse(response, 404)
+        # we didn't create any new orgunit
+        self.assertNoCreation()
+
+    def test_create_org_unit_group_not_in_same_version(self):
+        group = m.Group.objects.create(name="bla")
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [group.pk]},
+        )
+        jr = self.assertJSONResponse(response, 400)
+        self.assertEqual(jr[0]["errorKey"], "groups")
+        self.assertEqual(len(jr), 1)
+        # we didn't create any new orgunit
+        self.assertNoCreation()
+
+    def test_create_org_unit_group_not_in_same_version(self):
+        group = m.Group.objects.create(name="bla")
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [group.pk]},
+        )
+        jr = self.assertJSONResponse(response, 400)
+        self.assertEqual(jr[0]["errorKey"], "groups")
+        self.assertEqual(len(jr), 1)
+        # we didn't create any new orgunit
+        self.assertNoCreation()
+
+    def test_create_org_unit_group_ok_same_version(self):
+        group_1 = m.Group.objects.create(name="bla", source_version=self.star_wars.default_version)
+        group_2 = m.Group.objects.create(name="bla2", source_version=self.star_wars.default_version)
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [group_1.pk, group_2.pk]},
+        )
+
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        self.assertCreated(
+            {
+                m.OrgUnit: 1,
+            }
+        )
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertQuerysetEqual(
+            ou.groups.all().order_by("name"), ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"]
+        )
+
+    def test_edit_org_unit_retrieve_put(self):
+        """Retrieve a orgunit data and then resend back mostly unmodified and ensure that nothing burn
+
+        Note that a lot of the field we send will end up being unused"""
+        old_ou = self.jedi_council_corruscant
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/orgunits/{old_ou.id}/")
+        data = self.assertJSONResponse(response, 200)
+
+        group_ids = [g["id"] for g in data["groups"]]
+        data["groups"] = group_ids
+        response = self.client.patch(
+            f"/api/orgunits/{old_ou.id}/",
+            format="json",
+            data=data,
+        )
+
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        self.assertCreated({Modification: 1})
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertQuerysetEqual(ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"])
+        self.assertEqual(ou.id, old_ou.id)
+        self.assertEqual(ou.name, old_ou.name)
+        self.assertEqual(ou.parent, old_ou.parent)
+        self.assertEqual(ou.created_at, old_ou.created_at)
+        self.assertNotEqual(ou.updated_at, old_ou.updated_at)
+
+    def test_edit_org_unit_edit_bad_group_fail(self):
+        """FIXME this test Document current behaviour but we want to change how to handle this
+
+        If a org unit already has a bad group we can't edit it anymore from the interface
+        we should just not have this case"""
+
+        old_ou = m.OrgUnit.objects.create(
+            name="hey",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+        good_group = m.Group.objects.create(source_version=old_ou.version)
+        # group on wrong version
+        bad_group = m.Group.objects.create(name="bad")
+        old_ou.groups.set([bad_group, good_group])
+
+        self.old_counts = self.counts()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/orgunits/{old_ou.id}/")
+        data = self.assertJSONResponse(response, 200)
+
+        group_ids = [g["id"] for g in data["groups"]]
+        data["groups"] = group_ids
+        response = self.client.patch(
+            f"/api/orgunits/{old_ou.id}/",
+            format="json",
+            data=data,
+        )
+        self.assertJSONResponse(response, 400)
+        self.assertNoCreation()
+        ou = m.OrgUnit.objects.get(id=old_ou.id)
+        # Verify Nothing has changed
+        self.assertQuerysetEqual(
+            ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"]
+        )
+        self.assertEqual(ou.id, old_ou.id)
+        self.assertEqual(ou.name, old_ou.name)
+        self.assertEqual(ou.parent, old_ou.parent)
+        self.assertEqual(ou.created_at, old_ou.created_at)
+        self.assertEqual(ou.updated_at, old_ou.updated_at)

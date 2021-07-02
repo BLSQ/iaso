@@ -31,6 +31,13 @@ STATUS = [
     ("FINISHED", _("Finished")),
 ]
 
+PREPAREDNESS_SYNC_STATUS = [
+    ("QUEUED", _("Queued")),
+    ("ONGOING", _("Ongoing")),
+    ("FAILURE", _("Failed")),
+    ("FINISHED", _("Finished")),
+]
+
 PAYMENT = [
     ("DIRECT", _("Direct")),
     ("DFC", _("DFC")),
@@ -48,6 +55,18 @@ class Round(models.Model):
     lqas_ended_at = models.DateField(null=True, blank=True)
     target_population = models.IntegerField(null=True, blank=True)
     cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, null=True, blank=True)
+    im_percentage_children_missed_in_household = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
+    )
+    im_percentage_children_missed_out_household = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
+    )
+    awareness_of_campaign_planning = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
+    )
+    main_awareness_problem = models.CharField(max_length=255, null=True, blank=True)
+    lqas_district_passing = models.IntegerField(null=True, blank=True)
+    lqas_district_failing = models.IntegerField(null=True, blank=True)
 
 
 class Campaign(models.Model):
@@ -68,7 +87,7 @@ class Campaign(models.Model):
         on_delete=models.SET_NULL,
         related_name="campaigns",
         default=None,
-        limit_choices_to={"domain", "POLIO"},
+        limit_choices_to={"domain": "POLIO"},
     )
 
     onset_at = models.DateField(
@@ -154,6 +173,7 @@ class Campaign(models.Model):
     verification_score = models.IntegerField(null=True, blank=True)
     # Preparedness
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
+    preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
     # Surge recruitment
     surge_spreadsheet_url = models.URLField(null=True, blank=True)
     country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
@@ -259,3 +279,13 @@ class Surge(models.Model):
 
     def __str__(self) -> str:
         return f"{self.campaign} - {self.created_at}"
+
+
+class Config(models.Model):
+    slug = models.SlugField(unique=True)
+    content = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.slug

@@ -11,9 +11,10 @@ from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion
 from .command_logger import CommandLogger
 
 from ...tasks.dhis2_ou_importer import (
-    map_groups,
     load_groupsets,
     orgunit_from_row,
+    get_api_config,
+    fetch_orgunits,
 )
 
 # as geometry/coordinates might be big, increase the field size to its max
@@ -94,42 +95,36 @@ class Command(BaseCommand):
             "orgunits with unknown type\t", len([p for p in unit_dict.values() if p.org_unit_type == unknown_unit_type])
         )
 
-    """
-    the transaction prevent tons of small commits, and improve performancefrom 34 seconds to 8 seconds on play.dhis2.org dataset
-    """
-
+    # the transaction prevent tons of small commits, and improve performance
+    # from 34 seconds to 8 seconds on play.dhis2.org dataset
     @transaction.atomic
-    def handle(self, *args, **options):
+    def handle(
+        self,
+        source_name,
+        org_unit_type_csv_file=None,
+        version_number=None,
+        force=None,
+        validate=None,
+        continue_on_error=None,
+        dhis2_url=None,
+        dhis2_user=None,
+        dhis2_password=None,
+        **kwargs
+    ):
         iaso_logger = CommandLogger(self.stdout)
         self.iaso_logger = iaso_logger
         start = time.time()
 
-        org_unit_type_file_name = options.get("org_unit_type_csv_file", None)
-        source_name = options["source_name"]
-        version_number = options.get("version_number")
-        force = options.get("force")
-        validate = options.get("validate")
-        continue_on_error = options.get("continue_on_error")
+        org_unit_type_file_name = org_unit_type_csv_file
+
         source, _created = DataSource.objects.get_or_create(name=source_name)
 
-        url = (options.get("dhis2_url"),)
-        user = (options.get("dhis2_user"),)
-        password = (options.get("dhis2_password"),)
-
-        if url[0] and user[0] and password[0]:
-            connection_config = options
-        else:
-            if source.credentials:
-                connection_config = {
-                    "dhis2_url": source.credentials.url,
-                    "dhis2_password": source.credentials.password,
-                    "dhis2_user": source.credentials.login,
-                }
-
-            else:
-                iaso_logger.info("No credentials exist for this source, please provide them on the command line")
-                return
-        orgunits = self.fetch_orgunits(connection_config)
+        try:
+            connection_config = get_api_config(dhis2_url, dhis2_user, dhis2_password, source)
+        except ValueError:
+            iaso_logger.info("No credentials exist for this source, please provide them on the command line")
+            return
+        orgunits = fetch_orgunits(connection_config)
 
         version, _created = SourceVersion.objects.get_or_create(number=version_number, data_source=source)
 
@@ -157,10 +152,9 @@ class Command(BaseCommand):
         iaso_logger.ok("about to create orgunits", len(orgunits))
         for row in orgunits:
             try:
-                org_unit = orgunit_from_row(row, source, type_dict, unit_dict, unknown_unit_type, validate, version)
-
-                # org_unit should be saved before filling the groups
-                map_groups(row, org_unit, group_dict, version)
+                org_unit = orgunit_from_row(
+                    row, source, type_dict, unit_dict, group_dict, unknown_unit_type, validate, version
+                )
 
                 unit_dict[org_unit.source_ref] = org_unit
 

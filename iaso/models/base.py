@@ -20,6 +20,11 @@ from django.utils import timezone
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
+
 YEAR = "YEAR"
 QUARTER = "QUARTER"
 MONTH = "MONTH"
@@ -278,7 +283,7 @@ class AlgorithmRun(models.Model):
 
 class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    started_at = ended_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     progress_value = models.IntegerField(default=0)
     end_value = models.IntegerField(default=0)
@@ -328,8 +333,10 @@ class Task(models.Model):
         Warning: If you are in a transaction/atomic bloc the progress won't be seen from the API
         since it's local to the connexion.
         """
+        logger.info(f"Task {self} reported {progress_message}")
         self.refresh_from_db()
         if self.should_be_killed:
+            logger.warning(f"Stopping Task {self} as it as been marked for kill")
             self.status = KILLED
             self.ended_at = timezone.now()
             self.result = {"result": KILLED, "message": "Killed"}
@@ -345,6 +352,7 @@ class Task(models.Model):
         self.save()
 
     def report_success(self, message=None):
+        logger.info(f"Task {self} reported success with message {message}")
         self.status = SUCCESS
         self.ended_at = timezone.now()
         self.result = {"result": SUCCESS, "message": message}

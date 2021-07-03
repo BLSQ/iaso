@@ -613,13 +613,6 @@ const Round1Form = () => {
                     component={DateInput}
                     fullWidth
                 />
-                <Box className={classes.round1FormCalculations}>
-                    <Typography>
-                        Percentage of districts passing LQAS: xx% (xxx passing /
-                        xxx received / xxx total)
-                    </Typography>
-                    <Typography>Percentage of missed children: xx%</Typography>
-                </Box>
 
                 <Field
                     label={'IM Start'}
@@ -648,6 +641,42 @@ const Round1Form = () => {
                     name={'round_one.lqas_ended_at'}
                     component={DateInput}
                     fullWidth
+                />
+                <Field
+                        label="Districts passing LQAS"
+                        name={'round_one.lqas_district_passing'}
+                        component={TextInput}
+                        className={classes.input}
+                />
+                <Field
+                        label="Districts failing LQAS"
+                        name={'round_one.lqas_district_failing'}
+                        component={TextInput}
+                        className={classes.input}
+                />
+                <Field
+                        label="Main awareness problem"
+                        name={'round_one.main_awareness_problem'}
+                        component={TextInput}
+                        className={classes.input}
+                />
+                <Field
+                        label="% children missed IN household"
+                        name={'round_one.im_percentage_children_missed_in_household'}
+                        component={TextInput}
+                        className={classes.input}
+                />
+                <Field
+                        label="% children missed OUT OF household"
+                        name={'round_one.im_percentage_children_missed_out_household'}
+                        component={TextInput}
+                        className={classes.input}
+                />
+                <Field
+                        label="Awareness of campaign planning (%)"
+                        name={'round_one.awareness_of_campaign_planning'}
+                        component={TextInput}
+                        className={classes.input}
                 />
             </Grid>
         </Grid>
@@ -684,14 +713,6 @@ const Round2Form = () => {
                     component={DateInput}
                     fullWidth
                 />
-                <Box className={classes.round1FormCalculations}>
-                    <Typography>
-                        Percentage of districts passing LQAS: xx% (xxx passing /
-                        xxx received / xxx total)
-                    </Typography>
-                    <Typography>Percentage of missed children: xx%</Typography>
-                </Box>
-
                 <Field
                     label={'IM Start'}
                     name={'round_two.im_started_at'}
@@ -719,6 +740,42 @@ const Round2Form = () => {
                     name={'round_two.lqas_ended_at'}
                     component={DateInput}
                     fullWidth
+                />
+                <Field
+                        label="Districts passing LQAS"
+                        name={'round_two.lqas_district_passing'}
+                        component={TextInput}
+                        className={classes.input}
+                />
+                <Field
+                        label="Districts failing LQAS"
+                        name={'round_two.lqas_district_failing'}
+                        component={TextInput}
+                        className={classes.input}
+                />
+                <Field
+                        label="Main awareness problem"
+                        name={'round_two.main_awareness_problem'}
+                        component={TextInput}
+                        className={classes.input}
+                />
+                <Field
+                        label="% children missed IN household"
+                        name={'round_two.im_percentage_children_missed_in_household'}
+                        component={TextInput}
+                        className={classes.input}
+                />
+                <Field
+                        label="% children missed OUT OF household"
+                        name={'round_two.im_percentage_children_missed_out_household'}
+                        component={TextInput}
+                        className={classes.input}
+                />
+                <Field
+                        label="Awareness of campaign planning (%)"
+                        name={'round_two.awareness_of_campaign_planning'}
+                        component={TextInput}
+                        className={classes.input}
                 />
             </Grid>
         </Grid>

@@ -55,7 +55,12 @@ class ApiDhis2ouimporterTestCase(APITestCase):
             },
         )
         jr = self.assertJSONResponse(response, 200)
-        self.assertValidTaskAndInDB(jr)
+        task = self.assertValidTaskAndInDB(jr)
+        self.assertEqual(task.launcher, self.user)
+        self.assertEqual(task.params["kwargs"]["source_id"], source.id)
+        self.assertEqual(task.params["kwargs"]["dhis2_url"], None)
+        self.assertEqual(task.params["kwargs"]["dhis2_login"], None)
+        self.assertEqual(task.params["kwargs"]["dhis2_password"], None)
 
     def test_not_ok_incomplete_credentials(self):
         project = m.Project.objects.create(name="test proj", app_id="app_id", account=self.account)
@@ -141,9 +146,11 @@ class ApiDhis2ouimporterTestCase(APITestCase):
         )
         jr = self.assertJSONResponse(response, 200)
         task = self.assertValidTaskAndInDB(jr)
-        self.assertEqual(task.params["args"][5], "override url", task.params)
-        self.assertEqual(task.params["args"][6], "override login")
-        self.assertEqual(task.params["args"][7], "override pwd")
+        self.assertEqual(task.launcher, self.user)
+        self.assertEqual(task.params["kwargs"]["source_id"], source.id)
+        self.assertEqual(task.params["kwargs"]["dhis2_url"], "override url")
+        self.assertEqual(task.params["kwargs"]["dhis2_login"], "override login")
+        self.assertEqual(task.params["kwargs"]["dhis2_password"], "override pwd")
 
     def assertValidTaskAndInDB(self, jr, status="QUEUED", name=None):
         task_dict = jr["task"]

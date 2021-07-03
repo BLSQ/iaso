@@ -68,14 +68,14 @@ class Dhis2OuImporterViewSet(viewsets.ViewSet):
         dhis2_password = data.get("dhis2_password", None)
 
         task = dhis2_ou_importer(
-            source_id,
-            source_version_number,
-            force,
-            validate_status,
-            continue_on_error,
-            dhis2_url,
-            dhis2_login,
-            dhis2_password,
+            source_id=source_id,
+            source_version_number=source_version_number,
+            force=force,
+            validate_status=validate_status,
+            continue_on_error=continue_on_error,
+            dhis2_url=dhis2_url,
+            dhis2_login=dhis2_login,
+            dhis2_password=dhis2_password,
             user=request.user,
         )
         return Response({"task": TaskSerializer(instance=task).data})

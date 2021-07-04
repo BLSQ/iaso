@@ -1,5 +1,0 @@
-curl
-gettext
-gettext-base
-postgresql-client
-libgdal-dev

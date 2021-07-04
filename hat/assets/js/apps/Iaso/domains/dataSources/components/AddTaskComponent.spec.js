@@ -117,6 +117,9 @@ describe('AddTaskComponent', () => {
             connectedWrapper.update();
             await fillFields(connectedWrapper, credentialsFieldKeys);
             await awaitUseEffect(connectedWrapper);
+            confirmCancelDialogComponent = connectedWrapper.find(
+                ConfirmCancelDialogComponent,
+            );
             expect(confirmCancelDialogComponent.exists()).to.equal(true);
             expect(confirmCancelDialogComponent.props().allowConfirm).to.equal(
                 true,

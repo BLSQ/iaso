@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { Grid } from '@material-ui/core';
-import isEqual from 'lodash/isEqual';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
@@ -33,17 +32,17 @@ const AddTask = ({
     const [form, setFormField, _, setFormState] = useFormState(
         initialFormState(sourceCredentials),
     );
-    const [allowConfirm, setAllowConfirm] = useState(false);
     const [redirect, setRedirect] = useState(false);
     const [requestBody, setRequestBody] = useState();
     const [closeDialogCallback, setCloseDialogCallback] = useState(null);
-    const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(sourceCredentials.is_valid);
+    const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(
+        sourceCredentials.is_valid,
+    );
     const dispatch = useDispatch();
     // TODO add and return reset function
-    const dhisOu = useDhisOuImporterRequest(requestBody);
+    const { isLoading, data: dhisOu } = useDhisOuImporterRequest(requestBody);
 
     const submit = useCallback(() => {
-        setAllowConfirm(false);
         const body = {
             source_id: sourceId,
             source_version_number: sourceVersion,
@@ -90,29 +89,23 @@ const AddTask = ({
         },
         [onConfirm],
     );
-    useEffect(() => {
-        if (!withExistingDhis2Settings) {
-            if (
-                form.dhis2_url.value &&
-                form.dhis2_login.value &&
-                form.dhis2_password.value
-            ) {
-                setAllowConfirm(true);
-            } else {
-                setAllowConfirm(false);
-            }
+
+    let allowConfirm;
+    if (isLoading) {
+        allowConfirm = false;
+    } else if (!withExistingDhis2Settings) {
+        if (
+            form.dhis2_url.value &&
+            form.dhis2_login.value &&
+            form.dhis2_password.value
+        ) {
+            allowConfirm = true;
         } else {
-            setAllowConfirm(true);
+            allowConfirm = false;
         }
-    }, [
-        withExistingDhis2Settings,
-        form.dhis2_url.value,
-        form.dhis2_login.value,
-        form.dhis2_password.value,
-        // this dep to unlock buttons after successful request
-        // TODO include this behaviour in reset() func
-        dhisOu,
-    ]);
+    } else {
+        allowConfirm = true;
+    }
 
     useEffect(() => {
         if (dhisOu) {

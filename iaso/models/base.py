@@ -555,6 +555,10 @@ class ExternalCredentials(models.Model):
     password = models.TextField()
     url = models.TextField()
 
+    @property
+    def is_valid(self) -> bool:
+        return bool(self.url and self.password and self.login)
+
     def __str__(self):
         return "%s - %s - %s (%s)" % (self.name, self.login, self.url, self.account)
 
@@ -564,6 +568,7 @@ class ExternalCredentials(models.Model):
             "name": self.name,
             "login": self.login,
             "url": self.url,
+            "is_valid": self.is_valid,
         }
 
 

@@ -13,6 +13,7 @@ const existingCredentials = {
     name: 'Goron',
     login: 'Daruk',
     url: '/api/divinebeast/vahnaboris',
+    is_valid: true,
 };
 
 const SOURCE_ID = 1;

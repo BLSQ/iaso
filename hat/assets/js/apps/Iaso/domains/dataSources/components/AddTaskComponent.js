@@ -37,9 +37,7 @@ const AddTask = ({
     const [redirect, setRedirect] = useState(false);
     const [requestBody, setRequestBody] = useState();
     const [closeDialogCallback, setCloseDialogCallback] = useState(null);
-    const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(
-        !isEqual(sourceCredentials, {}),
-    );
+    const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(sourceCredentials.is_valid);
     const dispatch = useDispatch();
     // TODO add and return reset function
     const dhisOu = useDhisOuImporterRequest(requestBody);
@@ -216,10 +214,10 @@ const AddTask = ({
             <Grid container spacing={4} style={{ marginTop: '5px' }}>
                 {withExistingDhis2Settings ? (
                     <Grid xs={12} item>
-                        {renderDefaultLayout(!isEqual(sourceCredentials, {}))}
+                        {renderDefaultLayout(sourceCredentials.is_valid)}
                     </Grid>
                 ) : (
-                    renderWithOptionalFields(!isEqual(sourceCredentials, {}))
+                    renderWithOptionalFields(sourceCredentials.is_valid)
                 )}
             </Grid>
         </ConfirmCancelDialogComponent>

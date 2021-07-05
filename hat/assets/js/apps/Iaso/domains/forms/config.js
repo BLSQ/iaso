@@ -98,6 +98,7 @@ const formsTableColumns = (
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
+        style: { justifyContent: 'left' },
         Cell: settings => <ColumnTextComponent text={settings.original.name} />,
     },
     {
@@ -157,6 +158,7 @@ const formsTableColumns = (
     {
         Header: formatMessage(MESSAGES.form_id),
         sortable: false,
+        style: { justifyContent: 'left' },
         Cell: settings => (
             <ColumnTextComponent
                 text={settings.original.form_id || textPlaceholder}

@@ -70,7 +70,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         which all the power should be really specified.
 
         Can serve theses formats, depending on the combination of GET Parameters:
-         * Simple JSON (default)
+         * Simple JSON (default) -> as_dict_for_mobile
          * Paginated JSON (if a `limit` is passed)
          * Paginated JSON with less info (if both `limit` and `smallSearch` is passed.
          * GeoJson with the geo info (if `withShapes` is passed` )
@@ -348,16 +348,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
-
+        altitude = request.data.get("altitude", None)
         if latitude and longitude:
-            # TODO: remove this mess once the frontend handles altitude edition
-            if "altitude" in request.data:  # provided explicitly
-                altitude = request.data["altitude"]
-            elif org_unit.location is not None:  # not provided but we have a current location: keep altitude
-                altitude = org_unit.location.z
-            else:  # no location yet, no altitude provided, set to 0
-                altitude = 0
-
             org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
         else:
             org_unit.location = None

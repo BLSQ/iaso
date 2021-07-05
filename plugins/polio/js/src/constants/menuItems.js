@@ -129,6 +129,13 @@ export const menuItems = [
                 // permission: paths.formsPath.permission,
                 icon: 'list',
             },
+            {
+                label: MESSAGES.pages,
+                path: '/pages/polio/list',
+                key: 'list',
+                // permission: paths.formsPath.permission,
+                icon: 'list',
+            },
         ],
     },
 ];

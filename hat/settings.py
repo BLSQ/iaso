@@ -89,7 +89,7 @@ LOGGING = {
 }
 
 # AWS expects python logs to be stored in this folder
-AWS_LOG_FOLDER = "/var/log"
+AWS_LOG_FOLDER = "/var/app/log"
 if os.path.isdir(AWS_LOG_FOLDER):
     if os.access(AWS_LOG_FOLDER, os.W_OK):
         print("Logging to django log")

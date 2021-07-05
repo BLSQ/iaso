@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 
 import { Grid } from '@material-ui/core';
 
+import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
@@ -14,6 +15,7 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import MESSAGES from '../messages';
 
 const FormForm = ({ currentForm, setFieldValue }) => {
+    const intl = useSafeIntl();
     const allProjects = useSelector(state => state.projects.allProjects);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
     const setPeriodType = value => {
@@ -87,10 +89,30 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                 <InputComponent
                     keyValue="single_per_period"
                     disabled={currentForm.period_type.value === null}
+                    required
                     onChange={(key, value) => setFieldValue(key, value)}
                     value={currentForm.single_per_period.value}
-                    errors={currentForm.single_per_period.errors}
-                    type="checkbox"
+                    errors={
+                        currentForm.single_per_period.value === null
+                            ? [
+                                  intl.formatMessage(
+                                      MESSAGES.singlePerPeriodSelect,
+                                  ),
+                              ]
+                            : []
+                    }
+                    type="select"
+                    options={[
+                        {
+                            label: intl.formatMessage(MESSAGES.yes),
+                            value: true,
+                        },
+                        {
+                            label: intl.formatMessage(MESSAGES.no),
+                            value: false,
+                        },
+                    ]}
+                    clearable={false}
                     label={MESSAGES.singlePerPeriod}
                 />
             </Grid>

@@ -16,14 +16,11 @@
         "webpack-prod": "webpack --config ./hat/webpack.prod.js",
         "webpack-server": "node ./hat/webpack.server.js",
         "dev": "npm run webpack && npm run webpack-server",
-        "test-py": "python ./test2.py",
+        "scan-translations": "python ./scripts/scantranslations.py",
         "extract-iaso-en-messages": "extract-messages --locales=en  --flat --output './hat/assets/js/apps/Iaso/domains/app/translations/extracted' './hat/assets/js/apps/Iaso/**/*.js'",
-        "extract-detected-en-keys": "json -f './hat/assets/js/apps/Iaso/domains/app/translations/extracted/en.json' -k >> './hat/assets/js/apps/Iaso/domains/app/translations/extracted/detectedEnKeys.txt'",
-        "extract-existing-en-keys": "json -f './hat/assets/js/apps/Iaso/domains/app/translations/en.json' -k >> './hat/assets/js/apps/Iaso/domains/app/translations/extracted/existingEnKeys.txt'",
         "extract-iaso-fr-messages": "extract-messages --locales=fr  --flat --output './hat/assets/js/apps/Iaso/domains/app/translations/extracted' './hat/assets/js/apps/Iaso/**/*.js'",
-        "extract-detected-fr-keys": "json -f './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' -k >> './hat/assets/js/apps/Iaso/domains/app/translations/extracted/detectedFrKeys.txt'",
-        "extract-existing-fr-keys": "json -f './hat/assets/js/apps/Iaso/domains/app/translations/fr.json' -k >> './hat/assets/js/apps/Iaso/domains/app/translations/extracted/existingFrKeys.txt'",
-        "scan-translations-en": "npm run extract-iaso-en-messages &&  npm run extract-detected-en-keys && npm run extract-existing-en-keys && npm run test-py"
+        "scan-translations-en": "npm run extract-iaso-en-messages && npm run scan-translations './hat/assets/js/apps/Iaso/domains/app/translations/en.json' './hat/assets/js/apps/Iaso/domains/app/translations/extracted/en.json' 'En'",
+        "scan-translations-fr": "npm run extract-iaso-fr-messages && npm run scan-translations './hat/assets/js/apps/Iaso/domains/app/translations/fr.json' './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' 'Fr'"
     },
     "repository": {
         "type": "git",

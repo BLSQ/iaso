@@ -12,6 +12,7 @@ coverage
 __pycache__/
 *.py[cod]
 *$py.class
+.mypy_cache
 
 # C extensions
 *.so
@@ -91,6 +92,7 @@ build_scripts/deploy.zip
 #!.elasticbeanstalk/*.cfg.yml
 #!.elasticbeanstalk/*.global.yml
 .elasticbeanstalk/config.yml
+.elasticbeanstalk/logs
 
 ### Built JS ###
 hat/assets/bundles/

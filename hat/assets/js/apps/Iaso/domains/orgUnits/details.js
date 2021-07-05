@@ -291,23 +291,22 @@ class OrgUnitDetail extends Component {
         // TODO not sure why, perhaps to remove decimals
         const convert = pos =>
             pos !== null ? parseFloat(pos.toFixed(8)) : null;
-        const new_pos = {};
+        const newPos = {
+            altitude: location.alt ? convert(location.alt) : 0,
+        };
         // only update dimensions that are presents
-        if (location.alt !== undefined) {
-            new_pos.altitude = convert(location.alt);
-        }
         if (location.lng !== undefined) {
-            new_pos.longitude = convert(location.lng);
+            newPos.longitude = convert(location.lng);
         }
         if (location.lat !== undefined) {
-            new_pos.latitude = convert(location.lat);
+            newPos.latitude = convert(location.lat);
         }
 
         this.setState({
             orgUnitLocationModified: true,
             currentOrgUnit: {
                 ...this.state.currentOrgUnit,
-                ...new_pos,
+                ...newPos,
             },
         });
     }

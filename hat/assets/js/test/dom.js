@@ -30,7 +30,6 @@ global.navigator = {
     language: 'en',
 };
 global.STATIC_URL = '';
-global.IS_TEST = true;
 global.PLUGIN_POLIO_ENABLED = false;
 global.L = require('leaflet');
 

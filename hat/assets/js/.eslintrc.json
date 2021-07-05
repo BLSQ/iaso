@@ -106,7 +106,6 @@
     "shallow": "readonly",
     "mount": "readonly",
     "sinon": "readonly",
-    "render":"readonly",
-    "IS_TEST":"readonly"
+    "render":"readonly"
   }
 }

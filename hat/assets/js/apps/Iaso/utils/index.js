@@ -1,10 +1,4 @@
-let pluginsConfigs = {};
-
-if (!global.IS_TEST) {
-    // TODO: remove this ugly hack for the tests
-    // eslint-disable-next-line global-require
-    pluginsConfigs = require('../../../../../../plugins');
-}
+import pluginsConfigs from '../../../../../../plugins';
 
 export const capitalize = (text, keepEndCase = false) =>
     text

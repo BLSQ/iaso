@@ -13,7 +13,7 @@ import { baseUrls } from '../../constants/urls';
 import OrgUnitTooltip from './components/OrgUnitTooltip';
 import getDisplayName from '../../utils/usersUtils';
 import MESSAGES from './messages';
-import { getStatusMessage, getOrgUnitGroups } from './utils';
+import { getStatusMessage, getOrgUnitGroups, getStatusColor } from './utils';
 
 export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
     const columns = [
@@ -59,14 +59,14 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
         {
             Header: formatMessage(MESSAGES.status),
             accessor: 'validation_status',
-            Cell: settings => (
-                <span>
-                    {getStatusMessage(
-                        settings.original.validation_status,
-                        formatMessage,
-                    )}
-                </span>
-            ),
+            Cell: settings => {
+                const status = settings.original.validation_status;
+                return (
+                    <span style={getStatusColor(status)}>
+                        {getStatusMessage(status, formatMessage)}
+                    </span>
+                );
+            },
         },
         {
             Header: formatMessage(MESSAGES.instances_count),

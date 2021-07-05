@@ -9,6 +9,7 @@ from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.apps import AppsViewSet
+from .api.pages import PagesViewSet
 from .api.projects import ProjectsViewSet
 from .api.instances import InstancesViewSet
 from .api.devices import DevicesViewSet
@@ -64,6 +65,7 @@ router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
 router.register(r"instances", InstancesViewSet, basename="instances")
 router.register(r"forms", FormsViewSet, basename="forms")
+router.register(r"pages", PagesViewSet, basename="pages")
 router.register(r"formversions", FormVersionsViewSet, basename="formversions")
 router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")

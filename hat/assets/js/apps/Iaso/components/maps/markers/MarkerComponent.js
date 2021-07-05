@@ -30,7 +30,7 @@ const MarkerComponent = props => {
         <Marker
             draggable={draggable}
             icon={marker || customMarker}
-            position={[item.latitude, item.longitude]}
+            position={[item.latitude, item.longitude, item.altitude]}
             onClick={() => onClick(item)}
             onDragend={e => onDragend(e.target)}
             {...markerProps(item)}

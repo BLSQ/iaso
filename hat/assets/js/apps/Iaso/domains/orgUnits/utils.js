@@ -1,6 +1,6 @@
 import React from 'react';
 import orderBy from 'lodash/orderBy';
-import { textPlaceholder, rawTheme } from 'bluesquare-components';
+import { textPlaceholder } from 'bluesquare-components';
 import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
 import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
 import { circleColorMarkerOptions } from '../../utils/mapUtils';
@@ -171,20 +171,6 @@ export const getStatusMessage = (status, formatMessage) => {
         }
         default:
             return formatMessage(MESSAGES.validated);
-    }
-};
-
-export const getStatusColor = status => {
-    switch (status) {
-        case 'NEW': {
-            // value taken from /iaso/hat/assets/css/_iaso.scss
-            return { color: '#2372BA' };
-        }
-        case 'REJECTED': {
-            return { color: rawTheme.palette.error.main };
-        }
-        default:
-            return { color: rawTheme.palette.success.main };
     }
 };
 

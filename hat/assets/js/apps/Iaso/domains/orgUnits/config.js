@@ -13,9 +13,22 @@ import { baseUrls } from '../../constants/urls';
 import OrgUnitTooltip from './components/OrgUnitTooltip';
 import getDisplayName from '../../utils/usersUtils';
 import MESSAGES from './messages';
-import { getStatusMessage, getOrgUnitGroups, getStatusColor } from './utils';
+import { getStatusMessage, getOrgUnitGroups } from './utils';
 
 export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
+    const getStatusColor = status => {
+        switch (status) {
+            case 'NEW': {
+                // value taken from /iaso/hat/assets/css/_iaso.scss
+                return classes.statusNew;
+            }
+            case 'REJECTED': {
+                return classes.statusRejected;
+            }
+            default:
+                return classes.statusValidated;
+        }
+    };
     const columns = [
         {
             Header: 'Id',
@@ -62,7 +75,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             Cell: settings => {
                 const status = settings.original.validation_status;
                 return (
-                    <span style={getStatusColor(status)}>
+                    <span className={getStatusColor(status)}>
                         {getStatusMessage(status, formatMessage)}
                     </span>
                 );

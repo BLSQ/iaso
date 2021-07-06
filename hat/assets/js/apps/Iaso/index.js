@@ -13,7 +13,7 @@ import { addRoutes } from './routing/redirections';
 import * as zoomBar from './components/leaflet/zoom-bar'; // don't delete - needed to override leaflet zoombar
 
 export default function iasoApp(element) {
-    const baseRoutes = routeConfigs().map(routeConfig => (
+    const baseRoutes = routeConfigs.map(routeConfig => (
         <Route
             path={getPath(routeConfig)}
             component={props => (

@@ -163,10 +163,8 @@ if (PLUGIN_POLIO_ENABLED === 'True') {
     });
 }
 
-const plugins = getPlugins();
-let pluginsMenu = [];
-plugins.forEach(plugin => {
-    pluginsMenu = [...pluginsMenu, ...plugin.menu];
-});
+const pluginsMenu = getPlugins()
+    .map(plugin => plugin.menu)
+    .flat();
 
 export default [...menuItems, ...pluginsMenu];

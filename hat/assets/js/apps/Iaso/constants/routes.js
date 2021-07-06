@@ -496,38 +496,31 @@ export const page500 = {
     params: [],
 };
 
-export const routeConfigs = () => {
-    let routes = [
-        formsPath,
-        archivedPath,
-        formDetailPath,
-        mappingsPath,
-        mappingDetailPath,
-        instancesPath,
-        instanceDetailPath,
-        orgUnitsPath,
-        orgUnitsDetailsPath,
-        linksPath,
-        algosPath,
-        completenessPath,
-        usersPath,
-        projectsPath,
-        dataSourcesPath,
-        tasksPath,
-        devicesPath,
-        groupsPath,
-        orgUnitTypesPath,
-        polioPath,
-        page401,
-        page404,
-        page500,
-    ];
-
-    const plugins = getPlugins();
-
-    plugins.forEach(plugin => {
-        routes = routes.concat(plugin.routes);
-    });
-
-    return routes;
-};
+export const routeConfigs = [
+    formsPath,
+    archivedPath,
+    formDetailPath,
+    mappingsPath,
+    mappingDetailPath,
+    instancesPath,
+    instanceDetailPath,
+    orgUnitsPath,
+    orgUnitsDetailsPath,
+    linksPath,
+    algosPath,
+    completenessPath,
+    usersPath,
+    projectsPath,
+    dataSourcesPath,
+    tasksPath,
+    devicesPath,
+    groupsPath,
+    orgUnitTypesPath,
+    polioPath,
+    page401,
+    page404,
+    page500,
+    ...getPlugins()
+        .map(plugin => plugin.routes)
+        .flat(),
+];

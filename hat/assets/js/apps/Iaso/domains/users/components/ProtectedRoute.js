@@ -15,6 +15,7 @@ import { userHasPermission, getFirstAllowedUrl } from '../utils';
 
 import PageError from '../../../components/errors/PageError';
 import { switchLocale } from '../../app/actions';
+import { setCookie, getCookie } from '../../../utils/cookies';
 
 class ProtectedRoute extends Component {
     componentDidMount() {
@@ -35,8 +36,8 @@ class ProtectedRoute extends Component {
                 }
             }
             // Use defined default language if it exists and if the user didn't set it manually
-            if (currentUser?.language && !localStorage.getItem('iaso_locale')) {
-                localStorage.setItem('iaso_locale', currentUser.language);
+            if (currentUser?.language && !getCookie('django_language')) {
+                setCookie('django_language', currentUser.language);
                 this.props.dispatch(switchLocale(currentUser.language));
             }
         }

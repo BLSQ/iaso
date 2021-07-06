@@ -9,8 +9,8 @@
       <h1 class="auth__heading"> <img src="{% static 'images/logo.png' %}" /></h1>
       <p>{% trans 'An offspring of the <a href="https://www.trypelim.org">Trypelim</a> project' %}</p>
     </header>
-    <div class="auth__form">
-      <form method="post" data-qa="login-form" action="{% url 'login' %}">
+    <div>
+      <form method="post" data-qa="login-form" class="auth__form" action="{% url 'login' %}">
         {% if next %}
         {% if user.is_authenticated %}
         <p class="auth__text--warning">
@@ -41,6 +41,7 @@
         </button>
         <p class="login-link"><a href="{% url 'forgot_password' %}">{% trans 'Forgot password' %}</a></p>
       </form>
+      {% include "./language_picker.html" %}
     </div>
   </div>
 </div>

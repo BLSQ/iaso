@@ -89,7 +89,7 @@ LOGGING = {
 }
 
 # AWS expects python logs to be stored in this folder
-AWS_LOG_FOLDER = "/opt/python/log"
+AWS_LOG_FOLDER = "/var/app/log"
 if os.path.isdir(AWS_LOG_FOLDER):
     if os.access(AWS_LOG_FOLDER, os.W_OK):
         print("Logging to django log")
@@ -218,7 +218,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en"
 
-LOCALE_PATHS = ["/opt/app/hat/locale/", "hat/locale/"]
+LOCALE_PATHS = ["/var/app/current/hat/locale/", "hat/locale/"]
 
 TIME_ZONE = "UTC"
 
@@ -331,6 +331,8 @@ SSL_ON = (not DEBUG) and (not BEANSTALK_WORKER)
 if SSL_ON:
     SECURE_HSTS_SECONDS = 31_536_000  # 1 year
 SECURE_SSL_REDIRECT = SSL_ON
+# AWS Health check need to be able to access this endpoint directly to verify that the server is up
+SECURE_REDIRECT_EXEMPT = [r"_health/$"]
 
 # Email configuration
 

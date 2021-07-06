@@ -7,6 +7,7 @@ import { Box } from '@material-ui/core';
 import { Page } from './Page';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { useStyles } from '../styles/theme';
+import { useGetPages } from '../hooks/useGetPages';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -15,13 +16,11 @@ const DEFAULT_ORDER = 'name';
 export const Pages = () => {
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
-    const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
-    const { query } = useGetCampaigns({
+    const { query } = useGetPages({
         page,
         pageSize,
-        order,
     });
 
     const { data: pages = [], status } = query;
@@ -48,20 +47,16 @@ export const Pages = () => {
             if (newParams.pageSize !== pageSize) {
                 setPageSize(newParams.pageSize);
             }
-            if (newParams.order !== order) {
-                setOrder(newParams.order);
-            }
         },
-        [page, pageSize, order],
+        [page, pageSize],
     );
 
     const tableParams = useMemo(() => {
         return {
             pageSize,
             page,
-            order,
         };
-    }, [pageSize, page, order]);
+    }, [pageSize, page]);
 
     return (
         <Page title={'Pages'}>
@@ -75,7 +70,7 @@ export const Pages = () => {
                         baseUrl={'/polio'}
                         redirectTo={onTableParamsChange}
                         columns={columns}
-                        data={pages.result}
+                        data={pages.results}
                         watchToRender={tableParams}
                     />
                 )}

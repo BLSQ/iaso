@@ -28,10 +28,11 @@ const DatesRange = ({
     dateTo,
     onChangeDate,
     intl: { formatMessage },
-    dateFormat,
     displayedDateFormat,
 }) => {
     const classes = useStyles();
+    // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
+    const dateFormat = 'DD-MM-YYYY';
     return (
         <Grid container spacing={4}>
             <Grid item xs={6}>
@@ -43,12 +44,12 @@ const DatesRange = ({
                         maxDate={
                             dateTo === ''
                                 ? undefined
-                                : moment(dateTo, dateFormat)
+                                : moment(dateTo, displayedDateFormat)
                         }
                         InputLabelProps={{
                             shrink: Boolean(dateFrom),
                         }}
-                        format={dateFormat}
+                        format={displayedDateFormat}
                         label={formatMessage(MESSAGES.from)}
                         helperText=""
                         inputVariant="outlined"
@@ -87,12 +88,12 @@ const DatesRange = ({
                         minDate={
                             dateFrom === ''
                                 ? undefined
-                                : moment(dateFrom, dateFormat)
+                                : moment(dateFrom, displayedDateFormat)
                         }
                         InputLabelProps={{
                             shrink: Boolean(dateTo),
                         }}
-                        format={dateFormat}
+                        format={displayedDateFormat}
                         label={formatMessage(MESSAGES.to)}
                         helperText=""
                         value={
@@ -127,9 +128,7 @@ const DatesRange = ({
 DatesRange.defaultProps = {
     dateFrom: '',
     dateTo: '',
-    // Using displayedDateFormat because passing a date with format DD/MM/YYYY will cause a bug in Firefox
     displayedDateFormat: 'DD/MM/YYYY',
-    dateFormat: 'DD-MM-YYYY',
     onChangeDate: () => null,
 };
 
@@ -138,7 +137,6 @@ DatesRange.propTypes = {
     dateFrom: PropTypes.string,
     dateTo: PropTypes.string,
     displayedDateFormat: PropTypes.string,
-    dateFormat: PropTypes.string,
     intl: PropTypes.object.isRequired,
 };
 

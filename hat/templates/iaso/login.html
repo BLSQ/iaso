@@ -10,21 +10,6 @@
       <p>{% trans 'An offspring of the <a href="https://www.trypelim.org">Trypelim</a> project' %}</p>
     </header>
     <div class="auth__form">
-      <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
-        <input name="next" type="hidden" value="{{ redirect_to }}">
-        <select name="language">
-          {% get_current_language as LANGUAGE_CODE %}
-          {% get_available_languages as LANGUAGES %}
-          {% get_language_info_list for LANGUAGES as languages %}
-          {% for language in languages %}
-          <option value="{{ language.code }}">
-            {{ language.name_local }} ({{ language.code }})
-          </option>
-          {% endfor %}
-        </select>
-        {{LANGUAGE_CODE}}
-        <input type="submit" value="Go">
-      </form>
       <form method="post" data-qa="login-form" action="{% url 'login' %}">
         {% if next %}
         {% if user.is_authenticated %}
@@ -54,11 +39,9 @@
         <button id="display-password">
           <i class="fa fa-eye" id="eye-icon" aria-hidden="true"></i>
         </button>
+        <p class="login-link"><a href="{% url 'forgot_password' %}">{% trans 'Forgot password' %}</a></p>
       </form>
     </div>
-    <footer class="auth__footer">
-      <p><a href="{% url 'forgot_password' %}">{% trans 'Forgot password' %}</a></p>
-    </footer>
   </div>
 </div>
 <script>

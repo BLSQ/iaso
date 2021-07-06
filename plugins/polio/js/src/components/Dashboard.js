@@ -843,6 +843,10 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
             form: RiskAssessmentForm,
         },
         {
+            title: 'Scope',
+            form: ScopeForm,
+        },
+        {
             title: 'Budget',
             form: BudgetForm,
         },

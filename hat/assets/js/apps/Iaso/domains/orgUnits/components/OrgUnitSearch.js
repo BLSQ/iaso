@@ -110,6 +110,7 @@ const OrgUnitSearch = ({
     onSelectOrgUnit,
     minResultCount,
     inputLabelObject,
+    withSearchButton,
 }) => {
     const [searchValue, setSearchValue] = useState('');
     const [resultsCount, setResultsCount] = useState(minResultCount);
@@ -163,14 +164,17 @@ const OrgUnitSearch = ({
                             label={inputLabelObject}
                             onEnterPressed={() => handleSearch()}
                         />
-                        <Button
-                            variant="contained"
-                            className={classes.searchButton}
-                            color="primary"
-                            onClick={handleSearch}
-                        >
-                            <FormattedMessage {...MESSAGES.search} />
-                        </Button>
+                        {/* //TODO make optional and default to false */}
+                        {withSearchButton && (
+                            <Button
+                                variant="contained"
+                                className={classes.searchButton}
+                                color="primary"
+                                onClick={handleSearch}
+                            >
+                                <FormattedMessage {...MESSAGES.search} />
+                            </Button>
+                        )}
                     </Box>
 
                     {isLoading && (
@@ -288,6 +292,7 @@ const OrgUnitSearch = ({
 OrgUnitSearch.defaultProps = {
     minResultCount: 50,
     inputLabelObject: MESSAGES.searchOrgUnit,
+    withSearchButton: false,
 };
 
 OrgUnitSearch.propTypes = {
@@ -295,6 +300,7 @@ OrgUnitSearch.propTypes = {
     onSelectOrgUnit: PropTypes.func.isRequired,
     minResultCount: PropTypes.number,
     inputLabelObject: PropTypes.object,
+    withSearchButton: PropTypes.bool,
 };
 
 export default withStyles(styles)(OrgUnitSearch);

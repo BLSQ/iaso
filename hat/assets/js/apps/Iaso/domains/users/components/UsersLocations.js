@@ -44,6 +44,7 @@ const UsersLocations = ({ handleChange, currentUser }) => {
             <OrgUnitSearch
                 onSelectOrgUnit={ou => handleAdd(ou)}
                 inputLabelObject={MESSAGES.addOrgUnit}
+                withSearchButton
             />
             {currentUser.org_units.value.length > 0 && (
                 <Box className={classes.chipList}>

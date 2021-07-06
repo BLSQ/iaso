@@ -11,23 +11,18 @@ const useStyles = makeStyles(theme => ({
     formControl: {
         width: '100%',
         marginBottom: theme.spacing(),
-    },
-    label: {
-        paddingTop: 4,
+        marginTop: theme.spacing(),
     },
     clearDateButton: {
         marginRight: theme.spacing(2),
         padding: 0,
         position: 'absolute',
-        right: theme.spacing(5),
-        top: 22,
-    },
-    input: {
-        height: 38,
+        right: theme.spacing(6),
+        top: 15,
     },
 }));
 
-const DateRange = ({
+const DatesRange = ({
     dateFrom,
     dateTo,
     onChangeDate,
@@ -44,15 +39,12 @@ const DateRange = ({
                         variant="inline"
                         maxDate={dateTo === '' ? undefined : dateTo}
                         InputLabelProps={{
-                            className: classes.label,
                             shrink: Boolean(dateFrom),
                         }}
                         format="DD/MM/YYYY"
                         label={formatMessage(MESSAGES.from)}
                         helperText=""
-                        InputProps={{
-                            className: classes.input,
-                        }}
+                        inputVariant="outlined"
                         value={dateFrom === '' ? null : dateFrom}
                         onChange={date =>
                             onChangeDate(
@@ -79,18 +71,15 @@ const DateRange = ({
                     <KeyboardDatePicker
                         autoOk
                         disableToolbar
+                        inputVariant="outlined"
                         variant="inline"
                         minDate={dateFrom === '' ? undefined : dateFrom}
                         InputLabelProps={{
-                            className: classes.label,
                             shrink: Boolean(dateTo),
                         }}
                         format="DD/MM/YYYY"
                         label={formatMessage(MESSAGES.to)}
                         helperText=""
-                        InputProps={{
-                            className: classes.input,
-                        }}
                         value={dateTo === '' ? null : dateTo}
                         onChange={date =>
                             onChangeDate(
@@ -116,19 +105,19 @@ const DateRange = ({
     );
 };
 
-DateRange.defaultProps = {
+DatesRange.defaultProps = {
     dateFrom: '',
     dateTo: '',
     onChangeDate: () => null,
 };
 
-DateRange.propTypes = {
+DatesRange.propTypes = {
     onChangeDate: PropTypes.func,
     dateFrom: PropTypes.string,
     dateTo: PropTypes.string,
     intl: PropTypes.object.isRequired,
 };
 
-const DateRangeIntl = injectIntl(DateRange);
+const DatesRangeIntl = injectIntl(DatesRange);
 
-export default DateRangeIntl;
+export default DatesRangeIntl;

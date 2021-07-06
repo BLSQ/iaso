@@ -190,17 +190,17 @@ class OrgUnitsFiltersComponent extends Component {
                         </div>
                     </Grid>
                     <Grid item xs={8}>
-                        <Grid container spacing={4}>
-                            <Grid item xs={12}>
-                                <DatesRange
-                                    onChangeDate={(key, value) => {
-                                        this.onChange(value, key);
-                                    }}
-                                    dateFrom={searchParams.dateFrom}
-                                    dateTo={searchParams.dateTo}
-                                />
-                            </Grid>
+                        <Grid container item xs={12}>
+                            <DatesRange
+                                onChangeDate={(key, value) => {
+                                    this.onChange(value, key);
+                                }}
+                                dateFrom={searchParams.dateFrom}
+                                dateTo={searchParams.dateTo}
+                            />
+                        </Grid>
 
+                        <Grid container spacing={4}>
                             <Grid item xs={6}>
                                 <FiltersComponent
                                     params={params}

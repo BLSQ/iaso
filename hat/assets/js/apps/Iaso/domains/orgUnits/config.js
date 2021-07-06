@@ -16,6 +16,19 @@ import MESSAGES from './messages';
 import { getStatusMessage, getOrgUnitGroups } from './utils';
 
 export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
+    const getStatusColor = status => {
+        switch (status) {
+            case 'NEW': {
+                // value taken from /iaso/hat/assets/css/_iaso.scss
+                return classes.statusNew;
+            }
+            case 'REJECTED': {
+                return classes.statusRejected;
+            }
+            default:
+                return classes.statusValidated;
+        }
+    };
     const columns = [
         {
             Header: 'Id',
@@ -59,14 +72,14 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
         {
             Header: formatMessage(MESSAGES.status),
             accessor: 'validation_status',
-            Cell: settings => (
-                <span>
-                    {getStatusMessage(
-                        settings.original.validation_status,
-                        formatMessage,
-                    )}
-                </span>
-            ),
+            Cell: settings => {
+                const status = settings.original.validation_status;
+                return (
+                    <span className={getStatusColor(status)}>
+                        {getStatusMessage(status, formatMessage)}
+                    </span>
+                );
+            },
         },
         {
             Header: formatMessage(MESSAGES.instances_count),

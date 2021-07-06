@@ -90,6 +90,15 @@ const styles = theme => ({
         height: 15,
         borderRadius: 15,
     },
+    statusNew: {
+        color: theme.palette.primary.main,
+    },
+    statusValidated: {
+        color: theme.palette.success.main,
+    },
+    statusRejected: {
+        color: theme.palette.error.main,
+    },
 });
 
 const getDefaultSource = currentUser =>

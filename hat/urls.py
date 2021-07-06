@@ -11,8 +11,8 @@ admin.site.index_title = "Administration de Iaso"
 
 urlpatterns = [
     url(r"^$", RedirectView.as_view(pattern_name="dashboard:iaso", permanent=False), name="index"),
-    url(r"^accounts/", include("django.contrib.auth.urls")),
     url(r"^_health/", health),
+    url(r"^accounts/", include("django.contrib.auth.urls")),
     url(r"^admin/", admin.site.urls),
     url(r"^api/", include("iaso.urls")),
     # url(r"^api/", include("hat.api.urls")),

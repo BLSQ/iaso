@@ -331,6 +331,7 @@ SSL_ON = (not DEBUG) and (not BEANSTALK_WORKER)
 if SSL_ON:
     SECURE_HSTS_SECONDS = 31_536_000  # 1 year
 SECURE_SSL_REDIRECT = SSL_ON
+SECURE_REDIRECT_EXEMPT = [r"_health/$"]
 
 # Email configuration
 

@@ -121,9 +121,15 @@ class IMViewSet(viewsets.ViewSet):
                     for key in keys.keys():
                         value = form.get(key, None)
                         if value is None:
-                            value = form[prefix][0]["%s/%s" % (prefix, key)]
+                            value = 0
+                            for item in form[prefix]:
+                                try:
+                                    value += int(item["%s/%s" % (prefix, key)])
+                                except:
+                                    value = item["%s/%s" % (prefix, key)]
                         reduced_form[keys[key]] = value
-                        reduced_form["type"] = prefix
+                    reduced_form["visited"] = len(form[prefix])
+                    reduced_form["type"] = prefix
 
                     res.append(reduced_form)
                 except Exception as e:

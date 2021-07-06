@@ -66,9 +66,14 @@ export const getSourcesWithoutCurrentSource = (
 export const getOrgunitMessage = (orgUnit, withType) => {
     let message = textPlaceholder;
     if (orgUnit) {
-        message = `${orgUnit.name} - source: ${orgUnit.source}`;
-        if (orgUnit.org_unit_type_name && withType) {
-            message += ` (${orgUnit.org_unit_type_name})`;
+        if (orgUnit.name) {
+            message = `${orgUnit.name}${
+                orgUnit.source ? ` - source: ${orgUnit.source}` : ''
+            }${
+                orgUnit.org_unit_type_name && withType
+                    ? ` (${orgUnit.org_unit_type_name})`
+                    : ''
+            }`;
         }
     }
     return message;

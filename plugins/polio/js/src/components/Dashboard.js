@@ -893,7 +893,6 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
 
     // default to tab 0 when opening
     useEffect(() => {
-        console.log('working???');
         setSelectedTab(0);
     }, [isOpen]);
 

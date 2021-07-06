@@ -385,7 +385,7 @@ const ScopeForm = () => {
 
     const { group = {} } = values;
 
-    const { data = [] } = useGetRegionGeoJson(
+    const { data = [], isFetching } = useGetRegionGeoJson(
         values.org_unit?.country_parent?.id ||
             values.org_unit?.root?.id ||
             values.org_unit?.id,
@@ -423,10 +423,14 @@ const ScopeForm = () => {
         <>
             <Grid container spacing={2}>
                 <Grid xs={12} item>
-                    <MapContainer
-                        shapes={shapes}
-                        onSelectShape={onSelectOrgUnit}
-                    />
+                    {isFetching ? (
+                        <LoadingSpinner />
+                    ) : (
+                        <MapContainer
+                            shapes={shapes}
+                            onSelectShape={onSelectOrgUnit}
+                        />
+                    )}
                 </Grid>
             </Grid>
         </>

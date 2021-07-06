@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
@@ -27,6 +28,7 @@ const DatesRange = ({
     dateTo,
     onChangeDate,
     intl: { formatMessage },
+    dateFormat,
 }) => {
     const classes = useStyles();
     return (
@@ -37,19 +39,27 @@ const DatesRange = ({
                         autoOk
                         disableToolbar
                         variant="inline"
-                        maxDate={dateTo === '' ? undefined : dateTo}
+                        maxDate={
+                            dateTo === ''
+                                ? undefined
+                                : moment(dateTo, dateFormat)
+                        }
                         InputLabelProps={{
                             shrink: Boolean(dateFrom),
                         }}
-                        format="DD/MM/YYYY"
+                        format={dateFormat}
                         label={formatMessage(MESSAGES.from)}
                         helperText=""
                         inputVariant="outlined"
-                        value={dateFrom === '' ? null : dateFrom}
+                        value={
+                            dateFrom === ''
+                                ? null
+                                : moment(dateFrom, dateFormat)
+                        }
                         onChange={date =>
                             onChangeDate(
                                 'dateFrom',
-                                date ? date.format('MM-DD-YYYY') : null,
+                                date ? date.format(dateFormat) : null,
                             )
                         }
                     />
@@ -73,18 +83,24 @@ const DatesRange = ({
                         disableToolbar
                         inputVariant="outlined"
                         variant="inline"
-                        minDate={dateFrom === '' ? undefined : dateFrom}
+                        minDate={
+                            dateFrom === ''
+                                ? undefined
+                                : moment(dateFrom, dateFormat)
+                        }
                         InputLabelProps={{
                             shrink: Boolean(dateTo),
                         }}
-                        format="DD/MM/YYYY"
+                        format={dateFormat}
                         label={formatMessage(MESSAGES.to)}
                         helperText=""
-                        value={dateTo === '' ? null : dateTo}
+                        value={
+                            dateTo === '' ? null : moment(dateTo, dateFormat)
+                        }
                         onChange={date =>
                             onChangeDate(
                                 'dateTo',
-                                date ? date.format('MM-DD-YYYY') : null,
+                                date ? date.format(dateFormat) : null,
                             )
                         }
                     />
@@ -108,6 +124,7 @@ const DatesRange = ({
 DatesRange.defaultProps = {
     dateFrom: '',
     dateTo: '',
+    dateFormat: 'DD-MM-YYYY',
     onChangeDate: () => null,
 };
 
@@ -115,6 +132,7 @@ DatesRange.propTypes = {
     onChangeDate: PropTypes.func,
     dateFrom: PropTypes.string,
     dateTo: PropTypes.string,
+    dateFormat: PropTypes.string,
     intl: PropTypes.object.isRequired,
 };
 

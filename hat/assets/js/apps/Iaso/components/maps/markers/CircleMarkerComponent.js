@@ -28,7 +28,7 @@ const CircleMarkerComponent = props => {
     return (
         <CircleMarker
             draggable={draggable}
-            center={[item.latitude, item.longitude]}
+            center={[item.latitude, item.longitude, item.altitude]}
             onClick={() => onClick(item)}
             onDragend={e => onDragend(e.target)}
             {...markerProps(item)}

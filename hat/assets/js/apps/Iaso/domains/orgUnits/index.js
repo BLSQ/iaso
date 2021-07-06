@@ -97,6 +97,15 @@ const styles = theme => ({
     treeView: {
         margin: theme.spacing(2),
     },
+    statusNew: {
+        color: theme.palette.primary.main,
+    },
+    statusValidated: {
+        color: theme.palette.success.main,
+    },
+    statusRejected: {
+        color: theme.palette.error.main,
+    },
 });
 
 const getDefaultSource = currentUser =>

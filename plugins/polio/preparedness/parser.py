@@ -102,7 +102,7 @@ def get_national_level_preparedness(sheet: gspread.Spreadsheet, manager: QuotaMa
 
         except gspread.CellNotFound:
             try:
-                cell = worksheet.find("Résumé du niveau de préparation au niveau national")
+                cell = worksheet.find("Résumé du niveau de préparation au niveau national ")
                 print(f"Data found on worksheet: {worksheet.title}")
                 return _get_scores(worksheet, cell)
             except gspread.CellNotFound:
@@ -124,7 +124,7 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet, manager: QuotaMa
             print(f"Data found on worksheet: {worksheet.title}")
         except gspread.CellNotFound:
             try:
-                cell = worksheet.find("Résumé du niveau de préparation régional")
+                cell = worksheet.find("Résumé du niveau de préparation")
                 print(f"Data found on worksheet: {worksheet.title}")
             except:
                 print(f"No data found on worksheet: {worksheet.title}")

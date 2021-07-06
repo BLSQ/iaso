@@ -65,9 +65,9 @@ class CampaignViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class LQASViewSet(viewsets.ViewSet):
+class IMViewSet(viewsets.ViewSet):
     """
-           Endpoint used to transform lqas data from existing ODK forms stored in ONA. Very custom to the polio project.
+           Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA. Very custom to the polio project.
 
     sample Config:
 
@@ -136,4 +136,4 @@ class LQASViewSet(viewsets.ViewSet):
 
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
-router.register(r"polio/lqas", LQASViewSet, basename="LQAS")
+router.register(r"polio/im", IMViewSet, basename="IM")

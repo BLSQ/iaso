@@ -285,6 +285,7 @@ class OrgUnitMapComponent extends Component {
             onChangeLocation({
                 lat: newOrgUnit.latitude,
                 lng: newOrgUnit.longitude,
+                alt: newOrgUnit.altitude,
             });
         } else if (newOrgUnit.has_geo_json) {
             setOrgUnitLocationModified();

@@ -288,19 +288,25 @@ class OrgUnitDetail extends Component {
     }
 
     handleChangeLocation(location) {
+        // TODO not sure why, perhaps to remove decimals
+        const convert = pos =>
+            pos !== null ? parseFloat(pos.toFixed(8)) : null;
+        const newPos = {
+            altitude: location.alt ? convert(location.alt) : 0,
+        };
+        // only update dimensions that are presents
+        if (location.lng !== undefined) {
+            newPos.longitude = convert(location.lng);
+        }
+        if (location.lat !== undefined) {
+            newPos.latitude = convert(location.lat);
+        }
+
         this.setState({
             orgUnitLocationModified: true,
             currentOrgUnit: {
                 ...this.state.currentOrgUnit,
-                latitude: location.lat
-                    ? parseFloat(location.lat.toFixed(8))
-                    : null,
-                longitude: location.lng
-                    ? parseFloat(location.lng.toFixed(8))
-                    : null,
-                altitude: location.alt
-                    ? parseFloat(location.alt.toFixed(8))
-                    : null,
+                ...newPos,
             },
         });
     }

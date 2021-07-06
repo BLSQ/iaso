@@ -60,6 +60,8 @@ class EditableGroup {
     addEvents(map, onAdd) {
         map.on('draw:created', e => {
             if (e.layerType === 'marker') {
+                // Set a default altitude for the newly created location
+                e.layer.setLatLng({ alt: 0, ...e.layer.getLatLng() });
                 this.onChangeLocation(e.layer.getLatLng());
                 this.toggleDrawMarker(false);
                 map.removeLayer(e.layer);

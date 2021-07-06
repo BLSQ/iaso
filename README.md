@@ -115,6 +115,7 @@ configure all dep in separate container. As such your computer should only need:
 If docker-compose give you trouble, make sure it can connect to the
 __docker daemon__.
 
+A `pgdata-iaso` folder, containing the database data, will be created in the parent directory of the git repository
 
 ### 1. Environment variables
 
@@ -360,7 +361,6 @@ This will put the data in a database called iaso5. You can choose in your .env f
 the `RDS_DB_NAME` settings.
 
 
-
 Contributing
 ============
 
@@ -392,7 +392,7 @@ docker-compose exec iaso ./manage.py test
 Code reloading
 --------------
 
-In development the servers will reload when it detects a file
+In development the servers will reload when they detect a file
 change, either in Python or Javascript. 
 
 Troubleshooting

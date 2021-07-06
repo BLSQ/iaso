@@ -55,6 +55,11 @@ module.exports = {
 
     module: {
         rules: [
+                  {
+              test: /\.js$/,
+              enforce: "pre",
+              use: ["source-map-loader"],
+            },
             // we pass the output from babel loader to react-hot loader
             {
                 test: /\.js?$/,

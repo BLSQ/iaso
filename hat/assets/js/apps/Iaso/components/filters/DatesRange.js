@@ -29,6 +29,7 @@ const DatesRange = ({
     onChangeDate,
     intl: { formatMessage },
     dateFormat,
+    displayedDateFormat,
 }) => {
     const classes = useStyles();
     return (
@@ -54,7 +55,7 @@ const DatesRange = ({
                         value={
                             dateFrom === ''
                                 ? null
-                                : moment(dateFrom, dateFormat)
+                                : moment(dateFrom, displayedDateFormat)
                         }
                         onChange={date =>
                             onChangeDate(
@@ -95,7 +96,9 @@ const DatesRange = ({
                         label={formatMessage(MESSAGES.to)}
                         helperText=""
                         value={
-                            dateTo === '' ? null : moment(dateTo, dateFormat)
+                            dateTo === ''
+                                ? null
+                                : moment(dateTo, displayedDateFormat)
                         }
                         onChange={date =>
                             onChangeDate(
@@ -124,6 +127,8 @@ const DatesRange = ({
 DatesRange.defaultProps = {
     dateFrom: '',
     dateTo: '',
+    // Using displayedDateFormat because passing a date with format DD/MM/YYYY will cause a bug in Firefox
+    displayedDateFormat: 'DD/MM/YYYY',
     dateFormat: 'DD-MM-YYYY',
     onChangeDate: () => null,
 };
@@ -132,6 +137,7 @@ DatesRange.propTypes = {
     onChangeDate: PropTypes.func,
     dateFrom: PropTypes.string,
     dateTo: PropTypes.string,
+    displayedDateFormat: PropTypes.string,
     dateFormat: PropTypes.string,
     intl: PropTypes.object.isRequired,
 };

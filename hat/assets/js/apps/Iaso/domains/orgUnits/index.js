@@ -3,10 +3,10 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import moment from 'moment';
 import { withStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
-import TreeView from '@material-ui/lab/TreeView';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import TreeItem from '@material-ui/lab/TreeItem';
+// import TreeView from '@material-ui/lab/TreeView';
+// import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+// import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+// import TreeItem from '@material-ui/lab/TreeItem';
 
 import PropTypes from 'prop-types';
 
@@ -67,7 +67,7 @@ import {
     enqueueSnackbar,
     closeFixedSnackbar,
 } from '../../redux/snackBarsReducer';
-
+import { IasoTreeView } from './components/TreeView/IasoTreeView';
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { locationLimitMax } from './constants/orgUnitConstants';
@@ -457,7 +457,7 @@ class OrgUnits extends Component {
                 </TopBar>
                 <Grid container spacing={4}>
                     <Grid item xs={2}>
-                        <TreeView
+                        {/* <TreeView
                             className={classes.treeView}
                             defaultCollapseIcon={<ExpandMoreIcon />}
                             defaultExpandIcon={<ChevronRightIcon />}
@@ -479,7 +479,8 @@ class OrgUnits extends Component {
                                     </TreeItem>
                                 </TreeItem>
                             </TreeItem>
-                        </TreeView>
+                        </TreeView> */}
+                        <IasoTreeView labelField="name" nodeField="id" />
                     </Grid>
                     <Grid item xs={10}>
                         <Box className={classes.containerFullHeightPadded}>

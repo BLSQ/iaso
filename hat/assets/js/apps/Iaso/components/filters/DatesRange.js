@@ -42,7 +42,7 @@ const DatesRange = ({
                         disableToolbar
                         variant="inline"
                         maxDate={
-                            dateTo === ''
+                            dateTo === '' || dateTo === null
                                 ? undefined
                                 : moment(dateTo, displayedDateFormat)
                         }
@@ -54,7 +54,7 @@ const DatesRange = ({
                         helperText=""
                         inputVariant="outlined"
                         value={
-                            dateFrom === ''
+                            dateFrom === '' || dateFrom === null
                                 ? null
                                 : moment(dateFrom, displayedDateFormat)
                         }
@@ -86,7 +86,7 @@ const DatesRange = ({
                         inputVariant="outlined"
                         variant="inline"
                         minDate={
-                            dateFrom === ''
+                            dateFrom === '' || dateFrom === null
                                 ? undefined
                                 : moment(dateFrom, displayedDateFormat)
                         }
@@ -97,7 +97,7 @@ const DatesRange = ({
                         label={formatMessage(MESSAGES.to)}
                         helperText=""
                         value={
-                            dateTo === ''
+                            dateTo === '' || dateTo === null
                                 ? null
                                 : moment(dateTo, displayedDateFormat)
                         }

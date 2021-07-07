@@ -133,7 +133,8 @@ describe('FormFormComponent connected component', () => {
                 element.props().onChange(i.keyValue, i.newValue);
                 connectedWrapper.update();
             });
-            expect(setFieldValueSpy.callCount).to.equal(16);
+            // Count went from 16 to 17 switchint to Select input because there's an additional call in a useEffect hook
+            expect(setFieldValueSpy.callCount).to.equal(17);
         });
         it('mount properly without org_unit_type_ids and project_ids', () => {
             connectedWrapper = mount(

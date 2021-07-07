@@ -238,12 +238,14 @@ class Instances extends Component {
             search: params.search,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
             dateFrom: params.dateFrom
-                ? moment(params.dateFrom)
+                ? moment(params.dateFrom, 'DD-MM-YYYY')
                       .startOf('day')
                       .format('YYYY-MM-DD HH:MM')
                 : null,
             dateTo: params.dateTo
-                ? moment(params.dateTo).endOf('day').format('YYYY-MM-DD HH:MM')
+                ? moment(params.dateTo, 'DD-MM-YYYY')
+                      .endOf('day')
+                      .format('YYYY-MM-DD HH:MM')
                 : null,
             showDeleted: params.showDeleted,
         };

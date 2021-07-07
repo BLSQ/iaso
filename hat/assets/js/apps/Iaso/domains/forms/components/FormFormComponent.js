@@ -1,11 +1,12 @@
 // To stay consistent with the naming convention, this component is named FormForm such as OrgUnitForm ...
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
 import { Grid } from '@material-ui/core';
 
+import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
@@ -14,6 +15,8 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import MESSAGES from '../messages';
 
 const FormForm = ({ currentForm, setFieldValue }) => {
+    const intl = useSafeIntl();
+    const [isSinglePerPeriodSet, setIsSinglePeriodSet] = useState(false);
     const allProjects = useSelector(state => state.projects.allProjects);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
     const setPeriodType = value => {
@@ -35,6 +38,26 @@ const FormForm = ({ currentForm, setFieldValue }) => {
     if (currentForm.project_ids.value.length > 0) {
         projects = currentForm.project_ids.value.join(',');
     }
+    const setSinglePerPeriod = useCallback(
+        (key, value) => {
+            if (!isSinglePerPeriodSet) {
+                setIsSinglePeriodSet(true);
+            }
+            setFieldValue(key, value);
+        },
+        [isSinglePerPeriodSet, setFieldValue],
+    );
+
+    // Running the effect at every render otherwise it's overwritten when the page loads
+    useEffect(() => {
+        if (
+            !isSinglePerPeriodSet &&
+            currentForm.single_per_period.value !== null
+        ) {
+            setFieldValue('single_per_period', null);
+        }
+    });
+
     return (
         <Grid container spacing={2} justify="flex-start">
             <Grid xs={6} item>
@@ -87,10 +110,30 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                 <InputComponent
                     keyValue="single_per_period"
                     disabled={currentForm.period_type.value === null}
-                    onChange={(key, value) => setFieldValue(key, value)}
+                    required
+                    onChange={setSinglePerPeriod}
                     value={currentForm.single_per_period.value}
-                    errors={currentForm.single_per_period.errors}
-                    type="checkbox"
+                    errors={
+                        currentForm.single_per_period.value === null
+                            ? [
+                                  intl.formatMessage(
+                                      MESSAGES.singlePerPeriodSelect,
+                                  ),
+                              ]
+                            : []
+                    }
+                    type="select"
+                    options={[
+                        {
+                            label: intl.formatMessage(MESSAGES.yes),
+                            value: true,
+                        },
+                        {
+                            label: intl.formatMessage(MESSAGES.no),
+                            value: false,
+                        },
+                    ]}
+                    clearable={false}
                     label={MESSAGES.singlePerPeriod}
                 />
             </Grid>

@@ -429,6 +429,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.endPeriod',
         defaultMessage: 'end period',
     },
+    singlePerPeriodSelect: {
+        id: 'iaso.form.label.singlePerPeriodSelect',
+        defaultMessage: 'Please select an answer',
+    },
 });
 
 export default MESSAGES;

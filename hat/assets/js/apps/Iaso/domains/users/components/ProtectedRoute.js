@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import moment from 'moment';
 
 import PropTypes from 'prop-types';
 
@@ -18,7 +19,9 @@ import { switchLocale } from '../../app/actions';
 
 class ProtectedRoute extends Component {
     componentDidMount() {
+        const { activeLocale } = this.props;
         this.props.fetchCurrentUser();
+        moment.locale(activeLocale.code);
     }
 
     componentDidUpdate(prevProps) {

@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
@@ -11,29 +12,27 @@ const useStyles = makeStyles(theme => ({
     formControl: {
         width: '100%',
         marginBottom: theme.spacing(),
-    },
-    label: {
-        paddingTop: 4,
+        marginTop: theme.spacing(),
     },
     clearDateButton: {
         marginRight: theme.spacing(2),
         padding: 0,
         position: 'absolute',
-        right: theme.spacing(5),
-        top: 22,
-    },
-    input: {
-        height: 38,
+        right: theme.spacing(6),
+        top: 15,
     },
 }));
 
-const DateRange = ({
+const DatesRange = ({
     dateFrom,
     dateTo,
     onChangeDate,
     intl: { formatMessage },
+    displayedDateFormat,
 }) => {
     const classes = useStyles();
+    // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
+    const dateFormat = 'DD-MM-YYYY';
     return (
         <Grid container spacing={4}>
             <Grid item xs={6}>
@@ -42,22 +41,27 @@ const DateRange = ({
                         autoOk
                         disableToolbar
                         variant="inline"
-                        maxDate={dateTo === '' ? undefined : dateTo}
+                        maxDate={
+                            dateTo === ''
+                                ? undefined
+                                : moment(dateTo, displayedDateFormat)
+                        }
                         InputLabelProps={{
-                            className: classes.label,
                             shrink: Boolean(dateFrom),
                         }}
-                        format="DD/MM/YYYY"
+                        format={displayedDateFormat}
                         label={formatMessage(MESSAGES.from)}
                         helperText=""
-                        InputProps={{
-                            className: classes.input,
-                        }}
-                        value={dateFrom === '' ? null : dateFrom}
+                        inputVariant="outlined"
+                        value={
+                            dateFrom === ''
+                                ? null
+                                : moment(dateFrom, displayedDateFormat)
+                        }
                         onChange={date =>
                             onChangeDate(
                                 'dateFrom',
-                                date ? date.format('MM-DD-YYYY') : null,
+                                date ? date.format(dateFormat) : null,
                             )
                         }
                     />
@@ -79,23 +83,28 @@ const DateRange = ({
                     <KeyboardDatePicker
                         autoOk
                         disableToolbar
+                        inputVariant="outlined"
                         variant="inline"
-                        minDate={dateFrom === '' ? undefined : dateFrom}
+                        minDate={
+                            dateFrom === ''
+                                ? undefined
+                                : moment(dateFrom, displayedDateFormat)
+                        }
                         InputLabelProps={{
-                            className: classes.label,
                             shrink: Boolean(dateTo),
                         }}
-                        format="DD/MM/YYYY"
+                        format={displayedDateFormat}
                         label={formatMessage(MESSAGES.to)}
                         helperText=""
-                        InputProps={{
-                            className: classes.input,
-                        }}
-                        value={dateTo === '' ? null : dateTo}
+                        value={
+                            dateTo === ''
+                                ? null
+                                : moment(dateTo, displayedDateFormat)
+                        }
                         onChange={date =>
                             onChangeDate(
                                 'dateTo',
-                                date ? date.format('MM-DD-YYYY') : null,
+                                date ? date.format(dateFormat) : null,
                             )
                         }
                     />
@@ -116,19 +125,21 @@ const DateRange = ({
     );
 };
 
-DateRange.defaultProps = {
+DatesRange.defaultProps = {
     dateFrom: '',
     dateTo: '',
+    displayedDateFormat: 'DD/MM/YYYY',
     onChangeDate: () => null,
 };
 
-DateRange.propTypes = {
+DatesRange.propTypes = {
     onChangeDate: PropTypes.func,
     dateFrom: PropTypes.string,
     dateTo: PropTypes.string,
+    displayedDateFormat: PropTypes.string,
     intl: PropTypes.object.isRequired,
 };
 
-const DateRangeIntl = injectIntl(DateRange);
+const DatesRangeIntl = injectIntl(DatesRange);
 
-export default DateRangeIntl;
+export default DatesRangeIntl;

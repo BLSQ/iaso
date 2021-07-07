@@ -12,6 +12,7 @@ from .models import Campaign, Config
 from iaso.api.common import ModelViewSet
 import requests
 from django.http import JsonResponse
+import json
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -74,13 +75,8 @@ class IMViewSet(viewsets.ViewSet):
     configs = [
            {
                "keys": {"roundNumber": "roundNumber",
-                       "District": "District",
-                       "Region": "Region",
                        "Response": "Response",
-                       "NumberofSiteVisited": "visited",
-                       "Child_Checked": "children",
-                       "Child_FMD": "fm",
-                       "today": "today"},
+                },
                "prefix": "OHH",
                "url": 'https://brol.com/api/v1/data/5888',
                "login": "qmsdkljf",
@@ -88,13 +84,8 @@ class IMViewSet(viewsets.ViewSet):
            },
            {
                "keys": {'roundNumber': "roundNumber",
-                       "District": "District",
-                       "Region": "Region",
                        "Response": "Response",
-                       "HH_count": "visited",
-                       "Total_U5_Present": "children",
-                       "TotalFM": "fm",
-                       "today": "today"},
+                },
                "prefix": "HH",
                "url":  'https://brol.com/api/v1/data/5887',
                "login": "qmsldkjf",
@@ -117,21 +108,18 @@ class IMViewSet(viewsets.ViewSet):
 
             for form in forms:
                 try:
-                    reduced_form = {}
+                    copy_form = form.copy()
+                    del copy_form[prefix]
                     for key in keys.keys():
                         value = form.get(key, None)
                         if value is None:
-                            value = 0
-                            for item in form[prefix]:
-                                try:
-                                    value += int(item["%s/%s" % (prefix, key)])
-                                except:
-                                    value = item["%s/%s" % (prefix, key)]
-                        reduced_form[keys[key]] = value
-                    reduced_form["visited"] = len(form[prefix])
-                    reduced_form["type"] = prefix
-
-                    res.append(reduced_form)
+                            value = form[prefix][0]["%s/%s" % (prefix, key)]
+                        copy_form[keys[key]] = value
+                    for sub_part in form[prefix]:
+                        res_form = copy_form.copy()
+                        res_form.update(sub_part)
+                        res_form["type"] = prefix
+                        res.append(res_form)
                 except Exception as e:
                     print("failed on ", e, form, prefix)
                     failure_count += 1

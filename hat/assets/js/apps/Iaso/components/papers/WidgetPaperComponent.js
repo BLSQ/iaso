@@ -53,7 +53,7 @@ const WidgetPaper = ({
                     xs={2}
                     item
                     container
-                    justify="flex-end"
+                    justifyContent="flex-end"
                     className={classes.paperTitleButtonContainer}
                 >
                     <div className={classes.paperTitleButton}>

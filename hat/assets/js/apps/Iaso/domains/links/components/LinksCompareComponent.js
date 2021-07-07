@@ -40,7 +40,7 @@ const LinksCompare = ({ link, compareLink, classes, title, validated }) => {
                     container
                     spacing={0}
                     alignItems="center"
-                    justify="flex-start"
+                    justifyContent="flex-start"
                     className={classes.title}
                 >
                     <Grid item xs={11}>

@@ -430,7 +430,7 @@ class Instances extends Component {
                             item
                             container
                             alignItems="center"
-                            justify="flex-end"
+                            justifyContent="flex-end"
                             className={classes.selectColmunsContainer}
                         >
                             <ColumnsSelectDrawer

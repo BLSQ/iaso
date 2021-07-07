@@ -15,7 +15,7 @@ import {
     // TopBar,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { alpha } from '@material-ui/core/styles/colorManipulator';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
     setCurrentOrgUnit,
@@ -81,13 +81,13 @@ const styles = theme => ({
     ...commonStyles(theme),
     root: {
         '& path.primary': {
-            fill: fade(theme.palette.primary.main, 0.6),
+            fill: alpha(theme.palette.primary.main, 0.6),
             stroke: theme.palette.primary.main,
             strokeOpacity: 1,
             strokeWidth: 3,
         },
         '& path.secondary': {
-            fill: fade(theme.palette.secondary.main, 0.6),
+            fill: alpha(theme.palette.secondary.main, 0.6),
             stroke: theme.palette.secondary.main,
             strokeOpacity: 1,
             strokeWidth: 3,
@@ -710,7 +710,7 @@ class OrgUnitDetail extends Component {
                         {tab === 'comments' && (
                             <Grid
                                 container
-                                justify="center"
+                                justifyContent="center"
                                 className={classes.commentsWrapper}
                             >
                                 <Grid item xs={6}>

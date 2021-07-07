@@ -48,7 +48,7 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
         sortable: false,
         Cell: settings =>
             settings.original.latest_form_version !== null && (
-                <Grid container spacing={1} justify="center">
+                <Grid container spacing={1} justifyContent="center">
                     <Grid item>
                         <ColumnTextComponent
                             text={
@@ -56,7 +56,7 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
                             }
                         />
                     </Grid>
-                    <Grid container spacing={1} justify="center">
+                    <Grid container spacing={1} justifyContent="center">
                         {settings.original.latest_form_version.xls_file && (
                             <Grid item>
                                 <Link

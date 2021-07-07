@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Popover from '@material-ui/core/Popover';
 import Box from '@material-ui/core/Box';
-import Button from '@material-ui/core/Button';
+import { Button } from '@material-ui/core';
 import Info from '@material-ui/icons/InfoOutlined';
 
 import { injectIntl } from 'bluesquare-components';

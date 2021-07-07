@@ -98,7 +98,7 @@ class OrgUnitTypes extends Component {
                     <Grid
                         container
                         spacing={0}
-                        justify="flex-end"
+                        justifyContent="flex-end"
                         alignItems="center"
                         className={classes.marginTop}
                     >

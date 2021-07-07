@@ -14,19 +14,16 @@ export const setCookie = (name, value, days) => {
 
 export const getCookie = name => {
     const nameEQ = `${name}=`;
-    const ca = document.cookie.split(';');
+    const cookiesArray = document.cookie
+        .split(';')
+        .map(cookieString => cookieString.trim())
+        .filter(cookie => cookie.indexOf(nameEQ) === 0);
 
-    for (let i = 0; i < ca.length; i += 1) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') {
-            c = c.substring(1, c.length);
-        }
-        if (c.indexOf(nameEQ) === 0) {
-            return c.substring(nameEQ.length, c.length);
-        }
+    if (cookiesArray.length === 0) {
+        return null;
     }
-
-    return null;
+    const cookie = cookiesArray[0];
+    return cookie.substring(nameEQ.length, cookie.length);
 };
 
 export const eraseCookie = name => {

@@ -40,6 +40,7 @@
     "iaso.exportRequest.last_export_success_at": "Last export success at",
     "iaso.exportRequest.launcher": "Exported by",
     "iaso.exportRequest.Status": "Status",
+    "iaso.form.label.singlePerPeriodSelect": "Please select an answer",
     "iaso.forms.aliases": "Aliases",
     "iaso.forms.all": "All",
     "iaso.forms.create": "Create form",

@@ -1,24 +1,10 @@
-import base64
-import json
-import os
-from plugins.polio.preparedness.quota_manager import QuotaManager
-from typing import List
 from itertools import groupby
+
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 
+from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError
-
-DIRNAME = os.path.dirname(__file__)
-SCOPES = ["https://spreadsheets.google.com/feeds"]
-
-
-def _get_client():
-    encoded_config = os.environ.get("GOOGLE_API_KEY_BASE64")
-    decoded_config = base64.b64decode(encoded_config)
-    data = json.loads(decoded_config)
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(data, SCOPES)
-    return gspread.authorize(creds)
+from plugins.polio.preparedness.quota_manager import QuotaManager
 
 
 def parse_value(value: str):
@@ -29,7 +15,7 @@ def parse_value(value: str):
 
 
 def open_sheet_by_url(spreadsheet_url):
-    client = _get_client()
+    client = get_client()
     return client.open_by_url(spreadsheet_url)
 
 

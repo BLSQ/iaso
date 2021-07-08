@@ -148,14 +148,16 @@ class CampaignSerializer(serializers.ModelSerializer):
         return ""
 
     def get_general_status(self, campaign):
-        if campaign.round_two.ended_at:
-            return _("Round 2 completed")
-        if campaign.round_two.started_at:
-            return _("Round 2 started")
-        if campaign.round_one.ended_at:
-            return _("Round 1 completed")
-        if campaign.round_one.started_at:
-            return _("Round 1 started")
+        if campaign.round_two:
+            if campaign.round_two.ended_at:
+                return _("Round 2 completed")
+            if campaign.round_two.started_at:
+                return _("Round 2 started")
+        if campaign.round_one:
+            if campaign.round_one.ended_at:
+                return _("Round 1 completed")
+            if campaign.round_one.started_at:
+                return _("Round 1 started")
 
         return _("Preparing")
 

@@ -281,43 +281,7 @@ const unselectedPathOptions = { color: 'gray' };
 
 const RiskAssessmentForm = () => {
     const classes = useStyles();
-    const { values, setFieldValue } = useFormikContext();
-
-    const { group = {} } = values;
-
-    const { data = [] } = useGetRegionGeoJson(
-        values.org_unit?.country_parent?.id ||
-            values.org_unit?.root?.id ||
-            values.org_unit?.id,
-    );
-
-    const shapes = useMemo(() => {
-        return data.map(shape => ({
-            ...shape,
-            pathOptions: group.org_units.find(org_unit => shape.id === org_unit)
-                ? selectedPathOptions
-                : unselectedPathOptions,
-        }));
-    }, [data, group]);
-
-    const onSelectOrgUnit = useCallback(
-        shape => {
-            var { org_units } = group;
-            const hasFound = org_units.find(org_unit => shape.id === org_unit);
-
-            if (hasFound) {
-                org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
-            } else {
-                org_units.push(shape.id);
-            }
-
-            setFieldValue('group', {
-                ...group,
-                org_units,
-            });
-        },
-        [group, setFieldValue],
-    );
+    const { values } = useFormikContext();
 
     const wastageRate = 0.26;
 
@@ -411,11 +375,62 @@ const RiskAssessmentForm = () => {
                         {Number.isNaN(vialsRequested) ? 0 : vialsRequested}
                     </Typography>
                 </Grid>
-                <Grid xs={12} md={6} item>
-                    <MapContainer
-                        shapes={shapes}
-                        onSelectShape={onSelectOrgUnit}
-                    />
+            </Grid>
+        </>
+    );
+};
+
+const ScopeForm = () => {
+    const { values, setFieldValue } = useFormikContext();
+
+    const { group = {} } = values;
+
+    const { data = [], isFetching } = useGetRegionGeoJson(
+        values.org_unit?.country_parent?.id ||
+            values.org_unit?.root?.id ||
+            values.org_unit?.id,
+    );
+
+    const shapes = useMemo(() => {
+        return data.map(shape => ({
+            ...shape,
+            pathOptions: group.org_units.find(org_unit => shape.id === org_unit)
+                ? selectedPathOptions
+                : unselectedPathOptions,
+        }));
+    }, [data, group]);
+
+    const onSelectOrgUnit = useCallback(
+        shape => {
+            var { org_units } = group;
+            const hasFound = org_units.find(org_unit => shape.id === org_unit);
+
+            if (hasFound) {
+                org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
+            } else {
+                org_units.push(shape.id);
+            }
+
+            setFieldValue('group', {
+                ...group,
+                org_units,
+            });
+        },
+        [group, setFieldValue],
+    );
+
+    return (
+        <>
+            <Grid container spacing={2}>
+                <Grid xs={12} item>
+                    {isFetching ? (
+                        <LoadingSpinner />
+                    ) : (
+                        <MapContainer
+                            shapes={shapes}
+                            onSelectShape={onSelectOrgUnit}
+                        />
+                    )}
                 </Grid>
             </Grid>
         </>
@@ -643,40 +658,44 @@ const Round1Form = () => {
                     fullWidth
                 />
                 <Field
-                        label="Districts passing LQAS"
-                        name={'round_one.lqas_district_passing'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="Districts passing LQAS"
+                    name={'round_one.lqas_district_passing'}
+                    component={TextInput}
+                    className={classes.input}
                 />
                 <Field
-                        label="Districts failing LQAS"
-                        name={'round_one.lqas_district_failing'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="Districts failing LQAS"
+                    name={'round_one.lqas_district_failing'}
+                    component={TextInput}
+                    className={classes.input}
                 />
                 <Field
-                        label="Main awareness problem"
-                        name={'round_one.main_awareness_problem'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="Main awareness problem"
+                    name={'round_one.main_awareness_problem'}
+                    component={TextInput}
+                    className={classes.input}
                 />
                 <Field
-                        label="% children missed IN household"
-                        name={'round_one.im_percentage_children_missed_in_household'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="% children missed IN household"
+                    name={
+                        'round_one.im_percentage_children_missed_in_household'
+                    }
+                    component={TextInput}
+                    className={classes.input}
                 />
                 <Field
-                        label="% children missed OUT OF household"
-                        name={'round_one.im_percentage_children_missed_out_household'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="% children missed OUT OF household"
+                    name={
+                        'round_one.im_percentage_children_missed_out_household'
+                    }
+                    component={TextInput}
+                    className={classes.input}
                 />
                 <Field
-                        label="Awareness of campaign planning (%)"
-                        name={'round_one.awareness_of_campaign_planning'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="Awareness of campaign planning (%)"
+                    name={'round_one.awareness_of_campaign_planning'}
+                    component={TextInput}
+                    className={classes.input}
                 />
             </Grid>
         </Grid>
@@ -742,40 +761,44 @@ const Round2Form = () => {
                     fullWidth
                 />
                 <Field
-                        label="Districts passing LQAS"
-                        name={'round_two.lqas_district_passing'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="Districts passing LQAS"
+                    name={'round_two.lqas_district_passing'}
+                    component={TextInput}
+                    className={classes.input}
                 />
                 <Field
-                        label="Districts failing LQAS"
-                        name={'round_two.lqas_district_failing'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="Districts failing LQAS"
+                    name={'round_two.lqas_district_failing'}
+                    component={TextInput}
+                    className={classes.input}
                 />
                 <Field
-                        label="Main awareness problem"
-                        name={'round_two.main_awareness_problem'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="Main awareness problem"
+                    name={'round_two.main_awareness_problem'}
+                    component={TextInput}
+                    className={classes.input}
                 />
                 <Field
-                        label="% children missed IN household"
-                        name={'round_two.im_percentage_children_missed_in_household'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="% children missed IN household"
+                    name={
+                        'round_two.im_percentage_children_missed_in_household'
+                    }
+                    component={TextInput}
+                    className={classes.input}
                 />
                 <Field
-                        label="% children missed OUT OF household"
-                        name={'round_two.im_percentage_children_missed_out_household'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="% children missed OUT OF household"
+                    name={
+                        'round_two.im_percentage_children_missed_out_household'
+                    }
+                    component={TextInput}
+                    className={classes.input}
                 />
                 <Field
-                        label="Awareness of campaign planning (%)"
-                        name={'round_two.awareness_of_campaign_planning'}
-                        component={TextInput}
-                        className={classes.input}
+                    label="Awareness of campaign planning (%)"
+                    name={'round_two.awareness_of_campaign_planning'}
+                    component={TextInput}
+                    className={classes.input}
                 />
             </Grid>
         </Grid>
@@ -841,6 +864,10 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
         {
             title: 'Risk Assessment',
             form: RiskAssessmentForm,
+        },
+        {
+            title: 'Scope',
+            form: ScopeForm,
         },
         {
             title: 'Budget',

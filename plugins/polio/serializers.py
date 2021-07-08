@@ -1,5 +1,5 @@
 from plugins.polio.preparedness.calculator import get_preparedness_score
-from django.db.models import fields
+from django.utils.translation import gettext_lazy as _
 from django.db.transaction import atomic
 from rest_framework import serializers
 from iaso.models import Group, OrgUnit, org_unit
@@ -137,11 +137,27 @@ class CampaignSerializer(serializers.ModelSerializer):
     round_two = RoundSerializer()
     org_unit = OrgUnitSerializer(source="initial_org_unit", read_only=True)
     top_level_org_unit_name = serializers.SerializerMethodField()
+    general_status = serializers.SerializerMethodField()
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.initial_org_unit:
-            return campaign.initial_org_unit.name
+            parent = campaign.initial_org_unit
+            while parent.parent:
+                parent = parent.parent
+            return parent.name
         return ""
+
+    def get_general_status(self, campaign):
+        if campaign.round_two.ended_at:
+            return _("Round 2 completed")
+        if campaign.round_two.started_at:
+            return _("Round 2 started")
+        if campaign.round_one.ended_at:
+            return _("Round 1 completed")
+        if campaign.round_one.started_at:
+            return _("Round 1 started")
+
+        return _("Preparing")
 
     group = GroupSerializer(required=False, allow_null=True)
 

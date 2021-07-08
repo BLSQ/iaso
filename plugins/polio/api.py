@@ -43,7 +43,13 @@ class CampaignViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
     filters.OrderingFilter.ordering_param = "order"
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend]
-    ordering_fields = ["obr_name", "cvdpv2_notified_at", "detection_status"]
+    ordering_fields = [
+        "obr_name",
+        "cvdpv2_notified_at",
+        "detection_status",
+        "round_one__started_at",
+        "round_two__started_at",
+    ]
 
     def get_queryset(self):
         user = self.request.user

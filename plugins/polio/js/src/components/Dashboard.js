@@ -1015,9 +1015,9 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
     );
 };
 
-const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
-const DEFAULT_ORDER = 'obr_name';
+const DEFAULT_ORDER = '-cvdpv2_notified_at';
 
 export const Dashboard = () => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
@@ -1098,6 +1098,17 @@ export const Dashboard = () => {
 
     const columns = useMemo(
         () => [
+          {
+                Header: 'Country',
+                accessor: 'top_level_org_unit_name',
+                sortable: false,
+                Cell: settings => {
+                    const text =
+                        settings?.original?.top_level_org_unit_name ??
+                        textPlaceholder;
+                    return <span>{text}</span>;
+                },
+            },
             {
                 Header: 'Name',
                 accessor: 'obr_name',
@@ -1116,16 +1127,36 @@ export const Dashboard = () => {
                 },
             },
             {
-                Header: 'Status',
-                accessor: 'detection_status',
+                Header: 'Round 1',
+                accessor: 'round_one__started_at',
                 Cell: settings => {
                     return (
-                        <ColumnText text={settings.original.detection_status} />
+                        <ColumnText text={settings.original?.round_one?.started_at} />
+                    );
+                },
+            },
+            {
+                Header: 'Round 2',
+                accessor: 'round_two__started_at',
+                Cell: settings => {
+                    return (
+                        <ColumnText text={settings.original?.round_two?.started_at} />
+                    );
+                },
+            },
+            {
+                Header: 'Status',
+                sortable: false,
+                accessor: 'general_status',
+                Cell: settings => {
+                    return (
+                        <ColumnText text={settings.original.general_status} />
                     );
                 },
             },
             {
                 Header: 'Actions',
+                sortable: false,
                 Cell: settings => {
                     return (
                         <>

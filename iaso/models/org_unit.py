@@ -287,6 +287,8 @@ class OrgUnit(TreeModel):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            # FIXME Don't commit on prod !!!!!
+            "has_children": self.children().count() > 0,
         }
 
     def as_dict(self, with_groups=True):

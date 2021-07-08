@@ -46,7 +46,7 @@ class OrgUnitLevelFilterComponent extends Component {
             validationStatus &&
             statusIcons.find(
                 icon => icon.value === validationStatus.validation_status,
-            ).icon;
+            )?.icon;
 
         return (
             <>

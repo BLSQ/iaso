@@ -11,6 +11,8 @@ from rest_framework.decorators import action
 from .models import Campaign, Config
 from iaso.api.common import ModelViewSet
 import requests
+import csv
+from django.http import HttpResponse
 from django.http import JsonResponse
 import json
 
@@ -97,6 +99,7 @@ class IMViewSet(viewsets.ViewSet):
     def list(self, request):
 
         slug = request.GET.get("country", None)
+        as_csv = request.GET.get("format", None) == "csv"
         config = get_object_or_404(Config, slug=slug)
         res = []
         failure_count = 0
@@ -104,40 +107,64 @@ class IMViewSet(viewsets.ViewSet):
         for config in config.content:
             keys = config["keys"]
             all_keys = all_keys.union(keys.keys())
+            # print("all_keys 1", all_keys)
             prefix = config["prefix"]
             response = requests.get(config["url"], auth=(config["login"], config["password"]))
             forms = response.json()
-
+            form_count = 0
             for form in forms:
                 try:
                     copy_form = form.copy()
                     del copy_form[prefix]
-                    all_keys.union(copy_form.keys())
+                    all_keys = all_keys.union(copy_form.keys())
+                    # print("all_keys 2", all_keys)
                     for key in keys.keys():
                         value = form.get(key, None)
                         if value is None:
                             value = form[prefix][0]["%s/%s" % (prefix, key)]
                         copy_form[keys[key]] = value
+                    count = 1
                     for sub_part in form[prefix]:
-                        res_form = copy_form.copy()
-                        count = 1
+                        res_form = copy_form
+
                         for k in sub_part.keys():
                             new_key = "%s[%d]/%s" % (prefix, count, k[len(prefix) + 1 :])
+                            # print(new_key)
                             all_keys.add(new_key)
                             res_form[new_key] = sub_part[k]
-                            count += 1
+                        count += 1
+                        # print("all_keys 3", all_keys)
                     res_form["type"] = prefix
                     res.append(res_form)
                 except Exception as e:
                     print("failed on ", e, form, prefix)
                     failure_count += 1
-        for item in res:
-            for k in all_keys:
-                if k not in item:
-                    item[k] = None
+                form_count += 1
+            # if form_count == 2:
+            #     break
+        all_keys = sorted(list(all_keys))
+
         print("parsed:", len(res), "failed:", failure_count)
         print("all_keys", all_keys)
-        return JsonResponse(res, safe=False)
+        if not as_csv:
+            for item in res:
+                for k in all_keys:
+                    if k not in item:
+                        item[k] = None
+            return JsonResponse(res, safe=False)
+        else:
+            response = HttpResponse(content_type="text/csv")
+
+            writer = csv.writer(response)
+            writer.writerow(all_keys)
+            i = 1
+            for item in res:
+                ar = [item.get(key, None) for key in all_keys]
+                writer.writerow(ar)
+                i += 1
+                if i % 100 == 0:
+                    print(i)
+            return response
 
 
 router = routers.SimpleRouter()

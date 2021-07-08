@@ -255,9 +255,15 @@ class OrgUnitDetail extends Component {
             prevProps.params.orgUnitId !== '0'
         ) {
             this.resetCurrentOrgUnit();
-            this.fetchDetail();
-        }
-        if (params.tab !== prevProps.params.tab) {
+            this.fetchDetail().then(() => {
+                // we need the condition here otherwise the setState from handleChangeTab will trigger before fetching is done
+                // Which will cause display errors
+                if (params.tab !== prevProps.params.tab) {
+                    this.handleChangeTab(params.tab, false);
+                }
+            });
+            // repeating the condition here with else if to handle tab navigation without redirection
+        } else if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
         }
     }

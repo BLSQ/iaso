@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
 import { withStyles, Button, Grid } from '@material-ui/core';
@@ -67,12 +67,6 @@ const OrgUnitForm = ({
         setFormState(initialFormState(orgUnit));
         onResetOrgUnit();
     };
-
-    useEffect(() => {
-        if (!orgUnitModified) {
-            setFormState(initialFormState(orgUnit));
-        }
-    }, [orgUnit, orgUnitModified]);
 
     const isNewOrgunit = orgUnit && !orgUnit.id;
     return (

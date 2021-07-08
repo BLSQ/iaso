@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { string, func, arrayOf, bool } from 'prop-types';
+import { string, func, arrayOf, bool, element } from 'prop-types';
 import { TreeItem } from '@material-ui/lab';
 import { useSafeIntl } from 'bluesquare-components';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -7,40 +7,22 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import { useAPI } from '../../../../utils/requests';
 import { MESSAGES } from './messages';
 
-// needs to be wrapped in useCallback by parent
-// const fetchFunction = async id =>
-//     iasoGetRequest({
-//         disableSuccessSnackBar: true,
-//         requestParams: {
-//             url: `/api/orgunits/?&parent_id=${id}&defaultVersion=true&validation_status=all`,
-//         },
-//     });
-
-// class Model {
-//     constructor() {
-//         this.id = string;
-//         this.name = string;
-//         this.hasChildren = bool;
-//         return this;
-//     }
-// }
-
 const EnrichedTreeItem = ({
     label,
     id,
-    // children,
+    hasChildren,
     fetchChildrenData, // fetchChildrenData(id)
     expanded,
     notifyParent,
+    toggleOnLabelClick,
+    // icon,  //for checkboxes
+    // onIconClick, // for checkboxes
     // selected,
 }) => {
     // TODO add a condition that triggers API call --> NodeToggle
     // TODO add conditional rendering based on whether value from call exists or not
     // TODO check performance of the hook with large tree (useEffect related renders)
     const isExpanded = expanded.includes(id);
-    // const model = new Model();
-    // model.test = 'test';
-    // console.log('model', model, model instanceof Model);
     // const [isExpanded, setIsExpanded] = useState(false);
     const { data: childrenData, isLoading } = useAPI(fetchChildrenData, id, {
         preventTrigger: !isExpanded,
@@ -49,13 +31,18 @@ const EnrichedTreeItem = ({
     const { formatMessage } = useSafeIntl();
     // This kinda stinks as it will make the parent TreeView re-render
     // It should also be replaced by onNodeToggle so Icon can be freed for use as checkbox
-    const onIconClick = useCallback(
-        e => {
-            e.preventDefault;
-            notifyParent([...expanded, id.toString()]);
-        },
-        [notifyParent, expanded],
-    );
+    // const onIconClick = useCallback(
+    //     e => {
+    //         e.preventDefault;
+    //         onIconClick()
+    //     },
+    //     [notifyParent, expanded],
+    // );
+    const onLabelClick = e => {
+        if (!toggleOnLabelClick) {
+            e.preventDefault();
+        }
+    };
 
     const makeSubTree = data => {
         if (!data) return null;
@@ -67,6 +54,9 @@ const EnrichedTreeItem = ({
                 fetchChildrenData={fetchChildrenData}
                 expanded={expanded}
                 notifyParent={notifyParent}
+                hasChildren={unit.hasChildren}
+                toggleOnLabelClick={toggleOnLabelClick}
+                // onIconClick={onIconClick}
             />
         ));
     };
@@ -77,17 +67,19 @@ const EnrichedTreeItem = ({
             </TreeItem>
         );
     }
-    // TODO remove the reference to orgUnits
-    if (childrenData?.orgUnits) {
+    // TODO make better conditionals
+    if (hasChildren) {
         return (
             <TreeItem
                 label={label}
                 nodeId={id}
                 collapseIcon={<ExpandMoreIcon />}
                 expandIcon={<ChevronRightIcon />}
+                onLabelClick={onLabelClick}
+                // onIconClick={onIconClick}
                 // icon={<ExpandMoreIcon />}
             >
-                {isExpanded && makeSubTree(childrenData.orgUnits)}
+                {childrenData && isExpanded && makeSubTree(childrenData)}
                 {!isExpanded && <div />}
             </TreeItem>
         );
@@ -98,8 +90,8 @@ const EnrichedTreeItem = ({
             nodeId={id}
             collapseIcon={<ExpandMoreIcon />}
             expandIcon={<ChevronRightIcon />}
-            icon={<ChevronRightIcon />}
-            onIconClick={onIconClick}
+            // icon={<ChevronRightIcon />}
+            // onIconClick={onIconClick}
         />
     );
 };
@@ -114,14 +106,24 @@ EnrichedTreeItem.propTypes = {
     fetchChildrenData: func,
     expanded: arrayOf(string),
     notifyParent: func.isRequired,
+    hasChildren: bool,
+    // icon: element,
     // selected: bool,
+    // onIconClick:func,
+    toggleOnLabelClick: bool,
+    // onIconClick: func,
 };
 
 EnrichedTreeItem.defaultProps = {
     // children: null,
     fetchChildrenData: noOp,
     expanded: [],
+    hasChildren: false,
+    // icon: null,
+    // oniconClick:()=>{},
     // selected: false,
+    toggleOnLabelClick: true,
+    // onIconClick: () => {},
 };
 
 export { EnrichedTreeItem };

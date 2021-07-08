@@ -100,8 +100,10 @@ class IMViewSet(viewsets.ViewSet):
         config = get_object_or_404(Config, slug=slug)
         res = []
         failure_count = 0
+        all_keys = set()
         for config in config.content:
             keys = config["keys"]
+            all_keys = all_keys.union(keys.keys())
             prefix = config["prefix"]
             response = requests.get(config["url"], auth=(config["login"], config["password"]))
             forms = response.json()
@@ -110,6 +112,7 @@ class IMViewSet(viewsets.ViewSet):
                 try:
                     copy_form = form.copy()
                     del copy_form[prefix]
+                    all_keys.union(copy_form.keys())
                     for key in keys.keys():
                         value = form.get(key, None)
                         if value is None:
@@ -117,14 +120,23 @@ class IMViewSet(viewsets.ViewSet):
                         copy_form[keys[key]] = value
                     for sub_part in form[prefix]:
                         res_form = copy_form.copy()
-                        res_form.update(sub_part)
-                        res_form["type"] = prefix
-                        res.append(res_form)
+                        count = 1
+                        for k in sub_part.keys():
+                            new_key = "%s[%d]/%s" % (prefix, count, k[len(prefix) + 1 :])
+                            all_keys.add(new_key)
+                            res_form[new_key] = sub_part[k]
+                            count += 1
+                    res_form["type"] = prefix
+                    res.append(res_form)
                 except Exception as e:
                     print("failed on ", e, form, prefix)
                     failure_count += 1
+            for item in res:
+                for k in all_keys:
+                    if k not in item:
+                        item[k] = None
         print("parsed:", len(res), "failed:", failure_count)
-
+        print("all_keys", all_keys)
         return JsonResponse(res, safe=False)
 
 

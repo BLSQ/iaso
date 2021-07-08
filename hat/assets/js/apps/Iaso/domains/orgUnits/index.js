@@ -22,6 +22,7 @@ import {
     injectIntl,
     Table,
 } from 'bluesquare-components';
+import { getRootData, getChildrenData } from './components/TreeView/requests';
 
 import {
     fetchOrgUnitsTypes,
@@ -67,10 +68,10 @@ import {
     enqueueSnackbar,
     closeFixedSnackbar,
 } from '../../redux/snackBarsReducer';
-import { IasoTreeView } from './components/TreeView/IasoTreeView';
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { locationLimitMax } from './constants/orgUnitConstants';
+import { SingleSelectTreeView } from './components/TreeView/SingleSelectTreeView';
 
 const baseUrl = baseUrls.orgUnits;
 let warningDisplayed = false;
@@ -480,7 +481,16 @@ class OrgUnits extends Component {
                                 </TreeItem>
                             </TreeItem>
                         </TreeView> */}
-                        <IasoTreeView labelField="name" nodeField="id" />
+                        <SingleSelectTreeView
+                            labelField="name"
+                            nodeField="id"
+                            toggleOnLabelClick={false}
+                            getRootData={getRootData}
+                            getChildrenData={getChildrenData}
+                            onSelect={(_event, selected) => {
+                                console.log('selected node', selected);
+                            }}
+                        />
                     </Grid>
                     <Grid item xs={10}>
                         <Box className={classes.containerFullHeightPadded}>

@@ -1,41 +1,51 @@
-import { string } from 'prop-types';
-import React, { useCallback, useState } from 'react';
+import { string, bool, arrayOf, func } from 'prop-types';
+import React, { useCallback } from 'react';
 import { TreeView } from '@material-ui/lab';
 
 import { EnrichedTreeItem } from './EnrichedTreeItem';
-import { useAPI, iasoGetRequest } from '../../../../utils/requests';
+import { useAPI } from '../../../../utils/requests';
 
-const getChildrenData = async id =>
-    iasoGetRequest({
-        disableSuccessSnackBar: true,
-        requestParams: {
-            url: `/api/orgunits/?&parent_id=${id}&defaultVersion=true&validation_status=all`,
-        },
-    });
+// class Model {
+//     constructor() {
+//         this.id = string;
+//         this.name = string;
+//         this.hasChildren = bool;
+//         return this;
+//     }
+// }
 
-const getRootData = async () =>
-    iasoGetRequest({
-        disableSuccessSnackBar: true,
-        requestParams: {
-            url: `/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all`,
-        },
-    });
+// function treeviewElement(props, propName, componentName) {
+//     if (
+//         typeof props[propName].id !== 'string' ||
+//         typeof props[propName].name !== 'string' ||
+//         typeof props[propName].hasChildren !== 'boolean'
+//     ) {
+//         return new Error(
+//             `Invalid prop \`${propName}\` supplied to` +
+//                 ` \`${componentName}\`. Validation failed.`,
+//         );
+//     }
+// }
 
 const IasoTreeView = ({
-    // getChildrenData,
-    // getRootData,
+    getChildrenData,
+    getRootData,
     labelField, // name
     nodeField, // id
-    // Experimen to pass type as object
+    multiselect,
+    expanded,
+    parentNotifier,
+    toggleOnLabelClick,
+    onSelect,
+    onIconClick,
+    // Experiment to pass type as object
     // dataModel,
 }) => {
     const fetchChildrenData = useCallback(getChildrenData, []);
     const fetchRootData = useCallback(getRootData, []);
     const { data: rootData } = useAPI(fetchRootData);
-    const [expanded, setExpanded] = useState([]);
     const onNodeToggle = (_event, nodeIds) => {
-        console.log('Hello Toggle', nodeIds, expanded);
-        setExpanded(nodeIds);
+        parentNotifier(nodeIds);
     };
     const makeChildren = useCallback(
         data => {
@@ -47,31 +57,49 @@ const IasoTreeView = ({
                     key={`RootTreeItem ${item[nodeField]}`}
                     fetchChildrenData={fetchChildrenData}
                     expanded={expanded}
-                    notifyParent={setExpanded}
+                    notifyParent={parentNotifier}
+                    hasChildren={item.hasChildren}
+                    toggleOnLabelClick={toggleOnLabelClick}
+                    onIconClick={onIconClick}
                 />
             ));
         },
         [expanded],
     );
     return (
-        <TreeView expanded={expanded} onNodeToggle={onNodeToggle}>
-            {rootData && makeChildren(rootData.orgUnits)}
+        <TreeView
+            expanded={expanded}
+            onNodeToggle={onNodeToggle}
+            multiSelect={multiselect}
+            onNodeSelect={onSelect}
+        >
+            {rootData && makeChildren(rootData)}
         </TreeView>
     );
 };
 
 IasoTreeView.propTypes = {
-    // getChildrenData: func,
-    // getRootData: func,
+    getChildrenData: func,
+    getRootData: func,
     labelField: string.isRequired,
     nodeField: string.isRequired,
     // dataModel: object,
+    multiselect: bool,
+    toggleOnLabelClick: bool,
+    expanded: arrayOf(string).isRequired,
+    parentNotifier: func.isRequired,
+    onSelect: func,
+    onIconClick: func,
 };
 
 IasoTreeView.defaultProps = {
-    // getChildrenData: () => {},
-    // getRootData: () => {},
+    getChildrenData: () => {},
+    getRootData: () => {},
     // dataModel: null,
+    multiselect: true,
+    toggleOnLabelClick: true,
+    onSelect: () => {},
+    onIconClick: () => {},
 };
 
 export { IasoTreeView };

@@ -131,10 +131,10 @@ class IMViewSet(viewsets.ViewSet):
                 except Exception as e:
                     print("failed on ", e, form, prefix)
                     failure_count += 1
-            for item in res:
-                for k in all_keys:
-                    if k not in item:
-                        item[k] = None
+        for item in res:
+            for k in all_keys:
+                if k not in item:
+                    item[k] = None
         print("parsed:", len(res), "failed:", failure_count)
         print("all_keys", all_keys)
         return JsonResponse(res, safe=False)

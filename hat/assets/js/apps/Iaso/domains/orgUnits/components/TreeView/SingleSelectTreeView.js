@@ -11,7 +11,6 @@ const SingleSelectTreeView = ({
     onSelect,
 }) => {
     const [expanded, setExpanded] = useState([]);
-
     return (
         <IasoTreeView
             labelField={labelField}

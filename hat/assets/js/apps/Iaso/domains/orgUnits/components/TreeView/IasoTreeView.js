@@ -1,4 +1,4 @@
-import { string, bool, arrayOf, func } from 'prop-types';
+import { string, bool, arrayOf, func, object } from 'prop-types';
 import React, { useCallback } from 'react';
 import { TreeView } from '@material-ui/lab';
 
@@ -26,7 +26,11 @@ import { useAPI } from '../../../../utils/requests';
 //         );
 //     }
 // }
-
+const model = {
+    id: 'string',
+    name: 'string',
+    hasChildren: 'boolean',
+};
 const IasoTreeView = ({
     getChildrenData,
     getRootData,
@@ -42,7 +46,7 @@ const IasoTreeView = ({
     // dataModel,
 }) => {
     const fetchChildrenData = useCallback(getChildrenData, []);
-    const fetchRootData = useCallback(getRootData, []);
+    const fetchRootData = useCallback(getRootData(model), []);
     const { data: rootData } = useAPI(fetchRootData);
     const onNodeToggle = (_event, nodeIds) => {
         parentNotifier(nodeIds);
@@ -61,6 +65,7 @@ const IasoTreeView = ({
                     hasChildren={item.hasChildren}
                     toggleOnLabelClick={toggleOnLabelClick}
                     onIconClick={onIconClick}
+                    // dataModel={dataModel}
                 />
             ));
         },
@@ -95,6 +100,7 @@ IasoTreeView.propTypes = {
 IasoTreeView.defaultProps = {
     getChildrenData: () => {},
     getRootData: () => {},
+    // dataModel: model,
     // dataModel: null,
     multiselect: true,
     toggleOnLabelClick: true,

@@ -14,6 +14,8 @@ import Search from '@material-ui/icons/Search';
 import classNames from 'classnames';
 import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
 import { getChipColors, chipColors } from '../../../constants/chipColors';
+import { SingleSelectTreeView } from './TreeView/SingleSelectTreeView';
+import { getRootData, getChildrenData } from './TreeView/requests';
 
 import {
     search,
@@ -50,6 +52,15 @@ const styles = theme => ({
     },
     marginRight: {
         marginRight: theme.spacing(2),
+    },
+    treeview: {
+        overflowY: 'scroll',
+        overflowX: 'scroll',
+        marginTop: '20px',
+        marginBottom: '15px',
+        maxHeight: '30vh',
+        border: '1px solid grey',
+        borderRadius: '7px',
     },
 });
 
@@ -230,8 +241,8 @@ class OrgUnitsFiltersComponent extends Component {
                                     ]}
                                 />
                             </Grid>
-                            <Grid item xs={6}>
-                                <FiltersComponent
+                            <Grid item xs={6} className={classes.treeview}>
+                                {/* <FiltersComponent
                                     params={params}
                                     baseUrl={baseUrl}
                                     filters={[
@@ -258,6 +269,17 @@ class OrgUnitsFiltersComponent extends Component {
                                     params={params}
                                     baseUrl={baseUrl}
                                     searchIndex={searchIndex}
+                                /> */}
+
+                                <SingleSelectTreeView
+                                    labelField="name"
+                                    nodeField="id"
+                                    toggleOnLabelClick={false}
+                                    getRootData={getRootData}
+                                    getChildrenData={getChildrenData}
+                                    onSelect={(_event, selected) => {
+                                        this.onChange(selected, 'levels');
+                                    }}
                                 />
                             </Grid>
                         </Grid>

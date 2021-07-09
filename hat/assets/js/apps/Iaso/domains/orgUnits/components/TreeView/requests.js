@@ -36,7 +36,10 @@ const modelCheck = (response, model) => {
         }
     });
     if (missingKeys.length > 0) {
-        console.error(`Missing properties in response: ${missingKeys}`);
+        console.error(
+            `Missing properties in response: ${missingKeys} in `,
+            response,
+        );
         return false;
     }
     return true;
@@ -49,11 +52,12 @@ const getChildrenData = async id => {
             url: `/api/orgunits/?&parent_id=${id}&defaultVersion=true&validation_status=all`,
         },
     });
-    const useableData = response.orgUnits.map((orgUnit, index) => {
-        if (index % 2 > 0) {
-            return { id: orgUnit.id, name: orgUnit.name, hasChildren: true };
-        }
-        return { id: orgUnit.id, name: orgUnit.name, hasChildren: false };
+    const useableData = response.orgUnits.map(orgUnit => {
+        return {
+            id: orgUnit.id,
+            name: orgUnit.name,
+            hasChildren: orgUnit.has_children,
+        };
     });
     return useableData;
 };
@@ -69,10 +73,11 @@ const getRootData = model => async () => {
         return {
             id: orgUnit.id.toString(),
             name: orgUnit.name,
-            hasChildren: true,
+            // hasChildren: true,
+            hasChildren: orgUnit.has_children,
         };
     });
-    if (modelCheck(response.orgUnits[0], model)) return useableData;
+    if (modelCheck(useableData[0], model)) return useableData;
     console.error(`Received Wrong data type, expected`, model);
     return null;
 };

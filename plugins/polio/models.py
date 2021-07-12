@@ -3,7 +3,7 @@ from uuid import uuid4
 from django.db import models
 from django.utils.translation import gettext as _
 
-from iaso.models import Group
+from iaso.models import Group, OrgUnit
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -242,6 +242,14 @@ class Campaign(models.Model):
             countries = self.initial_org_unit.country_ancestors()
             if countries is not None and len(countries) > 0:
                 return countries[0]
+
+    def get_districts(self):
+        if self.group is None:
+            return OrgUnit.objects.none()
+        return self.group.org_units.all()
+
+    def get_regions(self):
+        return OrgUnit.objects.filter(id__in=self.get_districts().values_list('parent_id', flat=True).distinct())
 
     def last_preparedness(self):
         return self.preparedness_set.order_by("-created_at").first()

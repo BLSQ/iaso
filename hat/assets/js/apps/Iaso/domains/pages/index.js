@@ -1,22 +1,28 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Table, LoadingSpinner } from 'bluesquare-components';
-import 'react-table/react-table.css';
-
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+    Table,
+    LoadingSpinner,
+    useSafeIntl,
+    commonStyles,
+} from 'bluesquare-components';
+import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
-
-import { Page } from './Page';
-import { useGetCampaigns } from '../hooks/useGetCampaigns';
-import { useStyles } from '../styles/theme';
-import { useGetPages } from '../hooks/useGetPages';
+import TopBar from '../../components/nav/TopBarComponent';
+import MESSAGES from '../forms/messages';
+import { useGetPages } from './useGetPages';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
-const DEFAULT_ORDER = 'name';
 
-export const Pages = () => {
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
+}));
+
+const Pages = () => {
+    const intl = useSafeIntl();
+    const classes = useStyles();
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
-    const classes = useStyles();
 
     const { query } = useGetPages({
         page,
@@ -31,7 +37,7 @@ export const Pages = () => {
                 Header: 'Name',
                 accessor: 'name',
                 Cell: settings => {
-                    return <sspan>{settings.original.name}</sspan>;
+                    return <span>{settings.original.name}</span>;
                 },
             },
         ],
@@ -59,7 +65,8 @@ export const Pages = () => {
     }, [pageSize, page]);
 
     return (
-        <Page title={'Pages'}>
+        <>
+            <TopBar title={intl.formatMessage(MESSAGES.title)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {status === 'loading' && <LoadingSpinner />}
                 {status === 'success' && (
@@ -67,7 +74,7 @@ export const Pages = () => {
                         params={tableParams}
                         count={pages.count}
                         pages={Math.ceil(pages.count / pageSize)}
-                        baseUrl={'/polio'}
+                        baseUrl="/polio"
                         redirectTo={onTableParamsChange}
                         columns={columns}
                         data={pages.results}
@@ -75,6 +82,8 @@ export const Pages = () => {
                     />
                 )}
             </Box>
-        </Page>
+        </>
     );
 };
+
+export default Pages;

@@ -118,6 +118,20 @@ export const menuItems = [
         ],
     },
     {
+        label: MESSAGES.pages,
+        key: 'pages',
+        icon: 'list',
+        subMenu: [
+            {
+                label: MESSAGES.list,
+                path: '/dashboard/pages/list',
+                key: 'list',
+                // permission: paths.formsPath.permission,
+                icon: 'list',
+            },
+        ],
+    },
+    {
         label: MESSAGES.polio,
         key: 'polio',
         icon: 'forms',
@@ -125,13 +139,6 @@ export const menuItems = [
             {
                 label: MESSAGES.dashboard,
                 path: '/dashboard/polio/list',
-                key: 'list',
-                // permission: paths.formsPath.permission,
-                icon: 'list',
-            },
-            {
-                label: MESSAGES.pages,
-                path: '/pages/polio/list',
                 key: 'list',
                 // permission: paths.formsPath.permission,
                 icon: 'list',

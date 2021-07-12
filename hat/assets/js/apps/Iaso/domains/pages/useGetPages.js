@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query';
-import { sendRequest } from '../utils/networking';
+import { sendRequest } from './networking';
 
 export const useGetPages = options => {
     const params = {

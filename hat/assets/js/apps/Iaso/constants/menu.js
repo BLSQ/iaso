@@ -144,6 +144,19 @@ const menuItems = [
             },
         ],
     },
+    {
+        label: MESSAGES.pages,
+        key: 'pages',
+        icon: props => <DataSourceIcon {...props} />,
+        subMenu: [
+            {
+                label: MESSAGES.list,
+                key: 'list',
+                permission: paths.tasksPath.permission,
+                icon: props => <FormatListBulleted {...props} />,
+            },
+        ],
+    },
 ];
 
 if (PLUGIN_POLIO_ENABLED === 'True') {

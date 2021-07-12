@@ -21,6 +21,7 @@ import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
 import { orgUnitFiltersWithPrefix, linksFiltersWithPrefix } from './filters';
+import Pages from "../domains/pages";
 
 const paginationPathParams = [
     {
@@ -70,6 +71,14 @@ export const formsPath = {
         },
     ],
     component: props => <Forms {...props} />,
+    isRootUrl: true,
+};
+
+export const pagesPath = {
+    baseUrl: baseUrls.pages,
+    permission: 'iaso_pages',
+    params: [],
+    component: props => <Pages {...props} />,
     isRootUrl: true,
 };
 
@@ -517,6 +526,7 @@ export const routeConfigs = [
     groupsPath,
     orgUnitTypesPath,
     polioPath,
+    pagesPath,
     page401,
     page404,
     page500,

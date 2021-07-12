@@ -1,11 +1,11 @@
 from iaso.models.org_unit import OrgUnitType
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from plugins.polio.serializers import SurgePreviewSerializer
+from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
 from iaso.models import OrgUnit
 from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer
 from django.shortcuts import get_object_or_404
-from rest_framework import routers, filters, viewsets
+from rest_framework import routers, filters, viewsets, serializers
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import Campaign, Config
@@ -15,6 +15,8 @@ import csv
 from django.http import HttpResponse
 from django.http import JsonResponse
 import json
+
+from .preparedness.spreadsheet_manager import create_spreadsheet
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -65,6 +67,14 @@ class CampaignViewSet(ModelViewSet):
     def preview_preparedness(self, request, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
+
+    @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
+    def create_preparedness_sheet(self, request, pk=None, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(data={**request.data, "instance": instance})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
 
     @action(methods=["POST"], detail=False, serializer_class=SurgePreviewSerializer)
@@ -130,7 +140,7 @@ class IMViewSet(viewsets.ViewSet):
                     count = 1
                     for sub_part in form[prefix]:
                         for k in sub_part.keys():
-                            new_key = "%s[%d]/%s" % (prefix, count, k[len(prefix) + 1 :])
+                            new_key = "%s[%d]/%s" % (prefix, count, k[len(prefix) + 1:])
                             all_keys.add(new_key)
                             copy_form[new_key] = sub_part[k]
                         count += 1

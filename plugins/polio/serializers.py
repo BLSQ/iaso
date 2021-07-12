@@ -13,6 +13,8 @@ from .preparedness.parser import (
 )
 from gspread.exceptions import APIError
 
+from .preparedness.spreadsheet_manager import create_spreadsheet
+
 
 class GroupSerializer(serializers.ModelSerializer):
     org_units = serializers.PrimaryKeyRelatedField(many=True, allow_empty=True, queryset=OrgUnit.objects.all())
@@ -130,6 +132,16 @@ class OrgUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnit
         fields = ["id", "name", "root", "country_parent"]
+
+
+class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
+    url = serializers.URLField(read_only=True)
+
+    def create(self, validated_data):
+        spreadsheet = create_spreadsheet('Teste')
+        return {
+            "url": spreadsheet.url
+        }
 
 
 class CampaignSerializer(serializers.ModelSerializer):

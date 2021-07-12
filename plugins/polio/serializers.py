@@ -153,6 +153,18 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
             payment_mode=campaign.payment_mode,
             country=campaign.country()
         )
+
+        regional_template_worksheet = spreadsheet.worksheet("Regional")
+
+        regions = campaign.get_regions()
+        current_index = 2
+        for index, region in enumerate(regions):
+            regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)
+            regional_worksheet.batch_update([
+                {'range': 'c4', 'values': [[region.name]]}
+            ])
+            current_index += 1
+
         return {
             "url": spreadsheet.url
         }

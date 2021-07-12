@@ -15,10 +15,11 @@ def create_spreadsheet(title: str):
 
 
 def update_national_worksheet(sheet: gspread.Worksheet, **kwargs):
+    country_name = kwargs.get('country').name if 'country' in kwargs else ''
     updates = [
         {'range': 'C4', 'values': [[kwargs.get('payment_mode', '')]]},
         {'range': 'C11', 'values': [[kwargs.get('vacine', '')]]},
-        {'range': 'C6', 'values': [[kwargs.get('country', '')]]},
+        {'range': 'C6', 'values': [[country_name]]},
     ]
 
     sheet.batch_update(updates)

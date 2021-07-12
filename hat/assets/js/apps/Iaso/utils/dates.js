@@ -36,7 +36,7 @@ export const getToDateString = dateTo =>
 
 const longDateFormats = {
     fr: {
-        LT: 'h:mm A',
+        LT: 'HH:mm',
         LTS: 'DD/MM/YYYY HH:mm',
         L: 'DD/MM/YYYY',
         LL: 'Do MMMM YYYY',

@@ -19,8 +19,6 @@ services:
       - ./entrypoint.sh:/opt/app/entrypoint.sh
       - ./docs:/opt/app/docs
       - ./README.md:/opt/app/README.md
-      # build scripts for testing prod version
-      - ./build_scripts:/opt/app/build_scripts
       # test data
       - ./testdata:/opt/app/testdata
       # jupyter notebooks

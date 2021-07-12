@@ -65,6 +65,6 @@ InstanceDetailsField.propTypes = {
     label: PropTypes.string.isRequired,
     value: PropTypes.any,
     Icon: PropTypes.object,
-    valueTitle: PropTypes.string,
+    valueTitle: PropTypes.oneOfType([PropTypes.node, PropTypes.string]),
 };
 export default withStyles(styles)(InstanceDetailsField);

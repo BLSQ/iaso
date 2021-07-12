@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core';
 import { Link } from 'react-router';
 
 import { textPlaceholder } from 'bluesquare-components';
-import { getOrgunitMessage } from '../utils';
+import { OrgunitMessage } from '../utils';
 
 const styles = () => ({
     link: {
@@ -22,7 +22,7 @@ const OrgUnitDisplay = ({ orgUnit, classes, withType }) => {
             className={classes.link}
             href={`/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}`}
         >
-            {getOrgunitMessage(orgUnit, withType)}
+            <OrgunitMessage orgUnit={orgUnit} withType={withType} />
         </Link>
     );
 };

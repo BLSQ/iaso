@@ -6,7 +6,7 @@ import { FormattedMessage } from 'react-intl';
 
 import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
 import OrgUnitTooltip from '../../orgUnits/components/OrgUnitTooltip';
-import { getOrgunitMessage } from '../../orgUnits/utils';
+import { OrgunitMessage } from '../../orgUnits/utils';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -57,7 +57,12 @@ const UsersLocations = ({ handleChange, currentUser }) => {
                     {currentUser.org_units.value.map(ou => (
                         <OrgUnitTooltip orgUnit={ou} key={ou.id}>
                             <Chip
-                                label={getOrgunitMessage(ou)}
+                                label={
+                                    <OrgunitMessage
+                                        orgUnit={ou}
+                                        withType={false}
+                                    />
+                                }
                                 onDelete={() => handleDelete(ou)}
                                 className={classes.chip}
                                 color="primary"

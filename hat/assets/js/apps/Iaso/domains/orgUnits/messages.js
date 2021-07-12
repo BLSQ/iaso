@@ -145,6 +145,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Source',
         id: 'iaso.orgUnits.source',
     },
+    sourceLower: {
+        defaultMessage: 'source',
+        id: 'iaso.orgUnits.sourceLower',
+    },
     sourceRef: {
         defaultMessage: 'Source ref',
         id: 'iaso.orgUnits.sourceRef',

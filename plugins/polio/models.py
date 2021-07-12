@@ -1,6 +1,8 @@
+from uuid import uuid4
+
 from django.db import models
 from django.utils.translation import gettext as _
-from uuid import uuid4
+
 from iaso.models import Group
 
 VIRUSES = [
@@ -234,6 +236,12 @@ class Campaign(models.Model):
 
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
+
+    def country(self):
+        if self.initial_org_unit is not None:
+            countries = self.initial_org_unit.country_ancestors()
+            if countries is not None and len(countries) > 0:
+                return countries[0]
 
     def last_preparedness(self):
         return self.preparedness_set.order_by("-created_at").first()

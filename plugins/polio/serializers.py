@@ -1,19 +1,19 @@
-from plugins.polio.preparedness.calculator import get_preparedness_score
-from django.utils.translation import gettext_lazy as _
 from django.db.transaction import atomic
+from django.utils.translation import gettext_lazy as _
+from gspread.exceptions import APIError
 from rest_framework import serializers, exceptions
-from iaso.models import Group, OrgUnit, org_unit
+
+from iaso.models import Group, OrgUnit
+from plugins.polio.preparedness.calculator import get_preparedness_score
 from .models import Preparedness, Round, Campaign, Surge
+from .preparedness.exceptions import *
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
     get_national_level_preparedness,
     parse_value,
 )
-from .preparedness.exceptions import *
-from gspread.exceptions import APIError
-
-from .preparedness.spreadsheet_manager import create_spreadsheet
+from .preparedness.spreadsheet_manager import create_spreadsheet, PREPAREDNESS_TEMPLATE_ID
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -135,16 +135,20 @@ class OrgUnitSerializer(serializers.ModelSerializer):
 
 
 class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
+    campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all(), write_only=True)
     url = serializers.URLField(read_only=True)
 
+    def validate(self, attrs):
+        if not PREPAREDNESS_TEMPLATE_ID:
+            raise exceptions.ValidationError({'message': _("Preparedness template not configured")})
+        return attrs
+
     def create(self, validated_data):
-        try:
-            spreadsheet = create_spreadsheet('Teste')
-            return {
-                "url": spreadsheet.url
-            }
-        except TemplateNotFound as e:
-            raise exceptions.ValidationError({'message': str(e)})
+        campaign = validated_data.get('campaign')
+        spreadsheet = create_spreadsheet(campaign.obr_name)
+        return {
+            "url": spreadsheet.url
+        }
 
 
 class CampaignSerializer(serializers.ModelSerializer):

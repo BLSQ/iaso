@@ -70,8 +70,7 @@ class CampaignViewSet(ModelViewSet):
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request, pk=None, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(data={**request.data, "instance": instance})
+        serializer = self.get_serializer(data={'campaign': pk})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

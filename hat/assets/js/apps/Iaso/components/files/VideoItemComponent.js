@@ -6,7 +6,6 @@ import { withStyles, IconButton } from '@material-ui/core';
 import PlayIcon from '@material-ui/icons/PlayCircleFilled';
 import PauseIcon from '@material-ui/icons/PauseCircleFilled';
 import { theme } from 'bluesquare-components';
-import { getDisplayedDateHourFormat } from '../../utils/dates';
 
 const styles = () => ({
     root: {
@@ -137,9 +136,7 @@ class VideoItemComponent extends React.Component {
                             : classes.fileInfo
                     }
                 >
-                    {`${moment
-                        .unix(videoItem.createdAt)
-                        .format(getDisplayedDateHourFormat())} - ${
+                    {`${moment.unix(videoItem.createdAt).format('LTS')} - ${
                         videoItem.name
                     }.${videoItem.extension}`}
                 </span>

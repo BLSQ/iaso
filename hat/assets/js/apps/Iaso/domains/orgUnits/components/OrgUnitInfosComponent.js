@@ -131,14 +131,14 @@ const OrgUnitInfosComponent = ({
                     keyValue="created_at"
                     value={moment
                         .unix(orgUnit.created_at)
-                        .format(getDisplayedDateHourFormat())}
+                        .format('LTS')}
                     disabled
                 />
                 <InputComponent
                     keyValue="updated_at"
                     value={moment
                         .unix(orgUnit.updated_at)
-                        .format(getDisplayedDateHourFormat())}
+                        .format('LTS')}
                     disabled
                 />
             </Grid>

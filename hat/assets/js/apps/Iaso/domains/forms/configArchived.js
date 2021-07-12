@@ -8,7 +8,6 @@ import {
     ColumnText as ColumnTextComponent,
 } from 'bluesquare-components';
 import MESSAGES from './messages';
-import { getDisplayedDateHourFormat } from '../../utils/dates';
 
 const archivedTableColumn = (formatMessage, restoreForm) => [
     {
@@ -92,7 +91,7 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.created_at)
-                    .format(getDisplayedDateHourFormat())}
+                    .format('LTS')}
             />
         ),
     },
@@ -103,7 +102,7 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.updated_at)
-                    .format(getDisplayedDateHourFormat())}
+                    .format('LTS')}
             />
         ),
     },
@@ -114,7 +113,7 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.deleted_at)
-                    .format(getDisplayedDateHourFormat())}
+                    .format('LTS')}
             />
         ),
     },

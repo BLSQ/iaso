@@ -51,7 +51,7 @@ const DatesRange = ({
                         InputLabelProps={{
                             shrink: Boolean(dateFrom),
                         }}
-                        format={getDisplayedDateFormat()}
+                        format="L"
                         label={formatMessage(MESSAGES.from)}
                         helperText=""
                         inputVariant="outlined"
@@ -95,7 +95,7 @@ const DatesRange = ({
                         InputLabelProps={{
                             shrink: Boolean(dateTo),
                         }}
-                        format={getDisplayedDateFormat()}
+                        format="L"
                         label={formatMessage(MESSAGES.to)}
                         helperText=""
                         value={

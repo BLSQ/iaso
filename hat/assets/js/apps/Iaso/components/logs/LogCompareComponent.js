@@ -31,8 +31,6 @@ import PolygonMap from '../maps/PolygonMapComponent';
 import MarkerMap from '../maps/MarkerMapComponent';
 import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
 
-import { getDisplayedDateHourFormat } from '../../utils/dates';
-
 import MESSAGES from '../../domains/forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
 
@@ -77,7 +75,7 @@ const renderValue = (fieldKey, value, fields, classes) => {
             );
         }
         case 'updated_at': {
-            return moment(value).format(getDisplayedDateHourFormat());
+            return moment(value).format('LTS');
         }
 
         case 'location': {

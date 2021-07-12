@@ -14,7 +14,6 @@ import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { getDisplayedDateHourFormat } from '../../utils/dates';
 
 export const formVersionsTableColumns = (
     formatMessage,
@@ -109,7 +108,7 @@ const formsTableColumns = (
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.created_at)
-                    .format(getDisplayedDateHourFormat())}
+                    .format('LTS')}
             />
         ),
     },
@@ -120,7 +119,7 @@ const formsTableColumns = (
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.updated_at)
-                    .format(getDisplayedDateHourFormat())}
+                    .format('LTS')}
             />
         ),
     },
@@ -131,7 +130,7 @@ const formsTableColumns = (
             const dateText = settings.original.instance_updated_at
                 ? moment
                       .unix(settings.original.instance_updated_at)
-                      .format(getDisplayedDateHourFormat())
+                      .format('LTS')
                 : textPlaceholder;
 
             return <ColumnTextComponent text={dateText} />;

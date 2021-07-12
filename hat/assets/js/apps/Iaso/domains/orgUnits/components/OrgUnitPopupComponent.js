@@ -120,7 +120,7 @@ class OrgUnitPopupComponent extends Component {
                                 label={formatMessage(MESSAGES.created_at)}
                                 value={moment
                                     .unix(currentOrgUnit.created_at)
-                                    .format(getDisplayedDateHourFormat())}
+                                    .format('LTS')}
                             />
                             <Box className={classes.actionBox}>
                                 <Grid

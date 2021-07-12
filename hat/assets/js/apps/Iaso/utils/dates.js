@@ -1,15 +1,5 @@
 import moment from 'moment';
 
-// this is the date used in for display purpose, in the future we can get it from the user locale
-export const getDisplayedDateFormat = () => {
-    return moment.localeData().longDateFormat('L');
-};
-
-// this is the date used in for display purpose, in the future we can get it from the user locale
-export const getDisplayedDateHourFormat = () => {
-    return moment.localeData().longDateFormat('LTS');
-};
-
 // this is the date format used in url params
 export const dateFormat = 'DD-MM-YYYY';
 /**

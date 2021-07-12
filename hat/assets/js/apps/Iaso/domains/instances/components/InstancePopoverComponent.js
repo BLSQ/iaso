@@ -65,9 +65,7 @@ function InstancePopover(props) {
                     instanceDetail.org_unit
                         ? `${instanceDetail.org_unit.name} - `
                         : ''
-                }${moment
-                    .unix(instanceDetail.created_at)
-                    .format(getDisplayedDateHourFormat())}`}
+                }${moment.unix(instanceDetail.created_at).format('LTS')}`}
                 <Info className={classes.buttonIcon} />
             </Button>
             <Popover

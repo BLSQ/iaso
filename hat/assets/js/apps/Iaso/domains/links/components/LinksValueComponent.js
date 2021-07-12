@@ -64,7 +64,7 @@ const renderValue = (linkKey, link, value, classes) => {
         }
         case 'created_at':
         case 'updated_at': {
-            return moment.unix(value).format(getDisplayedDateHourFormat());
+            return moment.unix(value).format('LTS');
         }
         case 'parent': {
             return getOrgUnitParentsString(link);

@@ -11,7 +11,6 @@ import {
 import PropTypes from 'prop-types';
 
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import { getDisplayedDateFormat } from '../../../utils/dates';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -51,7 +50,7 @@ const DatePickerComponent = ({
                 InputProps={{
                     error: hasError || Boolean(dateError),
                 }}
-                format={getDisplayedDateFormat()} // This one need be set by user locale
+                format="L"
                 label={placeholder}
                 helperText=""
                 value={currentDate}

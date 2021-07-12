@@ -13,9 +13,7 @@ import InstanceDetailsField from './InstanceDetailsField';
 import { getDisplayedDateHourFormat } from '../../../utils/dates';
 
 const formatUnixTimestamp = unix =>
-    unix
-        ? moment.unix(unix).format(getDisplayedDateHourFormat())
-        : textPlaceholder;
+    unix ? moment.unix(unix).format('LTS') : textPlaceholder;
 
 const InstanceDetailsExportRequests = ({
     currentInstance,

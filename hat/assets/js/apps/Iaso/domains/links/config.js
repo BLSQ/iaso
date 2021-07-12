@@ -12,6 +12,8 @@ import {
     textPlaceholder,
 } from 'bluesquare-components';
 import getDisplayName from '../../utils/usersUtils';
+import { getDisplayedDateHourFormat } from '../../utils/dates';
+
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import StarsComponent from '../../components/stars/StarsComponent';
 
@@ -79,7 +81,7 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
             <span>
                 {moment
                     .unix(settings.original.updated_at)
-                    .format('DD/MM/YYYY HH:mm')}
+                    .format(getDisplayedDateHourFormat())}
             </span>
         ),
     },
@@ -140,7 +142,7 @@ export const runsTableColumns = (formatMessage, component) => [
                 {settings.original.ended_at ? (
                     moment
                         .unix(settings.original.ended_at)
-                        .format('DD/MM/YYYY HH:mm')
+                        .format(getDisplayedDateHourFormat())
                 ) : (
                     <LoadingSpinner
                         fixed={false}
@@ -159,7 +161,7 @@ export const runsTableColumns = (formatMessage, component) => [
             <span>
                 {moment
                     .unix(settings.original.created_at)
-                    .format('DD/MM/YYYY HH:mm')}
+                    .format(getDisplayedDateHourFormat())}
             </span>
         ),
     },

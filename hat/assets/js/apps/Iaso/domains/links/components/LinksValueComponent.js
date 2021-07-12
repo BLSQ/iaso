@@ -11,6 +11,7 @@ import { getOrgUnitParentsString } from '../../orgUnits/utils';
 
 import MESSAGES from '../../forms/messages';
 import { MESSAGES as LINKS_MESSAGES } from '../messages';
+import { getDisplayedDateHourFormat } from '../../../utils/dates';
 
 const styles = theme => ({
     cell: {
@@ -63,7 +64,7 @@ const renderValue = (linkKey, link, value, classes) => {
         }
         case 'created_at':
         case 'updated_at': {
-            return moment.unix(value).format('DD/MM/YYYY HH:mm');
+            return moment.unix(value).format(getDisplayedDateHourFormat());
         }
         case 'parent': {
             return getOrgUnitParentsString(link);

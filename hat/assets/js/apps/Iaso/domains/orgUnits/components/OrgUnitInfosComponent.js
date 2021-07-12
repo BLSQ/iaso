@@ -13,6 +13,8 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import MESSAGES from '../../forms/messages';
 import FormControlComponent from '../../../components/forms/FormControlComponent';
 
+import { getDisplayedDateHourFormat } from '../../../utils/dates';
+
 const OrgUnitInfosComponent = ({
     orgUnit,
     onChangeInfo,
@@ -102,19 +104,19 @@ const OrgUnitInfosComponent = ({
         </Grid>
         <Grid item xs={orgUnit.id ? 4 : 6}>
             <FormControlComponent errors={orgUnit.parent_id.errors}>
-            <OrgUnitsLevelsFiltersComponent
-                onLatestIdChanged={latestId => {
-                    if (latestId !== orgUnit.parent_id.value) {
-                        onChangeInfo('parent_id', latestId);
-                    }
-                }}
-                params={params}
-                defaultVersion={params.orgUnitId === '0'}
-                baseUrl={baseUrl}
-                showCurrentOrgUnit={false}
-                currentOrgUnitId={orgUnit.id}
-                source={orgUnit.source_id}
-            />
+                <OrgUnitsLevelsFiltersComponent
+                    onLatestIdChanged={latestId => {
+                        if (latestId !== orgUnit.parent_id.value) {
+                            onChangeInfo('parent_id', latestId);
+                        }
+                    }}
+                    params={params}
+                    defaultVersion={params.orgUnitId === '0'}
+                    baseUrl={baseUrl}
+                    showCurrentOrgUnit={false}
+                    currentOrgUnitId={orgUnit.id}
+                    source={orgUnit.source_id}
+                />
             </FormControlComponent>
         </Grid>
         {orgUnit.id && (
@@ -129,14 +131,14 @@ const OrgUnitInfosComponent = ({
                     keyValue="created_at"
                     value={moment
                         .unix(orgUnit.created_at)
-                        .format('DD/MM/YYYY HH:mm')}
+                        .format(getDisplayedDateHourFormat())}
                     disabled
                 />
                 <InputComponent
                     keyValue="updated_at"
                     value={moment
                         .unix(orgUnit.updated_at)
-                        .format('DD/MM/YYYY HH:mm')}
+                        .format(getDisplayedDateHourFormat())}
                     disabled
                 />
             </Grid>

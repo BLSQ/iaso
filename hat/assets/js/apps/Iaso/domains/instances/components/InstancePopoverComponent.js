@@ -13,6 +13,7 @@ import MESSAGES from '../messages';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 
 import { getOrgUnitsTree } from '../../orgUnits/utils';
+import { getDisplayedDateHourFormat } from '../../../utils/dates';
 
 const useStyles = makeStyles(theme => ({
     popoverPaper: {
@@ -66,7 +67,7 @@ function InstancePopover(props) {
                         : ''
                 }${moment
                     .unix(instanceDetail.created_at)
-                    .format('DD/MM/YYYY HH:mm')}`}
+                    .format(getDisplayedDateHourFormat())}`}
                 <Info className={classes.buttonIcon} />
             </Button>
             <Popover

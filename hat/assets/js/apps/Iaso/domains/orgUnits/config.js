@@ -14,6 +14,7 @@ import OrgUnitTooltip from './components/OrgUnitTooltip';
 import getDisplayName from '../../utils/usersUtils';
 import MESSAGES from './messages';
 import { getStatusMessage, getOrgUnitGroups } from './utils';
+import { getDisplayedDateHourFormat } from '../../utils/dates';
 
 export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
     const getStatusColor = status => {
@@ -93,7 +94,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
                 <section>
                     {moment
                         .unix(settings.original.updated_at)
-                        .format('DD/MM/YYYY HH:mm')}
+                        .format(getDisplayedDateHourFormat())}
                 </section>
             ),
         },
@@ -104,7 +105,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
                 <section>
                     {moment
                         .unix(settings.original.created_at)
-                        .format('DD/MM/YYYY HH:mm')}
+                        .format(getDisplayedDateHourFormat())}
                 </section>
             ),
         },
@@ -181,7 +182,7 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => [
         Cell: settings => (
             <span>
                 {moment(settings.original.created_at).format(
-                    'YYYY-MM-DD HH:mm',
+                    getDisplayedDateHourFormat(),
                 )}
             </span>
         ),

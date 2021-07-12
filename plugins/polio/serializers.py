@@ -1,6 +1,7 @@
 from django.db.transaction import atomic
 from django.utils.translation import gettext_lazy as _
 from gspread.exceptions import APIError
+from gspread.utils import rowcol_to_a1
 from rest_framework import serializers, exceptions
 
 from iaso.models import Group, OrgUnit
@@ -156,13 +157,28 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
 
         regional_template_worksheet = spreadsheet.worksheet("Regional")
 
+        districts = campaign.get_districts()
         regions = campaign.get_regions()
         current_index = 2
         for index, region in enumerate(regions):
             regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)
-            regional_worksheet.batch_update([
-                {'range': 'c4', 'values': [[region.name]]}
-            ])
+            region_districts = districts.filter(parent=region)
+            updates = [
+                {'range': 'c4', 'values': [[region.name]]},
+            ]
+            for idx, district in enumerate(region_districts):
+                col_index = 7 + idx
+                regional_worksheet.insert_cols([[]], col_index)
+                updates += [
+                    {'range': rowcol_to_a1(7, col_index), 'values': [[district.name]]},
+                    {'range': rowcol_to_a1(15, col_index), 'values': [[district.name]]},
+                    {'range': rowcol_to_a1(27, col_index), 'values': [[district.name]]},
+                    {'range': rowcol_to_a1(34, col_index), 'values': [[district.name]]},
+                    {'range': rowcol_to_a1(43, col_index), 'values': [[district.name]]},
+                    {'range': rowcol_to_a1(54, col_index), 'values': [[district.name]]},
+                ]
+
+            regional_worksheet.batch_update(updates)
             current_index += 1
 
         return {

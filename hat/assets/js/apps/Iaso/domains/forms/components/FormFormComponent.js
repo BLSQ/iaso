@@ -59,7 +59,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
     });
 
     return (
-        <Grid container spacing={2} justify="flex-start">
+        <Grid container spacing={2} justifyContent="flex-start">
             <Grid xs={6} item>
                 <InputComponent
                     keyValue="name"

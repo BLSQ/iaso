@@ -133,7 +133,8 @@ const LogCompareComponent = ({
             fields.push(longitude);
         }
         fields = fields.concat(getArrayfields(fieldsObject).slice(latIndex));
-        const fieldEquals = compareLog[i] && isEqual(l.fields, compareLog[i].fields);
+        const fieldEquals =
+            compareLog[i] && isEqual(l.fields, compareLog[i].fields);
         return (
             <Paper className={classes.paper} key={l.pk}>
                 {!fieldEquals && (
@@ -142,7 +143,7 @@ const LogCompareComponent = ({
                             container
                             item
                             xs={6}
-                            justify="flex-start"
+                            justifyContent="flex-start"
                             alignItems="center"
                         >
                             <Typography
@@ -157,7 +158,7 @@ const LogCompareComponent = ({
                             container
                             item
                             xs={6}
-                            justify="flex-end"
+                            justifyContent="flex-end"
                             alignItems="center"
                         >
                             <Tooltip
@@ -300,7 +301,7 @@ const LogCompareComponent = ({
                             container
                             spacing={2}
                             alignItems="center"
-                            justify="center"
+                            justifyContent="center"
                         >
                             <Grid xs={6} item>
                                 <ConfirmDialog

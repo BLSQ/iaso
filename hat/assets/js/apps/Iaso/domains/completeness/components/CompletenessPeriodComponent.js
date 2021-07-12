@@ -84,7 +84,7 @@ class CompletenessPeriodComponent extends Component {
                         xs={6}
                         item
                         container
-                        justify="flex-start"
+                        justifyContent="flex-start"
                         alignItems="center"
                     >
                         <Typography variant="h5" gutterBottom>

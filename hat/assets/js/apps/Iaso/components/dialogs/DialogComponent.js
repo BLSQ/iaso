@@ -65,7 +65,7 @@ function DialogComponent({
                     classes={{
                         paper: classes.paper,
                     }}
-                    onBackdropClick={closeDialog}
+                    onClose={closeDialog}
                     scroll="body"
                 >
                     <DialogTitle className={classes.title}>

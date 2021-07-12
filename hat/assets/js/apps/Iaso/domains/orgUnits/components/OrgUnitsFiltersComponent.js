@@ -6,9 +6,9 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { CirclePicker } from 'react-color';
 
-import { withStyles, FormLabel } from '@material-ui/core';
+import { withStyles, FormLabel, Button } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
+
 import Add from '@material-ui/icons/Add';
 import Search from '@material-ui/icons/Search';
 import classNames from 'classnames';
@@ -267,14 +267,14 @@ class OrgUnitsFiltersComponent extends Component {
                 <Grid
                     container
                     spacing={4}
-                    justify="flex-end"
+                    justifyContent="flex-end"
                     alignItems="center"
                 >
                     <Grid
                         item
                         xs={4}
                         container
-                        justify="flex-end"
+                        justifyContent="flex-end"
                         alignItems="center"
                     >
                         <Button

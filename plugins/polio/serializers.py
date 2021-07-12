@@ -146,6 +146,20 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
     def create(self, validated_data):
         campaign = validated_data.get('campaign')
         spreadsheet = create_spreadsheet(campaign.obr_name)
+        national_worksheet = spreadsheet.worksheet("National")
+        updates = [
+            {'range': 'C4', 'values': [[campaign.payment_mode]]},
+            {'range': 'C11', 'values': [[campaign.vacine]]},
+        ]
+        if campaign.initial_org_unit is not None:
+
+            countries = campaign.initial_org_unit.country_ancestors()
+            if countries is not None and len(countries) > 0:
+                country = countries[0]
+                updates.append(
+                    {'range': 'C6', 'values': [[country.name]]},
+                )
+        national_worksheet.batch_update(updates)
         return {
             "url": spreadsheet.url
         }

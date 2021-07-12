@@ -46,12 +46,12 @@ const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
                     />
                 </Grid>
             </Grid>
-            <Grid container spacing={4} justify="flex-end" alignItems="center">
+            <Grid container spacing={4} justifyContent="flex-end" alignItems="center">
                 <Grid
                     item
                     xs={2}
                     container
-                    justify="flex-end"
+                    justifyContent="flex-end"
                     alignItems="center"
                 >
                     <Button

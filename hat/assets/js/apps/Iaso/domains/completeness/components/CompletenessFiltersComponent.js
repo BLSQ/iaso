@@ -28,7 +28,7 @@ function CompletenessFiltersComponent({
                     />
                 </Grid>
                 <Grid item xs={3} />
-                <Grid item container xs={6} justify="flex-end">
+                <Grid item container xs={6} justifyContent="flex-end">
                     <ChipListComponent
                         options={instanceStatusOptions}
                         value={activeInstanceStatuses}

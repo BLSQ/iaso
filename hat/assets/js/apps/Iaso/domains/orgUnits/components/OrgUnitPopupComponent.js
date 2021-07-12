@@ -125,7 +125,7 @@ class OrgUnitPopupComponent extends Component {
                                 <Grid
                                     container
                                     spacing={0}
-                                    justify={
+                                    justifyContent={
                                         displayUseLocation
                                             ? 'center'
                                             : 'flex-end'

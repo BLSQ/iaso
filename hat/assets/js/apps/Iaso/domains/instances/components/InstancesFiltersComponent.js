@@ -5,9 +5,9 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push, replace } from 'react-router-redux';
 
-import { withStyles } from '@material-ui/core';
+import { withStyles, Button } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
+
 import Search from '@material-ui/icons/Search';
 
 import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
@@ -215,14 +215,14 @@ class InstancesFiltersComponent extends Component {
                 <Grid
                     container
                     spacing={4}
-                    justify="flex-end"
+                    justifyContent="flex-end"
                     alignItems="center"
                 >
                     <Grid
                         item
                         xs={2}
                         container
-                        justify="flex-end"
+                        justifyContent="flex-end"
                         alignItems="center"
                     >
                         <Button

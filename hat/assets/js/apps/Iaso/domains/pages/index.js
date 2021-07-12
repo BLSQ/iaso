@@ -8,8 +8,10 @@ import {
     ColumnText,
 } from 'bluesquare-components';
 import { makeStyles } from '@material-ui/core/styles';
-import { Box } from '@material-ui/core';
+import { Button, Box } from '@material-ui/core';
 import moment from 'moment';
+import AddIcon from '@material-ui/icons/Add';
+import Grid from '@material-ui/core/Grid';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from '../forms/messages';
 import { useGetPages } from './useGetPages';
@@ -22,6 +24,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const handleClickEditRow = id => alert('open modal');
+const handleClickCreateButton = () => alert('open modal');
 
 const Pages = () => {
     const intl = useSafeIntl();
@@ -110,6 +113,14 @@ const Pages = () => {
             <TopBar title={intl.formatMessage(MESSAGES.title)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {status === 'loading' && <LoadingSpinner />}
+                <PageActions>
+                    <PageAction
+                        icon={AddIcon}
+                        onClick={handleClickCreateButton}
+                    >
+                        Create
+                    </PageAction>
+                </PageActions>
                 {status === 'success' && (
                     <Table
                         params={tableParams}
@@ -124,6 +135,40 @@ const Pages = () => {
                 )}
             </Box>
         </>
+    );
+};
+
+const PageActions = ({ children }) => {
+    const classes = useStyles();
+
+    return (
+        <Grid
+            container
+            className={classes.pageActions}
+            spacing={4}
+            justify="flex-end"
+            alignItems="center"
+        >
+            <Grid item xs={4} container justify="flex-end" alignItems="center">
+                {children}
+            </Grid>
+        </Grid>
+    );
+};
+
+const PageAction = ({ icon: Icon, onClick, children }) => {
+    const classes = useStyles();
+
+    return (
+        <Button
+            variant="contained"
+            color="primary"
+            onClick={onClick}
+            className={classes.pageAction}
+        >
+            <Icon className={classes.buttonIcon} />
+            {children}
+        </Button>
     );
 };
 

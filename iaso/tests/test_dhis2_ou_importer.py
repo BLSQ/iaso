@@ -10,34 +10,50 @@ from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
 from iaso.test import TestCase
 
 
-class CommandTests(TestCase):
+class DHIS2TestMixin:
     def fixture_json(self, name):
         with open("./iaso/tests/fixtures/dhis2/" + name + ".json") as json_file:
             return json.load(json_file)
 
-    @responses.activate
-    def test_command(self):
-        out = StringIO()
+    def setup_responses(self, orgunit_fixture_name, groupsets_fixture_name):
+        orgunit_response_content = self.fixture_json(orgunit_fixture_name)
 
-        # fixture file based on https://play.dhis2.org/2.30/api/organisationUnits.json?fields=id%2Cname%2Cpath%2Ccoordinates%2Cgeometry%2Cparent%2CorganisationUnitGroups%5Bid%2Cname%5D&filter=id:in:[ImspTQPwCqd,kJq2mPyFEHo,KXSqt7jv6DU,LOpWauwwghf]
+        # Assume @responses.activate in the test function
 
         responses.add(
             responses.GET,
             "https://play.dhis2.org/2.30/api/organisationUnits.json"
             "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
             "&pageSize=500&page=1&totalPages=True",
-            json=self.fixture_json("orgunits"),
+            json=orgunit_response_content,
             status=200,
         )
+
+        empty_groupset_response = {"organisationUnitGroupSets": []}
+        if groupsets_fixture_name:
+            groupsets_response_content = self.fixture_json(groupsets_fixture_name)
+        else:
+            groupsets_response_content = empty_groupset_response
 
         responses.add(
             responses.GET,
             "https://play.dhis2.org/2.30/api/organisationUnitGroupSets.json"
             "?paging=false&fields=id,name,organisationUnitGroups[id,name]",
-            json=self.fixture_json("groupsets"),
+            json=groupsets_response_content,
             status=200,
         )
 
+
+class CommandTests(TestCase, DHIS2TestMixin):
+    @responses.activate
+    def test_command(self):
+        # fixture files based on
+        # https://play.dhis2.org/2.30/api/organisationUnits.json?
+        # fields=id%2Cname%2Cpath%2Ccoordinates%2Cgeometry%2Cparent%2CorganisationUnitGroups%5Bid%2Cname%5D
+        # &filter=id:in:[ImspTQPwCqd,kJq2mPyFEHo,KXSqt7jv6DU,LOpWauwwghf]
+        self.setup_responses(orgunit_fixture_name="orgunits", groupsets_fixture_name="groupsets")
+
+        out = StringIO()
         management.call_command(
             "dhis2_ou_importer",
             stdout=out,
@@ -100,28 +116,12 @@ class CommandTests(TestCase):
     def test_stranges_geom(self):
         """Testfile with Shape with hole and with multi polygon"""
         out = StringIO()
-
-        responses.add(
-            responses.GET,
-            "https://play.dhis2.org/2.36/api/organisationUnits.json"
-            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
-            "&pageSize=500&page=1&totalPages=True",
-            json=self.fixture_json("orgunits_strange_geom"),
-            status=200,
-        )
-
-        responses.add(
-            responses.GET,
-            "https://play.dhis2.org/2.36/api/organisationUnitGroupSets.json"
-            "?paging=false&fields=id,name,organisationUnitGroups[id,name]",
-            json={"organisationUnitGroupSets": []},
-            status=200,
-        )
+        self.setup_responses(orgunit_fixture_name="orgunits_strange_geom", groupsets_fixture_name=None)
 
         management.call_command(
             "dhis2_ou_importer",
             stdout=out,
-            dhis2_url="https://play.dhis2.org/2.36",
+            dhis2_url="https://play.dhis2.org/2.30",
             dhis2_user="admin",
             dhis2_password="district",
             source_name="play",
@@ -157,34 +157,12 @@ class CommandTests(TestCase):
         self.assertEqual(len(ou_c.geom.coords[1]), 2)
 
 
-class TaskTests(TestCase):
+class TaskTests(TestCase, DHIS2TestMixin):
     """FIXME this is a copy of the CommandTest adapted for task, we have to keep them in sync"""
-
-    def fixture_json(self, name):
-        with open("./iaso/tests/fixtures/dhis2/" + name + ".json") as json_file:
-            return json.load(json_file)
 
     @responses.activate
     def test_import(self):
-        # fixture file based on
-        # https://play.dhis2.org/2.30/api/organisationUnits.json?fields=id%2Cname%2Cpath%2Ccoordinates%2Cgeometry%2Cparent%2CorganisationUnitGroups%5Bid%2Cname%5D&filter=id:in:[ImspTQPwCqd,kJq2mPyFEHo,KXSqt7jv6DU,LOpWauwwghf]
-
-        responses.add(
-            responses.GET,
-            "https://play.dhis2.org/2.30/api/organisationUnits.json"
-            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
-            "&pageSize=500&page=1&totalPages=True",
-            json=self.fixture_json("orgunits"),
-            status=200,
-        )
-
-        responses.add(
-            responses.GET,
-            "https://play.dhis2.org/2.30/api/organisationUnitGroupSets.json"
-            "?paging=false&fields=id,name,organisationUnitGroups[id,name]",
-            json=self.fixture_json("groupsets"),
-            status=200,
-        )
+        self.setup_responses(orgunit_fixture_name="orgunits", groupsets_fixture_name="groupsets")
 
         account = Account.objects.create(name="a")
         user = self.create_user_with_profile(username="link", account=account)

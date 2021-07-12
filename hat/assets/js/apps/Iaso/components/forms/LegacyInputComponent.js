@@ -25,7 +25,7 @@ import {
     // IconButton,
     // RadioGroup,
 } from '@material-ui/core';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { alpha } from '@material-ui/core/styles/colorManipulator';
 import grey from '@material-ui/core/colors/grey';
 
 import MESSAGES from '../../domains/forms/messages';
@@ -70,10 +70,10 @@ const styles = theme => ({
             padding: '0 !important',
             color: theme.palette.secondary.main,
             borderColor: theme.palette.secondary.main,
-            backgroundColor: fade(theme.palette.secondary.main, 0.08),
+            backgroundColor: alpha(theme.palette.secondary.main, 0.08),
         },
         '& .Select--multi .Select-value .Select-value-icon': {
-            borderColor: fade(theme.palette.secondary.main, 0.24),
+            borderColor: alpha(theme.palette.secondary.main, 0.24),
             width: '21px',
             height: '100%',
             paddingTop: '3px',

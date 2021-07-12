@@ -127,7 +127,7 @@ class AddRunDialogComponent extends Component {
                             container
                             spacing={2}
                             alignItems="center"
-                            justify="flex-start"
+                            justifyContent="flex-start"
                         >
                             <Grid xs={6} item>
                                 <InputComponent
@@ -151,7 +151,7 @@ class AddRunDialogComponent extends Component {
                             container
                             spacing={2}
                             alignItems="center"
-                            justify="flex-start"
+                            justifyContent="flex-start"
                         >
                             <Grid xs={6} item>
                                 <InputComponent

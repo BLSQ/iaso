@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 import sentry_sdk
 from datetime import timedelta
+from django.utils.translation import ugettext_lazy as _
 
 from sentry_sdk.integrations.django import DjangoIntegration
 
@@ -140,6 +141,7 @@ if PLUGIN_POLIO_ENABLED:
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -217,6 +219,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 
 LANGUAGE_CODE = "en"
+
+LANGUAGES = (
+    ("fr", _("French")),
+    ("en", _("English")),
+)
 
 LOCALE_PATHS = ["/opt/app/hat/locale/", "hat/locale/"]
 

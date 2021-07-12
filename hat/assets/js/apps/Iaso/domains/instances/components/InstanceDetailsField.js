@@ -35,7 +35,13 @@ const InstanceDetailsField = ({ classes, label, value, Icon, valueTitle }) => (
                 :
             </div>
         </Grid>
-        <Grid xs={7} container item justify="flex-start" alignItems="center">
+        <Grid
+            xs={7}
+            container
+            item
+            justifyContent="flex-start"
+            alignItems="center"
+        >
             <Typography
                 variant="body1"
                 noWrap

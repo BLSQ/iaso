@@ -97,6 +97,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
+    },
     latest_version_files: {
         defaultMessage: 'Latest version',
         id: 'iaso.forms.latest_version_files',
@@ -428,6 +432,10 @@ const MESSAGES = defineMessages({
     endPeriod: {
         id: 'iaso.label.endPeriod',
         defaultMessage: 'end period',
+    },
+    viewPage: {
+        id: 'iaso.forms.viewpages',
+        defaultMessage: 'View page',
     },
 });
 

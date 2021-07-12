@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {
-    Select,
     TextInput,
     PasswordInput,
     NumberInput,
@@ -13,6 +12,7 @@ import {
     injectIntl,
 } from 'bluesquare-components';
 import MESSAGES from '../../domains/forms/messages';
+import { Select } from './Select';
 
 /**
  * @deprecated

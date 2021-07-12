@@ -119,7 +119,7 @@ class InstancesFiltersComponent extends Component {
 
         const searchParams = [{ search: params.search }];
         const secondColumnFilters = [
-            location(formatMessage),
+            // location(formatMessage),
             orgUnitType(orgUnitTypes),
         ];
         if (periodsList.length > 0) {
@@ -129,7 +129,7 @@ class InstancesFiltersComponent extends Component {
             <div className={classes.marginBottomBig}>
                 <Grid container spacing={4}>
                     <Grid item xs={8}>
-                        <Grid container item xs={12}>
+                        {/* <Grid container item xs={12}>
                             <DatesRange
                                 onChangeDate={(key, value) =>
                                     this.onChange(value, key)
@@ -137,7 +137,7 @@ class InstancesFiltersComponent extends Component {
                                 dateFrom={params.dateFrom}
                                 dateTo={params.dateTo}
                             />
-                        </Grid>
+                        </Grid> */}
                         <Grid container spacing={4}>
                             <Grid item xs={6}>
                                 <FiltersComponent
@@ -149,7 +149,7 @@ class InstancesFiltersComponent extends Component {
                                     filters={secondColumnFilters}
                                 />
                             </Grid>
-                            <Grid item xs={6}>
+                            {/* <Grid item xs={6}>
                                 <FiltersComponent
                                     params={params}
                                     baseUrl={baseUrl}
@@ -162,10 +162,10 @@ class InstancesFiltersComponent extends Component {
                                         deviceOwnership(devicesOwnerships),
                                     ]}
                                 />
-                            </Grid>
+                            </Grid> */}
                         </Grid>
                     </Grid>
-                    <Grid item xs={4}>
+                    {/* <Grid item xs={4}>
                         <Grid container spacing={4}>
                             <Grid item xs={12}>
                                 <FiltersComponent
@@ -209,7 +209,7 @@ class InstancesFiltersComponent extends Component {
                                 />
                             </Grid>
                         </Grid>
-                    </Grid>
+                    </Grid> */}
                 </Grid>
 
                 <Grid

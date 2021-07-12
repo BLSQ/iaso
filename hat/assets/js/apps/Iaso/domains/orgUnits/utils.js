@@ -63,7 +63,7 @@ export const getSourcesWithoutCurrentSource = (
     return sources;
 };
 
-export const OrgunitMessage = ({ orgUnit, withType }) => {
+export const OrgUnitLabel = ({ orgUnit, withType }) => {
     let message = textPlaceholder;
     const intl = useSafeIntl();
     if (orgUnit && orgUnit.name) {

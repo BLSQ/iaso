@@ -6,7 +6,7 @@ import { FormattedMessage } from 'react-intl';
 
 import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
 import OrgUnitTooltip from '../../orgUnits/components/OrgUnitTooltip';
-import { OrgunitMessage } from '../../orgUnits/utils';
+import { OrgUnitLabel } from '../../orgUnits/utils';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -58,7 +58,7 @@ const UsersLocations = ({ handleChange, currentUser }) => {
                         <OrgUnitTooltip orgUnit={ou} key={ou.id}>
                             <Chip
                                 label={
-                                    <OrgunitMessage
+                                    <OrgUnitLabel
                                         orgUnit={ou}
                                         withType={false}
                                     />

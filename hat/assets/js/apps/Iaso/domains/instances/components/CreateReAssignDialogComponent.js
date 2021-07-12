@@ -6,7 +6,7 @@ import { Chip, makeStyles, Box, Typography } from '@material-ui/core';
 import InputComponent from '../../../components/forms/InputComponent';
 import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
 import OrgUnitTooltip from '../../orgUnits/components/OrgUnitTooltip';
-import { OrgunitMessage } from '../../orgUnits/utils';
+import { OrgUnitLabel } from '../../orgUnits/utils';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { Period } from '../../periods/models';
 
@@ -164,7 +164,7 @@ const CreateReAssignDialogComponent = ({
                         >
                             <Chip
                                 label={
-                                    <OrgunitMessage
+                                    <OrgUnitLabel
                                         orgUnit={fieldValue.orgUnit.value}
                                     />
                                 }

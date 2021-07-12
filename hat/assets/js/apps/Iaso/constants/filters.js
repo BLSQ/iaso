@@ -6,7 +6,7 @@ import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
 import { Period } from '../domains/periods/models';
-import { OrgunitMessage } from '../domains/orgUnits/utils';
+import { OrgUnitLabel } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';
 
 export const search = (urlKey = 'search') => ({
@@ -107,7 +107,7 @@ export const orgUnitLevel = (
     useKeyParam: false,
     isClearable: true,
     options: orgunitList.map(o => ({
-        label: <OrgunitMessage orgUnit={o} withType />,
+        label: <OrgUnitLabel orgUnit={o} withType />,
         value: o.id,
     })),
     labelString: `${formatMessage(MESSAGES.level)} ${level + 1}`,

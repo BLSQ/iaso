@@ -4,7 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { displayDateFromTimestamp } from 'bluesquare-components';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { Period } from '../periods/models';
-import { OrgunitMessage } from '../orgUnits/utils';
+import { OrgUnitLabel } from '../orgUnits/utils';
 import MESSAGES from './messages';
 
 export const INSTANCE_STATUS_READY = 'READY';
@@ -55,7 +55,7 @@ export const INSTANCE_METAS_FIELDS = [
                     domComponent="span"
                 >
                     <>
-                        <OrgunitMessage orgUnit={value} withType />
+                        <OrgUnitLabel orgUnit={value} withType />
                     </>
                 </OrgUnitTooltip>
             );

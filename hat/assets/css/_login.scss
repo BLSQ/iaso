@@ -22,6 +22,7 @@
 .auth__content {
   width: 100%;
   max-width: 320px;
+
   .errorlist {
     margin-top: 1em;
     font-size: $font-size-s;
@@ -36,17 +37,23 @@
   padding-top: calc(#{$padding-unit} - 1em);
   box-shadow: inset 0 3px 0 0 $blue, 0 0 10px 10px rgba(black, 0.15);
   position: relative;
+
   * {
     box-sizing: border-box;
   }
+
   label {
     margin-top: 1.5em;
   }
+
   input {
     width: 100% !important;
   }
+
   button {
     margin-top: 1.25em;
+    width: 100%;
+    display: block;
   }
 }
 
@@ -56,36 +63,45 @@
   line-height: 1.3;
   margin-top: 1em;
 }
+
 .auth__text {
   &--error {
     @include text--error;
   }
+
   &--warning {
     @include text--warning;
   }
 }
+
 .helptext {
-    ul {
-      padding: $padding-unit / 2 0 0 $padding-unit / 2;
-      font-size: 14px;
-      line-height: 1.3;
-    }
+  ul {
+    padding: $padding-unit / 2 0 0 $padding-unit / 2;
+    font-size: 14px;
+    line-height: 1.3;
+  }
 }
+
 .errorlist {
   color: $red;
-  padding: 0 0 $padding-unit / 2  $padding-unit / 2;
+  padding: 0 0 $padding-unit / 2 $padding-unit / 2;
   font-size: 14px !important;
 }
+
 $right-icon-position : 40px;
+
 #display-password {
   position: absolute;
-  bottom: 100px;
+  width: auto;
+  bottom: 133px;
   right: $right-icon-position;
+
   &.id_new_password1 {
     top: 225px;
     right: $right-icon-position;
     bottom: auto;
   }
+
   &.id_old_password {
     top: 145px;
     right: $right-icon-position;
@@ -105,4 +121,9 @@ $right-icon-position : 40px;
   border-radius: 4px;
   padding: $padding-unit;
   box-shadow: inset 0 3px 0 0 $blue, 0 0 10px 10px rgba(black, 0.15);
+}
+
+.login-link {
+  margin: 10px 0;
+  text-align: right;
 }

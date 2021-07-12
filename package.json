@@ -16,7 +16,11 @@
         "webpack-prod": "webpack --config ./hat/webpack.prod.js",
         "webpack-server": "node ./hat/webpack.server.js",
         "dev": "npm run webpack && npm run webpack-server",
-        "extract-iaso-en-messages": "extract-messages --locales=en  --flat --output './hat/assets/js/apps/Iaso/domains/app/translations' './hat/assets/js/apps/Iaso/**/*.js'"
+        "scan-translations": "python ./scripts/scantranslations.py",
+        "extract-iaso-en-messages": "extract-messages --locales=en  --flat --output './hat/assets/js/apps/Iaso/domains/app/translations/extracted' './hat/assets/js/apps/Iaso/**/*.js'",
+        "extract-iaso-fr-messages": "extract-messages --locales=fr  --flat --output './hat/assets/js/apps/Iaso/domains/app/translations/extracted' './hat/assets/js/apps/Iaso/**/*.js'",
+        "scan-translations-en": "npm run extract-iaso-en-messages && npm run scan-translations './hat/assets/js/apps/Iaso/domains/app/translations/en.json' './hat/assets/js/apps/Iaso/domains/app/translations/extracted/en.json' 'En'",
+        "scan-translations-fr": "npm run extract-iaso-fr-messages && npm run scan-translations './hat/assets/js/apps/Iaso/domains/app/translations/fr.json' './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' 'Fr'"
     },
     "repository": {
         "type": "git",
@@ -109,6 +113,7 @@
         "file-loader": "^6.2.0",
         "husky": "^3.0.0",
         "jsdom": "^15.1.1",
+        "json": "^11.0.0",
         "lint-staged": "^9.0.1",
         "mini-css-extract-plugin": "^1.6.0",
         "mocha": "^8.2.0",
@@ -124,6 +129,8 @@
         "sinon": "^9.2.1",
         "sinon-chai": "^3.5.0",
         "style-loader": "^0.23.1",
+        "ts-loader": "^9.2.3",
+        "typescript": "^4.3.4",
         "url-loader": "^4.1.1",
         "webpack": "^5.0.0-rc.6",
         "webpack-bundle-tracker": "^0.4.3",

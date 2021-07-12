@@ -17,6 +17,7 @@ urlpatterns = [
     # url(r"^api/", include("hat.api.urls")),
     url(r"^pages/(?P<page_slug>[a-z0-9-]+)/$", page, name="pages"),
     url(r"^dashboard/", include("hat.dashboard.urls")),
+    url("i18n/", include("django.conf.urls.i18n")),
     url(r"^login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login"),
     url(r"^logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
     url(

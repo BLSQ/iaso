@@ -13,6 +13,8 @@ import ProtectedRoute from './ProtectedRoute';
 import { redirectTo as redirectToAction } from '../../../routing/actions';
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
 
+const cookieStub = require('../../../utils/cookies');
+
 let component;
 
 const user = {
@@ -52,7 +54,7 @@ const storeWithUnauthorizedUser = makeMockedStore(unauthorizedUser);
 
 const storeWithNoUser = makeMockedStore(null);
 
-const localStorageSpy = sinon.spy(localStorage, 'setItem');
+const setCookieSpy = sinon.spy(cookieStub, 'setCookie');
 
 const updatedDispatchSpy = sinon.spy(updatedStore, 'dispatch');
 
@@ -63,14 +65,13 @@ const unauthorizedDispatchSpy = sinon.spy(
 const redirectSpy = sinon.spy(redirectToAction);
 
 const fakeGetItem = key => {
-    if (key === 'iaso_locale') {
+    if (key === 'django_language') {
         return 'fr';
     }
     return '';
 };
-
-const localStorageStub = sinon
-    .stub(localStorage, 'getItem')
+const getCookieStub = sinon
+    .stub(cookieStub, 'getCookie')
     .callsFake(fakeGetItem);
 
 const stubComponent = () => <div>I am a stub</div>;
@@ -95,7 +96,7 @@ const renderComponent = () => {
 
 describe('ProtectedRoutes', () => {
     beforeEach(() => {
-        localStorageSpy.resetHistory();
+        setCookieSpy.resetHistory();
         updatedDispatchSpy.resetHistory();
         unauthorizedDispatchSpy.resetHistory();
         redirectSpy.resetHistory();
@@ -109,25 +110,25 @@ describe('ProtectedRoutes', () => {
     it('renders', () => {
         expect(component.exists()).to.equal(true);
     });
-    it('uses the languages option in localstorage if it exists', async () => {
+    it('uses the languages option in cookies if it exists', async () => {
         // updating store to trigger componentDidUpdate
         component.setProps({ store: updatedStore });
         await component.update();
-        expect(localStorageSpy).to.not.have.been.called;
+        expect(setCookieSpy).to.not.have.been.called;
     });
     // Passes when not run as part of the test suite
-    it.skip('uses the language option from backend if none exist in localstorage', async () => {
-        localStorageStub.returns(null);
+    it.skip('uses the language option from backend if none exist in cookies', async () => {
+        getCookieStub.returns(null);
         component.setProps({ store: updatedStore });
         await component.update();
         expect(updatedDispatchSpy).to.have.been.calledOnce;
-        // expect 2 calls because localStorage is set again by action dispatched
-        expect(localStorageSpy).to.have.been.calledTwice;
+        // expect 2 calls because cookies is set again by action dispatched
+        expect(setCookieSpy).to.have.been.calledTwice;
     });
     // Passes when not run as part of the test suite
     it.skip('redirects unauthorized user to first authorized route', async () => {
-        // put a value in localStorage to prevent saving language option (which would trigger a second dispatch call)
-        localStorageStub.returns('en');
+        // put a value in cookies to prevent saving language option (which would trigger a second dispatch call)
+        getCookieStub.returns('en');
         component.setProps({ store: storeWithUnauthorizedUser });
         await component.update();
 

@@ -190,6 +190,12 @@ const BaseInfoForm = () => {
                     />
                     <Field
                         className={classes.input}
+                        label="GPEI Email"
+                        name={'gpei_email'}
+                        component={TextInput}
+                    />
+                    <Field
+                        className={classes.input}
                         name={'initial_org_unit'}
                         component={OrgUnitsLevels}
                     />

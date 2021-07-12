@@ -1,16 +1,16 @@
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from django.utils.translation import gettext_lazy as _
 from django.db.transaction import atomic
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from iaso.models import Group, OrgUnit, org_unit
 from .models import Preparedness, Round, Campaign, Surge
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
     get_national_level_preparedness,
-    InvalidFormatError,
     parse_value,
 )
+from .preparedness.exceptions import *
 from gspread.exceptions import APIError
 
 from .preparedness.spreadsheet_manager import create_spreadsheet
@@ -138,10 +138,13 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
     url = serializers.URLField(read_only=True)
 
     def create(self, validated_data):
-        spreadsheet = create_spreadsheet('Teste')
-        return {
-            "url": spreadsheet.url
-        }
+        try:
+            spreadsheet = create_spreadsheet('Teste')
+            return {
+                "url": spreadsheet.url
+            }
+        except TemplateNotFound as e:
+            raise exceptions.ValidationError({'message': str(e)})
 
 
 class CampaignSerializer(serializers.ModelSerializer):

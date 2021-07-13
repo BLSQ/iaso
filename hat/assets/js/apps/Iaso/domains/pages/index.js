@@ -303,20 +303,6 @@ const Pages = () => {
                                     onClick={() => {}}
                                 />
                             </Link>
-                            <IconButtonComponent
-                                icon="edit"
-                                tooltipMessage={MESSAGES.edit}
-                                onClick={() =>
-                                    handleClickEditRow(settings.original.id)
-                                }
-                            />
-                            <IconButtonComponent
-                                icon="delete"
-                                tooltipMessage={MESSAGES.delete}
-                                onClick={() =>
-                                    handleClickDeleteRow(settings.original.id)
-                                }
-                            />
                         </>
                     );
                 },
@@ -360,14 +346,6 @@ const Pages = () => {
             <TopBar title={intl.formatMessage(MESSAGES.title)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {status === 'loading' && <LoadingSpinner />}
-                <PageActions>
-                    <PageAction
-                        icon={AddIcon}
-                        onClick={handleClickCreateButton}
-                    >
-                        Create
-                    </PageAction>
-                </PageActions>
                 {status === 'success' && (
                     <Table
                         params={tableParams}
@@ -382,40 +360,6 @@ const Pages = () => {
                 )}
             </Box>
         </>
-    );
-};
-
-const PageActions = ({ children }) => {
-    const classes = useStyles();
-
-    return (
-        <Grid
-            container
-            className={classes.pageActions}
-            spacing={4}
-            justify="flex-end"
-            alignItems="center"
-        >
-            <Grid item xs={4} container justify="flex-end" alignItems="center">
-                {children}
-            </Grid>
-        </Grid>
-    );
-};
-
-const PageAction = ({ icon: Icon, onClick, children }) => {
-    const classes = useStyles();
-
-    return (
-        <Button
-            variant="contained"
-            color="primary"
-            onClick={onClick}
-            className={classes.pageAction}
-        >
-            <Icon className={classes.buttonIcon} />
-            {children}
-        </Button>
     );
 };
 

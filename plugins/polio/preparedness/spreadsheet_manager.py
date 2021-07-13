@@ -42,8 +42,8 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
             generate_training_section(col_index, district_name_cell),
             generate_monitoring_section(col_index, district_name_cell),
             generate_vaccine_logistics_section(col_index, district_name_cell),
-            {'range': rowcol_to_a1(43, col_index), 'values': [[district_name_cell]]},
-            {'range': rowcol_to_a1(54, col_index), 'values': [[district_name_cell]]},
+            generate_advocacy_section(col_index, district_name_cell),
+            generate_adverse_section(col_index, district_name_cell),
         ]
 
     sheet.batch_update(updates, value_input_option='USER_ENTERED')
@@ -70,6 +70,35 @@ def generate_monitoring_section(col_index: int, district_name):
             '0',
             '0',
             get_average_of_range(col_index, 28, 29),
+        ])
+    }
+
+
+def generate_advocacy_section(col_index: int, district_name):
+    return {
+        'range': get_range(col_index, 43, 50),
+        'values': map_to_column_value([
+            district_name,
+            '0',
+            '0',
+            '0',
+            '0',
+            '0',
+            '0',
+            get_average_of_range(col_index, 44, 45),
+        ])
+    }
+
+
+def generate_adverse_section(col_index: int, district_name):
+    return {
+        'range': get_range(col_index, 54, 58),
+        'values': map_to_column_value([
+            district_name,
+            '0',
+            '0',
+            '',
+            get_average_of_range(col_index, 55, 56),
         ])
     }
 

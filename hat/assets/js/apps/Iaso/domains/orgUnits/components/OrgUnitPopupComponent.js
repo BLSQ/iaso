@@ -28,6 +28,7 @@ import PopupItemComponent from '../../../components/maps/popups/PopupItemCompone
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 
 import { baseUrls } from '../../../constants/urls';
+import { getDisplayedDateHourFormat } from '../../../utils/dates';
 
 import MESSAGES from '../messages';
 
@@ -119,7 +120,7 @@ class OrgUnitPopupComponent extends Component {
                                 label={formatMessage(MESSAGES.created_at)}
                                 value={moment
                                     .unix(currentOrgUnit.created_at)
-                                    .format('DD/MM/YYYY HH:mm')}
+                                    .format('LTS')}
                             />
                             <Box className={classes.actionBox}>
                                 <Grid

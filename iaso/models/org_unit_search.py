@@ -32,6 +32,7 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
     link_source = params.get("linkSource", None)
     link_version = params.get("linkVersion", None)
     roots_for_user = params.get("rootsForUser", None)
+    ignore_empty_names = params.get("ignoreEmptyNames", False)
 
     org_unit_type_category = params.get("orgUnitTypeCategory", None)
 
@@ -156,6 +157,9 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
 
     if org_unit_type_category:
         queryset = queryset.filter(org_unit_type__category=org_unit_type_category.upper())
+
+    if ignore_empty_names:
+        queryset = queryset.filter(~Q(name=""))
 
     queryset = queryset.annotate(
         instances_count=Count(

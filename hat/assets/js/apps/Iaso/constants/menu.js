@@ -17,6 +17,7 @@ import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRoun
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
+import { getPlugins } from '../utils/index';
 
 import MESSAGES from './messages';
 
@@ -162,4 +163,8 @@ if (PLUGIN_POLIO_ENABLED === 'True') {
     });
 }
 
-export default menuItems;
+const pluginsMenu = getPlugins()
+    .map(plugin => plugin.menu)
+    .flat();
+
+export default [...menuItems, ...pluginsMenu];

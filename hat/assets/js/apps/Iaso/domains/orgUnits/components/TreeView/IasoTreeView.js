@@ -1,4 +1,4 @@
-import { string, bool, arrayOf, func, object } from 'prop-types';
+import PropTypes, { string, bool, arrayOf, func, oneOf } from 'prop-types';
 import React, { useCallback } from 'react';
 import { TreeView } from '@material-ui/lab';
 
@@ -26,11 +26,11 @@ import { useAPI } from '../../../../utils/requests';
 //         );
 //     }
 // }
-const model = {
-    id: 'string',
-    name: 'string',
-    hasChildren: 'boolean',
-};
+// const model = {
+//     id: 'string',
+//     name: 'string',
+//     hasChildren: 'boolean',
+// };
 const IasoTreeView = ({
     getChildrenData,
     getRootData,
@@ -38,7 +38,8 @@ const IasoTreeView = ({
     nodeField, // id
     multiselect,
     expanded,
-    parentNotifier,
+    selected,
+    onToggle,
     toggleOnLabelClick,
     onSelect,
     onIconClick,
@@ -46,10 +47,14 @@ const IasoTreeView = ({
     // dataModel,
 }) => {
     const fetchChildrenData = useCallback(getChildrenData, []);
-    const fetchRootData = useCallback(getRootData(model), []);
+    // const fetchRootData = useCallback(getRootData(model), []);
+    const fetchRootData = useCallback(getRootData, []);
     const { data: rootData } = useAPI(fetchRootData);
     const onNodeToggle = (_event, nodeIds) => {
-        parentNotifier(nodeIds);
+        onToggle(nodeIds);
+    };
+    const onNodeSelect = (_event, selection) => {
+        onSelect(selection);
     };
     const makeChildren = useCallback(
         data => {
@@ -61,7 +66,8 @@ const IasoTreeView = ({
                     key={`RootTreeItem ${item[nodeField]}`}
                     fetchChildrenData={fetchChildrenData}
                     expanded={expanded}
-                    notifyParent={parentNotifier}
+                    selected={selected}
+                    // notifyParent={onToggle}
                     hasChildren={item.hasChildren}
                     toggleOnLabelClick={toggleOnLabelClick}
                     onIconClick={onIconClick}
@@ -74,9 +80,10 @@ const IasoTreeView = ({
     return (
         <TreeView
             expanded={expanded}
-            onNodeToggle={onNodeToggle}
+            selected={selected}
             multiSelect={multiselect}
-            onNodeSelect={onSelect}
+            onNodeSelect={onNodeSelect}
+            onNodeToggle={onNodeToggle}
         >
             {rootData && makeChildren(rootData)}
         </TreeView>
@@ -91,10 +98,13 @@ IasoTreeView.propTypes = {
     // dataModel: object,
     multiselect: bool,
     toggleOnLabelClick: bool,
+    // TODO see if better to force array and adapt in single select case
     expanded: arrayOf(string).isRequired,
-    parentNotifier: func.isRequired,
+    onToggle: func.isRequired,
     onSelect: func,
     onIconClick: func,
+    // selected: oneOf([PropTypes.string, PropTypes.arrayOf(string)]),
+    selected: string,
 };
 
 IasoTreeView.defaultProps = {
@@ -102,10 +112,11 @@ IasoTreeView.defaultProps = {
     getRootData: () => {},
     // dataModel: model,
     // dataModel: null,
-    multiselect: true,
+    multiselect: false,
     toggleOnLabelClick: true,
     onSelect: () => {},
     onIconClick: () => {},
+    selected: undefined,
 };
 
 export { IasoTreeView };

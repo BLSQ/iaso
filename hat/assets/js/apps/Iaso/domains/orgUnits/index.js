@@ -22,7 +22,6 @@ import {
     injectIntl,
     Table,
 } from 'bluesquare-components';
-import { getRootData, getChildrenData } from './components/TreeView/requests';
 
 import {
     fetchOrgUnitsTypes,
@@ -71,7 +70,6 @@ import {
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { locationLimitMax } from './constants/orgUnitConstants';
-import { SingleSelectTreeView } from './components/TreeView/SingleSelectTreeView';
 
 const baseUrl = baseUrls.orgUnits;
 let warningDisplayed = false;

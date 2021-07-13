@@ -1,49 +1,49 @@
 import { iasoGetRequest } from '../../../../utils/requests';
 
 // Basic type check. Will check missing keys and key types, but not nested objects
-const modelCheck = (response, model) => {
-    const modelKeys = Object.keys(model);
-    const missingKeys = [];
-    modelKeys.forEach(modelKey => {
-        if (response[modelKey] === undefined) {
-            console.error(
-                'pushing to missingKeys',
-                modelKey,
-                response[modelKey],
-            );
-            missingKeys.push(modelKey);
-        } else if (
-            typeof response[modelKey] === 'object' &&
-            model[modelKey] === 'array'
-        ) {
-            if (!Array.isArray(response[modelKey])) {
-                console.error(
-                    `Wrong property type for ${modelKey}. Should be ${
-                        model[modelKey]
-                    }, was: ${typeof response[modelKey]}`,
-                );
-                return false;
-            }
-            // the model object will contain strings that can be compared to typeof
-            // eslint-disable-next-line valid-typeof
-        } else if (typeof response[modelKey] !== model[modelKey]) {
-            console.error(
-                `Wrong property type for ${modelKey}. Should be ${
-                    model[modelKey]
-                }, was: ${typeof response[modelKey]}`,
-            );
-            return false;
-        }
-    });
-    if (missingKeys.length > 0) {
-        console.error(
-            `Missing properties in response: ${missingKeys} in `,
-            response,
-        );
-        return false;
-    }
-    return true;
-};
+// const modelCheck = (response, model) => {
+//     const modelKeys = Object.keys(model);
+//     const missingKeys = [];
+//     modelKeys.forEach(modelKey => {
+//         if (response[modelKey] === undefined) {
+//             console.error(
+//                 'pushing to missingKeys',
+//                 modelKey,
+//                 response[modelKey],
+//             );
+//             missingKeys.push(modelKey);
+//         } else if (
+//             typeof response[modelKey] === 'object' &&
+//             model[modelKey] === 'array'
+//         ) {
+//             if (!Array.isArray(response[modelKey])) {
+//                 console.error(
+//                     `Wrong property type for ${modelKey}. Should be ${
+//                         model[modelKey]
+//                     }, was: ${typeof response[modelKey]}`,
+//                 );
+//                 return false;
+//             }
+//             // the model object will contain strings that can be compared to typeof
+//             // eslint-disable-next-line valid-typeof
+//         } else if (typeof response[modelKey] !== model[modelKey]) {
+//             console.error(
+//                 `Wrong property type for ${modelKey}. Should be ${
+//                     model[modelKey]
+//                 }, was: ${typeof response[modelKey]}`,
+//             );
+//             return false;
+//         }
+//     });
+//     if (missingKeys.length > 0) {
+//         console.error(
+//             `Missing properties in response: ${missingKeys} in `,
+//             response,
+//         );
+//         return false;
+//     }
+//     return true;
+// };
 
 const getChildrenData = async id => {
     const response = await iasoGetRequest({
@@ -62,7 +62,8 @@ const getChildrenData = async id => {
     return useableData;
 };
 
-const getRootData = model => async () => {
+// const getRootData = model => async () => {
+const getRootData = async () => {
     const response = await iasoGetRequest({
         disableSuccessSnackBar: true,
         requestParams: {
@@ -77,9 +78,10 @@ const getRootData = model => async () => {
             hasChildren: orgUnit.has_children,
         };
     });
-    if (modelCheck(useableData[0], model)) return useableData;
-    console.error(`Received Wrong data type, expected`, model);
-    return null;
+    // if (modelCheck(useableData[0], model)) return useableData;
+    // console.error(`Received Wrong data type, expected`, model);
+    // return null;
+    return useableData;
 };
 
 export { getRootData, getChildrenData };

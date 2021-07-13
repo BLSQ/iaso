@@ -13,7 +13,7 @@ const EnrichedTreeItem = ({
     hasChildren,
     fetchChildrenData, // fetchChildrenData(id)
     expanded,
-    notifyParent,
+    // notifyParent,
     toggleOnLabelClick,
     // icon,  //for checkboxes
     // onIconClick, // for checkboxes
@@ -53,7 +53,7 @@ const EnrichedTreeItem = ({
                 id={unit.id.toString()}
                 fetchChildrenData={fetchChildrenData}
                 expanded={expanded}
-                notifyParent={notifyParent}
+                // notifyParent={notifyParent}
                 hasChildren={unit.hasChildren}
                 toggleOnLabelClick={toggleOnLabelClick}
                 // onIconClick={onIconClick}
@@ -105,7 +105,7 @@ EnrichedTreeItem.propTypes = {
     // should be wrapped in useCallback by parent
     fetchChildrenData: func,
     expanded: arrayOf(string),
-    notifyParent: func.isRequired,
+    // notifyParent: func.isRequired,
     hasChildren: bool,
     // icon: element,
     // selected: bool,

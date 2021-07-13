@@ -16,6 +16,7 @@ import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
 import { getChipColors, chipColors } from '../../../constants/chipColors';
 import { SingleSelectTreeView } from './TreeView/SingleSelectTreeView';
 import { getRootData, getChildrenData } from './TreeView/requests';
+import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import {
     search,
@@ -31,7 +32,7 @@ import { setFiltersUpdated, setOrgUnitsLocations } from '../actions';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
-import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
+// import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import { decodeSearch, encodeUriSearches } from '../utils';
 import { baseUrls } from '../../../constants/urls';
@@ -242,7 +243,7 @@ class OrgUnitsFiltersComponent extends Component {
                                 />
                             </Grid>
                             <Grid item xs={6} className={classes.treeview}>
-                                {/* <FiltersComponent
+                                <FiltersComponent
                                     params={params}
                                     baseUrl={baseUrl}
                                     filters={[
@@ -269,18 +270,18 @@ class OrgUnitsFiltersComponent extends Component {
                                     params={params}
                                     baseUrl={baseUrl}
                                     searchIndex={searchIndex}
-                                /> */}
+                                />
 
-                                <SingleSelectTreeView
+                                {/* <SingleSelectTreeView
                                     labelField="name"
                                     nodeField="id"
                                     toggleOnLabelClick={false}
                                     getRootData={getRootData}
                                     getChildrenData={getChildrenData}
-                                    onSelect={(_event, selected) => {
+                                    onSelect={selected => {
                                         this.onChange(selected, 'levels');
                                     }}
-                                />
+                                /> */}
                             </Grid>
                         </Grid>
                     </Grid>

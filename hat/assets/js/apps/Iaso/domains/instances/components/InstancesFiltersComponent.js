@@ -9,8 +9,12 @@ import { withStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Search from '@material-ui/icons/Search';
-
 import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
+import OrgUnitTooltip from '../../orgUnits/components/OrgUnitTooltip';
+import {
+    getRootData,
+    getChildrenData,
+} from '../../orgUnits/components/TreeView/requests';
 
 import {
     search,
@@ -25,13 +29,15 @@ import {
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
 
-import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
-import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
-import { getOrgUnitParentsIds } from '../../orgUnits/utils';
+// import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
+// import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
+import { getOrgUnitParentsIds, getOrgunitMessage } from '../../orgUnits/utils';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated as setInstancesFilterAction } from '../actions';
 import MESSAGES from '../messages';
+import { TreeViewWithSearch } from '../../orgUnits/components/TreeView/TreeViewWithSearch';
+import { iasoGetRequest } from '../../../utils/requests';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -101,6 +107,26 @@ class InstancesFiltersComponent extends Component {
         };
 
         redirectToReplace(baseUrl, tempParams);
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    tooltip(orgUnit, icon) {
+        return (
+            <OrgUnitTooltip orgUnit={orgUnit} enterDelay={0} enterNextDelay={0}>
+                {icon}
+            </OrgUnitTooltip>
+        );
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    async request(searchValue, resultsCount) {
+        const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}"}]&order=name&page=1&limit=${resultsCount}&treeSearch=True`;
+        return iasoGetRequest({
+            requestParams: { url },
+            disableSuccessSnackBar: true,
+            errorKeyMessage: 'Searching Org Units',
+            consoleError: url,
+        });
     }
 
     render() {
@@ -194,7 +220,17 @@ class InstancesFiltersComponent extends Component {
                                     ]}
                                     onEnterPressed={() => this.onSearch()}
                                 />
-                                <OrgUnitSearch
+                                <TreeViewWithSearch
+                                    parseNodeIds={getOrgUnitParentsIds}
+                                    labelField="name"
+                                    nodeField="id"
+                                    toolTip={this.tooltip}
+                                    getChildrenData={getChildrenData}
+                                    getRootData={getRootData}
+                                    makeDropDownText={getOrgunitMessage}
+                                    request={this.request}
+                                />
+                                {/* <OrgUnitSearch
                                     onSelectOrgUnit={ou =>
                                         this.onSelectOrgUnit(ou)
                                     }
@@ -206,7 +242,7 @@ class InstancesFiltersComponent extends Component {
                                     defaultVersion
                                     params={params}
                                     baseUrl={baseUrl}
-                                />
+                                /> */}
                             </Grid>
                         </Grid>
                     </Grid>

@@ -296,7 +296,7 @@ const Pages = () => {
                 Cell: settings => {
                     return (
                         <>
-                            <Link to={`/pages/${settings.original.id}`}>
+                            <Link to={`/pages/${settings.original.slug}`}>
                                 <IconButtonComponent
                                     icon="remove-red-eye"
                                     tooltipMessage={MESSAGES.viewPage}

@@ -13,7 +13,12 @@ class PagesSerializer(serializers.ModelSerializer):
 class PagesViewSet(ModelViewSet):
     serializer_class = PagesSerializer
     results_key = "results"
-    queryset = Page.objects.all()
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return Page.objects.filter(users=user).all()
 
 
 # router.register(r"polio/pages", PagesViewSet, basename="Pages")

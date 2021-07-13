@@ -75,7 +75,7 @@ export const TextInput = ({ field = {}, form = {}, ...props } = {}) => {
     );
 };
 
-const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
+const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
     const { mutate: savePage } = useSavePage();
 
     const classes = useStyles();
@@ -216,6 +216,13 @@ const Pages = () => {
                 accessor: 'name',
                 Cell: settings => {
                     return <span>{settings.original.name}</span>;
+                },
+            },
+            {
+                Header: 'Slug',
+                accessor: 'slug',
+                Cell: settings => {
+                    return <span>{settings.original.slug}</span>;
                 },
             },
             {

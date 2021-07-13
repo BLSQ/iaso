@@ -84,7 +84,7 @@ def generate_vaccine_logistics_section(col_index: int, district_name):
             '0',
             '',
             '0',
-            get_average_from(f'{get_range(col_index, 35, 37)}, {rowcol_to_a1(39, col_index)}')
+            f'=AVERAGE({get_range(col_index, 35, 37)}, {rowcol_to_a1(39, col_index)})*0.1'
         ])
     }
 

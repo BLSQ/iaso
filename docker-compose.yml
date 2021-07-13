@@ -29,6 +29,7 @@ services:
       - db
     environment: &hat_environment
       PLUGIN_POLIO_ENABLED:
+      PLUGINS:
       GOOGLE_API_KEY_BASE64:
       IASO_ENVIRONMENT: "development"
       RDS_HOSTNAME: db

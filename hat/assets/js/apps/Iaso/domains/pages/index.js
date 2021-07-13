@@ -28,8 +28,8 @@ import Typography from '@material-ui/core/Typography';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from '../forms/messages';
 import { useGetPages } from './useGetPages';
-import { useSavePage } from './useSaveCampaign';
-import { useRemovePage } from './useRemoveCampaign';
+import { useSavePage } from './useSavePage';
+import { useRemovePage } from './useRemovePage';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;

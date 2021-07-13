@@ -25,7 +25,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-#  Make a few types around the Dhis2 API format to help dev
+#  Define a few types around the Dhis2 API format to help dev
 
 
 class DhisGroup(TypedDict):
@@ -236,7 +236,6 @@ def get_api_config(
     return connection_config
 
 
-# TODO add update_mode parameter
 # TODO : remove force
 @task_decorator(task_name="dhis2_ou_importer")
 def dhis2_ou_importer(
@@ -248,6 +247,7 @@ def dhis2_ou_importer(
     url: Optional[str],
     login: Optional[str],
     password: Optional[str],
+    update_mode: bool = False,
     task: Task = None,
 ) -> Task:
     the_task = task
@@ -261,20 +261,20 @@ def dhis2_ou_importer(
     the_task.report_progress_and_stop_if_killed(progress_message="Fetching org units")
 
     version, _created = SourceVersion.objects.get_or_create(number=source_version_number, data_source=source)
-    if OrgUnit.objects.filter(version=version).count() > 0:
+    if OrgUnit.objects.filter(version=version).count() > 0 and not update_mode:
         raise Exception(f"Version {SourceVersion} is not Empty")
 
     # name of group to a orgunit type. If a orgunit belong to one of these group it will get that type
     group_type_dict: Dict[str, OrgUnitType] = {}
     error_count, unit_dict = import_orgunits_and_groups(
-        api, source, version, validate, continue_on_error, group_type_dict, start, the_task
+        api, source, version, validate, continue_on_error, group_type_dict, start, update_mode, the_task
     )
 
     end = time.time()
     # TODO add skipped count
     res_string = f"""Processed {len(unit_dict)} orgunits in {end - start:.2f} seconds
         Orgunits with point: {len([p for p in unit_dict.values() if p.location])},
-        Orgunits with polygon: { len([p for p in unit_dict.values() if p.geom])}
+        Orgunits with polygon: {len([p for p in unit_dict.values() if p.geom])}
         Errors : {error_count}
     """
     if error_count:
@@ -285,7 +285,7 @@ def dhis2_ou_importer(
 
 
 def import_orgunits_and_groups(
-    api, source, version, validate, continue_on_error, group_type_dict, start, task, update_mode=False
+    api, source, version, validate, continue_on_error, group_type_dict, start, update_mode, task
 ):
     index = 0
     error_count = 0

@@ -142,7 +142,7 @@ class Command(BaseCommand):
             task = FakeTask(iaso_logger)
 
             error_count, unit_dict = import_orgunits_and_groups(
-                api, source, version, validate, continue_on_error, type_dict, start, task
+                api, source, version, validate, continue_on_error, type_dict, start, update_mode=False, task=task
             )
             iaso_logger.info("Committing in the DB....")
 

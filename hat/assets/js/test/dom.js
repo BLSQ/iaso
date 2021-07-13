@@ -19,10 +19,7 @@ function copyProps(src, target) {
 
 global.window = window;
 global.document = window.document;
-global.localStorage = {
-    getItem: () => null,
-    setItem: () => null,
-};
+global.cookie = 'django_language=fr;';
 global.navigator = {
     userAgent: 'node.js',
     platform: 'Mac',

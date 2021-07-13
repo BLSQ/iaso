@@ -5,9 +5,9 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push, replace } from 'react-router-redux';
 
-import { withStyles } from '@material-ui/core';
+import { withStyles, Button } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
+
 import Search from '@material-ui/icons/Search';
 
 import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
@@ -129,91 +129,100 @@ class InstancesFiltersComponent extends Component {
             <div className={classes.marginBottomBig}>
                 <Grid container spacing={4}>
                     <Grid item xs={8}>
-                        <DatesRange
-                            onChangeDate={(key, value) =>
-                                this.onChange(value, key)
-                            }
-                            dateFrom={params.dateFrom}
-                            dateTo={params.dateTo}
-                        />
+                        <Grid container item xs={12}>
+                            <DatesRange
+                                onChangeDate={(key, value) =>
+                                    this.onChange(value, key)
+                                }
+                                dateFrom={params.dateFrom}
+                                dateTo={params.dateTo}
+                            />
+                        </Grid>
+                        <Grid container spacing={4}>
+                            <Grid item xs={6}>
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    onFilterChanged={() =>
+                                        setInstancesFilterUpdated(true)
+                                    }
+                                    filters={secondColumnFilters}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    onFilterChanged={() =>
+                                        setInstancesFilterUpdated(true)
+                                    }
+                                    filters={[
+                                        instanceStatus(instanceStatusOptions),
+                                        device(devices),
+                                        deviceOwnership(devicesOwnerships),
+                                    ]}
+                                />
+                            </Grid>
+                        </Grid>
                     </Grid>
                     <Grid item xs={4}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            onFilterChanged={() =>
-                                setInstancesFilterUpdated(true)
-                            }
-                            filters={[instanceDeleted()]}
-                        />
+                        <Grid container spacing={4}>
+                            <Grid item xs={12}>
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    onFilterChanged={() =>
+                                        setInstancesFilterUpdated(true)
+                                    }
+                                    filters={[instanceDeleted()]}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    onFilterChanged={() =>
+                                        setInstancesFilterUpdated(true)
+                                    }
+                                    filters={[
+                                        extendFilter(
+                                            searchParams,
+                                            search(),
+                                            (value, urlKey) =>
+                                                this.onChange(value, urlKey),
+                                        ),
+                                    ]}
+                                    onEnterPressed={() => this.onSearch()}
+                                />
+                                <OrgUnitSearch
+                                    onSelectOrgUnit={ou =>
+                                        this.onSelectOrgUnit(ou)
+                                    }
+                                />
+                                <OrgUnitsLevelsFiltersComponent
+                                    onLatestIdChanged={() =>
+                                        setInstancesFilterUpdated(true)
+                                    }
+                                    defaultVersion
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                />
+                            </Grid>
+                        </Grid>
                     </Grid>
                 </Grid>
-                <Grid container spacing={4}>
-                    <Grid item xs={4}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            onFilterChanged={() =>
-                                setInstancesFilterUpdated(true)
-                            }
-                            filters={secondColumnFilters}
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            onFilterChanged={() =>
-                                setInstancesFilterUpdated(true)
-                            }
-                            filters={[
-                                instanceStatus(instanceStatusOptions),
-                                device(devices),
-                                deviceOwnership(devicesOwnerships),
-                            ]}
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            onFilterChanged={() =>
-                                setInstancesFilterUpdated(true)
-                            }
-                            filters={[
-                                extendFilter(
-                                    searchParams,
-                                    search(),
-                                    (value, urlKey) =>
-                                        this.onChange(value, urlKey),
-                                ),
-                            ]}
-                            onEnterPressed={() => this.onSearch()}
-                        />
-                        <OrgUnitSearch
-                            onSelectOrgUnit={ou => this.onSelectOrgUnit(ou)}
-                        />
-                        <OrgUnitsLevelsFiltersComponent
-                            onLatestIdChanged={() =>
-                                setInstancesFilterUpdated(true)
-                            }
-                            defaultVersion
-                            params={params}
-                            baseUrl={baseUrl}
-                        />
-                    </Grid>
-                </Grid>
+
                 <Grid
                     container
                     spacing={4}
-                    justify="flex-end"
+                    justifyContent="flex-end"
                     alignItems="center"
                 >
                     <Grid
                         item
                         xs={2}
                         container
-                        justify="flex-end"
+                        justifyContent="flex-end"
                         alignItems="center"
                     >
                         <Button

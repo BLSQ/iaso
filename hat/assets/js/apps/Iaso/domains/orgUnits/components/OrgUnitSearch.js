@@ -22,7 +22,7 @@ import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import OrgUnitTooltip from './OrgUnitTooltip';
 import { getRequest } from '../../../libs/Api';
-import { getOrgunitMessage } from '../utils';
+import { OrgUnitLabel } from '../utils';
 import MESSAGES from '../messages';
 
 const styles = theme => ({
@@ -110,6 +110,7 @@ const OrgUnitSearch = ({
     onSelectOrgUnit,
     minResultCount,
     inputLabelObject,
+    withSearchButton,
 }) => {
     const [searchValue, setSearchValue] = useState('');
     const [resultsCount, setResultsCount] = useState(minResultCount);
@@ -163,14 +164,17 @@ const OrgUnitSearch = ({
                             label={inputLabelObject}
                             onEnterPressed={() => handleSearch()}
                         />
-                        <Button
-                            variant="contained"
-                            className={classes.searchButton}
-                            color="primary"
-                            onClick={handleSearch}
-                        >
-                            <FormattedMessage {...MESSAGES.search} />
-                        </Button>
+                        {/* //TODO make optional and default to false */}
+                        {withSearchButton && (
+                            <Button
+                                variant="contained"
+                                className={classes.searchButton}
+                                color="primary"
+                                onClick={handleSearch}
+                            >
+                                <FormattedMessage {...MESSAGES.search} />
+                            </Button>
+                        )}
                     </Box>
 
                     {isLoading && (
@@ -207,10 +211,10 @@ const OrgUnitSearch = ({
                                         <ListItemText
                                             primary={
                                                 <Typography type="body2">
-                                                    {getOrgunitMessage(
-                                                        ou,
-                                                        true,
-                                                    )}
+                                                    <OrgUnitLabel
+                                                        orgUnit={ou}
+                                                        withType
+                                                    />
                                                 </Typography>
                                             }
                                         />
@@ -288,6 +292,7 @@ const OrgUnitSearch = ({
 OrgUnitSearch.defaultProps = {
     minResultCount: 50,
     inputLabelObject: MESSAGES.searchOrgUnit,
+    withSearchButton: false,
 };
 
 OrgUnitSearch.propTypes = {
@@ -295,6 +300,7 @@ OrgUnitSearch.propTypes = {
     onSelectOrgUnit: PropTypes.func.isRequired,
     minResultCount: PropTypes.number,
     inputLabelObject: PropTypes.object,
+    withSearchButton: PropTypes.bool,
 };
 
 export default withStyles(styles)(OrgUnitSearch);

@@ -45,8 +45,6 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                                 if (latitude) {
                                     onChangeLocation({
                                         lat: parseFloat(latitude),
-                                        lng: orgUnit.longitude,
-                                        alt: orgUnit.altitude,
                                     });
                                 }
                             }}
@@ -56,31 +54,27 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                         />
                         <InputComponent
                             keyValue="longitude"
-                            onChange={(key, longitude) =>
-                                onChangeLocation({
-                                    lat: orgUnit.latitude,
-                                    lng: parseFloat(longitude),
-                                    alt: orgUnit.altitude,
-                                })
-                            }
+                            onChange={(key, longitude) => {
+                                if (longitude) {
+                                    onChangeLocation({
+                                        lng: parseFloat(longitude),
+                                    });
+                                }
+                            }}
                             value={orgUnit.longitude}
                             type="number"
                             label={MESSAGES.longitude}
                         />
                         <InputComponent
                             keyValue="altitude"
-                            value={
-                                orgUnit.altitude !== null ? orgUnit.altitude : 0
-                            }
+                            value={orgUnit.altitude}
                             type="number"
                             label={MESSAGES.altitude}
-                            onChange={(key, altitude) =>
+                            onChange={(key, altitude) => {
                                 onChangeLocation({
-                                    lat: orgUnit.latitude,
-                                    lng: orgUnit.longitude,
-                                    alt: parseFloat(altitude),
-                                })
-                            }
+                                    alt: altitude ? parseFloat(altitude) : null,
+                                });
+                            }}
                         />
                         <Box mb={2} mt={2}>
                             <Button
@@ -91,7 +85,7 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                                     onChangeLocation({
                                         lat: null,
                                         lng: null,
-                                        alt: 0,
+                                        alt: null,
                                     })
                                 }
                             >

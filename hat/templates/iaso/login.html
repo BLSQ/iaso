@@ -2,34 +2,35 @@
 {% load i18n %}
 {% load static %}
 {% block body %}
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <div class="auth__container iasologin">
-    <div class="auth__content">
-      <header class="auth__header">
-        <h1 class="auth__heading">  <img src="{% static 'images/logo.png' %}" /></h1>
-          <p>{% trans 'An offspring of the <a href="https://www.trypelim.org">Trypelim</a> project' %}</p>
-      </header>
-      <form method="post" data-qa="login-form" action="{% url 'login' %}" class="auth__form">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<div class="auth__container iasologin">
+  <div class="auth__content">
+    <header class="auth__header">
+      <h1 class="auth__heading"> <img src="{% static 'images/logo.png' %}" /></h1>
+      <p>{% trans 'An offspring of the <a href="https://www.trypelim.org">Trypelim</a> project' %}</p>
+    </header>
+    <div>
+      <form method="post" data-qa="login-form" class="auth__form" action="{% url 'login' %}">
         {% if next %}
-          {% if user.is_authenticated %}
-            <p class="auth__text--warning">
-            {% blocktrans %}
-            Your account doesn't have access to this page. To proceed,
-            please login with an account that has access.
-            {% endblocktrans %}
-            </p>
-          {% else %}
-            <p class="auth__text--warning">
-              {% trans 'Please login to see this page.' %}
-            </p>
-          {% endif %}
+        {% if user.is_authenticated %}
+        <p class="auth__text--warning">
+          {% blocktrans %}
+          Your account doesn't have access to this page. To proceed,
+          please login with an account that has access.
+          {% endblocktrans %}
+        </p>
+        {% else %}
+        <p class="auth__text--warning">
+          {% trans 'Please login to see this page.' %}
+        </p>
+        {% endif %}
         {% endif %}
         {% if form.errors %}
-          <p class="auth__text--error">
-            {% blocktrans %}
-            Your username and password didn't match. Please try again.
-            {% endblocktrans %}
-          </p>
+        <p class="auth__text--error">
+          {% blocktrans %}
+          Your username and password didn't match. Please try again.
+          {% endblocktrans %}
+        </p>
         {% endif %}
         {% csrf_token %}
         {{ form }}
@@ -38,27 +39,27 @@
         <button id="display-password">
           <i class="fa fa-eye" id="eye-icon" aria-hidden="true"></i>
         </button>
+        <p class="login-link"><a href="{% url 'forgot_password' %}">{% trans 'Forgot password' %}</a></p>
       </form>
-      <footer class="auth__footer">
-        <p><a href="{% url 'forgot_password' %}">{% trans 'Forgot password' %}</a></p>
-      </footer>
+      {% include "./language_picker.html" %}
     </div>
   </div>
-  <script>
-      
-      function togglePassword() {
-        var passwordField = $('#id_password');
-        if (passwordField.attr('type') === 'password') {
-          passwordField.attr('type', 'text');
-          $('#eye-icon').attr('class', 'fa fa-eye-slash');
-        } else {
-          passwordField.attr('type', 'password');
-          $('#eye-icon').attr('class', 'fa fa-eye');
-        }
-      }
-      document.getElementById('display-password').addEventListener('click', function(e) {
-        e.preventDefault();
-        togglePassword();
-      })
-  </script>
+</div>
+<script>
+
+  function togglePassword() {
+    var passwordField = $('#id_password');
+    if (passwordField.attr('type') === 'password') {
+      passwordField.attr('type', 'text');
+      $('#eye-icon').attr('class', 'fa fa-eye-slash');
+    } else {
+      passwordField.attr('type', 'password');
+      $('#eye-icon').attr('class', 'fa fa-eye');
+    }
+  }
+  document.getElementById('display-password').addEventListener('click', function (e) {
+    e.preventDefault();
+    togglePassword();
+  })
+</script>
 {% endblock %}

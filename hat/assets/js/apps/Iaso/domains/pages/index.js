@@ -29,6 +29,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from '../forms/messages';
 import { useGetPages } from './useGetPages';
 import { useSavePage } from './useSaveCampaign';
+import { useRemovePage } from './useRemoveCampaign';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -75,7 +76,30 @@ export const TextInput = ({ field = {}, form = {}, ...props } = {}) => {
     );
 };
 
-const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
+const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
+    const classes = useStyles();
+
+    return (
+        <Dialog fullWidth open={isOpen} onBackdropClick={onClose}>
+            <DialogTitle className={classes.title}>
+                Are you sure you want to delete this page?
+            </DialogTitle>
+            <DialogContent className={classes.content}>
+                This operation cannot be undone
+            </DialogContent>
+            <DialogActions className={classes.action}>
+                <Button onClick={onClose} color="primary">
+                    No
+                </Button>
+                <Button onClick={onConfirm} color="primary" autoFocus>
+                    Yes
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+};
+
+const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
     const { mutate: savePage } = useSavePage();
 
     const classes = useStyles();
@@ -90,7 +114,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
 
     const defaultValues = {};
 
-    const initialValues = merge(selectedCampaign, defaultValues);
+    const initialValues = merge(selectedPage, defaultValues);
 
     const formik = useFormik({
         initialValues,
@@ -175,6 +199,8 @@ const Pages = () => {
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
     const [selectedPageId, setSelectedPageId] = useState();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
+    const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
+        useState(false);
 
     const openCreateEditDialog = useCallback(() => {
         setIsCreateEditDialogOpen(true);
@@ -198,6 +224,24 @@ const Pages = () => {
         setIsCreateEditDialogOpen(false);
     };
 
+    const closeDeleteConfirmDialog = () => {
+        setIsConfirmDeleteDialogOpen(false);
+    };
+
+    const { mutate: removePage } = useRemovePage();
+
+    const openDeleteConfirmDialog = useCallback(() => {
+        setIsConfirmDeleteDialogOpen(true);
+    }, [setIsConfirmDeleteDialogOpen]);
+
+    const handleClickDeleteRow = useCallback(
+        id => {
+            setSelectedPageId(id);
+            openDeleteConfirmDialog();
+        },
+        [setSelectedPageId, openDeleteConfirmDialog],
+    );
+
     const { query } = useGetPages({
         page,
         pageSize,
@@ -208,6 +252,14 @@ const Pages = () => {
     const selectedPage = pages?.results?.find(
         result => result.id === selectedPageId,
     );
+
+    const handleDeleteConfirmDialogConfirm = () => {
+        removePage(selectedPage.id, {
+            onSuccess: () => {
+                closeDeleteConfirmDialog();
+            },
+        });
+    };
 
     const columns = useMemo(
         () => [
@@ -257,12 +309,19 @@ const Pages = () => {
                                     handleClickEditRow(settings.original.id)
                                 }
                             />
+                            <IconButtonComponent
+                                icon="delete"
+                                tooltipMessage={MESSAGES.delete}
+                                onClick={() =>
+                                    handleClickDeleteRow(settings.original.id)
+                                }
+                            />
                         </>
                     );
                 },
             },
         ],
-        [],
+        [handleClickDeleteRow, handleClickEditRow],
     );
 
     // The naming is aligned with the names in Table
@@ -288,9 +347,14 @@ const Pages = () => {
     return (
         <>
             <CreateEditDialog
-                selectedCampaign={selectedPage}
+                selectedPage={selectedPage}
                 isOpen={isCreateEditDialogOpen}
                 onClose={closeCreateEditDialog}
+            />
+            <DeleteConfirmDialog
+                isOpen={isConfirmDeleteDialogOpen}
+                onClose={closeDeleteConfirmDialog}
+                onConfirm={handleDeleteConfirmDialogConfirm}
             />
             <TopBar title={intl.formatMessage(MESSAGES.title)} />
             <Box className={classes.containerFullHeightNoTabPadded}>

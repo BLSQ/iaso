@@ -65,8 +65,10 @@ class DHIS2TestMixin:
 
         for model in new_counts.keys():
             diff[model] = new_counts[model] - self.old_counts[model]
+            if model not in createds and diff[model] == 0:
+                del diff[model]
 
-        self.assertDictContainsSubset(createds, diff, createds)
+        self.assertDictEqual(createds, diff, diff)
 
 
 class CommandTests(TestCase, DHIS2TestMixin):
@@ -77,6 +79,7 @@ class CommandTests(TestCase, DHIS2TestMixin):
         # fields=id%2Cname%2Cpath%2Ccoordinates%2Cgeometry%2Cparent%2CorganisationUnitGroups%5Bid%2Cname%5D
         # &filter=id:in:[ImspTQPwCqd,kJq2mPyFEHo,KXSqt7jv6DU,LOpWauwwghf]
         self.setup_responses(orgunit_fixture_name="orgunits", groupsets_fixture_name="groupsets")
+        self.old_counts = self.counts()
 
         out = StringIO()
         management.call_command(
@@ -92,6 +95,15 @@ class CommandTests(TestCase, DHIS2TestMixin):
 
         if environ.get("DEBUG_TEST") is not None:
             print(out.getvalue())
+
+        self.assertCreated(
+            {
+                m.OrgUnit: 4,
+                m.OrgUnitType: 1,
+                m.Group: 18,
+                m.GroupSet: 4,
+            }
+        )
 
         created_orgunits_qs = OrgUnit.objects.order_by("id")
         created_orgunits = [entry for entry in created_orgunits_qs.values("source_ref", "name")]
@@ -132,7 +144,11 @@ class CommandTests(TestCase, DHIS2TestMixin):
             ],
         )
         facility_type = groupsets_qs.get(name="Facility Type")
-        self.assertEquals([x.name for x in facility_type.groups.all()], ["CHP", "MCHP", "Clinic", "Hospital", "CHC"])
+        self.assertQuerysetEqual(
+            facility_type.groups.all().order_by("name"),
+            ["CHC", "CHP", "Clinic", "Hospital", "MCHP"],
+            transform=lambda x: x.name,
+        )
 
         # assert that path has been generated for all org units
         self.assertEquals(0, OrgUnit.objects.filter(path=None).count())
@@ -142,6 +158,7 @@ class CommandTests(TestCase, DHIS2TestMixin):
         """Testfile with Shape with hole and with multi polygon"""
         out = StringIO()
         self.setup_responses(orgunit_fixture_name="orgunits_strange_geom", groupsets_fixture_name=None)
+        self.old_counts = self.counts()
 
         management.call_command(
             "dhis2_ou_importer",
@@ -156,6 +173,13 @@ class CommandTests(TestCase, DHIS2TestMixin):
 
         if environ.get("DEBUG_TEST") is not None:
             print(out.getvalue())
+        self.assertCreated(
+            {
+                m.OrgUnit: 4,
+                m.OrgUnitType: 1,
+                m.Group: 2,  # there is 2 group on OrgUnit C
+            }
+        )
 
         created_orgunits_qs = OrgUnit.objects.order_by("id")
 
@@ -218,6 +242,9 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 4,
+                m.OrgUnitType: 1,
+                m.Group: 18,
+                m.GroupSet: 4,
             }
         )
 
@@ -298,6 +325,8 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 2,
+                m.OrgUnitType: 1,
+                m.Group: 0,  # there is 2 group on OrgUnit C, they are skipped since we skipped C
             }
         )
 
@@ -345,6 +374,8 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 4,
+                m.OrgUnitType: 1,
+                m.Group: 2,  # there is 2 group on OrgUnit C
             }
         )
 

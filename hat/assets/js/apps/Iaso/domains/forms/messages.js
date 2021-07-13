@@ -437,6 +437,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.viewpages',
         defaultMessage: 'View page',
     },
+    singlePerPeriodSelect: {
+        id: 'iaso.form.label.singlePerPeriodSelect',
+        defaultMessage: 'Please select an answer',
+    },
 });
 
 export default MESSAGES;

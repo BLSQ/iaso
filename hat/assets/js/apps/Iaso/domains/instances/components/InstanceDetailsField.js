@@ -35,7 +35,13 @@ const InstanceDetailsField = ({ classes, label, value, Icon, valueTitle }) => (
                 :
             </div>
         </Grid>
-        <Grid xs={7} container item justify="flex-start" alignItems="center">
+        <Grid
+            xs={7}
+            container
+            item
+            justifyContent="flex-start"
+            alignItems="center"
+        >
             <Typography
                 variant="body1"
                 noWrap
@@ -59,6 +65,6 @@ InstanceDetailsField.propTypes = {
     label: PropTypes.string.isRequired,
     value: PropTypes.any,
     Icon: PropTypes.object,
-    valueTitle: PropTypes.string,
+    valueTitle: PropTypes.oneOfType([PropTypes.node, PropTypes.string]),
 };
 export default withStyles(styles)(InstanceDetailsField);

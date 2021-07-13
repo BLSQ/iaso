@@ -1,6 +1,8 @@
 import { JSDOM } from 'jsdom';
 
-const { window } = new JSDOM('<!doctype html><html><body></body></html>');
+const { window } = new JSDOM('<!doctype html><html><body></body></html>', {
+    url: 'http://localhost:8081',
+});
 
 function copyProps(src, target) {
     const props = Object.getOwnPropertyNames(src)
@@ -17,10 +19,7 @@ function copyProps(src, target) {
 
 global.window = window;
 global.document = window.document;
-global.localStorage = {
-    getItem: () => null,
-    setItem: () => null,
-};
+global.cookie = 'django_language=fr;';
 global.navigator = {
     userAgent: 'node.js',
     platform: 'Mac',

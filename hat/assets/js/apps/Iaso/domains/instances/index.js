@@ -5,7 +5,6 @@ import { withStyles, Tabs, Grid, Tab, Box } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
-import moment from 'moment';
 
 import {
     getTableUrl,
@@ -52,6 +51,7 @@ import {
     getSelectionActions,
 } from './utils';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
+import { getFromDateString, getToDateString } from '../../utils/dates';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
@@ -237,14 +237,8 @@ class Instances extends Component {
             deviceOwnershipId: params.deviceOwnershipId,
             search: params.search,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
-            dateFrom: params.dateFrom
-                ? moment(params.dateFrom)
-                      .startOf('day')
-                      .format('YYYY-MM-DD HH:MM')
-                : null,
-            dateTo: params.dateTo
-                ? moment(params.dateTo).endOf('day').format('YYYY-MM-DD HH:MM')
-                : null,
+            dateFrom: getFromDateString(params.dateFrom),
+            dateTo: getToDateString(params.dateTo),
             showDeleted: params.showDeleted,
         };
         const filters = {};
@@ -428,7 +422,7 @@ class Instances extends Component {
                             item
                             container
                             alignItems="center"
-                            justify="flex-end"
+                            justifyContent="flex-end"
                             className={classes.selectColmunsContainer}
                         >
                             <ColumnsSelectDrawer

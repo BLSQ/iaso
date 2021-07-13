@@ -16,6 +16,19 @@ import MESSAGES from './messages';
 import { getStatusMessage, getOrgUnitGroups } from './utils';
 
 export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
+    const getStatusColor = status => {
+        switch (status) {
+            case 'NEW': {
+                // value taken from /iaso/hat/assets/css/_iaso.scss
+                return classes.statusNew;
+            }
+            case 'REJECTED': {
+                return classes.statusRejected;
+            }
+            default:
+                return classes.statusValidated;
+        }
+    };
     const columns = [
         {
             Header: 'Id',
@@ -59,14 +72,14 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
         {
             Header: formatMessage(MESSAGES.status),
             accessor: 'validation_status',
-            Cell: settings => (
-                <span>
-                    {getStatusMessage(
-                        settings.original.validation_status,
-                        formatMessage,
-                    )}
-                </span>
-            ),
+            Cell: settings => {
+                const status = settings.original.validation_status;
+                return (
+                    <span className={getStatusColor(status)}>
+                        {getStatusMessage(status, formatMessage)}
+                    </span>
+                );
+            },
         },
         {
             Header: formatMessage(MESSAGES.instances_count),
@@ -78,9 +91,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             accessor: 'updated_at',
             Cell: settings => (
                 <section>
-                    {moment
-                        .unix(settings.original.updated_at)
-                        .format('DD/MM/YYYY HH:mm')}
+                    {moment.unix(settings.original.updated_at).format('LTS')}
                 </section>
             ),
         },
@@ -89,9 +100,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             accessor: 'created_at',
             Cell: settings => (
                 <section>
-                    {moment
-                        .unix(settings.original.created_at)
-                        .format('DD/MM/YYYY HH:mm')}
+                    {moment.unix(settings.original.created_at).format('LTS')}
                 </section>
             ),
         },
@@ -166,11 +175,7 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => [
         Header: formatMessage(MESSAGES.date),
         accessor: 'created_at',
         Cell: settings => (
-            <span>
-                {moment(settings.original.created_at).format(
-                    'YYYY-MM-DD HH:mm',
-                )}
-            </span>
+            <span>{moment(settings.original.created_at).format('LTS')}</span>
         ),
     },
     {

@@ -48,6 +48,7 @@ import {
     encodeUriParams,
     encodeUriSearches,
 } from './utils';
+import { getFromDateString, getToDateString } from '../../utils/dates';
 
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -89,6 +90,15 @@ const styles = theme => ({
         width: 15,
         height: 15,
         borderRadius: 15,
+    },
+    statusNew: {
+        color: theme.palette.primary.main,
+    },
+    statusValidated: {
+        color: theme.palette.success.main,
+    },
+    statusRejected: {
+        color: theme.palette.error.main,
     },
 });
 
@@ -269,17 +279,8 @@ class OrgUnits extends Component {
                 ? fetchLatestOrgUnitLevelId(searches[i].levels)
                 : null;
 
-            searches[i].dateFrom = searches[i].dateFrom
-                ? moment(searches[i].dateFrom)
-                      .startOf('day')
-                      .format('YYYY-MM-DD HH:MM')
-                : null;
-
-            searches[i].dateTo = searches[i].dateTo
-                ? moment(searches[i].dateTo)
-                      .endOf('day')
-                      .format('YYYY-MM-DD HH:MM')
-                : null;
+            searches[i].dateFrom = getFromDateString(searches[i].dateFrom);
+            searches[i].dateTo = getToDateString(searches[i].dateTo);
         });
 
         const urlParams = {

@@ -136,11 +136,9 @@ class VideoItemComponent extends React.Component {
                             : classes.fileInfo
                     }
                 >
-                    {`${moment
-                        .unix(videoItem.createdAt)
-                        .format('DD/MM/YYYY HH:mm')} - ${videoItem.name}.${
-                        videoItem.extension
-                    }`}
+                    {`${moment.unix(videoItem.createdAt).format('LTS')} - ${
+                        videoItem.name
+                    }.${videoItem.extension}`}
                 </span>
             </section>
         );

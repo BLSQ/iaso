@@ -10,9 +10,10 @@ import {
 import MESSAGES from '../messages';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import InstanceDetailsField from './InstanceDetailsField';
+import { getDisplayedDateHourFormat } from '../../../utils/dates';
 
 const formatUnixTimestamp = unix =>
-    unix ? moment.unix(unix).format('DD/MM/YYYY HH:mm') : textPlaceholder;
+    unix ? moment.unix(unix).format('LTS') : textPlaceholder;
 
 const InstanceDetailsExportRequests = ({
     currentInstance,

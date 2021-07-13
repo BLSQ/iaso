@@ -296,10 +296,11 @@ const Pages = () => {
                 Cell: settings => {
                     return (
                         <>
-                            <Link to={`/pages/${settings.original.slug}`}>
+                            <Link to={`/pages/${settings.original.id}`}>
                                 <IconButtonComponent
                                     icon="remove-red-eye"
                                     tooltipMessage={MESSAGES.viewPage}
+                                    onClick={() => {}}
                                 />
                             </Link>
                             <IconButtonComponent

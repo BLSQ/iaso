@@ -1,6 +1,19 @@
 import { useQuery } from 'react-query';
 import { sendRequest } from './networking';
 
+export const useGetPage = slug => {
+    return {
+        query: useQuery(
+            ['iaso', 'page', slug],
+            async () => {
+                // additional props are WIP
+                return sendRequest('GET', `/api/pages/${slug}`);
+            },
+            { cacheTime: 0, structuralSharing: false },
+        ),
+    };
+};
+
 export const useGetPages = options => {
     const params = {
         limit: options.pageSize,
@@ -21,7 +34,7 @@ export const useGetPages = options => {
 
     return {
         query: useQuery(
-            ['polio', 'pages', params],
+            ['iaso', 'pages', params],
             async () => {
                 // additional props are WIP
                 return sendRequest('GET', getURL(params));

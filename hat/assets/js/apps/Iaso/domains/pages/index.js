@@ -25,6 +25,7 @@ import get from 'lodash.get';
 import { Field, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import Typography from '@material-ui/core/Typography';
+import { Link } from 'react-router';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from '../forms/messages';
 import { useGetPages } from './useGetPages';
@@ -295,13 +296,12 @@ const Pages = () => {
                 Cell: settings => {
                     return (
                         <>
-                            <IconButtonComponent
-                                icon="remove-red-eye"
-                                tooltipMessage={MESSAGES.viewPage}
-                                onClick={() =>
-                                    handleClickEditRow(settings.original.id)
-                                }
-                            />
+                            <Link to={`/pages/${settings.original.id}`}>
+                                <IconButtonComponent
+                                    icon="remove-red-eye"
+                                    tooltipMessage={MESSAGES.viewPage}
+                                />
+                            </Link>
                             <IconButtonComponent
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}

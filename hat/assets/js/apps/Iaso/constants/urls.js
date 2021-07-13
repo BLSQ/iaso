@@ -20,6 +20,7 @@ export const baseUrls = {
     devices: 'settings/devices',
     polio: 'polio/list',
     pages: 'pages/list',
+    viewPage: 'pages/:slug',
     error401: '401',
     error404: '404',
     error500: '500',

@@ -46,6 +46,28 @@ class DHIS2TestMixin:
             status=200,
         )
 
+    # copy from orgunit api test, can refactor
+    def counts(self) -> dict:
+        return {
+            m.OrgUnit: m.OrgUnit.objects.count(),
+            m.OrgUnitType: m.OrgUnitType.objects.count(),
+            m.Group: m.Group.objects.count(),
+            m.GroupSet: m.GroupSet.objects.count(),
+            Modification: Modification.objects.count(),
+        }
+
+    def assertNoCreation(self):
+        self.assertEqual(self.old_counts, self.counts())
+
+    def assertCreated(self: TestCase, createds: dict):
+        new_counts = self.counts()
+        diff = {}
+
+        for model in new_counts.keys():
+            diff[model] = new_counts[model] - self.old_counts[model]
+
+        self.assertDictContainsSubset(createds, diff, createds)
+
 
 class CommandTests(TestCase, DHIS2TestMixin):
     @responses.activate
@@ -169,6 +191,9 @@ class TaskTests(TestCase, DHIS2TestMixin):
         cls.user = cls.create_user_with_profile(username="link", account=cls.account)
         cls.source = DataSource.objects.create(name="play")
 
+    def setUp(self):
+        self.old_counts = self.counts()
+
     @responses.activate
     def test_import(self):
         self.setup_responses(orgunit_fixture_name="orgunits", groupsets_fixture_name="groupsets")
@@ -189,6 +214,13 @@ class TaskTests(TestCase, DHIS2TestMixin):
 
         task.refresh_from_db()
         self.assertEquals(task.status, SUCCESS, task.result)
+
+        self.assertCreated(
+            {
+                m.OrgUnit: 4,
+            }
+        )
+
         created_orgunits_qs = OrgUnit.objects.order_by("id")
         created_orgunits = [entry for entry in created_orgunits_qs.values("source_ref", "name")]
 
@@ -232,31 +264,6 @@ class TaskTests(TestCase, DHIS2TestMixin):
 
         # assert that path has been generated for all org units
         self.assertEquals(0, OrgUnit.objects.filter(path=None).count())
-
-    # copy from orgunit api test, can refactor
-    def setUp(self):
-        self.old_counts = self.counts()
-
-    def counts(self) -> dict:
-        return {
-            m.OrgUnit: m.OrgUnit.objects.count(),
-            m.OrgUnitType: m.OrgUnitType.objects.count(),
-            m.Group: m.Group.objects.count(),
-            m.GroupSet: m.GroupSet.objects.count(),
-            Modification: Modification.objects.count(),
-        }
-
-    def assertNoCreation(self):
-        self.assertEqual(self.old_counts, self.counts())
-
-    def assertCreated(self, createds: dict):
-        new_counts = self.counts()
-        diff = {}
-
-        for model in new_counts.keys():
-            diff[model] = new_counts[model] - self.old_counts[model]
-
-        self.assertDictContainsSubset(createds, diff)
 
     @responses.activate
     def test_update(self):

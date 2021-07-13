@@ -7,6 +7,7 @@ import Menu from '@material-ui/core/Menu';
 
 import { switchLocale } from '../actions';
 import { APP_LOCALES } from '../constants';
+import { setLocale } from '../../../utils/dates';
 
 const useStyles = makeStyles(theme => ({
     currentLocale: {
@@ -29,6 +30,7 @@ export default function LanguageSwitchComponent() {
     };
 
     const handleLocaleSwitch = localeCode => {
+        setLocale(localeCode);
         dispatch(switchLocale(localeCode));
         setAnchorEl(null);
     };

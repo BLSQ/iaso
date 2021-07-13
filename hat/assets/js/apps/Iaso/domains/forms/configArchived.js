@@ -91,7 +91,7 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.created_at)
-                    .format('DD/MM/YYYY HH:mm')}
+                    .format('LTS')}
             />
         ),
     },
@@ -102,7 +102,7 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.updated_at)
-                    .format('DD/MM/YYYY HH:mm')}
+                    .format('LTS')}
             />
         ),
     },
@@ -113,7 +113,7 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.deleted_at)
-                    .format('DD/MM/YYYY HH:mm')}
+                    .format('LTS')}
             />
         ),
     },

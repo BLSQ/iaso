@@ -50,7 +50,7 @@ const DatePickerComponent = ({
                 InputProps={{
                     error: hasError || Boolean(dateError),
                 }}
-                format="DD/MM/YYYY" // This one need be set by user locale
+                format="L"
                 label={placeholder}
                 helperText=""
                 value={currentDate}

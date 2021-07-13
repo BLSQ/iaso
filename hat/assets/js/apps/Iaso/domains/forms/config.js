@@ -108,7 +108,7 @@ const formsTableColumns = (
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.created_at)
-                    .format('DD/MM/YYYY HH:mm')}
+                    .format('LTS')}
             />
         ),
     },
@@ -119,7 +119,7 @@ const formsTableColumns = (
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.updated_at)
-                    .format('DD/MM/YYYY HH:mm')}
+                    .format('LTS')}
             />
         ),
     },
@@ -130,7 +130,7 @@ const formsTableColumns = (
             const dateText = settings.original.instance_updated_at
                 ? moment
                       .unix(settings.original.instance_updated_at)
-                      .format('DD/MM/YYYY HH:mm')
+                      .format('LTS')
                 : textPlaceholder;
 
             return <ColumnTextComponent text={dateText} />;

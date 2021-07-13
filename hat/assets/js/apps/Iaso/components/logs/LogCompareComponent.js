@@ -75,7 +75,7 @@ const renderValue = (fieldKey, value, fields, classes) => {
             );
         }
         case 'updated_at': {
-            return moment(value).format('DD/MM/YYYY HH:mm');
+            return moment(value).format('LTS');
         }
 
         case 'location': {

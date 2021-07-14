@@ -3,11 +3,11 @@ from typing import List
 
 import gspread
 from gspread.utils import rowcol_to_a1
-from gspread_formatting import get_conditional_format_rules, ConditionalFormatRule, GridRange
+from gspread_formatting import get_conditional_format_rules, ConditionalFormatRule, GridRange, format_cell_ranges
 
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.conditional_formatting import DARK_YELLOW, LIGHT_YELLOW, LIGHT_GREEN, \
-    DARK_GREEN, get_between_rule, NOT_BLANK, IS_BLANK
+    DARK_GREEN, get_between_rule, NOT_BLANK, IS_BLANK, PERCENT_FORMAT, TEXT_CENTERED
 
 PREPAREDNESS_TEMPLATE_ID = os.environ.get("PREPAREDNESS_TEMPLATE_ID", None)
 
@@ -54,24 +54,27 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
         ]
 
     final_column = 6 + region_districts.count()
-    ranges = [
-        GridRange.from_a1_range(f'F7:{rowcol_to_a1(10, final_column)}', sheet),
-        GridRange.from_a1_range(f'F16:{rowcol_to_a1(16, final_column)}', sheet),
-        GridRange.from_a1_range(f'F28:{rowcol_to_a1(29, final_column)}', sheet),
-        GridRange.from_a1_range(f'F35:{rowcol_to_a1(37, final_column)}', sheet),
-        GridRange.from_a1_range(f'F39:{rowcol_to_a1(39, final_column)}', sheet),
-        GridRange.from_a1_range(f'F44:{rowcol_to_a1(49, final_column)}', sheet),
-        GridRange.from_a1_range(f'F55:{rowcol_to_a1(56, final_column)}', sheet)
+    summary_range_a1 = [
+        f'F11:{rowcol_to_a1(11, final_column)}',
+        f'F24:{rowcol_to_a1(24, final_column)}',
+        f'F30:{rowcol_to_a1(30, final_column)}',
+        f'F40:{rowcol_to_a1(40, final_column)}',
+        f'F50:{rowcol_to_a1(50, final_column)}',
+        f'F58:{rowcol_to_a1(58, final_column)}'
+    ]
+    district_data_range = [
+        f'F7:{rowcol_to_a1(10, final_column)}',
+        f'F16:{rowcol_to_a1(16, final_column)}',
+        f'F28:{rowcol_to_a1(29, final_column)}',
+        f'F35:{rowcol_to_a1(37, final_column)}',
+        f'F39:{rowcol_to_a1(39, final_column)}',
+        f'F44:{rowcol_to_a1(49, final_column)}',
+        f'F55:{rowcol_to_a1(56, final_column)}'
     ]
 
-    summary_ranges = [
-        GridRange.from_a1_range(f'F11:{rowcol_to_a1(11, final_column)}', sheet),
-        GridRange.from_a1_range(f'F24:{rowcol_to_a1(24, final_column)}', sheet),
-        GridRange.from_a1_range(f'F30:{rowcol_to_a1(30, final_column)}', sheet),
-        GridRange.from_a1_range(f'F40:{rowcol_to_a1(40, final_column)}', sheet),
-        GridRange.from_a1_range(f'F50:{rowcol_to_a1(50, final_column)}', sheet),
-        GridRange.from_a1_range(f'F58:{rowcol_to_a1(58, final_column)}', sheet)
-    ]
+    ranges = [GridRange.from_a1_range(data, sheet) for data in district_data_range]
+
+    summary_ranges = [GridRange.from_a1_range(range_cell, sheet) for range_cell in summary_range_a1]
 
     non_blank_ranges = [
         GridRange.from_a1_range(f'F17:{rowcol_to_a1(23, final_column)}', sheet),
@@ -83,6 +86,10 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
         non_blank_ranges)
 
     [rules.append(rule) for rule in custom_rules]
+
+    format_cell_ranges(worksheet=sheet, ranges=[(range_cells, PERCENT_FORMAT) for range_cells in summary_range_a1])
+    format_cell_ranges(worksheet=sheet,
+                       ranges=[(range_cells, TEXT_CENTERED) for range_cells in summary_range_a1 + district_data_range])
 
     sheet.batch_update(updates, value_input_option='USER_ENTERED')
     rules.save()

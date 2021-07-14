@@ -1,6 +1,6 @@
 from typing import List
 
-from gspread_formatting import BooleanRule, BooleanCondition, CellFormat, Color, ColorStyle, TextFormat
+from gspread_formatting import BooleanRule, BooleanCondition, CellFormat, Color, TextFormat, NumberFormat
 
 LIGHT_BLUE = Color(0.7882353, 0.85490197, 0.972549)
 
@@ -24,15 +24,24 @@ LIGHT_GREEN = Color(0.776, 0.937, 0.808)
 NOT_BLANK = BooleanRule(
     condition=BooleanCondition('NOT_BLANK', []),
     format=CellFormat(
-        backgroundColorStyle=ColorStyle(rgbColor=LIGHT_BLUE)
+        backgroundColor=LIGHT_BLUE
     )
 )
 
 IS_BLANK = BooleanRule(
     condition=BooleanCondition('BLANK', []),
     format=CellFormat(
-        backgroundColorStyle=ColorStyle(rgbColor=LIGHT_YELLOW)
+        backgroundColor=LIGHT_YELLOW
     )
+)
+
+TEXT_CENTERED = CellFormat(
+    verticalAlignment="MIDDLE",
+    horizontalAlignment="CENTER"
+)
+
+PERCENT_FORMAT = CellFormat(
+    numberFormat=NumberFormat(type='PERCENT', pattern='0%'),
 )
 
 
@@ -41,9 +50,11 @@ def get_between_rule(values: List[str], text_foreground_color: Color = DARK_RED,
     return BooleanRule(
         condition=BooleanCondition('NUMBER_BETWEEN', values),
         format=CellFormat(
-            textFormat=TextFormat(bold=True,
-                                  foregroundColorStyle=ColorStyle(rgbColor=text_foreground_color)),
-            backgroundColorStyle=ColorStyle(rgbColor=background_color)
+            textFormat=TextFormat(
+                bold=True,
+                foregroundColor=text_foreground_color
+            ),
+            backgroundColor=background_color
         )
     )
 
@@ -52,6 +63,6 @@ EQ_TO_0 = BooleanRule(
     condition=BooleanCondition('NUMBER_EQ', ['0']),
     format=CellFormat(
         textFormat=TextFormat(foregroundColor=DARK_RED),
-        backgroundColorStyle=ColorStyle(rgbColor=LIGHT_RED)
+        backgroundColor=LIGHT_RED
     )
 )

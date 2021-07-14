@@ -3,8 +3,11 @@ from typing import List
 
 import gspread
 from gspread.utils import rowcol_to_a1
+from gspread_formatting import get_conditional_format_rules, ConditionalFormatRule, GridRange
 
 from plugins.polio.preparedness.client import get_client
+from plugins.polio.preparedness.conditional_formatting import DARK_YELLOW, LIGHT_YELLOW, LIGHT_GREEN, \
+    DARK_GREEN, get_between_rule
 
 PREPAREDNESS_TEMPLATE_ID = os.environ.get("PREPAREDNESS_TEMPLATE_ID", None)
 
@@ -31,6 +34,10 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     updates = [
         {'range': 'c4', 'values': [[region_name]]},
     ]
+
+    rules = get_conditional_format_rules(sheet)
+    rules.clear()
+
     for idx, district in enumerate(region_districts):
         col_index = 7 + idx
         sheet.insert_cols([[]], col_index)
@@ -46,7 +53,23 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
             generate_adverse_section(col_index, district_name_cell),
         ]
 
+    final_column = 6 + region_districts.count()
+    print({
+        'plan': f'F7:{rowcol_to_a1(10, final_column)}',
+        'training': f'F16:{rowcol_to_a1(23, final_column)}'
+    })
+    plan_coord_rules = get_conditional_rules(GridRange.from_a1_range(f'F7:{rowcol_to_a1(10, final_column)}', sheet))
+    training_rules = get_conditional_rules(GridRange.from_a1_range(f'F16:{rowcol_to_a1(16, final_column)}', sheet))
+    monitoring_rules = get_conditional_rules(GridRange.from_a1_range(f'F28:{rowcol_to_a1(29, final_column)}', sheet))
+    vaccine_logi_rules = get_conditional_rules(GridRange.from_a1_range(f'F35:{rowcol_to_a1(37, final_column)}', sheet))
+    advocacy_rules = get_conditional_rules(GridRange.from_a1_range(f'F44:{rowcol_to_a1(49, final_column)}', sheet))
+    adverse_rules = get_conditional_rules(GridRange.from_a1_range(f'F55:{rowcol_to_a1(56, final_column)}', sheet))
+
+    custom_rules = plan_coord_rules + training_rules + monitoring_rules + vaccine_logi_rules + advocacy_rules + adverse_rules
+
+    [rules.append(rule) for rule in custom_rules]
     sheet.batch_update(updates, value_input_option='USER_ENTERED')
+    rules.save()
 
 
 def generate_planning_coord_funding_section(col_index: int, district):
@@ -142,6 +165,21 @@ def get_average_from(range: str) -> str:
 
 def get_average_of_range(col_index: int, initial_row: int, final_row: int):
     return get_average_from(get_range(col_index, initial_row, final_row))
+
+
+def get_conditional_rules(ranges: str) -> List[ConditionalFormatRule]:
+    print(ranges)
+    return [
+        ConditionalFormatRule(
+            ranges=[ranges],
+            booleanRule=get_between_rule(['0', '4'])),
+        ConditionalFormatRule(
+            ranges=[ranges],
+            booleanRule=get_between_rule(['5', '8'], text_foreground_color=DARK_YELLOW, background_color=LIGHT_YELLOW)),
+        ConditionalFormatRule(
+            ranges=[ranges],
+            booleanRule=get_between_rule(['9', '10'], text_foreground_color=DARK_GREEN, background_color=LIGHT_GREEN)),
+    ]
 
 
 def map_to_column_value(data: List[str]) -> List[List[str]]:

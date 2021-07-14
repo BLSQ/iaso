@@ -147,13 +147,13 @@ def generate_training_section(col_index: int, district_name: str):
         'values': map_to_column_value([
             district_name,
             '0',
-            '0',
-            '0',
-            '0',
-            '0',
-            '0',
-            '0',
-            '0',
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
             f'={rowcol_to_a1(16, col_index)}*0.1'
         ])
     }

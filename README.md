@@ -239,7 +239,7 @@ By running the command
 
 
 ``` {.sourceCode .bash}
-docker-compose run --rm iaso manage.py seed_test_data --mode=seed --dhis2version=2.35.3
+docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.35.3
 ```
 
 The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. Type of OrgUnit are not

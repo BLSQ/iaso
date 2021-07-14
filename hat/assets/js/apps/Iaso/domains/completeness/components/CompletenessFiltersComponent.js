@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import Grid from '@material-ui/core/Grid';
+import React from 'react'
+import PropTypes from 'prop-types'
+import Grid from '@material-ui/core/Grid'
 
-import InputComponent from '../../../components/forms/InputComponent';
-import ChipListComponent from '../../../components/chips/ChipListComponent';
-import { periodTypeOptions, instanceStatusOptions } from '../config';
-import MESSAGES from '../messages';
+import InputComponent from '../../../components/forms/InputComponent'
+import ChipListComponent from '../../../components/chips/ChipListComponent'
+import { instanceStatusOptions, periodTypeOptions } from '../config'
+import MESSAGES from '../messages'
 
 function CompletenessFiltersComponent({
     activePeriodType,
@@ -28,7 +28,7 @@ function CompletenessFiltersComponent({
                     />
                 </Grid>
                 <Grid item xs={3} />
-                <Grid item container xs={6} justify="flex-end">
+                <Grid item container xs={6} justifyContent="flex-end">
                     <ChipListComponent
                         options={instanceStatusOptions}
                         value={activeInstanceStatuses}

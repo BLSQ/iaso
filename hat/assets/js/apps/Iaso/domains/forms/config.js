@@ -1,19 +1,19 @@
-import React from 'react';
-import moment from 'moment';
-import { Grid } from '@material-ui/core';
-import { Link } from 'react-router';
+import React from 'react'
+import moment from 'moment'
+import { Grid } from '@material-ui/core'
+import { Link } from 'react-router'
 
 import {
-    textPlaceholder,
-    IconButton as IconButtonComponent,
-    ColumnText as ColumnTextComponent,
-} from 'bluesquare-components';
-import FormVersionsDialog from './components/FormVersionsDialogComponent';
-import { baseUrls } from '../../constants/urls';
-import { getOrgUnitParentsIds } from '../orgUnits/utils';
+  ColumnText as ColumnTextComponent,
+  IconButton as IconButtonComponent,
+  textPlaceholder,
+} from 'bluesquare-components'
+import FormVersionsDialog from './components/FormVersionsDialogComponent'
+import { baseUrls } from '../../constants/urls'
+import { getOrgUnitParentsIds } from '../orgUnits/utils'
 
-import MESSAGES from './messages';
-import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import MESSAGES from './messages'
+import DeleteDialog from '../../components/dialogs/DeleteDialogComponent'
 
 export const formVersionsTableColumns = (
     formatMessage,
@@ -108,7 +108,7 @@ const formsTableColumns = (
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.created_at)
-                    .format('DD/MM/YYYY HH:mm')}
+                    .format('LTS')}
             />
         ),
     },
@@ -119,7 +119,7 @@ const formsTableColumns = (
             <ColumnTextComponent
                 text={moment
                     .unix(settings.original.updated_at)
-                    .format('DD/MM/YYYY HH:mm')}
+                    .format('LTS')}
             />
         ),
     },
@@ -130,7 +130,7 @@ const formsTableColumns = (
             const dateText = settings.original.instance_updated_at
                 ? moment
                       .unix(settings.original.instance_updated_at)
-                      .format('DD/MM/YYYY HH:mm')
+                      .format('LTS')
                 : textPlaceholder;
 
             return <ColumnTextComponent text={dateText} />;
@@ -170,7 +170,7 @@ const formsTableColumns = (
         sortable: false,
         Cell: settings =>
             settings.original.latest_form_version !== null && (
-                <Grid container spacing={1} justify="center">
+                <Grid container spacing={1} justifyContent="center">
                     <Grid item>
                         <ColumnTextComponent
                             text={
@@ -178,7 +178,7 @@ const formsTableColumns = (
                             }
                         />
                     </Grid>
-                    <Grid container spacing={1} justify="center">
+                    <Grid container spacing={1} justifyContent="center">
                         {settings.original.latest_form_version.xls_file && (
                             <Grid item>
                                 <Link

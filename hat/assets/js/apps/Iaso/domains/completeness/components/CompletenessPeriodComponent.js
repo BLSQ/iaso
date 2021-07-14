@@ -1,12 +1,12 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { Paper, withStyles, Typography, Grid } from '@material-ui/core';
-import ReactTable, { ReactTableDefaults } from 'react-table';
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+import { Grid, Paper, Typography, withStyles } from '@material-ui/core'
+import ReactTable, { ReactTableDefaults } from 'react-table'
 
-import { injectIntl, commonStyles } from 'bluesquare-components';
-import { getColumns } from '../config';
-import customTableTranslations from '../../../constants/customTableTranslations';
-import { baseUrls } from '../../../constants/urls';
+import { commonStyles, injectIntl } from 'bluesquare-components'
+import { getColumns } from '../config'
+import customTableTranslations from '../../../constants/customTableTranslations'
+import { baseUrls } from '../../../constants/urls'
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -84,7 +84,7 @@ class CompletenessPeriodComponent extends Component {
                         xs={6}
                         item
                         container
-                        justify="flex-start"
+                        justifyContent="flex-start"
                         alignItems="center"
                     >
                         <Typography variant="h5" gutterBottom>

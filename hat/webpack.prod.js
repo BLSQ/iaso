@@ -6,6 +6,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // remember to switch in webpack.dev.js and
 // django settings as well
 var LOCALE = 'fr';
+const pluginsString = process.env.PLUGINS || '';
+const plugins = pluginsString.split(',');
 
 module.exports = {
     // fail the entire build on 'module not found'
@@ -47,6 +49,7 @@ module.exports = {
                 // need to do JSON stringify on all vars here to take effect,
                 // see https://github.com/eHealthAfrica/guinea-connect-universal-app/blob/development/webpack/prod.config.js
                 NODE_ENV: JSON.stringify('production'),
+                PLUGINS_KEYS: JSON.stringify(plugins),
             },
             __LOCALE: JSON.stringify(LOCALE),
         }),

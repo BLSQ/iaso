@@ -1,4 +1,4 @@
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { alpha } from '@material-ui/core/styles/colorManipulator';
 
 const mapStyles = theme => ({
     mapContainer: {
@@ -25,14 +25,14 @@ const mapStyles = theme => ({
             zIndex: -1,
         },
         '& .marker-cluster.primary': {
-            backgroundColor: fade(theme.palette.primary.main, 0.6),
+            backgroundColor: alpha(theme.palette.primary.main, 0.6),
         },
         '& .marker-cluster.primary > div': {
             backgroundColor: theme.palette.primary.main,
             color: theme.palette.primary.contrastText,
         },
         '& .marker-cluster.secondary': {
-            backgroundColor: fade(theme.palette.secondary.main, 0.6),
+            backgroundColor: alpha(theme.palette.secondary.main, 0.6),
         },
         '& .marker-cluster.secondary > div': {
             backgroundColor: theme.palette.secondary.main,
@@ -91,13 +91,13 @@ const mapStyles = theme => ({
             pointerEvents: 'none',
         },
         '& path.primary': {
-            fill: fade(theme.palette.primary.main, 0.6),
+            fill: alpha(theme.palette.primary.main, 0.6),
             stroke: theme.palette.primary.main,
             strokeOpacity: 1,
             strokeWidth: 3,
         },
         '& path.secondary': {
-            fill: fade(theme.palette.secondary.main, 0.6),
+            fill: alpha(theme.palette.secondary.main, 0.6),
             stroke: theme.palette.secondary.main,
             strokeOpacity: 1,
             strokeWidth: 3,

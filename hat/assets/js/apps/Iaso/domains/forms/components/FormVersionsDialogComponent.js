@@ -135,7 +135,7 @@ const FormVersionsDialogComponent = ({
             confirmMessage={MESSAGES.save}
             {...dialogProps}
         >
-            <Grid container spacing={4} justify="flex-start">
+            <Grid container spacing={4} justifyContent="flex-start">
                 <Grid xs={12} item>
                     {!formState.id.value && (
                         <FileInputComponent

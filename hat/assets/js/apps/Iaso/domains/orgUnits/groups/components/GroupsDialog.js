@@ -107,7 +107,7 @@ class GroupDialogComponent extends Component {
                 renderTrigger={renderTrigger}
                 maxWidth="sm"
             >
-                <Grid container spacing={4} justify="flex-start">
+                <Grid container spacing={4} justifyContent="flex-start">
                     <Grid xs={12} item>
                         <InputComponent
                             keyValue="name"

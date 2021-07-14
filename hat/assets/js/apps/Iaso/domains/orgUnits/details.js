@@ -1,79 +1,65 @@
-import React, { Component } from 'react';
-import omit from 'lodash/omit';
-import { connect } from 'react-redux';
-import { push, replace } from 'react-router-redux';
-import { bindActionCreators } from 'redux';
+import React, { Component } from 'react'
+import omit from 'lodash/omit'
+import { connect } from 'react-redux'
+import { push, replace } from 'react-router-redux'
+import { bindActionCreators } from 'redux'
 
-import { withStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
+import { Box, Grid, Tab, Tabs, withStyles } from '@material-ui/core'
 
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
+
+import { commonStyles, createUrl, injectIntl, LoadingSpinner, } from 'bluesquare-components'
+import { alpha } from '@material-ui/core/styles/colorManipulator'
+import TopBar from '../../components/nav/TopBarComponent'
+import {
+  createOrgUnit as createOrgUnitAction,
+  resetOrgUnits,
+  saveOrgUnit as saveOrgUnitAction,
+  setCurrentForms,
+  setCurrentOrgUnit,
+  setFetchingDetail,
+  setGroups,
+  setOrgUnitTypes,
+  setSources,
+  setSourcesSelected,
+} from './actions'
+import { setAlgorithmRuns, setAlgorithms } from '../links/actions'
+
+import { setForms as setFormsAction } from '../forms/actions'
+import formsTableColumns from '../forms/config'
+import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer'
 
 import {
-    createUrl,
-    injectIntl,
-    commonStyles,
-    // TopBar,
-    LoadingSpinner,
-} from 'bluesquare-components';
-import { fade } from '@material-ui/core/styles/colorManipulator';
-import TopBar from '../../components/nav/TopBarComponent';
-import {
-    setCurrentOrgUnit,
-    setOrgUnitTypes,
-    resetOrgUnits,
-    setCurrentForms,
-    setSources,
-    setGroups,
-    setFetchingDetail,
-    saveOrgUnit as saveOrgUnitAction,
-    createOrgUnit as createOrgUnitAction,
-    setSourcesSelected,
-} from './actions';
-import { setAlgorithms, setAlgorithmRuns } from '../links/actions';
+  fetchAlgorithmRuns,
+  fetchAlgorithms,
+  fetchAssociatedDataSources,
+  fetchAssociatedOrgUnits,
+  fetchForms,
+  fetchGroups,
+  fetchLinks,
+  fetchOrgUnitDetail,
+  fetchOrgUnitsList,
+  fetchOrgUnitsTypes,
+  fetchSources,
+  saveLink,
+} from '../../utils/requests'
+import { getAliasesArrayFromString, getOrgUnitsTree, getSourcesWithoutCurrentSource, } from './utils'
+import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions'
 
-import { setForms as setFormsAction } from '../forms/actions';
-import formsTableColumns from '../forms/config';
-import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
+import OrgUnitForm from './components/OrgUnitForm'
+import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent'
+import Logs from '../../components/logs/LogsComponent'
+import SingleTable from '../../components/tables/SingleTable'
+import LinksDetails from '../links/components/LinksDetailsComponent'
 
-import {
-    fetchOrgUnitsTypes,
-    fetchAssociatedDataSources,
-    fetchOrgUnitDetail,
-    fetchForms,
-    fetchGroups,
-    fetchSources,
-    fetchOrgUnitsList,
-    fetchLinks,
-    fetchAlgorithms,
-    fetchAlgorithmRuns,
-    saveLink,
-    fetchAssociatedOrgUnits,
-} from '../../utils/requests';
-import {
-    getAliasesArrayFromString,
-    getOrgUnitsTree,
-    getSourcesWithoutCurrentSource,
-} from './utils';
-import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
+import { getChipColors } from '../../constants/chipColors'
+import { baseUrls } from '../../constants/urls'
+import MESSAGES from './messages'
 
-import OrgUnitForm from './components/OrgUnitForm';
-import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
-import Logs from '../../components/logs/LogsComponent';
-import SingleTable from '../../components/tables/SingleTable';
-import LinksDetails from '../links/components/LinksDetailsComponent';
-
-import { getChipColors } from '../../constants/chipColors';
-import { baseUrls } from '../../constants/urls';
-import MESSAGES from './messages';
-
-import {
-    orgUnitFiltersWithPrefix,
-    linksFiltersWithPrefix,
-    onlyChildrenParams,
-} from '../../constants/filters';
-import { orgUnitsTableColumns } from './config';
-import { linksTableColumns } from '../links/config';
-import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
+import { linksFiltersWithPrefix, onlyChildrenParams, orgUnitFiltersWithPrefix, } from '../../constants/filters'
+import { orgUnitsTableColumns } from './config'
+import { linksTableColumns } from '../links/config'
+import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments'
 
 const baseUrl = baseUrls.orgUnitDetails;
 
@@ -81,13 +67,13 @@ const styles = theme => ({
     ...commonStyles(theme),
     root: {
         '& path.primary': {
-            fill: fade(theme.palette.primary.main, 0.6),
+            fill: alpha(theme.palette.primary.main, 0.6),
             stroke: theme.palette.primary.main,
             strokeOpacity: 1,
             strokeWidth: 3,
         },
         '& path.secondary': {
-            fill: fade(theme.palette.secondary.main, 0.6),
+            fill: alpha(theme.palette.secondary.main, 0.6),
             stroke: theme.palette.secondary.main,
             strokeOpacity: 1,
             strokeWidth: 3,
@@ -255,9 +241,15 @@ class OrgUnitDetail extends Component {
             prevProps.params.orgUnitId !== '0'
         ) {
             this.resetCurrentOrgUnit();
-            this.fetchDetail();
-        }
-        if (params.tab !== prevProps.params.tab) {
+            this.fetchDetail().then(() => {
+                // we need the condition here otherwise the setState from handleChangeTab will trigger before fetching is done
+                // Which will cause display errors
+                if (params.tab !== prevProps.params.tab) {
+                    this.handleChangeTab(params.tab, false);
+                }
+            });
+            // repeating the condition here with else if to handle tab navigation without redirection
+        } else if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
         }
     }
@@ -710,7 +702,7 @@ class OrgUnitDetail extends Component {
                         {tab === 'comments' && (
                             <Grid
                                 container
-                                justify="center"
+                                justifyContent="center"
                                 className={classes.commentsWrapper}
                             >
                                 <Grid item xs={6}>

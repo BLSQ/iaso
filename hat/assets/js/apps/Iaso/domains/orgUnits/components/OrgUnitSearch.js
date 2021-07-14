@@ -22,7 +22,7 @@ import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import OrgUnitTooltip from './OrgUnitTooltip';
 import { getRequest } from '../../../libs/Api';
-import { getOrgunitMessage } from '../utils';
+import { OrgUnitLabel } from '../utils';
 import MESSAGES from '../messages';
 
 const styles = theme => ({
@@ -211,10 +211,10 @@ const OrgUnitSearch = ({
                                         <ListItemText
                                             primary={
                                                 <Typography type="body2">
-                                                    {getOrgunitMessage(
-                                                        ou,
-                                                        true,
-                                                    )}
+                                                    <OrgUnitLabel
+                                                        orgUnit={ou}
+                                                        withType
+                                                    />
                                                 </Typography>
                                             }
                                         />

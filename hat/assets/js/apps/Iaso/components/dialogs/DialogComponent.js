@@ -1,15 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react'
 
-import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import PropTypes from 'prop-types'
+import { FormattedMessage } from 'react-intl'
 
-import {
-    withStyles,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from '@material-ui/core';
-import { commonStyles } from 'bluesquare-components';
+import { Dialog, DialogContent, DialogTitle, withStyles, } from '@material-ui/core'
+import { commonStyles } from 'bluesquare-components'
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -65,7 +60,7 @@ function DialogComponent({
                     classes={{
                         paper: classes.paper,
                     }}
-                    onBackdropClick={closeDialog}
+                    onClose={closeDialog}
                     scroll="body"
                 >
                     <DialogTitle className={classes.title}>

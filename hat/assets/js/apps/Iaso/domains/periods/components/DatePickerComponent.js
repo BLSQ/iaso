@@ -1,17 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
-import { KeyboardDatePicker } from '@material-ui/pickers';
-import Clear from '@material-ui/icons/Clear';
-import {
-    FormControl,
-    Tooltip,
-    IconButton,
-    makeStyles,
-} from '@material-ui/core';
-import PropTypes from 'prop-types';
+import { KeyboardDatePicker } from '@material-ui/pickers'
+import Clear from '@material-ui/icons/Clear'
+import { FormControl, IconButton, makeStyles, Tooltip, } from '@material-ui/core'
+import PropTypes from 'prop-types'
 
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import MESSAGES from '../messages';
+import { commonStyles, useSafeIntl } from 'bluesquare-components'
+import MESSAGES from '../messages'
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -50,7 +45,7 @@ const DatePickerComponent = ({
                 InputProps={{
                     error: hasError || Boolean(dateError),
                 }}
-                format="DD/MM/YYYY" // This one need be set by user locale
+                format="L"
                 label={placeholder}
                 helperText=""
                 value={currentDate}

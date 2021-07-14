@@ -13,7 +13,7 @@ const OrgUnitsSmallInfosRow = ({ label, value, classes }) => (
             xs={5}
             item
             container
-            justify="flex-end"
+            justifyContent="flex-end"
             alignContent="flex-start"
         >
             <span className={classes.label}>{`${label} :`}</span>
@@ -22,7 +22,7 @@ const OrgUnitsSmallInfosRow = ({ label, value, classes }) => (
             xs={7}
             item
             container
-            justify="flex-start"
+            justifyContent="flex-start"
             alignContent="flex-start"
         >
             {value}

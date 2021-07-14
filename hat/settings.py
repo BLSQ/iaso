@@ -17,8 +17,10 @@ from django.utils.translation import ugettext_lazy as _
 
 from sentry_sdk.integrations.django import DjangoIntegration
 
+DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGIN_POLIO_ENABLED = os.environ.get("PLUGIN_POLIO_ENABLED", "").lower() == "true"
+PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -137,6 +139,10 @@ COMMENTS_APP = "iaso"
 
 if PLUGIN_POLIO_ENABLED:
     INSTALLED_APPS.append("plugins.polio")
+
+print("Enabled plugins:", PLUGINS)
+for plugin_name in PLUGINS:
+    INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -348,3 +354,4 @@ EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.smtpbucket.com")
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_PORT = os.environ.get("EMAIL_PORT", "8025")
+EMAIL_USE_TLS = os.environ.get("EMAIL_TLS", "true") == "true"

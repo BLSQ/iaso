@@ -1,16 +1,19 @@
-from django.db.transaction import atomic
 from django.utils.translation import gettext_lazy as _
 from gspread.exceptions import APIError
 from rest_framework import serializers, exceptions
 
-from iaso.models import Group, OrgUnit
 from plugins.polio.preparedness.calculator import get_preparedness_score
+from django.db.transaction import atomic
+from datetime import datetime, timezone
+
+from iaso.models import Group, OrgUnit
 from .models import Preparedness, Round, Campaign, Surge
-from .preparedness.exceptions import *
+
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
     get_national_level_preparedness,
+    InvalidFormatError,
     parse_value,
 )
 from .preparedness.spreadsheet_manager import *
@@ -186,14 +189,17 @@ class CampaignSerializer(serializers.ModelSerializer):
         return ""
 
     def get_general_status(self, campaign):
-        if campaign.round_two.ended_at:
-            return _("Round 2 completed")
-        if campaign.round_two.started_at:
-            return _("Round 2 started")
-        if campaign.round_one.ended_at:
-            return _("Round 1 completed")
-        if campaign.round_one.started_at:
-            return _("Round 1 started")
+        now_utc = datetime.now(timezone.utc).date()
+        if campaign.round_two:
+            if campaign.round_two.ended_at and now_utc > campaign.round_two.ended_at:
+                return _("Round 2 completed")
+            if campaign.round_two.started_at and now_utc >= campaign.round_two.started_at:
+                return _("Round 2 started")
+        if campaign.round_one:
+            if campaign.round_one.ended_at and now_utc > campaign.round_one.ended_at:
+                return _("Round 1 completed")
+            if campaign.round_one.started_at and now_utc >= campaign.round_one.started_at:
+                return _("Round 1 started")
 
         return _("Preparing")
 

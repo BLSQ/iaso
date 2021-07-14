@@ -1,20 +1,20 @@
-import React, { Fragment } from 'react';
-import { FormattedMessage } from 'react-intl';
-import { bindActionCreators } from 'redux';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import React from 'react'
+import { FormattedMessage } from 'react-intl'
+import { bindActionCreators } from 'redux'
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 
-import { Grid, Button, withStyles } from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
+import { Button, Grid, withStyles } from '@material-ui/core'
+import SearchIcon from '@material-ui/icons/Search'
 
-import { commonStyles } from 'bluesquare-components';
-import { redirectTo as redirectToAction } from '../../../../routing/actions';
+import { commonStyles } from 'bluesquare-components'
+import { redirectTo as redirectToAction } from '../../../../routing/actions'
 
-import { search } from '../../../../constants/filters';
+import { search } from '../../../../constants/filters'
 
-import FiltersComponent from '../../../../components/filters/FiltersComponent';
+import FiltersComponent from '../../../../components/filters/FiltersComponent'
 
-import MESSAGES from '../messages';
+import MESSAGES from '../messages'
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -46,12 +46,12 @@ const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
                     />
                 </Grid>
             </Grid>
-            <Grid container spacing={4} justify="flex-end" alignItems="center">
+            <Grid container spacing={4} justifyContent="flex-end" alignItems="center">
                 <Grid
                     item
                     xs={2}
                     container
-                    justify="flex-end"
+                    justifyContent="flex-end"
                     alignItems="center"
                 >
                     <Button

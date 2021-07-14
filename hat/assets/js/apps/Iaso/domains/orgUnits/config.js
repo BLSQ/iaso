@@ -1,19 +1,16 @@
-import React from 'react';
-import moment from 'moment';
-import { Tooltip } from '@material-ui/core';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import React from 'react'
+import moment from 'moment'
+import { Tooltip } from '@material-ui/core'
+import Visibility from '@material-ui/icons/Visibility'
+import VisibilityOff from '@material-ui/icons/VisibilityOff'
 
-import Color from 'color';
-import {
-    IconButton as IconButtonComponent,
-    textPlaceholder,
-} from 'bluesquare-components';
-import { baseUrls } from '../../constants/urls';
-import OrgUnitTooltip from './components/OrgUnitTooltip';
-import getDisplayName from '../../utils/usersUtils';
-import MESSAGES from './messages';
-import { getStatusMessage, getOrgUnitGroups } from './utils';
+import Color from 'color'
+import { IconButton as IconButtonComponent, textPlaceholder, } from 'bluesquare-components'
+import { baseUrls } from '../../constants/urls'
+import OrgUnitTooltip from './components/OrgUnitTooltip'
+import getDisplayName from '../../utils/usersUtils'
+import MESSAGES from './messages'
+import { getOrgUnitGroups, getStatusMessage } from './utils'
 
 export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
     const getStatusColor = status => {
@@ -91,9 +88,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             accessor: 'updated_at',
             Cell: settings => (
                 <section>
-                    {moment
-                        .unix(settings.original.updated_at)
-                        .format('DD/MM/YYYY HH:mm')}
+                    {moment.unix(settings.original.updated_at).format('LTS')}
                 </section>
             ),
         },
@@ -102,9 +97,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             accessor: 'created_at',
             Cell: settings => (
                 <section>
-                    {moment
-                        .unix(settings.original.created_at)
-                        .format('DD/MM/YYYY HH:mm')}
+                    {moment.unix(settings.original.created_at).format('LTS')}
                 </section>
             ),
         },
@@ -179,11 +172,7 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => [
         Header: formatMessage(MESSAGES.date),
         accessor: 'created_at',
         Cell: settings => (
-            <span>
-                {moment(settings.original.created_at).format(
-                    'YYYY-MM-DD HH:mm',
-                )}
-            </span>
+            <span>{moment(settings.original.created_at).format('LTS')}</span>
         ),
     },
     {

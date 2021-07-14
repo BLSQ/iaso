@@ -1,16 +1,16 @@
-import React from 'react';
-import { FormattedMessage } from 'react-intl';
-import PropTypes from 'prop-types';
-import { Chip, makeStyles, Box, Typography } from '@material-ui/core';
+import React from 'react'
+import { FormattedMessage } from 'react-intl'
+import PropTypes from 'prop-types'
+import { Box, Chip, makeStyles, Typography } from '@material-ui/core'
 
-import InputComponent from '../../../components/forms/InputComponent';
-import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
-import OrgUnitTooltip from '../../orgUnits/components/OrgUnitTooltip';
-import { getOrgunitMessage } from '../../orgUnits/utils';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { Period } from '../../periods/models';
+import InputComponent from '../../../components/forms/InputComponent'
+import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch'
+import OrgUnitTooltip from '../../orgUnits/components/OrgUnitTooltip'
+import { OrgUnitLabel } from '../../orgUnits/utils'
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent'
+import { Period } from '../../periods/models'
 
-import MESSAGES from '../messages';
+import MESSAGES from '../messages'
 
 const useStyles = makeStyles(theme => ({
     chipList: {
@@ -163,9 +163,11 @@ const CreateReAssignDialogComponent = ({
                             key={fieldValue.orgUnit.value.id}
                         >
                             <Chip
-                                label={getOrgunitMessage(
-                                    fieldValue.orgUnit.value,
-                                )}
+                                label={
+                                    <OrgUnitLabel
+                                        orgUnit={fieldValue.orgUnit.value}
+                                    />
+                                }
                                 onDelete={() => handleRemoveOrgUnit()}
                                 className={classes.chip}
                                 color="primary"

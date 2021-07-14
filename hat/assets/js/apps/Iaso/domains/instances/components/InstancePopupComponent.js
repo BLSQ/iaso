@@ -109,7 +109,7 @@ class InstancePopupComponent extends Component {
                                     <Grid
                                         container
                                         spacing={0}
-                                        justify="center"
+                                        justifyContent="center"
                                         alignItems="center"
                                     >
                                         <ConfirmDialog
@@ -131,7 +131,7 @@ class InstancePopupComponent extends Component {
                                 <Grid
                                     container
                                     spacing={0}
-                                    justify={
+                                    justifyContent={
                                         displayUseLocation
                                             ? 'center'
                                             : 'flex-end'

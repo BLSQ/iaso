@@ -1,57 +1,50 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-    Table,
-    textPlaceholder,
-    IconButton as IconButtonComponent,
-    ColumnText,
-    LoadingSpinner,
-} from 'bluesquare-components';
-import 'react-table/react-table.css';
+  ColumnText,
+  IconButton as IconButtonComponent,
+  LoadingSpinner,
+  Table,
+  textPlaceholder,
+} from 'bluesquare-components'
+import 'react-table/react-table.css'
 
 import {
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    FormControl,
-    Grid,
-    InputAdornment,
-    InputLabel,
-    OutlinedInput,
-    Tab,
-    Tabs,
-    Typography,
-} from '@material-ui/core';
-import merge from 'lodash.merge';
-import AddIcon from '@material-ui/icons/Add';
-import DownloadIcon from '@material-ui/icons/GetApp';
-import { MapContainer } from './MapComponent';
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  Grid,
+  InputAdornment,
+  InputLabel,
+  OutlinedInput,
+  Tab,
+  Tabs,
+  Typography,
+} from '@material-ui/core'
+import merge from 'lodash.merge'
+import AddIcon from '@material-ui/icons/Add'
+import DownloadIcon from '@material-ui/icons/GetApp'
+import { MapContainer } from './MapComponent'
 
-import {
-    DateInput,
-    ResponsibleField,
-    PaymentField,
-    Select,
-    StatusField,
-    TextInput,
-} from './Inputs';
+import { DateInput, PaymentField, ResponsibleField, Select, StatusField, TextInput, } from './Inputs'
 
-import { Page } from './Page';
-import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
-import * as yup from 'yup';
-import { polioVacines, polioViruses } from '../constants/virus';
-import { useGetCampaigns } from '../hooks/useGetCampaigns';
-import { OrgUnitsLevels } from './Inputs/OrgUnitsSelect';
-import { useSaveCampaign } from '../hooks/useSaveCampaign';
-import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
-import { useStyles } from '../styles/theme';
-import { PreparednessForm } from '../forms/PreparednessForm';
-import { useGetRegionGeoJson } from '../hooks/useGetRegionGeoJson';
-import MESSAGES from '../constants/messages';
-import SearchIcon from '@material-ui/icons/Search';
-import { useDebounce } from 'use-debounce';
+import { Page } from './Page'
+import { Field, FormikProvider, useFormik, useFormikContext } from 'formik'
+import * as yup from 'yup'
+import { polioVacines, polioViruses } from '../constants/virus'
+import { useGetCampaigns } from '../hooks/useGetCampaigns'
+import { OrgUnitsLevels } from './Inputs/OrgUnitsSelect'
+import { useSaveCampaign } from '../hooks/useSaveCampaign'
+import { useRemoveCampaign } from '../hooks/useRemoveCampaign'
+import { useStyles } from '../styles/theme'
+import { PreparednessForm } from '../forms/PreparednessForm'
+import { useGetRegionGeoJson } from '../hooks/useGetRegionGeoJson'
+import MESSAGES from '../constants/messages'
+import SearchIcon from '@material-ui/icons/Search'
+import { useDebounce } from 'use-debounce'
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -186,6 +179,12 @@ const BaseInfoForm = () => {
                         className={classes.input}
                         label="GPEI Coordinator"
                         name={'gpei_coordinator'}
+                        component={TextInput}
+                    />
+                    <Field
+                        className={classes.input}
+                        label="GPEI Email"
+                        name={'gpei_email'}
                         component={TextInput}
                     />
                     <Field

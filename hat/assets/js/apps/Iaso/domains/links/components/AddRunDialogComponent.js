@@ -1,24 +1,16 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react'
 
-import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-import { connect } from 'react-redux';
+import PropTypes from 'prop-types'
+import { FormattedMessage } from 'react-intl'
+import { connect } from 'react-redux'
 
-import Add from '@material-ui/icons/Add';
-import {
-    withStyles,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Grid,
-} from '@material-ui/core';
+import Add from '@material-ui/icons/Add'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, withStyles, } from '@material-ui/core'
 
-import { injectIntl, commonStyles } from 'bluesquare-components';
-import InputComponent from '../../../components/forms/InputComponent';
+import { commonStyles, injectIntl } from 'bluesquare-components'
+import InputComponent from '../../../components/forms/InputComponent'
 
-import MESSAGES from '../messages';
+import MESSAGES from '../messages'
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -127,7 +119,7 @@ class AddRunDialogComponent extends Component {
                             container
                             spacing={2}
                             alignItems="center"
-                            justify="flex-start"
+                            justifyContent="flex-start"
                         >
                             <Grid xs={6} item>
                                 <InputComponent
@@ -151,7 +143,7 @@ class AddRunDialogComponent extends Component {
                             container
                             spacing={2}
                             alignItems="center"
-                            justify="flex-start"
+                            justifyContent="flex-start"
                         >
                             <Grid xs={6} item>
                                 <InputComponent

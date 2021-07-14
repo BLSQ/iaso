@@ -1,12 +1,12 @@
-import React from 'react';
-import moment from 'moment';
-import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
-import { KeyboardDatePicker } from '@material-ui/pickers';
-import { FormControl, Grid, Tooltip, IconButton } from '@material-ui/core';
-import Clear from '@material-ui/icons/Clear';
-import { injectIntl } from 'bluesquare-components';
-import MESSAGES from './messages';
+import React from 'react'
+import PropTypes from 'prop-types'
+import { makeStyles } from '@material-ui/core/styles'
+import { KeyboardDatePicker } from '@material-ui/pickers'
+import { FormControl, Grid, IconButton, Tooltip } from '@material-ui/core'
+import Clear from '@material-ui/icons/Clear'
+import { injectIntl } from 'bluesquare-components'
+import MESSAGES from './messages'
+import { dateFormat, getUrlParamDateObject, } from '../../utils/dates'
 
 const useStyles = makeStyles(theme => ({
     formControl: {
@@ -28,11 +28,9 @@ const DatesRange = ({
     dateTo,
     onChangeDate,
     intl: { formatMessage },
-    displayedDateFormat,
 }) => {
     const classes = useStyles();
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
-    const dateFormat = 'DD-MM-YYYY';
     return (
         <Grid container spacing={4}>
             <Grid item xs={6}>
@@ -44,19 +42,19 @@ const DatesRange = ({
                         maxDate={
                             dateTo === '' || dateTo === null
                                 ? undefined
-                                : moment(dateTo, displayedDateFormat)
+                                : getUrlParamDateObject(dateTo)
                         }
                         InputLabelProps={{
                             shrink: Boolean(dateFrom),
                         }}
-                        format={displayedDateFormat}
+                        format="L"
                         label={formatMessage(MESSAGES.from)}
                         helperText=""
                         inputVariant="outlined"
                         value={
                             dateFrom === '' || dateFrom === null
                                 ? null
-                                : moment(dateFrom, displayedDateFormat)
+                                : getUrlParamDateObject(dateFrom)
                         }
                         onChange={date =>
                             onChangeDate(
@@ -88,18 +86,18 @@ const DatesRange = ({
                         minDate={
                             dateFrom === '' || dateFrom === null
                                 ? undefined
-                                : moment(dateFrom, displayedDateFormat)
+                                : getUrlParamDateObject(dateFrom)
                         }
                         InputLabelProps={{
                             shrink: Boolean(dateTo),
                         }}
-                        format={displayedDateFormat}
+                        format="L"
                         label={formatMessage(MESSAGES.to)}
                         helperText=""
                         value={
                             dateTo === '' || dateTo === null
                                 ? null
-                                : moment(dateTo, displayedDateFormat)
+                                : getUrlParamDateObject(dateTo)
                         }
                         onChange={date =>
                             onChangeDate(
@@ -128,7 +126,6 @@ const DatesRange = ({
 DatesRange.defaultProps = {
     dateFrom: '',
     dateTo: '',
-    displayedDateFormat: 'DD/MM/YYYY',
     onChangeDate: () => null,
 };
 
@@ -136,7 +133,6 @@ DatesRange.propTypes = {
     onChangeDate: PropTypes.func,
     dateFrom: PropTypes.string,
     dateTo: PropTypes.string,
-    displayedDateFormat: PropTypes.string,
     intl: PropTypes.object.isRequired,
 };
 

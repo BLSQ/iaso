@@ -1,11 +1,11 @@
-import React from 'react';
+import React from 'react'
 
-import { FormattedMessage } from 'react-intl';
-import { displayDateFromTimestamp } from 'bluesquare-components';
-import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
-import { Period } from '../periods/models';
-import { getOrgunitMessage } from '../orgUnits/utils';
-import MESSAGES from './messages';
+import { FormattedMessage } from 'react-intl'
+import { displayDateFromTimestamp } from 'bluesquare-components'
+import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip'
+import { Period } from '../periods/models'
+import { OrgUnitLabel } from '../orgUnits/utils'
+import MESSAGES from './messages'
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -54,7 +54,9 @@ export const INSTANCE_METAS_FIELDS = [
                     orgUnit={value}
                     domComponent="span"
                 >
-                    <>{getOrgunitMessage(value, true)}</>
+                    <>
+                        <OrgUnitLabel orgUnit={value} withType />
+                    </>
                 </OrgUnitTooltip>
             );
         },

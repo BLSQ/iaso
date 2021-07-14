@@ -1,26 +1,22 @@
-import React, { Component } from 'react';
-import get from 'lodash/get';
-import PropTypes from 'prop-types';
-import { Grid, Box } from '@material-ui/core';
-import { connect } from 'react-redux';
-import isEqual from 'lodash/isEqual';
+import React, { Component } from 'react'
+import get from 'lodash/get'
+import PropTypes from 'prop-types'
+import { Box, Grid } from '@material-ui/core'
+import { connect } from 'react-redux'
+import isEqual from 'lodash/isEqual'
 
-import { useSafeIntl } from 'bluesquare-components';
-import {
-    createDataSource,
-    updateDataSource,
-    updateDefaultSource,
-} from '../../../utils/requests';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import InputComponent from '../../../components/forms/InputComponent';
-import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
-import { succesfullSnackBar } from '../../../constants/snackBars';
+import { useSafeIntl } from 'bluesquare-components'
+import { createDataSource, updateDataSource, updateDefaultSource, } from '../../../utils/requests'
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent'
+import InputComponent from '../../../components/forms/InputComponent'
+import { enqueueSnackbar } from '../../../redux/snackBarsReducer'
+import { succesfullSnackBar } from '../../../constants/snackBars'
 
-import { setIsLoading } from '../actions';
-import { fetchCurrentUser } from '../../users/actions';
-import MESSAGES from '../messages';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { EditableTextFields } from '../../../components/forms/EditableTextFields';
+import { setIsLoading } from '../actions'
+import { fetchCurrentUser } from '../../users/actions'
+import MESSAGES from '../messages'
+import { commaSeparatedIdsToArray } from '../../../utils/forms'
+import { EditableTextFields } from '../../../components/forms/EditableTextFields'
 
 // This wrapper to import translations to project_ids
 const ProjectIds = ({ keyValue, value, onChange, errors, options, label }) => {
@@ -274,7 +270,7 @@ export class DataSourceDialogComponent extends Component {
                 maxWidth="md"
                 allowConfirm={allowConfirm}
             >
-                <Grid container spacing={4} justify="flex-start">
+                <Grid container spacing={4} justifyContent="flex-start">
                     <Grid xs={6} item>
                         <InputComponent
                             keyValue="name"

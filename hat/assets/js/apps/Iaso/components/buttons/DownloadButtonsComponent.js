@@ -1,10 +1,10 @@
-import React from 'react';
+import React from 'react'
 
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 
-import Button from '@material-ui/core/Button';
-import { withStyles } from '@material-ui/core';
-import SaveAlt from '@material-ui/icons/SaveAlt';
+import { Button, withStyles } from '@material-ui/core'
+
+import SaveAlt from '@material-ui/icons/SaveAlt'
 
 const styles = theme => ({
     button: {

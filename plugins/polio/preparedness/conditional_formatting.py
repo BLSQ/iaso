@@ -2,7 +2,7 @@ from typing import List
 
 from gspread_formatting import BooleanRule, BooleanCondition, CellFormat, Color, ColorStyle, TextFormat
 
-LIGHT_BLUE = ColorStyle(rgbColor=Color(0.7882353, 0.85490197, 0.972549))
+LIGHT_BLUE = Color(0.7882353, 0.85490197, 0.972549)
 
 # #9c0006
 DARK_RED = Color(0.61, 0.0, 0.024)
@@ -24,7 +24,14 @@ LIGHT_GREEN = Color(0.776, 0.937, 0.808)
 NOT_BLANK = BooleanRule(
     condition=BooleanCondition('NOT_BLANK', []),
     format=CellFormat(
-        backgroundColorStyle=LIGHT_BLUE
+        backgroundColorStyle=ColorStyle(rgbColor=LIGHT_BLUE)
+    )
+)
+
+IS_BLANK = BooleanRule(
+    condition=BooleanCondition('BLANK', []),
+    format=CellFormat(
+        backgroundColorStyle=ColorStyle(rgbColor=LIGHT_YELLOW)
     )
 )
 

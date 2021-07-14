@@ -7,7 +7,7 @@ from gspread_formatting import get_conditional_format_rules, ConditionalFormatRu
 
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.conditional_formatting import DARK_YELLOW, LIGHT_YELLOW, LIGHT_GREEN, \
-    DARK_GREEN, get_between_rule
+    DARK_GREEN, get_between_rule, NOT_BLANK, IS_BLANK
 
 PREPAREDNESS_TEMPLATE_ID = os.environ.get("PREPAREDNESS_TEMPLATE_ID", None)
 
@@ -73,8 +73,17 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
         GridRange.from_a1_range(f'F58:{rowcol_to_a1(58, final_column)}', sheet)
     ]
 
-    [rules.append(rule) for rule in get_conditional_rules(ranges)]
-    [rules.append(rule) for rule in get_summary_conditional_rules(summary_ranges)]
+    non_blank_ranges = [
+        GridRange.from_a1_range(f'F17:{rowcol_to_a1(23, final_column)}', sheet),
+        GridRange.from_a1_range(f'F38:{rowcol_to_a1(38, final_column)}', sheet),
+        GridRange.from_a1_range(f'F57:{rowcol_to_a1(57, final_column)}', sheet),
+    ]
+
+    custom_rules = get_conditional_rules(ranges) + get_summary_conditional_rules(summary_ranges) + get_non_blank_rules(
+        non_blank_ranges)
+
+    [rules.append(rule) for rule in custom_rules]
+
     sheet.batch_update(updates, value_input_option='USER_ENTERED')
     rules.save()
 
@@ -185,6 +194,17 @@ def get_conditional_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
         ConditionalFormatRule(
             ranges=ranges,
             booleanRule=get_between_rule(['9', '10'], text_foreground_color=DARK_GREEN, background_color=LIGHT_GREEN)),
+    ]
+
+
+def get_non_blank_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
+    return [
+        ConditionalFormatRule(
+            ranges=ranges,
+            booleanRule=NOT_BLANK),
+        ConditionalFormatRule(
+            ranges=ranges,
+            booleanRule=IS_BLANK),
     ]
 
 

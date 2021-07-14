@@ -5,17 +5,25 @@ import ConfirmCancelDialogComponent from '../../../../components/dialogs/Confirm
 import { MESSAGES } from './messages';
 import { iasoGetRequest } from '../../../../utils/requests';
 import { getRootData, getChildrenData } from './requests';
-import { getOrgunitMessage } from '../../utils';
+import {
+    getOrgunitMessage,
+    getOrgUnitAncestorsIds,
+    getOrgUnitAncestorsNames,
+} from '../../utils';
 import OrgUnitTooltip from '../OrgUnitTooltip';
+import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
 
 const OrgUnitTreeviewModal = ({
     renderTrigger,
     titleMessage,
     toggleOnLabelClick,
-    onSelect,
+    // onSelect,
     onConfirm,
 }) => {
     const [allowConfirm, setAllowConfirm] = useState(false);
+    const [selectedOrgUnit, setSelectedOrgUnit] = useState(null);
+    const [selectedOrgUnitParents, setSelectedOrgUnitParents] = useState(null);
+    // const [closeDialogCallback, setCloseDialogCallback] = useState(null);
 
     /**
      * @param {string} searchValue
@@ -23,20 +31,43 @@ const OrgUnitTreeviewModal = ({
      */
     const request = async (searchValue, resultsCount) => {
         const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}"}]&order=name&page=1&limit=${resultsCount}&treeSearch=True`;
-        return iasoGetRequest(url, {
+        return iasoGetRequest({
+            requestParams: { url },
             disableSuccessSnackBar: true,
             errorKeyMessage: 'Searching Org Units',
             consoleError: url,
         });
     };
-    const onOrgUnitSelect = useCallback(
-        orgUnit => {
-            onSelect(orgUnit);
-            setAllowConfirm(true);
+    const onOrgUnitSelect = orgUnit => {
+        setSelectedOrgUnit(orgUnit);
+        setAllowConfirm(true);
+    };
+
+    const confirmOrgUnit = useCallback(async () => {
+        const fullOrgUnit = await iasoGetRequest({
+            requestParams: { url: `/api/orgunits/${selectedOrgUnit}` },
+            disableSuccessSnackBar: true,
+        });
+        // console.log('full org unit', fullOrgUnit);
+        const genealogy = getOrgUnitAncestorsNames(fullOrgUnit);
+        console.log('genealogy', genealogy);
+        setSelectedOrgUnitParents(genealogy);
+        onConfirm(selectedOrgUnit);
+    }, [selectedOrgUnit, onConfirm]);
+
+    const modalConfirm = useCallback(
+        // eslint-disable-next-line no-unused-vars
+        closeDialog => {
+            confirmOrgUnit();
+            closeDialog();
+            // setCloseDialogCallback(() => closeDialog);
         },
-        [onSelect],
+        [confirmOrgUnit],
     );
 
+    const reset = () => {
+        setSelectedOrgUnit(null);
+    };
     const tooltip = (orgUnit, icon) => (
         <OrgUnitTooltip orgUnit={orgUnit} enterDelay={0} enterNextDelay={0}>
             {icon}
@@ -45,9 +76,15 @@ const OrgUnitTreeviewModal = ({
 
     return (
         <ConfirmCancelDialogComponent
-            renderTrigger={renderTrigger}
+            renderTrigger={({ openDialog }) => (
+                <OrgUnitTreeviewPicker
+                    onClick={openDialog}
+                    selectedItems={selectedOrgUnitParents}
+                />
+            )}
+            // renderTrigger={renderTrigger}
             titleMessage={titleMessage}
-            onConfirm={onConfirm}
+            onConfirm={modalConfirm}
             // eslint-disable-next-line no-unused-vars
             onClosed={reset}
             confirmMessage={MESSAGES.confirm}
@@ -65,6 +102,9 @@ const OrgUnitTreeviewModal = ({
                 request={request}
                 makeDropDownText={getOrgunitMessage}
                 toolTip={tooltip}
+                parseNodeIds={getOrgUnitAncestorsIds}
+                // onIconClick={setSelectedOrgUnitParents}
+                // onLabelClick={setSelectedOrgUnitParents}
             />
         </ConfirmCancelDialogComponent>
     );
@@ -74,13 +114,13 @@ OrgUnitTreeviewModal.propTypes = {
     renderTrigger: func.isRequired,
     titleMessage: object.isRequired,
     toggleOnLabelClick: bool,
-    onSelect: func,
+    // onSelect: func,
     onConfirm: func,
 };
 
 OrgUnitTreeviewModal.defaultProps = {
     toggleOnLabelClick: true,
-    onSelect: () => {},
+    // onSelect: () => {},
     onConfirm: () => {},
 };
 

@@ -1,36 +1,10 @@
-import PropTypes, { string, bool, arrayOf, func, oneOf } from 'prop-types';
+import { string, bool, arrayOf, func } from 'prop-types';
 import React, { useCallback } from 'react';
 import { TreeView } from '@material-ui/lab';
 
 import { EnrichedTreeItem } from './EnrichedTreeItem';
 import { useAPI } from '../../../../utils/requests';
 
-// class Model {
-//     constructor() {
-//         this.id = string;
-//         this.name = string;
-//         this.hasChildren = bool;
-//         return this;
-//     }
-// }
-
-// function treeviewElement(props, propName, componentName) {
-//     if (
-//         typeof props[propName].id !== 'string' ||
-//         typeof props[propName].name !== 'string' ||
-//         typeof props[propName].hasChildren !== 'boolean'
-//     ) {
-//         return new Error(
-//             `Invalid prop \`${propName}\` supplied to` +
-//                 ` \`${componentName}\`. Validation failed.`,
-//         );
-//     }
-// }
-// const model = {
-//     id: 'string',
-//     name: 'string',
-//     hasChildren: 'boolean',
-// };
 const IasoTreeView = ({
     getChildrenData,
     getRootData,
@@ -43,6 +17,7 @@ const IasoTreeView = ({
     toggleOnLabelClick,
     onSelect,
     onIconClick,
+    onLabelClick,
     // Experiment to pass type as object
     // dataModel,
 }) => {
@@ -63,6 +38,7 @@ const IasoTreeView = ({
                 <EnrichedTreeItem
                     label={item[labelField]}
                     id={item[nodeField].toString()}
+                    data={item.data}
                     key={`RootTreeItem ${item[nodeField]}`}
                     fetchChildrenData={fetchChildrenData}
                     expanded={expanded}
@@ -71,6 +47,7 @@ const IasoTreeView = ({
                     hasChildren={item.hasChildren}
                     toggleOnLabelClick={toggleOnLabelClick}
                     onIconClick={onIconClick}
+                    onLabelClick={onLabelClick}
                     // dataModel={dataModel}
                 />
             ));
@@ -103,6 +80,7 @@ IasoTreeView.propTypes = {
     onToggle: func.isRequired,
     onSelect: func,
     onIconClick: func,
+    onLabelClick: func,
     // selected: oneOf([PropTypes.string, PropTypes.arrayOf(string)]),
     selected: string,
 };
@@ -116,6 +94,7 @@ IasoTreeView.defaultProps = {
     toggleOnLabelClick: true,
     onSelect: () => {},
     onIconClick: () => {},
+    onLabelClick: () => {},
     selected: undefined,
 };
 

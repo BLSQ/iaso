@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { string, func, arrayOf, bool, element } from 'prop-types';
+import React from 'react';
+import { string, func, arrayOf, bool, any } from 'prop-types';
 import { TreeItem } from '@material-ui/lab';
 import { useSafeIntl } from 'bluesquare-components';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -16,7 +16,9 @@ const EnrichedTreeItem = ({
     // notifyParent,
     toggleOnLabelClick,
     // icon,  //for checkboxes
-    // onIconClick, // for checkboxes
+    onIconClick, // for checkboxes
+    onLabelClick,
+    data, // additional data that can be passed up to the parent (eg org unit details)
     // selected,
 }) => {
     // TODO add a condition that triggers API call --> NodeToggle
@@ -29,34 +31,34 @@ const EnrichedTreeItem = ({
     });
 
     const { formatMessage } = useSafeIntl();
-    // This kinda stinks as it will make the parent TreeView re-render
-    // It should also be replaced by onNodeToggle so Icon can be freed for use as checkbox
-    // const onIconClick = useCallback(
-    //     e => {
-    //         e.preventDefault;
-    //         onIconClick()
-    //     },
-    //     [notifyParent, expanded],
-    // );
-    const onLabelClick = e => {
+
+    const handleLabelClick = e => {
         if (!toggleOnLabelClick) {
             e.preventDefault();
         }
+        onLabelClick(data);
     };
 
-    const makeSubTree = data => {
-        if (!data) return null;
-        return data.map(unit => (
+    // eslint-disable-next-line no-unused-vars
+    const handleIconClick = e => {
+        // e.preventDefault();
+        onIconClick(data);
+    };
+
+    const makeSubTree = subTreeData => {
+        if (!subTreeData) return null;
+        return subTreeData.map(unit => (
             <EnrichedTreeItem
                 key={`TreeItem ${unit.id}`}
                 label={unit.name}
                 id={unit.id.toString()}
                 fetchChildrenData={fetchChildrenData}
                 expanded={expanded}
-                // notifyParent={notifyParent}
                 hasChildren={unit.hasChildren}
                 toggleOnLabelClick={toggleOnLabelClick}
-                // onIconClick={onIconClick}
+                onIconClick={onIconClick}
+                onLabelClick={onLabelClick}
+                data={unit.data ?? null}
             />
         ));
     };
@@ -75,8 +77,8 @@ const EnrichedTreeItem = ({
                 nodeId={id}
                 collapseIcon={<ExpandMoreIcon />}
                 expandIcon={<ChevronRightIcon />}
-                onLabelClick={onLabelClick}
-                // onIconClick={onIconClick}
+                onIconClick={handleIconClick}
+                onLabelClick={handleLabelClick}
                 // icon={<ExpandMoreIcon />}
             >
                 {childrenData && isExpanded && makeSubTree(childrenData)}
@@ -91,7 +93,8 @@ const EnrichedTreeItem = ({
             collapseIcon={<ExpandMoreIcon />}
             expandIcon={<ChevronRightIcon />}
             // icon={<ChevronRightIcon />}
-            // onIconClick={onIconClick}
+            onIconClick={handleIconClick}
+            onLabelClick={handleLabelClick}
         />
     );
 };
@@ -105,13 +108,12 @@ EnrichedTreeItem.propTypes = {
     // should be wrapped in useCallback by parent
     fetchChildrenData: func,
     expanded: arrayOf(string),
-    // notifyParent: func.isRequired,
     hasChildren: bool,
     // icon: element,
-    // selected: bool,
-    // onIconClick:func,
+    onIconClick: func,
     toggleOnLabelClick: bool,
-    // onIconClick: func,
+    data: any,
+    onLabelClick: func,
 };
 
 EnrichedTreeItem.defaultProps = {
@@ -119,11 +121,10 @@ EnrichedTreeItem.defaultProps = {
     fetchChildrenData: noOp,
     expanded: [],
     hasChildren: false,
-    // icon: null,
-    // oniconClick:()=>{},
-    // selected: false,
     toggleOnLabelClick: true,
-    // onIconClick: () => {},
+    onIconClick: () => {},
+    onLabelClick: () => {},
+    data: null,
 };
 
 export { EnrichedTreeItem };

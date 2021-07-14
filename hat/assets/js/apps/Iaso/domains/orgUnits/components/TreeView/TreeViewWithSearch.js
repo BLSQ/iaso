@@ -19,12 +19,15 @@ const TreeViewWithSearch = ({
     makeDropDownText,
     toolTip,
     parseNodeIds,
+    onLabelClick,
+    onIconClick,
 }) => {
     const [selected, setSelected] = useState('');
     const [expanded, setExpanded] = useState([]);
 
     const onNodeSelect = useCallback(
         selection => {
+            console.log('onNodeSelect', selection);
             setSelected(selection);
             onSelect(selection);
         },
@@ -33,15 +36,22 @@ const TreeViewWithSearch = ({
 
     const onSearchSelect = useCallback(
         searchSelection => {
+            console.log('searchSelection', searchSelection);
             const idsToExpand = parseNodeIds(searchSelection).map(id =>
                 id.toString(),
             );
-            // setExpanded(idsToExpand);
+            console.log(
+                'onSearchSelect',
+                idsToExpand[idsToExpand.length - 1],
+                idsToExpand,
+            );
             // TODO fix data problem
-            setExpanded(['1092839', '1092035', '1091431']);
-            // setSelected(idsToExpand[0]);
+            setExpanded(idsToExpand);
+            // setExpanded(['1092839', '1092035', '1091431', '1092840']);
+            // setSelected('1092840');
+            onNodeSelect(idsToExpand[idsToExpand.length - 1]);
         },
-        [parseNodeIds],
+        [parseNodeIds, onNodeSelect],
     );
 
     return (
@@ -65,6 +75,8 @@ const TreeViewWithSearch = ({
                 onSelect={onNodeSelect}
                 expanded={expanded}
                 onToggle={setExpanded}
+                onIconClick={onIconClick}
+                onLabelClick={onLabelClick}
             />
         </>
     );
@@ -85,6 +97,8 @@ TreeViewWithSearch.propTypes = {
     makeDropDownText: func.isRequired,
     toolTip: func,
     parseNodeIds: func.isRequired,
+    onIconClick: func,
+    onLabelClick: func,
 };
 
 TreeViewWithSearch.defaultProps = {
@@ -96,6 +110,8 @@ TreeViewWithSearch.defaultProps = {
     inputLabelObject: MESSAGES.search,
     withSearchButton: false,
     toolTip: null,
+    onIconClick: () => {},
+    onLabelClick: () => {},
 };
 
 export { TreeViewWithSearch };

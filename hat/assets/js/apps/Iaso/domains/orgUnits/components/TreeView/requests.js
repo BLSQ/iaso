@@ -1,4 +1,5 @@
 import { iasoGetRequest } from '../../../../utils/requests';
+// import { getOrgUnitAncestorsNames } from '../../utils';
 
 // Basic type check. Will check missing keys and key types, but not nested objects
 // const modelCheck = (response, model) => {
@@ -57,6 +58,7 @@ const getChildrenData = async id => {
             id: orgUnit.id,
             name: orgUnit.name,
             hasChildren: orgUnit.has_children,
+            // genealogy: getOrgUnitAncestorsNames(orgUnit),
         };
     });
     return useableData;
@@ -76,6 +78,7 @@ const getRootData = async () => {
             name: orgUnit.name,
             // hasChildren: true,
             hasChildren: orgUnit.has_children,
+            // data: getOrgUnitAncestorsNames(orgUnit),
         };
     });
     // if (modelCheck(useableData[0], model)) return useableData;

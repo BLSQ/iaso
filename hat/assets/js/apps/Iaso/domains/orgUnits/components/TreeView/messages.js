@@ -25,6 +25,10 @@ const MESSAGES = defineMessages({
         id: 'blsq.treeview.search.results.label.resultsLower',
         defaultMessage: 'result(s)',
     },
+    noOptions: {
+        id: 'blsq.treeview.search.options.label.noOptions',
+        defaultMessage: 'No result found',
+    },
 });
 
 export { MESSAGES };

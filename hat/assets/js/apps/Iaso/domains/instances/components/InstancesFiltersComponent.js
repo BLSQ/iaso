@@ -9,7 +9,12 @@ import { withStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Search from '@material-ui/icons/Search';
-import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
+import {
+    createUrl,
+    injectIntl,
+    commonStyles,
+    IconButton as IconButtonComponent,
+} from 'bluesquare-components';
 import OrgUnitTooltip from '../../orgUnits/components/OrgUnitTooltip';
 import {
     getRootData,
@@ -31,13 +36,18 @@ import DatesRange from '../../../components/filters/DatesRange';
 
 // import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
 // import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
-import { getOrgUnitParentsIds, getOrgunitMessage } from '../../orgUnits/utils';
+import {
+    getOrgUnitParentsIds,
+    getOrgunitMessage,
+    getOrgUnitAncestorsIds,
+} from '../../orgUnits/utils';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated as setInstancesFilterAction } from '../actions';
 import MESSAGES from '../messages';
 import { TreeViewWithSearch } from '../../orgUnits/components/TreeView/TreeViewWithSearch';
 import { iasoGetRequest } from '../../../utils/requests';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -78,6 +88,7 @@ class InstancesFiltersComponent extends Component {
         onSearch();
     }
 
+    /** @deprecated */
     onSelectOrgUnit(orgUnit) {
         const { redirectTo, params, baseUrl, setInstancesFilterUpdated } =
             this.props;
@@ -88,6 +99,14 @@ class InstancesFiltersComponent extends Component {
             levels: parentIds.join(','),
         };
 
+        redirectTo(baseUrl, tempParams);
+        setInstancesFilterUpdated(true);
+    }
+
+    onSelectOrgUnitFromTree(orgUnitId) {
+        const { redirectTo, params, baseUrl, setInstancesFilterUpdated } =
+            this.props;
+        const tempParams = { ...params, levels: [orgUnitId] };
         redirectTo(baseUrl, tempParams);
         setInstancesFilterUpdated(true);
     }
@@ -220,8 +239,26 @@ class InstancesFiltersComponent extends Component {
                                     ]}
                                     onEnterPressed={() => this.onSearch()}
                                 />
-                                <TreeViewWithSearch
-                                    parseNodeIds={getOrgUnitParentsIds}
+                                <OrgUnitTreeviewModal
+                                    renderTrigger={({ openDialog }) => (
+                                        <IconButtonComponent
+                                            onClick={openDialog}
+                                            icon="globe"
+                                            tooltipMessage={MESSAGES.search}
+                                        />
+                                    )}
+                                    toggleOnLabelClick={false}
+                                    titleMessage={MESSAGES.search}
+                                    onConfirm={orgUnitId => {
+                                        console.log(
+                                            'passed to onConfirm',
+                                            orgUnitId,
+                                        );
+                                        this.onSelectOrgUnitFromTree(orgUnitId);
+                                    }}
+                                />
+                                {/* <TreeViewWithSearch
+                                    parseNodeIds={getOrgUnitAncestorsIds}
                                     labelField="name"
                                     nodeField="id"
                                     toolTip={this.tooltip}
@@ -229,7 +266,7 @@ class InstancesFiltersComponent extends Component {
                                     getRootData={getRootData}
                                     makeDropDownText={getOrgunitMessage}
                                     request={this.request}
-                                />
+                                /> */}
                                 {/* <OrgUnitSearch
                                     onSelectOrgUnit={ou =>
                                         this.onSelectOrgUnit(ou)

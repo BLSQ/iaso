@@ -161,6 +161,31 @@ export const getOrgUnitParentsIds = orgUnit =>
         .map(ou => ou.parent_id)
         .reverse();
 
+const getOrgUnitsParentsUntilRoot = (orgUnit, parents = []) => {
+    let parentsList = [...parents];
+    parentsList.push(orgUnit);
+    if (orgUnit.parent) {
+        parentsList = getOrgUnitsParentsUntilRoot(orgUnit.parent, parentsList);
+    }
+    return parentsList;
+};
+
+export const getOrgUnitAncestorsIds = orgUnit => {
+    const result = getOrgUnitParentsIds(orgUnit);
+    // Adding id of the org unit in case it's a root
+    // and to be able to select it with the treeview
+    result.push(orgUnit.id);
+    return result;
+};
+
+export const getOrgUnitAncestorsNames = orgUnit => {
+    const result = getOrgUnitsParentsUntilRoot(orgUnit)
+        .map(parent => parent.name)
+        .reverse();
+    // result.push(orgUnit.name);
+    return result;
+};
+
 export const getStatusMessage = (status, formatMessage) => {
     switch (status) {
         case 'NEW': {

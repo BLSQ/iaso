@@ -54,20 +54,27 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
         ]
 
     final_column = 6 + region_districts.count()
-    print({
-        'plan': f'F7:{rowcol_to_a1(10, final_column)}',
-        'training': f'F16:{rowcol_to_a1(23, final_column)}'
-    })
-    plan_coord_rules = get_conditional_rules(GridRange.from_a1_range(f'F7:{rowcol_to_a1(10, final_column)}', sheet))
-    training_rules = get_conditional_rules(GridRange.from_a1_range(f'F16:{rowcol_to_a1(16, final_column)}', sheet))
-    monitoring_rules = get_conditional_rules(GridRange.from_a1_range(f'F28:{rowcol_to_a1(29, final_column)}', sheet))
-    vaccine_logi_rules = get_conditional_rules(GridRange.from_a1_range(f'F35:{rowcol_to_a1(37, final_column)}', sheet))
-    advocacy_rules = get_conditional_rules(GridRange.from_a1_range(f'F44:{rowcol_to_a1(49, final_column)}', sheet))
-    adverse_rules = get_conditional_rules(GridRange.from_a1_range(f'F55:{rowcol_to_a1(56, final_column)}', sheet))
+    ranges = [
+        GridRange.from_a1_range(f'F7:{rowcol_to_a1(10, final_column)}', sheet),
+        GridRange.from_a1_range(f'F16:{rowcol_to_a1(16, final_column)}', sheet),
+        GridRange.from_a1_range(f'F28:{rowcol_to_a1(29, final_column)}', sheet),
+        GridRange.from_a1_range(f'F35:{rowcol_to_a1(37, final_column)}', sheet),
+        GridRange.from_a1_range(f'F39:{rowcol_to_a1(39, final_column)}', sheet),
+        GridRange.from_a1_range(f'F44:{rowcol_to_a1(49, final_column)}', sheet),
+        GridRange.from_a1_range(f'F55:{rowcol_to_a1(56, final_column)}', sheet)
+    ]
 
-    custom_rules = plan_coord_rules + training_rules + monitoring_rules + vaccine_logi_rules + advocacy_rules + adverse_rules
+    summary_ranges = [
+        GridRange.from_a1_range(f'F11:{rowcol_to_a1(11, final_column)}', sheet),
+        GridRange.from_a1_range(f'F24:{rowcol_to_a1(24, final_column)}', sheet),
+        GridRange.from_a1_range(f'F30:{rowcol_to_a1(30, final_column)}', sheet),
+        GridRange.from_a1_range(f'F40:{rowcol_to_a1(40, final_column)}', sheet),
+        GridRange.from_a1_range(f'F50:{rowcol_to_a1(50, final_column)}', sheet),
+        GridRange.from_a1_range(f'F58:{rowcol_to_a1(58, final_column)}', sheet)
+    ]
 
-    [rules.append(rule) for rule in custom_rules]
+    [rules.append(rule) for rule in get_conditional_rules(ranges)]
+    [rules.append(rule) for rule in get_summary_conditional_rules(summary_ranges)]
     sheet.batch_update(updates, value_input_option='USER_ENTERED')
     rules.save()
 
@@ -167,18 +174,33 @@ def get_average_of_range(col_index: int, initial_row: int, final_row: int):
     return get_average_from(get_range(col_index, initial_row, final_row))
 
 
-def get_conditional_rules(ranges: str) -> List[ConditionalFormatRule]:
-    print(ranges)
+def get_conditional_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
     return [
         ConditionalFormatRule(
-            ranges=[ranges],
+            ranges=ranges,
             booleanRule=get_between_rule(['0', '4'])),
         ConditionalFormatRule(
-            ranges=[ranges],
+            ranges=ranges,
             booleanRule=get_between_rule(['5', '8'], text_foreground_color=DARK_YELLOW, background_color=LIGHT_YELLOW)),
         ConditionalFormatRule(
-            ranges=[ranges],
+            ranges=ranges,
             booleanRule=get_between_rule(['9', '10'], text_foreground_color=DARK_GREEN, background_color=LIGHT_GREEN)),
+    ]
+
+
+def get_summary_conditional_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
+    return [
+        ConditionalFormatRule(
+            ranges=ranges,
+            booleanRule=get_between_rule(['0', '0.49'])),
+        ConditionalFormatRule(
+            ranges=ranges,
+            booleanRule=get_between_rule(['0.5', '0.79'], text_foreground_color=DARK_YELLOW,
+                                         background_color=LIGHT_YELLOW)),
+        ConditionalFormatRule(
+            ranges=ranges,
+            booleanRule=get_between_rule(['0.8', '1.0'], text_foreground_color=DARK_GREEN,
+                                         background_color=LIGHT_GREEN)),
     ]
 
 

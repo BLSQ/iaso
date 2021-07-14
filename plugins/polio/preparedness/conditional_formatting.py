@@ -41,17 +41,6 @@ def get_between_rule(values: List[str], text_foreground_color: Color = DARK_RED,
     )
 
 
-def get_greater_rule(value: str, text_foreground_color: Color = DARK_RED,
-                     background_color: Color = LIGHT_RED):
-    return BooleanRule(
-        condition=BooleanCondition('NUMBER_GREATER_THAN_EQ', [value]),
-        format=CellFormat(
-            textFormat=TextFormat(foregroundColor=text_foreground_color),
-            backgroundColorStyle=ColorStyle(rgbColor=background_color)
-        )
-    )
-
-
 EQ_TO_0 = BooleanRule(
     condition=BooleanCondition('NUMBER_EQ', ['0']),
     format=CellFormat(

@@ -12,9 +12,10 @@ import {
 } from '../../utils';
 import OrgUnitTooltip from '../OrgUnitTooltip';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
+import { useSafeIntl } from 'bluesquare-components';
 
 const OrgUnitTreeviewModal = ({
-    renderTrigger,
+    // renderTrigger,
     titleMessage,
     toggleOnLabelClick,
     // onSelect,
@@ -30,7 +31,7 @@ const OrgUnitTreeviewModal = ({
      * @param {number} resultsCount
      */
     const request = async (searchValue, resultsCount) => {
-        const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}"}]&order=name&page=1&limit=${resultsCount}&treeSearch=True`;
+        const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}","defaultVersion":"true"}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
         return iasoGetRequest({
             requestParams: { url },
             disableSuccessSnackBar: true,
@@ -68,6 +69,12 @@ const OrgUnitTreeviewModal = ({
     const reset = () => {
         setSelectedOrgUnit(null);
     };
+
+    const resetSelection = () => {
+        setSelectedOrgUnit(null);
+        setSelectedOrgUnitParents(null);
+        onConfirm(null);
+    }
     const tooltip = (orgUnit, icon) => (
         <OrgUnitTooltip orgUnit={orgUnit} enterDelay={0} enterNextDelay={0}>
             {icon}
@@ -80,6 +87,7 @@ const OrgUnitTreeviewModal = ({
                 <OrgUnitTreeviewPicker
                     onClick={openDialog}
                     selectedItems={selectedOrgUnitParents}
+                    resetSelection={resetSelection}
                 />
             )}
             // renderTrigger={renderTrigger}
@@ -100,7 +108,7 @@ const OrgUnitTreeviewModal = ({
                 toggleOnLabelClick={toggleOnLabelClick}
                 onSelect={onOrgUnitSelect}
                 request={request}
-                makeDropDownText={OrgUnitLabel}
+                makeDropDownText={orgUnit=><OrgUnitLabel orgUnit={orgUnit} withType/>}
                 toolTip={tooltip}
                 parseNodeIds={getOrgUnitAncestorsIds}
                 // onIconClick={setSelectedOrgUnitParents}

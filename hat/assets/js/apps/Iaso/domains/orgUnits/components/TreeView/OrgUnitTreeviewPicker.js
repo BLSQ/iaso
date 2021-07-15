@@ -5,7 +5,8 @@ import { TreeView, TreeItem } from '@material-ui/lab';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import { makeStyles } from '@material-ui/core/styles';
-import { result } from 'lodash-es';
+import { IconButton } from 'bluesquare-components';
+import { MESSAGES } from './messages';
 
 const styles = {
     truncatedTreeview: {
@@ -21,17 +22,15 @@ const styles = {
 
 const useStyles = makeStyles(styles);
 
-const OrgUnitTreeviewPicker = ({ onClick, selectedItems }) => {
+const OrgUnitTreeviewPicker = ({ onClick, selectedItems, resetSelection }) => {
     const uniqueItems = selectedItems?.map((item, index) => `${item}-${index}`);
-    // console.log('Picker', selectedItems);
     const style = useStyles();
     const makeTreeItems = items => {
         if (!items) return <p>Select org unit</p>;
         if (items.length === 0) return null;
         const nextItems = [...items];
         const item = nextItems.shift();
-        console.log('making item', item, nextItems);
-        const prout = (
+        const truncatedTree = (
             <TreeItem
                 key={item + nextItems.length.toString()}
                 className={style.truncatedTreeview}
@@ -39,24 +38,31 @@ const OrgUnitTreeviewPicker = ({ onClick, selectedItems }) => {
                 onLabelClick={e => e.preventDefault()}
                 collapseIcon={<ExpandMoreIcon />}
                 expandIcon={<ChevronRightIcon />}
-                label={item}
+                label={item.split('-')[0]}
                 nodeId={item}
             >
                 {items.length >= 1 ? makeTreeItems(nextItems) : null}
             </TreeItem>
         );
-        console.log('prout', prout);
-        return prout;
+        return truncatedTree;
     };
     return (
-        <Paper variant="outlined" elevation={0} onClick={onClick}>
+        <Paper variant="outlined" elevation={0}>
             <TreeView
+                onClick={onClick}
                 disableSelection
                 expanded={uniqueItems ?? []}
                 className={style.truncatedTreeview}
             >
                 {makeTreeItems(uniqueItems)}
             </TreeView>
+            {resetSelection && (
+                <IconButton
+                    icon="delete"
+                    tooltipMessage={MESSAGES.confirm}
+                    onClick={resetSelection}
+                />
+            )}
         </Paper>
     );
 };
@@ -64,9 +70,11 @@ const OrgUnitTreeviewPicker = ({ onClick, selectedItems }) => {
 OrgUnitTreeviewPicker.propTypes = {
     onClick: func.isRequired,
     selectedItems: arrayOf(string),
+    resetSelection: func,
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: null,
+    resetSelection: null,
 };
 
 export { OrgUnitTreeviewPicker };

@@ -66,6 +66,7 @@ const extendFilter = (searchParams, filter, onChange) => ({
     callback: (value, urlKey) => onChange(value, urlKey),
 });
 
+// TODO make better track of changes (search button activates too easily)
 class InstancesFiltersComponent extends Component {
     onSearch() {
         const {
@@ -106,9 +107,18 @@ class InstancesFiltersComponent extends Component {
     onSelectOrgUnitFromTree(orgUnitId) {
         const { redirectTo, params, baseUrl, setInstancesFilterUpdated } =
             this.props;
-        const tempParams = { ...params, levels: [orgUnitId] };
-        redirectTo(baseUrl, tempParams);
-        setInstancesFilterUpdated(true);
+        if (orgUnitId) {
+            const tempParams = { ...params, levels: [orgUnitId] };
+            redirectTo(baseUrl, tempParams);
+            setInstancesFilterUpdated(true);
+        } else {
+            const noLevels = { ...params };
+            delete noLevels.levels;
+            redirectTo(baseUrl, noLevels);
+            if (params.levels) {
+                setInstancesFilterUpdated(true);
+            }
+        }
     }
 
     onChange(value, urlKey) {
@@ -139,7 +149,7 @@ class InstancesFiltersComponent extends Component {
 
     // eslint-disable-next-line class-methods-use-this
     async request(searchValue, resultsCount) {
-        const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}"}]&order=name&page=1&limit=${resultsCount}&treeSearch=True`;
+        const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}","defaultVersion":"true"}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
         return iasoGetRequest({
             requestParams: { url },
             disableSuccessSnackBar: true,
@@ -250,10 +260,6 @@ class InstancesFiltersComponent extends Component {
                                     toggleOnLabelClick={false}
                                     titleMessage={MESSAGES.search}
                                     onConfirm={orgUnitId => {
-                                        console.log(
-                                            'passed to onConfirm',
-                                            orgUnitId,
-                                        );
                                         this.onSelectOrgUnitFromTree(orgUnitId);
                                     }}
                                 />

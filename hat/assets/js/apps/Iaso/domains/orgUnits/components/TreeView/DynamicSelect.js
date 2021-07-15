@@ -26,7 +26,7 @@ import {
 // import InputComponent from '../../../components/forms/InputComponent'; // extract - > use Select from lib
 // import OrgUnitTooltip from './OrgUnitTooltip'; // extract
 // import { getRequest } from '../../../libs/Api'; // extract - > pass as props
-// import { getOrgunitMessage } from '../utils'; // extract
+// import { OrgUnitLabel } from '../utils'; // extract
 import { MESSAGES } from './messages'; // extract
 
 const styles = theme => ({
@@ -238,7 +238,7 @@ const DynamicSelect = ({
                                                     {makeDropDownText(element)}
                                                 </Typography>
                                                 // <Typography type="body2">
-                                                //     {getOrgunitMessage(
+                                                //     {OrgUnitLabel(
                                                 //         ou,
                                                 //         true,
                                                 //     )}

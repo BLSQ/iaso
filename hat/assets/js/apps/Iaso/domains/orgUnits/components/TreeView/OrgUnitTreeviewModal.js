@@ -6,7 +6,7 @@ import { MESSAGES } from './messages';
 import { iasoGetRequest } from '../../../../utils/requests';
 import { getRootData, getChildrenData } from './requests';
 import {
-    getOrgunitMessage,
+    OrgUnitLabel,
     getOrgUnitAncestorsIds,
     getOrgUnitAncestorsNames,
 } from '../../utils';
@@ -100,7 +100,7 @@ const OrgUnitTreeviewModal = ({
                 toggleOnLabelClick={toggleOnLabelClick}
                 onSelect={onOrgUnitSelect}
                 request={request}
-                makeDropDownText={getOrgunitMessage}
+                makeDropDownText={OrgUnitLabel}
                 toolTip={tooltip}
                 parseNodeIds={getOrgUnitAncestorsIds}
                 // onIconClick={setSelectedOrgUnitParents}

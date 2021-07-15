@@ -38,7 +38,7 @@ import DatesRange from '../../../components/filters/DatesRange';
 // import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
 import {
     getOrgUnitParentsIds,
-    getOrgunitMessage,
+    OrgUnitLabel,
     getOrgUnitAncestorsIds,
 } from '../../orgUnits/utils';
 
@@ -264,7 +264,7 @@ class InstancesFiltersComponent extends Component {
                                     toolTip={this.tooltip}
                                     getChildrenData={getChildrenData}
                                     getRootData={getRootData}
-                                    makeDropDownText={getOrgunitMessage}
+                                    makeDropDownText={OrgUnitLabel}
                                     request={this.request}
                                 /> */}
                                 {/* <OrgUnitSearch

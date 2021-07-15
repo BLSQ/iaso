@@ -666,7 +666,7 @@ const Round1Form = () => {
                     className={classes.input}
                 />
                 <Field
-                    label="Main reason for unvaccinated children"
+                    label="Main reason for non-vaccination"
                     name={'round_one.main_awareness_problem'}
                     component={TextInput}
                     className={classes.input}
@@ -777,7 +777,7 @@ const Round2Form = () => {
                     className={classes.input}
                 />
                 <Field
-                    label="Main awareness problem"
+                    label="Main reason for non-vaccination"
                     name={'round_two.main_awareness_problem'}
                     component={TextInput}
                     className={classes.input}
@@ -794,6 +794,14 @@ const Round2Form = () => {
                     label="% children missed OUT OF household"
                     name={
                         'round_two.im_percentage_children_missed_out_household'
+                    }
+                    component={TextInput}
+                    className={classes.input}
+                />
+                <Field
+                    label="% children missed IN+OUT OF household"
+                    name={
+                        'round_two.im_percentage_children_missed_in_plus_out_household'
                     }
                     component={TextInput}
                     className={classes.input}

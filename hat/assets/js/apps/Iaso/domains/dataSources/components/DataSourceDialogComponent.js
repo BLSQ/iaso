@@ -274,7 +274,7 @@ export class DataSourceDialogComponent extends Component {
                 maxWidth="md"
                 allowConfirm={allowConfirm}
             >
-                <Grid container spacing={4} justify="flex-start">
+                <Grid container spacing={4} justifyContent="flex-start">
                     <Grid xs={6} item>
                         <InputComponent
                             keyValue="name"

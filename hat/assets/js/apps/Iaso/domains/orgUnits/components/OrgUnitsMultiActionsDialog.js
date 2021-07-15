@@ -141,7 +141,7 @@ const OrgUnitsMultiActionsDialog = ({
                 classes={{
                     paper: classes.paper,
                 }}
-                onBackdropClick={closeAndReset}
+                onClose={closeAndReset}
                 scroll="body"
             >
                 <DialogTitle className={classes.title}>

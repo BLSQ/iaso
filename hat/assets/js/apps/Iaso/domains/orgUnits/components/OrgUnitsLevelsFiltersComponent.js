@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 
 import PropTypes from 'prop-types';
 
+import { createUrl } from 'bluesquare-components';
 import OrgUnitLevelFilterComponent from './OrgUnitLevelFilterComponent';
 
 import { fetchOrgUnits } from '../../../utils/requests';
-import { createUrl } from 'bluesquare-components';
 import { fetchLatestOrgUnitLevelId, decodeSearch } from '../utils';
 
 import { setOrgUnitsLevel } from '../../../redux/orgUnitsLevelsReducer';
@@ -158,20 +158,21 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             levels,
         });
 
-        return fetchOrgUnits(dispatch, this.buildUrl('&rootsForUser=true')).then(
-            orgUnits => {
-                this.props.setOrgUnitsLevel(orgUnits, 0, searchIndex);
-                if (levels[0]) {
-                    if (
-                        showCurrentOrgUnit !== false ||
-                        (showCurrentOrgUnit === false &&
-                            parseInt(levels[0], 10) !== currentOrgUnitId)
-                    ) {
-                        this.fetchTree(1);
-                    }
+        return fetchOrgUnits(
+            dispatch,
+            this.buildUrl('&rootsForUser=true&ignoreEmptyNames=true'),
+        ).then(orgUnits => {
+            this.props.setOrgUnitsLevel(orgUnits, 0, searchIndex);
+            if (levels[0]) {
+                if (
+                    showCurrentOrgUnit !== false ||
+                    (showCurrentOrgUnit === false &&
+                        parseInt(levels[0], 10) !== currentOrgUnitId)
+                ) {
+                    this.fetchTree(1);
                 }
-            },
-        );
+            }
+        });
     }
 
     fetchTree(level) {

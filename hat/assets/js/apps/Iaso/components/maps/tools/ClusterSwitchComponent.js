@@ -34,7 +34,7 @@ const ClusterSwitchComponent = props => {
                 component="label"
                 container
                 alignItems="center"
-                justify="flex-start"
+                justifyContent="flex-start"
                 spacing={1}
             >
                 <Grid item>

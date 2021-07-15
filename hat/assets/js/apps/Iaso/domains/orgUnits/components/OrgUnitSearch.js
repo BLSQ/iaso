@@ -22,7 +22,7 @@ import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import OrgUnitTooltip from './OrgUnitTooltip';
 import { getRequest } from '../../../libs/Api';
-import { getOrgunitMessage } from '../utils';
+import { OrgUnitLabel } from '../utils';
 import MESSAGES from '../messages';
 
 const styles = theme => ({
@@ -126,7 +126,7 @@ const OrgUnitSearch = ({
     };
     const handleSearch = () => {
         if (searchValue !== '') {
-            const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}"}]&order=name&page=1&limit=${resultsCount}&smallSearch=True`;
+            const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}","defaultVersion":"true"}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
             seIsLoading(true);
             getRequest(url).then(res => {
                 seIsLoading(false);
@@ -211,10 +211,10 @@ const OrgUnitSearch = ({
                                         <ListItemText
                                             primary={
                                                 <Typography type="body2">
-                                                    {getOrgunitMessage(
-                                                        ou,
-                                                        true,
-                                                    )}
+                                                    <OrgUnitLabel
+                                                        orgUnit={ou}
+                                                        withType
+                                                    />
                                                 </Typography>
                                             }
                                         />

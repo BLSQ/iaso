@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Popover from '@material-ui/core/Popover';
 import Box from '@material-ui/core/Box';
-import Button from '@material-ui/core/Button';
+import { Button } from '@material-ui/core';
 import Info from '@material-ui/icons/InfoOutlined';
 
 import { injectIntl } from 'bluesquare-components';
@@ -13,6 +13,7 @@ import MESSAGES from '../messages';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 
 import { getOrgUnitsTree } from '../../orgUnits/utils';
+import { getDisplayedDateHourFormat } from '../../../utils/dates';
 
 const useStyles = makeStyles(theme => ({
     popoverPaper: {
@@ -64,9 +65,7 @@ function InstancePopover(props) {
                     instanceDetail.org_unit
                         ? `${instanceDetail.org_unit.name} - `
                         : ''
-                }${moment
-                    .unix(instanceDetail.created_at)
-                    .format('DD/MM/YYYY HH:mm')}`}
+                }${moment.unix(instanceDetail.created_at).format('LTS')}`}
                 <Info className={classes.buttonIcon} />
             </Button>
             <Popover

@@ -73,6 +73,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Polio',
         id: 'iaso.label.polio',
     },
+    pages: {
+        defaultMessage: 'Pages',
+        id: 'iaso.label.pages',
+    },
 });
 
 export default MESSAGES;

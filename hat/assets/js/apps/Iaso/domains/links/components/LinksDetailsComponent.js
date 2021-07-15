@@ -108,7 +108,7 @@ class LinksDetails extends Component {
                                     />
                                 </Grid>
                             </Grid>
-                            <Grid container spacing={2} justify="center">
+                            <Grid container spacing={2} justifyContent="center">
                                 <Button
                                     className={classes.marginTop}
                                     variant="contained"

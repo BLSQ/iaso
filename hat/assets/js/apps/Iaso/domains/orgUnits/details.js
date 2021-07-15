@@ -15,7 +15,7 @@ import {
     // TopBar,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { alpha } from '@material-ui/core/styles/colorManipulator';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
     setCurrentOrgUnit,
@@ -81,13 +81,13 @@ const styles = theme => ({
     ...commonStyles(theme),
     root: {
         '& path.primary': {
-            fill: fade(theme.palette.primary.main, 0.6),
+            fill: alpha(theme.palette.primary.main, 0.6),
             stroke: theme.palette.primary.main,
             strokeOpacity: 1,
             strokeWidth: 3,
         },
         '& path.secondary': {
-            fill: fade(theme.palette.secondary.main, 0.6),
+            fill: alpha(theme.palette.secondary.main, 0.6),
             stroke: theme.palette.secondary.main,
             strokeOpacity: 1,
             strokeWidth: 3,
@@ -255,9 +255,15 @@ class OrgUnitDetail extends Component {
             prevProps.params.orgUnitId !== '0'
         ) {
             this.resetCurrentOrgUnit();
-            this.fetchDetail();
-        }
-        if (params.tab !== prevProps.params.tab) {
+            this.fetchDetail().then(() => {
+                // we need the condition here otherwise the setState from handleChangeTab will trigger before fetching is done
+                // Which will cause display errors
+                if (params.tab !== prevProps.params.tab) {
+                    this.handleChangeTab(params.tab, false);
+                }
+            });
+            // repeating the condition here with else if to handle tab navigation without redirection
+        } else if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
         }
     }
@@ -710,7 +716,7 @@ class OrgUnitDetail extends Component {
                         {tab === 'comments' && (
                             <Grid
                                 container
-                                justify="center"
+                                justifyContent="center"
                                 className={classes.commentsWrapper}
                             >
                                 <Grid item xs={6}>

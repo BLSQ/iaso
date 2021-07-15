@@ -86,14 +86,6 @@ jobs:
           GIT_COMMITTER_NAME: Github Bot
           EMAIL: edarchis@bluesquarehub.com
 
-#      - name: slack notification
-#        uses: rtCamp/action-slack-notify@v2.0.2
-#        env:
-#          SLACK_USERNAME: github-actions-DEPLOY
-#          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-#          SLACK_CHANNEL: ${{ github.event.inputs.slack_channel }}
-#          SLACK_TITLE: Iaso deploying on ${{ github.event.inputs.environment }}...
-#
       - name: deploy to beanstalk
         run: python scripts/eb_deploy.py ${{ github.event.inputs.environment }}
         env:

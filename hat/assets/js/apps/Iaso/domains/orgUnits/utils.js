@@ -1,6 +1,6 @@
 import React from 'react';
 import orderBy from 'lodash/orderBy';
-import { textPlaceholder } from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
 import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
 import { circleColorMarkerOptions } from '../../utils/mapUtils';
@@ -63,10 +63,16 @@ export const getSourcesWithoutCurrentSource = (
     return sources;
 };
 
-export const getOrgunitMessage = (orgUnit, withType) => {
+export const OrgUnitLabel = ({ orgUnit, withType }) => {
     let message = textPlaceholder;
-    if (orgUnit) {
-        message = `${orgUnit.name} - source: ${orgUnit.source}`;
+    const intl = useSafeIntl();
+    if (orgUnit && orgUnit.name) {
+        message = orgUnit.name;
+        if (orgUnit.source) {
+            message += ` - ${intl.formatMessage(MESSAGES.sourceLower)}: ${
+                orgUnit.source
+            }`;
+        }
         if (orgUnit.org_unit_type_name && withType) {
             message += ` (${orgUnit.org_unit_type_name})`;
         }

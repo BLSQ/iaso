@@ -1,0 +1,7 @@
+- model: test.blogpost
+  fields:
+    created_at: 2021-07-07 13:47:11.887580+00:00
+    updated_at: 2021-07-07 13:47:11.887609+00:00
+    title: Welcome to the Iaso Blog !
+    content: Viva the new plugin system
+    author: 1

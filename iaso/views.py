@@ -6,12 +6,11 @@ from django.conf import settings
 from iaso.models import Page
 
 
-@login_required
 def page(request, page_slug):
     page = get_object_or_404(Page, slug=page_slug)
-    if request.user not in page.users.all():
-        path = request.get_full_path()
-        resolved_login_url = resolve_url(settings.LOGIN_URL)
+    path = request.get_full_path()
+    resolved_login_url = resolve_url(settings.LOGIN_URL)
+    print()
+    if page.needs_authentication and ((not request.user.is_authenticated) or (request.user not in page.users.all())):
         return redirect_to_login(path, resolved_login_url, "next")
-
     return HttpResponse(page.content)

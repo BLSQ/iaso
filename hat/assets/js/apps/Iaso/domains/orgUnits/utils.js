@@ -63,13 +63,12 @@ export const getSourcesWithoutCurrentSource = (
     return sources;
 };
 
-export const OrgUnitLabel = ({ orgUnit, withType }) => {
+export const OrgUnitLabelString = (orgUnit, withType, formatMessage) => {
     let message = textPlaceholder;
-    const intl = useSafeIntl();
     if (orgUnit && orgUnit.name) {
         message = orgUnit.name;
         if (orgUnit.source) {
-            message += ` - ${intl.formatMessage(MESSAGES.sourceLower)}: ${
+            message += ` - ${formatMessage(MESSAGES.sourceLower)}: ${
                 orgUnit.source
             }`;
         }
@@ -78,6 +77,11 @@ export const OrgUnitLabel = ({ orgUnit, withType }) => {
         }
     }
     return message;
+};
+
+export const OrgUnitLabel = ({ orgUnit, withType }) => {
+    const intl = useSafeIntl();
+    return OrgUnitLabelString(orgUnit, withType, intl.formatMessage);
 };
 
 const mapOrgUnitBySearch = (orgUnits, searches) => {

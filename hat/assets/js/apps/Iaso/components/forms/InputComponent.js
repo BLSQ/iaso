@@ -10,9 +10,10 @@ import {
     SearchInput,
     translateOptions,
     injectIntl,
+    // Select,
 } from 'bluesquare-components';
-import MESSAGES from '../../domains/forms/messages';
 import { Select } from './Select';
+import MESSAGES from '../../domains/forms/messages';
 
 /**
  * @deprecated
@@ -43,9 +44,12 @@ class InputComponent extends Component {
             required,
             onEnterPressed,
             withMarginTop,
-            isSearchable,
             multi,
             uid,
+            loading,
+            getOptionSelected,
+            getOptionLabel,
+            renderOption,
         } = this.props;
         const { isFocused, displayPassword } = this.state;
         let labelText;
@@ -115,18 +119,18 @@ class InputComponent extends Component {
             case 'select':
                 return (
                     <Select
-                        withMarginTop={withMarginTop}
                         errors={errors}
                         keyValue={keyValue}
                         label={labelText}
                         required={required}
                         disabled={disabled}
-                        searchable={isSearchable}
+                        loading={loading}
                         clearable={clearable}
-                        isFocused={isFocused}
                         multi={multi}
                         value={value}
-                        noResultsText={formatMessage(MESSAGES.noOptions)}
+                        renderOption={renderOption}
+                        getOptionLabel={getOptionLabel}
+                        getOptionSelected={getOptionSelected}
                         options={translateOptions(options, formatMessage)}
                         onChange={newValue => {
                             onChange(keyValue, newValue);
@@ -197,9 +201,12 @@ InputComponent.defaultProps = {
     onEnterPressed: () => null,
     onChange: () => null,
     withMarginTop: true,
-    isSearchable: true,
     multi: false,
     uid: null,
+    loading: false,
+    getOptionLabel: null,
+    getOptionSelected: null,
+    renderOption: null,
 };
 InputComponent.propTypes = {
     type: PropTypes.string,
@@ -217,9 +224,12 @@ InputComponent.propTypes = {
     required: PropTypes.bool,
     onEnterPressed: PropTypes.func,
     withMarginTop: PropTypes.bool,
-    isSearchable: PropTypes.bool,
     multi: PropTypes.bool,
+    loading: PropTypes.bool,
     uid: PropTypes.any,
+    getOptionLabel: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+    getOptionSelected: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+    renderOption: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
 };
 
 const translated = injectIntl(InputComponent);

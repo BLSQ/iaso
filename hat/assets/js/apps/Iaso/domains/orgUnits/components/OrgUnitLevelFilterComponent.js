@@ -1,5 +1,6 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
 
 import PropTypes from 'prop-types';
 
@@ -49,7 +50,7 @@ class OrgUnitLevelFilterComponent extends Component {
             )?.icon;
 
         return (
-            <>
+            <Box mb={-2}>
                 <Grid
                     container
                     direction="row"
@@ -82,7 +83,7 @@ class OrgUnitLevelFilterComponent extends Component {
                         </Grid>
                     )}
                 </Grid>
-            </>
+            </Box>
         );
     }
 }

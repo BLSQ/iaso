@@ -1,6 +1,5 @@
 $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
 
-.trypelim,
 .auth__container {
 
     input[type="text"],
@@ -100,27 +99,6 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
         height: 15px;
         width: 50px;
         margin: 0 $padding-unit/5;
-    }
-
-    .Select {
-        &.is-open {
-            z-index: 1001;
-        }
-
-        &.only-one {
-            .Select-value-icon {
-                display: none;
-            }
-
-            .Select-value {
-                padding-left: 5px;
-                padding-right: 5px;
-            }
-        }
-
-        &.form-error .Select-control {
-            border-color: $red !important;
-        }
     }
 
     .button--export {

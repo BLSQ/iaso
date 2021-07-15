@@ -78,9 +78,7 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
         accessor: 'updated_at',
         Cell: settings => (
             <span>
-                {moment
-                    .unix(settings.original.updated_at)
-                    .format('LTS')}
+                {moment.unix(settings.original.updated_at).format('LTS')}
             </span>
         ),
     },
@@ -139,9 +137,7 @@ export const runsTableColumns = (formatMessage, component) => [
         Cell: settings => (
             <span>
                 {settings.original.ended_at ? (
-                    moment
-                        .unix(settings.original.ended_at)
-                        .format('LTS')
+                    moment.unix(settings.original.ended_at).format('LTS')
                 ) : (
                     <LoadingSpinner
                         fixed={false}
@@ -158,9 +154,7 @@ export const runsTableColumns = (formatMessage, component) => [
         accessor: 'created_at',
         Cell: settings => (
             <span>
-                {moment
-                    .unix(settings.original.created_at)
-                    .format('LTS')}
+                {moment.unix(settings.original.created_at).format('LTS')}
             </span>
         ),
     },

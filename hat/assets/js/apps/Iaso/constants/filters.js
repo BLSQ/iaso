@@ -6,7 +6,7 @@ import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
 import { Period } from '../domains/periods/models';
-import { OrgUnitLabel } from '../domains/orgUnits/utils';
+import { OrgUnitLabelString } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';
 
 export const search = (urlKey = 'search') => ({
@@ -107,7 +107,7 @@ export const orgUnitLevel = (
     useKeyParam: false,
     isClearable: true,
     options: orgunitList.map(o => ({
-        label: <OrgUnitLabel orgUnit={o} withType />,
+        label: OrgUnitLabelString(o, true, formatMessage),
         value: o.id,
     })),
     labelString: `${formatMessage(MESSAGES.level)} ${level + 1}`,
@@ -292,10 +292,11 @@ export const score = () => ({
     isMultiSelect: false,
     isClearable: true,
     options: [1, 2, 3, 4, 5].map(s => ({
-        label: <FullStarsSvg score={s} />,
+        label: `${s}`,
         value: `${(s - 1) * 20},${s * 20}`,
     })),
     label: MESSAGES.score,
+    renderOption: option => <FullStarsSvg score={parseInt(option.label, 10)} />,
     type: 'select',
     isSearchable: false,
 });

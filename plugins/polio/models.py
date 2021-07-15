@@ -174,6 +174,7 @@ class Campaign(models.Model):
         verbose_name=_("DG Authorization"),
     )
     verification_score = models.IntegerField(null=True, blank=True)
+    vials_requested = models.IntegerField(null=True, blank=True)
     # Preparedness
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
     preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)

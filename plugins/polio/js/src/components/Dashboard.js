@@ -289,19 +289,6 @@ const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { values } = useFormikContext();
 
-    const wastageRate = 0.26;
-
-    const round1Doses = parseInt(
-        defaultToZero(values?.round_one?.target_population ?? 0),
-    );
-    const round2Doses = parseInt(
-        defaultToZero(values?.round_two?.target_population ?? 0),
-    );
-
-    const vialsRequested = Math.ceil(
-        ((round1Doses + round2Doses) / 20) * (1 / (1 - wastageRate)),
-    );
-
     return (
         <>
             <Grid container spacing={2}>
@@ -376,10 +363,12 @@ const RiskAssessmentForm = () => {
                         component={TextInput}
                         className={classes.input}
                     />
-                    <Typography>
-                        Vials Requested{' '}
-                        {Number.isNaN(vialsRequested) ? 0 : vialsRequested}
-                    </Typography>
+                    <Field
+                        label="Vials Requested (both rounds)"
+                        name={'vials_requested'}
+                        component={TextInput}
+                        className={classes.input}
+                    />
                 </Grid>
             </Grid>
         </>
@@ -676,7 +665,7 @@ const Round1Form = () => {
                     className={classes.input}
                 />
                 <Field
-                    label="Main awareness problem"
+                    label="Main reason for unvaccinated children"
                     name={'round_one.main_awareness_problem'}
                     component={TextInput}
                     className={classes.input}

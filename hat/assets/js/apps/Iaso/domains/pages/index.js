@@ -272,7 +272,7 @@ const Pages = () => {
                 },
             },
             {
-                Header: 'Slug',
+                Header: 'Address',
                 accessor: 'slug',
                 Cell: settings => {
                     return <span>{settings.original.slug}</span>;
@@ -296,13 +296,13 @@ const Pages = () => {
                 Cell: settings => {
                     return (
                         <>
-                            <Link to={`/pages/${settings.original.slug}`}>
+                            <a href={`/pages/${settings.original.slug}`}>
                                 <IconButtonComponent
                                     icon="remove-red-eye"
                                     tooltipMessage={MESSAGES.viewPage}
                                     onClick={() => {}}
                                 />
-                            </Link>
+                            </a>
                         </>
                     );
                 },
@@ -343,7 +343,7 @@ const Pages = () => {
                 onClose={closeDeleteConfirmDialog}
                 onConfirm={handleDeleteConfirmDialogConfirm}
             />
-            <TopBar title={intl.formatMessage(MESSAGES.title)} />
+            <TopBar title={intl.formatMessage(MESSAGES.pages)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {status === 'loading' && <LoadingSpinner />}
                 {status === 'success' && (

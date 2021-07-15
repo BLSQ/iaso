@@ -288,7 +288,7 @@ const unselectedPathOptions = { color: 'gray' };
 
 const RiskAssessmentForm = () => {
     const classes = useStyles();
-    const { values } = useFormikContext();
+    useFormikContext();
 
     return (
         <>

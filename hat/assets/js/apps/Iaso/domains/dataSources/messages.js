@@ -138,6 +138,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.geoPkg',
         defaultMessage: 'Import GeoPackage',
     },
+    dhisSyncLabel: {
+       id: 'iaso.datasources.dhisSyncLabel',
+        defaultMessage: 'Automatic import OrgUnit from DHIS',
+    }
+
 });
 
 export default MESSAGES;

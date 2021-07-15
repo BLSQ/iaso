@@ -5,7 +5,7 @@ import { Grid, Box } from '@material-ui/core';
 import { connect } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 
-import { useSafeIntl } from 'bluesquare-components';
+import { injectIntl, Select, translateOptions, useSafeIntl } from "bluesquare-components";
 import {
     createDataSource,
     updateDataSource,
@@ -59,7 +59,7 @@ export class DataSourceDialogComponent extends Component {
         };
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState, snapshot) {
         if (
             !isEqual(prevProps.initialData, this.props.initialData) ||
             !isEqual(
@@ -234,9 +234,12 @@ export class DataSourceDialogComponent extends Component {
                         ? this.props.sourceCredentials.login
                         : '',
                     dhis_password: '',
+                    dhis_sync: this.props.sourceCredentials.sync ? this.props.sourceCredentials.sync: 'no',
+
                 },
                 errors: [],
             },
+
         };
     }
 
@@ -418,8 +421,22 @@ export class DataSourceDialogComponent extends Component {
                                         this.setCredentials(key, value),
                                     password: true,
                                 },
+
                             ]}
                         />
+                        <InputComponent
+                        // errors={form.dhis_sync.errors}
+                        keyValue={"dhis_sync"}
+                        label={MESSAGES.dhisSyncLabel}
+                        clearable={false}
+                        type="select"
+                        value={form.credentials.value.dhis_sync}
+                        // Todo translation
+                        options={[{value:'no', label:'Do not sync automatically'}, {value:'weekly', label:'weekly'}, {value:'daily', label:'daily'}]}
+                        onChange={(key, value) =>
+                                    this.setCredentials(key, value)
+                        }
+                    />
                     </Grid>
                 </Grid>
             </ConfirmCancelDialogComponent>
@@ -455,4 +472,4 @@ const mapDispatchToProps = dispatch => ({ dispatch });
 export default connect(
     mapStateToProps,
     mapDispatchToProps,
-)(DataSourceDialogComponent);
+)(injectIntl(DataSourceDialogComponent));

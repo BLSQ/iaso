@@ -71,10 +71,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         Can serve theses formats, depending on the combination of GET Parameters:
          * Simple JSON (default) -> as_dict_for_mobile
-         * Paginated JSON (if a `limit` is passed)
-         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed.
-         * GeoJson with the geo info (if `withShapes` is passed` )
-         * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting
+         * Paginated JSON (if a `limit` is passed) -> as_dict_with_parents
+         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed. -> as_small_dict
+         * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
+         * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
          * GeoPackage format (if `gpkg` is passed)
          * Excel XLSX  (if `xslx` is passed)
          * CSV (if `csv` is passed)

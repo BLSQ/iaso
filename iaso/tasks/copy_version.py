@@ -1,5 +1,5 @@
 from iaso.models import OrgUnit, DataSource, SourceVersion, Group, GroupSet, Task, SUCCESS, ERRORED, RUNNING
-from beanstalk_worker import task
+from beanstalk_worker import task_decorator
 from django.utils.translation import gettext as _
 
 import logging
@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@task(task_name="copy_version")
+@task_decorator(task_name="copy_version")
 def copy_version(
     source_source_id, source_version_number, destination_source_id, destination_version_number, force, task=None
 ):

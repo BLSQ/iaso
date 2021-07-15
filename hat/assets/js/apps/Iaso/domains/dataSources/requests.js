@@ -31,7 +31,7 @@ export const useDhisOuImporterRequest = requestBody => {
         async () => sendDhisOuImporterRequest(requestBody),
         [requestBody, sendDhisOuImporterRequest],
     );
-    return useAPI(callback)?.data;
+    return useAPI(callback);
 };
 
 const postGeoPkg = async request => {

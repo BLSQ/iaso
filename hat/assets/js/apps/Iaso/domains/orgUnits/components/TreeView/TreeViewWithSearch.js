@@ -27,7 +27,6 @@ const TreeViewWithSearch = ({
 
     const onNodeSelect = useCallback(
         selection => {
-            console.log('onNodeSelect', selection);
             setSelected(selection);
             onSelect(selection);
         },
@@ -36,22 +35,10 @@ const TreeViewWithSearch = ({
 
     const onSearchSelect = useCallback(
         searchSelection => {
-            console.log('searchSelection', searchSelection);
-            const idsToExpand = parseNodeIds(searchSelection).map(id =>
-                id.toString(),
-            );
-            console.log(
-                'onSearchSelect',
-                idsToExpand[idsToExpand.length - 1],
-                idsToExpand,
-            );
-            // TODO fix data problem
+            const idsToExpand = parseNodeIds(searchSelection).map(id =>id.toString());
             setExpanded(idsToExpand);
-            // setExpanded(['1092839', '1092035', '1091431', '1092840']);
-            // setSelected('1092840');
             onNodeSelect(idsToExpand[idsToExpand.length - 1]);
-        },
-        [parseNodeIds, onNodeSelect],
+        }, [parseNodeIds, onNodeSelect],
     );
 
     return (

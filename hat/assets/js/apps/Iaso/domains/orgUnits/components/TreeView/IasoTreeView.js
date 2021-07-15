@@ -18,8 +18,6 @@ const IasoTreeView = ({
     onSelect,
     onIconClick,
     onLabelClick,
-    // Experiment to pass type as object
-    // dataModel,
 }) => {
     const fetchChildrenData = useCallback(getChildrenData, []);
     // const fetchRootData = useCallback(getRootData(model), []);
@@ -43,12 +41,10 @@ const IasoTreeView = ({
                     fetchChildrenData={fetchChildrenData}
                     expanded={expanded}
                     selected={selected}
-                    // notifyParent={onToggle}
                     hasChildren={item.hasChildren}
                     toggleOnLabelClick={toggleOnLabelClick}
                     onIconClick={onIconClick}
                     onLabelClick={onLabelClick}
-                    // dataModel={dataModel}
                 />
             ));
         },
@@ -72,7 +68,6 @@ IasoTreeView.propTypes = {
     getRootData: func,
     labelField: string.isRequired,
     nodeField: string.isRequired,
-    // dataModel: object,
     multiselect: bool,
     toggleOnLabelClick: bool,
     // TODO see if better to force array and adapt in single select case
@@ -88,8 +83,6 @@ IasoTreeView.propTypes = {
 IasoTreeView.defaultProps = {
     getChildrenData: () => {},
     getRootData: () => {},
-    // dataModel: model,
-    // dataModel: null,
     multiselect: false,
     toggleOnLabelClick: true,
     onSelect: () => {},

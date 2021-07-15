@@ -16,10 +16,6 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import OrgUnitTooltip from '../../orgUnits/components/OrgUnitTooltip';
-import {
-    getRootData,
-    getChildrenData,
-} from '../../orgUnits/components/TreeView/requests';
 
 import {
     search,
@@ -36,17 +32,11 @@ import DatesRange from '../../../components/filters/DatesRange';
 
 // import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
 // import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
-import {
-    getOrgUnitParentsIds,
-    OrgUnitLabel,
-    getOrgUnitAncestorsIds,
-} from '../../orgUnits/utils';
+import { getOrgUnitParentsIds } from '../../orgUnits/utils';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated as setInstancesFilterAction } from '../actions';
 import MESSAGES from '../messages';
-import { TreeViewWithSearch } from '../../orgUnits/components/TreeView/TreeViewWithSearch';
-import { iasoGetRequest } from '../../../utils/requests';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
@@ -145,17 +135,6 @@ class InstancesFiltersComponent extends Component {
                 {icon}
             </OrgUnitTooltip>
         );
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    async request(searchValue, resultsCount) {
-        const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}","defaultVersion":"true"}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
-        return iasoGetRequest({
-            requestParams: { url },
-            disableSuccessSnackBar: true,
-            errorKeyMessage: 'Searching Org Units',
-            consoleError: url,
-        });
     }
 
     render() {

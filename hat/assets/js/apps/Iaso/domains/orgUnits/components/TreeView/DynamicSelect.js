@@ -23,11 +23,7 @@ import {
     SearchInput,
     useSafeIntl,
 } from 'bluesquare-components';
-// import InputComponent from '../../../components/forms/InputComponent'; // extract - > use Select from lib
-// import OrgUnitTooltip from './OrgUnitTooltip'; // extract
-// import { getRequest } from '../../../libs/Api'; // extract - > pass as props
-// import { OrgUnitLabel } from '../utils'; // extract
-import { MESSAGES } from './messages'; // extract
+import { MESSAGES } from './messages'; 
 
 const styles = theme => ({
     root: {
@@ -134,19 +130,12 @@ const DynamicSelect = ({
     };
     const handleSearch = () => {
         if (searchValue !== '') {
-            // const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}"}]&order=name&page=1&limit=1000&treeSearch=True`;
-            // const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}"}]&order=name&page=1&limit=${resultsCount}&treeSearch=True`;
             seIsLoading(true);
             request(searchValue, resultsCount).then(res => {
                 seIsLoading(false);
                 setSearchResults(res.orgunits);
                 setHasSearched(true);
             });
-            // getRequest(url).then(res => {
-            //     seIsLoading(false);
-            //     setSearchResults(res.orgunits);
-            //     setHasSearched(true);
-            // });
         }
     };
     const handleSelect = element => {
@@ -237,29 +226,10 @@ const DynamicSelect = ({
                                                 <Typography type="body2">
                                                     {makeDropDownText(element)}
                                                 </Typography>
-                                                // <Typography type="body2">
-                                                //     {OrgUnitLabel(
-                                                //         ou,
-                                                //         true,
-                                                //     )}
-                                                // </Typography>
                                             }
                                         />
                                         {toolTip &&
                                             toolTip(element, tooltipIcon)}
-                                        {/* <OrgUnitTooltip
-                                            orgUnit={ou}
-                                            enterDelay={0}
-                                            enterNextDelay={0}
-                                        > 
-                                            <InfoOutlinedIcon
-                                                fontSize="small"
-                                                style={{
-                                                    color: rawTheme.palette
-                                                        .mediumGray.main,
-                                                }}
-                                            /> */}
-                                        {/* </OrgUnitTooltip> */}
                                     </ListItem>
                                 ))}
                             </List>

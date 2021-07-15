@@ -12,10 +12,8 @@ import {
 } from '../../utils';
 import OrgUnitTooltip from '../OrgUnitTooltip';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
-import { useSafeIntl } from 'bluesquare-components';
 
 const OrgUnitTreeviewModal = ({
-    // renderTrigger,
     titleMessage,
     toggleOnLabelClick,
     // onSelect,
@@ -90,10 +88,8 @@ const OrgUnitTreeviewModal = ({
                     resetSelection={resetSelection}
                 />
             )}
-            // renderTrigger={renderTrigger}
             titleMessage={titleMessage}
             onConfirm={modalConfirm}
-            // eslint-disable-next-line no-unused-vars
             onClosed={reset}
             confirmMessage={MESSAGES.confirm}
             cancelMessage={MESSAGES.cancel}
@@ -119,7 +115,6 @@ const OrgUnitTreeviewModal = ({
 };
 
 OrgUnitTreeviewModal.propTypes = {
-    renderTrigger: func.isRequired,
     titleMessage: object.isRequired,
     toggleOnLabelClick: bool,
     // onSelect: func,

@@ -54,7 +54,7 @@ if settings.BEANSTALK_WORKER or settings.DEBUG:
 
 if settings.PLUGIN_POLIO_ENABLED:
     urlpatterns.append(url(r"^dashboard/polio/list", include("plugins.polio.urls")))
+urlpatterns.append(url(r"^dashboard/", include("hat.dashboard.urls")))
 
-url(r"^dashboard/", include("hat.dashboard.urls")),
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

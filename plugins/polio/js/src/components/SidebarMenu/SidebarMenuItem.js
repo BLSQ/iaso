@@ -14,8 +14,7 @@ import { List } from '@material-ui/core';
 
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
-import { useIntl } from 'react-intl';
-import { Link } from 'react-router-dom';
+import { useSafeIntl } from 'bluesquare-components';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -30,7 +29,7 @@ export const MenuItem = ({
     onExpand,
     subMenuLevel = 0,
 }) => {
-    const intl = useIntl();
+    const intl = useSafeIntl();
     const classes = useStyles();
     const color = expanded ? 'primary' : 'inherit';
     const subMenuIcon = expanded ? (
@@ -47,6 +46,7 @@ export const MenuItem = ({
         <ListItem
             button
             style={itemStyle}
+            href={menuItem.path}
             component={menuItem.path && 'a'}
             onClick={menuItem.subMenu && onExpand}
         >
@@ -65,14 +65,6 @@ export const MenuItem = ({
     );
 };
 
-const WrapWithLink = ({ menuItem, children }) => {
-    if (menuItem.path) {
-        return <Link to={menuItem.path}>{children}</Link>;
-    }
-
-    return <>{children}</>;
-};
-
 export const SidebarMenuItem = ({ menuItem, subMenuLevel = 1 }) => {
     const [expanded, setExpanded] = useState(false);
     return (
@@ -86,13 +78,11 @@ export const SidebarMenuItem = ({ menuItem, subMenuLevel = 1 }) => {
             {menuItem.subMenu && (
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
-                        {menuItem.subMenu.map((submenu, index) => (
-                            <WrapWithLink menuItem={menuItem} key={index}>
-                                <SidebarMenuItem
-                                    menuItem={submenu}
-                                    subMenuLevel={subMenuLevel + 1}
-                                />
-                            </WrapWithLink>
+                        {menuItem.subMenu.map( submenu => (
+                            <SidebarMenuItem
+                                menuItem={submenu}
+                                subMenuLevel={subMenuLevel + 1}
+                            />
                         ))}
                     </List>
                 </Collapse>

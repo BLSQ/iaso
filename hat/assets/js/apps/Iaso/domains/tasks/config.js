@@ -1,69 +1,63 @@
 import React from 'react';
-import Chip from '@material-ui/core/Chip';
 import {
     IconButton as IconButtonComponent,
     displayDateFromTimestamp,
 } from 'bluesquare-components';
 import MESSAGES from './messages';
 
+function getStatusMessageKey(settings) {
+    // Return default message key if not in message
+    return MESSAGES[settings.original.status.toLowerCase()] !== undefined
+      ? settings.original.status.toLowerCase()
+      : "unknown";
+}
+
 const tasksTableColumns = (formatMessage, killTaskAction) => [
     {
-        Header: formatMessage(MESSAGES.status),
+        Header: formatMessage(MESSAGES.name),
         sortable: true,
-        accessor: 'status',
-        Cell: settings => {
-            const statusCode =
-                MESSAGES[settings.original.status.toLowerCase()] !== undefined
-                    ? settings.original.status
-                    : 'UNKNOWN';
-
-            return (
-                <span>
-                    {settings.original.name}
-                    <br />
-                    <Chip
-                        variant="outlined"
-                        color="primary"
-                        size="small"
-                        label={formatMessage(
-                            MESSAGES[statusCode.toLowerCase()],
-                        )}
-                    />
-                </span>
-            );
-        },
+        accessor: 'name',
+        Cell: settings => settings.original.name,
+    },
+    {
+        Header: formatMessage(MESSAGES.launcher),
+        sortable: true,
+        accessor: 'launcher',
+        Cell: settings => settings.original.launcher?.username,
     },
     {
         Header: formatMessage(MESSAGES.progress),
-        sortable: false,
-        accessor: 'progress',
-        Cell: settings => (
-            <span>
-                {settings.original.status === 'RUNNING' &&
+        sortable: true,
+        accessor: 'status',
+        Cell: settings => {
+            return <span>
+                {settings.original.status === "RUNNING" &&
                 settings.original.end_value > 0
-                    ? `${settings.original.progress_value}/${
-                          settings.original.end_value
-                      } (${Math.round(
-                          (settings.original.progress_value /
-                              settings.original.end_value) *
-                              100,
-                      )}%)`
-                    : '-'}
-            </span>
-        ),
+                  ? `${settings.original.progress_value}/${
+                    settings.original.end_value
+                  } (${Math.round(
+                    (settings.original.progress_value /
+                      settings.original.end_value) *
+                    100
+                  )}%)`
+                  : formatMessage(
+                    MESSAGES[getStatusMessageKey(settings)]
+                  )}
+            </span>;
+
+        },
     },
     {
         Header: formatMessage(MESSAGES.message),
         sortable: false,
         accessor: 'message',
         Cell: settings => (
-            <span>
-                {settings.original.status === 'RUNNING'
-                    ? settings.original.progress_message
-                    : '-'}
-            </span>
+            <>
+                {settings.original.progress_message}
+            </>
         ),
     },
+
     {
         Header: formatMessage(MESSAGES.timeCreated),
         sortable: true,

@@ -70,6 +70,9 @@ class Round(models.Model):
     im_percentage_children_missed_out_household = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
     )
+    im_percentage_children_missed_in_plus_out_household = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
+    )
     awareness_of_campaign_planning = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
     )

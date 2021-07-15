@@ -688,6 +688,14 @@ const Round1Form = () => {
                     className={classes.input}
                 />
                 <Field
+                    label="% children missed IN+OUT OF household"
+                    name={
+                        'round_one.im_percentage_children_missed_in_plus_out_household'
+                    }
+                    component={TextInput}
+                    className={classes.input}
+                />
+                <Field
                     label="Awareness of campaign planning (%)"
                     name={'round_one.awareness_of_campaign_planning'}
                     component={TextInput}

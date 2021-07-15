@@ -33,6 +33,13 @@ STATUS = [
     ("FINISHED", _("Finished")),
 ]
 
+RA_BUDGET_STATUSES = [
+    ("APPROVED", _("Approved")),
+    ("TO_SUBMIT", _("To Submit")),
+    ("SUBMITTED", _("Submitted")),
+    ("REVIEWED", _("Reviewed by RRT")),
+]
+
 PREPAREDNESS_SYNC_STATUS = [
     ("QUEUED", _("Queued")),
     ("ONGOING", _("Ongoing")),
@@ -146,7 +153,7 @@ class Campaign(models.Model):
     )
 
     # Risk Assessment
-    risk_assessment_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
+    risk_assessment_status = models.CharField(max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True)
     risk_assessment_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     investigation_at = models.DateField(
         null=True,
@@ -182,7 +189,7 @@ class Campaign(models.Model):
     surge_spreadsheet_url = models.URLField(null=True, blank=True)
     country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
-    budget_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
+    budget_status = models.CharField(max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True)
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
 
     who_disbursed_to_co_at = models.DateField(

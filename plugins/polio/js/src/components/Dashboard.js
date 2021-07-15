@@ -35,6 +35,7 @@ import {
     PaymentField,
     Select,
     StatusField,
+    RABudgetStatusField,
     TextInput,
 } from './Inputs';
 
@@ -296,7 +297,7 @@ const RiskAssessmentForm = () => {
                     <Grid xs={12} md={6} item>
                         <Field
                             name={'risk_assessment_status'}
-                            component={StatusField}
+                            component={RABudgetStatusField}
                         />
                     </Grid>
                     <Grid xs={12} md={6} item>
@@ -472,7 +473,7 @@ const BudgetForm = () => {
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
-                        <Field name={'budget_status'} component={StatusField} />
+                        <Field name={'budget_status'} component={RABudgetStatusField} />
                     </Grid>
                     <Grid xs={12} md={6} item>
                         <Field

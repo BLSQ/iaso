@@ -19,9 +19,8 @@ class DHIS2TestMixin:
             return json.load(json_file)
 
     def setup_responses(self, orgunit_fixture_name, groupsets_fixture_name):
+        """Assume @responses.activate in the calling test function"""
         orgunit_response_content = self.fixture_json(orgunit_fixture_name)
-
-        # Assume @responses.activate in the test function
 
         responses.add(
             responses.GET,
@@ -326,9 +325,13 @@ class TaskTests(TestCase, DHIS2TestMixin):
             {
                 m.OrgUnit: 2,
                 m.OrgUnitType: 1,
-                m.Group: 0,  # there is 2 group on OrgUnit C, they are skipped since we skipped C
+                m.Group: 1,  # there is 2 group on OrgUnit C, they are skipped since we skipped C
             }
         )
+
+        g = m.Group.objects.latest("id")
+        self.assertEqual(g.org_units.count(), 2)
+        self.assertTrue(g.name.startswith("Imported on"))
 
         ou_a = OrgUnit.objects.get(source_ref="a")
         self.assertEqual(ou_a.name, "Simple square")
@@ -375,7 +378,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
             {
                 m.OrgUnit: 4,
                 m.OrgUnitType: 1,
-                m.Group: 2,  # there is 2 group on OrgUnit C
+                m.Group: 3,  # there are 2 groups on OrgUnit C
             }
         )
 
@@ -402,3 +405,69 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertEqual(len(ou_c.geom.coords), 2)
         self.assertEqual(len(ou_c.geom.coords[0]), 2)
         self.assertEqual(len(ou_c.geom.coords[1]), 2)
+
+        g = m.Group.objects.latest("id")
+        self.assertEqual(g.org_units.count(), 4)
+        self.assertTrue(g.name.startswith("Imported on"))
+
+    @responses.activate
+    def test_update_no_new(self):
+        self.setup_responses(orgunit_fixture_name="orgunits_strange_geom", groupsets_fixture_name=None)
+
+        # Existing version with data
+        version = m.SourceVersion.objects.create(data_source=self.source, number=1)
+
+        OrgUnit.objects.create(name="original a", source_ref="a", version=version)
+        OrgUnit.objects.create(name="original b", source_ref="b", version=version)
+        OrgUnit.objects.create(name="original c", source_ref="c", version=version)
+        OrgUnit.objects.create(name="original d", source_ref="d", version=version)
+
+        self.old_counts = self.counts()
+
+        task = Task.objects.create(name="dhis2_ou_importer", launcher=self.user, account=self.account)
+        dhis2_ou_importer(
+            source_id=self.source.id,
+            source_version_number=1,
+            force=False,
+            validate=False,
+            continue_on_error=False,
+            url="https://play.dhis2.org/2.30",
+            login="admin",
+            password="district",
+            update_mode=True,
+            task=task,
+            _immediate=True,
+        )
+
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS", task.result)
+        self.assertCreated(
+            {
+                m.OrgUnit: 0,
+                m.OrgUnitType: 1,
+                m.Group: 0,  # there is 2 group on OrgUnit C, they are skipped since we skipped C
+            }
+        )
+
+        # There is no 'imported on' group since we don't create new orgunits
+        groups = m.Group.objects.filter(name__startswith="Imported on")
+        self.assertEqual(groups.count(), 0)
+
+        # didn't touch the existing
+        ou_a = OrgUnit.objects.get(source_ref="a")
+        self.assertEqual(ou_a.name, "original a")
+        self.assertEqual(ou_a.geom, None)
+
+        ou_b = OrgUnit.objects.get(source_ref="b")
+        self.assertEqual(ou_b.name, "original b")
+        self.assertEqual(ou_b.geom, None)
+
+        ou_d = OrgUnit.objects.get(source_ref="d")
+        self.assertEqual(ou_d.name, "original d")
+        self.assertEqual(ou_d.geom, None)
+
+        ou_c = OrgUnit.objects.get(source_ref="c")
+        self.assertEqual(ou_c.geom, None)
+        self.assertEqual(ou_c.name, "original c")
+
+        self.assertEqual(OrgUnit.objects.count(), 4)

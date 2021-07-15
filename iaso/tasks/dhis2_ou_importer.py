@@ -11,6 +11,8 @@ from iaso.models import (
 )
 from beanstalk_worker import task_decorator
 from django.contrib.gis.geos import Point, MultiPolygon, Polygon
+from django.utils.timezone import now
+
 
 from dhis2 import Api
 
@@ -278,7 +280,7 @@ def dhis2_ou_importer(
         Errors : {error_count}
     """
     if error_count:
-        logger.error(f"{error_count} import errors ignored")
+        logger.error(f"{error_count} import errors were ignored")
 
     the_task.report_success(message=res_string)
     return the_task
@@ -335,6 +337,13 @@ def import_orgunits_and_groups(
             )
 
         index += 1
-    logger.debug(f"Created {index} orgunits")
+
+    logger.debug(f"Created {index} OrgUnits")
+
+    # Create a group that represent all the Orgunit imported
+    if unit_dict and update_mode:
+        g = Group.objects.create(name=f"Imported on {now().isoformat()}", source_version=version)
+        g.org_units.set(unit_dict.values())
+
     load_groupsets(api, version, group_dict)
     return error_count, unit_dict

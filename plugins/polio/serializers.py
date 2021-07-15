@@ -4,7 +4,7 @@ from django.db.transaction import atomic
 from datetime import datetime, timezone
 
 from rest_framework import serializers
-from iaso.models import Group, OrgUnit, org_unit
+from iaso.models import Group, OrgUnit, org_unit, Page
 from .models import Preparedness, Round, Campaign, Surge
 from .preparedness.parser import (
     open_sheet_by_url,

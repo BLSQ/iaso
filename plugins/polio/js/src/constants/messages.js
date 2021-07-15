@@ -81,6 +81,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
+    pages: {
+        defaultMessage: 'Pages',
+        id: 'iaso.label.pages',
+    },
 });
 
 export default MESSAGES;

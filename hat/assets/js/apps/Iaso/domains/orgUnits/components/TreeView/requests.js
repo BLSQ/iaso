@@ -34,4 +34,24 @@ const getRootData = async () => {
     return useableData;
 };
 
-export { getRootData, getChildrenData };
+/**
+ * @param {string} searchValue
+ * @param {number} resultsCount
+ */
+const searchOrgUnits = async (searchValue, resultsCount) => {
+    const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}","defaultVersion":"true"}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
+    return iasoGetRequest({
+        requestParams: { url },
+        disableSuccessSnackBar: true,
+        errorKeyMessage: 'Searching Org Units',
+        consoleError: url,
+    });
+};
+
+const getOrgUnit = orgUnitId =>
+    iasoGetRequest({
+        requestParams: { url: `/api/orgunits/${orgUnitId}` },
+        disableSuccessSnackBar: true,
+    });
+
+export { getRootData, getChildrenData, searchOrgUnits, getOrgUnit };

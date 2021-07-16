@@ -3,8 +3,12 @@ import { bool, func, object } from 'prop-types';
 import { TreeViewWithSearch } from './TreeViewWithSearch';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { MESSAGES } from './messages';
-import { iasoGetRequest } from '../../../../utils/requests';
-import { getRootData, getChildrenData } from './requests';
+import {
+    getRootData,
+    getChildrenData,
+    searchOrgUnits,
+    getOrgUnit,
+} from './requests';
 import {
     OrgUnitLabel,
     getOrgUnitAncestorsIds,
@@ -12,6 +16,12 @@ import {
 } from '../../utils';
 import OrgUnitTooltip from '../OrgUnitTooltip';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
+
+const tooltip = (orgUnit, icon) => (
+    <OrgUnitTooltip orgUnit={orgUnit} enterDelay={0} enterNextDelay={0}>
+        {icon}
+    </OrgUnitTooltip>
+);
 
 const OrgUnitTreeviewModal = ({
     titleMessage,
@@ -22,49 +32,24 @@ const OrgUnitTreeviewModal = ({
     const [allowConfirm, setAllowConfirm] = useState(false);
     const [selectedOrgUnit, setSelectedOrgUnit] = useState(null);
     const [selectedOrgUnitParents, setSelectedOrgUnitParents] = useState(null);
-    // const [closeDialogCallback, setCloseDialogCallback] = useState(null);
 
-    /**
-     * @param {string} searchValue
-     * @param {number} resultsCount
-     */
-    const request = async (searchValue, resultsCount) => {
-        const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}","defaultVersion":"true"}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
-        return iasoGetRequest({
-            requestParams: { url },
-            disableSuccessSnackBar: true,
-            errorKeyMessage: 'Searching Org Units',
-            consoleError: url,
-        });
-    };
     const onOrgUnitSelect = orgUnit => {
         setSelectedOrgUnit(orgUnit);
         setAllowConfirm(true);
     };
 
-    const confirmOrgUnit = useCallback(async () => {
-        const fullOrgUnit = await iasoGetRequest({
-            requestParams: { url: `/api/orgunits/${selectedOrgUnit}` },
-            disableSuccessSnackBar: true,
-        });
-        // console.log('full org unit', fullOrgUnit);
-        const genealogy = getOrgUnitAncestorsNames(fullOrgUnit);
-        console.log('genealogy', genealogy);
-        setSelectedOrgUnitParents(genealogy);
-        onConfirm(selectedOrgUnit);
-    }, [selectedOrgUnit, onConfirm]);
-
-    const modalConfirm = useCallback(
-        // eslint-disable-next-line no-unused-vars
-        closeDialog => {
-            confirmOrgUnit();
+    const onModalConfirm = useCallback(
+        async closeDialog => {
+            const fullOrgUnit = await getOrgUnit(selectedOrgUnit);
+            const genealogy = getOrgUnitAncestorsNames(fullOrgUnit);
+            setSelectedOrgUnitParents(genealogy);
+            onConfirm(selectedOrgUnit);
             closeDialog();
-            // setCloseDialogCallback(() => closeDialog);
         },
-        [confirmOrgUnit],
+        [selectedOrgUnit, onConfirm, getOrgUnit, getOrgUnitAncestorsNames],
     );
 
-    const reset = () => {
+    const onModalClose = () => {
         setSelectedOrgUnit(null);
     };
 
@@ -72,12 +57,7 @@ const OrgUnitTreeviewModal = ({
         setSelectedOrgUnit(null);
         setSelectedOrgUnitParents(null);
         onConfirm(null);
-    }
-    const tooltip = (orgUnit, icon) => (
-        <OrgUnitTooltip orgUnit={orgUnit} enterDelay={0} enterNextDelay={0}>
-            {icon}
-        </OrgUnitTooltip>
-    );
+    };
 
     return (
         <ConfirmCancelDialogComponent
@@ -89,8 +69,8 @@ const OrgUnitTreeviewModal = ({
                 />
             )}
             titleMessage={titleMessage}
-            onConfirm={modalConfirm}
-            onClosed={reset}
+            onConfirm={onModalConfirm}
+            onClosed={onModalClose}
             confirmMessage={MESSAGES.confirm}
             cancelMessage={MESSAGES.cancel}
             maxWidth="sm"
@@ -103,8 +83,10 @@ const OrgUnitTreeviewModal = ({
                 getRootData={getRootData}
                 toggleOnLabelClick={toggleOnLabelClick}
                 onSelect={onOrgUnitSelect}
-                request={request}
-                makeDropDownText={orgUnit=><OrgUnitLabel orgUnit={orgUnit} withType/>}
+                request={searchOrgUnits}
+                makeDropDownText={orgUnit => (
+                    <OrgUnitLabel orgUnit={orgUnit} withType />
+                )}
                 toolTip={tooltip}
                 parseNodeIds={getOrgUnitAncestorsIds}
                 // onIconClick={setSelectedOrgUnitParents}

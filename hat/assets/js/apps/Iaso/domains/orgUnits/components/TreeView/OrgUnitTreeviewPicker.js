@@ -78,11 +78,3 @@ OrgUnitTreeviewPicker.defaultProps = {
 };
 
 export { OrgUnitTreeviewPicker };
-
-// renderTrigger = {({ openDialog }) => (
-//     <IconButtonComponent
-//         onClick={openDialog}
-//         icon="globe"
-//         tooltipMessage={MESSAGES.search}
-//     />
-// )}

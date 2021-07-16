@@ -19,8 +19,8 @@ const IasoTreeView = ({
     onIconClick,
     onLabelClick,
 }) => {
+    // TODO add additional state to manage checkbox state
     const fetchChildrenData = useCallback(getChildrenData, []);
-    // const fetchRootData = useCallback(getRootData(model), []);
     const fetchRootData = useCallback(getRootData, []);
     const { data: rootData } = useAPI(fetchRootData);
     const onNodeToggle = (_event, nodeIds) => {

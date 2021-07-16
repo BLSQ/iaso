@@ -23,7 +23,7 @@ import {
     SearchInput,
     useSafeIntl,
 } from 'bluesquare-components';
-import { MESSAGES } from './messages'; 
+import { MESSAGES } from './messages';
 
 const styles = theme => ({
     root: {

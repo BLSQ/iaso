@@ -51,8 +51,7 @@ jobs:
       - name: Setup beanstalk
         run: |
            cp .elasticbeanstalk/config.github.yml .elasticbeanstalk/config.yml
-           pip install awsebcli --upgrade
-           pip install boto3 --upgrade
+           pip install boto3  awsebcli --upgrade
 
       - name: Environment info
         run: |

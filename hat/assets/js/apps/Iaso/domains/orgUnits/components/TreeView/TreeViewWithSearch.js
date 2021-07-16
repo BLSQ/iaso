@@ -1,5 +1,14 @@
-import React, { useState, useCallback } from 'react';
-import { string, bool, func, object, number } from 'prop-types';
+import React, { useState, useCallback, useEffect } from 'react';
+import {
+    string,
+    bool,
+    func,
+    object,
+    number,
+    oneOfType,
+    array,
+    arrayOf,
+} from 'prop-types';
 import { DynamicSelect } from './DynamicSelect';
 import { MESSAGES } from './messages';
 import { IasoTreeView } from './IasoTreeView';
@@ -11,7 +20,6 @@ const TreeViewWithSearch = ({
     getRootData,
     toggleOnLabelClick,
     onSelect,
-    // onSearchSelect,
     minResultCount,
     inputLabelObject,
     withSearchButton,
@@ -20,10 +28,14 @@ const TreeViewWithSearch = ({
     toolTip,
     parseNodeIds,
     onLabelClick,
-    onIconClick,
+    // onCheckBoxClick,
+    multiselect,
+    preselected,
+    preexpanded,
 }) => {
-    const [selected, setSelected] = useState('');
+    const [selected, setSelected] = useState(multiselect ? [] : '');
     const [expanded, setExpanded] = useState([]);
+    const [ticked, setTicked] = useState([]);
 
     const onNodeSelect = useCallback(
         selection => {
@@ -33,14 +45,46 @@ const TreeViewWithSearch = ({
         [onSelect],
     );
 
-    const onSearchSelect = useCallback(
-        searchSelection => {
-            const idsToExpand = parseNodeIds(searchSelection).map(id =>id.toString());
-            setExpanded(idsToExpand);
-            onNodeSelect(idsToExpand[idsToExpand.length - 1]);
-        }, [parseNodeIds, onNodeSelect],
+    useEffect(() => {
+        console.log('effect!');
+        if (multiselect && preselected) setTicked(preselected);
+        if (!multiselect && preselected) setSelected(preselected);
+        if (preexpanded) setExpanded(preexpanded); // doesn't work -> need to get id i.o name
+    }, [preselected, preexpanded, multiselect]);
+
+    // Tick and untick checkbox
+    const handleCheckbox = useCallback(
+        id => {
+            const newTicked = ticked.includes(id)
+                ? ticked.filter(tickedId => tickedId !== id)
+                : [...ticked, id];
+            setTicked(newTicked);
+            onLabelClick(newTicked);
+        },
+        [onLabelClick, ticked],
     );
 
+    const onSearchSelect = useCallback(
+        searchSelection => {
+            const idsToExpand = parseNodeIds(searchSelection).map(id =>
+                id.toString(),
+            );
+            if (multiselect) {
+                setExpanded([...expanded, ...idsToExpand]);
+                const newSelected = [
+                    ...selected,
+                    idsToExpand[idsToExpand.length - 1],
+                ];
+                onNodeSelect(newSelected);
+            } else {
+                setExpanded(idsToExpand);
+                onNodeSelect(idsToExpand[idsToExpand.length - 1]);
+            }
+        },
+        [parseNodeIds, onNodeSelect, selected],
+    );
+
+    console.log('preexpanded', preexpanded);
     return (
         <>
             <DynamicSelect
@@ -62,8 +106,10 @@ const TreeViewWithSearch = ({
                 onSelect={onNodeSelect}
                 expanded={expanded}
                 onToggle={setExpanded}
-                onIconClick={onIconClick}
-                onLabelClick={onLabelClick}
+                // onCheckBoxClick={handleCheckbox}
+                onLabelClick={handleCheckbox}
+                multiselect={multiselect}
+                ticked={ticked}
             />
         </>
     );
@@ -76,7 +122,6 @@ TreeViewWithSearch.propTypes = {
     nodeField: string.isRequired,
     toggleOnLabelClick: bool,
     onSelect: func,
-    // onSearchSelect: func.isRequired,
     minResultCount: number,
     inputLabelObject: object,
     withSearchButton: bool,
@@ -84,8 +129,11 @@ TreeViewWithSearch.propTypes = {
     makeDropDownText: func.isRequired,
     toolTip: func,
     parseNodeIds: func.isRequired,
-    onIconClick: func,
+    // onCheckBoxClick: func,
     onLabelClick: func,
+    multiselect: bool,
+    preselected: oneOfType([string, array]),
+    preexpanded: arrayOf(string),
 };
 
 TreeViewWithSearch.defaultProps = {
@@ -97,8 +145,11 @@ TreeViewWithSearch.defaultProps = {
     inputLabelObject: MESSAGES.search,
     withSearchButton: false,
     toolTip: null,
-    onIconClick: () => {},
+    // onCheckBoxClick: () => {},
     onLabelClick: () => {},
+    multiselect: false,
+    preselected: null,
+    preexpanded: null,
 };
 
 export { TreeViewWithSearch };

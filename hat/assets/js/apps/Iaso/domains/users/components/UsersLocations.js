@@ -8,6 +8,7 @@ import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
 import OrgUnitTooltip from '../../orgUnits/components/OrgUnitTooltip';
 import { OrgUnitLabel } from '../../orgUnits/utils';
 import MESSAGES from '../messages';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
 const useStyles = makeStyles(theme => ({
     chipList: {
@@ -41,10 +42,19 @@ const UsersLocations = ({ handleChange, currentUser }) => {
     };
     return (
         <>
-            <OrgUnitSearch
+            {/* <OrgUnitSearch
                 onSelectOrgUnit={ou => handleAdd(ou)}
                 inputLabelObject={MESSAGES.addOrgUnit}
                 withSearchButton
+            /> */}
+
+            <OrgUnitTreeviewModal
+                toggleOnLabelClick={false}
+                titleMessage={MESSAGES.create}
+                onConfirm={orgUnitIds => {
+                    console.log('OrgUnits to add', orgUnitIds);
+                }}
+                multiselect
             />
             {currentUser.org_units.value.length > 0 && (
                 <Box className={classes.chipList}>

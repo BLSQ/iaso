@@ -1,4 +1,4 @@
-import { string, bool, arrayOf, func } from 'prop-types';
+import { string, bool, arrayOf, func, array, oneOfType } from 'prop-types';
 import React, { useCallback } from 'react';
 import { TreeView } from '@material-ui/lab';
 
@@ -16,10 +16,12 @@ const IasoTreeView = ({
     onToggle,
     toggleOnLabelClick,
     onSelect,
-    onIconClick,
+    onCheckBoxClick,
     onLabelClick,
+    ticked,
 }) => {
     // TODO add additional state to manage checkbox state
+    // TODO add checkbox if multiselect
     const fetchChildrenData = useCallback(getChildrenData, []);
     const fetchRootData = useCallback(getRootData, []);
     const { data: rootData } = useAPI(fetchRootData);
@@ -43,12 +45,14 @@ const IasoTreeView = ({
                     selected={selected}
                     hasChildren={item.hasChildren}
                     toggleOnLabelClick={toggleOnLabelClick}
-                    onIconClick={onIconClick}
+                    onCheckBoxClick={onCheckBoxClick}
                     onLabelClick={onLabelClick}
+                    withCheckbox={multiselect}
+                    ticked={ticked}
                 />
             ));
         },
-        [expanded],
+        [expanded, ticked],
     );
     return (
         <TreeView
@@ -74,10 +78,11 @@ IasoTreeView.propTypes = {
     expanded: arrayOf(string).isRequired,
     onToggle: func.isRequired,
     onSelect: func,
-    onIconClick: func,
+    onCheckBoxClick: func,
     onLabelClick: func,
-    // selected: oneOf([PropTypes.string, PropTypes.arrayOf(string)]),
-    selected: string,
+    selected: oneOfType([string, arrayOf(string)]),
+    // selected: string || array,
+    ticked: array,
 };
 
 IasoTreeView.defaultProps = {
@@ -86,9 +91,10 @@ IasoTreeView.defaultProps = {
     multiselect: false,
     toggleOnLabelClick: true,
     onSelect: () => {},
-    onIconClick: () => {},
+    onCheckBoxClick: () => {},
     onLabelClick: () => {},
     selected: undefined,
+    ticked: [],
 };
 
 export { IasoTreeView };

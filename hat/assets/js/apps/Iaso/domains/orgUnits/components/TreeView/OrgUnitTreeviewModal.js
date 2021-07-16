@@ -23,42 +23,75 @@ const tooltip = (orgUnit, icon) => (
     </OrgUnitTooltip>
 );
 
+const getOrgUnitGenealogy = async orgUnit => {
+    const fullOrgUnit = await getOrgUnit(orgUnit);
+    return getOrgUnitAncestorsNames(fullOrgUnit);
+};
+
 const OrgUnitTreeviewModal = ({
     titleMessage,
     toggleOnLabelClick,
     // onSelect,
     onConfirm,
+    multiselect,
 }) => {
-    const [allowConfirm, setAllowConfirm] = useState(false);
-    const [selectedOrgUnit, setSelectedOrgUnit] = useState(null);
-    const [selectedOrgUnitParents, setSelectedOrgUnitParents] = useState(null);
+    // const [allowConfirm, setAllowConfirm] = useState(false);
+    const [selectedOrgUnits, setSelectedOrgUnits] = useState();
+    const [selectedOrgUnitParents, setSelectedOrgUnitParents] = useState([]);
 
-    const onOrgUnitSelect = orgUnit => {
-        setSelectedOrgUnit(orgUnit);
-        setAllowConfirm(true);
-    };
+    const onOrgUnitSelect = useCallback(
+        orgUnit => {
+            if (!multiselect) {
+                setSelectedOrgUnits(orgUnit);
+                // setAllowConfirm(true);
+            }
+        },
+        [multiselect],
+    );
+
+    const onLabelClick = useCallback(
+        orgUnits => {
+            if (multiselect) setSelectedOrgUnits(orgUnits);
+        },
+        [multiselect, selectedOrgUnits],
+    );
 
     const onModalConfirm = useCallback(
         async closeDialog => {
-            const fullOrgUnit = await getOrgUnit(selectedOrgUnit);
-            const genealogy = getOrgUnitAncestorsNames(fullOrgUnit);
-            setSelectedOrgUnitParents(genealogy);
-            onConfirm(selectedOrgUnit);
+            if (!multiselect) {
+                const genealogy = getOrgUnitGenealogy(selectedOrgUnits);
+                setSelectedOrgUnitParents([genealogy]);
+            } else {
+                const genealogies = selectedOrgUnits.map(selectedOrgUnit =>
+                    getOrgUnitGenealogy(selectedOrgUnit),
+                );
+                // launching all requests, waiting for the slowest one to finish
+                Promise.all(genealogies).then(values => {
+                    setSelectedOrgUnitParents(values);
+                });
+            }
+            onConfirm(selectedOrgUnits);
             closeDialog();
         },
-        [selectedOrgUnit, onConfirm, getOrgUnit, getOrgUnitAncestorsNames],
+        [
+            selectedOrgUnits,
+            onConfirm,
+            getOrgUnit,
+            getOrgUnitAncestorsNames,
+            multiselect,
+        ],
     );
 
-    const onModalClose = () => {
-        setSelectedOrgUnit(null);
+    const onModalCancel = () => {
+        setSelectedOrgUnits(null);
     };
 
     const resetSelection = () => {
-        setSelectedOrgUnit(null);
-        setSelectedOrgUnitParents(null);
+        setSelectedOrgUnits(null);
+        setSelectedOrgUnitParents([]);
         onConfirm(null);
     };
-
+    console.log('Modal selected org units', selectedOrgUnits);
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={({ openDialog }) => (
@@ -70,11 +103,11 @@ const OrgUnitTreeviewModal = ({
             )}
             titleMessage={titleMessage}
             onConfirm={onModalConfirm}
-            onClosed={onModalClose}
+            onCancel={onModalCancel}
             confirmMessage={MESSAGES.confirm}
             cancelMessage={MESSAGES.cancel}
             maxWidth="sm"
-            allowConfirm={allowConfirm}
+            allowConfirm={selectedOrgUnits?.length > 0}
         >
             <TreeViewWithSearch
                 labelField="name"
@@ -89,8 +122,11 @@ const OrgUnitTreeviewModal = ({
                 )}
                 toolTip={tooltip}
                 parseNodeIds={getOrgUnitAncestorsIds}
+                multiselect={multiselect}
+                preselected={selectedOrgUnits}
+                // preexpanded={selectedOrgUnitParents.flat()}
                 // onIconClick={setSelectedOrgUnitParents}
-                // onLabelClick={setSelectedOrgUnitParents}
+                onLabelClick={onLabelClick}
             />
         </ConfirmCancelDialogComponent>
     );
@@ -101,12 +137,14 @@ OrgUnitTreeviewModal.propTypes = {
     toggleOnLabelClick: bool,
     // onSelect: func,
     onConfirm: func,
+    multiselect: bool,
 };
 
 OrgUnitTreeviewModal.defaultProps = {
     toggleOnLabelClick: true,
     // onSelect: () => {},
     onConfirm: () => {},
+    multiselect: false,
 };
 
 export { OrgUnitTreeviewModal };

@@ -1,61 +1,29 @@
-import { arrayOf, func, string } from 'prop-types';
+import { array, func } from 'prop-types';
 import React from 'react';
 import { Paper } from '@material-ui/core';
-import { TreeView, TreeItem } from '@material-ui/lab';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import { makeStyles } from '@material-ui/core/styles';
+// import { TreeView, TreeItem } from '@material-ui/lab';
+// import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+// import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+// import { makeStyles } from '@material-ui/core/styles';
 import { IconButton } from 'bluesquare-components';
 import { MESSAGES } from './messages';
-
-const styles = {
-    truncatedTreeview: {
-        '&:hover .MuiTreeItem-label': {
-            backgroundColor: 'white',
-        },
-        '&.MuiTreeItem-root:focus > .MuiTreeItem-content .MuiTreeItem-label': {
-            backgroundColor: 'white',
-        },
-        // TODO use theme for font color
-    },
-};
-
-const useStyles = makeStyles(styles);
+import { TruncatedTreeview } from './TruncatedTreeview';
 
 const OrgUnitTreeviewPicker = ({ onClick, selectedItems, resetSelection }) => {
-    const uniqueItems = selectedItems?.map((item, index) => `${item}-${index}`);
-    const style = useStyles();
-    const makeTreeItems = items => {
-        if (!items) return <p>Select org unit</p>;
-        if (items.length === 0) return null;
-        const nextItems = [...items];
-        const item = nextItems.shift();
-        const truncatedTree = (
-            <TreeItem
-                key={item + nextItems.length.toString()}
-                className={style.truncatedTreeview}
-                onIconClick={e => e.preventDefault()}
-                onLabelClick={e => e.preventDefault()}
-                collapseIcon={<ExpandMoreIcon />}
-                expandIcon={<ChevronRightIcon />}
-                label={item.split('-')[0]}
-                nodeId={item}
-            >
-                {items.length >= 1 ? makeTreeItems(nextItems) : null}
-            </TreeItem>
-        );
-        return truncatedTree;
+    const makeTruncatedTrees = treesData => {
+        if (treesData.length === 0)
+            return <p onClick={onClick}>Select org unit</p>;
+        return treesData.map((treeData, index) => (
+            <TruncatedTreeview
+                onClick={onClick}
+                selectedItems={treeData}
+                key={`TruncatedTree${index.toString()}`}
+            />
+        ));
     };
     return (
         <Paper variant="outlined" elevation={0}>
-            <TreeView
-                onClick={onClick}
-                disableSelection
-                expanded={uniqueItems ?? []}
-                className={style.truncatedTreeview}
-            >
-                {makeTreeItems(uniqueItems)}
-            </TreeView>
+            {makeTruncatedTrees(selectedItems)}
             {resetSelection && (
                 <IconButton
                     icon="delete"
@@ -69,11 +37,11 @@ const OrgUnitTreeviewPicker = ({ onClick, selectedItems, resetSelection }) => {
 
 OrgUnitTreeviewPicker.propTypes = {
     onClick: func.isRequired,
-    selectedItems: arrayOf(string),
+    selectedItems: array,
     resetSelection: func,
 };
 OrgUnitTreeviewPicker.defaultProps = {
-    selectedItems: null,
+    selectedItems: [],
     resetSelection: null,
 };
 

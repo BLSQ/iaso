@@ -4,7 +4,8 @@ import sys
 
 
 def eb_deploy(env_name):
-    return os.system(f"eb deploy {env_name}")
+    status = os.system(f"eb deploy {env_name}")
+    return os.waitstatus_to_exitcode(status)
     # for Action debugging: print(f"eb deploy {env_name}")
 
 
@@ -34,4 +35,6 @@ if __name__ == "__main__":
     else:
         for e in target_envs:
             print("Deploying to", e)
-            eb_deploy(e)
+            r = eb_deploy(e)
+            if r != 0:
+                sys.exit(r)

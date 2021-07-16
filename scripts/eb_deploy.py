@@ -4,8 +4,8 @@ import sys
 
 
 def eb_deploy(env_name):
-    status = os.system(f"eb deploy {env_name}")
-    return os.waitstatus_to_exitcode(status)
+    return os.system(f"eb deploy {env_name}")
+
     # for Action debugging: print(f"eb deploy {env_name}")
 
 

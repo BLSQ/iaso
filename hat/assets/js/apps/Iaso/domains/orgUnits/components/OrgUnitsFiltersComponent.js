@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
@@ -25,22 +25,20 @@ import {
     location,
     group,
 } from '../../../constants/filters';
-import { fetchOrgUnitsTypes, fetchGroups } from '../../../utils/requests';
 import {
     setFiltersUpdated,
     setOrgUnitsLocations,
     setFetchingOrgUnitTypes,
-    setOrgUnitTypes,
-    setGroups,
 } from '../actions';
-import { resetOrgUnitsLevels } from '../../../redux/orgUnitsLevelsReducer';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import { decodeSearch, encodeUriSearches } from '../utils';
+import { useOrgUnitsFiltersData } from '../hooks';
 import { baseUrls } from '../../../constants/urls';
+
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -91,19 +89,11 @@ const OrgUnitsFiltersComponent = ({
 
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        dispatch(resetOrgUnitsLevels());
-        dispatch(setFetchingOrgUnitTypes(true));
-        fetchOrgUnitsTypes(dispatch).then(newOrgUnitTypes => {
-            dispatch(setOrgUnitTypes(newOrgUnitTypes));
-            dispatch(setFetchingOrgUnitTypes(false));
-        });
-        setFetchingGroups(true);
-        fetchGroups(dispatch).then(newGroups => {
-            setFetchingGroups(false);
-            dispatch(setGroups(newGroups));
-        });
-    }, []);
+    useOrgUnitsFiltersData(
+        dispatch,
+        setFetchingOrgUnitTypes,
+        setFetchingGroups,
+    );
 
     const onChange = (value, urlKey) => {
         if (urlKey !== 'color') {

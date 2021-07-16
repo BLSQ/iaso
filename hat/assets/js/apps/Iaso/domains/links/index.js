@@ -1,238 +1,159 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
-import { bindActionCreators } from 'redux';
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { withRouter } from 'react-router';
 
-import { withStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
-import {
-    fetchOrgUnitsTypes,
-    saveLink,
-    fetchSources,
-    fetchAlgorithms,
-    fetchAlgorithmRuns,
-    fetchLinks,
-} from '../../utils/requests';
-
-import { setOrgUnitTypes, setSources } from '../orgUnits/actions';
-
-import { setAlgorithms, setAlgorithmRuns } from './actions';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { saveLink, fetchLinks } from '../../utils/requests';
 
 import { linksTableColumns } from './config';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import LinksDetails from './components/LinksDetailsComponent';
 import SingleTable from '../../components/tables/SingleTable';
-import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
 import { baseUrls } from '../../constants/urls';
 import { linksFilters } from '../../constants/filters';
+
+import { useLinksFiltersData } from './hooks';
 
 import MESSAGES from './messages';
 
 const baseUrl = baseUrls.links;
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     reactTable: {
         ...commonStyles(theme).reactTable,
         marginTop: theme.spacing(4),
     },
-});
+}));
 
-class Links extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            tableColumns: linksTableColumns(
-                props.intl.formatMessage,
-                link => this.validateLink(link),
-                props.classes,
-            ),
-            expanded: {},
-            forceRefresh: false,
-        };
-    }
+const Links = ({ params, router }) => {
+    const classes = useStyles();
+    const intl = useSafeIntl();
+    const dispatch = useDispatch();
+    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
+    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
+    const sources = useSelector(state => state.orgUnits.sources);
+    const profiles = useSelector(state => state.users.list);
+    const algorithms = useSelector(state => state.links.algorithmsList);
+    const algorithmRuns = useSelector(state => state.links.algorithmRunsList);
 
-    // eslint-disable-next-line camelcase
-    UNSAFE_componentWillMount() {
-        const { dispatch, fetchUsersProfiles } = this.props;
-        fetchUsersProfiles();
-        fetchOrgUnitsTypes(dispatch).then(orgUnitTypes =>
-            this.props.setOrgUnitTypes(orgUnitTypes),
-        );
-        fetchSources(dispatch).then(sources => this.props.setSources(sources));
-        fetchAlgorithms(dispatch).then(algoList =>
-            this.props.setAlgorithms(algoList),
-        );
-        fetchAlgorithmRuns(dispatch).then(algoRunsList =>
-            this.props.setAlgorithmRuns(algoRunsList),
-        );
-    }
+    const [expanded, setExpanded] = useState({});
+    const [forceRefresh, setForceRefresh] = useState(false);
+    const [fetchingRuns, setFetchingRuns] = useState(false);
+    const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
+    const [fetchingProfiles, setFetchingProfiles] = useState(false);
+    const [fetchingAlgorithms, setFetchingAlgorithms] = useState(false);
+    const [fetchingSources, setFetchingSource] = useState(false);
 
-    onExpandedChange(expanded) {
-        this.setState({
-            expanded,
-        });
-    }
+    useLinksFiltersData(
+        dispatch,
+        setFetchingRuns,
+        setFetchingOrgUnitTypes,
+        setFetchingProfiles,
+        setFetchingAlgorithms,
+        setFetchingSource,
+    );
 
-    onDataLoaded() {
-        this.setState({
-            expanded: {},
-        });
-    }
-
-    validateLink(link) {
-        const { dispatch } = this.props;
+    const validateLink = link => {
         const newLink = {
             ...link,
             validated: !link.validated,
         };
         saveLink(dispatch, newLink).then(() => {
-            this.setState({
-                forceRefresh: true,
-            });
+            setForceRefresh(true);
         });
-    }
+    };
+    const [tableColumns] = useState(
+        linksTableColumns(
+            intl.formatMessage,
+            link => validateLink(link),
+            classes,
+        ),
+    );
 
-    render() {
-        const {
-            params,
-            intl: { formatMessage },
-            prevPathname,
-            router,
-            orgUnitTypes,
-            sources,
-            profiles,
-            algorithms,
-            algorithmRuns,
-        } = this.props;
-        const { tableColumns, expanded, forceRefresh } = this.state;
-        const displayBackButton =
-            prevPathname && prevPathname.includes('/links/runs/');
-        let currentOrigin;
-        if (params.origin && sources) {
-            currentOrigin = sources.find(
-                s => s.id === parseInt(params.origin, 10),
-            );
-        }
-        let currentDestination;
-        if (params.destination && sources) {
-            currentDestination = sources.find(
-                s => s.id === parseInt(params.destination, 10),
-            );
-        }
-        return (
-            <>
-                <TopBar
-                    title={formatMessage(MESSAGES.title)}
-                    displayBackButton={displayBackButton}
-                    goBack={() => router.goBack()}
-                />
-                <SingleTable
-                    baseUrl={baseUrl}
-                    endPointPath="links"
-                    hideGpkg
-                    dataKey="links"
-                    apiParams={{
-                        ...params,
-                    }}
-                    forceRefresh={forceRefresh}
-                    onForceRefreshDone={() => {
-                        this.setState({
-                            forceRefresh: false,
-                        });
-                    }}
-                    searchActive={params.searchActive === 'true'}
-                    fetchItems={fetchLinks}
-                    defaultSorted={[{ id: 'similarity_score', desc: true }]}
-                    toggleActiveSearch
-                    columns={tableColumns}
-                    filters={linksFilters(
-                        formatMessage,
-                        algorithmRuns,
-                        orgUnitTypes,
-                        profiles,
-                        algorithms,
-                        sources,
-                        currentOrigin,
-                        currentDestination,
-                    )}
-                    onDataLoaded={({ list, count, pages }) => {
-                        this.onDataLoaded(list, count, pages);
-                    }}
-                    extraProps={{
-                        expanded,
-                        onExpandedChange: newExpanded =>
-                            this.onExpandedChange(newExpanded),
-                    }}
-                    subComponent={link =>
-                        link ? (
-                            <LinksDetails
-                                linkId={link.id}
-                                validated={link.validated}
-                                validateLink={() => this.validateLink(link)}
-                            />
-                        ) : null
-                    }
-                />
-            </>
+    const onDataLoaded = () => {
+        setExpanded({});
+    };
+
+    const displayBackButton =
+        prevPathname && prevPathname.includes('/links/runs/');
+    let currentOrigin;
+    if (params.origin && sources) {
+        currentOrigin = sources.find(s => s.id === parseInt(params.origin, 10));
+    }
+    let currentDestination;
+    if (params.destination && sources) {
+        currentDestination = sources.find(
+            s => s.id === parseInt(params.destination, 10),
         );
     }
-}
-
-Links.defaultProps = {
-    prevPathname: null,
-    sources: [],
+    return (
+        <>
+            <TopBar
+                title={intl.formatMessage(MESSAGES.title)}
+                displayBackButton={displayBackButton}
+                goBack={() => router.goBack()}
+            />
+            <SingleTable
+                baseUrl={baseUrl}
+                endPointPath="links"
+                hideGpkg
+                dataKey="links"
+                apiParams={{
+                    ...params,
+                }}
+                forceRefresh={forceRefresh}
+                onForceRefreshDone={() => setForceRefresh(false)}
+                searchActive={params.searchActive === 'true'}
+                fetchItems={fetchLinks}
+                defaultSorted={[{ id: 'similarity_score', desc: true }]}
+                toggleActiveSearch
+                columns={tableColumns}
+                filters={linksFilters(
+                    intl.formatMessage,
+                    algorithmRuns,
+                    orgUnitTypes,
+                    profiles,
+                    algorithms,
+                    sources,
+                    currentOrigin,
+                    currentDestination,
+                    fetchingRuns,
+                    fetchingOrgUnitTypes,
+                    fetchingProfiles,
+                    fetchingAlgorithms,
+                    fetchingSources,
+                )}
+                onDataLoaded={({ list, count, pages }) => {
+                    onDataLoaded(list, count, pages);
+                }}
+                extraProps={{
+                    expanded,
+                    onExpandedChange: newExpanded => setExpanded(newExpanded),
+                }}
+                subComponent={link =>
+                    link ? (
+                        <LinksDetails
+                            linkId={link.id}
+                            validated={link.validated}
+                            validateLink={() => validateLink(link)}
+                        />
+                    ) : null
+                }
+            />
+        </>
+    );
 };
 
 Links.propTypes = {
     router: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
-    setOrgUnitTypes: PropTypes.func.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    setSources: PropTypes.func.isRequired,
-    setAlgorithms: PropTypes.func.isRequired,
-    setAlgorithmRuns: PropTypes.func.isRequired,
-    prevPathname: PropTypes.any,
-    fetchUsersProfiles: PropTypes.func.isRequired,
-    orgUnitTypes: PropTypes.array.isRequired,
-    sources: PropTypes.array,
-    profiles: PropTypes.array.isRequired,
-    algorithms: PropTypes.array.isRequired,
-    algorithmRuns: PropTypes.array.isRequired,
 };
 
-const MapStateToProps = state => ({
-    prevPathname: state.routerCustom.prevPathname,
-    orgUnitTypes: state.orgUnits.orgUnitTypes,
-    sources: state.orgUnits.sources,
-    profiles: state.users.list,
-    algorithms: state.links.algorithmsList,
-    algorithmRuns: state.links.algorithmRunsList,
-});
-
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-    redirectTo: (key, params) =>
-        dispatch(push(`${key}${createUrl(params, '')}`)),
-    setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
-    setSources: sources => dispatch(setSources(sources)),
-    setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
-    setAlgorithmRuns: algoRunsList => dispatch(setAlgorithmRuns(algoRunsList)),
-    ...bindActionCreators(
-        {
-            fetchUsersProfiles: fetchUsersProfilesAction,
-        },
-        dispatch,
-    ),
-});
-
-export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(Links)),
-);
+export default withRouter(Links);

@@ -4,6 +4,7 @@ import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
 import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
 import { circleColorMarkerOptions } from '../../utils/mapUtils';
+
 import MESSAGES from './messages';
 
 export const getPolygonPositionsFromSimplifiedGeom = field => {

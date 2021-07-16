@@ -519,10 +519,14 @@ export const runsFilters = (
     sources = [],
     currentOrigin = null,
     currentDestination = null,
+    fetchingProfiles,
+    fetchingAlgorithms,
+    fetchingSources,
 ) => {
     const filters = [
         {
             ...algo(algorithms),
+            loading: fetchingAlgorithms,
             column: 1,
         },
         {
@@ -532,6 +536,7 @@ export const runsFilters = (
                 'launcher',
                 formatMessage(MESSAGES.launcher),
             ),
+            loading: fetchingProfiles,
             column: 1,
         },
         {
@@ -542,6 +547,7 @@ export const runsFilters = (
                 'origin',
                 formatMessage(MESSAGES.sourceorigin),
             ),
+            loading: fetchingSources,
             column: 2,
         },
         {
@@ -596,6 +602,11 @@ export const linksFilters = (
     sources = [],
     currentOrigin = null,
     currentDestination = null,
+    fetchingRuns,
+    fetchingOrgUnitTypes,
+    fetchingProfiles,
+    fetchingAlgorithms,
+    fetchingSources,
 ) => {
     const filters = [
         {
@@ -604,10 +615,12 @@ export const linksFilters = (
         },
         {
             ...algoRun(algorithmRuns, formatMessage),
+            loading: fetchingRuns,
             column: 1,
         },
         {
             ...orgUnitType(orgUnitTypes),
+            loading: fetchingOrgUnitTypes,
             column: 1,
         },
         {
@@ -616,10 +629,12 @@ export const linksFilters = (
         },
         {
             ...validator(profiles),
+            loading: fetchingProfiles,
             column: 2,
         },
         {
             ...algo(algorithms),
+            loading: fetchingAlgorithms,
             column: 2,
         },
         {
@@ -634,6 +649,7 @@ export const linksFilters = (
                 'origin',
                 formatMessage(MESSAGES.sourceorigin),
             ),
+            loading: fetchingSources,
             column: 3,
         },
         {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
@@ -21,13 +21,6 @@ import {
     instanceStatus,
     instanceDeleted,
 } from '../../../constants/filters';
-
-import {
-    fetchOrgUnitsTypes,
-    fetchDevices,
-    fetchDevicesOwnerships,
-    fetchPeriods,
-} from '../../../utils/requests';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
 
@@ -38,12 +31,8 @@ import { getOrgUnitParentsIds } from '../../orgUnits/utils';
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 import { redirectTo, redirectToReplace } from '../../../routing/actions';
-import { setOrgUnitTypes } from '../../orgUnits/actions';
-import {
-    setDevicesList,
-    setDevicesOwnershipList,
-} from '../../../redux/devicesReducer';
-import { setPeriods } from '../../periods/actions';
+
+import { useInstancesFiltersData } from '../hooks';
 
 import MESSAGES from '../messages';
 
@@ -96,35 +85,21 @@ const InstancesFiltersComponent = ({
         },
         instanceDeleted(),
     ];
+    useInstancesFiltersData(
+        periodsList,
+        formId,
+        setFetchingOrgUnitTypes,
+        setFetchingDevices,
+        setFetchingDevicesOwnerships,
+        setFetchingPeriodsList,
+    );
+
     if (periodsList.length > 0) {
         secondColumnFilters.unshift({
             ...periods(periodsList),
             loading: fetchingPeriodsList,
         });
     }
-
-    useEffect(() => {
-        setFetchingOrgUnitTypes(true);
-        fetchOrgUnitsTypes(dispatch).then(newOrgUnitTypes => {
-            setFetchingOrgUnitTypes(false);
-            dispatch(setOrgUnitTypes(newOrgUnitTypes));
-        });
-        setFetchingDevices(true);
-        fetchDevices(dispatch).then(newDevices => {
-            setFetchingDevices(false);
-            dispatch(setDevicesList(newDevices));
-        });
-        setFetchingDevicesOwnerships(true);
-        fetchDevicesOwnerships(dispatch).then(devicesOwnershipsList => {
-            setFetchingDevicesOwnerships(false);
-            dispatch(setDevicesOwnershipList(devicesOwnershipsList));
-        });
-        setFetchingPeriodsList(true);
-        fetchPeriods(dispatch, formId).then(newPeriods => {
-            setFetchingPeriodsList(false);
-            dispatch(setPeriods(newPeriods));
-        });
-    }, []);
 
     const handleSearch = () => {
         if (isInstancesFilterUpdated) {

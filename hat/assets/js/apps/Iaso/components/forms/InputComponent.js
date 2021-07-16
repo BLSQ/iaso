@@ -10,9 +10,8 @@ import {
     SearchInput,
     translateOptions,
     injectIntl,
-    // Select,
+    Select,
 } from 'bluesquare-components';
-import { Select } from './Select';
 import MESSAGES from '../../domains/forms/messages';
 
 /**

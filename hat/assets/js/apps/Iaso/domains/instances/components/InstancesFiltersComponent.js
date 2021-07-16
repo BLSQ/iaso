@@ -229,13 +229,6 @@ class InstancesFiltersComponent extends Component {
                                     onEnterPressed={() => this.onSearch()}
                                 />
                                 <OrgUnitTreeviewModal
-                                    renderTrigger={({ openDialog }) => (
-                                        <IconButtonComponent
-                                            onClick={openDialog}
-                                            icon="globe"
-                                            tooltipMessage={MESSAGES.search}
-                                        />
-                                    )}
                                     toggleOnLabelClick={false}
                                     titleMessage={MESSAGES.search}
                                     onConfirm={orgUnitId => {

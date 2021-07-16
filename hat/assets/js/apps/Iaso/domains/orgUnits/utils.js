@@ -189,7 +189,6 @@ export const getOrgUnitAncestorsNames = orgUnit => {
     const result = getOrgUnitsParentsUntilRoot(orgUnit)
         .map(parent => parent.name)
         .reverse();
-    // result.push(orgUnit.name);
     return result;
 };
 

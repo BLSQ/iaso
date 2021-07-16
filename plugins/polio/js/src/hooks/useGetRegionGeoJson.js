@@ -27,5 +27,8 @@ export const useGetRegionGeoJson = region => {
         {
             enabled: Boolean(region) && isFetching,
         },
+        {
+            refetchOnWindowFocus: false,
+        },
     );
 };

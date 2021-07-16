@@ -6,7 +6,7 @@ const useFetchOnMount = promisesArray => {
     useEffect(() => {
         promisesArray.forEach(p => {
             p.setFetching(true);
-            p.fetch(dispatch, [...(p.args ?? [])]).then(data => {
+            p.fetch(...[dispatch, ...(p.args ?? [])]).then(data => {
                 p.setFetching(false);
                 p.setData && dispatch(p.setData(data));
             });

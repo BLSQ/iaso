@@ -43,7 +43,7 @@
         "@material-ui/icons": "^4.2.1",
         "@material-ui/lab": "^4.0.0-alpha.48",
         "@material-ui/pickers": "^3.2.10",
-        "bluesquare-components": "file:../../bluesquare-components/lib/bluesquare-components-0.1.0.tgz",
+        "bluesquare-components": "github:BLSQ/bluesquare-components#IA-651-autocomplete",
         "classnames": "^2.2.6",
         "color": "^3.1.2",
         "font-awesome": "^4.7.0",

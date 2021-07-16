@@ -32,7 +32,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const Links = ({ params, router }) => {
+export const Links = ({ params, router }) => {
     const classes = useStyles();
     const intl = useSafeIntl();
     const dispatch = useDispatch();

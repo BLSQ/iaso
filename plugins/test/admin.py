@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from plugins.test.models import BlogPost
 
 

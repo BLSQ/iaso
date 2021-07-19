@@ -21,7 +21,9 @@ from .preparedness.spreadsheet_manager import *
 
 
 class GroupSerializer(serializers.ModelSerializer):
-    org_units = serializers.PrimaryKeyRelatedField(many=True, allow_empty=True, queryset=OrgUnit.objects.all())
+    org_units = serializers.PrimaryKeyRelatedField(
+        many=True, allow_empty=True, queryset=OrgUnit.objects.all(), style={"base_template": "input.html"}
+    )
 
     class Meta:
         model = Group

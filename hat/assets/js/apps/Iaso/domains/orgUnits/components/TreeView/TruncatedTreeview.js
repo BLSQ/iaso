@@ -21,7 +21,7 @@ const styles = {
 const useStyles = makeStyles(styles);
 
 const TruncatedTreeview = ({ onClick, selectedItems }) => {
-    const uniqueItems = selectedItems?.map((item, index) => `${item}-${index}`);
+    console.log('truncatedTree prop', selectedItems);
     const style = useStyles();
     const makeTreeItems = items => {
         if (!items) return <p>Select org unit</p>;
@@ -36,8 +36,8 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
                 onLabelClick={e => e.preventDefault()}
                 collapseIcon={<ExpandMoreIcon />}
                 expandIcon={<ChevronRightIcon />}
-                label={item.split('-')[0]}
-                nodeId={item}
+                label={item.name}
+                nodeId={item.id}
             >
                 {items.length >= 1 ? makeTreeItems(nextItems) : null}
             </TreeItem>
@@ -49,10 +49,10 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
         <TreeView
             onClick={onClick}
             disableSelection
-            expanded={uniqueItems ?? []}
+            expanded={selectedItems ?? []}
             className={style.truncatedTreeview}
         >
-            {makeTreeItems(uniqueItems)}
+            {makeTreeItems(selectedItems)}
         </TreeView>
     );
 };

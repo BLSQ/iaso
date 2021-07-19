@@ -1,17 +1,23 @@
 import { iasoGetRequest } from '../../../../utils/requests';
+import { getOrgUnitAncestors } from '../../utils';
+
+// hack to get api query to return parent tree. Should beremoved when API is updated
+const LIMIT_HACK = '&limit=100000';
 
 const getChildrenData = async id => {
     const response = await iasoGetRequest({
         disableSuccessSnackBar: true,
         requestParams: {
-            url: `/api/orgunits/?&parent_id=${id}&defaultVersion=true&validation_status=all`,
+            url: `/api/orgunits/?&parent_id=${id}&defaultVersion=true&validation_status=all${LIMIT_HACK}`,
         },
     });
-    const useableData = response.orgUnits.map(orgUnit => {
+    console.log('RESPONSE', response);
+    const useableData = response.orgunits.map(orgUnit => {
         return {
             id: orgUnit.id,
             name: orgUnit.name,
             hasChildren: orgUnit.has_children,
+            data: getOrgUnitAncestors(orgUnit),
         };
     });
     return useableData;
@@ -21,14 +27,15 @@ const getRootData = async () => {
     const response = await iasoGetRequest({
         disableSuccessSnackBar: true,
         requestParams: {
-            url: `/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all`,
+            url: `/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all${LIMIT_HACK}`,
         },
     });
-    const useableData = response.orgUnits.map(orgUnit => {
+    const useableData = response.orgunits.map(orgUnit => {
         return {
             id: orgUnit.id.toString(),
             name: orgUnit.name,
             hasChildren: orgUnit.has_children,
+            data: getOrgUnitAncestors(orgUnit),
         };
     });
     return useableData;

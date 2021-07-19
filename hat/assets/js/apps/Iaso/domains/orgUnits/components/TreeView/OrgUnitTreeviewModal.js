@@ -12,7 +12,7 @@ import {
 import {
     OrgUnitLabel,
     getOrgUnitAncestorsIds,
-    getOrgUnitAncestorsNames,
+    // getOrgUnitAncestorsNames,
 } from '../../utils';
 import OrgUnitTooltip from '../OrgUnitTooltip';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
@@ -23,10 +23,10 @@ const tooltip = (orgUnit, icon) => (
     </OrgUnitTooltip>
 );
 
-const getOrgUnitGenealogy = async orgUnit => {
-    const fullOrgUnit = await getOrgUnit(orgUnit);
-    return getOrgUnitAncestorsNames(fullOrgUnit);
-};
+// const getOrgUnitGenealogy = async orgUnit => {
+//     const fullOrgUnit = await getOrgUnit(orgUnit);
+//     return getOrgUnitAncestorsNames(fullOrgUnit);
+// };
 
 const OrgUnitTreeviewModal = ({
     titleMessage,
@@ -50,40 +50,52 @@ const OrgUnitTreeviewModal = ({
     );
 
     const onLabelClick = useCallback(
-        orgUnits => {
-            if (multiselect) setSelectedOrgUnits(orgUnits);
+        (orgUnitIds, parentsData) => {
+            if (multiselect) {
+                setSelectedOrgUnits(orgUnitIds);
+            }
+            const newSelectedOrgUnitParents = [
+                ...selectedOrgUnitParents,
+                parentsData,
+            ];
+            console.log(
+                'updated parent selection',
+                newSelectedOrgUnitParents,
+                parentsData,
+            );
+            setSelectedOrgUnitParents(existingSelection => [
+                ...existingSelection,
+                parentsData,
+            ]);
         },
-        [multiselect, selectedOrgUnits],
+        [multiselect, selectedOrgUnits, selectedOrgUnitParents],
     );
 
     const onModalConfirm = useCallback(
         async closeDialog => {
-            if (!multiselect) {
-                const genealogy = getOrgUnitGenealogy(selectedOrgUnits);
-                setSelectedOrgUnitParents([genealogy]);
-            } else {
-                const genealogies = selectedOrgUnits.map(selectedOrgUnit =>
-                    getOrgUnitGenealogy(selectedOrgUnit),
-                );
-                // launching all requests, waiting for the slowest one to finish
-                Promise.all(genealogies).then(values => {
-                    setSelectedOrgUnitParents(values);
-                });
-            }
+            // if (!multiselect) {
+            //     // TODO refactor to remove call
+            //     const genealogy = getOrgUnitGenealogy(selectedOrgUnits);
+            //     setSelectedOrgUnitParents([genealogy]);
+            // } else {
+            //     // TODO refactor to remove call
+            //     const genealogies = selectedOrgUnits.map(selectedOrgUnit =>
+            //         getOrgUnitGenealogy(selectedOrgUnit),
+            //     );
+            //     // launching all requests, waiting for the slowest one to finish
+            //     Promise.all(genealogies).then(values => {
+            //         setSelectedOrgUnitParents(values);
+            //     });
+            // }
             onConfirm(selectedOrgUnits);
             closeDialog();
         },
-        [
-            selectedOrgUnits,
-            onConfirm,
-            getOrgUnit,
-            getOrgUnitAncestorsNames,
-            multiselect,
-        ],
+        [selectedOrgUnits, onConfirm],
     );
 
-    const onModalCancel = () => {
+    const onModalCancel = closeDialog => {
         setSelectedOrgUnits(null);
+        closeDialog();
     };
 
     const resetSelection = () => {
@@ -91,7 +103,7 @@ const OrgUnitTreeviewModal = ({
         setSelectedOrgUnitParents([]);
         onConfirm(null);
     };
-    console.log('Modal selected org units', selectedOrgUnits);
+    // console.log('Modal selected org units', selectedOrgUnits);
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={({ openDialog }) => (

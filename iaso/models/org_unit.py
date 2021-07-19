@@ -342,6 +342,8 @@ class OrgUnit(TreeModel):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
+            # FIXME Don't commit on prod !!!!!
+            "has_children": self.children().count() > 0 if self.path else False,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -369,6 +371,8 @@ class OrgUnit(TreeModel):
             "source_ref": self.source_ref,
             "parent": self.parent.as_small_dict() if self.parent else None,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
+            # FIXME Don't commit on prod !!!!!
+            "has_children": self.children().count() > 0 if self.path else False,
         }
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index

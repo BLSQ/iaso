@@ -54,12 +54,12 @@ const TreeViewWithSearch = ({
 
     // Tick and untick checkbox
     const handleCheckbox = useCallback(
-        id => {
+        (id, data) => {
             const newTicked = ticked.includes(id)
                 ? ticked.filter(tickedId => tickedId !== id)
                 : [...ticked, id];
             setTicked(newTicked);
-            onLabelClick(newTicked);
+            onLabelClick(newTicked, data);
         },
         [onLabelClick, ticked],
     );

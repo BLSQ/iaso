@@ -31,7 +31,7 @@ const EnrichedTreeItem = ({
     // notifyParent,
     toggleOnLabelClick,
     // icon,  //for checkboxes
-    onCheckBoxClick, // for checkboxes
+    // onCheckBoxClick, // for checkboxes
     onLabelClick, // this instead for checkboxes
     data, // additional data that can be passed up to the parent (eg org unit details)
     // selected,
@@ -59,7 +59,7 @@ const EnrichedTreeItem = ({
     // eslint-disable-next-line no-unused-vars
     const handleIconClick = e => {
         // e.preventDefault();
-        onCheckBoxClick(data);
+        // onCheckBoxClick(data);
     };
 
     const makeSubTree = subTreeData => {
@@ -73,7 +73,7 @@ const EnrichedTreeItem = ({
                 expanded={expanded}
                 hasChildren={unit.hasChildren}
                 toggleOnLabelClick={toggleOnLabelClick}
-                onCheckBoxClick={onCheckBoxClick}
+                // onCheckBoxClick={onCheckBoxClick}
                 onLabelClick={onLabelClick}
                 data={unit.data ?? null}
                 withCheckbox={withCheckbox}
@@ -139,7 +139,7 @@ EnrichedTreeItem.propTypes = {
     expanded: arrayOf(string),
     hasChildren: bool,
     // icon: element,
-    onCheckBoxClick: func,
+    // onCheckBoxClick: func,
     toggleOnLabelClick: bool,
     data: any,
     onLabelClick: func,
@@ -153,7 +153,7 @@ EnrichedTreeItem.defaultProps = {
     expanded: [],
     hasChildren: false,
     toggleOnLabelClick: true,
-    onCheckBoxClick: () => {},
+    // onCheckBoxClick: () => {},
     onLabelClick: () => {},
     data: null,
     withCheckbox: false,

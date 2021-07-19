@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { string, func, arrayOf, bool, any, array } from 'prop-types';
 import { TreeItem } from '@material-ui/lab';
 import { useSafeIntl } from 'bluesquare-components';
@@ -48,12 +48,15 @@ const EnrichedTreeItem = ({
 
     const { formatMessage } = useSafeIntl();
 
-    const handleLabelClick = e => {
-        if (!toggleOnLabelClick) {
-            e.preventDefault();
-        }
-        onLabelClick(id);
-    };
+    const handleLabelClick = useCallback(
+        e => {
+            if (!toggleOnLabelClick) {
+                e.preventDefault();
+            }
+            onLabelClick(id, data);
+        },
+        [childrenData],
+    );
 
     // TODO disciminate Icon from chevron
     // eslint-disable-next-line no-unused-vars
@@ -81,7 +84,6 @@ const EnrichedTreeItem = ({
             />
         ));
     };
-    // console.log('isTicked', isTicked, ticked, id);
     if (isExpanded && isLoading) {
         return (
             <TreeItem label={label} nodeId={id} icon={<ExpandMoreIcon />}>

@@ -11,8 +11,10 @@ const getChildrenData = async id => {
             url: `/api/orgunits/?&parent_id=${id}&defaultVersion=true&validation_status=all${LIMIT_HACK}`,
         },
     });
-    console.log('RESPONSE', response);
+    // console.log('RESPONSE', response);
     const useableData = response.orgunits.map(orgUnit => {
+        // const data = getOrgUnitAncestors(orgUnit);
+        // console.log('DATA', data);
         return {
             id: orgUnit.id,
             name: orgUnit.name,

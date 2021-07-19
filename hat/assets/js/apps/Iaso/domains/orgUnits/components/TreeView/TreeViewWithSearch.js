@@ -36,6 +36,12 @@ const TreeViewWithSearch = ({
     const [selected, setSelected] = useState(multiselect ? [] : '');
     const [expanded, setExpanded] = useState([]);
     const [ticked, setTicked] = useState([]);
+    // const [renderCount, setRenderCount] = useState(0);
+
+    // useEffect(() => {
+    //     console.log('ticked', ticked);
+    //     setRenderCount(count => count + 1);
+    // }, [ticked]);
 
     const onNodeSelect = useCallback(
         selection => {
@@ -45,12 +51,12 @@ const TreeViewWithSearch = ({
         [onSelect],
     );
 
-    useEffect(() => {
-        console.log('effect!');
-        if (multiselect && preselected) setTicked(preselected);
-        if (!multiselect && preselected) setSelected(preselected);
-        if (preexpanded) setExpanded(preexpanded); // doesn't work -> need to get id i.o name
-    }, [preselected, preexpanded, multiselect]);
+    // useEffect(() => {
+    //     console.log('effect!');
+    //     if (multiselect && preselected) setTicked(preselected);
+    //     if (!multiselect && preselected) setSelected(preselected);
+    //     if (preexpanded) setExpanded(preexpanded); // doesn't work -> need to get id i.o name
+    // }, [preselected, preexpanded, multiselect]);
 
     // Tick and untick checkbox
     const handleCheckbox = useCallback(
@@ -59,6 +65,7 @@ const TreeViewWithSearch = ({
                 ? ticked.filter(tickedId => tickedId !== id)
                 : [...ticked, id];
             setTicked(newTicked);
+            console.log('tick update', ticked, newTicked);
             onLabelClick(newTicked, data);
         },
         [onLabelClick, ticked],
@@ -97,6 +104,7 @@ const TreeViewWithSearch = ({
                 toolTip={toolTip}
             />
             <IasoTreeView
+                // key={`iasotreeview${renderCount.toString()}`}
                 labelField={labelField}
                 nodeField={nodeField}
                 getChildrenData={getChildrenData}

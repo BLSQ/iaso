@@ -1,5 +1,5 @@
 import React from 'react';
-import { arrayOf, func, string } from 'prop-types';
+import { arrayOf, func, object } from 'prop-types';
 import { TreeView, TreeItem } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/core/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -21,7 +21,6 @@ const styles = {
 const useStyles = makeStyles(styles);
 
 const TruncatedTreeview = ({ onClick, selectedItems }) => {
-    console.log('truncatedTree prop', selectedItems);
     const style = useStyles();
     const makeTreeItems = items => {
         if (!items) return <p>Select org unit</p>;
@@ -37,7 +36,7 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
                 collapseIcon={<ExpandMoreIcon />}
                 expandIcon={<ChevronRightIcon />}
                 label={item.name}
-                nodeId={item.id}
+                nodeId={item.id.toString()}
             >
                 {items.length >= 1 ? makeTreeItems(nextItems) : null}
             </TreeItem>
@@ -49,7 +48,7 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
         <TreeView
             onClick={onClick}
             disableSelection
-            expanded={selectedItems ?? []}
+            expanded={selectedItems.map(item => item.id.toString()) ?? []}
             className={style.truncatedTreeview}
         >
             {makeTreeItems(selectedItems)}
@@ -59,7 +58,7 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
 
 TruncatedTreeview.propTypes = {
     onClick: func.isRequired,
-    selectedItems: arrayOf(string),
+    selectedItems: arrayOf(object),
 };
 TruncatedTreeview.defaultProps = {
     selectedItems: null,

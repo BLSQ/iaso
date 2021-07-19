@@ -36,7 +36,7 @@ const OrgUnitTreeviewModal = ({
     multiselect,
 }) => {
     // const [allowConfirm, setAllowConfirm] = useState(false);
-    const [selectedOrgUnits, setSelectedOrgUnits] = useState();
+    const [selectedOrgUnits, setSelectedOrgUnits] = useState([]);
     const [selectedOrgUnitParents, setSelectedOrgUnitParents] = useState([]);
 
     const onOrgUnitSelect = useCallback(
@@ -50,9 +50,15 @@ const OrgUnitTreeviewModal = ({
     );
 
     const onLabelClick = useCallback(
-        (orgUnitIds, parentsData) => {
+        (orgUnitId, parentsData) => {
             if (multiselect) {
-                setSelectedOrgUnits(orgUnitIds);
+                console.log('sent to Modal', orgUnitId);
+                setSelectedOrgUnits(existingSelection => {
+                    if (existingSelection.includes(orgUnitId)) {
+                        return existingSelection.filter(id => id !== orgUnitId);
+                    }
+                    return [...existingSelection, orgUnitId];
+                });
             }
             const newSelectedOrgUnitParents = [
                 ...selectedOrgUnitParents,

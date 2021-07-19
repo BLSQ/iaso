@@ -78,9 +78,7 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
         accessor: 'updated_at',
         Cell: settings => (
             <span>
-                {moment
-                    .unix(settings.original.updated_at)
-                    .format('LTS')}
+                {moment.unix(settings.original.updated_at).format('LTS')}
             </span>
         ),
     },
@@ -132,16 +130,18 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
     },
 ];
 
-export const runsTableColumns = (formatMessage, component) => [
+export const runsTableColumns = (
+    formatMessage,
+    onSelectRunLinks,
+    deleteRuns,
+) => [
     {
         Header: formatMessage(MESSAGES.endedAt),
         accessor: 'ended_at',
         Cell: settings => (
             <span>
                 {settings.original.ended_at ? (
-                    moment
-                        .unix(settings.original.ended_at)
-                        .format('LTS')
+                    moment.unix(settings.original.ended_at).format('LTS')
                 ) : (
                     <LoadingSpinner
                         fixed={false}
@@ -158,9 +158,7 @@ export const runsTableColumns = (formatMessage, component) => [
         accessor: 'created_at',
         Cell: settings => (
             <span>
-                {moment
-                    .unix(settings.original.created_at)
-                    .format('LTS')}
+                {moment.unix(settings.original.created_at).format('LTS')}
             </span>
         ),
     },
@@ -192,9 +190,7 @@ export const runsTableColumns = (formatMessage, component) => [
                 {settings.original.links_count > 0 && (
                     <Link
                         size="small"
-                        onClick={() =>
-                            component.onSelectRunLinks(settings.original)
-                        }
+                        onClick={() => onSelectRunLinks(settings.original)}
                     >
                         {formatThousand(settings.original.links_count)}
                     </Link>
@@ -243,9 +239,7 @@ export const runsTableColumns = (formatMessage, component) => [
                     titleMessage={MESSAGES.deleteRunTitle}
                     message={MESSAGES.deleteRunText}
                     onConfirm={closeDialog =>
-                        component
-                            .deleteRuns(settings.original)
-                            .then(closeDialog)
+                        deleteRuns(settings.original).then(closeDialog)
                     }
                 />
             </section>

@@ -12,18 +12,6 @@ const params = {
 
 const requests = [
     {
-        url: '/api/orgunittypes/',
-        body: {
-            orgUnitTypes: [],
-        },
-    },
-    {
-        url: '/api/groups/',
-        body: {
-            groups: [],
-        },
-    },
-    {
         url: '/api/datasources/',
         body: {
             sources: [],
@@ -40,7 +28,9 @@ describe('OrgUnits connected component', () => {
 
     it('mount properly', () => {
         const connectedWrapper = mount(
-            renderWithStore(<ConnectedOrgUnits params={params} />),
+            renderWithStore(
+                <ConnectedOrgUnits params={params} currentUser={{}} />,
+            ),
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });

@@ -398,8 +398,9 @@ export const fetchLinks = (dispatch, url = '/api/links/') =>
             throw error;
         });
 
-export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') =>
-    getRequest(url)
+export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') => {
+    console.log('url', url);
+    return getRequest(url)
         .then(algorithms => algorithms)
         .catch(error => {
             dispatch(
@@ -410,6 +411,7 @@ export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') =>
             console.error('Error while fetching algorithms list:', error);
             throw error;
         });
+};
 
 export const deleteAlgorithmRun = (dispatch, runId) =>
     deleteRequest(`/api/algorithmsruns/${runId}/`)

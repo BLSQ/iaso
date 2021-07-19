@@ -1,16 +1,15 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { push, replace } from 'react-router-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { withStyles, Button } from '@material-ui/core';
+import { Button, makeStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 
 import Search from '@material-ui/icons/Search';
 
-import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import {
     search,
@@ -30,7 +29,11 @@ import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
 import { getOrgUnitParentsIds } from '../../orgUnits/utils';
 
 import { INSTANCE_STATUSES } from '../constants';
-import { setInstancesFilterUpdated as setInstancesFilterAction } from '../actions';
+import { setInstancesFilterUpdated } from '../actions';
+import { redirectTo, redirectToReplace } from '../../../routing/actions';
+
+import { useInstancesFiltersData } from '../hooks';
+
 import MESSAGES from '../messages';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
@@ -38,9 +41,9 @@ export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     label: MESSAGES[status.toLowerCase()],
 }));
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-});
+}));
 
 const extendFilter = (searchParams, filter, onChange) => ({
     // should be moved from here to a common location
@@ -50,31 +53,67 @@ const extendFilter = (searchParams, filter, onChange) => ({
     callback: (value, urlKey) => onChange(value, urlKey),
 });
 
-class InstancesFiltersComponent extends Component {
-    onSearch() {
-        const {
-            params,
-            isInstancesFilterUpdated,
-            setInstancesFilterUpdated,
-            onSearch,
-            redirectToReplace,
-            baseUrl,
-        } = this.props;
+const InstancesFiltersComponent = ({
+    params: { formId },
+    params,
+    onSearch,
+    baseUrl,
+}) => {
+    const intl = useSafeIntl();
+    const dispatch = useDispatch();
+    const classes = useStyles();
 
+    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
+    const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
+    const periodsList = useSelector(state => state.periods.list);
+    const [fetchingPeriodsList, setFetchingPeriodsList] = useState(false);
+    const devices = useSelector(state => state.devices.list);
+    const [fetchingDevices, setFetchingDevices] = useState(false);
+    const devicesOwnerships = useSelector(state => state.devices.ownershipList);
+    const [fetchingDevicesOwnerships, setFetchingDevicesOwnerships] =
+        useState(false);
+
+    const isInstancesFilterUpdated = useSelector(
+        state => state.instances.isInstancesFilterUpdated,
+    );
+    const searchParams = [{ search: params.search }];
+    const secondColumnFilters = [
+        location(intl.formatMessage),
+        {
+            ...orgUnitType(orgUnitTypes),
+            loading: fetchingOrgUnitTypes,
+        },
+        instanceDeleted(),
+    ];
+    useInstancesFiltersData(
+        periodsList,
+        formId,
+        setFetchingOrgUnitTypes,
+        setFetchingDevices,
+        setFetchingDevicesOwnerships,
+        setFetchingPeriodsList,
+    );
+
+    if (periodsList.length > 0) {
+        secondColumnFilters.unshift({
+            ...periods(periodsList),
+            loading: fetchingPeriodsList,
+        });
+    }
+
+    const handleSearch = () => {
         if (isInstancesFilterUpdated) {
-            setInstancesFilterUpdated(false);
+            dispatch(setInstancesFilterUpdated(false));
             const tempParams = {
                 ...params,
             };
             tempParams.page = 1;
-            redirectToReplace(baseUrl, tempParams);
+            dispatch(redirectToReplace(baseUrl, tempParams));
         }
         onSearch();
-    }
+    };
 
-    onSelectOrgUnit(orgUnit) {
-        const { redirectTo, params, baseUrl, setInstancesFilterUpdated } =
-            this.props;
+    const onSelectOrgUnit = orgUnit => {
         const parentIds = getOrgUnitParentsIds(orgUnit);
         parentIds.push(orgUnit.id);
         const tempParams = {
@@ -82,204 +121,135 @@ class InstancesFiltersComponent extends Component {
             levels: parentIds.join(','),
         };
 
-        redirectTo(baseUrl, tempParams);
-        setInstancesFilterUpdated(true);
-    }
+        dispatch(redirectTo(baseUrl, tempParams));
+        dispatch(setInstancesFilterUpdated(true));
+    };
 
-    onChange(value, urlKey) {
-        const {
-            params,
-            setInstancesFilterUpdated,
-            redirectToReplace,
-            baseUrl,
-        } = this.props;
-        setInstancesFilterUpdated(true);
+    const onChange = (value, urlKey) => {
+        dispatch(setInstancesFilterUpdated(true));
 
         const tempParams = {
             ...params,
             [urlKey]: value,
         };
 
-        redirectToReplace(baseUrl, tempParams);
-    }
-
-    render() {
-        const {
-            params,
-            classes,
-            baseUrl,
-            intl: { formatMessage },
-            orgUnitTypes,
-            devices,
-            devicesOwnerships,
-            periodsList,
-            isInstancesFilterUpdated,
-            setInstancesFilterUpdated,
-        } = this.props;
-
-        const searchParams = [{ search: params.search }];
-        const secondColumnFilters = [
-            location(formatMessage),
-            orgUnitType(orgUnitTypes),
-        ];
-        if (periodsList.length > 0) {
-            secondColumnFilters.unshift(periods(periodsList));
-        }
-        return (
-            <div className={classes.marginBottomBig}>
-                <Grid container spacing={4}>
-                    <Grid item xs={8}>
-                        <Grid container item xs={12}>
-                            <DatesRange
-                                onChangeDate={(key, value) =>
-                                    this.onChange(value, key)
+        dispatch(redirectToReplace(baseUrl, tempParams));
+    };
+    return (
+        <div className={classes.marginBottomBig}>
+            <Grid container spacing={4}>
+                <Grid item xs={8}>
+                    <Grid container item xs={12}>
+                        <DatesRange
+                            onChangeDate={(key, value) => onChange(value, key)}
+                            dateFrom={params.dateFrom}
+                            dateTo={params.dateTo}
+                        />
+                    </Grid>
+                    <Grid container spacing={4}>
+                        <Grid item xs={6}>
+                            <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                onFilterChanged={() =>
+                                    dispatch(setInstancesFilterUpdated(true))
                                 }
-                                dateFrom={params.dateFrom}
-                                dateTo={params.dateTo}
+                                filters={secondColumnFilters}
                             />
                         </Grid>
-                        <Grid container spacing={4}>
-                            <Grid item xs={6}>
-                                <FiltersComponent
-                                    params={params}
-                                    baseUrl={baseUrl}
-                                    onFilterChanged={() =>
-                                        setInstancesFilterUpdated(true)
-                                    }
-                                    filters={secondColumnFilters}
-                                />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <FiltersComponent
-                                    params={params}
-                                    baseUrl={baseUrl}
-                                    onFilterChanged={() =>
-                                        setInstancesFilterUpdated(true)
-                                    }
-                                    filters={[
-                                        instanceStatus(instanceStatusOptions),
-                                        device(devices),
-                                        deviceOwnership(devicesOwnerships),
-                                    ]}
-                                />
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Grid container spacing={4}>
-                            <Grid item xs={12}>
-                                <FiltersComponent
-                                    params={params}
-                                    baseUrl={baseUrl}
-                                    onFilterChanged={() =>
-                                        setInstancesFilterUpdated(true)
-                                    }
-                                    filters={[instanceDeleted()]}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <FiltersComponent
-                                    params={params}
-                                    baseUrl={baseUrl}
-                                    onFilterChanged={() =>
-                                        setInstancesFilterUpdated(true)
-                                    }
-                                    filters={[
-                                        extendFilter(
-                                            searchParams,
-                                            search(),
-                                            (value, urlKey) =>
-                                                this.onChange(value, urlKey),
-                                        ),
-                                    ]}
-                                    onEnterPressed={() => this.onSearch()}
-                                />
-                                <OrgUnitSearch
-                                    onSelectOrgUnit={ou =>
-                                        this.onSelectOrgUnit(ou)
-                                    }
-                                />
-                                <OrgUnitsLevelsFiltersComponent
-                                    onLatestIdChanged={() =>
-                                        setInstancesFilterUpdated(true)
-                                    }
-                                    defaultVersion
-                                    params={params}
-                                    baseUrl={baseUrl}
-                                />
-                            </Grid>
+                        <Grid item xs={6}>
+                            <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                onFilterChanged={() =>
+                                    dispatch(setInstancesFilterUpdated(true))
+                                }
+                                filters={[
+                                    instanceStatus(instanceStatusOptions),
+                                    {
+                                        ...device(devices),
+                                        loading: fetchingDevices,
+                                    },
+                                    {
+                                        ...deviceOwnership(devicesOwnerships),
+                                        loading: fetchingDevicesOwnerships,
+                                    },
+                                ]}
+                            />
                         </Grid>
                     </Grid>
                 </Grid>
+                <Grid item xs={4}>
+                    <Grid container spacing={4}>
+                        <Grid item xs={12}>
+                            <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                onFilterChanged={() =>
+                                    dispatch(setInstancesFilterUpdated(true))
+                                }
+                                filters={[
+                                    extendFilter(
+                                        searchParams,
+                                        search(),
+                                        (value, urlKey) =>
+                                            onChange(value, urlKey),
+                                    ),
+                                ]}
+                                onEnterPressed={() => handleSearch()}
+                            />
+                            <OrgUnitSearch
+                                onSelectOrgUnit={ou => onSelectOrgUnit(ou)}
+                            />
+                            <OrgUnitsLevelsFiltersComponent
+                                onLatestIdChanged={() =>
+                                    dispatch(setInstancesFilterUpdated(true))
+                                }
+                                defaultVersion
+                                params={params}
+                                baseUrl={baseUrl}
+                            />
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
 
+            <Grid
+                container
+                spacing={4}
+                justifyContent="flex-end"
+                alignItems="center"
+            >
                 <Grid
+                    item
+                    xs={2}
                     container
-                    spacing={4}
                     justifyContent="flex-end"
                     alignItems="center"
                 >
-                    <Grid
-                        item
-                        xs={2}
-                        container
-                        justifyContent="flex-end"
-                        alignItems="center"
+                    <Button
+                        disabled={!isInstancesFilterUpdated}
+                        variant="contained"
+                        className={classes.button}
+                        color="primary"
+                        onClick={() => handleSearch()}
                     >
-                        <Button
-                            disabled={!isInstancesFilterUpdated}
-                            variant="contained"
-                            className={classes.button}
-                            color="primary"
-                            onClick={() => this.onSearch()}
-                        >
-                            <Search className={classes.buttonIcon} />
-                            <FormattedMessage {...MESSAGES.search} />
-                        </Button>
-                    </Grid>
+                        <Search className={classes.buttonIcon} />
+                        <FormattedMessage {...MESSAGES.search} />
+                    </Button>
                 </Grid>
-            </div>
-        );
-    }
-}
+            </Grid>
+        </div>
+    );
+};
 InstancesFiltersComponent.defaultProps = {
     baseUrl: '',
 };
 
 InstancesFiltersComponent.propTypes = {
-    intl: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
-    orgUnitTypes: PropTypes.array.isRequired,
-    devices: PropTypes.array.isRequired,
-    devicesOwnerships: PropTypes.array.isRequired,
-    redirectTo: PropTypes.func.isRequired,
-    redirectToReplace: PropTypes.func.isRequired,
-    periodsList: PropTypes.array.isRequired,
-    isInstancesFilterUpdated: PropTypes.bool.isRequired,
-    setInstancesFilterUpdated: PropTypes.func.isRequired,
 };
 
-const MapStateToProps = state => ({
-    orgUnitTypes: state.orgUnits.orgUnitTypes,
-    devices: state.devices.list,
-    devicesOwnerships: state.devices.ownershipList,
-    periodsList: state.periods.list,
-    isInstancesFilterUpdated: state.instances.isInstancesFilterUpdated,
-});
-
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-    redirectTo: (key, params) =>
-        dispatch(push(`${key}${createUrl(params, '')}`)),
-    redirectToReplace: (key, params) =>
-        dispatch(replace(`${key}${createUrl(params, '')}`)),
-    setInstancesFilterUpdated: isInstancesFilterUpdated =>
-        dispatch(setInstancesFilterAction(isInstancesFilterUpdated)),
-});
-
-export default connect(
-    MapStateToProps,
-    MapDispatchToProps,
-)(withStyles(styles)(injectIntl(InstancesFiltersComponent)));
+export default InstancesFiltersComponent;

@@ -311,8 +311,7 @@ describe('useAPI', () => {
         });
         it('stops updating its internal state', () => {
             component.unmount();
-            // expect(refValue.current).to.equal(false); TODO: this test fails after upgrade to React 17
-            expect(refValue.current).to.equal(true);
+            expect(refValue.current).to.equal(false);
             refStub.restore();
         });
     });

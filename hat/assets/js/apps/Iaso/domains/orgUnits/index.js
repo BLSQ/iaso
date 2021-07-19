@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import moment from 'moment';
 import { withStyles, Box, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -19,25 +18,16 @@ import {
     Table,
 } from 'bluesquare-components';
 
-import {
-    fetchOrgUnitsTypes,
-    fetchSources,
-    fetchOrgUnitsList,
-    fetchGroups,
-} from '../../utils/requests';
+import { fetchSources, fetchOrgUnitsList } from '../../utils/requests';
 
 import {
     setOrgUnits,
     setOrgUnitsLocations,
-    setOrgUnitTypes,
     setOrgUnitsListFetching,
     setSources,
-    setFetchingOrgUnitTypes,
     setFiltersUpdated,
-    setGroups,
     resetOrgUnits,
 } from './actions';
-import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
 import { orgUnitsTableColumns } from './config';
 
@@ -123,15 +113,6 @@ class OrgUnits extends Component {
     // eslint-disable-next-line camelcase
     UNSAFE_componentWillMount() {
         const { dispatch, params, currentUser } = this.props;
-        this.props.resetOrgUnitsLevels();
-
-        dispatch(this.props.setFetchingOrgUnitTypes(true));
-        fetchOrgUnitsTypes(dispatch).then(orgUnitTypes => {
-            this.props.setOrgUnitTypes(orgUnitTypes);
-            dispatch(this.props.setFetchingOrgUnitTypes(false));
-        });
-
-        fetchGroups(dispatch).then(groups => this.props.setGroups(groups));
 
         fetchSources(dispatch).then(data => {
             const sources = [];
@@ -571,18 +552,14 @@ OrgUnits.propTypes = {
     setOrgUnits: PropTypes.func.isRequired,
     resetOrgUnits: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
-    setOrgUnitTypes: PropTypes.func.isRequired,
     setSources: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsListFetching: PropTypes.func.isRequired,
-    setFetchingOrgUnitTypes: PropTypes.func.isRequired,
     fetchingList: PropTypes.bool.isRequired,
     setOrgUnitsLocations: PropTypes.func.isRequired,
     fetchingOrgUnitTypes: PropTypes.bool.isRequired,
     filtersUpdated: PropTypes.bool.isRequired,
     setFiltersUpdated: PropTypes.func.isRequired,
-    setGroups: PropTypes.func.isRequired,
-    resetOrgUnitsLevels: PropTypes.func.isRequired,
     searchCounts: PropTypes.array.isRequired,
     currentUser: PropTypes.object.isRequired,
 };
@@ -603,18 +580,13 @@ const MapDispatchToProps = dispatch => ({
     resetOrgUnits: () => dispatch(resetOrgUnits()),
     redirectTo: (key, params) =>
         dispatch(push(`${key}${createUrl(params, '')}`)),
-    setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setSources: sources => dispatch(setSources(sources)),
     setOrgUnitsListFetching: isFetching =>
         dispatch(setOrgUnitsListFetching(isFetching)),
-    setFetchingOrgUnitTypes: isFetching =>
-        dispatch(setFetchingOrgUnitTypes(isFetching)),
     setOrgUnitsLocations: orgUnitsList =>
         dispatch(setOrgUnitsLocations(orgUnitsList)),
     setFiltersUpdated: filtersUpdated =>
         dispatch(setFiltersUpdated(filtersUpdated)),
-    setGroups: groups => dispatch(setGroups(groups)),
-    resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
 });
 
 export default withStyles(styles)(

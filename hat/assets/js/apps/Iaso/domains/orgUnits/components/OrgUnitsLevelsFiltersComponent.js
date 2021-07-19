@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { push } from 'react-router-redux';
 import { connect } from 'react-redux';
+import Box from '@material-ui/core/Box';
 
 import PropTypes from 'prop-types';
 
@@ -212,7 +213,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         } = this.props;
         const { levels } = this.state;
         return (
-            <div>
+            <Box mb={2}>
                 {orgUnitsLevels.map((level, index) => {
                     if (
                         !orgUnitsLevels[index] ||
@@ -245,7 +246,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
                         />
                     );
                 })}
-            </div>
+            </Box>
         );
     }
 }

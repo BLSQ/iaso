@@ -377,6 +377,7 @@ const RiskAssessmentForm = () => {
 };
 
 const ScopeForm = () => {
+    const [selectRegion, setSelectRegion] = useState(false)
     const { values, setFieldValue } = useFormikContext();
 
     const { group = {} } = values;
@@ -387,6 +388,15 @@ const ScopeForm = () => {
             values.org_unit?.id,
     );
 
+    const toggleRegionMessage = selectRegionEnabled => {
+        if(selectRegionEnabled){
+            return "Select by Org Unit";
+        } 
+        return "Select by Region";
+    }
+    const toggleRegionSelect = () => {
+        setSelectRegion(current => !current)
+    }
     const shapes = useMemo(() => {
         return data.map(shape => ({
             ...shape,
@@ -398,21 +408,34 @@ const ScopeForm = () => {
 
     const onSelectOrgUnit = useCallback(
         shape => {
-            var { org_units } = group;
-            const hasFound = org_units.find(org_unit => shape.id === org_unit);
-
-            if (hasFound) {
-                org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
+            console.log("SHAPE", shape);
+            if (selectRegion){
+                // Select region here
+                const { org_units } = group;
+                const regionShapes = shapes.filter(s=>s.parent_id===shape.parent_id).filter(s=>!org_units.includes(s.id)).map(s=>s.id);
+                const updatedSelection = [...org_units,...regionShapes]
+                console.log("updatedSelection", updatedSelection);
+                setFieldValue('group',{
+                    ...group,
+                    org_units:updatedSelection
+                });
             } else {
-                org_units.push(shape.id);
+                var { org_units } = group;
+                const hasFound = org_units.find(org_unit => shape.id === org_unit);
+    
+                if (hasFound) {
+                    org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
+                } else {
+                    org_units.push(shape.id);
+                }
+    
+                setFieldValue('group', {
+                    ...group,
+                    org_units,
+                });
             }
-
-            setFieldValue('group', {
-                ...group,
-                org_units,
-            });
         },
-        [group, setFieldValue],
+        [group, setFieldValue,selectRegion,shapes],
     );
 
     return (
@@ -428,6 +451,7 @@ const ScopeForm = () => {
                         />
                     )}
                 </Grid>
+                <Button onClick={toggleRegionSelect}>{toggleRegionMessage(selectRegion)}</Button>
             </Grid>
         </>
     );

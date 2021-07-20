@@ -1,6 +1,5 @@
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import { useEffect, useRef } from 'react';
-import {Button} from '@material-ui/core';
 
 import 'leaflet/dist/leaflet.css';
 import { useMapContext } from './Context';

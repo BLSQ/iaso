@@ -7,7 +7,6 @@ import {
     LoadingSpinner,
 } from 'bluesquare-components';
 import 'react-table/react-table.css';
-
 import {
     Box,
     Button,
@@ -16,6 +15,9 @@ import {
     DialogContent,
     DialogTitle,
     FormControl,
+    FormControlLabel,
+    FormGroup,
+    Switch,
     Grid,
     InputAdornment,
     InputLabel,
@@ -53,6 +55,7 @@ import { useGetRegionGeoJson } from '../hooks/useGetRegionGeoJson';
 import MESSAGES from '../constants/messages';
 import SearchIcon from '@material-ui/icons/Search';
 import { useDebounce } from 'use-debounce';
+import { classes } from 'istanbul-lib-coverage';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -376,7 +379,24 @@ const RiskAssessmentForm = () => {
     );
 };
 
+const separate = (array, referenceArray) => {
+    const result = {
+        selected:[],
+        unselected:[]
+    };
+    array.forEach(item=>{
+        if(referenceArray.includes(item)){
+            result.selected.push(item);
+        } else {
+            result.unselected.push(item);
+        }
+    });
+    return result;
+
+}
+
 const ScopeForm = () => {
+    // const { formatMessage } = useSafeIntl();
     const [selectRegion, setSelectRegion] = useState(false)
     const { values, setFieldValue } = useFormikContext();
 
@@ -388,12 +408,6 @@ const ScopeForm = () => {
             values.org_unit?.id,
     );
 
-    const toggleRegionMessage = selectRegionEnabled => {
-        if(selectRegionEnabled){
-            return "Select by Org Unit";
-        } 
-        return "Select by Region";
-    }
     const toggleRegionSelect = () => {
         setSelectRegion(current => !current)
     }
@@ -408,17 +422,24 @@ const ScopeForm = () => {
 
     const onSelectOrgUnit = useCallback(
         shape => {
-            console.log("SHAPE", shape);
             if (selectRegion){
-                // Select region here
                 const { org_units } = group;
-                const regionShapes = shapes.filter(s=>s.parent_id===shape.parent_id).filter(s=>!org_units.includes(s.id)).map(s=>s.id);
-                const updatedSelection = [...org_units,...regionShapes]
-                console.log("updatedSelection", updatedSelection);
-                setFieldValue('group',{
-                    ...group,
-                    org_units:updatedSelection
-                });
+                const regionShapes = shapes.filter(s=>s.parent_id===shape.parent_id).map(s=>s.id)
+                const {selected, unselected} = separate(regionShapes, org_units);
+                const isRegionSelected = selected.length === regionShapes.length;
+                if(isRegionSelected){
+                    const regionRemoved = org_units.filter(orgUnit => !regionShapes.includes(orgUnit));
+                    setFieldValue('group',{
+                        ...group,
+                        org_units:regionRemoved
+                    });
+                }else{
+                    const selectionWithRegion = [...org_units,...unselected]
+                    setFieldValue('group',{
+                        ...group,
+                        org_units:selectionWithRegion
+                    });
+                }
             } else {
                 var { org_units } = group;
                 const hasFound = org_units.find(org_unit => shape.id === org_unit);
@@ -451,7 +472,16 @@ const ScopeForm = () => {
                         />
                     )}
                 </Grid>
-                <Button onClick={toggleRegionSelect}>{toggleRegionMessage(selectRegion)}</Button>
+                <Grid xs={12} item>
+                    <FormGroup>
+                        <FormControlLabel
+                        // className={classes.switch}
+                        style={{width:'max-content'}}
+                        control={<Switch size="medium" checked={selectRegion} onChange={toggleRegionSelect} color="primary"/>}
+                        label="Select region"
+                        />
+                    </FormGroup>
+                </Grid>
             </Grid>
         </>
     );

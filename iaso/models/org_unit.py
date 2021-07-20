@@ -386,6 +386,7 @@ class OrgUnit(TreeModel):
             "id": self.id,
             "name": self.name,
             "short_name": self.name,
+            "parent_id": self.parent_id,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,

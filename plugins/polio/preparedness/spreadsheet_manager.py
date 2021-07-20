@@ -28,8 +28,8 @@ def create_spreadsheet(title: str):
     return spreadsheet
 
 
-def update_national_worksheet(sheet: gspread.Worksheet, **kwargs):
-    country_name = kwargs.get("country").name if "country" in kwargs else ""
+def update_national_worksheet(sheet: gspread.Worksheet, country=None, **kwargs):
+    country_name = country.name if country else ""
     updates = [
         {"range": "C4", "values": [[kwargs.get("payment_mode", "")]]},
         {"range": "C11", "values": [[kwargs.get("vacine", "")]]},

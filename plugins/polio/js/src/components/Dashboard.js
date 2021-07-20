@@ -55,7 +55,6 @@ import { useGetRegionGeoJson } from '../hooks/useGetRegionGeoJson';
 import MESSAGES from '../constants/messages';
 import SearchIcon from '@material-ui/icons/Search';
 import { useDebounce } from 'use-debounce';
-import { classes } from 'istanbul-lib-coverage';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -396,7 +395,6 @@ const separate = (array, referenceArray) => {
 }
 
 const ScopeForm = () => {
-    // const { formatMessage } = useSafeIntl();
     const [selectRegion, setSelectRegion] = useState(false)
     const { values, setFieldValue } = useFormikContext();
 
@@ -475,7 +473,6 @@ const ScopeForm = () => {
                 <Grid xs={12} item>
                     <FormGroup>
                         <FormControlLabel
-                        // className={classes.switch}
                         style={{width:'max-content'}}
                         control={<Switch size="medium" checked={selectRegion} onChange={toggleRegionSelect} color="primary"/>}
                         label="Select region"

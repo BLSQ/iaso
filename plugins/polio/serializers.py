@@ -1,11 +1,15 @@
-from plugins.polio.preparedness.calculator import get_preparedness_score
 from django.utils.translation import gettext_lazy as _
+from gspread.exceptions import APIError
+from rest_framework import serializers, exceptions
+
+from plugins.polio.preparedness.calculator import get_preparedness_score
 from django.db.transaction import atomic
 from datetime import datetime, timezone
 
 from rest_framework import serializers
 from iaso.models import Group, OrgUnit, org_unit, Page
 from .models import Preparedness, Round, Campaign, Surge
+
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
@@ -13,11 +17,13 @@ from .preparedness.parser import (
     InvalidFormatError,
     parse_value,
 )
-from gspread.exceptions import APIError
+from .preparedness.spreadsheet_manager import *
 
 
 class GroupSerializer(serializers.ModelSerializer):
-    org_units = serializers.PrimaryKeyRelatedField(many=True, allow_empty=True, queryset=OrgUnit.objects.all())
+    org_units = serializers.PrimaryKeyRelatedField(
+        many=True, allow_empty=True, queryset=OrgUnit.objects.all(), style={"base_template": "input.html"}
+    )
 
     class Meta:
         model = Group
@@ -132,6 +138,40 @@ class OrgUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnit
         fields = ["id", "name", "root", "country_parent"]
+
+
+class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
+    campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all(), write_only=True)
+    url = serializers.URLField(read_only=True)
+
+    def validate(self, attrs):
+        if not PREPAREDNESS_TEMPLATE_ID:
+            raise exceptions.ValidationError({"message": _("Preparedness template not configured")})
+        return attrs
+
+    def create(self, validated_data):
+        campaign = validated_data.get("campaign")
+        spreadsheet = create_spreadsheet(campaign.obr_name)
+
+        update_national_worksheet(
+            spreadsheet.worksheet("National"),
+            vacine=campaign.vacine,
+            payment_mode=campaign.payment_mode,
+            country=campaign.country(),
+        )
+
+        regional_template_worksheet = spreadsheet.worksheet("Regional")
+
+        districts = campaign.get_districts()
+        regions = campaign.get_regions()
+        current_index = 2
+        for index, region in enumerate(regions):
+            regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)
+            region_districts = districts.filter(parent=region)
+            update_regional_worksheet(regional_worksheet, region.name, region_districts)
+            current_index += 1
+
+        return {"url": spreadsheet.url}
 
 
 class CampaignSerializer(serializers.ModelSerializer):

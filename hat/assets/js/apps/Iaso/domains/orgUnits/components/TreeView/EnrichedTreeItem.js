@@ -6,18 +6,20 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import CheckBoxOutlineBlankOutlinedIcon from '@material-ui/icons/CheckBoxOutlineBlankOutlined';
 import CheckBoxOutlinedIcon from '@material-ui/icons/CheckBoxOutlined';
+import IndeterminateCheckBoxOutlinedIcon from '@material-ui/icons/IndeterminateCheckBoxOutlined';
 import { useAPI } from '../../../../utils/requests';
 import { MESSAGES } from './messages';
 
-const makeIcon = (withCheckbox, ticked) => {
+const makeIcon = (withCheckbox, ticked, tickedParent) => {
     if (!withCheckbox) return null;
     if (ticked) return <CheckBoxOutlinedIcon />;
+    if (tickedParent) return <IndeterminateCheckBoxOutlinedIcon />;
     return <CheckBoxOutlineBlankOutlinedIcon />;
 };
 
-const makeLabel = (label, withCheckbox, ticked) => (
+const makeLabel = (label, withCheckbox, ticked, tickedParent) => (
     <div style={{ display: 'flex' }}>
-        {makeIcon(withCheckbox, ticked)}
+        {makeIcon(withCheckbox, ticked, tickedParent)}
         {label}
     </div>
 );
@@ -37,10 +39,12 @@ const EnrichedTreeItem = ({
     // selected,
     withCheckbox,
     ticked,
+    parentsTicked,
 }) => {
     // TODO add optional checkbox and checkbox controls
     const isExpanded = expanded.includes(id);
     const isTicked = ticked.includes(id);
+    const isTickedParent = parentsTicked.includes(id);
     // const [isExpanded, setIsExpanded] = useState(false);
     const { data: childrenData, isLoading } = useAPI(fetchChildrenData, id, {
         preventTrigger: !isExpanded,
@@ -81,6 +85,7 @@ const EnrichedTreeItem = ({
                 data={unit.data ?? null}
                 withCheckbox={withCheckbox}
                 ticked={ticked}
+                parentsTicked={parentsTicked}
             />
         ));
     };
@@ -100,6 +105,7 @@ const EnrichedTreeItem = ({
                         label || `id: ${id.toString()}`,
                         withCheckbox,
                         isTicked,
+                        isTickedParent,
                     )}
                     nodeId={id}
                     collapseIcon={<ExpandMoreIcon />}
@@ -147,6 +153,7 @@ EnrichedTreeItem.propTypes = {
     onLabelClick: func,
     withCheckbox: bool,
     ticked: array,
+    parentsTicked: array,
 };
 
 EnrichedTreeItem.defaultProps = {
@@ -160,6 +167,7 @@ EnrichedTreeItem.defaultProps = {
     data: null,
     withCheckbox: false,
     ticked: [],
+    parentsTicked: [],
 };
 
 export { EnrichedTreeItem };

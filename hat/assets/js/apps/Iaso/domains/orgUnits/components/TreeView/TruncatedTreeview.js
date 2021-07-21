@@ -25,7 +25,7 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
     const makeTreeItems = items => {
         if (items.size === 0) return null;
         const nextItems = new Map(items);
-        // first entry of the map in the form of an array [key,value]
+        // first entry of the map in the form of an array: [key,value]
         const item = nextItems.entries().next().value;
         nextItems.delete(item[0]);
         return (

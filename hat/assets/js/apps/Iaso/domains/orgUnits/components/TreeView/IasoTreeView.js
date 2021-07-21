@@ -19,6 +19,7 @@ const IasoTreeView = ({
     onCheckBoxClick,
     onLabelClick,
     ticked,
+    parentsTicked,
 }) => {
     // TODO add additional state to manage checkbox state
     // TODO add checkbox if multiselect
@@ -49,6 +50,7 @@ const IasoTreeView = ({
                     onLabelClick={onLabelClick}
                     withCheckbox={multiselect}
                     ticked={ticked}
+                    parentsTicked={parentsTicked}
                 />
             ));
         },
@@ -83,6 +85,7 @@ IasoTreeView.propTypes = {
     selected: oneOfType([string, arrayOf(string)]),
     // selected: string || array,
     ticked: array,
+    parentsTicked: array,
 };
 
 IasoTreeView.defaultProps = {
@@ -95,6 +98,7 @@ IasoTreeView.defaultProps = {
     onLabelClick: () => {},
     selected: undefined,
     ticked: [],
+    parentsTicked: [],
 };
 
 export { IasoTreeView };

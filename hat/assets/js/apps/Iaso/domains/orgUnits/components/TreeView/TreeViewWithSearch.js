@@ -56,6 +56,7 @@ const TreeViewWithSearch = ({
     const [expanded, setExpanded] = useState(adaptMap(preexpanded) ?? []);
     const [ticked, setTicked] = useState(preselected ?? []);
     // TODO pass map to children to neutral tick parents
+    // Maybe no state necessary
     const [parentsTicked, setParentsTicked] = useState(
         preexpanded ?? new Map(),
     );
@@ -133,6 +134,7 @@ const TreeViewWithSearch = ({
                 onLabelClick={handleCheckbox}
                 multiselect={multiselect}
                 ticked={ticked}
+                parentsTicked={adaptMap(parentsTicked)}
             />
         </>
     );

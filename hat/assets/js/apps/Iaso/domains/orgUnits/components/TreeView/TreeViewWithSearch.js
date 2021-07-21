@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     string,
     bool,
@@ -7,11 +7,27 @@ import {
     number,
     oneOfType,
     array,
-    arrayOf,
+    any,
 } from 'prop-types';
 import { DynamicSelect } from './DynamicSelect';
 import { MESSAGES } from './messages';
 import { IasoTreeView } from './IasoTreeView';
+
+const adaptMap = value => {
+    if (!value) return null;
+    return Array.from(value.entries()) // original map in array form [[key1, entry1],[key2, entry2]]
+        .map(entry => Array.from(entry[1].keys())) // 2D array containing the keys of each entry from comment above: [[entry1Key1, entry1Key2],[entry2Key1,entry2Key2]]
+        .map(
+            keys =>
+                keys
+                    .map(key => key.toString())
+                    .filter(
+                        (key, _index, keyArray) =>
+                            key !== keyArray[keyArray.length - 1],
+                    ), // removing last entry in the array to avoid expanding it
+        ) // [["entry1Key1"],["entry2Key1"]]. String conversion needed for Treeview
+        .flat();
+};
 
 const TreeViewWithSearch = ({
     labelField, // name
@@ -30,14 +46,19 @@ const TreeViewWithSearch = ({
     onLabelClick,
     // onCheckBoxClick,
     multiselect,
-    preselected,
-    preexpanded,
+    preselected, // TODO rename
+    preexpanded, // TODO rename
 }) => {
-    const [selected, setSelected] = useState(multiselect ? [] : '');
-    const [expanded, setExpanded] = useState([]);
-    const [ticked, setTicked] = useState([]);
+    // TODO Pass selected prop
+    const [selected, setSelected] = useState(
+        preselected ?? multiselect ? [] : '',
+    );
+    const [expanded, setExpanded] = useState(adaptMap(preexpanded) ?? []);
+    const [ticked, setTicked] = useState(preselected ?? []);
     // TODO pass map to children to neutral tick parents
-    const [parentsTicked, setParentsTicked] = useState(new Map());
+    const [parentsTicked, setParentsTicked] = useState(
+        preexpanded ?? new Map(),
+    );
 
     const onNodeSelect = useCallback(
         selection => {
@@ -47,13 +68,6 @@ const TreeViewWithSearch = ({
         [onSelect],
     );
 
-    // useEffect(() => {
-    //     console.log('effect!');
-    //     if (multiselect && preselected) setTicked(preselected);
-    //     if (!multiselect && preselected) setSelected(preselected);
-    //     if (preexpanded) setExpanded(preexpanded); // doesn't work -> need to get id i.o name
-    // }, [preselected, preexpanded, multiselect]);
-
     // Tick and untick checkbox
     const handleCheckbox = useCallback(
         (id, data) => {
@@ -61,16 +75,12 @@ const TreeViewWithSearch = ({
                 ? ticked.filter(tickedId => tickedId !== id)
                 : [...ticked, id];
             setTicked(newTicked);
-            console.log('tick update', ticked, newTicked);
             const updatedParents = new Map(parentsTicked);
             if (parentsTicked.has(id)) {
-                // untick the parents if they're ticked
                 updatedParents.delete(id);
             } else {
-                // tick the parents if they're not
                 updatedParents.set(id, data);
             }
-            console.log('updatedParents', updatedParents);
             setParentsTicked(updatedParents);
 
             onLabelClick(newTicked, updatedParents);
@@ -98,7 +108,6 @@ const TreeViewWithSearch = ({
         [parseNodeIds, onNodeSelect, selected],
     );
 
-    // console.log('preexpanded', preexpanded);
     return (
         <>
             <DynamicSelect
@@ -147,7 +156,8 @@ TreeViewWithSearch.propTypes = {
     onLabelClick: func,
     multiselect: bool,
     preselected: oneOfType([string, array]),
-    preexpanded: arrayOf(string),
+    // preexpanded is a Map
+    preexpanded: any,
 };
 
 TreeViewWithSearch.defaultProps = {

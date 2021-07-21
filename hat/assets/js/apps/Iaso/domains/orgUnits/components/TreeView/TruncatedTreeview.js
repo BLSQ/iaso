@@ -1,5 +1,5 @@
 import React from 'react';
-import { arrayOf, func, any } from 'prop-types';
+import { func, any } from 'prop-types';
 import { TreeView, TreeItem } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/core/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -21,17 +21,14 @@ const styles = {
 const useStyles = makeStyles(styles);
 
 const TruncatedTreeview = ({ onClick, selectedItems }) => {
-    console.log('selectedItems', selectedItems);
     const style = useStyles();
     const makeTreeItems = items => {
-        // if (!items) return <p>Select org unit</p>;
         if (items.size === 0) return null;
         const nextItems = new Map(items);
-        // const nextItems = [...items];
         // first entry of the map in the form of an array [key,value]
         const item = nextItems.entries().next().value;
         nextItems.delete(item[0]);
-        const truncatedTree = (
+        return (
             <TreeItem
                 key={item + nextItems.size.toString()}
                 className={style.truncatedTreeview}
@@ -45,17 +42,14 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
                 {items.size >= 1 ? makeTreeItems(nextItems) : null}
             </TreeItem>
         );
-        return truncatedTree;
     };
-
+    const expanded =
+        Array.from(selectedItems.keys()).map(item => item.toString()) ?? [];
     return (
         <TreeView
             onClick={onClick}
             disableSelection
-            expanded={
-                Array.of(selectedItems.keys()).map(item => item.toString()) ??
-                []
-            }
+            expanded={expanded}
             className={style.truncatedTreeview}
         >
             {makeTreeItems(selectedItems)}
@@ -65,7 +59,7 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
 
 TruncatedTreeview.propTypes = {
     onClick: func.isRequired,
-    // in fact array of Map()
+    // in fact a nested map : {orgUnitId:{parentId:parentName}}
     selectedItems: any,
 };
 TruncatedTreeview.defaultProps = {

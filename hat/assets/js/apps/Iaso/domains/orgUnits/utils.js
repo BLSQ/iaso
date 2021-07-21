@@ -64,7 +64,6 @@ export const getSourcesWithoutCurrentSource = (
 };
 
 export const OrgUnitLabel = ({ orgUnit, withType }) => {
-    // console.log('utils', intl, orgUnit);
     let message = textPlaceholder;
     const intl = useSafeIntl();
     if (orgUnit && orgUnit.name) {

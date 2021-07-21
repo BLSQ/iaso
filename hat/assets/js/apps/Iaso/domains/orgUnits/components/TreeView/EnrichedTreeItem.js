@@ -30,13 +30,9 @@ const EnrichedTreeItem = ({
     hasChildren,
     fetchChildrenData, // fetchChildrenData(id)
     expanded,
-    // notifyParent,
     toggleOnLabelClick,
-    // icon,  //for checkboxes
-    // onCheckBoxClick, // for checkboxes
     onLabelClick, // this instead for checkboxes
     data, // additional data that can be passed up to the parent (eg org unit details)
-    // selected,
     withCheckbox,
     ticked,
     parentsTicked,
@@ -45,7 +41,6 @@ const EnrichedTreeItem = ({
     const isExpanded = expanded.includes(id);
     const isTicked = ticked.includes(id);
     const isTickedParent = parentsTicked.includes(id);
-    // const [isExpanded, setIsExpanded] = useState(false);
     const { data: childrenData, isLoading } = useAPI(fetchChildrenData, id, {
         preventTrigger: !isExpanded,
     });
@@ -62,7 +57,7 @@ const EnrichedTreeItem = ({
         [childrenData, onLabelClick],
     );
 
-    // TODO disciminate Icon from chevron
+    // TODO discriminate Icon from chevron
     // eslint-disable-next-line no-unused-vars
     const handleIconClick = e => {
         // e.preventDefault();
@@ -141,13 +136,10 @@ const EnrichedTreeItem = ({
 EnrichedTreeItem.propTypes = {
     label: string.isRequired,
     id: string.isRequired,
-    // children: oneOfType([element, arrayOf(element)]),
     // should be wrapped in useCallback by parent
     fetchChildrenData: func,
     expanded: arrayOf(string),
     hasChildren: bool,
-    // icon: element,
-    // onCheckBoxClick: func,
     toggleOnLabelClick: bool,
     data: any,
     onLabelClick: func,
@@ -157,12 +149,10 @@ EnrichedTreeItem.propTypes = {
 };
 
 EnrichedTreeItem.defaultProps = {
-    // children: null,
     fetchChildrenData: () => {},
     expanded: [],
     hasChildren: false,
     toggleOnLabelClick: true,
-    // onCheckBoxClick: () => {},
     onLabelClick: () => {},
     data: null,
     withCheckbox: false,

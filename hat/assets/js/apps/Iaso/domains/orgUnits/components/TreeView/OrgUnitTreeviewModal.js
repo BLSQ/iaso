@@ -4,7 +4,7 @@ import { TreeViewWithSearch } from './TreeViewWithSearch';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { MESSAGES } from './messages';
 import { getRootData, getChildrenData, searchOrgUnits } from './requests';
-import { OrgUnitLabel, getOrgUnitAncestorsIds } from '../../utils';
+import { OrgUnitLabel, getOrgUnitAncestors } from '../../utils';
 import OrgUnitTooltip from '../OrgUnitTooltip';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
 
@@ -17,7 +17,6 @@ const tooltip = (orgUnit, icon) => (
 const OrgUnitTreeviewModal = ({
     titleMessage,
     toggleOnLabelClick,
-    // onSelect,
     onConfirm,
     multiselect,
 }) => {
@@ -40,9 +39,7 @@ const OrgUnitTreeviewModal = ({
 
     const onLabelClick = useCallback(
         (orgUnitIds, parentsData) => {
-            if (multiselect) {
-                setSelectedOrgUnits(orgUnitIds);
-            }
+            setSelectedOrgUnits(orgUnitIds);
             setSelectedOrgUnitParents(parentsData);
         },
         [multiselect, selectedOrgUnits, selectedOrgUnitParents],
@@ -69,7 +66,7 @@ const OrgUnitTreeviewModal = ({
 
     const resetSelection = () => {
         setSelectedOrgUnits(null);
-        setSelectedOrgUnitParents([]);
+        setSelectedOrgUnitParents(new Map());
         onConfirm(null);
     };
     return (
@@ -101,11 +98,10 @@ const OrgUnitTreeviewModal = ({
                     <OrgUnitLabel orgUnit={orgUnit} withType />
                 )}
                 toolTip={tooltip}
-                parseNodeIds={getOrgUnitAncestorsIds}
+                parseNodeIds={getOrgUnitAncestors}
                 multiselect={multiselect}
                 preselected={selectedOrgUnits}
                 preexpanded={selectedOrgUnitParents}
-                // onIconClick={setSelectedOrgUnitParents}
                 onLabelClick={onLabelClick}
             />
         </ConfirmCancelDialogComponent>

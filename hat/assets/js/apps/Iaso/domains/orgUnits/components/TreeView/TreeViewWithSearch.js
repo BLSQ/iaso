@@ -64,49 +64,62 @@ const TreeViewWithSearch = ({
     const onNodeSelect = useCallback(
         selection => {
             setSelected(selection);
-            onSelect(selection);
+            if (multiselect) {
+                // disabling when multiselect to avoid allowing user to confirm data while boxes are unticked
+                onSelect(selection);
+            }
         },
-        [onSelect],
+        [onSelect, multiselect],
     );
 
     // Tick and untick checkbox
     const handleCheckbox = useCallback(
         (id, data) => {
-            const newTicked = ticked.includes(id)
-                ? ticked.filter(tickedId => tickedId !== id)
-                : [...ticked, id];
+            let newTicked;
+            let updatedParents;
+            if (multiselect) {
+                newTicked = ticked.includes(id)
+                    ? ticked.filter(tickedId => tickedId !== id)
+                    : [...ticked, id];
+                updatedParents = new Map(parentsTicked);
+            } else {
+                newTicked = [id];
+                updatedParents = new Map();
+            }
             setTicked(newTicked);
-            const updatedParents = new Map(parentsTicked);
             if (parentsTicked.has(id)) {
                 updatedParents.delete(id);
             } else {
                 updatedParents.set(id, data);
             }
             setParentsTicked(updatedParents);
-
             onLabelClick(newTicked, updatedParents);
         },
-        [onLabelClick, ticked, parentsTicked],
+        [onLabelClick, ticked, parentsTicked, multiselect],
     );
 
     const onSearchSelect = useCallback(
+        // this is an org unit so you can access the parents here
         searchSelection => {
-            const idsToExpand = parseNodeIds(searchSelection).map(id =>
+            const ancestors = parseNodeIds(searchSelection);
+            const idsToExpand = Array.from(ancestors.keys()).map(id =>
                 id.toString(),
             );
+            const currentId = idsToExpand[idsToExpand.length - 1];
             if (multiselect) {
                 setExpanded([...expanded, ...idsToExpand]);
-                const newSelected = [
-                    ...selected,
-                    idsToExpand[idsToExpand.length - 1],
-                ];
+                const newSelected = [...selected, currentId];
                 onNodeSelect(newSelected);
             } else {
                 setExpanded(idsToExpand);
-                onNodeSelect(idsToExpand[idsToExpand.length - 1]);
+                const newParentsTicked = new Map();
+                newParentsTicked.set(currentId, ancestors);
+                onNodeSelect(currentId);
+                // TODO check this more cafefully, maybe split up code
+                onLabelClick(currentId, newParentsTicked);
             }
         },
-        [parseNodeIds, onNodeSelect, selected],
+        [parseNodeIds, onNodeSelect, selected, onLabelClick],
     );
 
     return (
@@ -130,7 +143,6 @@ const TreeViewWithSearch = ({
                 onSelect={onNodeSelect}
                 expanded={expanded}
                 onToggle={setExpanded}
-                // onCheckBoxClick={handleCheckbox}
                 onLabelClick={handleCheckbox}
                 multiselect={multiselect}
                 ticked={ticked}

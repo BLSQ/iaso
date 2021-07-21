@@ -21,8 +21,6 @@ const IasoTreeView = ({
     ticked,
     parentsTicked,
 }) => {
-    // TODO add additional state to manage checkbox state
-    // TODO add checkbox if multiselect
     const fetchChildrenData = useCallback(getChildrenData, []);
     const fetchRootData = useCallback(getRootData, []);
     const { data: rootData } = useAPI(fetchRootData);
@@ -84,7 +82,7 @@ IasoTreeView.propTypes = {
     onLabelClick: func,
     selected: oneOfType([string, arrayOf(string)]),
     // selected: string || array,
-    ticked: array,
+    ticked: oneOfType([string, arrayOf(string)]),
     parentsTicked: array,
 };
 

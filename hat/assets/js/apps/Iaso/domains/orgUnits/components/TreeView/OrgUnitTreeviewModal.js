@@ -37,7 +37,9 @@ const OrgUnitTreeviewModal = ({
 }) => {
     // const [allowConfirm, setAllowConfirm] = useState(false);
     const [selectedOrgUnits, setSelectedOrgUnits] = useState([]);
-    const [selectedOrgUnitParents, setSelectedOrgUnitParents] = useState([]);
+    const [selectedOrgUnitParents, setSelectedOrgUnitParents] = useState(
+        new Map(),
+    );
 
     const onOrgUnitSelect = useCallback(
         orgUnit => {
@@ -50,29 +52,39 @@ const OrgUnitTreeviewModal = ({
     );
 
     const onLabelClick = useCallback(
-        (orgUnitId, parentsData) => {
+        (orgUnitIds, parentsData) => {
             if (multiselect) {
-                console.log('sent to Modal', orgUnitId);
-                setSelectedOrgUnits(existingSelection => {
-                    if (existingSelection.includes(orgUnitId)) {
-                        return existingSelection.filter(id => id !== orgUnitId);
-                    }
-                    return [...existingSelection, orgUnitId];
-                });
+                console.log('sent to Modal', orgUnitIds);
+                // setSelectedOrgUnits(existingSelection => {
+                //     if (existingSelection.includes(orgUnitIds)) {
+                //         return existingSelection.filter(
+                //             id => id !== orgUnitIds,
+                //         );
+                //     }
+                //     return [...existingSelection, orgUnitIds];
+                // });
+                // setSelectedOrgUnits(existingSelection => {
+                //     const addedOrgUnits = orgUnitIds.filter(
+                //         id => !existingSelection.includes(id),
+                //     );
+                //     // console.log(
+                //     //     'existing',
+                //     //     existingSelection,
+                //     //     'added',
+                //     //     addedOrgUnits,
+                //     // );
+                //     return [...existingSelection, ...addedOrgUnits];
+                // });
+                setSelectedOrgUnits(orgUnitIds);
             }
-            const newSelectedOrgUnitParents = [
-                ...selectedOrgUnitParents,
-                parentsData,
-            ];
-            console.log(
-                'updated parent selection',
-                newSelectedOrgUnitParents,
-                parentsData,
-            );
-            setSelectedOrgUnitParents(existingSelection => [
-                ...existingSelection,
-                parentsData,
-            ]);
+            console.log('parentsData', parentsData);
+            setSelectedOrgUnitParents(parentsData);
+            // setSelectedOrgUnitParents(existingSelection => {
+            //     const parentsToAdd = parentsData.filter(
+            //         parent => !existingSelection.includes(parent),
+            //     );
+            //     [...existingSelection, parentsData];
+            // });
         },
         [multiselect, selectedOrgUnits, selectedOrgUnitParents],
     );
@@ -110,6 +122,7 @@ const OrgUnitTreeviewModal = ({
         onConfirm(null);
     };
     // console.log('Modal selected org units', selectedOrgUnits);
+    console.log('genealogy', selectedOrgUnitParents);
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={({ openDialog }) => (

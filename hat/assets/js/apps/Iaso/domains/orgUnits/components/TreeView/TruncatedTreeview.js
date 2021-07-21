@@ -1,5 +1,5 @@
 import React from 'react';
-import { arrayOf, func, object } from 'prop-types';
+import { arrayOf, func, any } from 'prop-types';
 import { TreeView, TreeItem } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/core/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -21,24 +21,28 @@ const styles = {
 const useStyles = makeStyles(styles);
 
 const TruncatedTreeview = ({ onClick, selectedItems }) => {
+    console.log('selectedItems', selectedItems);
     const style = useStyles();
     const makeTreeItems = items => {
-        if (!items) return <p>Select org unit</p>;
-        if (items.length === 0) return null;
-        const nextItems = [...items];
-        const item = nextItems.shift();
+        // if (!items) return <p>Select org unit</p>;
+        if (items.size === 0) return null;
+        const nextItems = new Map(items);
+        // const nextItems = [...items];
+        // first entry of the map in the form of an array [key,value]
+        const item = nextItems.entries().next().value;
+        nextItems.delete(item[0]);
         const truncatedTree = (
             <TreeItem
-                key={item + nextItems.length.toString()}
+                key={item + nextItems.size.toString()}
                 className={style.truncatedTreeview}
                 onIconClick={e => e.preventDefault()}
                 onLabelClick={e => e.preventDefault()}
                 collapseIcon={<ExpandMoreIcon />}
                 expandIcon={<ChevronRightIcon />}
-                label={item.name}
-                nodeId={item.id.toString()}
+                label={item[1]}
+                nodeId={item[0].toString()}
             >
-                {items.length >= 1 ? makeTreeItems(nextItems) : null}
+                {items.size >= 1 ? makeTreeItems(nextItems) : null}
             </TreeItem>
         );
         return truncatedTree;
@@ -48,7 +52,10 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
         <TreeView
             onClick={onClick}
             disableSelection
-            expanded={selectedItems.map(item => item.id.toString()) ?? []}
+            expanded={
+                Array.of(selectedItems.keys()).map(item => item.toString()) ??
+                []
+            }
             className={style.truncatedTreeview}
         >
             {makeTreeItems(selectedItems)}
@@ -58,7 +65,8 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
 
 TruncatedTreeview.propTypes = {
     onClick: func.isRequired,
-    selectedItems: arrayOf(object),
+    // in fact array of Map()
+    selectedItems: any,
 };
 TruncatedTreeview.defaultProps = {
     selectedItems: null,

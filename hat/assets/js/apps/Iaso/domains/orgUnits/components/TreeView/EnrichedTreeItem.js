@@ -55,7 +55,7 @@ const EnrichedTreeItem = ({
             }
             onLabelClick(id, data);
         },
-        [childrenData],
+        [childrenData, onLabelClick],
     );
 
     // TODO disciminate Icon from chevron

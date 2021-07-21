@@ -1,4 +1,4 @@
-import { array, func } from 'prop-types';
+import { func, any } from 'prop-types';
 import React from 'react';
 import { Paper } from '@material-ui/core';
 // import { TreeView, TreeItem } from '@material-ui/lab';
@@ -10,16 +10,31 @@ import { MESSAGES } from './messages';
 import { TruncatedTreeview } from './TruncatedTreeview';
 
 const OrgUnitTreeviewPicker = ({ onClick, selectedItems, resetSelection }) => {
+    console.log('selectedItems in Picker', selectedItems);
     const makeTruncatedTrees = treesData => {
-        if (treesData.length === 0)
+        if (treesData.size === 0)
             return <p onClick={onClick}>Select org unit</p>;
-        return treesData.map((treeData, index) => (
-            <TruncatedTreeview
-                onClick={onClick}
-                selectedItems={treeData}
-                key={`TruncatedTree${index.toString()}`}
-            />
-        ));
+        const treeviews = [];
+        treesData.forEach((value, key) => {
+            console.log('treeview', value, key);
+            const treeview = (
+                <TruncatedTreeview
+                    onClick={onClick}
+                    selectedItems={value}
+                    key={`TruncatedTree${key.toString()}`}
+                />
+            );
+            treeviews.push(treeview);
+        });
+
+        // return treesData.map((treeData, index) => (
+        // <TruncatedTreeview
+        //     onClick={onClick}
+        //     selectedItems={treeData}
+        //     key={`TruncatedTree${index.toString()}`}
+        // />
+        // ));
+        return treeviews;
     };
     return (
         <Paper variant="outlined" elevation={0}>
@@ -37,7 +52,8 @@ const OrgUnitTreeviewPicker = ({ onClick, selectedItems, resetSelection }) => {
 
 OrgUnitTreeviewPicker.propTypes = {
     onClick: func.isRequired,
-    selectedItems: array,
+    // map with other maps as values: {id:{id:name}}
+    selectedItems: any,
     resetSelection: func,
 };
 OrgUnitTreeviewPicker.defaultProps = {

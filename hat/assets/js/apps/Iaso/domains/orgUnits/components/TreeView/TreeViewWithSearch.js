@@ -36,12 +36,8 @@ const TreeViewWithSearch = ({
     const [selected, setSelected] = useState(multiselect ? [] : '');
     const [expanded, setExpanded] = useState([]);
     const [ticked, setTicked] = useState([]);
-    // const [renderCount, setRenderCount] = useState(0);
-
-    // useEffect(() => {
-    //     console.log('ticked', ticked);
-    //     setRenderCount(count => count + 1);
-    // }, [ticked]);
+    // TODO pass map to children to neutral tick parents
+    const [parentsTicked, setParentsTicked] = useState(new Map());
 
     const onNodeSelect = useCallback(
         selection => {
@@ -66,9 +62,20 @@ const TreeViewWithSearch = ({
                 : [...ticked, id];
             setTicked(newTicked);
             console.log('tick update', ticked, newTicked);
-            onLabelClick(newTicked, data);
+            const updatedParents = new Map(parentsTicked);
+            if (parentsTicked.has(id)) {
+                // untick the parents if they're ticked
+                updatedParents.delete(id);
+            } else {
+                // tick the parents if they're not
+                updatedParents.set(id, data);
+            }
+            console.log('updatedParents', updatedParents);
+            setParentsTicked(updatedParents);
+
+            onLabelClick(newTicked, updatedParents);
         },
-        [onLabelClick, ticked],
+        [onLabelClick, ticked, parentsTicked],
     );
 
     const onSearchSelect = useCallback(
@@ -91,7 +98,7 @@ const TreeViewWithSearch = ({
         [parseNodeIds, onNodeSelect, selected],
     );
 
-    console.log('preexpanded', preexpanded);
+    // console.log('preexpanded', preexpanded);
     return (
         <>
             <DynamicSelect
@@ -104,7 +111,6 @@ const TreeViewWithSearch = ({
                 toolTip={toolTip}
             />
             <IasoTreeView
-                // key={`iasotreeview${renderCount.toString()}`}
                 labelField={labelField}
                 nodeField={nodeField}
                 getChildrenData={getChildrenData}

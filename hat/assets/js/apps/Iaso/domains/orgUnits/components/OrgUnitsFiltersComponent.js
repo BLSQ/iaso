@@ -14,6 +14,9 @@ import Search from '@material-ui/icons/Search';
 import classNames from 'classnames';
 import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
 import { getChipColors, chipColors } from '../../../constants/chipColors';
+import { SingleSelectTreeView } from './TreeView/SingleSelectTreeView';
+import { getRootData, getChildrenData } from './TreeView/requests';
+import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import {
     search,
@@ -29,7 +32,7 @@ import { setFiltersUpdated, setOrgUnitsLocations } from '../actions';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
-import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
+// import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import { decodeSearch, encodeUriSearches } from '../utils';
 import { baseUrls } from '../../../constants/urls';
@@ -50,6 +53,15 @@ const styles = theme => ({
     },
     marginRight: {
         marginRight: theme.spacing(2),
+    },
+    treeview: {
+        overflowY: 'scroll',
+        overflowX: 'scroll',
+        marginTop: '20px',
+        marginBottom: '15px',
+        maxHeight: '30vh',
+        border: '1px solid grey',
+        borderRadius: '7px',
     },
 });
 
@@ -230,7 +242,7 @@ class OrgUnitsFiltersComponent extends Component {
                                     ]}
                                 />
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid item xs={6} className={classes.treeview}>
                                 <FiltersComponent
                                     params={params}
                                     baseUrl={baseUrl}
@@ -259,6 +271,17 @@ class OrgUnitsFiltersComponent extends Component {
                                     baseUrl={baseUrl}
                                     searchIndex={searchIndex}
                                 />
+
+                                {/* <SingleSelectTreeView
+                                    labelField="name"
+                                    nodeField="id"
+                                    toggleOnLabelClick={false}
+                                    getRootData={getRootData}
+                                    getChildrenData={getChildrenData}
+                                    onSelect={selected => {
+                                        this.onChange(selected, 'levels');
+                                    }}
+                                /> */}
                             </Grid>
                         </Grid>
                     </Grid>

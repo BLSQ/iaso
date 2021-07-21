@@ -9,8 +9,13 @@ import { withStyles, Button } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 
 import Search from '@material-ui/icons/Search';
-
-import { createUrl, injectIntl, commonStyles } from 'bluesquare-components';
+import {
+    createUrl,
+    injectIntl,
+    commonStyles,
+    IconButton as IconButtonComponent,
+} from 'bluesquare-components';
+import OrgUnitTooltip from '../../orgUnits/components/OrgUnitTooltip';
 
 import {
     search,
@@ -25,13 +30,14 @@ import {
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
 
-import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
-import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
+// import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
+// import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
 import { getOrgUnitParentsIds } from '../../orgUnits/utils';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated as setInstancesFilterAction } from '../actions';
 import MESSAGES from '../messages';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -50,6 +56,7 @@ const extendFilter = (searchParams, filter, onChange) => ({
     callback: (value, urlKey) => onChange(value, urlKey),
 });
 
+// TODO make better track of changes (search button activates too easily)
 class InstancesFiltersComponent extends Component {
     onSearch() {
         const {
@@ -72,6 +79,7 @@ class InstancesFiltersComponent extends Component {
         onSearch();
     }
 
+    /** @deprecated */
     onSelectOrgUnit(orgUnit) {
         const { redirectTo, params, baseUrl, setInstancesFilterUpdated } =
             this.props;
@@ -84,6 +92,23 @@ class InstancesFiltersComponent extends Component {
 
         redirectTo(baseUrl, tempParams);
         setInstancesFilterUpdated(true);
+    }
+
+    onSelectOrgUnitFromTree(orgUnitId) {
+        const { redirectTo, params, baseUrl, setInstancesFilterUpdated } =
+            this.props;
+        if (orgUnitId) {
+            const tempParams = { ...params, levels: [orgUnitId] };
+            redirectTo(baseUrl, tempParams);
+            setInstancesFilterUpdated(true);
+        } else {
+            const noLevels = { ...params };
+            delete noLevels.levels;
+            redirectTo(baseUrl, noLevels);
+            if (params.levels) {
+                setInstancesFilterUpdated(true);
+            }
+        }
     }
 
     onChange(value, urlKey) {
@@ -101,6 +126,15 @@ class InstancesFiltersComponent extends Component {
         };
 
         redirectToReplace(baseUrl, tempParams);
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    tooltip(orgUnit, icon) {
+        return (
+            <OrgUnitTooltip orgUnit={orgUnit} enterDelay={0} enterNextDelay={0}>
+                {icon}
+            </OrgUnitTooltip>
+        );
     }
 
     render() {
@@ -194,7 +228,24 @@ class InstancesFiltersComponent extends Component {
                                     ]}
                                     onEnterPressed={() => this.onSearch()}
                                 />
-                                <OrgUnitSearch
+                                <OrgUnitTreeviewModal
+                                    toggleOnLabelClick={false}
+                                    titleMessage={MESSAGES.search}
+                                    onConfirm={orgUnitId => {
+                                        this.onSelectOrgUnitFromTree(orgUnitId);
+                                    }}
+                                />
+                                {/* <TreeViewWithSearch
+                                    parseNodeIds={getOrgUnitAncestorsIds}
+                                    labelField="name"
+                                    nodeField="id"
+                                    toolTip={this.tooltip}
+                                    getChildrenData={getChildrenData}
+                                    getRootData={getRootData}
+                                    makeDropDownText={OrgUnitLabel}
+                                    request={this.request}
+                                /> */}
+                                {/* <OrgUnitSearch
                                     onSelectOrgUnit={ou =>
                                         this.onSelectOrgUnit(ou)
                                     }
@@ -206,7 +257,7 @@ class InstancesFiltersComponent extends Component {
                                     defaultVersion
                                     params={params}
                                     baseUrl={baseUrl}
-                                />
+                                /> */}
                             </Grid>
                         </Grid>
                     </Grid>

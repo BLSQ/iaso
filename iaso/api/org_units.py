@@ -152,7 +152,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
                 return Response(res)
             elif with_shapes:
-
                 org_units = []
                 for unit in queryset:
                     temp_org_unit = unit.as_dict()

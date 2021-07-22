@@ -7,7 +7,6 @@ import {
     LoadingSpinner,
 } from 'bluesquare-components';
 import 'react-table/react-table.css';
-
 import {
     Box,
     Button,
@@ -16,6 +15,9 @@ import {
     DialogContent,
     DialogTitle,
     FormControl,
+    FormControlLabel,
+    FormGroup,
+    Switch,
     Grid,
     InputAdornment,
     InputLabel,
@@ -376,7 +378,24 @@ const RiskAssessmentForm = () => {
     );
 };
 
+const separate = (array, referenceArray) => {
+    const result = {
+        selected:[],
+        unselected:[]
+    };
+    array.forEach(item=>{
+        if(referenceArray.includes(item)){
+            result.selected.push(item);
+        } else {
+            result.unselected.push(item);
+        }
+    });
+    return result;
+
+}
+
 const ScopeForm = () => {
+    const [selectRegion, setSelectRegion] = useState(false)
     const { values, setFieldValue } = useFormikContext();
 
     const { group = {} } = values;
@@ -387,6 +406,9 @@ const ScopeForm = () => {
             values.org_unit?.id,
     );
 
+    const toggleRegionSelect = () => {
+        setSelectRegion(current => !current)
+    }
     const shapes = useMemo(() => {
         return data.map(shape => ({
             ...shape,
@@ -398,21 +420,41 @@ const ScopeForm = () => {
 
     const onSelectOrgUnit = useCallback(
         shape => {
-            var { org_units } = group;
-            const hasFound = org_units.find(org_unit => shape.id === org_unit);
-
-            if (hasFound) {
-                org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
+            if (selectRegion){
+                const { org_units } = group;
+                const regionShapes = shapes.filter(s=>s.parent_id===shape.parent_id).map(s=>s.id)
+                const {selected, unselected} = separate(regionShapes, org_units);
+                const isRegionSelected = selected.length === regionShapes.length;
+                if(isRegionSelected){
+                    const regionRemoved = org_units.filter(orgUnit => !regionShapes.includes(orgUnit));
+                    setFieldValue('group',{
+                        ...group,
+                        org_units:regionRemoved
+                    });
+                }else{
+                    const selectionWithRegion = [...org_units,...unselected]
+                    setFieldValue('group',{
+                        ...group,
+                        org_units:selectionWithRegion
+                    });
+                }
             } else {
-                org_units.push(shape.id);
+                var { org_units } = group;
+                const hasFound = org_units.find(org_unit => shape.id === org_unit);
+    
+                if (hasFound) {
+                    org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
+                } else {
+                    org_units.push(shape.id);
+                }
+    
+                setFieldValue('group', {
+                    ...group,
+                    org_units,
+                });
             }
-
-            setFieldValue('group', {
-                ...group,
-                org_units,
-            });
         },
-        [group, setFieldValue],
+        [group, setFieldValue,selectRegion,shapes],
     );
 
     return (
@@ -427,6 +469,15 @@ const ScopeForm = () => {
                             onSelectShape={onSelectOrgUnit}
                         />
                     )}
+                </Grid>
+                <Grid xs={12} item>
+                    <FormGroup>
+                        <FormControlLabel
+                        style={{width:'max-content'}}
+                        control={<Switch size="medium" checked={selectRegion} onChange={toggleRegionSelect} color="primary"/>}
+                        label="Select region"
+                        />
+                    </FormGroup>
                 </Grid>
             </Grid>
         </>

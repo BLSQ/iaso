@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 
 import 'leaflet/dist/leaflet.css';
 import { useMapContext } from './Context';
+import * as L from "leaflet";
 
 const InnerMap = ({ onClick }) => {
     const { shapes } = useMapContext();
@@ -29,19 +30,15 @@ const InnerMap = ({ onClick }) => {
 
 export const MapComponent = ({ onSelectShape }) => {
     const map = useRef();
-    const { centeredShape } = useMapContext();
+    const { shapes } = useMapContext();
 
     useEffect(() => {
-        if (centeredShape?.getBounds().isValid()) {
-            map.current?.leafletElement.fitBounds(centeredShape.getBounds());
-        }
-        map.current?.leafletElement.setZoom(8);
+        let bounds_list = shapes.map(orgunit => L.geoJSON(orgunit.geo_json).getBounds()).filter(b=> b !== undefined)
+        const bounds = bounds_list[0]
+        bounds.extend(bounds_list)
+        map.current?.leafletElement.fitBounds(bounds)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [map.current]);
-
-    if (!centeredShape) {
-        return null;
-    }
 
     return (
         <Map

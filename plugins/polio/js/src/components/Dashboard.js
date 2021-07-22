@@ -55,6 +55,7 @@ import { useGetRegionGeoJson } from '../hooks/useGetRegionGeoJson';
 import MESSAGES from '../constants/messages';
 import SearchIcon from '@material-ui/icons/Search';
 import { useDebounce } from 'use-debounce';
+import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -889,7 +890,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     const classes = useStyles();
 
     const handleSubmit = (values, helpers) =>
-        saveCampaign(values, {
+        saveCampaign(convertEmptyStringToNull(values), {
             onSuccess: () => {
                 helpers.resetForm();
                 onClose();

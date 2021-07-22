@@ -36,7 +36,11 @@ export const useGetCampaigns = options => {
                 // additional props are WIP
                 return sendRequest('GET', getURL(params));
             },
-            { cacheTime: 0, structuralSharing: false },
+            {
+                cacheTime: 0,
+                structuralSharing: false,
+                refetchOnWindowFocus: false,
+            },
         ),
     };
 };

@@ -5,6 +5,9 @@ const convertEmptyStringToNull = values => {
         if (values[key]===""){
             converted[key]=null;
         }
+        if (key.includes("round_")){
+            converted[key] = convertEmptyStringToNull(values[key]);
+        }
     })
     return converted;
 }

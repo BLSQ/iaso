@@ -7,6 +7,8 @@ export const MapComponent = ({ onSelectShape, bounds, shapes }) => {
     const map = useRef();
 
     useEffect(() => {
+        // When there is no data, bounds is undefined, so default center and zoom is used,
+        // when the data get there, bounds change and we use the effect to focus on it
         if(bounds && bounds.isValid()) {
             map.current?.leafletElement.fitBounds(bounds);
         }
@@ -19,6 +21,7 @@ export const MapComponent = ({ onSelectShape, bounds, shapes }) => {
             center={[0, 0]}
             zoom={3}
             scrollWheelZoom={false}
+            bounds={bounds}
         >
             <TileLayer
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'

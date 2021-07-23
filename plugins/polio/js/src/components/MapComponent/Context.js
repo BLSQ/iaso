@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo } from 'react';
-import * as L from 'leaflet';
+import {geoJSON} from "leaflet";
 import { MapComponent } from './MapComponent';
 import { Typography } from '@material-ui/core';
 
@@ -22,7 +22,7 @@ export const useMapContext = () => useContext(MapContext);
 export const MapContainer = ({ shapes = [], onSelectShape }) => {
     const centeredShape = useMemo(() => {
         const firstShape = shapes.find(shape => shape.geo_json);
-        if (firstShape) return L.geoJSON(firstShape.geo_json);
+        if (firstShape) return geoJSON(firstShape.geo_json);
     }, [shapes]);
     return (
         <MapContext.Provider value={{ shapes, centeredShape }}>

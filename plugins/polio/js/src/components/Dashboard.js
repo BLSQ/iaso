@@ -288,6 +288,7 @@ const DetectionForm = () => {
 
 const selectedPathOptions = { color: 'lime' };
 const unselectedPathOptions = { color: 'gray' };
+const initialDistrict = { color: 'red' };
 
 const RiskAssessmentForm = () => {
     const classes = useStyles();
@@ -381,22 +382,21 @@ const RiskAssessmentForm = () => {
 
 const separate = (array, referenceArray) => {
     const result = {
-        selected:[],
-        unselected:[]
+        selected: [],
+        unselected: [],
     };
-    array.forEach(item=>{
-        if(referenceArray.includes(item)){
+    array.forEach(item => {
+        if (referenceArray.includes(item)) {
             result.selected.push(item);
         } else {
             result.unselected.push(item);
         }
     });
     return result;
-
-}
+};
 
 const ScopeForm = () => {
-    const [selectRegion, setSelectRegion] = useState(false)
+    const [selectRegion, setSelectRegion] = useState(false);
     const { values, setFieldValue } = useFormikContext();
     // Group contains selected orgunits
     const { group = {} } = values;
@@ -408,15 +408,18 @@ const ScopeForm = () => {
     );
 
     const toggleRegionSelect = () => {
-        setSelectRegion(!selectRegion)
+        setSelectRegion(!selectRegion);
     }
+
 
     const getShapeStyle = useCallback((shape) => {
           return group.org_units.includes(shape.id)
-            ? selectedPathOptions
-            : unselectedPathOptions;
+                ? selectedPathOptions
+                : values.org_unit?.id === shape.id
+                ? initialDistrict
+                : unselectedPathOptions;
       },
-      [group]
+      [group, values.org_unit?.id]
     );
 
     const onSelectOrgUnit = useCallback(
@@ -470,6 +473,7 @@ const ScopeForm = () => {
                       label="Select region"
                     />
                 </FormGroup>
+
             </Grid>
             <Grid xs={4} item>
                 {shapes && isFetching &&
@@ -520,7 +524,10 @@ const BudgetForm = () => {
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
-                        <Field name={'budget_status'} component={RABudgetStatusField} />
+                        <Field
+                            name={'budget_status'}
+                            component={RABudgetStatusField}
+                        />
                     </Grid>
                     <Grid xs={12} md={6} item>
                         <Field
@@ -1157,7 +1164,7 @@ export const Dashboard = () => {
 
     const columns = useMemo(
         () => [
-          {
+            {
                 Header: 'Country',
                 accessor: 'top_level_org_unit_name',
                 sortable: false,

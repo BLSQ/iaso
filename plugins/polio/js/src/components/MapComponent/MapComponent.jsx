@@ -1,13 +1,10 @@
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import { useEffect, useRef } from "react";
-
 import 'leaflet/dist/leaflet.css';
-import { useMapContext } from './Context';
 
 
-export const MapComponent = ({ onSelectShape, bounds }) => {
+export const MapComponent = ({ onSelectShape, bounds, shapes }) => {
     const map = useRef();
-    const { shapes } = useMapContext();
 
     useEffect(() => {
         if(bounds && bounds.isValid()) {

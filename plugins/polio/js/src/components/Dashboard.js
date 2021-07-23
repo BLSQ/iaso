@@ -29,7 +29,6 @@ import {
 import merge from 'lodash.merge';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
-import { MapContainer } from './MapComponent';
 
 import {
     DateInput,
@@ -40,6 +39,7 @@ import {
     RABudgetStatusField,
     TextInput,
 } from './Inputs';
+import { MapComponent } from "./MapComponent/MapComponent";
 
 import { Page } from './Page';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
@@ -478,7 +478,7 @@ const ScopeForm = () => {
                     {!isFetching  &&  !data &&
                         <Typography>Please save the Campaign before selecting scope.</Typography>
                     }
-                    <MapContainer
+                    <MapComponent
                         bounds={bounds}
                         shapes={shapes}
                         onSelectShape={onSelectOrgUnit}

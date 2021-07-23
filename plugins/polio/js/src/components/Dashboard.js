@@ -56,7 +56,6 @@ import MESSAGES from '../constants/messages';
 import SearchIcon from '@material-ui/icons/Search';
 import { useDebounce } from 'use-debounce';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
-import { geoJSON } from "leaflet";
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -399,10 +398,10 @@ const separate = (array, referenceArray) => {
 const ScopeForm = () => {
     const [selectRegion, setSelectRegion] = useState(false)
     const { values, setFieldValue } = useFormikContext();
-    // Group represent select orgunit
+    // Group contains selected orgunits
     const { group = {} } = values;
 
-    const { data, isFetching } = useGetRegionGeoJson(
+    const { data: shapes, isFetching } = useGetRegionGeoJson(
         values.org_unit?.country_parent?.id ||
             values.org_unit?.root?.id ||
             values.org_unit?.id,
@@ -411,74 +410,55 @@ const ScopeForm = () => {
     const toggleRegionSelect = () => {
         setSelectRegion(!selectRegion)
     }
-    const shapes = useMemo(() => {
-        if(!data) {return null;}
-        return data.map(shape => ({
-            ...shape,
-            pathOptions: group.org_units.find(org_unit => shape.id === org_unit)
-                ? selectedPathOptions
-                : unselectedPathOptions,
-        }));
-    }, [data, group]);
 
-    const bounds = useMemo(() => {
-        if(!data) {return null;}
-        let bounds_list = data.map(orgunit => geoJSON(orgunit.geo_json).getBounds()).filter(b=> b !== undefined)
-        const bounds = bounds_list[0]
-        bounds.extend(bounds_list)
-        return bounds
-    },[data])
+    const getShapeStyle = useCallback((shape) => {
+          return group.org_units.includes(shape.id)
+            ? selectedPathOptions
+            : unselectedPathOptions;
+      },
+      [group]
+    );
 
     const onSelectOrgUnit = useCallback(
-        shape => {
-            if (selectRegion){
-                const { org_units } = group;
-                const regionShapes = shapes.filter(s=>s.parent_id===shape.parent_id).map(s=>s.id)
-                const {selected, unselected} = separate(regionShapes, org_units);
-                const isRegionSelected = selected.length === regionShapes.length;
-                if(isRegionSelected){
-                    const regionRemoved = org_units.filter(orgUnit => !regionShapes.includes(orgUnit));
-                    setFieldValue('group',{
-                        ...group,
-                        org_units:regionRemoved
-                    });
-                }else{
-                    const selectionWithRegion = [...org_units,...unselected]
-                    setFieldValue('group',{
-                        ...group,
-                        org_units:selectionWithRegion
-                    });
-                }
-            } else {
-                var { org_units } = group;
-                const isOrgUnitSelected = org_units.find(org_unit => shape.id === org_unit);
+      shape => {
+          const { org_units } = group;
+          let newOrgUnits;
+          if (selectRegion) {
+              const regionShapes = shapes.filter(s => s.parent_id === shape.parent_id).map(s => s.id);
+              const { selected, unselected } = separate(regionShapes, org_units);
+              const isRegionSelected = selected.length === regionShapes.length;
+              if (isRegionSelected) {
+                  newOrgUnits = org_units.filter(orgUnit => !regionShapes.includes(orgUnit));
+              } else {
+                  newOrgUnits = [...org_units, ...unselected];
+              }
+          } else {
+              if (org_units.find(org_unit => shape.id === org_unit)) {
+                  newOrgUnits = org_units.filter(orgUnit => orgUnit !== shape.id);
+              } else {
+                  newOrgUnits = [...org_units, shape.id];
+              }
+          }
 
-                if (isOrgUnitSelected) {
-                    org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
-                } else {
-                    org_units.push(shape.id);
-                }
-
-                setFieldValue('group', {
-                    ...group,
-                    org_units,
-                });
-            }
-        },
-        [group, setFieldValue,selectRegion,shapes],
+          setFieldValue("group", {
+              ...group,
+              org_units: newOrgUnits
+          });
+      },
+      [group, setFieldValue, selectRegion, shapes]
     );
 
     return <Grid container spacing={2}>
         <Grid xs={12} item>
-            {isFetching && !data && <LoadingSpinner />}
-            {!isFetching && !data &&
+            {isFetching && !shapes && <LoadingSpinner />}
+            {!isFetching && !shapes &&
                 // FIXME should not be needed
                 <Typography>Please save the Campaign before selecting scope.</Typography>
             }
             <MapComponent
-              bounds={bounds}
               shapes={shapes}
               onSelectShape={onSelectOrgUnit}
+              getShapeStyle={getShapeStyle}
             />
         </Grid>
         <Grid container>
@@ -492,7 +472,7 @@ const ScopeForm = () => {
                 </FormGroup>
             </Grid>
             <Grid xs={4} item>
-                {data && isFetching &&
+                {shapes && isFetching &&
                     <Typography align="right">Refreshing ...</Typography>
                 }
             </Grid>

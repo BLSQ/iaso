@@ -1,14 +1,23 @@
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import 'leaflet/dist/leaflet.css';
+import { geoJSON } from "leaflet";
 
 
-export const MapComponent = ({ onSelectShape, bounds, shapes }) => {
+export const MapComponent = ({ onSelectShape, shapes, getShapeStyle }) => {
     const map = useRef();
 
+    // When there is no data, bounds is undefined, so default center and zoom is used,
+    // when the data get there, bounds change and the effect focus on it via the deps
+    const bounds = useMemo(() => {
+        if(!shapes) {return null;}
+        const bounds_list = shapes.map(orgunit => geoJSON(orgunit.geo_json).getBounds()).filter(b=> b !== undefined)
+        const bounds = bounds_list[0]
+        bounds.extend(bounds_list)
+        return bounds
+    },[shapes])
+
     useEffect(() => {
-        // When there is no data, bounds is undefined, so default center and zoom is used,
-        // when the data get there, bounds change and we use the effect to focus on it
         if(bounds && bounds.isValid()) {
             map.current?.leafletElement.fitBounds(bounds);
         }
@@ -31,7 +40,7 @@ export const MapComponent = ({ onSelectShape, bounds, shapes }) => {
                 <GeoJSON
                     key={shape.id}
                     data={shape.geo_json}
-                    style={(feature) => shape.pathOptions}
+                    style={(feature) => getShapeStyle(shape)}
                     onClick={() => onSelectShape(shape)}
                 />
             ))}

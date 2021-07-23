@@ -399,6 +399,7 @@ const separate = (array, referenceArray) => {
 const ScopeForm = () => {
     const [selectRegion, setSelectRegion] = useState(false)
     const { values, setFieldValue } = useFormikContext();
+    // Group represent select orgunit
     const { group = {} } = values;
 
     const { data, isFetching } = useGetRegionGeoJson(
@@ -422,7 +423,6 @@ const ScopeForm = () => {
 
     const bounds = useMemo(() => {
         if(!data) {return null;}
-        console.log("Calculating bounds")
         let bounds_list = data.map(orgunit => geoJSON(orgunit.geo_json).getBounds()).filter(b=> b !== undefined)
         const bounds = bounds_list[0]
         bounds.extend(bounds_list)
@@ -451,9 +451,9 @@ const ScopeForm = () => {
                 }
             } else {
                 var { org_units } = group;
-                const hasFound = org_units.find(org_unit => shape.id === org_unit);
+                const isOrgUnitSelected = org_units.find(org_unit => shape.id === org_unit);
 
-                if (hasFound) {
+                if (isOrgUnitSelected) {
                     org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
                 } else {
                     org_units.push(shape.id);
@@ -468,41 +468,36 @@ const ScopeForm = () => {
         [group, setFieldValue,selectRegion,shapes],
     );
 
-    return (
-        <>
-            <Grid container spacing={2}>
-                <Grid xs={12} item>
-                    {isFetching  &&  !data &&
-                    <LoadingSpinner />
-                    }
-                    {!isFetching  &&  !data &&
-                        <Typography>Please save the Campaign before selecting scope.</Typography>
-                    }
-                    <MapComponent
-                        bounds={bounds}
-                        shapes={shapes}
-                        onSelectShape={onSelectOrgUnit}
+    return <Grid container spacing={2}>
+        <Grid xs={12} item>
+            {isFetching && !data && <LoadingSpinner />}
+            {!isFetching && !data &&
+                // FIXME should not be needed
+                <Typography>Please save the Campaign before selecting scope.</Typography>
+            }
+            <MapComponent
+              bounds={bounds}
+              shapes={shapes}
+              onSelectShape={onSelectOrgUnit}
+            />
+        </Grid>
+        <Grid container>
+            <Grid xs={8} item>
+                <FormGroup>
+                    <FormControlLabel
+                      style={{ width: "max-content" }}
+                      control={<Switch size="medium" checked={selectRegion} onChange={toggleRegionSelect} color="primary" />}
+                      label="Select region"
                     />
-                </Grid>
-                <Grid container>
-                <Grid xs={8} item>
-                    <FormGroup>
-                        <FormControlLabel
-                        style={{width:'max-content'}}
-                        control={<Switch size="medium" checked={selectRegion} onChange={toggleRegionSelect} color="primary"/>}
-                        label="Select region"
-                        />
-                    </FormGroup>
-                </Grid>
-                <Grid xs={4} item >
-                    {data && isFetching &&
-                        <Typography align="right">Refreshing ...</Typography>
-                    }
-                </Grid>
-                    </Grid>
+                </FormGroup>
             </Grid>
-        </>
-    );
+            <Grid xs={4} item>
+                {data && isFetching &&
+                    <Typography align="right">Refreshing ...</Typography>
+                }
+            </Grid>
+        </Grid>
+    </Grid>;
 };
 
 const BudgetForm = () => {

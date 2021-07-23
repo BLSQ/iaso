@@ -21,7 +21,7 @@ export const MapComponent = ({ onSelectShape, shapes, getShapeStyle }) => {
         if(bounds && bounds.isValid()) {
             map.current?.leafletElement.fitBounds(bounds);
         }
-    }, [map.current, bounds]);
+    }, [bounds]);
 
     return (
         <Map

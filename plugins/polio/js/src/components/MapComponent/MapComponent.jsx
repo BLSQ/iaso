@@ -12,16 +12,10 @@ const InnerMap = ({ onClick }) => {
         <>
             {shapes.map(shape => (
                 <GeoJSON
-                    key={`${shape.id}-${new Date().toISOString()}`}
+                    key={shape.id}
                     data={shape.geo_json}
-                    onEachFeature={(feature, layer) => {
-                        layer.setStyle(shape.pathOptions);
-                        layer.on({
-                            click() {
-                                onClick(shape);
-                            },
-                        });
-                    }}
+                    style={(feature) => shape.pathOptions}
+                    onClick={() => onClick(shape)}
                 />
             ))}
         </>

@@ -408,7 +408,7 @@ const ScopeForm = () => {
     );
 
     const toggleRegionSelect = () => {
-        setSelectRegion(current => !current)
+        setSelectRegion(!selectRegion)
     }
     const shapes = useMemo(() => {
         return data.map(shape => ({
@@ -442,13 +442,13 @@ const ScopeForm = () => {
             } else {
                 var { org_units } = group;
                 const hasFound = org_units.find(org_unit => shape.id === org_unit);
-    
+
                 if (hasFound) {
                     org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
                 } else {
                     org_units.push(shape.id);
                 }
-    
+
                 setFieldValue('group', {
                     ...group,
                     org_units,

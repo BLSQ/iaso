@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 
 import 'leaflet/dist/leaflet.css';
 import { useMapContext } from './Context';
-import * as L from "leaflet";
+import { geoJSON } from "leaflet";
 
 const InnerMap = ({ onClick }) => {
     const { shapes } = useMapContext();
@@ -33,7 +33,7 @@ export const MapComponent = ({ onSelectShape }) => {
     const { shapes } = useMapContext();
 
     useEffect(() => {
-        let bounds_list = shapes.map(orgunit => L.geoJSON(orgunit.geo_json).getBounds()).filter(b=> b !== undefined)
+        let bounds_list = shapes.map(orgunit => geoJSON(orgunit.geo_json).getBounds()).filter(b=> b !== undefined)
         const bounds = bounds_list[0]
         bounds.extend(bounds_list)
         map.current?.leafletElement.fitBounds(bounds)

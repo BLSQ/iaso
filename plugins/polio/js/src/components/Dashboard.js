@@ -25,7 +25,7 @@ import {
     Tab,
     Tabs,
     Typography,
-} from '@material-ui/core';
+} from "@material-ui/core";
 import merge from 'lodash.merge';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
@@ -398,10 +398,9 @@ const separate = (array, referenceArray) => {
 const ScopeForm = () => {
     const [selectRegion, setSelectRegion] = useState(false)
     const { values, setFieldValue } = useFormikContext();
-
     const { group = {} } = values;
 
-    const { data = [], isFetching } = useGetRegionGeoJson(
+    const { data, isFetching } = useGetRegionGeoJson(
         values.org_unit?.country_parent?.id ||
             values.org_unit?.root?.id ||
             values.org_unit?.id,
@@ -411,6 +410,7 @@ const ScopeForm = () => {
         setSelectRegion(!selectRegion)
     }
     const shapes = useMemo(() => {
+        if(!data) {return null;}
         return data.map(shape => ({
             ...shape,
             pathOptions: group.org_units.find(org_unit => shape.id === org_unit)
@@ -462,16 +462,19 @@ const ScopeForm = () => {
         <>
             <Grid container spacing={2}>
                 <Grid xs={12} item>
-                    {isFetching ? (
-                        <LoadingSpinner />
-                    ) : (
-                        <MapContainer
-                            shapes={shapes}
-                            onSelectShape={onSelectOrgUnit}
-                        />
-                    )}
+                    {isFetching  &&  !data &&
+                    <LoadingSpinner />
+                    }
+                    {!isFetching  &&  !data &&
+                        <Typography>Please save the Campaign before selecting scope.</Typography>
+                    }
+                    <MapContainer
+                        shapes={shapes}
+                        onSelectShape={onSelectOrgUnit}
+                    />
                 </Grid>
-                <Grid xs={12} item>
+                <Grid container>
+                <Grid xs={8} item>
                     <FormGroup>
                         <FormControlLabel
                         style={{width:'max-content'}}
@@ -480,6 +483,12 @@ const ScopeForm = () => {
                         />
                     </FormGroup>
                 </Grid>
+                <Grid xs={4} item >
+                    {data && isFetching &&
+                        <Typography align="right">Refreshing ...</Typography>
+                    }
+                </Grid>
+                    </Grid>
             </Grid>
         </>
     );
@@ -1195,7 +1204,7 @@ export const Dashboard = () => {
                 accessor: 'round_one__started_at',
                 Cell: settings => {
                     return (
-                        <ColumnText text={settings.original?.round_one?.started_at} />
+                        <ColumnText text={settings.original?.round_one?.started_at ?? textPlaceholder} />
                     );
                 },
             },
@@ -1204,7 +1213,7 @@ export const Dashboard = () => {
                 accessor: 'round_two__started_at',
                 Cell: settings => {
                     return (
-                        <ColumnText text={settings.original?.round_two?.started_at} />
+                        <ColumnText text={settings.original?.round_two?.started_at ?? textPlaceholder} />
                     );
                 },
             },

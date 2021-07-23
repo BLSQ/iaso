@@ -10,7 +10,7 @@ const InnerMap = ({ onClick }) => {
 
     return (
         <>
-            {shapes.map(shape => (
+            {shapes && shapes.map(shape => (
                 <GeoJSON
                     key={shape.id}
                     data={shape.geo_json}
@@ -27,26 +27,28 @@ export const MapComponent = ({ onSelectShape }) => {
     const { shapes } = useMapContext();
 
     useEffect(() => {
+        if(!shapes)
+            return;
         let bounds_list = shapes.map(orgunit => geoJSON(orgunit.geo_json).getBounds()).filter(b=> b !== undefined)
         const bounds = bounds_list[0]
         bounds.extend(bounds_list)
         map.current?.leafletElement.fitBounds(bounds)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [map.current]);
+    }, [map.current, shapes]);
 
     return (
         <Map
             ref={map}
             style={{ height: 500 }}
             center={[0, 0]}
-            zoom={10}
+            zoom={3}
             scrollWheelZoom={false}
         >
             <TileLayer
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <InnerMap onClick={onSelectShape} />
+              <InnerMap onClick={onSelectShape} />
         </Map>
     );
 };

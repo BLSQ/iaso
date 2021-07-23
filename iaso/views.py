@@ -1,9 +1,11 @@
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import login_required, resolve_url
+from django.contrib.auth.decorators import resolve_url
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from iaso.models import Page, Account
+
+from hat.__version__ import DEPLOYED_ON, DEPLOYED_BY, VERSION
 
 
 def page(request, page_slug):
@@ -21,7 +23,14 @@ def health(request):
 
     it just looks at the 200 status code and not at the content.
     """
-    res = {"up": "ok", "env": settings.ENVIRONMENT}
+    res = {
+        "up": "ok",
+        "env": settings.ENVIRONMENT,
+        "DEPLOYED_ON": DEPLOYED_ON,
+        "DEPLOYED_BY": DEPLOYED_BY,
+        "VERSION": VERSION,
+    }
+    # noinspection PyBroadException
     try:
         # mostly to check we can connect to the db
         res["account_count"] = Account.objects.count()

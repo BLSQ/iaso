@@ -1,10 +1,11 @@
 from copy import copy
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, redirect
 from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 from hat.audit.models import log_modification, PASSWORD_API
 from django.contrib import messages

@@ -16,10 +16,10 @@ export const MapContext = createContext({
 
 export const useMapContext = () => useContext(MapContext);
 
-export const MapContainer = ({ shapes = [], onSelectShape }) => {
+export const MapContainer = ({ shapes = [], bounds, onSelectShape }) => {
     return (
         <MapContext.Provider value={{ shapes }}>
-                <MapComponent onSelectShape={onSelectShape} />
+                <MapComponent bounds={bounds} onSelectShape={onSelectShape} />
         </MapContext.Provider>
     );
 };

@@ -56,6 +56,7 @@ import MESSAGES from '../constants/messages';
 import SearchIcon from '@material-ui/icons/Search';
 import { useDebounce } from 'use-debounce';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
+import { geoJSON } from "leaflet";
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -419,6 +420,15 @@ const ScopeForm = () => {
         }));
     }, [data, group]);
 
+    const bounds = useMemo(() => {
+        if(!data) {return null;}
+        console.log("Calculating bounds")
+        let bounds_list = data.map(orgunit => geoJSON(orgunit.geo_json).getBounds()).filter(b=> b !== undefined)
+        const bounds = bounds_list[0]
+        bounds.extend(bounds_list)
+        return bounds
+    },[data])
+
     const onSelectOrgUnit = useCallback(
         shape => {
             if (selectRegion){
@@ -469,6 +479,7 @@ const ScopeForm = () => {
                         <Typography>Please save the Campaign before selecting scope.</Typography>
                     }
                     <MapContainer
+                        bounds={bounds}
                         shapes={shapes}
                         onSelectShape={onSelectOrgUnit}
                     />

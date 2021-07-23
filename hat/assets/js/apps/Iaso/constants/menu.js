@@ -161,6 +161,19 @@ if (PLUGIN_POLIO_ENABLED === 'True') {
             },
         ],
     });
+    menuItems.push({
+        label: MESSAGES.pages,
+        key: 'pages',
+        icon: props => <DataSourceIcon {...props} />,
+        subMenu: [
+            {
+                label: MESSAGES.list,
+                key: 'list',
+                permission: paths.tasksPath.permission,
+                icon: props => <FormatListBulleted {...props} />,
+            },
+        ],
+    });
 }
 
 const pluginsMenu = getPlugins()

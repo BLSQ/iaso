@@ -14,7 +14,7 @@ import { List } from '@material-ui/core';
 
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
-import {useIntl} from "react-intl";
+import { useSafeIntl } from 'bluesquare-components';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -29,7 +29,7 @@ export const MenuItem = ({
     onExpand,
     subMenuLevel = 0,
 }) => {
-    const intl = useIntl();
+    const intl = useSafeIntl();
     const classes = useStyles();
     const color = expanded ? 'primary' : 'inherit';
     const subMenuIcon = expanded ? (
@@ -45,8 +45,8 @@ export const MenuItem = ({
     return (
         <ListItem
             button
-            href={menuItem.path}
             style={itemStyle}
+            href={menuItem.path}
             component={menuItem.path && 'a'}
             onClick={menuItem.subMenu && onExpand}
         >
@@ -78,7 +78,7 @@ export const SidebarMenuItem = ({ menuItem, subMenuLevel = 1 }) => {
             {menuItem.subMenu && (
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
-                        {menuItem.subMenu.map(submenu => (
+                        {menuItem.subMenu.map( submenu => (
                             <SidebarMenuItem
                                 menuItem={submenu}
                                 subMenuLevel={subMenuLevel + 1}

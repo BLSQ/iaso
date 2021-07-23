@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Forms',
         id: 'iaso.forms.title',
     },
+    pages: {
+        defaultMessage: 'Pages',
+        id: 'iaso.pages.title',
+    },
     detailTitle: {
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
@@ -96,6 +100,10 @@ const MESSAGES = defineMessages({
     edit: {
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
+    },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
     },
     latest_version_files: {
         defaultMessage: 'Latest version',
@@ -428,6 +436,10 @@ const MESSAGES = defineMessages({
     endPeriod: {
         id: 'iaso.label.endPeriod',
         defaultMessage: 'end period',
+    },
+    viewPage: {
+        id: 'iaso.forms.viewpages',
+        defaultMessage: 'View page',
     },
     singlePerPeriodSelect: {
         id: 'iaso.form.label.singlePerPeriodSelect',

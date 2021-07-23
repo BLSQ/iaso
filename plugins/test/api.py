@@ -7,7 +7,6 @@ from rest_framework.viewsets import ModelViewSet
 
 from .models import BlogPost
 
-
 logger = logging.getLogger(__name__)
 
 

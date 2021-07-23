@@ -7,7 +7,6 @@ import {
     LoadingSpinner,
 } from 'bluesquare-components';
 import 'react-table/react-table.css';
-
 import {
     Box,
     Button,
@@ -16,6 +15,9 @@ import {
     DialogContent,
     DialogTitle,
     FormControl,
+    FormControlLabel,
+    FormGroup,
+    Switch,
     Grid,
     InputAdornment,
     InputLabel,
@@ -35,6 +37,7 @@ import {
     PaymentField,
     Select,
     StatusField,
+    RABudgetStatusField,
     TextInput,
 } from './Inputs';
 
@@ -52,6 +55,7 @@ import { useGetRegionGeoJson } from '../hooks/useGetRegionGeoJson';
 import MESSAGES from '../constants/messages';
 import SearchIcon from '@material-ui/icons/Search';
 import { useDebounce } from 'use-debounce';
+import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -287,20 +291,7 @@ const unselectedPathOptions = { color: 'gray' };
 
 const RiskAssessmentForm = () => {
     const classes = useStyles();
-    const { values } = useFormikContext();
-
-    const wastageRate = 0.26;
-
-    const round1Doses = parseInt(
-        defaultToZero(values?.round_one?.target_population ?? 0),
-    );
-    const round2Doses = parseInt(
-        defaultToZero(values?.round_two?.target_population ?? 0),
-    );
-
-    const vialsRequested = Math.ceil(
-        ((round1Doses + round2Doses) / 20) * (1 / (1 - wastageRate)),
-    );
+    useFormikContext();
 
     return (
         <>
@@ -309,7 +300,7 @@ const RiskAssessmentForm = () => {
                     <Grid xs={12} md={6} item>
                         <Field
                             name={'risk_assessment_status'}
-                            component={StatusField}
+                            component={RABudgetStatusField}
                         />
                     </Grid>
                     <Grid xs={12} md={6} item>
@@ -376,17 +367,36 @@ const RiskAssessmentForm = () => {
                         component={TextInput}
                         className={classes.input}
                     />
-                    <Typography>
-                        Vials Requested{' '}
-                        {Number.isNaN(vialsRequested) ? 0 : vialsRequested}
-                    </Typography>
+                    <Field
+                        label="Vials Requested (both rounds)"
+                        name={'vials_requested'}
+                        component={TextInput}
+                        className={classes.input}
+                    />
                 </Grid>
             </Grid>
         </>
     );
 };
 
+const separate = (array, referenceArray) => {
+    const result = {
+        selected:[],
+        unselected:[]
+    };
+    array.forEach(item=>{
+        if(referenceArray.includes(item)){
+            result.selected.push(item);
+        } else {
+            result.unselected.push(item);
+        }
+    });
+    return result;
+
+}
+
 const ScopeForm = () => {
+    const [selectRegion, setSelectRegion] = useState(false)
     const { values, setFieldValue } = useFormikContext();
 
     const { group = {} } = values;
@@ -397,6 +407,9 @@ const ScopeForm = () => {
             values.org_unit?.id,
     );
 
+    const toggleRegionSelect = () => {
+        setSelectRegion(!selectRegion)
+    }
     const shapes = useMemo(() => {
         return data.map(shape => ({
             ...shape,
@@ -408,21 +421,41 @@ const ScopeForm = () => {
 
     const onSelectOrgUnit = useCallback(
         shape => {
-            var { org_units } = group;
-            const hasFound = org_units.find(org_unit => shape.id === org_unit);
-
-            if (hasFound) {
-                org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
+            if (selectRegion){
+                const { org_units } = group;
+                const regionShapes = shapes.filter(s=>s.parent_id===shape.parent_id).map(s=>s.id)
+                const {selected, unselected} = separate(regionShapes, org_units);
+                const isRegionSelected = selected.length === regionShapes.length;
+                if(isRegionSelected){
+                    const regionRemoved = org_units.filter(orgUnit => !regionShapes.includes(orgUnit));
+                    setFieldValue('group',{
+                        ...group,
+                        org_units:regionRemoved
+                    });
+                }else{
+                    const selectionWithRegion = [...org_units,...unselected]
+                    setFieldValue('group',{
+                        ...group,
+                        org_units:selectionWithRegion
+                    });
+                }
             } else {
-                org_units.push(shape.id);
-            }
+                var { org_units } = group;
+                const hasFound = org_units.find(org_unit => shape.id === org_unit);
 
-            setFieldValue('group', {
-                ...group,
-                org_units,
-            });
+                if (hasFound) {
+                    org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
+                } else {
+                    org_units.push(shape.id);
+                }
+
+                setFieldValue('group', {
+                    ...group,
+                    org_units,
+                });
+            }
         },
-        [group, setFieldValue],
+        [group, setFieldValue,selectRegion,shapes],
     );
 
     return (
@@ -437,6 +470,15 @@ const ScopeForm = () => {
                             onSelectShape={onSelectOrgUnit}
                         />
                     )}
+                </Grid>
+                <Grid xs={12} item>
+                    <FormGroup>
+                        <FormControlLabel
+                        style={{width:'max-content'}}
+                        control={<Switch size="medium" checked={selectRegion} onChange={toggleRegionSelect} color="primary"/>}
+                        label="Select region"
+                        />
+                    </FormGroup>
                 </Grid>
             </Grid>
         </>
@@ -483,7 +525,7 @@ const BudgetForm = () => {
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
-                        <Field name={'budget_status'} component={StatusField} />
+                        <Field name={'budget_status'} component={RABudgetStatusField} />
                     </Grid>
                     <Grid xs={12} md={6} item>
                         <Field
@@ -676,7 +718,7 @@ const Round1Form = () => {
                     className={classes.input}
                 />
                 <Field
-                    label="Main awareness problem"
+                    label="Main reason for non-vaccination"
                     name={'round_one.main_awareness_problem'}
                     component={TextInput}
                     className={classes.input}
@@ -693,6 +735,14 @@ const Round1Form = () => {
                     label="% children missed OUT OF household"
                     name={
                         'round_one.im_percentage_children_missed_out_household'
+                    }
+                    component={TextInput}
+                    className={classes.input}
+                />
+                <Field
+                    label="% children missed IN+OUT OF household"
+                    name={
+                        'round_one.im_percentage_children_missed_in_plus_out_household'
                     }
                     component={TextInput}
                     className={classes.input}
@@ -779,7 +829,7 @@ const Round2Form = () => {
                     className={classes.input}
                 />
                 <Field
-                    label="Main awareness problem"
+                    label="Main reason for non-vaccination"
                     name={'round_two.main_awareness_problem'}
                     component={TextInput}
                     className={classes.input}
@@ -796,6 +846,14 @@ const Round2Form = () => {
                     label="% children missed OUT OF household"
                     name={
                         'round_two.im_percentage_children_missed_out_household'
+                    }
+                    component={TextInput}
+                    className={classes.input}
+                />
+                <Field
+                    label="% children missed IN+OUT OF household"
+                    name={
+                        'round_two.im_percentage_children_missed_in_plus_out_household'
                     }
                     component={TextInput}
                     className={classes.input}
@@ -832,7 +890,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
     const classes = useStyles();
 
     const handleSubmit = (values, helpers) =>
-        saveCampaign(values, {
+        saveCampaign(convertEmptyStringToNull(values), {
             onSuccess: () => {
                 helpers.resetForm();
                 onClose();

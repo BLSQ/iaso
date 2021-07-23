@@ -354,7 +354,7 @@ The dumpfile will be created on your host. The `-Fc` meant it will use an optimi
 To restore a dump file that you made or that somebody sent you:
 ```
 docker-compose exec db psql -U postgres -c "create database iaso5"
- cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 /dev/stdin
+cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --no-owner /dev/stdin
 ```
 
 This will put the data in a database called iaso5. You can choose in your .env file which database is used by editing

@@ -288,7 +288,7 @@ const DetectionForm = () => {
 
 const selectedPathOptions = { color: 'lime' };
 const unselectedPathOptions = { color: 'gray' };
-const initialDistrict = { color: 'red' };
+const initialDistrict = { color: '#FF695C' };
 
 const RiskAssessmentForm = () => {
     const classes = useStyles();

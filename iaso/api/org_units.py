@@ -131,15 +131,18 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 limit = int(limit)
                 page_offset = int(page_offset)
                 paginator = Paginator(queryset, limit)
-                res = {"count": paginator.count}
-                res["counts"] = counts
+
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
+
                 if small_search:
-                    res["orgunits"] = map(lambda x: x.as_small_dict(), page.object_list)
+                    serializer = lambda x: x.as_small_dict()
                 else:
-                    res["orgunits"] = map(lambda x: x.as_dict_with_parents(light=False), page.object_list)
+                    serializer = lambda x: x.as_dict_with_parents(light=False)
+                res = {"count": paginator.count}
+                res["counts"] = counts
+                res["orgunits"] = map(serializer, page.object_list)
 
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
@@ -180,12 +183,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         elif gpkg_format:
             return self.list_to_gpkg(queryset)
         else:
+            # When filtering the org units by group, the values_list will return the groups also filtered.
+            #  In order to get the all groups independently of filters, we should get the groups
+            # based on the org_unit FK.
 
-            """
-            When filtering the org units by group, the values_list will return the groups also filtered.
-            In order to get the all groups independently of filters, we should get the groups
-            based on the org_unit FK.
-            """
             org_ids = queryset.order_by("pk").values_list("pk", flat=True).distinct()
             groups = Group.objects.filter(org_units__id__in=list(org_ids)).only("id", "name").distinct("id")
 
@@ -210,11 +211,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"title": "Ref Ext parent 4", "width": 20},
             ]
             counts_by_forms = []
-            if is_export:
-                for frm in forms:
-                    columns.append({"title": "Total d'instances " + frm.name, "width": 15})
-                    counts_by_forms.append("form_" + str(frm.id) + "_instances")
-                columns.append({"title": "Total d'instances", "width": 15})
+            for frm in forms:
+                columns.append({"title": "Total d'instances " + frm.name, "width": 15})
+                counts_by_forms.append("form_" + str(frm.id) + "_instances")
+            columns.append({"title": "Total d'instances", "width": 15})
 
             for group in groups:
                 group.org_units__ids = list(group.org_units.values_list("id", flat=True))

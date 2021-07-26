@@ -357,47 +357,6 @@ class OrgUnit(TreeModel):
 
         return res
 
-    def as_parent_dict_for_search(self):
-        return {
-            "name": self.name,
-            "id": self.id,
-            "parent": self.parent.as_parent_dict_for_search() if self.parent else None,
-        }
-
-    def as_dict_for_search(self):
-        res = {
-            "name": self.name,
-            "id": self.id,
-            "sub_source": self.sub_source,
-            "sub_source_id": self.sub_source,
-            "source_ref": self.source_ref,
-            "parent_id": self.parent_id,
-            "validation_status": self.validation_status,
-            "parent": self.parent.as_parent_dict_for_search() if self.parent else None,
-            "org_unit_type_id": self.org_unit_type_id,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "aliases": self.aliases,
-            "has_geo_json": True if self.simplified_geom else False,
-            "groups": [group.as_dict(with_counts=False) for group in self.groups.all()],
-            "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
-            "org_unit_type": self.org_unit_type.as_dict(sub_units=False) if self.org_unit_type else None,
-            "source": self.version.data_source.name if self.version else None,
-            "source_id": self.version.data_source.id if self.version else None,
-            "version": self.version.number if self.version else None,
-        }
-        # search_index and instances_count aren't on the model but added via annotations
-        if hasattr(self, "search_index"):
-            res["search_index"] = self.search_index
-        if hasattr(self, "instances_count"):
-            res["instances_count"] = self.instances_count
-        else:
-            res["instances_count"] = self.instance_set.filter(
-                ~Q(file="") & ~Q(device__test_device=True) & ~Q(deleted=True)
-            ).count()
-
-        return res
-
     def as_small_dict(self):
         res = {
             "name": self.name,

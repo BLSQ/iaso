@@ -45,6 +45,66 @@ class HasOrgUnitPermission(permissions.BasePermission):
         return user_account.id in account_ids
 
 
+def serialize_orgunit_small_search(org_unit: OrgUnit):
+    res = {
+        "name": org_unit.name,
+        "id": org_unit.id,
+        "parent_id": org_unit.parent_id,
+        "validation_status": org_unit.validation_status,
+        "parent_name": org_unit.parent.name if org_unit.parent else None,
+        "source": org_unit.version.data_source.name if org_unit.version else None,
+        "source_ref": org_unit.source_ref,
+        "parent": serialize_orgunit_small_search(org_unit.parent) if org_unit.parent else None,
+        "org_unit_type_name": org_unit.org_unit_type.name if org_unit.org_unit_type else None,
+    }
+    if hasattr(org_unit, "search_index"):
+        res["search_index"] = org_unit.search_index
+    return res
+
+
+def serialize_orgunit_parent_search(org_unit: OrgUnit):
+    return {
+        "name": org_unit.name,
+        "id": org_unit.id,
+        "parent": serialize_orgunit_parent_search(org_unit.parent) if org_unit.parent else None,
+    }
+
+
+def serialize_orgunit_search(org_unit: OrgUnit):
+    res = {
+        "name": org_unit.name,
+        "id": org_unit.id,
+        "sub_source": org_unit.sub_source,
+        "sub_source_id": org_unit.sub_source,
+        "source_ref": org_unit.source_ref,
+        "parent_id": org_unit.parent_id,
+        "validation_status": org_unit.validation_status,
+        "parent": serialize_orgunit_parent_search(org_unit.parent) if org_unit.parent else None,
+        "org_unit_type_id": org_unit.org_unit_type_id,
+        "created_at": org_unit.created_at.timestamp() if org_unit.created_at else None,
+        "updated_at": org_unit.updated_at.timestamp() if org_unit.updated_at else None,
+        "aliases": org_unit.aliases,
+        "has_geo_json": True if org_unit.simplified_geom else False,
+        "groups": [group.as_dict(with_counts=False) for group in org_unit.groups.all()],
+        "org_unit_type_name": org_unit.org_unit_type.name if org_unit.org_unit_type else None,
+        "org_unit_type": org_unit.org_unit_type.as_dict(sub_units=False) if org_unit.org_unit_type else None,
+        "source": org_unit.version.data_source.name if org_unit.version else None,
+        "source_id": org_unit.version.data_source.id if org_unit.version else None,
+        "version": org_unit.version.number if org_unit.version else None,
+    }
+    # search_index and instances_count aren't on the model but added via annotations
+    if hasattr(org_unit, "search_index"):
+        res["search_index"] = org_unit.search_index
+    if hasattr(org_unit, "instances_count"):
+        res["instances_count"] = org_unit.instances_count
+    else:
+        res["instances_count"] = org_unit.instance_set.filter(
+            ~Q(file="") & ~Q(device__test_device=True) & ~Q(deleted=True)
+        ).count()
+
+    return res
+
+
 class OrgUnitViewSet(viewsets.ViewSet):
     """Org units API
 
@@ -104,12 +164,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
         order_by_instance_count = "instances_count" in order or "-instances_count" in order
         annotate_instance_count = order_by_instance_count or is_export
 
-        searches = request.GET.get("searches", None)
-        counts = []
         if not request.user.is_anonymous:
             profile = request.user.iaso_profile
         else:
             profile = None
+
+        searches = request.GET.get("searches", None)
+        counts = []
+
         if searches:
             search_index = 0
             base_queryset = queryset
@@ -141,9 +203,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 page = paginator.page(page_offset)
 
                 if small_search:
-                    serializer = lambda x: x.as_small_dict()
+                    serializer = serialize_orgunit_small_search
                 else:
-                    serializer = lambda x: x.as_dict_for_search()
+                    serializer = serialize_orgunit_search
                 res = {
                     "count": paginator.count,
                     "counts": counts,

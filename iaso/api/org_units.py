@@ -1,28 +1,27 @@
-from django.db import transaction
-from django.utils import timezone
-from rest_framework import viewsets, status, permissions
+import json
+from copy import deepcopy
+from time import gmtime, strftime
+
+from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
-from rest_framework.response import Response
-from rest_framework.decorators import action
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.db.models import Value, IntegerField
+from django.http import StreamingHttpResponse, HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import gettext as _
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.audit import models as audit_models
 from iaso.api.common import safe_api_import
 from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, DataSource
-from django.contrib.gis.geos import Point
-
-from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404
-
+from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form
 from iaso.models.org_unit_search import build_org_units_queryset
 from iaso.utils import geojson_queryset
-from django.db.models import Q
-from copy import deepcopy
-from hat.audit import models as audit_models
-from time import gmtime, strftime
-from django.http import StreamingHttpResponse, HttpResponse
-from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
-import json
-from django.db.models import Value, IntegerField
 
 
 class HasOrgUnitPermission(permissions.BasePermission):

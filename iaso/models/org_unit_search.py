@@ -170,9 +170,7 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
 
     if is_export:
         annotations = {
-            "form_"
-            + str(frm.id)
-            + "_instances": Sum(
+            f"form_{frm.id}_instances": Sum(
                 Case(
                     When(
                         Q(instance__form_id=frm.id)
@@ -191,4 +189,11 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
 
     queryset = queryset.select_related("version__data_source")
     queryset = queryset.select_related("org_unit_type")
+
+    queryset = queryset.prefetch_related("groups")
+    queryset = queryset.prefetch_related("parent")
+    queryset = queryset.prefetch_related("parent__parent")
+    queryset = queryset.prefetch_related("parent__parent__parent")
+    queryset = queryset.prefetch_related("parent__parent__parent__parent")
+
     return queryset.distinct()

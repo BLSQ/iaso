@@ -133,7 +133,7 @@ class OrgUnitQuerySet(models.QuerySet):
             queryset = queryset.filter(version_id__in=version_ids)
 
             # If applicable, filter on the org units associated to the user
-            if user.iaso_profile.org_units.count() > 0:
+            if user.iaso_profile.org_units.exists():
                 queryset = queryset.hierarchy(user.iaso_profile.org_units.all())
 
         if app_id is not None:
@@ -356,42 +356,37 @@ class OrgUnit(TreeModel):
 
         return res
 
-    def as_dict_for_search(self, light=False, light_parents=True):
+    def as_parent_dict_for_search(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "parent": self.parent.as_parent_dict_for_search() if self.parent else None,
+        }
+
+    def as_dict_for_search(self):
         res = {
             "name": self.name,
-            "short_name": self.name,
             "id": self.id,
             "sub_source": self.sub_source,
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,
-            "source_url": self.version.data_source.credentials.url
-            if self.version and self.version.data_source and self.version.data_source.credentials
-            else None,
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
-            "parent_name": self.parent.name if self.parent else None,
-            "parent": self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents)
-            if self.parent
-            else None,
+            "parent": self.parent.as_parent_dict_for_search() if self.parent else None,
             "org_unit_type_id": self.org_unit_type_id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
-            "latitude": self.location.y if self.location else None,
-            "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
+            "groups": [group.as_dict(with_counts=False) for group in self.groups.all()],
+            "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
+            "org_unit_type": self.org_unit_type.as_dict(sub_units=False) if self.org_unit_type else None,
+            "source": self.version.data_source.name if self.version else None,
+            "source_id": self.version.data_source.id if self.version else None,
+            "version": self.version.number if self.version else None,
         }
-        if not light:  # avoiding joins here
-            res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
-            res["org_unit_type_name"] = self.org_unit_type.name if self.org_unit_type else None
-            res["org_unit_type"] = self.org_unit_type.as_dict() if self.org_unit_type else None
-            res["source"] = self.version.data_source.name if self.version else None
-            res["source_id"] = self.version.data_source.id if self.version else None
-            res["version"] = self.version.number if self.version else None
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
-
         if hasattr(self, "instances_count"):
             res["instances_count"] = self.instances_count
 

@@ -70,7 +70,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         Can serve theses formats, depending on the combination of GET Parameters:
          * Simple JSON (default) -> as_dict_for_mobile
-         * Paginated JSON (if a `limit` is passed) -> as_dict_with_parents
+         * Paginated JSON (if a `limit` is passed) -> as_dict_for_search
          * Paginated JSON with less info (if both `limit` and `smallSearch` is passed. -> as_small_dict
          * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
          * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
@@ -96,8 +96,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
         direct_children = request.GET.get("onlyDirectChildren", False)
-
-        queryset.prefetch_related("group_set")
 
         if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
@@ -139,7 +137,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 if small_search:
                     serializer = lambda x: x.as_small_dict()
                 else:
-                    serializer = lambda x: x.as_dict_for_search(light=False)
+                    serializer = lambda x: x.as_dict_for_search()
                 res = {
                     "count": paginator.count,
                     "counts": counts,

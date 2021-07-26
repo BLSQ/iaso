@@ -139,7 +139,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 if small_search:
                     serializer = lambda x: x.as_small_dict()
                 else:
-                    serializer = lambda x: x.as_dict_with_parents(light=False)
+                    serializer = lambda x: x.as_dict_for_search(light=False)
                 res = {
                     "count": paginator.count,
                     "counts": counts,

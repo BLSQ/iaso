@@ -143,28 +143,20 @@ export const encodeUriParams = params => {
     return newParams;
 };
 
-export const getOrgUnitParents = (orgUnit, parents = []) => {
-    let parentsList = [...parents];
-    if (orgUnit.parent) {
-        parentsList.push(orgUnit);
-        if (orgUnit.parent.parent) {
-            parentsList = getOrgUnitParents(orgUnit.parent, parentsList);
-        }
-    }
-    return parentsList;
+export const getOrgUnitParents = orgUnit => {
+    if (!orgUnit.parent) return [];
+    return [orgUnit.parent, ...getOrgUnitParents(orgUnit.parent)];
 };
 
 export const getOrgUnitParentsString = orgUnit =>
     getOrgUnitParents(orgUnit)
-        .map(ou =>
-            ou.parent_name !== '' ? ou.parent_name : ou.org_unit_type_name,
-        )
+        .map(ou => (ou.name !== '' ? ou.name : ou.org_unit_type_name))
         .reverse()
         .join(' > ');
 
 export const getOrgUnitParentsIds = orgUnit =>
     getOrgUnitParents(orgUnit)
-        .map(ou => ou.parent_id)
+        .map(ou => ou.id)
         .reverse();
 
 export const getStatusMessage = (status, formatMessage) => {

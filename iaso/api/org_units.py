@@ -140,17 +140,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     serializer = lambda x: x.as_small_dict()
                 else:
                     serializer = lambda x: x.as_dict_with_parents(light=False)
-                res = {"count": paginator.count}
-                res["counts"] = counts
-                res["orgunits"] = map(serializer, page.object_list)
-
-                res["has_next"] = page.has_next()
-                res["has_previous"] = page.has_previous()
-                res["page"] = page_offset
-                res["pages"] = paginator.num_pages
-                res["limit"] = limit
-
-                res["orgunits"] = list(res["orgunits"])
+                res = {
+                    "count": paginator.count,
+                    "counts": counts,
+                    "orgunits": map(serializer, page.object_list),
+                    "has_next": page.has_next(),
+                    "has_previous": page.has_previous(),
+                    "page": page_offset,
+                    "pages": paginator.num_pages,
+                    "limit": limit,
+                }
 
                 return Response(res)
             elif with_shapes:

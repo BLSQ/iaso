@@ -6,6 +6,7 @@ from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
+from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django_ltree.fields import PathField
 from django_ltree.models import TreeModel
@@ -385,10 +386,15 @@ class OrgUnit(TreeModel):
             "source_id": self.version.data_source.id if self.version else None,
             "version": self.version.number if self.version else None,
         }
+        # search_index and instances_count aren't on the model but added via annotations
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
         if hasattr(self, "instances_count"):
             res["instances_count"] = self.instances_count
+        else:
+            res["instances_count"] = self.instance_set.filter(
+                ~Q(file="") & ~Q(device__test_device=True) & ~Q(deleted=True)
+            ).count()
 
         return res
 

@@ -8,7 +8,7 @@ from iaso.models import OrgUnit, Instance, DataSource
 # FIXME Not sure if it's the best place but needed to move it out of circular import
 
 
-def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TODO: move in viewset.get_queryset()
+def build_org_units_queryset(queryset, params, profile, is_export, forms, annotate_instance_count=False):
     validation_status = params.get("validation_status", OrgUnit.VALIDATION_VALID)
     has_instances = params.get("hasInstances", None)
     date_from = params.get("dateFrom", None)
@@ -161,12 +161,13 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
     if ignore_empty_names:
         queryset = queryset.filter(~Q(name=""))
 
-    queryset = queryset.annotate(
-        instances_count=Count(
-            "instance",
-            filter=(~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True)),
+    if annotate_instance_count:
+        queryset = queryset.annotate(
+            instances_count=Count(
+                "instance",
+                filter=(~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True)),
+            )
         )
-    )
 
     if is_export:
         annotations = {

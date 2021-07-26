@@ -100,6 +100,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
 
+        # Annotate number of instance per org unit to sort by it
+        order_by_instance_count = "instances_count" in order or "-instances_count" in order
+        annotate_instance_count = order_by_instance_count or is_export
+
         searches = request.GET.get("searches", None)
         counts = []
         if not request.user.is_anonymous:
@@ -111,7 +115,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             base_queryset = queryset
             for search in json.loads(searches):
                 additional_queryset = build_org_units_queryset(
-                    base_queryset, search, profile, is_export, forms
+                    base_queryset, search, profile, is_export, forms, annotate_instance_count
                 ).annotate(search_index=Value(search_index, IntegerField()))
                 if search_index == 0:
                     queryset = additional_queryset
@@ -120,7 +124,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 counts.append({"index": search_index, "count": additional_queryset.count()})
                 search_index += 1
         else:
-            queryset = build_org_units_queryset(queryset, request.GET, profile, is_export, forms)
+            queryset = build_org_units_queryset(
+                queryset, request.GET, profile, is_export, forms, annotate_instance_count
+            )
 
         queryset = queryset.order_by(*order)
 
@@ -151,7 +157,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
                 return Response(res)
             elif with_shapes:
-
                 org_units = []
                 for unit in queryset:
                     temp_org_unit = unit.as_dict()
@@ -258,14 +263,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 ]
                 return org_unit_values
 
-            # Django don't allow prefetch_related after an union
-            # so we will disable the optimisation in that case
-            # which will make it pretty slow. FIXME.
-            if not queryset.query.combinator:
-                queryset.prefetch_related("parent__parent__parent__parent").prefetch_related(
-                    "parent__parent__parent"
-                ).prefetch_related("parent__parent").prefetch_related("parent")
-
             if xlsx_format:
                 filename = filename + ".xlsx"
                 response = HttpResponse(
@@ -281,12 +278,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return response
 
     def list_to_gpkg(self, queryset):
-        # Django don't allow prefetch_related after an union
-        # so we will disable the optimisation in that case
-        # which will make it pretty slow. FIXME.
-        if not queryset.query.combinator:
-            queryset = queryset.prefetch_related("parent", "org_unit_type")
-
         response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
         filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"

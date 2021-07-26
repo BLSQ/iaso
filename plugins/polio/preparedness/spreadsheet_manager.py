@@ -65,20 +65,19 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     final_column = 6 + region_districts.count()
     summary_range_a1 = [
         f"F11:{rowcol_to_a1(11, final_column)}",
-        f"F24:{rowcol_to_a1(24, final_column)}",
-        f"F30:{rowcol_to_a1(30, final_column)}",
-        f"F40:{rowcol_to_a1(40, final_column)}",
-        f"F50:{rowcol_to_a1(50, final_column)}",
-        f"F58:{rowcol_to_a1(58, final_column)}",
+        f"F22:{rowcol_to_a1(22, final_column)}",
+        f"F28:{rowcol_to_a1(28, final_column)}",
+        f"F38:{rowcol_to_a1(38, final_column)}",
+        f"F46:{rowcol_to_a1(46, final_column)}",
+        f"F54:{rowcol_to_a1(54, final_column)}",
     ]
     district_data_range = [
-        f"F7:{rowcol_to_a1(10, final_column)}",
-        f"F16:{rowcol_to_a1(16, final_column)}",
-        f"F28:{rowcol_to_a1(29, final_column)}",
-        f"F35:{rowcol_to_a1(37, final_column)}",
-        f"F39:{rowcol_to_a1(39, final_column)}",
-        f"F44:{rowcol_to_a1(49, final_column)}",
-        f"F55:{rowcol_to_a1(56, final_column)}",
+        f"F7:{rowcol_to_a1(11, final_column)}",
+        f"F17:{rowcol_to_a1(17, final_column)}",
+        f"F26:{rowcol_to_a1(27, final_column)}",
+        f"F33:{rowcol_to_a1(37, final_column)}",
+        f"F42:{rowcol_to_a1(43, final_column)}",
+        f"F51:{rowcol_to_a1(52, final_column)}"
     ]
 
     ranges = [GridRange.from_a1_range(data, sheet) for data in district_data_range]
@@ -92,9 +91,9 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     ]
 
     custom_rules = (
-        get_conditional_rules(ranges)
-        + get_summary_conditional_rules(summary_ranges)
-        + get_non_blank_rules(non_blank_ranges)
+            get_conditional_rules(ranges)
+            + get_summary_conditional_rules(summary_ranges)
+            + get_non_blank_rules(non_blank_ranges)
     )
 
     [rules.append(rule) for rule in custom_rules]
@@ -123,15 +122,24 @@ def generate_planning_coord_funding_section(col_index: int, district):
     }
 
 
+def generate_training_section(col_index: int, district_name: str):
+    return {
+        "range": get_range(col_index, 15, 22),
+        "values": map_to_column_value(
+            [district_name, None, "0", None, None, None, None, f"={rowcol_to_a1(17, col_index)}*0.1"]
+        ),
+    }
+
+
 def generate_monitoring_section(col_index: int, district_name):
     return {
-        "range": get_range(col_index, 27, 30),
+        "range": get_range(col_index, 25, 28),
         "values": map_to_column_value(
             [
                 district_name,
                 "0",
                 "0",
-                get_average_of_range(col_index, 28, 29),
+                get_average_of_range(col_index, 26, 27),
             ]
         ),
     }
@@ -139,17 +147,15 @@ def generate_monitoring_section(col_index: int, district_name):
 
 def generate_advocacy_section(col_index: int, district_name):
     return {
-        "range": get_range(col_index, 43, 50),
+        "range": get_range(col_index, 41, 46),
         "values": map_to_column_value(
             [
                 district_name,
                 "0",
                 "0",
-                "0",
-                "0",
-                "0",
-                "0",
-                get_average_of_range(col_index, 44, 45),
+                "",
+                "",
+                get_average_of_range(col_index, 42, 45),
             ]
         ),
     }
@@ -157,14 +163,14 @@ def generate_advocacy_section(col_index: int, district_name):
 
 def generate_adverse_section(col_index: int, district_name):
     return {
-        "range": get_range(col_index, 54, 58),
+        "range": get_range(col_index, 50, 54),
         "values": map_to_column_value(
             [
                 district_name,
                 "0",
                 "0",
                 "",
-                get_average_of_range(col_index, 55, 56),
+                get_average_of_range(col_index, 51, 53),
             ]
         ),
     }
@@ -172,7 +178,7 @@ def generate_adverse_section(col_index: int, district_name):
 
 def generate_vaccine_logistics_section(col_index: int, district_name):
     return {
-        "range": get_range(col_index, 34, 40),
+        "range": get_range(col_index, 32, 38),
         "values": map_to_column_value(
             [
                 district_name,
@@ -183,15 +189,6 @@ def generate_vaccine_logistics_section(col_index: int, district_name):
                 "0",
                 f"=AVERAGE({get_range(col_index, 35, 37)}, {rowcol_to_a1(39, col_index)})*0.1",
             ]
-        ),
-    }
-
-
-def generate_training_section(col_index: int, district_name: str):
-    return {
-        "range": get_range(col_index, 15, 24),
-        "values": map_to_column_value(
-            [district_name, "0", None, None, None, None, None, None, None, f"={rowcol_to_a1(16, col_index)}*0.1"]
         ),
     }
 

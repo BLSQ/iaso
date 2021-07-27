@@ -17,15 +17,13 @@ import DataSources from '../domains/dataSources';
 import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import Groups from '../domains/orgUnits/groups';
-import Types from '../domains/orgUnits/types';
-import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
 import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
-import TreeComponent from '../domains/orgUnits/tree';
+import TreePage from '../domains/orgUnits/tree';
 
 const paginationPathParams = [
     {
@@ -475,7 +473,7 @@ export const groupsPath = {
 export const treePath = {
     baseUrl: baseUrls.tree,
     permission: 'iaso_org_units',
-    component: props => <TreeComponent {...props} />,
+    component: props => <TreePage {...props} />,
     params: [],
 };
 

@@ -316,7 +316,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["GET"], permission_classes=[permissions.IsAuthenticated, permissions.IsAdminUser])
     def tree(self, request: "Request"):
         version_id = request.query_params.get("version_id")
-        version_id = 4
         source_version = SourceVersion.objects.get(pk=version_id)
 
         # assume parent are already created, hence ordering by path

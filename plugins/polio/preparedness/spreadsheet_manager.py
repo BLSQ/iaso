@@ -3,7 +3,12 @@ from typing import List
 
 import gspread
 from gspread.utils import rowcol_to_a1
-from gspread_formatting import get_conditional_format_rules, ConditionalFormatRule, GridRange, format_cell_ranges
+from gspread_formatting import (
+    get_conditional_format_rules,
+    ConditionalFormatRule,
+    GridRange,
+    format_cell_ranges,
+)
 
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.conditional_formatting import (
@@ -39,7 +44,9 @@ def update_national_worksheet(sheet: gspread.Worksheet, country=None, **kwargs):
     sheet.batch_update(updates)
 
 
-def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region_districts):
+def update_regional_worksheet(
+    sheet: gspread.Worksheet, region_name: str, region_districts
+):
     updates = [
         {"range": "c4", "values": [[region_name]]},
     ]
@@ -77,12 +84,14 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
         f"F26:{rowcol_to_a1(27, final_column)}",
         f"F33:{rowcol_to_a1(37, final_column)}",
         f"F42:{rowcol_to_a1(43, final_column)}",
-        f"F51:{rowcol_to_a1(52, final_column)}"
+        f"F51:{rowcol_to_a1(52, final_column)}",
     ]
 
     ranges = [GridRange.from_a1_range(data, sheet) for data in district_data_range]
 
-    summary_ranges = [GridRange.from_a1_range(range_cell, sheet) for range_cell in summary_range_a1]
+    summary_ranges = [
+        GridRange.from_a1_range(range_cell, sheet) for range_cell in summary_range_a1
+    ]
 
     non_blank_ranges = [
         GridRange.from_a1_range(f"F17:{rowcol_to_a1(23, final_column)}", sheet),
@@ -91,16 +100,23 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     ]
 
     custom_rules = (
-            get_conditional_rules(ranges)
-            + get_summary_conditional_rules(summary_ranges)
-            + get_non_blank_rules(non_blank_ranges)
+        get_conditional_rules(ranges)
+        + get_summary_conditional_rules(summary_ranges)
+        + get_non_blank_rules(non_blank_ranges)
     )
 
     [rules.append(rule) for rule in custom_rules]
 
-    format_cell_ranges(worksheet=sheet, ranges=[(range_cells, PERCENT_FORMAT) for range_cells in summary_range_a1])
     format_cell_ranges(
-        worksheet=sheet, ranges=[(range_cells, TEXT_CENTERED) for range_cells in summary_range_a1 + district_data_range]
+        worksheet=sheet,
+        ranges=[(range_cells, PERCENT_FORMAT) for range_cells in summary_range_a1],
+    )
+    format_cell_ranges(
+        worksheet=sheet,
+        ranges=[
+            (range_cells, TEXT_CENTERED)
+            for range_cells in summary_range_a1 + district_data_range
+        ],
     )
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
@@ -126,7 +142,16 @@ def generate_training_section(col_index: int, district_name: str):
     return {
         "range": get_range(col_index, 15, 22),
         "values": map_to_column_value(
-            [district_name, None, "0", None, None, None, None, f"={rowcol_to_a1(17, col_index)}*0.1"]
+            [
+                district_name,
+                None,
+                "0",
+                None,
+                None,
+                None,
+                None,
+                f"={rowcol_to_a1(17, col_index)}*0.1",
+            ]
         ),
     }
 
@@ -206,11 +231,19 @@ def get_conditional_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
         ConditionalFormatRule(ranges=ranges, booleanRule=get_between_rule(["0", "4"])),
         ConditionalFormatRule(
             ranges=ranges,
-            booleanRule=get_between_rule(["5", "8"], text_foreground_color=DARK_YELLOW, background_color=LIGHT_YELLOW),
+            booleanRule=get_between_rule(
+                ["5", "8"],
+                text_foreground_color=DARK_YELLOW,
+                background_color=LIGHT_YELLOW,
+            ),
         ),
         ConditionalFormatRule(
             ranges=ranges,
-            booleanRule=get_between_rule(["9", "10"], text_foreground_color=DARK_GREEN, background_color=LIGHT_GREEN),
+            booleanRule=get_between_rule(
+                ["9", "10"],
+                text_foreground_color=DARK_GREEN,
+                background_color=LIGHT_GREEN,
+            ),
         ),
     ]
 
@@ -224,17 +257,23 @@ def get_non_blank_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
 
 def get_summary_conditional_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
     return [
-        ConditionalFormatRule(ranges=ranges, booleanRule=get_between_rule(["0", "0.49"])),
+        ConditionalFormatRule(
+            ranges=ranges, booleanRule=get_between_rule(["0", "0.49"])
+        ),
         ConditionalFormatRule(
             ranges=ranges,
             booleanRule=get_between_rule(
-                ["0.5", "0.79"], text_foreground_color=DARK_YELLOW, background_color=LIGHT_YELLOW
+                ["0.5", "0.79"],
+                text_foreground_color=DARK_YELLOW,
+                background_color=LIGHT_YELLOW,
             ),
         ),
         ConditionalFormatRule(
             ranges=ranges,
             booleanRule=get_between_rule(
-                ["0.8", "1.0"], text_foreground_color=DARK_GREEN, background_color=LIGHT_GREEN
+                ["0.8", "1.0"],
+                text_foreground_color=DARK_GREEN,
+                background_color=LIGHT_GREEN,
             ),
         ),
     ]

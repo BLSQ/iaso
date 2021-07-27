@@ -218,6 +218,12 @@ class SourceVersionAdmin(admin.ModelAdmin):
     list_filter = ("data_source",)
 
 
+class SourceVersionAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at",)
+    list_display = ("id", "data_source", "number", "created_at")
+    list_filter = ("data_source",)
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)

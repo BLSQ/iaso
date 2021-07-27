@@ -6,7 +6,7 @@ import React, {
     useState,
 } from 'react';
 
-import { useQuery } from 'react-query';
+import { useQueries, useQuery } from 'react-query';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import { TreeItem, TreeView } from '@material-ui/lab';
@@ -33,13 +33,21 @@ const useGetTree = slug =>
         { staleTime: 5, refetchOnWindowFocus: false },
     );
 
-const useGetShape = slug =>
-    useQuery(
-        ['orgunitshape', slug],
-        async () => {
-            return sendRequest('GET', `/api/orgunits/${slug}/`);
-        },
-        { staleTime: 5, cacheTime: 5, refetchOnWindowFocus: false, enabled: Boolean(slug) },
+const defaultConfig = {
+    staleTime: 5,
+    cacheTime: 5,
+    refetchOnWindowFocus: false,
+};
+const useGetShapes = slugs =>
+    useQueries(
+        slugs.map(slug => {
+            return {
+                queryKey: ['orgunitshape', slug],
+                queryFn: () => sendRequest('GET', `/api/orgunits/${slug}/`),
+                enabled: Boolean(slug),
+                ...defaultConfig,
+            };
+        }),
     );
 
 const Label = node => (
@@ -82,12 +90,7 @@ const MapComponent = ({ children, bounds }) => {
     }, [bounds]);
 
     return (
-        <Map
-            ref={map}
-            style={{ height: 1000 }}
-            center={[0, 20]}
-            zoom={4}
-        >
+        <Map ref={map} style={{ height: 1000 }} center={[0, 20]} zoom={4}>
             <TileLayer
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -98,22 +101,30 @@ const MapComponent = ({ children, bounds }) => {
 };
 
 const TreePage = () => {
-    // const { data, isFetching, error } = useGetDSTree();
     const { data, isFetching, error } = useGetTree(39);
-    const [selectedNode, setSelectedNode] = useState();
-    const { data: shape } = useGetShape(selectedNode);
+    const [selectedNodes = [], setSelectedNodes] = useState();
+    const queries = useGetShapes(selectedNodes);
+    const shapes = queries.map(q => q.data);
 
     if (error) {
         return error.toString();
     }
-    const handleSelect = (event, nodeIds) => {
-        setSelectedNode(nodeIds);
+    const handleSelect = (event, nodeId) => {
+        let newNodes;
+        if (selectedNodes.includes(nodeId)) {
+            newNodes = selectedNodes.filter(n => n === nodeId);
+        } else {
+            newNodes = [nodeId, ...selectedNodes];
+        }
+        setSelectedNodes(newNodes);
     };
+    
 
     const bounds = useMemo(() => {
+        const shape = shapes[0]
         if (!(shape && shape.geo_json)) return null;
         return geoJSON(shape.geo_json).getBounds();
-    }, [shape]);
+    }, [shapes[0]]);
 
     return (
         <>
@@ -124,9 +135,11 @@ const TreePage = () => {
                 </Grid>
                 <Grid item xs={6}>
                     <MapComponent bounds={bounds}>
-                        {shape && Boolean(shape.geo_json) && (
-                            <GeoJSON data={shape.geo_json} />
-                        )}
+                        {shapes
+                            .filter(s => s && Boolean(s.geo_json))
+                            .map(shape => (
+                                <GeoJSON key={shape.id} data={shape.geo_json} />
+                            ))}
                     </MapComponent>
                 </Grid>
             </Grid>

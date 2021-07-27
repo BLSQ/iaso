@@ -77,18 +77,16 @@ const MapComponent = ({ children, bounds }) => {
     const map = useRef();
     useEffect(() => {
         if (bounds && bounds.isValid()) {
-            map.current.leafletElement.fitBounds(bounds);
+            map.current.leafletElement.panInsideBounds(bounds);
         }
     }, [bounds]);
 
     return (
         <Map
             ref={map}
-            // style={{ height: '100%' }}
-            center={[0, 0]}
-            zoom={3}
-            scrollWheelZoom={false}
-            // bounds={bounds}
+            style={{ height: 1000 }}
+            center={[0, 20]}
+            zoom={4}
         >
             <TileLayer
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'

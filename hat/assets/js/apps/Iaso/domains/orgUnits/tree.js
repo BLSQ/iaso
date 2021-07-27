@@ -1,5 +1,4 @@
 import React, {
-    useCallback,
     useEffect,
     useMemo,
     useRef,
@@ -75,6 +74,7 @@ const TreeComponent = ({ data, onNodeSelected }) => {
             defaultExpanded={['0']}
             defaultExpandIcon={<ChevronRightIcon />}
             onNodeSelect={onNodeSelected}
+            multiSelect
         >
             {renderTree(data)}
         </TreeView>
@@ -109,19 +109,12 @@ const TreePage = () => {
     if (error) {
         return error.toString();
     }
-    const handleSelect = (event, nodeId) => {
-        let newNodes;
-        if (selectedNodes.includes(nodeId)) {
-            newNodes = selectedNodes.filter(n => n === nodeId);
-        } else {
-            newNodes = [nodeId, ...selectedNodes];
-        }
-        setSelectedNodes(newNodes);
+    const handleSelect = (event, nodeIds) => {
+        setSelectedNodes(nodeIds);
     };
-    
 
     const bounds = useMemo(() => {
-        const shape = shapes[0]
+        const shape = shapes[0];
         if (!(shape && shape.geo_json)) return null;
         return geoJSON(shape.geo_json).getBounds();
     }, [shapes[0]]);

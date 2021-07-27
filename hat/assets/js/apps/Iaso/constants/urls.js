@@ -9,6 +9,7 @@ export const baseUrls = {
     instanceDetail: 'forms/submission',
     orgUnits: 'orgunits/list',
     groups: 'orgunits/groups',
+    tree: 'orgunits/tree',
     orgUnitTypes: 'orgunits/types',
     orgUnitDetails: 'orgunits/detail',
     links: 'orgunits/sources/links/list',

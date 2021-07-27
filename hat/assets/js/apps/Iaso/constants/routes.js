@@ -25,6 +25,7 @@ import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
+import TreeComponent from '../domains/orgUnits/tree';
 
 const paginationPathParams = [
     {
@@ -470,6 +471,14 @@ export const groupsPath = {
         })),
     ],
 };
+
+export const treePath = {
+    baseUrl: baseUrls.tree,
+    permission: 'iaso_org_units',
+    component: props => <TreeComponent {...props} />,
+    params: [],
+};
+
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
     permission: 'iaso_org_units',
@@ -524,6 +533,7 @@ export const routeConfigs = [
     tasksPath,
     devicesPath,
     groupsPath,
+    treePath,
     orgUnitTypesPath,
     pagesPath,
     page401,

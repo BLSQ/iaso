@@ -84,6 +84,12 @@ const menuItems = [
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
+                label: { defaultMessage: 'Tree', id: 'tree' },
+                permission: paths.orgUnitsPath.permission,
+                key: 'tree',
+                icon: props => <FormatListBulleted {...props} />,
+            },
+            {
                 label: MESSAGES.groups,
                 permission: paths.groupsPath.permission,
                 key: 'groups',

@@ -25,11 +25,10 @@ import {
     Tab,
     Tabs,
     Typography,
-} from '@material-ui/core';
+} from "@material-ui/core";
 import merge from 'lodash.merge';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
-import { MapContainer } from './MapComponent';
 
 import {
     DateInput,
@@ -40,6 +39,7 @@ import {
     RABudgetStatusField,
     TextInput,
 } from './Inputs';
+import { MapComponent } from "./MapComponent/MapComponent";
 
 import { Page } from './Page';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
@@ -398,10 +398,10 @@ const separate = (array, referenceArray) => {
 const ScopeForm = () => {
     const [selectRegion, setSelectRegion] = useState(false)
     const { values, setFieldValue } = useFormikContext();
-
+    // Group contains selected orgunits
     const { group = {} } = values;
 
-    const { data = [], isFetching } = useGetRegionGeoJson(
+    const { data: shapes, isFetching } = useGetRegionGeoJson(
         values.org_unit?.country_parent?.id ||
             values.org_unit?.root?.id ||
             values.org_unit?.id,
@@ -410,79 +410,74 @@ const ScopeForm = () => {
     const toggleRegionSelect = () => {
         setSelectRegion(!selectRegion)
     }
-    const shapes = useMemo(() => {
-        return data.map(shape => ({
-            ...shape,
-            pathOptions: group.org_units.find(org_unit => shape.id === org_unit)
-                ? selectedPathOptions
-                : unselectedPathOptions,
-        }));
-    }, [data, group]);
+
+    const getShapeStyle = useCallback((shape) => {
+          return group.org_units.includes(shape.id)
+            ? selectedPathOptions
+            : unselectedPathOptions;
+      },
+      [group]
+    );
 
     const onSelectOrgUnit = useCallback(
-        shape => {
-            if (selectRegion){
-                const { org_units } = group;
-                const regionShapes = shapes.filter(s=>s.parent_id===shape.parent_id).map(s=>s.id)
-                const {selected, unselected} = separate(regionShapes, org_units);
-                const isRegionSelected = selected.length === regionShapes.length;
-                if(isRegionSelected){
-                    const regionRemoved = org_units.filter(orgUnit => !regionShapes.includes(orgUnit));
-                    setFieldValue('group',{
-                        ...group,
-                        org_units:regionRemoved
-                    });
-                }else{
-                    const selectionWithRegion = [...org_units,...unselected]
-                    setFieldValue('group',{
-                        ...group,
-                        org_units:selectionWithRegion
-                    });
-                }
-            } else {
-                var { org_units } = group;
-                const hasFound = org_units.find(org_unit => shape.id === org_unit);
+      shape => {
+          const { org_units } = group;
+          let newOrgUnits;
+          if (selectRegion) {
+              const regionShapes = shapes.filter(s => s.parent_id === shape.parent_id).map(s => s.id);
+              const { selected, unselected } = separate(regionShapes, org_units);
+              const isRegionSelected = selected.length === regionShapes.length;
+              if (isRegionSelected) {
+                  newOrgUnits = org_units.filter(orgUnit => !regionShapes.includes(orgUnit));
+              } else {
+                  newOrgUnits = [...org_units, ...unselected];
+              }
+          } else {
+              if (org_units.find(org_unit => shape.id === org_unit)) {
+                  newOrgUnits = org_units.filter(orgUnit => orgUnit !== shape.id);
+              } else {
+                  newOrgUnits = [...org_units, shape.id];
+              }
+          }
 
-                if (hasFound) {
-                    org_units = org_units.filter(orgUnit => orgUnit !== shape.id);
-                } else {
-                    org_units.push(shape.id);
-                }
+          setFieldValue("group", {
+              ...group,
+              org_units: newOrgUnits
+          });
+      },
+      [group, setFieldValue, selectRegion, shapes]
+    );
 
-                setFieldValue('group', {
-                    ...group,
-                    org_units,
-                });
+    return <Grid container spacing={2}>
+        <Grid xs={12} item>
+            {isFetching && !shapes && <LoadingSpinner />}
+            {!isFetching && !shapes &&
+                // FIXME should not be needed
+                <Typography>Please save the Campaign before selecting scope.</Typography>
             }
-        },
-        [group, setFieldValue,selectRegion,shapes],
-    );
-
-    return (
-        <>
-            <Grid container spacing={2}>
-                <Grid xs={12} item>
-                    {isFetching ? (
-                        <LoadingSpinner />
-                    ) : (
-                        <MapContainer
-                            shapes={shapes}
-                            onSelectShape={onSelectOrgUnit}
-                        />
-                    )}
-                </Grid>
-                <Grid xs={12} item>
-                    <FormGroup>
-                        <FormControlLabel
-                        style={{width:'max-content'}}
-                        control={<Switch size="medium" checked={selectRegion} onChange={toggleRegionSelect} color="primary"/>}
-                        label="Select region"
-                        />
-                    </FormGroup>
-                </Grid>
+            <MapComponent
+              shapes={shapes}
+              onSelectShape={onSelectOrgUnit}
+              getShapeStyle={getShapeStyle}
+            />
+        </Grid>
+        <Grid container>
+            <Grid xs={8} item>
+                <FormGroup>
+                    <FormControlLabel
+                      style={{ width: "max-content" }}
+                      control={<Switch size="medium" checked={selectRegion} onChange={toggleRegionSelect} color="primary" />}
+                      label="Select region"
+                    />
+                </FormGroup>
             </Grid>
-        </>
-    );
+            <Grid xs={4} item>
+                {shapes && isFetching &&
+                    <Typography align="right">Refreshing ...</Typography>
+                }
+            </Grid>
+        </Grid>
+    </Grid>;
 };
 
 const BudgetForm = () => {
@@ -1195,7 +1190,7 @@ export const Dashboard = () => {
                 accessor: 'round_one__started_at',
                 Cell: settings => {
                     return (
-                        <ColumnText text={settings.original?.round_one?.started_at} />
+                        <ColumnText text={settings.original?.round_one?.started_at ?? textPlaceholder} />
                     );
                 },
             },
@@ -1204,7 +1199,7 @@ export const Dashboard = () => {
                 accessor: 'round_two__started_at',
                 Cell: settings => {
                     return (
-                        <ColumnText text={settings.original?.round_two?.started_at} />
+                        <ColumnText text={settings.original?.round_two?.started_at ?? textPlaceholder} />
                     );
                 },
             },

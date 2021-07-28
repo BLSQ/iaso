@@ -170,10 +170,7 @@ def build_org_units_queryset(queryset, params, profile):
     return queryset
 
 
-def annotate_query(queryset, count_instances, count_per_form, forms, search_index=None):
-    if search_index is not None:
-        queryset = queryset.annotate(search_index=Value(search_index, IntegerField()))
-
+def annotate_query(queryset, count_instances, count_per_form, forms):
     if count_instances:
         queryset = queryset.annotate(
             instances_count=Count(

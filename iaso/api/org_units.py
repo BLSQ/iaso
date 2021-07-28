@@ -5,7 +5,7 @@ from time import gmtime, strftime
 from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, IntegerField, Value
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -164,6 +164,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         order_by_instance_count = "instances_count" in order or "-instances_count" in order
         count_instances = order_by_instance_count or is_export
         count_per_form = csv_format or xlsx_format
+        # add annotation(s) if needed
+        queryset = annotate_query(queryset, count_instances, count_per_form, forms)
 
         if not request.user.is_anonymous:
             profile = request.user.iaso_profile
@@ -176,22 +178,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if searches:
             search_index = 0
             base_queryset = queryset
+            queryset = OrgUnit.objects.none()
             for search in json.loads(searches):
-                additional_queryset = build_org_units_queryset(base_queryset, search, profile)
-                counts.append({"index": search_index, "count": additional_queryset.count()})
-                additional_queryset = annotate_query(
-                    additional_queryset, count_instances, count_per_form, forms, search_index
+                sub_queryset = build_org_units_queryset(base_queryset, search, profile).annotate(
+                    search_index=Value(search_index, IntegerField())
                 )
-
-                if search_index == 0:
-                    queryset = additional_queryset
-                else:
-                    queryset = queryset.union(additional_queryset)
-
+                counts.append({"index": search_index, "count": sub_queryset.count()})
+                queryset = queryset.union(sub_queryset)
                 search_index += 1
         else:
             queryset = build_org_units_queryset(queryset, request.GET, profile)
-            queryset = annotate_query(queryset, count_instances, count_per_form, forms)
 
         queryset = queryset.order_by(*order)
 

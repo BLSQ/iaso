@@ -3,10 +3,11 @@ import { Field, useFormikContext } from 'formik';
 import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import {
+    useGeneratePreparednessSheet,
     useGetPreparednessData,
     useSurgeData,
 } from '../hooks/useGetPreparednessData';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export const PreparednessForm = () => {
     const classes = useStyles();
@@ -24,6 +25,12 @@ export const PreparednessForm = () => {
         [surgeDataTotals, lastSurge],
     );
     const { mutate, isLoading, isError, error } = useGetPreparednessData();
+    const {
+        mutate: generateSpreadsheet,
+        isLoading: isGeneratingSpreadsheet,
+        data: generatedSpreadsheet,
+    } = useGeneratePreparednessSheet(values.id);
+
     const { preperadness_spreadsheet_url = '' } = values;
 
     const refreshData = () => {
@@ -86,6 +93,16 @@ export const PreparednessForm = () => {
             },
         );
     };
+
+    useEffect(() => {
+        if (generatedSpreadsheet) {
+            setFieldValue(
+                'preperadness_spreadsheet_url',
+                generatedSpreadsheet.url,
+            );
+        }
+    }, [generatedSpreadsheet]);
+
     return (
         <>
             <Grid container spacing={2}>
@@ -93,16 +110,18 @@ export const PreparednessForm = () => {
                     <Grid xs={12} md={8} item>
                         <Field
                             placeholder={
-                                'Enter Google Sheet url or use the button to generate a new one'
+                                values.id
+                                    ? 'Enter Google Sheet url or use the button to generate a new one'
+                                    : 'Enter Google Sheet url'
                             }
                             label="Preparedness Google Sheet URL"
                             name={'preperadness_spreadsheet_url'}
                             component={TextInput}
-                            disabled={isLoading}
+                            disabled={isLoading || isGeneratingSpreadsheet}
                             className={classes.input}
                         />
                     </Grid>
-                    {preperadness_spreadsheet_url?.trim().length ? (
+                    {preperadness_spreadsheet_url?.trim().length > 0 && (
                         <Grid
                             xs={12}
                             md={4}
@@ -128,7 +147,8 @@ export const PreparednessForm = () => {
                                 Refresh Preparedness data
                             </Button>
                         </Grid>
-                    ) : (
+                    )}
+                    {values.id && !preperadness_spreadsheet_url?.trim().length && (
                         <Grid
                             xs={12}
                             md={4}
@@ -140,15 +160,15 @@ export const PreparednessForm = () => {
                                 fullWidth
                                 variant="contained"
                                 color="primary"
-                                disabled={isLoading || isProcessingData}
-                                onClick={refreshData}
+                                disabled={isGeneratingSpreadsheet}
+                                onClick={generateSpreadsheet}
                             >
                                 Generate a spreadsheet
                             </Button>
                         </Grid>
                     )}
                     <Grid xd={12} item>
-                        {isLoading ? (
+                        {isLoading || isGeneratingSpreadsheet ? (
                             <CircularProgress />
                         ) : (
                             <>

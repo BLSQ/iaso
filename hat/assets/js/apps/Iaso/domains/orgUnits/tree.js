@@ -51,6 +51,7 @@ const Label = node => (
         {node.num_children > 0 && (
             <span style={{ color: 'grey' }}> {node.num_children}</span>
         )}
+        {node.has_geo_json && ' 🌍'}
     </>
 );
 const renderTree = node => (
@@ -101,25 +102,24 @@ const TreePage = () => {
     const [selectedNodes = [], setSelectedNodes] = useState();
     const queries = useGetShapes(selectedNodes);
     const shapes = queries.map(q => q.data);
-
-    if (error) {
-        return error.toString();
-    }
-    const handleSelect = (event, nodeIds) => {
-        setSelectedNodes(nodeIds);
-    };
-
     const bounds = useMemo(() => {
         const shape = shapes[0];
         if (!(shape && shape.geo_json)) return null;
         return geoJSON(shape.geo_json).getBounds();
     }, [shapes[0]]);
 
+    if (error) {
+        return <>Error from server {error.toString()}</>;
+    }
+    const handleSelect = (event, nodeIds) => {
+        setSelectedNodes(nodeIds);
+    };
+
     return (
         <>
-            {isFetching && 'Loading ...'}
             <Grid container>
                 <Grid item xs={6}>
+                    {isFetching && 'Loading ...'}
                     <TreeComponent data={data} onNodeSelected={handleSelect} />
                 </Grid>
                 <Grid item xs={6}>

@@ -340,7 +340,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
         tree = {"children": {}, "id": "0", "name": f"Source: {source_version}"}
         for ou in source_version.orgunit_set.all().select_related("org_unit_type").order_by("path"):
             insert_in_tree(
-                tree["children"], str(ou.path), {"name": ou.name, "type": ou.org_unit_type.name, "id": str(ou.id)}
+                tree["children"],
+                str(ou.path),
+                {
+                    "name": ou.name,
+                    "type": ou.org_unit_type.name,
+                    "id": str(ou.id),
+                    "has_geo_json": True if ou.simplified_geom else False,
+                },
             )
 
         def plop_tree(node):  # convert children dict in list in place

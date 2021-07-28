@@ -25,7 +25,7 @@ import {
     Tab,
     Tabs,
     Typography,
-} from "@material-ui/core";
+} from '@material-ui/core';
 import merge from 'lodash.merge';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
@@ -39,7 +39,7 @@ import {
     RABudgetStatusField,
     TextInput,
 } from './Inputs';
-import { MapComponent } from "./MapComponent/MapComponent";
+import { MapComponent } from './MapComponent/MapComponent';
 
 import { Page } from './Page';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
@@ -62,25 +62,25 @@ const round_shape = yup.object().shape({
     ended_at: yup
         .date()
         .nullable()
-        .min(yup.ref('started_at'), "end date can't be before start date"),
+        .min(yup.ref('started_at'), 'end date can\'t be before start date'),
     mop_up_started_at: yup.date().nullable(),
     mop_up_ended_at: yup
         .date()
         .nullable()
         .min(
             yup.ref('mop_up_started_at'),
-            "end date can't be before start date",
+            'end date can\'t be before start date',
         ),
     im_started_at: yup.date().nullable(),
     im_ended_at: yup
         .date()
         .nullable()
-        .min(yup.ref('im_started_at'), "end date can't be before start date"),
+        .min(yup.ref('im_started_at'), 'end date can\'t be before start date'),
     lqas_started_at: yup.date().nullable(),
     lqas_ended_at: yup
         .date()
         .nullable()
-        .min(yup.ref('lqas_started_at'), "end date can't be before start date"),
+        .min(yup.ref('lqas_started_at'), 'end date can\'t be before start date'),
     target_population: yup.number().nullable().min(0).integer(),
     cost: yup.number().nullable().min(0).integer(),
 });
@@ -403,81 +403,87 @@ const ScopeForm = () => {
 
     const { data: shapes, isFetching } = useGetRegionGeoJson(
         values.org_unit?.country_parent?.id ||
-            values.org_unit?.root?.id ||
-            values.org_unit?.id,
+        values.org_unit?.root?.id ||
+        values.org_unit?.id,
     );
 
     const toggleRegionSelect = () => {
         setSelectRegion(!selectRegion);
-    }
+    };
 
 
     const getShapeStyle = useCallback((shape) => {
-          return group.org_units.includes(shape.id)
+            return group.org_units.includes(shape.id)
                 ? selectedPathOptions
                 : values.org_unit?.id === shape.id
-                ? initialDistrict
-                : unselectedPathOptions;
-      },
-      [group, values.org_unit?.id]
+                    ? initialDistrict
+                    : unselectedPathOptions;
+        },
+        [group, values.org_unit?.id],
     );
 
     const onSelectOrgUnit = useCallback(
-      shape => {
-          const { org_units } = group;
-          let newOrgUnits;
-          if (selectRegion) {
-              const regionShapes = shapes.filter(s => s.parent_id === shape.parent_id).map(s => s.id);
-              const { selected, unselected } = separate(regionShapes, org_units);
-              const isRegionSelected = selected.length === regionShapes.length;
-              if (isRegionSelected) {
-                  newOrgUnits = org_units.filter(orgUnit => !regionShapes.includes(orgUnit));
-              } else {
-                  newOrgUnits = [...org_units, ...unselected];
-              }
-          } else {
-              if (org_units.find(org_unit => shape.id === org_unit)) {
-                  newOrgUnits = org_units.filter(orgUnit => orgUnit !== shape.id);
-              } else {
-                  newOrgUnits = [...org_units, shape.id];
-              }
-          }
+        shape => {
+            const { org_units } = group;
+            let newOrgUnits;
+            if (selectRegion) {
+                const regionShapes = shapes.filter(s => s.parent_id === shape.parent_id).map(s => s.id);
+                const {
+                    selected,
+                    unselected,
+                } = separate(regionShapes, org_units);
+                const isRegionSelected = selected.length === regionShapes.length;
+                if (isRegionSelected) {
+                    newOrgUnits = org_units.filter(orgUnit => !regionShapes.includes(orgUnit));
+                } else {
+                    newOrgUnits = [...org_units, ...unselected];
+                }
+            } else {
+                if (org_units.find(org_unit => shape.id === org_unit)) {
+                    newOrgUnits = org_units.filter(orgUnit => orgUnit !== shape.id);
+                } else {
+                    newOrgUnits = [...org_units, shape.id];
+                }
+            }
 
-          setFieldValue("group", {
-              ...group,
-              org_units: newOrgUnits
-          });
-      },
-      [group, setFieldValue, selectRegion, shapes]
+            setFieldValue('group', {
+                ...group,
+                org_units: newOrgUnits,
+            });
+        },
+        [group, setFieldValue, selectRegion, shapes],
     );
 
     return <Grid container spacing={2}>
         <Grid xs={12} item>
             {isFetching && !shapes && <LoadingSpinner />}
             {!isFetching && !shapes &&
-                // FIXME should not be needed
-                <Typography>Please save the Campaign before selecting scope.</Typography>
+            // FIXME should not be needed
+            <Typography>Please save the Campaign before selecting
+                scope.</Typography>
             }
             <MapComponent
-              shapes={shapes}
-              onSelectShape={onSelectOrgUnit}
-              getShapeStyle={getShapeStyle}
+                shapes={shapes}
+                onSelectShape={onSelectOrgUnit}
+                getShapeStyle={getShapeStyle}
             />
         </Grid>
         <Grid container>
             <Grid xs={8} item>
                 <FormGroup>
                     <FormControlLabel
-                      style={{ width: "max-content" }}
-                      control={<Switch size="medium" checked={selectRegion} onChange={toggleRegionSelect} color="primary" />}
-                      label="Select region"
+                        style={{ width: 'max-content' }}
+                        control={<Switch size="medium" checked={selectRegion}
+                                         onChange={toggleRegionSelect}
+                                         color="primary" />}
+                        label="Select region"
                     />
                 </FormGroup>
 
             </Grid>
             <Grid xs={4} item>
                 {shapes && isFetching &&
-                    <Typography align="right">Refreshing ...</Typography>
+                <Typography align="right">Refreshing ...</Typography>
                 }
             </Grid>
         </Grid>
@@ -1197,7 +1203,8 @@ export const Dashboard = () => {
                 accessor: 'round_one__started_at',
                 Cell: settings => {
                     return (
-                        <ColumnText text={settings.original?.round_one?.started_at ?? textPlaceholder} />
+                        <ColumnText
+                            text={settings.original?.round_one?.started_at ?? textPlaceholder} />
                     );
                 },
             },
@@ -1206,7 +1213,8 @@ export const Dashboard = () => {
                 accessor: 'round_two__started_at',
                 Cell: settings => {
                     return (
-                        <ColumnText text={settings.original?.round_two?.started_at ?? textPlaceholder} />
+                        <ColumnText
+                            text={settings.original?.round_two?.started_at ?? textPlaceholder} />
                     );
                 },
             },

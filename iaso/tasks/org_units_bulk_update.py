@@ -7,7 +7,7 @@ from django.db import transaction
 
 from beanstalk_worker import task as task_decorator
 from hat.audit import models as audit_models
-from iaso.models.org_unit_search import build_org_units_queryset
+from iaso.api.org_unit_search import build_org_units_queryset
 from iaso.models import Task, OrgUnit, DataSource, OrgUnitType, Group
 
 

@@ -20,10 +20,11 @@ from hat.audit import models as audit_models
 from iaso.api.common import safe_api_import
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form
-from iaso.models.org_unit_search import build_org_units_queryset
+from iaso.api.org_unit_search import build_org_units_queryset
 from iaso.utils import geojson_queryset
 
 
+# noinspection PyMethodMayBeStatic
 class HasOrgUnitPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if not (

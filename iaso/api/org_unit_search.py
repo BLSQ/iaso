@@ -5,9 +5,6 @@ from django.db.models import Q, Count, Sum, Case, When, IntegerField
 from iaso.models import OrgUnit, Instance, DataSource
 
 
-# FIXME Not sure if it's the best place but needed to move it out of circular import
-
-
 def build_org_units_queryset(queryset, params, profile, is_export, forms, annotate_instance_count=False):
     validation_status = params.get("validation_status", OrgUnit.VALIDATION_VALID)
     has_instances = params.get("hasInstances", None)

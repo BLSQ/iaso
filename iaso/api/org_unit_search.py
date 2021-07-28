@@ -167,7 +167,7 @@ def build_org_units_queryset(queryset, params, profile):
     queryset = queryset.prefetch_related("parent__parent__parent")
     queryset = queryset.prefetch_related("parent__parent__parent__parent")
 
-    return queryset
+    return queryset.distinct()
 
 
 def annotate_query(queryset, count_instances, count_per_form, forms):

@@ -24,9 +24,10 @@ export const PreparednessForm = () => {
         [surgeDataTotals, lastSurge],
     );
     const { mutate, isLoading, isError, error } = useGetPreparednessData();
+    const { preperadness_spreadsheet_url = '' } = values;
 
     const refreshData = () => {
-        mutate(values.preperadness_spreadsheet_url, {
+        mutate(preperadness_spreadsheet_url, {
             onSuccess: data => {
                 const { totals, ...payload } = data;
 
@@ -34,7 +35,7 @@ export const PreparednessForm = () => {
                 const { national_score, regional_score, district_score } =
                     totals;
                 setFieldValue('preparedness_data', {
-                    spreadsheet_url: values.preperadness_spreadsheet_url,
+                    spreadsheet_url: preperadness_spreadsheet_url,
                     national_score,
                     district_score,
                     regional_score,
@@ -91,6 +92,9 @@ export const PreparednessForm = () => {
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={8} item>
                         <Field
+                            placeholder={
+                                'Enter Google Sheet url or use the button to generate a new one'
+                            }
                             label="Preparedness Google Sheet URL"
                             name={'preperadness_spreadsheet_url'}
                             component={TextInput}
@@ -98,26 +102,51 @@ export const PreparednessForm = () => {
                             className={classes.input}
                         />
                     </Grid>
-                    <Grid xs={6} md={2} item>
-                        <Button
-                            target="_blank"
-                            href={values.preperadness_spreadsheet_url}
-                            color="primary"
+                    {preperadness_spreadsheet_url?.trim().length ? (
+                        <Grid
+                            xs={12}
+                            md={4}
+                            item
+                            direction={'column'}
+                            alignContent={'space-between'}
                         >
-                            Access data
-                        </Button>
-                    </Grid>
-                    <Grid xs={6} md={2} item>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            disabled={isLoading || isProcessingData}
-                            onClick={refreshData}
+                            <Button
+                                md={6}
+                                target="_blank"
+                                href={preperadness_spreadsheet_url}
+                                color="primary"
+                            >
+                                Access data
+                            </Button>
+                            <Button
+                                md={6}
+                                variant="contained"
+                                color="primary"
+                                disabled={isLoading || isProcessingData}
+                                onClick={refreshData}
+                            >
+                                Refresh Preparedness data
+                            </Button>
+                        </Grid>
+                    ) : (
+                        <Grid
+                            xs={12}
+                            md={4}
+                            item
+                            direction={'column'}
+                            alignContent={'space-between'}
                         >
-                            Refresh Preparedness data
-                        </Button>
-                    </Grid>
-
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                color="primary"
+                                disabled={isLoading || isProcessingData}
+                                onClick={refreshData}
+                            >
+                                Generate a spreadsheet
+                            </Button>
+                        </Grid>
+                    )}
                     <Grid xd={12} item>
                         {isLoading ? (
                             <CircularProgress />

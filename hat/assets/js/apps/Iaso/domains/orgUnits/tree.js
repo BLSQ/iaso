@@ -1,9 +1,4 @@
-import React, {
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useQueries, useQuery } from 'react-query';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -14,13 +9,19 @@ import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import { geoJSON } from 'leaflet';
 import { sendRequest } from '../pages/networking';
 
+const defaultConfig = {
+    staleTime: 1000 * 60 * 1,
+    cacheTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+};
+
 const useGetDSTree = () =>
     useQuery(
         ['datasource.tree'],
         async () => {
             return sendRequest('GET', `/api/orgunits/tree_source_data`);
         },
-        { staleTime: 5, refetchOnWindowFocus: false },
+        defaultConfig,
     );
 
 const useGetTree = slug =>
@@ -29,14 +30,9 @@ const useGetTree = slug =>
         async () => {
             return sendRequest('GET', `/api/orgunits/tree?version_id=${slug}`);
         },
-        { staleTime: 5, refetchOnWindowFocus: false },
+        defaultConfig,
     );
 
-const defaultConfig = {
-    staleTime: 5,
-    cacheTime: 5,
-    refetchOnWindowFocus: false,
-};
 const useGetShapes = slugs =>
     useQueries(
         slugs.map(slug => {

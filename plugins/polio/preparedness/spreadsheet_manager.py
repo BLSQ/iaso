@@ -44,9 +44,7 @@ def update_national_worksheet(sheet: gspread.Worksheet, country=None, **kwargs):
     sheet.batch_update(updates)
 
 
-def update_regional_worksheet(
-    sheet: gspread.Worksheet, region_name: str, region_districts
-):
+def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region_districts):
     updates = [
         {"range": "c4", "values": [[region_name]]},
     ]
@@ -89,9 +87,7 @@ def update_regional_worksheet(
 
     ranges = [GridRange.from_a1_range(data, sheet) for data in district_data_range]
 
-    summary_ranges = [
-        GridRange.from_a1_range(range_cell, sheet) for range_cell in summary_range_a1
-    ]
+    summary_ranges = [GridRange.from_a1_range(range_cell, sheet) for range_cell in summary_range_a1]
 
     non_blank_ranges = [
         GridRange.from_a1_range(f"F17:{rowcol_to_a1(23, final_column)}", sheet),
@@ -113,10 +109,7 @@ def update_regional_worksheet(
     )
     format_cell_ranges(
         worksheet=sheet,
-        ranges=[
-            (range_cells, TEXT_CENTERED)
-            for range_cells in summary_range_a1 + district_data_range
-        ],
+        ranges=[(range_cells, TEXT_CENTERED) for range_cells in summary_range_a1 + district_data_range],
     )
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
@@ -257,9 +250,7 @@ def get_non_blank_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
 
 def get_summary_conditional_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
     return [
-        ConditionalFormatRule(
-            ranges=ranges, booleanRule=get_between_rule(["0", "0.49"])
-        ),
+        ConditionalFormatRule(ranges=ranges, booleanRule=get_between_rule(["0", "0.49"])),
         ConditionalFormatRule(
             ranges=ranges,
             booleanRule=get_between_rule(

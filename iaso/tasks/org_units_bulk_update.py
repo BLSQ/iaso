@@ -66,9 +66,7 @@ def org_units_bulk_update(
             base_queryset = queryset
             queryset = OrgUnit.objects.none()
             for search in searches:
-                search_queryset = build_org_units_queryset(
-                    base_queryset, search, profile, is_export=False, forms=[], annotate_instance_count=False
-                )
+                search_queryset = build_org_units_queryset(base_queryset, search, profile)
                 queryset = queryset.union(search_queryset)
 
     if not queryset:

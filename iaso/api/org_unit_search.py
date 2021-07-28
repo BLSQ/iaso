@@ -1,11 +1,11 @@
 import re
 
-from django.db.models import Q, Count, Sum, Case, When, IntegerField
+from django.db.models import Q, Count, Sum, Case, When, IntegerField, Value
 
 from iaso.models import OrgUnit, Instance, DataSource
 
 
-def build_org_units_queryset(queryset, params, profile, is_export, forms, annotate_instance_count=False):
+def build_org_units_queryset(queryset, params, profile):
     validation_status = params.get("validation_status", OrgUnit.VALIDATION_VALID)
     has_instances = params.get("hasInstances", None)
     date_from = params.get("dateFrom", None)
@@ -158,7 +158,23 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms, annota
     if ignore_empty_names:
         queryset = queryset.filter(~Q(name=""))
 
-    if annotate_instance_count:
+    queryset = queryset.select_related("version__data_source")
+    queryset = queryset.select_related("org_unit_type")
+
+    queryset = queryset.prefetch_related("groups")
+    queryset = queryset.prefetch_related("parent")
+    queryset = queryset.prefetch_related("parent__parent")
+    queryset = queryset.prefetch_related("parent__parent__parent")
+    queryset = queryset.prefetch_related("parent__parent__parent__parent")
+
+    return queryset
+
+
+def annotate_query(queryset, count_instances, count_per_form, forms, search_index=None):
+    if search_index is not None:
+        queryset = queryset.annotate(search_index=Value(search_index, IntegerField()))
+
+    if count_instances:
         queryset = queryset.annotate(
             instances_count=Count(
                 "instance",
@@ -166,7 +182,7 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms, annota
             )
         )
 
-    if is_export:
+    if count_per_form:
         annotations = {
             f"form_{frm.id}_instances": Sum(
                 Case(
@@ -185,13 +201,4 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms, annota
         }
         queryset = queryset.annotate(**annotations)
 
-    queryset = queryset.select_related("version__data_source")
-    queryset = queryset.select_related("org_unit_type")
-
-    queryset = queryset.prefetch_related("groups")
-    queryset = queryset.prefetch_related("parent")
-    queryset = queryset.prefetch_related("parent__parent")
-    queryset = queryset.prefetch_related("parent__parent__parent")
-    queryset = queryset.prefetch_related("parent__parent__parent__parent")
-
-    return queryset.distinct()
+    return queryset

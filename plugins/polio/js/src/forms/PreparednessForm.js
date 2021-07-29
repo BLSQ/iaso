@@ -7,7 +7,7 @@ import {
     useGetPreparednessData,
     useSurgeData,
 } from '../hooks/useGetPreparednessData';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export const PreparednessForm = () => {
     const classes = useStyles();
@@ -26,9 +26,8 @@ export const PreparednessForm = () => {
     );
     const { mutate, isLoading, isError, error } = useGetPreparednessData();
     const {
-        mutate: generateSpreadsheet,
+        mutate: generateSpreadsheetMutation,
         isLoading: isGeneratingSpreadsheet,
-        data: generatedSpreadsheet,
     } = useGeneratePreparednessSheet(values.id);
 
     const { preperadness_spreadsheet_url = '' } = values;
@@ -94,15 +93,13 @@ export const PreparednessForm = () => {
         );
     };
 
-    useEffect(() => {
-        if (generatedSpreadsheet) {
-            setFieldValue(
-                'preperadness_spreadsheet_url',
-                generatedSpreadsheet.url,
-            );
-        }
-        // eslint-disable-next-line  react-hooks/exhaustive-deps
-    }, [generatedSpreadsheet]);
+    const generateSpreadsheet = () => {
+        generateSpreadsheetMutation(null, {
+            onSuccess: data => {
+                setFieldValue('preperadness_spreadsheet_url', data.url);
+            },
+        });
+    };
 
     return (
         <>

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Map, TileLayer, GeoJSON, ScaleControl } from 'react-leaflet';
 import isEqual from 'lodash/isEqual';
@@ -13,8 +13,8 @@ import { injectIntl } from 'bluesquare-components';
 import {
     mapOrgUnitByLocation,
     colorClusterCustomMarker,
-    customZoomBar,
     getleafletGeoJson,
+    ZoomControl,
 } from '../../../../utils/mapUtils';
 import { getMarkerList } from '../../utils';
 
@@ -100,8 +100,6 @@ class OrgUnitMapComponent extends Component {
             onChangeLocation,
         } = this.props;
         const { locationGroup, catchmentGroup } = this.state;
-        const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
-        zoomBar.addTo(this.map.leafletElement);
         const map = this.map.leafletElement;
         setDrawMessages(formatMessage);
         locationGroup.initialize({
@@ -410,6 +408,7 @@ class OrgUnitMapComponent extends Component {
                         zoomControl={false}
                         keyboard={false}
                     >
+                        <ZoomControl fitToBounds={() => this.fitToBounds()} />
                         <ScaleControl imperial={false} />
                         <TileLayer
                             attribution={

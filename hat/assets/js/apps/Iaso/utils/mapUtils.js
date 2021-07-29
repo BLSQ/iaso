@@ -1,8 +1,9 @@
 import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
-import { theme } from 'bluesquare-components';
+import { injectIntl, theme } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
+import { MapControl, withLeaflet } from 'react-leaflet';
 
 export const isCoordInsidePolygon = ([x, y], poly) => {
     let inside = false;
@@ -138,6 +139,10 @@ export const circleColorMarkerOptions = color => ({
     radius: 5,
 });
 
+/**
+ * @deprecated
+ * Use the ZoomControl component instead
+ */
 export const customZoomBar = (formatMessage, fitToBounds) =>
     L.control.zoombar({
         zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
@@ -146,6 +151,20 @@ export const customZoomBar = (formatMessage, fitToBounds) =>
         fitToBounds: () => fitToBounds(),
         position: 'topleft',
     });
+
+class ZoomControl_ extends MapControl {
+    createLeafletElement({ fitToBounds, intl: { formatMessage } }) {
+        return L.control.zoombar({
+            zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
+            zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
+            fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
+            fitToBounds,
+            position: 'topleft',
+        });
+    }
+}
+
+export const ZoomControl = injectIntl(withLeaflet(ZoomControl_));
 
 export const mapOrgUnitByLocation = orgUnits => {
     const mappedOrgunits = [];

@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit import models as audit_models
 from iaso.api.common import safe_api_import
+from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form
 from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
@@ -45,64 +46,6 @@ class HasOrgUnitPermission(permissions.BasePermission):
         return user_account.id in account_ids
 
 
-def serialize_orgunit_small_search(org_unit: OrgUnit):
-    res = {
-        "name": org_unit.name,
-        "id": org_unit.id,
-        "parent_id": org_unit.parent_id,
-        "validation_status": org_unit.validation_status,
-        "parent_name": org_unit.parent.name if org_unit.parent else None,
-        "source": org_unit.version.data_source.name if org_unit.version else None,
-        "source_ref": org_unit.source_ref,
-        "parent": serialize_orgunit_small_search(org_unit.parent) if org_unit.parent else None,
-        "org_unit_type_name": org_unit.org_unit_type.name if org_unit.org_unit_type else None,
-    }
-    if hasattr(org_unit, "search_index"):
-        res["search_index"] = org_unit.search_index
-    return res
-
-
-def serialize_orgunit_parent_search(org_unit: OrgUnit):
-    return {
-        "name": org_unit.name,
-        "id": org_unit.id,
-        "parent": serialize_orgunit_parent_search(org_unit.parent) if org_unit.parent else None,
-    }
-
-
-def serialize_orgunit_search(org_unit: OrgUnit):
-    res = {
-        "name": org_unit.name,
-        "id": org_unit.id,
-        "sub_source": org_unit.sub_source,
-        "source_ref": org_unit.source_ref,
-        "parent_id": org_unit.parent_id,
-        "validation_status": org_unit.validation_status,
-        "parent": serialize_orgunit_parent_search(org_unit.parent) if org_unit.parent else None,
-        "org_unit_type_id": org_unit.org_unit_type_id,
-        "created_at": org_unit.created_at.timestamp() if org_unit.created_at else None,
-        "updated_at": org_unit.updated_at.timestamp() if org_unit.updated_at else None,
-        "aliases": org_unit.aliases,
-        "has_geo_json": True if org_unit.simplified_geom else False,
-        "groups": [group.as_dict(with_counts=False) for group in org_unit.groups.all()],
-        "org_unit_type_name": org_unit.org_unit_type.name if org_unit.org_unit_type else None,
-        "org_unit_type": org_unit.org_unit_type.as_dict(sub_units=False) if org_unit.org_unit_type else None,
-        "source": org_unit.version.data_source.name if org_unit.version else None,
-        "source_id": org_unit.version.data_source.id if org_unit.version else None,
-    }
-    # search_index and instances_count aren't on the model but added via annotations
-    if hasattr(org_unit, "search_index"):
-        res["search_index"] = org_unit.search_index
-    if hasattr(org_unit, "instances_count"):
-        res["instances_count"] = org_unit.instances_count
-    else:
-        res["instances_count"] = org_unit.instance_set.filter(
-            ~Q(file="") & ~Q(device__test_device=True) & ~Q(deleted=True)
-        ).count()
-
-    return res
-
-
 # noinspection PyMethodMayBeStatic
 class OrgUnitViewSet(viewsets.ViewSet):
     """Org units API
@@ -129,8 +72,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         Can serve theses formats, depending on the combination of GET Parameters:
          * Simple JSON (default) -> as_dict_for_mobile
-         * Paginated JSON (if a `limit` is passed) -> as_dict_for_search
-         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed. -> as_small_dict
+         * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
+         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed. -> OrgUnitSmallSearchSerializer
          * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
          * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
          * GeoPackage format (if `gpkg` is passed)
@@ -201,13 +144,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 page = paginator.page(page_offset)
 
                 if small_search:
-                    serializer = serialize_orgunit_small_search
+                    serializer = OrgUnitSmallSearchSerializer
                 else:
-                    serializer = serialize_orgunit_search
+                    serializer = OrgUnitSearchSerializer
                 res = {
                     "count": paginator.count,
                     "counts": counts,
-                    "orgunits": map(serializer, page.object_list),
+                    "orgunits": serializer(page.object_list, many=True).data,
                     "has_next": page.has_next(),
                     "has_previous": page.has_previous(),
                     "page": page_offset,

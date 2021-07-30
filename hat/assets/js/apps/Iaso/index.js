@@ -4,7 +4,7 @@ import { Route } from 'react-router';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { theme } from 'bluesquare-components';
-import { QueryClient, QueryClientProvider } from 'react-query'; // don't delete - needed to override leaflet zoombar
+import { QueryClient, QueryClientProvider } from 'react-query';
 import App from './domains/app';
 import { routeConfigs, getPath } from './constants/routes';
 import ProtectedRoute from './domains/users/components/ProtectedRoute';

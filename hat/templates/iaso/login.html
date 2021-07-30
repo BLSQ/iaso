@@ -2,7 +2,6 @@
 {% load i18n %}
 {% load static %}
 {% block body %}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <div class="auth__container iasologin">
   <div class="auth__content">
     <header class="auth__header">
@@ -48,13 +47,13 @@
 <script>
 
   function togglePassword() {
-    var passwordField = $('#id_password');
-    if (passwordField.attr('type') === 'password') {
-      passwordField.attr('type', 'text');
-      $('#eye-icon').attr('class', 'fa fa-eye-slash');
+    const passwordField = document.getElementById('id_password');
+    if (passwordField.getAttribute('type') === 'password') {
+      passwordField.setAttribute('type', 'text');
+        document.getElementById('eye-icon').setAttribute('class', 'fa fa-eye-slash');
     } else {
-      passwordField.attr('type', 'password');
-      $('#eye-icon').attr('class', 'fa fa-eye');
+      passwordField.setAttribute('type', 'password');
+      document.getElementById('eye-icon').setAttribute('class', 'fa fa-eye');
     }
   }
   document.getElementById('display-password').addEventListener('click', function (e) {

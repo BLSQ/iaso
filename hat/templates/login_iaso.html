@@ -42,14 +42,14 @@
   </div>
   <script>
       function togglePassword() {
-        var passwordField = $('#id_password');
-        if (passwordField.attr('type') === 'password') {
-          passwordField.attr('type', 'text');
-          $('#eye-icon').attr('class', 'fa fa-eye-slash');
-        } else {
-          passwordField.attr('type', 'password');
-          $('#eye-icon').attr('class', 'fa fa-eye');
-        }
+          const passwordField = $('#id_password');
+          if (passwordField.attr('type') === 'password') {
+              passwordField.attr('type', 'text');
+              $('#eye-icon').attr('class', 'fa fa-eye-slash');
+          } else {
+              passwordField.attr('type', 'password');
+              $('#eye-icon').attr('class', 'fa fa-eye');
+          }
       }
   </script>
 {% endblock %}

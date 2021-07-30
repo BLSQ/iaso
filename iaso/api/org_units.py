@@ -75,7 +75,6 @@ def serialize_orgunit_search(org_unit: OrgUnit):
         "name": org_unit.name,
         "id": org_unit.id,
         "sub_source": org_unit.sub_source,
-        "sub_source_id": org_unit.sub_source,
         "source_ref": org_unit.source_ref,
         "parent_id": org_unit.parent_id,
         "validation_status": org_unit.validation_status,
@@ -90,7 +89,6 @@ def serialize_orgunit_search(org_unit: OrgUnit):
         "org_unit_type": org_unit.org_unit_type.as_dict(sub_units=False) if org_unit.org_unit_type else None,
         "source": org_unit.version.data_source.name if org_unit.version else None,
         "source_id": org_unit.version.data_source.id if org_unit.version else None,
-        "version": org_unit.version.number if org_unit.version else None,
     }
     # search_index and instances_count aren't on the model but added via annotations
     if hasattr(org_unit, "search_index"):
@@ -105,6 +103,7 @@ def serialize_orgunit_search(org_unit: OrgUnit):
     return res
 
 
+# noinspection PyMethodMayBeStatic
 class OrgUnitViewSet(viewsets.ViewSet):
     """Org units API
 

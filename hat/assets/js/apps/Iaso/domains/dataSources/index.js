@@ -5,6 +5,8 @@ import {
     useSafeIntl,
     TopBar,
 } from 'bluesquare-components';
+
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { fetchAllDataSources } from '../../utils/requests';
 import { getDefaultSourceVersion } from './utils';
 
@@ -37,32 +39,34 @@ const DataSources = () => {
                 displayBackButton={false}
                 toggleSidebar={() => dispatch(toggleSidebarMenu())}
             />
-            <SingleTable
-                baseUrl={baseUrl}
-                endPointPath="datasources"
-                exportButtons={false}
-                dataKey="sources"
-                defaultPageSize={20}
-                fetchItems={fetchAllDataSources}
-                defaultSorted={[{ id: defaultOrder, desc: false }]}
-                columns={dataSourcesTableColumns(
-                    intl.formatMessage,
-                    setForceRefresh,
-                    defaultSourceVersion,
-                )}
-                forceRefresh={forceRefresh}
-                onForceRefreshDone={() => setForceRefresh(false)}
-                extraComponent={
-                    <DataSourceDialogComponent
-                        defaultSourceVersion={defaultSourceVersion}
-                        titleMessage={MESSAGES.createDataSource}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent onClick={openDialog} />
-                        )}
-                        onSuccess={() => setForceRefresh(true)}
-                    />
-                }
-            />
+            <ErrorBoundary>
+                <SingleTable
+                    baseUrl={baseUrl}
+                    endPointPath="datasources"
+                    exportButtons={false}
+                    dataKey="sources"
+                    defaultPageSize={20}
+                    fetchItems={fetchAllDataSources}
+                    defaultSorted={[{ id: defaultOrder, desc: false }]}
+                    columns={dataSourcesTableColumns(
+                        intl.formatMessage,
+                        setForceRefresh,
+                        defaultSourceVersion,
+                    )}
+                    forceRefresh={forceRefresh}
+                    onForceRefreshDone={() => setForceRefresh(false)}
+                    extraComponent={
+                        <DataSourceDialogComponent
+                            defaultSourceVersion={defaultSourceVersion}
+                            titleMessage={MESSAGES.createDataSource}
+                            renderTrigger={({ openDialog }) => (
+                                <AddButtonComponent onClick={openDialog} />
+                            )}
+                            onSuccess={() => setForceRefresh(true)}
+                        />
+                    }
+                />
+            </ErrorBoundary>
         </>
     );
 };

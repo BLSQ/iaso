@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { Grid } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
+import { LoadingSpinner } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
@@ -200,6 +201,8 @@ const AddTask = ({
             additionalMessage={MESSAGES.goToCurrentTask}
             onAdditionalButtonClick={onRedirect}
         >
+            {isLoading && <LoadingSpinner />}
+
             <Grid container spacing={4}>
                 <Grid item>
                     {sourceVersion ? (
@@ -229,7 +232,6 @@ AddTask.defaultProps = {
 };
 AddTask.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
-    // titleMessage: PropTypes.object.isRequired,
     sourceId: PropTypes.number.isRequired,
     sourceVersion: PropTypes.number,
     sourceCredentials: PropTypes.object,

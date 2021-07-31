@@ -24,6 +24,7 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
+import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

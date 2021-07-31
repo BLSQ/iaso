@@ -25,16 +25,12 @@ const ImportGeoPkgDialog = ({
     titleMessage,
     sourceId,
     sourceName,
-    latestVersion,
     defaultVersion,
     projects,
 }) => {
-    const newVersionNumber = (latestVersion + 1).toString();
     // eslint-disable-next-line no-unused-vars
     const [form, setFormField, _, setFormState] = useFormState(
-        initialFormState(
-            defaultVersion ? defaultVersion.toString() : newVersionNumber,
-        ),
+        initialFormState(defaultVersion ? defaultVersion.toString() : null),
     );
     const intl = useSafeIntl();
     const [allowConfirm, setAllowConfirm] = useState(false);
@@ -64,9 +60,7 @@ const ImportGeoPkgDialog = ({
     const reset = useCallback(() => {
         setRequestBody(null);
         setFormState(
-            initialFormState(
-                defaultVersion ? defaultVersion.toString() : newVersionNumber,
-            ),
+            initialFormState(defaultVersion ? defaultVersion.toString() : ''),
         );
     }, [setFormState]);
 
@@ -169,7 +163,8 @@ const ImportGeoPkgDialog = ({
                                 disabled: !defaultVersion,
                             },
                             {
-                                value: newVersionNumber,
+                                key: 'new',
+                                value: '',
                                 label: 'Create new version',
                             },
                         ]}
@@ -184,7 +179,6 @@ ImportGeoPkgDialog.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     titleMessage: PropTypes.object.isRequired,
     projects: PropTypes.array.isRequired,
-    latestVersion: PropTypes.number.isRequired,
     defaultVersion: PropTypes.number,
     sourceId: PropTypes.number.isRequired,
     sourceName: PropTypes.string.isRequired,

@@ -144,7 +144,6 @@ const dataSourcesTableColumns = (
                         titleMessage={MESSAGES.geoPkgTitle}
                         sourceId={settings.original.id}
                         sourceName={settings.original.name}
-                        latestVersion={latestVersion}
                         defaultVersion={defaultVersion}
                         projects={settings.original.projects.flat()}
                     />

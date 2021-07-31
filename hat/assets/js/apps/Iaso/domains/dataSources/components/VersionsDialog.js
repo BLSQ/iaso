@@ -13,18 +13,19 @@ import { FormattedMessage } from 'react-intl';
 import {
     ColumnText,
     commonStyles,
+    DHIS2Svg,
     displayDateFromTimestamp,
     IconButton as IconButtonComponent,
     Table,
     useSafeIntl,
-    DHIS2Svg,
 } from 'bluesquare-components';
 import 'react-table';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
-import { ImportGeoPkgDialog, propTypes } from './ImportGeoPkgDialog';
+import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
+import { Public } from '@material-ui/icons';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -141,7 +142,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
             {source.versions.length === 0 && (
                 <Typography style={{ padding: 5 }}>
                     <FormattedMessage
-                        id="datasource.noversion"
+                        id="datasource.no_version"
                         defaultMessage="This datasource is empty, please create a versions using one of the buttons below"
                     />
                 </Typography>
@@ -153,13 +154,28 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                             <DHIS2Svg />
                             &nbsp;
                             <FormattedMessage
-                                id="New version from DHIS2"
+                                id="new_version_dhis2"
                                 defaultMessage=" New version from DHIS2"
                             />
                         </Button>
                     )}
                     sourceId={source.id}
                     sourceCredentials={source.credentials ?? {}}
+                />
+                <ImportGeoPkgDialog
+                    renderTrigger={({ openDialog }) => (
+                        <Button onClick={openDialog}>
+                            <Public />
+                            &nbsp;
+                            <FormattedMessage
+                                id="new_version_gpkg"
+                                defaultMessage=" New version from a Geopackage"
+                            />
+                        </Button>
+                    )}
+                    sourceId={source.id}
+                    sourceName={source.name}
+                    projects={source.projects.flat()}
                 />
             </Grid>
         </DialogComponent>
@@ -173,6 +189,7 @@ VersionsDialog.propTypes = {
         name: PropTypes.string.isRequired,
         versions: PropTypes.array.isRequired,
         credentials: PropTypes.object,
+        projects: PropTypes.array.isRequired,
     }).isRequired,
 };
 VersionsDialog.defaultProps = {};

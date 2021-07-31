@@ -82,7 +82,7 @@ const tasksTableColumns = source => [
                             />
                         )}
                         sourceId={source.id}
-                        sourceVersion={settings.original.id}
+                        sourceVersionNumber={settings.original.number}
                         sourceCredentials={source.credentials ?? {}}
                     />
                 </>

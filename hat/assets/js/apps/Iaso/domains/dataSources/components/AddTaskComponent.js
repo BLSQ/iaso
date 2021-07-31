@@ -26,7 +26,7 @@ const initialFormState = sourceCredentials => {
 const AddTask = ({
     renderTrigger,
     sourceId,
-    sourceVersion,
+    sourceVersionNumber,
     sourceCredentials,
 }) => {
     // eslint-disable-next-line no-unused-vars
@@ -43,11 +43,11 @@ const AddTask = ({
     // TODO add and return reset function
     const { isLoading, data: dhisOu } = useDhisOuImporterRequest(requestBody);
 
-    const titleMessage = sourceVersion ? (
+    const titleMessage = sourceVersionNumber ? (
         <FormattedMessage
             id="update"
             defaultMessage="Update version {version}"
-            values={{ version: sourceVersion }}
+            values={{ version: sourceVersionNumber }}
         />
     ) : (
         <FormattedMessage
@@ -58,7 +58,7 @@ const AddTask = ({
     const submit = useCallback(() => {
         const body = {
             source_id: sourceId,
-            source_version_number: sourceVersion,
+            source_version_number: sourceVersionNumber,
             force: false,
             validate_status: form.validate_status.value,
             continue_on_error: form.continue_on_error.value,
@@ -72,7 +72,7 @@ const AddTask = ({
         setRequestBody(body);
     }, [
         sourceId,
-        sourceVersion,
+        sourceVersionNumber,
         form.dhis2_url.value,
         form.dhis2_login.value,
         form.dhis2_password.value,
@@ -206,7 +206,7 @@ const AddTask = ({
             <Grid container spacing={4}>
                 <Grid item>
                     <Typography>
-                        {sourceVersion ? (
+                        {sourceVersionNumber ? (
                             <FormattedMessage
                                 id="update_explication"
                                 defaultMessage="Update this version by syncing with DHIS2. New Orgunit from DHIS2 will be imported but OrgUnit already present on this version won't be modified."
@@ -237,12 +237,12 @@ const AddTask = ({
 };
 AddTask.defaultProps = {
     sourceCredentials: {},
-    sourceVersion: null,
+    sourceVersionNumber: null,
 };
 AddTask.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     sourceId: PropTypes.number.isRequired,
-    sourceVersion: PropTypes.number,
+    sourceVersionNumber: PropTypes.number,
     sourceCredentials: PropTypes.object,
 };
 

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { Grid } from '@material-ui/core';
+import { Grid, Typography } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { LoadingSpinner } from 'bluesquare-components';
 import MESSAGES from '../messages';
@@ -205,18 +205,27 @@ const AddTask = ({
 
             <Grid container spacing={4}>
                 <Grid item>
-                    {sourceVersion ? (
+                    <Typography>
+                        {sourceVersion ? (
+                            <FormattedMessage
+                                id="update_explication"
+                                defaultMessage="Update this version by syncing with DHIS2. New Orgunit from DHIS2 will be imported but OrgUnit already present on this version won't be modified."
+                            />
+                        ) : (
+                            <FormattedMessage
+                                id="create_explication"
+                                defaultMessage="Import OrgUnits from a DHIS2 server."
+                            />
+                        )}
+                    </Typography>
+                    <Typography>
                         <FormattedMessage
-                            id="update_explication"
-                            defaultMessage="Update this version by syncing with DHIS2. New Orgunit from DHIS2 will be imported but OrgUnit already present on this version won't be modified."
+                            id="import_task_explication"
+                            defaultMessage="The import will be realised in the background and can take a dozen minutes to complete."
                         />
-                    ) : (
-                        <FormattedMessage
-                            id="create_explication"
-                            defaultMessage="Import OrgUnits from a DHIS2 server."
-                        />
-                    )}
+                    </Typography>
                 </Grid>
+
                 <Grid xs={12} item>
                     {!withExistingDhis2Settings &&
                         renderWithOptionalFields(sourceCredentials.is_valid)}

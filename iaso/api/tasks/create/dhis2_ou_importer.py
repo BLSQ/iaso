@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class Dhis2OuImporterSerializer(serializers.Serializer):
     source_id = serializers.IntegerField(required=True)
-    source_version_number = serializers.IntegerField(required=True)
+    source_version_number = serializers.IntegerField(required=False, default=None, allow_null=True)
     dhis2_url = serializers.CharField(max_length=200, required=False)
     dhis2_login = serializers.CharField(max_length=200, required=False)
     dhis2_password = serializers.CharField(max_length=200, required=False)
@@ -41,11 +41,12 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
             raise serializers.ValidationError("No valid credentials exist for this source, please provide them")
 
         source_id = attrs["source_id"]
-        versions = SourceVersion.objects.filter(data_source_id=source_id, number=attrs["source_version_number"])
-        for version in versions:
-            version_count = version.orgunit_set.all().count()
-            if version_count > 0:
-                raise serializers.ValidationError(f"A non empty version exists with {version_count} orgunits")
+        if "source_version_number" in attrs:
+            versions = SourceVersion.objects.filter(data_source_id=source_id, number=attrs["source_version_number"])
+            for version in versions:
+                version_count = version.orgunit_set.all().count()
+                if version_count > 0:
+                    raise serializers.ValidationError(f"A non empty version exists with {version_count} orgunits")
         return validated_data
 
 

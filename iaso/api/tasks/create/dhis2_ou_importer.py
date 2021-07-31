@@ -58,15 +58,19 @@ class Dhis2OuImporterViewSet(viewsets.ViewSet):
         serializer = Dhis2OuImporterSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+        source_version_number = data.get("source_version_number", None)
+        update_mode = source_version_number is not None
+
         task = dhis2_ou_importer(
             source_id=data["source_id"],
-            source_version_number=data["source_version_number"],
+            source_version_number=source_version_number,
             force=data.get("force", False),
             validate_status=data.get("validate_status", False),
             continue_on_error=data.get("continue_on_error", False),
             dhis2_url=data.get("dhis2_url", None),
             dhis2_login=data.get("dhis2_login", None),
             dhis2_password=data.get("dhis2_password", None),
+            update_mode=update_mode,
             user=request.user,
         )
         return Response({"task": TaskSerializer(instance=task).data})

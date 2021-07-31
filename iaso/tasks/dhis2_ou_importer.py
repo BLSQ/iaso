@@ -242,7 +242,7 @@ def get_api_config(
 @task_decorator(task_name="dhis2_ou_importer")
 def dhis2_ou_importer(
     source_id: int,
-    source_version_number: str,
+    source_version_number: Optional[str],
     force: bool,
     validate: bool,
     continue_on_error: bool,
@@ -262,7 +262,12 @@ def dhis2_ou_importer(
 
     the_task.report_progress_and_stop_if_killed(progress_message="Fetching org units")
 
-    version, _created = SourceVersion.objects.get_or_create(number=source_version_number, data_source=source)
+    if source_version_number is None:
+        last_version = source.versions.all().order_by("number").last()
+        source_version_number = last_version.number + 1 if last_version else 0
+        version = SourceVersion.objects.create(number=source_version_number, data_source=source)
+    else:
+        version, _created = SourceVersion.objects.get_or_create(number=source_version_number, data_source=source)
     if OrgUnit.objects.filter(version=version).count() > 0 and not update_mode:
         raise Exception(f"Version {SourceVersion} is not Empty")
 

@@ -138,6 +138,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.geoPkg',
         defaultMessage: 'Import GeoPackage',
     },
+    versions: {
+        id: 'iaso.datasources.version',
+        defaultMessage: 'Versions',
+    },
 });
 
 export default MESSAGES;

@@ -12,6 +12,7 @@ import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import MESSAGES from './messages';
 import { AddTask } from './components/AddTaskComponent';
 import { ImportGeoPkgDialog } from './components/ImportGeoPkgDialog';
+import { VersionsDialog } from './components/VersionsDialog';
 
 const dataSourcesTableColumns = (
     formatMessage,
@@ -105,6 +106,17 @@ const dataSourcesTableColumns = (
                                 ? settings.original.credentials
                                 : {}
                         }
+                    />
+                    <VersionsDialog
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="history"
+                                tooltipMessage={MESSAGES.versions}
+                            />
+                        )}
+                        defaultSourceVersion={defaultSourceVersion}
+                        source={settings.original}
                     />
                     <AddTask
                         renderTrigger={({ openDialog }) => (

@@ -102,15 +102,15 @@ DialogComponent.defaultProps = {
 DialogComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     children: PropTypes.node.isRequired,
-    titleMessage: PropTypes.oneOf(
-        PropTypes.ReactNode,
+    titleMessage: PropTypes.oneOfType([
         PropTypes.shape({
             id: PropTypes.string.isRequired,
             defaultMessage: PropTypes.string,
             values: PropTypes.object,
         }),
+        PropTypes.node,
         PropTypes.string, // untranslated not recommended
-    ),
+    ]),
     maxWidth: PropTypes.string,
     renderActions: PropTypes.func.isRequired,
     renderTrigger: PropTypes.func.isRequired,

@@ -5,9 +5,6 @@ import {
     useSafeIntl,
     TopBar,
 } from 'bluesquare-components';
-// import AddButtonComponent from '../../components/buttons/AddButtonComponent';
-// import { useSafeIntl } from '../../hooks/intl';
-// import TopBar from '../../components/nav/TopBarComponent';
 import { fetchAllDataSources } from '../../utils/requests';
 import { getDefaultSourceVersion } from './utils';
 

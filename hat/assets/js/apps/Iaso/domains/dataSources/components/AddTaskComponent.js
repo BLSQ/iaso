@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { Grid } from '@material-ui/core';
+import { FormattedMessage } from 'react-intl';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
@@ -23,7 +24,6 @@ const initialFormState = sourceCredentials => {
 
 const AddTask = ({
     renderTrigger,
-    titleMessage,
     sourceId,
     sourceVersion,
     sourceCredentials,
@@ -42,6 +42,18 @@ const AddTask = ({
     // TODO add and return reset function
     const { isLoading, data: dhisOu } = useDhisOuImporterRequest(requestBody);
 
+    const titleMessage = sourceVersion ? (
+        <FormattedMessage
+            id="update"
+            defaultMessage="Update version {version}"
+            values={{ version: sourceVersion }}
+        />
+    ) : (
+        <FormattedMessage
+            id="create"
+            defaultMessage="Create a new version from DHIS2"
+        />
+    );
     const submit = useCallback(() => {
         const body = {
             source_id: sourceId,
@@ -90,22 +102,13 @@ const AddTask = ({
         [onConfirm],
     );
 
-    let allowConfirm;
-    if (isLoading) {
-        allowConfirm = false;
-    } else if (!withExistingDhis2Settings) {
-        if (
-            form.dhis2_url.value &&
-            form.dhis2_login.value &&
-            form.dhis2_password.value
-        ) {
-            allowConfirm = true;
-        } else {
-            allowConfirm = false;
-        }
-    } else {
-        allowConfirm = true;
-    }
+    const formIsValid = Boolean(
+        withExistingDhis2Settings ||
+            (form.dhis2_url.value &&
+                form.dhis2_login.value &&
+                form.dhis2_password.value),
+    );
+    const allowConfirm = !isLoading && formIsValid;
 
     useEffect(() => {
         if (dhisOu) {
@@ -151,44 +154,37 @@ const AddTask = ({
         return <Checkboxes checkboxes={checkboxes} />;
     };
 
-    const renderWithOptionalFields = showDefaultOverride => {
-        return (
-            <>
-                <Grid xs={12} item>
-                    <EditableTextFields
-                        fields={[
-                            {
-                                keyValue: 'dhis2_url',
-                                label: MESSAGES.dhisUrl,
-                                value: form.dhis2_url.value,
-                                onChange: (field, value) => {
-                                    setFormField(field, value);
-                                },
-                            },
-                            {
-                                keyValue: 'dhis2_login',
-                                label: MESSAGES.dhisLogin,
-                                value: form.dhis2_login.value,
-                                onChange: (field, value) => {
-                                    setFormField(field, value);
-                                },
-                            },
-                            {
-                                keyValue: 'dhis2_password',
-                                label: MESSAGES.dhisPassword,
-                                value: form.dhis2_password.value,
-                                onChange: (field, value) => {
-                                    setFormField(field, value);
-                                },
-                                password: true,
-                            },
-                        ]}
-                    />
-                    {renderDefaultLayout(showDefaultOverride)}
-                </Grid>
-            </>
-        );
-    };
+    const renderWithOptionalFields = () => (
+        <EditableTextFields
+            fields={[
+                {
+                    keyValue: 'dhis2_url',
+                    label: MESSAGES.dhisUrl,
+                    value: form.dhis2_url.value,
+                    onChange: (field, value) => {
+                        setFormField(field, value);
+                    },
+                },
+                {
+                    keyValue: 'dhis2_login',
+                    label: MESSAGES.dhisLogin,
+                    value: form.dhis2_login.value,
+                    onChange: (field, value) => {
+                        setFormField(field, value);
+                    },
+                },
+                {
+                    keyValue: 'dhis2_password',
+                    label: MESSAGES.dhisPassword,
+                    value: form.dhis2_password.value,
+                    onChange: (field, value) => {
+                        setFormField(field, value);
+                    },
+                    password: true,
+                },
+            ]}
+        />
+    );
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
@@ -204,26 +200,38 @@ const AddTask = ({
             additionalMessage={MESSAGES.goToCurrentTask}
             onAdditionalButtonClick={onRedirect}
         >
-            <Grid container spacing={4} style={{ marginTop: '5px' }}>
-                {withExistingDhis2Settings ? (
-                    <Grid xs={12} item>
-                        {renderDefaultLayout(sourceCredentials.is_valid)}
-                    </Grid>
-                ) : (
-                    renderWithOptionalFields(sourceCredentials.is_valid)
-                )}
+            <Grid container spacing={4}>
+                <Grid item>
+                    {sourceVersion ? (
+                        <FormattedMessage
+                            id="update_explication"
+                            defaultMessage="Update this version by syncing with DHIS2. New Orgunit from DHIS2 will be imported but OrgUnit already present on this version won't be modified."
+                        />
+                    ) : (
+                        <FormattedMessage
+                            id="create_explication"
+                            defaultMessage="Import OrgUnits from a DHIS2 server."
+                        />
+                    )}
+                </Grid>
+                <Grid xs={12} item>
+                    {!withExistingDhis2Settings &&
+                        renderWithOptionalFields(sourceCredentials.is_valid)}
+                    {renderDefaultLayout(sourceCredentials.is_valid)}
+                </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>
     );
 };
 AddTask.defaultProps = {
     sourceCredentials: {},
+    sourceVersion: null,
 };
 AddTask.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
-    titleMessage: PropTypes.object.isRequired,
+    // titleMessage: PropTypes.object.isRequired,
     sourceId: PropTypes.number.isRequired,
-    sourceVersion: PropTypes.number.isRequired,
+    sourceVersion: PropTypes.number,
     sourceCredentials: PropTypes.object,
 };
 

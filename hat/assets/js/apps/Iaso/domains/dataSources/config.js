@@ -2,8 +2,6 @@ import React from 'react';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { Tooltip } from '@material-ui/core';
 
-// eslint-disable-next-line import/no-named-as-default
-// eslint-disable-next-line import/no-named-as-default-member
 import {
     IconButton as IconButtonComponent,
     textPlaceholder,
@@ -111,7 +109,7 @@ const dataSourcesTableColumns = (
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
                                 onClick={openDialog}
-                                icon="history"
+                                icon="history" // FIXME replace by formatListNumberedIcon when merged in bluesquare
                                 tooltipMessage={MESSAGES.versions}
                             />
                         )}
@@ -126,11 +124,9 @@ const dataSourcesTableColumns = (
                                 tooltipMessage={MESSAGES.importFromDhis2}
                             />
                         )}
-                        defaultSourceVersion={defaultSourceVersion}
                         titleMessage={addTaskTitle}
                         key={`${settings.original.updated_at} ${settings.original.id} addTask`}
                         sourceId={settings.original.id}
-                        sourceVersion={latestVersion + 1}
                         sourceCredentials={
                             settings.original.credentials
                                 ? settings.original.credentials

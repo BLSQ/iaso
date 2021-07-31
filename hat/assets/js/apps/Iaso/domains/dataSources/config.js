@@ -8,8 +8,6 @@ import {
 } from 'bluesquare-components';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import MESSAGES from './messages';
-import { AddTask } from './components/AddTaskComponent';
-import { ImportGeoPkgDialog } from './components/ImportGeoPkgDialog';
 import { VersionsDialog } from './components/VersionsDialog';
 
 const dataSourcesTableColumns = (
@@ -66,21 +64,6 @@ const dataSourcesTableColumns = (
         resizable: false,
         sortable: false,
         Cell: settings => {
-            const sortedVersions = settings.original.versions.sort(
-                (v1, v2) => v2.number - v1.number,
-            );
-            const latestVersion =
-                sortedVersions.length > 0 ? sortedVersions[0].number : 0;
-            const addTaskTitle = {
-                ...MESSAGES.addTaskTitle,
-                values: {
-                    title: formatMessage(MESSAGES.importFromDhis2),
-                    source: settings.original.name,
-                    version: latestVersion + 1,
-                },
-            };
-            const defaultVersion =
-                settings.original.default_version?.number ?? null;
             return (
                 <section>
                     <DataSourceDialogComponent
@@ -115,36 +98,6 @@ const dataSourcesTableColumns = (
                         )}
                         defaultSourceVersion={defaultSourceVersion}
                         source={settings.original}
-                    />
-                    <AddTask
-                        renderTrigger={({ openDialog }) => (
-                            <IconButtonComponent
-                                onClick={openDialog}
-                                icon="download"
-                                tooltipMessage={MESSAGES.importFromDhis2}
-                            />
-                        )}
-                        titleMessage={addTaskTitle}
-                        key={`${settings.original.updated_at} ${settings.original.id} addTask`}
-                        sourceId={settings.original.id}
-                        sourceCredentials={
-                            settings.original.credentials
-                                ? settings.original.credentials
-                                : {}
-                        }
-                    />
-                    <ImportGeoPkgDialog
-                        renderTrigger={({ openDialog }) => (
-                            <IconButtonComponent
-                                onClick={openDialog}
-                                icon="globe"
-                                tooltipMessage={MESSAGES.importGeoPkg}
-                            />
-                        )}
-                        sourceId={settings.original.id}
-                        sourceName={settings.original.name}
-                        // versionNumber={defaultVersion}
-                        projects={settings.original.projects.flat()}
                     />
                 </section>
             );

@@ -1,19 +1,21 @@
-{% extends 'iaso/base.html' %} {% load i18n %} {% load render_bundle from
-webpack_loader %} {% block extrajs %}
-<script type="text/javascript">
-  var STATIC_URL = '{{ STATIC_URL }}';
-  var PLUGIN_POLIO_ENABLED = '{{ PLUGIN_POLIO_ENABLED }}';
-</script>
-{% endblock %} {% block body %}
-<section>
-  {% load render_bundle from webpack_loader %} {% block content %}
-
-  <div id="app"></div>
-  {% render_bundle 'common' %} {% render_bundle 'iaso' %}
-  <script>
-    HAT.iaso.default(document.getElementById('app'), '/dashboard');
+{% extends 'iaso/base.html' %}
+{% load i18n %}
+{% load render_bundle from webpack_loader %}
+{% block extrajs %}
+  <script type="text/javascript">
+      const STATIC_URL = '{{ STATIC_URL }}';
+      const PLUGIN_POLIO_ENABLED = '{{ PLUGIN_POLIO_ENABLED }}';
   </script>
-
-  {% endblock %}
-</section>
+  {% render_bundle 'common' %}
+  {% render_bundle 'iaso' %}
+{% endblock %}
+{% block body %}
+  <section>
+    {% block content %}
+      <div id="app"></div>
+      <script>
+        HAT.iaso.default(document.getElementById('app'), '/dashboard');
+      </script>
+    {% endblock %}
+  </section>
 {% endblock %}

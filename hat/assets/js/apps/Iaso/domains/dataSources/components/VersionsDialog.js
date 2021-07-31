@@ -9,6 +9,8 @@ import {
     Tooltip,
     Typography,
 } from '@material-ui/core';
+import Public from '@material-ui/icons/Public';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { FormattedMessage } from 'react-intl';
 import {
     ColumnText,
@@ -20,12 +22,11 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import 'react-table';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+
 import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
-import { Public } from '@material-ui/icons';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

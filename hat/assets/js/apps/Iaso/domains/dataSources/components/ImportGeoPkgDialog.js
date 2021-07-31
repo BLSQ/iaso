@@ -68,10 +68,6 @@ const ImportGeoPkgDialog = ({
         [onConfirm],
     );
 
-    const allowConfirm = Boolean(
-        !isLoading && form.file.value && form.project.value,
-    );
-
     useEffect(() => {
         if (data) {
             closeDialogCallback();
@@ -89,13 +85,16 @@ const ImportGeoPkgDialog = ({
     const titleMessage = versionNumber ? (
         <FormattedMessage
             id="update_from_gpkg"
-            defaultMessage="Update {sourceName} - version"
+            defaultMessage="Update {sourceName} - {versionNumber}"
             values={{ sourceName, versionNumber }}
         />
     ) : (
         MESSAGES.geoPkgTitle
     );
 
+    const allowConfirm = Boolean(
+        !isLoading && form.file.value && form.project.value,
+    );
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
@@ -111,12 +110,14 @@ const ImportGeoPkgDialog = ({
             onClosed={reset}
         >
             {isLoading && <LoadingSpinner />}
-            <Grid container spacing={4} style={{ marginTop: '5px' }}>
+            <Grid container spacing={4}>
                 <Grid item>
                     <Typography>
                         <FormattedMessage
                             id="gpkg.explication"
-                            defaultMessage="Import Orgunit from a GeoPackage file. The file must be correctly formatted. "
+                            defaultMessage="Import OrgUnits from a GeoPackage file, all the OrgUnits present in the fill will be updated.
+                             The file must be correctly formatted.
+                             "
                         />
                     </Typography>
                     <Typography>

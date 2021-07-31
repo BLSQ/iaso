@@ -24,7 +24,7 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
-import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
+import { ImportGeoPkgDialog, propTypes } from './ImportGeoPkgDialog';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -84,6 +84,19 @@ const tasksTableColumns = source => [
                         sourceId={source.id}
                         sourceVersionNumber={settings.original.number}
                         sourceCredentials={source.credentials ?? {}}
+                    />
+                    <ImportGeoPkgDialog
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="globe"
+                                tooltipMessage={MESSAGES.importGeoPkg}
+                            />
+                        )}
+                        sourceId={source.id}
+                        sourceName={source.name}
+                        versionNumber={settings.original.number}
+                        projects={source.projects.flat()}
                     />
                 </>
             ),

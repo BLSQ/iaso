@@ -31,4 +31,4 @@ def import_gpkg_task(import_gpkg_id: int, task: Task):
             user=user,
         )
 
-        task.report_success(message=f"Import {total} OrgUnits")
+        task.report_success(message=f"Imported {total} OrgUnits")

@@ -154,8 +154,16 @@ def import_gpkg_file(filename, project_id, source_name, version_number, validati
 
 @transaction.atomic
 def import_gpkg_file2(
-    filename, project: Project, source: SourceVersion, version_number, validation_status, user: Optional[User]
+    filename,
+    project: Project,
+    source: SourceVersion,
+    version_number: Optional[int],
+    validation_status,
+    user: Optional[User],
 ):
+    if version_number is None:
+        last_version = source.versions.all().order_by("number").last()
+        version_number = last_version.number + 1 if last_version else 0
     version, created = SourceVersion.objects.get_or_create(number=version_number, data_source=source)
 
     # Create and update all the groups and put them in a dict indexed by ref

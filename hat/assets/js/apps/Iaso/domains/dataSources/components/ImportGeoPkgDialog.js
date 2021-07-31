@@ -2,7 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid, Typography } from '@material-ui/core';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { baseUrls } from '../../../constants/urls';
@@ -12,56 +13,44 @@ import MESSAGES from '../messages';
 import { useGeoPkgImport } from '../requests';
 import InputComponent from '../../../components/forms/InputComponent';
 
-const initialFormState = versionNumber => {
+const initialFormState = () => {
     return {
         file: null,
         project: null,
-        versionNumber,
     };
 };
 
 const ImportGeoPkgDialog = ({
     renderTrigger,
-    titleMessage,
     sourceId,
     sourceName,
-    defaultVersion,
+    versionNumber,
     projects,
 }) => {
     // eslint-disable-next-line no-unused-vars
     const [form, setFormField, _, setFormState] = useFormState(
-        initialFormState(defaultVersion ? defaultVersion.toString() : null),
+        initialFormState(),
     );
     const intl = useSafeIntl();
-    const [allowConfirm, setAllowConfirm] = useState(false);
     const [requestBody, setRequestBody] = useState(null);
     const [redirect, setRedirect] = useState(false);
     const [closeDialogCallback, setCloseDialogCallback] = useState(null);
-    const importedGeoPkg = useGeoPkgImport(requestBody);
-
+    const { data, isLoading } = useGeoPkgImport(requestBody);
     const dispatch = useDispatch();
 
     const submit = useCallback(() => {
-        setAllowConfirm(false);
         const body = {
             file: form.file.value,
             project: form.project.value,
             data_source: sourceId,
-            version_number: form.versionNumber.value,
+            version_number: versionNumber ? versionNumber.toString() : '',
         };
         setRequestBody(body);
-    }, [
-        form.file.value,
-        form.project.value,
-        sourceId,
-        form.versionNumber.value,
-    ]);
+    }, [form.file.value, form.project.value, sourceId]);
 
     const reset = useCallback(() => {
         setRequestBody(null);
-        setFormState(
-            initialFormState(defaultVersion ? defaultVersion.toString() : ''),
-        );
+        setFormState(initialFormState());
     }, [setFormState]);
 
     const onConfirm = useCallback(
@@ -79,23 +68,12 @@ const ImportGeoPkgDialog = ({
         [onConfirm],
     );
 
-    useEffect(() => {
-        // not enforcing truthiness of versionNumber as defaultVersion can be null
-        if (form.file.value && form.project.value) {
-            setAllowConfirm(true);
-        } else {
-            setAllowConfirm(false);
-        }
-    }, [
-        form.file.value,
-        form.project.value,
-        form.versionNumber.value,
-        // this dep to unlock buttons after successful request
-        importedGeoPkg,
-    ]);
+    const allowConfirm = Boolean(
+        !isLoading && form.file.value && form.project.value,
+    );
 
     useEffect(() => {
-        if (importedGeoPkg) {
+        if (data) {
             closeDialogCallback();
             if (redirect) {
                 dispatch(
@@ -106,7 +84,17 @@ const ImportGeoPkgDialog = ({
             }
             reset();
         }
-    }, [closeDialogCallback, importedGeoPkg, reset, redirect]);
+    }, [closeDialogCallback, data, reset, redirect]);
+
+    const titleMessage = versionNumber ? (
+        <FormattedMessage
+            id="update_from_gpkg"
+            defaultMessage="Update {sourceName} - version"
+            values={{ sourceName, versionNumber }}
+        />
+    ) : (
+        MESSAGES.geoPkgTitle
+    );
 
     return (
         <ConfirmCancelDialogComponent
@@ -122,8 +110,22 @@ const ImportGeoPkgDialog = ({
             onAdditionalButtonClick={onRedirect}
             onClosed={reset}
         >
-            <Typography variant="subtitle1">{`Data source: ${sourceName}`}</Typography>
+            {isLoading && <LoadingSpinner />}
             <Grid container spacing={4} style={{ marginTop: '5px' }}>
+                <Grid item>
+                    <Typography>
+                        <FormattedMessage
+                            id="gpkg.explication"
+                            defaultMessage="Import Orgunit from a GeoPackage file. The file must be correctly formatted. "
+                        />
+                    </Typography>
+                    <Typography>
+                        <FormattedMessage
+                            id="import_task_explication"
+                            defaultMessage="The import will be realised in the background and can take a dozen minutes to complete."
+                        />
+                    </Typography>
+                </Grid>
                 <Grid xs={12} item>
                     <FileInputComponent
                         keyValue="file"
@@ -147,28 +149,6 @@ const ImportGeoPkgDialog = ({
                         required
                         onChange={setFormField}
                     />
-                    <InputComponent
-                        type="radio"
-                        keyValue="versionNumber"
-                        value={form.versionNumber.value}
-                        onChange={(keyValue, value) => {
-                            setFormField(keyValue, value);
-                        }}
-                        options={[
-                            {
-                                value: defaultVersion
-                                    ? defaultVersion.toString()
-                                    : '',
-                                label: 'Use default version',
-                                disabled: !defaultVersion,
-                            },
-                            {
-                                key: 'new',
-                                value: '',
-                                label: 'Create new version',
-                            },
-                        ]}
-                    />
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>
@@ -177,14 +157,13 @@ const ImportGeoPkgDialog = ({
 
 ImportGeoPkgDialog.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
-    titleMessage: PropTypes.object.isRequired,
     projects: PropTypes.array.isRequired,
-    defaultVersion: PropTypes.number,
+    versionNumber: PropTypes.number,
     sourceId: PropTypes.number.isRequired,
     sourceName: PropTypes.string.isRequired,
 };
 ImportGeoPkgDialog.defaultProps = {
-    defaultVersion: null,
+    versionNumber: null,
 };
 
 export { ImportGeoPkgDialog };

@@ -55,5 +55,5 @@ export const useGeoPkgImport = request => {
         async () => postGeoPkg(request),
         [request, postGeoPkg],
     );
-    return useAPI(callback)?.data;
+    return useAPI(callback);
 };

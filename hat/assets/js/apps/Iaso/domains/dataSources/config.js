@@ -141,10 +141,9 @@ const dataSourcesTableColumns = (
                                 tooltipMessage={MESSAGES.importGeoPkg}
                             />
                         )}
-                        titleMessage={MESSAGES.geoPkgTitle}
                         sourceId={settings.original.id}
                         sourceName={settings.original.name}
-                        defaultVersion={defaultVersion}
+                        // versionNumber={defaultVersion}
                         projects={settings.original.projects.flat()}
                     />
                 </section>

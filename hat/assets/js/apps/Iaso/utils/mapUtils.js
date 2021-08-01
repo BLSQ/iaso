@@ -139,19 +139,6 @@ export const circleColorMarkerOptions = color => ({
     radius: 5,
 });
 
-/**
- * @deprecated
- * Use the ZoomControl component instead
- */
-export const customZoomBar = (formatMessage, fitToBounds) =>
-    L.control.zoombar({
-        zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
-        zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
-        fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
-        fitToBounds: () => fitToBounds(),
-        position: 'topleft',
-    });
-
 class ZoomControl_ extends MapControl {
     createLeafletElement({ fitToBounds, intl: { formatMessage } }) {
         return L.control.zoombar({

@@ -65,6 +65,15 @@ const styles = theme => ({
 const renderValue = (fieldKey, value, fields, classes) => {
     if (!value || value.toString().length === 0) return textPlaceholder;
     switch (fieldKey) {
+        case 'geom': {
+            const polygonPositions =
+                getPolygonPositionsFromSimplifiedGeom(value);
+            return (
+                <div className={classes.cellMap}>
+                    <PolygonMap polygonPositions={polygonPositions} />
+                </div>
+            );
+        }
         case 'simplified_geom': {
             const polygonPositions =
                 getPolygonPositionsFromSimplifiedGeom(value);

@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
 import { injectIntl } from 'bluesquare-components';
-import { getLatLngBounds, customZoomBar } from '../../utils/mapUtils';
+import { getLatLngBounds, ZoomControl } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
 
@@ -21,14 +21,6 @@ const styles = () => ({
 });
 
 class PolygonMap extends Component {
-    componentDidMount() {
-        const {
-            intl: { formatMessage },
-        } = this.props;
-        const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
-        zoomBar.addTo(this.map.leafletElement);
-    }
-
     fitToBounds() {
         const { polygonPositions } = this.props;
         const bounds = getLatLngBounds(polygonPositions);
@@ -56,6 +48,7 @@ class PolygonMap extends Component {
                     zoomControl={false}
                     keyboard={false}
                 >
+                    <ZoomControl fitToBounds={() => this.fitToBounds()} />
                     <ScaleControl imperial={false} />
                     <TileLayer
                         attribution={

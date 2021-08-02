@@ -13,10 +13,10 @@ import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { locationsLimit } from '../../../constants/filters';
 
 import {
+    ZoomControl,
     getLatLngBounds,
     getShapesBounds,
     colorClusterCustomMarker,
-    customZoomBar,
     circleColorMarkerOptions,
 } from '../../../utils/mapUtils';
 
@@ -89,12 +89,7 @@ class OrgunitsMap extends Component {
     }
 
     componentDidMount() {
-        const {
-            orgUnitTypes,
-            intl: { formatMessage },
-        } = this.props;
-        const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
-        zoomBar.addTo(this.map.leafletElement);
+        const { orgUnitTypes } = this.props;
         if (orgUnitTypes.length === 0) {
             this.map.leafletElement.createPane('custom-shape-pane');
         } else {
@@ -248,6 +243,7 @@ class OrgunitsMap extends Component {
                         keyboard={false}
                     >
                         <ScaleControl imperial={false} />
+                        <ZoomControl fitToBounds={() => this.fitToBounds()} />
                         <TileLayer
                             attribution={
                                 currentTile.attribution

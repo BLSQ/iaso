@@ -11,7 +11,7 @@ import { Grid, Divider } from '@material-ui/core';
 import {
     getLatLngBounds,
     clusterCustomMarker,
-    customZoomBar,
+    ZoomControl,
 } from '../../../utils/mapUtils';
 
 import { resetMapReducer } from '../../../redux/mapReducer';
@@ -36,16 +36,7 @@ const snackbarKey = 'noInstancesOnMap';
 
 class InstancesMap extends Component {
     componentDidMount() {
-        const {
-            intl: { formatMessage },
-        } = this.props;
         this.setWarning();
-        if (this.map) {
-            const newZoomBar = customZoomBar(formatMessage, () =>
-                this.fitToBounds(),
-            );
-            newZoomBar.addTo(this.map.leafletElement);
-        }
     }
 
     componentWillUnmount() {
@@ -126,6 +117,7 @@ class InstancesMap extends Component {
                         zoomControl={false}
                         keyboard={false}
                     >
+                        <ZoomControl fitToBounds={() => this.fitToBounds()} />
                         <ScaleControl imperial={false} />
                         <TileLayer
                             attribution={

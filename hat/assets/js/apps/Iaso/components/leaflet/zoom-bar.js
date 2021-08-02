@@ -1,5 +1,6 @@
 /*
- * L.Control.ZoomBar
+ * In react use the <ZoomControl> component from mapUtils instead !
+ *  from L.Control.ZoomBar
  * A control bar that extends standard zoom control.
  *
  * Adds:
@@ -11,7 +12,7 @@
 
 import L from 'leaflet';
 
-L.Control.ZoomBar = L.Control.Zoom.extend({
+export const ZoomBar = L.Control.Zoom.extend({
     options: {
         zoomInfoTitle: 'Current zoom level',
         zoomBoxTitle:
@@ -159,5 +160,3 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
         });
     },
 });
-
-L.control.zoombar = options => new L.Control.ZoomBar(options);

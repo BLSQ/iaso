@@ -80,7 +80,7 @@ const tasksTableColumns = source => [
                             <IconButtonComponent
                                 onClick={openDialog}
                                 icon="dhis"
-                                tooltipMessage={MESSAGES.edit}
+                                tooltipMessage={MESSAGES.updateFromDhis2}
                             />
                         )}
                         sourceId={source.id}

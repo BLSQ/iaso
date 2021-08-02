@@ -106,6 +106,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.importFromDhis2',
         defaultMessage: 'Import from DHIS2',
     },
+    updateFromDhis2: {
+        id: 'iaso.dataSources.updateFromDhis2',
+        defaultMessage: 'Update version from DHIS2',
+    },
     useDefaultDhisSettings: {
         id: 'iaso.dataSources.useDefaultDhisSettings',
         defaultMessage: 'Use default DHIS settings',

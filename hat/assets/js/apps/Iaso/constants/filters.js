@@ -6,7 +6,7 @@ import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
 import { Period } from '../domains/periods/models';
-import { OrgUnitLabel } from '../domains/orgUnits/utils';
+import { orgUnitLabelString } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';
 
 export const search = (urlKey = 'search') => ({
@@ -107,7 +107,7 @@ export const orgUnitLevel = (
     useKeyParam: false,
     isClearable: true,
     options: orgunitList.map(o => ({
-        label: <OrgUnitLabel orgUnit={o} withType />,
+        label: orgUnitLabelString(o, true, formatMessage),
         value: o.id,
     })),
     labelString: `${formatMessage(MESSAGES.level)} ${level + 1}`,
@@ -292,10 +292,11 @@ export const score = () => ({
     isMultiSelect: false,
     isClearable: true,
     options: [1, 2, 3, 4, 5].map(s => ({
-        label: <FullStarsSvg score={s} />,
+        label: `${s}`,
         value: `${(s - 1) * 20},${s * 20}`,
     })),
     label: MESSAGES.score,
+    renderOption: option => <FullStarsSvg score={parseInt(option.label, 10)} />,
     type: 'select',
     isSearchable: false,
 });
@@ -511,17 +512,22 @@ export const onlyChildrenParams = (paramsPrefix, params, parent) => {
         : { orgUnitParentId: parent.id };
 };
 
-export const runsFilters = (
-    formatMessage = () => null,
-    algorithms = [],
-    profiles = [],
-    sources = [],
-    currentOrigin = null,
-    currentDestination = null,
-) => {
+export const runsFilters = props => {
+    const {
+        formatMessage = () => null,
+        algorithms = [],
+        profiles = [],
+        sources = [],
+        currentOrigin = null,
+        currentDestination = null,
+        fetchingProfiles,
+        fetchingAlgorithms,
+        fetchingSources,
+    } = props;
     const filters = [
         {
             ...algo(algorithms),
+            loading: fetchingAlgorithms,
             column: 1,
         },
         {
@@ -531,6 +537,7 @@ export const runsFilters = (
                 'launcher',
                 formatMessage(MESSAGES.launcher),
             ),
+            loading: fetchingProfiles,
             column: 1,
         },
         {
@@ -541,6 +548,7 @@ export const runsFilters = (
                 'origin',
                 formatMessage(MESSAGES.sourceorigin),
             ),
+            loading: fetchingSources,
             column: 2,
         },
         {
@@ -586,16 +594,22 @@ export const runsFilters = (
     return filters;
 };
 
-export const linksFilters = (
-    formatMessage = () => null,
-    algorithmRuns = [],
-    orgUnitTypes = [],
-    profiles = [],
-    algorithms = [],
-    sources = [],
-    currentOrigin = null,
-    currentDestination = null,
-) => {
+export const linksFilters = props => {
+    const {
+        formatMessage = () => null,
+        algorithmRuns = [],
+        orgUnitTypes = [],
+        profiles = [],
+        algorithms = [],
+        sources = [],
+        currentOrigin = null,
+        currentDestination = null,
+        fetchingRuns,
+        fetchingOrgUnitTypes,
+        fetchingProfiles,
+        fetchingAlgorithms,
+        fetchingSources,
+    } = props;
     const filters = [
         {
             ...search(),
@@ -603,10 +617,12 @@ export const linksFilters = (
         },
         {
             ...algoRun(algorithmRuns, formatMessage),
+            loading: fetchingRuns,
             column: 1,
         },
         {
             ...orgUnitType(orgUnitTypes),
+            loading: fetchingOrgUnitTypes,
             column: 1,
         },
         {
@@ -615,10 +631,12 @@ export const linksFilters = (
         },
         {
             ...validator(profiles),
+            loading: fetchingProfiles,
             column: 2,
         },
         {
             ...algo(algorithms),
+            loading: fetchingAlgorithms,
             column: 2,
         },
         {
@@ -633,6 +651,7 @@ export const linksFilters = (
                 'origin',
                 formatMessage(MESSAGES.sourceorigin),
             ),
+            loading: fetchingSources,
             column: 3,
         },
         {

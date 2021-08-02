@@ -4,6 +4,7 @@ import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
 import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
 import { circleColorMarkerOptions } from '../../utils/mapUtils';
+
 import MESSAGES from './messages';
 
 export const getPolygonPositionsFromSimplifiedGeom = field => {
@@ -63,13 +64,12 @@ export const getSourcesWithoutCurrentSource = (
     return sources;
 };
 
-export const OrgUnitLabel = ({ orgUnit, withType }) => {
+export const orgUnitLabelString = (orgUnit, withType, formatMessage) => {
     let message = textPlaceholder;
-    const intl = useSafeIntl();
     if (orgUnit && orgUnit.name) {
         message = orgUnit.name;
         if (orgUnit.source) {
-            message += ` - ${intl.formatMessage(MESSAGES.sourceLower)}: ${
+            message += ` - ${formatMessage(MESSAGES.sourceLower)}: ${
                 orgUnit.source
             }`;
         }
@@ -78,6 +78,11 @@ export const OrgUnitLabel = ({ orgUnit, withType }) => {
         }
     }
     return message;
+};
+
+export const OrgUnitLabel = ({ orgUnit, withType }) => {
+    const intl = useSafeIntl();
+    return orgUnitLabelString(orgUnit, withType, intl.formatMessage);
 };
 
 const mapOrgUnitBySearch = (orgUnits, searches) => {

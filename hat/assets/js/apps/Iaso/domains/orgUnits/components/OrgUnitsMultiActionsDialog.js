@@ -188,7 +188,6 @@ const OrgUnitsMultiActionsDialog = ({
                                         value: g.id,
                                     }))}
                                     label={MESSAGES.addToGroups}
-                                    isSearchable
                                 />
                                 <InputComponent
                                     multi
@@ -210,7 +209,6 @@ const OrgUnitsMultiActionsDialog = ({
                                         value: g.id,
                                     }))}
                                     label={MESSAGES.removeFromGroups}
-                                    isSearchable
                                 />
                             </>
                         )}

@@ -15,7 +15,8 @@ export default (initialState = {}, reducers = {}, middleWare = []) =>
         initialState,
         compose(
             applyMiddleware(...middleWare),
-            // use devTools extension (or identity function if not available)
-            window.devToolsExtension ? window.devToolsExtension() : f => f,
+            window.__REDUX_DEVTOOLS_EXTENSION__
+                ? window.__REDUX_DEVTOOLS_EXTENSION__()
+                : f => f,
         ),
     );

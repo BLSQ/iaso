@@ -219,7 +219,6 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                         ))}
                     {orgUnitTypesList.length > 0 && (
                         <InputComponent
-                            withMarginTop={false}
                             keyValue="org_unit_type_id"
                             onChange={(key, orgUnitTypeId) =>
                                 this.onOrgUnitSelect(orgUnitTypeId)

@@ -13,8 +13,6 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import MESSAGES from '../../forms/messages';
 import FormControlComponent from '../../../components/forms/FormControlComponent';
 
-import { getDisplayedDateHourFormat } from '../../../utils/dates';
-
 const OrgUnitInfosComponent = ({
     orgUnit,
     onChangeInfo,
@@ -102,7 +100,12 @@ const OrgUnitInfosComponent = ({
                 type="arrayInput"
             />
         </Grid>
-        <Grid item xs={orgUnit.id ? 4 : 6}>
+        <Grid
+            item
+            xs={orgUnit.id ? 4 : 6}
+            container
+            style={{ paddingTop: '8px' }} // TODO: remove this with new org unit tree
+        >
             <FormControlComponent errors={orgUnit.parent_id.errors}>
                 <OrgUnitsLevelsFiltersComponent
                     onLatestIdChanged={latestId => {
@@ -129,16 +132,12 @@ const OrgUnitInfosComponent = ({
                 />
                 <InputComponent
                     keyValue="created_at"
-                    value={moment
-                        .unix(orgUnit.created_at)
-                        .format('LTS')}
+                    value={moment.unix(orgUnit.created_at).format('LTS')}
                     disabled
                 />
                 <InputComponent
                     keyValue="updated_at"
-                    value={moment
-                        .unix(orgUnit.updated_at)
-                        .format('LTS')}
+                    value={moment.unix(orgUnit.updated_at).format('LTS')}
                     disabled
                 />
             </Grid>

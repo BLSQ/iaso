@@ -1,7 +1,7 @@
 import Alert from '@material-ui/lab/Alert';
 import PropTypes from 'prop-types';
 import React from 'react';
-import Select from 'react-select';
+import { Select } from 'bluesquare-components';
 import { isMapped, isNeverMapped } from '../question_mappings';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';

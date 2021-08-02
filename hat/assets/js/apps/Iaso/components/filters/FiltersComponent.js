@@ -105,6 +105,7 @@ class FiltersComponent extends React.Component {
                                 )}
                                 {filter.type === 'select' && (
                                     <InputComponent
+                                        loading={filter.loading}
                                         multi={filter.isMultiSelect}
                                         clearable={filter.isClearable}
                                         disabled={filter.isDisabled || false}
@@ -121,7 +122,11 @@ class FiltersComponent extends React.Component {
                                         options={filter.options}
                                         label={filter.label}
                                         labelString={filter.labelString}
-                                        isSearchable={filter.isSearchable}
+                                        getOptionSelected={
+                                            filter.getOptionSelected
+                                        }
+                                        getOptionLabel={filter.getOptionLabel}
+                                        renderOption={filter.renderOption}
                                     />
                                 )}
 

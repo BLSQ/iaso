@@ -76,7 +76,6 @@
         "react-resize-detector": "^4.2.0",
         "react-router": "^3.0.0",
         "react-router-redux": "^4.0.0",
-        "react-select": "~1.2.1",
         "react-table": "6.8.2",
         "recursive-readdir": "^2.2.2",
         "redux": "^4.0.5",

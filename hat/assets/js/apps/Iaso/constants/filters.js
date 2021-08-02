@@ -6,7 +6,7 @@ import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
 import { Period } from '../domains/periods/models';
-import { OrgUnitLabelString } from '../domains/orgUnits/utils';
+import { orgUnitLabelString } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';
 
 export const search = (urlKey = 'search') => ({
@@ -107,7 +107,7 @@ export const orgUnitLevel = (
     useKeyParam: false,
     isClearable: true,
     options: orgunitList.map(o => ({
-        label: OrgUnitLabelString(o, true, formatMessage),
+        label: orgUnitLabelString(o, true, formatMessage),
         value: o.id,
     })),
     labelString: `${formatMessage(MESSAGES.level)} ${level + 1}`,
@@ -512,17 +512,18 @@ export const onlyChildrenParams = (paramsPrefix, params, parent) => {
         : { orgUnitParentId: parent.id };
 };
 
-export const runsFilters = (
-    formatMessage = () => null,
-    algorithms = [],
-    profiles = [],
-    sources = [],
-    currentOrigin = null,
-    currentDestination = null,
-    fetchingProfiles,
-    fetchingAlgorithms,
-    fetchingSources,
-) => {
+export const runsFilters = props => {
+    const {
+        formatMessage = () => null,
+        algorithms = [],
+        profiles = [],
+        sources = [],
+        currentOrigin = null,
+        currentDestination = null,
+        fetchingProfiles,
+        fetchingAlgorithms,
+        fetchingSources,
+    } = props;
     const filters = [
         {
             ...algo(algorithms),
@@ -593,21 +594,22 @@ export const runsFilters = (
     return filters;
 };
 
-export const linksFilters = (
-    formatMessage = () => null,
-    algorithmRuns = [],
-    orgUnitTypes = [],
-    profiles = [],
-    algorithms = [],
-    sources = [],
-    currentOrigin = null,
-    currentDestination = null,
-    fetchingRuns,
-    fetchingOrgUnitTypes,
-    fetchingProfiles,
-    fetchingAlgorithms,
-    fetchingSources,
-) => {
+export const linksFilters = props => {
+    const {
+        formatMessage = () => null,
+        algorithmRuns = [],
+        orgUnitTypes = [],
+        profiles = [],
+        algorithms = [],
+        sources = [],
+        currentOrigin = null,
+        currentDestination = null,
+        fetchingRuns,
+        fetchingOrgUnitTypes,
+        fetchingProfiles,
+        fetchingAlgorithms,
+        fetchingSources,
+    } = props;
     const filters = [
         {
             ...search(),

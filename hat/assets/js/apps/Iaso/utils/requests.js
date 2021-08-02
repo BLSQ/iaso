@@ -398,21 +398,6 @@ export const fetchLinks = (dispatch, url = '/api/links/') =>
             throw error;
         });
 
-export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') => {
-    console.log('url', url);
-    return getRequest(url)
-        .then(algorithms => algorithms)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchAlgorithmsError', null, error),
-                ),
-            );
-            console.error('Error while fetching algorithms list:', error);
-            throw error;
-        });
-};
-
 export const deleteAlgorithmRun = (dispatch, runId) =>
     deleteRequest(`/api/algorithmsruns/${runId}/`)
         .then(res => res)
@@ -767,3 +752,12 @@ export const postComment = async comment => {
     });
     return result;
 };
+
+export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') =>
+    iasoGetRequest({
+        disableSuccessSnackBar: true,
+        errorKeyMessage: 'fetchAlgorithmsError',
+        requestParams: {
+            url,
+        },
+    });

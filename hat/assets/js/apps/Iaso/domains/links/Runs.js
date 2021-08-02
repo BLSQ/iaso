@@ -119,8 +119,8 @@ const Runs = ({ params }) => {
                 defaultSorted={[{ id: 'ended_at', desc: true }]}
                 toggleActiveSearch
                 columns={tableColumns}
-                filters={runsFilters(
-                    intl.formatMessage,
+                filters={runsFilters({
+                    formatMessage: intl.formatMessage,
                     algorithms,
                     profiles,
                     sources,
@@ -129,7 +129,7 @@ const Runs = ({ params }) => {
                     fetchingProfiles,
                     fetchingAlgorithms,
                     fetchingSources,
-                )}
+                })}
                 onDataLoaded={() => setRefreshEnable(true)}
                 searchExtraComponent={
                     <Button

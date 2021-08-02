@@ -122,7 +122,6 @@ class FiltersComponent extends React.Component {
                                         options={filter.options}
                                         label={filter.label}
                                         labelString={filter.labelString}
-                                        isSearchable={filter.isSearchable}
                                         getOptionSelected={
                                             filter.getOptionSelected
                                         }

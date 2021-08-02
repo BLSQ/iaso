@@ -51,14 +51,14 @@ export const Links = ({ params, router }) => {
     const [fetchingAlgorithms, setFetchingAlgorithms] = useState(false);
     const [fetchingSources, setFetchingSource] = useState(false);
 
-    useLinksFiltersData(
+    useLinksFiltersData({
         dispatch,
         setFetchingRuns,
         setFetchingOrgUnitTypes,
         setFetchingProfiles,
         setFetchingAlgorithms,
         setFetchingSource,
-    );
+    });
 
     const validateLink = link => {
         const newLink = {
@@ -115,8 +115,8 @@ export const Links = ({ params, router }) => {
                 defaultSorted={[{ id: 'similarity_score', desc: true }]}
                 toggleActiveSearch
                 columns={tableColumns}
-                filters={linksFilters(
-                    intl.formatMessage,
+                filters={linksFilters({
+                    formatMessage: intl.formatMessage,
                     algorithmRuns,
                     orgUnitTypes,
                     profiles,
@@ -129,7 +129,7 @@ export const Links = ({ params, router }) => {
                     fetchingProfiles,
                     fetchingAlgorithms,
                     fetchingSources,
-                )}
+                })}
                 onDataLoaded={({ list, count, pages }) => {
                     onDataLoaded(list, count, pages);
                 }}

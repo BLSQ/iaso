@@ -64,7 +64,7 @@ export const getSourcesWithoutCurrentSource = (
     return sources;
 };
 
-export const OrgUnitLabelString = (orgUnit, withType, formatMessage) => {
+export const orgUnitLabelString = (orgUnit, withType, formatMessage) => {
     let message = textPlaceholder;
     if (orgUnit && orgUnit.name) {
         message = orgUnit.name;
@@ -82,7 +82,7 @@ export const OrgUnitLabelString = (orgUnit, withType, formatMessage) => {
 
 export const OrgUnitLabel = ({ orgUnit, withType }) => {
     const intl = useSafeIntl();
-    return OrgUnitLabelString(orgUnit, withType, intl.formatMessage);
+    return orgUnitLabelString(orgUnit, withType, intl.formatMessage);
 };
 
 const mapOrgUnitBySearch = (orgUnits, searches) => {

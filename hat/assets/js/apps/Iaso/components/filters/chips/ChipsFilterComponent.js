@@ -112,7 +112,6 @@ class ChipsFilterComponent extends Component {
                     ))}
                 {notSelectedItems.length > 0 && (
                     <InputComponent
-                        withMarginTop={false}
                         keyValue="form_id"
                         onChange={(key, formId) => this.onAdd(formId)}
                         value={null}

@@ -149,7 +149,6 @@ const ImportGeoPkgDialog = ({
                             label: project.name,
                             value: project.id,
                         }))}
-                        isSearchable
                         clearable
                         required
                         onChange={setFormField}

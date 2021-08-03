@@ -307,9 +307,11 @@ const OrgUnitsFiltersComponent = ({
                         )}
                         color="primary"
                         onClick={() =>
-                            redirectTo(baseUrls.orgUnitDetails, {
-                                orgUnitId: '0',
-                            })
+                            dispatch(
+                                redirectTo(baseUrls.orgUnitDetails, {
+                                    orgUnitId: '0',
+                                }),
+                            )
                         }
                     >
                         <Add className={classes.buttonIcon} />

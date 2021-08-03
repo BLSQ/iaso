@@ -3,18 +3,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button } from '@material-ui/core';
 
-import { injectIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
 
 function SnackBarButton(props) {
-    const {
-        messageKey,
-        onClick,
-        intl: { formatMessage },
-    } = props;
+    const { messageKey, onClick } = props;
+    const intl = useSafeIntl();
     return (
         <Button size="small" onClick={onClick}>
-            {formatMessage(MESSAGES[messageKey])}
+            {intl.formatMessage(MESSAGES[messageKey])}
         </Button>
     );
 }
@@ -25,4 +22,4 @@ SnackBarButton.propTypes = {
     intl: PropTypes.object.isRequired,
 };
 
-export default injectIntl(SnackBarButton);
+export default SnackBarButton;

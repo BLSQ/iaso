@@ -13,7 +13,7 @@ import { addRoutes } from './routing/redirections';
 
 const queryClient = new QueryClient();
 
-function iasoApp(element) {
+export default function iasoApp(element) {
     const baseRoutes = routeConfigs.map(routeConfig => (
         <Route
             path={getPath(routeConfig)}

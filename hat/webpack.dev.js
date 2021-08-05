@@ -63,15 +63,13 @@ module.exports = {
         rules: [
             {
                 test: /\.js$/,
-                enforce: "pre",
-                use: ["source-map-loader"],
+                enforce: 'pre',
+                use: ['source-map-loader'],
             },
-            // we pass the output from babel loader to react-hot loader
             {
                 test: /\.js?$/,
                 exclude: /node_modules/,
                 use: [
-                    { loader: 'react-hot-loader/webpack' },
                     {
                         loader: 'babel-loader',
                         options: {

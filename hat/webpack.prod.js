@@ -77,12 +77,10 @@ module.exports = {
 
     module: {
         rules: [
-            // we pass the output from babel loader to react-hot loader
             {
                 test: /\.js?$/,
                 exclude: /node_modules/,
                 use: [
-                    { loader: 'react-hot-loader/webpack' },
                     {
                         loader: 'babel-loader',
                         options: {

@@ -29,19 +29,17 @@ module.exports = {
 
     // config for webpack-dev-server
     devServer: {
-        publicPath: WEBPACK_URL + '/static/',
-        hot: false,
         historyApiFallback: true,
-        https: false,
-        // It suppress error shown in console, so it has to be set to false.
-        quiet: false,
-        // It suppress everything except error, so it has to be set to false as well
-        // to see success build.
         noInfo: false,
+        // needed so we can load the js from django (on another port or docker)
         headers: {
             'Access-Control-Allow-Origin': '*',
         },
         port: 3000,
+        // It suppress error shown in console, so it has to be set to false.
+        quiet: false,
+        // It suppress everything except error, so it has to be set to false as well
+        // to see success build.
         stats: {
             // Config for minimal console.log mess.
             assets: true,

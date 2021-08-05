@@ -14,7 +14,7 @@
         "build": "npm run webpack",
         "webpack": "webpack --config ./hat/webpack.dev.js",
         "webpack-prod": "webpack --config ./hat/webpack.prod.js",
-        "webpack-server": "node ./hat/webpack.server.js",
+        "webpack-server": "webpack  serve --config ./hat/webpack.dev.js",
         "dev": "npm run webpack && npm run webpack-server",
         "scan-translations": "python ./scripts/scantranslations.py",
         "extract-iaso-en-messages": "extract-messages --locales=en  --flat --output './hat/assets/js/apps/Iaso/domains/app/translations/extracted' './hat/assets/js/apps/Iaso/**/*.js'",

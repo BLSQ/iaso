@@ -27,6 +27,34 @@ module.exports = {
         publicPath: WEBPACK_URL + '/static/', // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
     },
 
+    // config for webpack-dev-server
+    devServer: {
+        publicPath: WEBPACK_URL + '/static/',
+        hot: false,
+        inline: false,
+        historyApiFallback: true,
+        https: false,
+        // It suppress error shown in console, so it has to be set to false.
+        quiet: false,
+        // It suppress everything except error, so it has to be set to false as well
+        // to see success build.
+        noInfo: false,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        },
+        port: 3000,
+        stats: {
+            // Config for minimal console.log mess.
+            assets: false,
+            colors: true,
+            version: false,
+            hash: false,
+            timings: false,
+            chunks: false,
+            chunkModules: false,
+        },
+    },
+
     plugins: [
         new webpack.NormalModuleReplacementPlugin(
             /^__intl\/messages\/en$/,

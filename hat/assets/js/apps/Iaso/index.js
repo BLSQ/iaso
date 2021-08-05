@@ -13,7 +13,7 @@ import { addRoutes } from './routing/redirections';
 
 const queryClient = new QueryClient();
 
-export default function iasoApp(element) {
+function iasoApp(element) {
     const baseRoutes = routeConfigs.map(routeConfig => (
         <Route
             path={getPath(routeConfig)}
@@ -39,3 +39,8 @@ export default function iasoApp(element) {
         element,
     );
 }
+
+// Before we were exporting the function and using the iaso as a proper lib
+// but it was proken by webbpack-dev-server injecting his code so this a replacement
+// solution
+window.iasoApp = iasoApp;

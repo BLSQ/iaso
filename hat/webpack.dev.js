@@ -17,19 +17,11 @@ module.exports = {
     entry: {
         // use same settings as in Prod
         common: ['react', 'react-dom', 'react-intl'],
-        styles: [
-            'webpack-dev-server/client?' + WEBPACK_URL,
-            './assets/css/index.scss',
-        ],
-        iaso: [
-            'webpack-dev-server/client?' + WEBPACK_URL,
-            './assets/js/apps/Iaso/index',
-        ],
+        styles: ['./assets/css/index.scss'],
+        iaso: ['./assets/js/apps/Iaso/index'],
     },
 
     output: {
-        library: ['HAT', '[name]'],
-        libraryTarget: 'var',
         path: path.resolve(__dirname, './assets/webpack/'),
         filename: '[name].js',
         publicPath: WEBPACK_URL + '/static/', // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name

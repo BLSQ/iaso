@@ -22,8 +22,6 @@ module.exports = {
     },
 
     output: {
-        library: ['HAT', '[name]'],
-        libraryTarget: 'var',
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
         publicPath: '',

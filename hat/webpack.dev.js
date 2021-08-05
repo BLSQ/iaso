@@ -44,12 +44,12 @@ module.exports = {
         port: 3000,
         stats: {
             // Config for minimal console.log mess.
-            assets: false,
+            assets: true,
             colors: true,
             version: false,
             hash: false,
-            timings: false,
-            chunks: false,
+            timings: true,
+            chunks: true,
             chunkModules: false,
         },
     },

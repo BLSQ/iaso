@@ -13,7 +13,7 @@ const plugins = pluginsString.split(',');
 module.exports = {
     context: __dirname,
     mode: 'development',
-    target: ['web', 'es2017'],
+    target: 'web',
     entry: {
         // use same settings as in Prod
         common: ['react', 'react-dom', 'react-intl'],
@@ -31,7 +31,6 @@ module.exports = {
     devServer: {
         publicPath: WEBPACK_URL + '/static/',
         hot: false,
-        inline: false,
         historyApiFallback: true,
         https: false,
         // It suppress error shown in console, so it has to be set to false.

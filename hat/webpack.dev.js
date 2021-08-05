@@ -16,9 +16,29 @@ module.exports = {
     target: 'web',
     entry: {
         // use same settings as in Prod
-        common: ['react', 'react-dom', 'react-intl'],
+        common: [
+            'react',
+            'bluesquare-components',
+            'react-dom',
+            'react-intl',
+            '@material-ui/core',
+            // Don't include, it packs all the icon instead of actually used one
+            // '@material-ui/icons',
+            '@material-ui/lab',
+            '@material-ui/pickers',
+            'lodash',
+            'moment',
+            'leaflet',
+            'leaflet-draw',
+            'react-redux',
+            'prop-types',
+            'video.js',
+        ],
         styles: ['./assets/css/index.scss'],
-        iaso: ['./assets/js/apps/Iaso/index'],
+        iaso: {
+            dependOn: 'common',
+            import: './assets/js/apps/Iaso/index',
+        },
     },
 
     output: {

@@ -76,8 +76,9 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
         f"F46:{rowcol_to_a1(46, final_column)}",
         f"F54:{rowcol_to_a1(54, final_column)}",
     ]
+    # FIXME should better categorize what is date and what is value
     district_data_range = [
-        f"F7:{rowcol_to_a1(11, final_column)}",
+        f"F7:{rowcol_to_a1(10, final_column)}",
         f"F17:{rowcol_to_a1(17, final_column)}",
         f"F26:{rowcol_to_a1(27, final_column)}",
         f"F33:{rowcol_to_a1(37, final_column)}",
@@ -90,9 +91,9 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     summary_ranges = [GridRange.from_a1_range(range_cell, sheet) for range_cell in summary_range_a1]
 
     non_blank_ranges = [
-        GridRange.from_a1_range(f"F17:{rowcol_to_a1(23, final_column)}", sheet),
-        GridRange.from_a1_range(f"F38:{rowcol_to_a1(38, final_column)}", sheet),
-        GridRange.from_a1_range(f"F57:{rowcol_to_a1(57, final_column)}", sheet),
+        GridRange.from_a1_range(f"F16:{rowcol_to_a1(21, final_column)}", sheet),
+        GridRange.from_a1_range(f"F36:{rowcol_to_a1(36, final_column)}", sheet),
+        GridRange.from_a1_range(f"F53:{rowcol_to_a1(57, final_column)}", sheet),
     ]
 
     custom_rules = (

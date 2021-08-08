@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+import pandas as pd
 from django.db.transaction import atomic
 from django.utils.translation import gettext_lazy as _
 from gspread.exceptions import APIError
@@ -8,7 +9,7 @@ from rest_framework import serializers
 
 from iaso.models import Group, OrgUnit
 from plugins.polio.preparedness.calculator import get_preparedness_score
-from .models import Preparedness, Round, Campaign, Surge
+from .models import Preparedness, Round, Campaign, Surge, LineListImport, VIRUSES
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
@@ -17,6 +18,42 @@ from .preparedness.parser import (
     parse_value,
 )
 from .preparedness.spreadsheet_manager import *
+
+
+class LineListImportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LineListImport
+        fields = "__all__"
+
+    def create(self, validated_data):
+        l = LineListImport(file=validated_data.get("file"))
+        l.save()
+        df = pd.read_excel(l.file)
+
+        mapping = {"EPID Number": "epid", "VDPV Category": "virus", "Onset Date": "onset_at"}
+        for key in mapping.keys():
+            if key not in df.columns:
+                print("problem")
+        created_campaigns = []
+        known_viruses = [v[0] for v in VIRUSES]
+        for ind in df.index:
+            epid = df["EPID Number"][ind]
+            if epid:
+                onset_date = df["Onset Date"][ind]
+                virus = df["VDPV Category"][ind]
+                print(epid, onset_date, type(onset_date), virus)
+                c, created = Campaign.objects.get_or_create(epid=epid)
+                if created:
+                    created_campaigns.append(c)
+                if virus in known_viruses:
+                    c.virus = virus
+                if isinstance(onset_date, datetime):
+                    c.onset_at = onset_date
+                c.save()
+            else:
+                break
+
+        return created_campaigns[-1]
 
 
 class GroupSerializer(serializers.ModelSerializer):

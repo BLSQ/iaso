@@ -345,3 +345,9 @@ class Config(models.Model):
 
     def __str__(self):
         return self.slug
+
+
+class LineListImport(models.Model):
+    file = models.FileField(upload_to="uploads/linelist/% Y/% m/% d/")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)

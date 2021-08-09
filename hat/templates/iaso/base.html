@@ -1,8 +1,10 @@
 {% load render_bundle from webpack_loader %}
 {% load i18n %}
 {% load static %}
+{% get_current_language as LANGUAGE_CODE %}
+
 <!DOCTYPE HTML>
-<html>
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
   <title>{% trans 'Iaso Dashboard' %}</title>
   <meta charset="utf-8">

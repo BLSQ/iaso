@@ -265,10 +265,14 @@ class Campaign(models.Model):
         return OrgUnit.objects.filter(id__in=self.get_districts().values_list("parent_id", flat=True).distinct())
 
     def last_preparedness(self):
-        return self.preparedness_set.order_by("-created_at").first()
+        return (
+            self.preparedness_set.filter(spreadsheet_url=self.preperadness_spreadsheet_url)
+            .order_by("-created_at")
+            .first()
+        )
 
     def last_surge(self):
-        return self.surge_set.order_by("-created_at").first()
+        return self.surge_set.filter(spreadsheet_url=self.surge_spreadsheet_url).order_by("-created_at").first()
 
     def save(self, *args, **kwargs):
         if not self.created_at and self.gpei_email:

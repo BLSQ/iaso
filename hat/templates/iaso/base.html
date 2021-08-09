@@ -2,7 +2,6 @@
 {% load i18n %}
 {% load static %}
 {% get_current_language as LANGUAGE_CODE %}
-
 <!DOCTYPE HTML>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
@@ -13,6 +12,7 @@
   <meta name="keywords" content="">
   {# favicon #}
   <link rel="icon" type="image/png" href="{% static 'images/iaso-favicon.png' %}">
+
   {% block extrajs %}
 
   {% endblock %}
@@ -32,8 +32,7 @@
   <meta data-qa="logged-in-marker" name="logged-in" content="{{ user.get_username }}">
   {% else %}
   <meta property="og:title" content="{% trans 'Welcome to the IASO Dashboard' %}" />
-  <meta property="og:description"
-    content="{% trans '' %}" />
+  <meta property="og:description" content="{% trans '' %}" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="" />
   <meta property="og:url" content="http://iaso.bluesquarehub.com" />

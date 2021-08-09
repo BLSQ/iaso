@@ -45,20 +45,20 @@
   </div>
 </div>
 <script>
-
-  function togglePassword() {
-    const passwordField = document.getElementById('id_password');
-    if (passwordField.getAttribute('type') === 'password') {
-      passwordField.setAttribute('type', 'text');
-        document.getElementById('eye-icon').setAttribute('class', 'fa fa-eye-slash');
-    } else {
-      passwordField.setAttribute('type', 'password');
-      document.getElementById('eye-icon').setAttribute('class', 'fa fa-eye');
+    function togglePassword() {
+        const passwordField = document.getElementById("id_password");
+        if (passwordField.getAttribute("type") === "password") {
+            passwordField.setAttribute("type", "text");
+            document.getElementById("eye-icon").setAttribute("class", "fa fa-eye-slash");
+        } else {
+            passwordField.setAttribute("type", "password");
+            document.getElementById("eye-icon").setAttribute("class", "fa fa-eye");
+        }
     }
-  }
-  document.getElementById('display-password').addEventListener('click', function (e) {
-    e.preventDefault();
-    togglePassword();
-  })
+
+    document.getElementById("display-password").addEventListener("click", function(e) {
+        e.preventDefault();
+        togglePassword();
+    });
 </script>
 {% endblock %}

@@ -165,7 +165,8 @@ export const PreparednessForm = () => {
                             </Button>
                         </Grid>
                     )}
-                    <Grid xd={12} item>
+                    {/*the padding bottom is a horrible quick fix to remove*/}
+                    <Grid xd={12} item style={{ paddingBottom: 20 }}>
                         {isLoading || isGeneratingSpreadsheet ? (
                             <CircularProgress />
                         ) : (

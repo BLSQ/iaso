@@ -83,7 +83,6 @@
         "standard": "^12.0.1",
         "superagent": "^5.1.0",
         "video.js": "^7.10.2",
-        "xlsx": "^0.14.3",
         "yup": "^0.32.9"
     },
     "devDependencies": {

@@ -11,7 +11,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="">
   <meta name="keywords" content="">
-
+  {# favicon #}
   <link rel="icon" type="image/png" href="{% static 'images/iaso-favicon.png' %}">
   {% block extrajs %}
 
@@ -24,9 +24,6 @@
     <!-- we're in the non dev-server part -->
     {% render_bundle 'styles' 'css' %}
   {% endif %}
-
-  {# favicon #}
-  <link rel="icon" href="" />
 
   {% block head %}
   {% endblock %}

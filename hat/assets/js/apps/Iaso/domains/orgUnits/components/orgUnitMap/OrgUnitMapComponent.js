@@ -42,7 +42,7 @@ import MESSAGES from '../../messages';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import InstancePopupComponent from '../../../instances/components/InstancePopupComponent';
 
-import EditableGroup from './EditableGoup';
+import EditableGroup from './EditableGroup';
 import fitToBounds from './fitToBounds';
 
 export const zoom = 5;

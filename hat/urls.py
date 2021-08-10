@@ -1,5 +1,5 @@
-from django.conf.urls import url, include
 from django.contrib import admin, auth
+from django.urls import path, include
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -10,18 +10,17 @@ admin.site.site_title = "Iaso"
 admin.site.index_title = "Administration de Iaso"
 
 urlpatterns = [
-    url(r"^$", RedirectView.as_view(pattern_name="dashboard:iaso", permanent=False), name="index"),
-    url(r"^_health/", health),
-    url(r"^accounts/", include("django.contrib.auth.urls")),
-    url(r"^admin/", admin.site.urls),
-    url(r"^api/", include("iaso.urls")),
-    # url(r"^api/", include("hat.api.urls")),
-    url(r"^pages/(?P<page_slug>[a-z0-9-]+)/$", page, name="pages"),
-    url("i18n/", include("django.conf.urls.i18n")),
-    url(r"^login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login"),
-    url(r"^logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
-    url(
-        r"^forgot-password/",
+    path("", RedirectView.as_view(pattern_name="dashboard:iaso", permanent=False), name="index"),
+    path("_health/", health),
+    path("accounts/", include("django.contrib.auth.urls")),
+    path("admin/", admin.site.urls),
+    path("api/", include("iaso.urls")),
+    path("pages/<page_slug>/", page, name="pages"),
+    path("i18n/", include("django.conf.urls.i18n")),
+    path("login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login"),
+    path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
+    path(
+        "forgot-password/",
         auth.views.PasswordResetView.as_view(
             template_name="iaso/forgot_password.html",
             email_template_name="iaso/reset_password_email.html",
@@ -30,32 +29,32 @@ urlpatterns = [
         ),
         name="forgot_password",
     ),
-    url(
-        r"^forgot-password-confirmation/",
+    path(
+        "forgot-password-confirmation/",
         auth.views.PasswordResetDoneView.as_view(template_name="iaso/forgot_password_confirmation.html"),
         name="forgot_password_confirmation",
     ),
-    url(
-        r"^reset-password-confirmation/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/",
+    path(
+        "reset-password-confirmation/<uidb64>/<token>/",
         auth.views.PasswordResetConfirmView.as_view(
             template_name="iaso/reset_password_confirmation.html", success_url="/reset-password-complete/"
         ),
         name="reset_password_confirmation",
     ),
-    url(
-        r"^reset-password-complete/",
+    path(
+        "reset-password-complete/",
         auth.views.PasswordResetCompleteView.as_view(template_name="iaso/reset_password_complete.html"),
         name="reset_password_complete",
     ),
-    url(r"^sync/", include("hat.sync.urls")),
+    path("sync/", include("hat.sync.urls")),
 ]
 
 if settings.BEANSTALK_WORKER or settings.DEBUG:
-    urlpatterns.append(url(r"^tasks/", include("beanstalk_worker.urls")))
+    urlpatterns.append(path("tasks/", include("beanstalk_worker.urls")))
 
 if settings.PLUGIN_POLIO_ENABLED:
-    urlpatterns.append(url(r"^dashboard/polio/list", include("plugins.polio.urls")))
-urlpatterns.append(url(r"^dashboard/", include("hat.dashboard.urls")))
+    urlpatterns.append(path("dashboard/polio/list", include("plugins.polio.urls")))
+urlpatterns.append(path("dashboard/", include("hat.dashboard.urls")))
 
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

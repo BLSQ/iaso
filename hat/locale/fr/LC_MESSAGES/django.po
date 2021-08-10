@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-09 15:21+0000\n"
+"POT-Creation-Date: 2021-08-10 07:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -45,10 +45,10 @@ msgstr ""
 
 #: hat/templates/iaso/forgot_password_confirmation.html:9
 msgid ""
-"If you don't receive an email, please make sure youve entered the address "
+"If you don't receive an email, please make sure you've entered the address "
 "you registered with, and check your spam folder."
 msgstr ""
-"Si vous ne recevez pas de couriel, verifiez que vous avez bien entrez votre "
+"Si vous ne recevez pas de courriel, verifiez que vous avez bien entrez votre "
 "addresse d'enregistrement et verifiez votre dossier spam."
 
 #: hat/templates/iaso/login.html:9
@@ -58,32 +58,38 @@ msgstr "Né du projet <a href=\"https://www.trypelim.org\">Trypelim</a>."
 
 #: hat/templates/iaso/login.html:16
 msgid ""
-"\n"
-"          Your account doesn't have access to this page. To proceed,\n"
-"          please login with an account that has access.\n"
+"Your account doesn't have access to this page. To proceed, please login with "
+"an account that has access.\n"
 "          "
 msgstr ""
-"\n"
-"Votre utilisateur n'a pas accès à cette page, pour continuer connecter vous "
-"avec un autre utilisateur"
+"Votre utilisateur n'a pas accès à cette page, pour continuer connectez-vous "
+"avec un autre utilisateur.\n"
 
-#: hat/templates/iaso/login.html:23
+#: hat/templates/iaso/login.html:21
 msgid "Please login to see this page."
 msgstr "Veuillez vous connecter pour voir cette page"
 
-#: hat/templates/iaso/login.html:29
-msgid ""
-"\n"
-"          Your username and password didn't match. Please try again.\n"
-"          "
-msgstr ""
-"\n"
-"Nom d'utilisateur ou mot de passe incorrect."
+#: hat/templates/iaso/login.html:27
+msgid "Your username and password didn't match. Please try again."
+msgstr "Nom d'utilisateur ou mot de passe incorrect."
 
-#: hat/templates/iaso/login.html:37
+#: hat/templates/iaso/login.html:33
 msgid "Login"
 msgstr "Connexion"
 
-#: hat/templates/iaso/login.html:41
+#: hat/templates/iaso/login.html:37
 msgid "Forgot password"
-msgstr "Mot de passe oublié"
+msgstr "Oublié votre mot de passe?"
+
+#: hat/templates/iaso/reset_password_complete.html:10
+#, python-format
+msgid ""
+"\n"
+"        Your password has been set. You may go ahead and <a href="
+"\"%(login_url)s\">sign in</a> now.\n"
+"        "
+msgstr ""
+"\n"
+"        Votre mot de passe à été sauvé. Vous pouvez maintenant vous <a href="
+"\"%(login_url)s\">connecter</a>.\n"
+"        "

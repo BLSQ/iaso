@@ -1,4 +1,4 @@
-import { Map, TileLayer, GeoJSON } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON, Tooltip } from "react-leaflet";
 import { useEffect, useMemo, useRef } from "react";
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from "leaflet";
@@ -40,9 +40,11 @@ export const MapComponent = ({ onSelectShape, shapes, getShapeStyle }) => {
                 <GeoJSON
                     key={shape.id}
                     data={shape.geo_json}
-                    style={(feature) => getShapeStyle(shape)}
+                    style={() => getShapeStyle(shape)}
                     onClick={() => onSelectShape(shape)}
-                />
+                >
+                    <Tooltip>{shape.name}</Tooltip>
+                </GeoJSON>
             ))}
         </Map>
     );

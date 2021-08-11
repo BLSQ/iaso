@@ -400,7 +400,7 @@ const ScopeForm = () => {
     const [selectRegion, setSelectRegion] = useState(false);
     const { values, setFieldValue } = useFormikContext();
     // Group contains selected orgunits
-    const { group = { org_units: [] }, initial_org_unit } = values;
+    const { group = { org_units: [] } } = values;
 
     const { data: shapes, isFetching } = useGetRegionGeoJson(
         values.org_unit?.country_parent?.id ||

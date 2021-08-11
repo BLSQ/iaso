@@ -138,7 +138,7 @@ INSTALLED_APPS = [
 COMMENTS_APP = "iaso"
 
 if PLUGIN_POLIO_ENABLED:
-    if 'polio' not in PLUGINS:
+    if "polio" not in PLUGINS:
         PLUGINS.append("polio")
 
 print("Enabled plugins:", PLUGINS)
@@ -255,7 +255,7 @@ AUTH_CLASSES = [
 
 
 # Needed for PowerBI, used for the Polio project, which only support support BasicAuth.
-if 'polio' in PLUGINS:
+if "polio" in PLUGINS:
     AUTH_CLASSES.append(
         "rest_framework.authentication.BasicAuthentication",
     )

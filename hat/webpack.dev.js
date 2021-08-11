@@ -55,6 +55,7 @@ module.exports = {
         headers: {
             'Access-Control-Allow-Origin': '*',
         },
+        host: '0.0.0.0',
         port: 3000,
         // It suppress error shown in console, so it has to be set to false.
         quiet: false,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Table,
     textPlaceholder,
@@ -41,7 +41,6 @@ import {
 } from './Inputs';
 import { MapComponent } from './MapComponent/MapComponent';
 
-import { Page } from './Page';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { polioVacines, polioViruses } from '../constants/virus';
@@ -56,6 +55,9 @@ import MESSAGES from '../constants/messages';
 import SearchIcon from '@material-ui/icons/Search';
 import { useDebounce } from 'use-debounce';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
+
+
+import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
@@ -1281,6 +1283,10 @@ export const Dashboard = () => {
     }, [pageSize, page, order]);
     return (
         <>
+            <TopBar
+                title="Dashboard"
+                displayBackButton={false}
+            />
             <CreateEditDialog
                 selectedCampaign={selectedCampaign}
                 isOpen={isCreateEditDialogOpen}
@@ -1291,34 +1297,32 @@ export const Dashboard = () => {
                 onClose={closeDeleteConfirmDialog}
                 onConfirm={handleDeleteConfirmDialogConfirm}
             />
-            <Page title={'Campaigns'}>
-                <Box className={classes.containerFullHeightNoTabPadded}>
-                    {status === 'loading' && <LoadingSpinner />}
-                    <PageActions onSearch={handleSearch}>
-                        <PageAction
-                            icon={AddIcon}
-                            onClick={handleClickCreateButton}
-                        >
-                            Create
-                        </PageAction>
-                        <PageAction icon={DownloadIcon} onClick={exportToCSV}>
-                            CSV
-                        </PageAction>
-                    </PageActions>
-                    {status === 'success' && (
-                        <Table
-                            params={tableParams}
-                            count={campaigns.count}
-                            pages={Math.ceil(campaigns.count / pageSize)}
-                            baseUrl={'/polio'}
-                            redirectTo={onTableParamsChange}
-                            columns={columns}
-                            data={campaigns.campaigns}
-                            watchToRender={tableParams}
-                        />
-                    )}
-                </Box>
-            </Page>
+            <Box className={classes.containerFullHeightNoTabPadded}>
+                {status === 'loading' && <LoadingSpinner />}
+                <PageActions onSearch={handleSearch}>
+                    <PageAction
+                        icon={AddIcon}
+                        onClick={handleClickCreateButton}
+                    >
+                        Create
+                    </PageAction>
+                    <PageAction icon={DownloadIcon} onClick={exportToCSV}>
+                        CSV
+                    </PageAction>
+                </PageActions>
+                {status === 'success' && (
+                    <Table
+                        params={tableParams}
+                        count={campaigns.count}
+                        pages={Math.ceil(campaigns.count / pageSize)}
+                        baseUrl={'/polio'}
+                        redirectTo={onTableParamsChange}
+                        columns={columns}
+                        data={campaigns.campaigns}
+                        watchToRender={tableParams}
+                    />
+                )}
+            </Box>
         </>
     );
 };

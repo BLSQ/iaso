@@ -1,3 +1,4 @@
+import React from 'react';
 import { MenuItem } from '@material-ui/core';
 
 import { TextInput } from './TextInput';

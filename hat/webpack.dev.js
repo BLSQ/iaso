@@ -9,7 +9,7 @@ var WEBPACK_URL = 'http://localhost:3000';
 
 const pluginsString = process.env.PLUGINS || '';
 const plugins = pluginsString.split(',');
-
+console.log('plugins', plugins);
 module.exports = {
     context: __dirname,
     mode: 'development',

@@ -137,8 +137,8 @@ INSTALLED_APPS = [
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
 
-if PLUGIN_POLIO_ENABLED:
-    INSTALLED_APPS.append("plugins.polio")
+# if PLUGIN_POLIO_ENABLED:
+#     INSTALLED_APPS.append("plugins.polio")
 
 print("Enabled plugins:", PLUGINS)
 for plugin_name in PLUGINS:

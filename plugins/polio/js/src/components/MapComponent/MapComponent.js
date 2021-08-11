@@ -1,5 +1,5 @@
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
-import { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from "leaflet";
 

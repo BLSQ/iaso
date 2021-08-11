@@ -3,7 +3,7 @@ import {
     useGetAllParentsOrgUnits,
     useGetOrgUnits,
 } from '../../hooks/useGetOrgUnits';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGetAuthenticatedUser } from '../../hooks/useGetAuthenticatedUser';
 import { CircularProgress } from '@material-ui/core';
 

@@ -149,22 +149,6 @@ const menuItems = [
     },
 ];
 
-if (PLUGIN_POLIO_ENABLED === 'True') {
-    menuItems.push({
-        label: MESSAGES.polio,
-        key: 'polio',
-        icon: props => <DataSourceIcon {...props} />,
-        subMenu: [
-            {
-                label: MESSAGES.dashboard,
-                key: 'list',
-                permission: paths.formsPath.permission,
-                icon: props => <FormatListBulleted {...props} />,
-            },
-        ],
-    });
-}
-
 const pluginsMenu = getPlugins()
     .map(plugin => plugin.menu)
     .flat();

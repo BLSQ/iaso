@@ -84,17 +84,6 @@ export const pagesPath = {
     component: props => <Pages {...props} />,
 };
 
-export const polioPath = {
-    baseUrl: baseUrls.polio,
-    permission: 'iaso_forms',
-    params: [],
-    component: () => {
-        window.location = '/dashboard/polio/list';
-
-        return <></>;
-    },
-};
-
 export const archivedPath = {
     baseUrl: baseUrls.archived,
     permission: 'iaso_forms',
@@ -527,7 +516,6 @@ export const routeConfigs = [
     devicesPath,
     groupsPath,
     orgUnitTypesPath,
-    polioPath,
     pagesPath,
     page401,
     page404,

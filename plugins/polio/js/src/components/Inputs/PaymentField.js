@@ -9,7 +9,7 @@ const PAYMENT = [
     {
         value: 'DFC',
         label: 'DFC',
-    }
+    },
 ];
 
 export const PaymentField = props => (

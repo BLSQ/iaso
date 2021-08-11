@@ -1,6 +1,6 @@
 import React from 'react';
-import { makeStyles, Typography } from '@material-ui/core';
-import { Box } from '@material-ui/core';
+import { makeStyles, Typography, Box } from '@material-ui/core';
+
 import classnames from 'classnames';
 
 import commonStyles from '../../styles/common';

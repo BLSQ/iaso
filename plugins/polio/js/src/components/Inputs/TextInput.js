@@ -9,8 +9,8 @@ export const TextInput = ({ field = {}, form = {}, ...props } = {}) => {
                 shrink: true,
             }}
             fullWidth
-            variant={'outlined'}
-            size={'medium'}
+            variant="outlined"
+            size="medium"
             {...props}
             {...field}
             error={form.errors && Boolean(get(form.errors, field.name))}

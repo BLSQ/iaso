@@ -4,7 +4,7 @@ import { sendRequest } from '../utils/networking';
 export const useGetOrgUnits = (parent, source) => {
     const params = {
         parent_id: parent,
-        source: source,
+        source,
         validation_status: 'VALID',
     };
 
@@ -23,7 +23,7 @@ export const useGetOrgUnits = (parent, source) => {
 
             return sendRequest(
                 'GET',
-                '/api/orgunits/?' + queryString.toString(),
+                `/api/orgunits/?${queryString.toString()}`,
             );
         },
         {
@@ -42,7 +42,7 @@ export const useGetAllParentsOrgUnits = initialOrgUnit => {
 
             const result = await sendRequest(
                 'GET',
-                '/api/orgunits/' + initialOrgUnit,
+                `/api/orgunits/${initialOrgUnit}`,
             );
 
             const initialState = [result.id];

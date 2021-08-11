@@ -13,26 +13,64 @@ const plugins = pluginsString.split(',');
 module.exports = {
     context: __dirname,
     mode: 'development',
-    target: ['web', 'es2017'],
+    target: 'web',
     entry: {
         // use same settings as in Prod
-        common: ['react', 'react-dom', 'react-intl'],
-        styles: [
-            'webpack-dev-server/client?' + WEBPACK_URL,
-            './assets/css/index.scss',
+        common: [
+            'react',
+            'bluesquare-components',
+            'react-dom',
+            'react-intl',
+            '@material-ui/core',
+            // Don't include, it packs all the icon instead of actually used one
+            // '@material-ui/icons',
+            '@material-ui/lab',
+            '@material-ui/pickers',
+            'lodash',
+            'moment',
+            'leaflet',
+            'leaflet-draw',
+            'react-redux',
+            'prop-types',
+            'video.js',
         ],
-        iaso: [
-            'webpack-dev-server/client?' + WEBPACK_URL,
-            './assets/js/apps/Iaso/index',
-        ],
+        styles: ['./assets/css/index.scss'],
+        iaso: {
+            dependOn: 'common',
+            import: './assets/js/apps/Iaso/index',
+        },
     },
 
     output: {
-        library: ['HAT', '[name]'],
-        libraryTarget: 'var',
         path: path.resolve(__dirname, './assets/webpack/'),
         filename: '[name].js',
         publicPath: WEBPACK_URL + '/static/', // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+    },
+
+    // config for webpack-dev-server
+    devServer: {
+        historyApiFallback: true,
+        noInfo: false,
+        // needed so we can load the js from django (on another port or docker)
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        },
+        host: '0.0.0.0',
+        port: 3000,
+        // It suppress error shown in console, so it has to be set to false.
+        quiet: false,
+        // It suppress everything except error, so it has to be set to false as well
+        // to see success build.
+        stats: {
+            // Config for minimal console.log mess.
+            assets: true,
+            colors: true,
+            version: false,
+            hash: false,
+            timings: true,
+            chunks: true,
+            chunkModules: false,
+        },
     },
 
     plugins: [
@@ -63,15 +101,13 @@ module.exports = {
         rules: [
             {
                 test: /\.js$/,
-                enforce: "pre",
-                use: ["source-map-loader"],
+                enforce: 'pre',
+                use: ['source-map-loader'],
             },
-            // we pass the output from babel loader to react-hot loader
             {
                 test: /\.js?$/,
                 exclude: /node_modules/,
                 use: [
-                    { loader: 'react-hot-loader/webpack' },
                     {
                         loader: 'babel-loader',
                         options: {

@@ -40,3 +40,8 @@ export default function iasoApp(element) {
         element,
     );
 }
+
+// Before we were exporting the function and using the iaso as a proper lib
+// but it was proken by webbpack-dev-server injecting his code so this a replacement
+// solution
+window.iasoApp = iasoApp;

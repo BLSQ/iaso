@@ -399,7 +399,7 @@ const ScopeForm = () => {
     const [selectRegion, setSelectRegion] = useState(false);
     const { values, setFieldValue } = useFormikContext();
     // Group contains selected orgunits
-    const { group = {} } = values;
+    const { group = { org_units: [] }, initial_org_unit } = values;
 
     const { data: shapes, isFetching } = useGetRegionGeoJson(
         values.org_unit?.country_parent?.id ||
@@ -462,8 +462,8 @@ const ScopeForm = () => {
     );
 
     return (
-        <Grid container spacing={2}>
-            <Grid xs={12} item>
+        <Grid container spacing={4}>
+            <Grid xs={9} item>
                 {isFetching && !shapes && <LoadingSpinner />}
                 {!isFetching && !shapes && (
                     // FIXME should not be needed
@@ -476,6 +476,14 @@ const ScopeForm = () => {
                     onSelectShape={onSelectOrgUnit}
                     getShapeStyle={getShapeStyle}
                 />
+            </Grid>
+            <Grid xs={3} item>
+                <ul>
+                    {shapes &&
+                        shapes
+                            .filter(shape => group.org_units.includes(shape.id))
+                            .map(shape => <li key={shape.id}>{shape.name}</li>)}
+                </ul>
             </Grid>
             <Grid container>
                 <Grid xs={8} item>

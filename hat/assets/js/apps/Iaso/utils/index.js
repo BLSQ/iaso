@@ -89,7 +89,6 @@ export const getPlugins = () => {
     const pluginsKeys = process.env.PLUGINS_KEYS
         ? process.env.PLUGINS_KEYS
         : [];
-    console.log('pluginsKeys', pluginsKeys);
     const plugins = [];
     pluginsKeys.forEach(plugin => {
         const pluginConfig = pluginsConfigs[plugin];

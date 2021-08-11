@@ -137,8 +137,9 @@ INSTALLED_APPS = [
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
 
-# if PLUGIN_POLIO_ENABLED:
-#     INSTALLED_APPS.append("plugins.polio")
+if PLUGIN_POLIO_ENABLED:
+    if 'polio' not in PLUGINS:
+        PLUGINS.append("polio")
 
 print("Enabled plugins:", PLUGINS)
 for plugin_name in PLUGINS:
@@ -254,7 +255,7 @@ AUTH_CLASSES = [
 
 
 # Needed for PowerBI, used for the Polio project, which only support support BasicAuth.
-if PLUGIN_POLIO_ENABLED:
+if 'polio' in PLUGINS:
     AUTH_CLASSES.append(
         "rest_framework.authentication.BasicAuthentication",
     )

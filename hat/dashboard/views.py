@@ -39,6 +39,6 @@ def iaso(request: HttpRequest) -> HttpResponse:
         "iaso/index.html",
         {
             "STATIC_URL": settings.STATIC_URL,
-            "PLUGIN_POLIO_ENABLED": settings.PLUGIN_POLIO_ENABLED,
+            "PLUGINS_ENABLED": settings.PLUGINS,
         },
     )

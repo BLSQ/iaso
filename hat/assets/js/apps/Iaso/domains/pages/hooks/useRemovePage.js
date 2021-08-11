@@ -4,8 +4,8 @@ import { sendRequest } from './networking';
 export const useRemovePage = () => {
     const queryClient = useQueryClient();
 
-    const { mutate, ...result } = useMutation(id =>
-        sendRequest('DELETE', `/api/pages/${id}`),
+    const { mutate, ...result } = useMutation(slug =>
+        sendRequest('DELETE', `/api/pages/${slug}`),
     );
 
     return {

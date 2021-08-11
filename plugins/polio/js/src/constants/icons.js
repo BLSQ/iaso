@@ -12,6 +12,7 @@ import GroupWork from '@material-ui/icons/GroupWork';
 import CategoryIcon from '@material-ui/icons/Category';
 import AssignmentRoundedIcon from '@material-ui/icons/AssignmentRounded';
 import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRounded';
+import BookIcon from '@material-ui/icons/Book';
 
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -33,4 +34,5 @@ export const icons = {
     devices: props => <ImportantDevicesRoundedIcon {...props} />,
     projects: props => <PhonelinkSetupIcon {...props} />,
     users: props => <SupervisorAccount {...props} />,
+    book: props => <BookIcon {...props} />,
 };

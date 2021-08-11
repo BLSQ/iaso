@@ -20,8 +20,8 @@ export const useGetPages = options => {
         page: options.page,
     };
 
-    const getURL = params => {
-        const filteredParams = Object.entries(params).filter(
+    const getURL = urlParams => {
+        const filteredParams = Object.entries(urlParams).filter(
             ([key, value]) => value !== undefined,
         );
 

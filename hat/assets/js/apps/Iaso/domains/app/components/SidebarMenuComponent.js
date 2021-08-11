@@ -26,7 +26,7 @@ import MenuItem from './MenuItemComponent';
 import LogoSvg from './LogoSvgComponent';
 import LanguageSwitch from './LanguageSwitchComponent';
 
-import menuItems from '../../../constants/menu';
+import getMenuItems from '../../../constants/menu';
 
 import MESSAGES from './messages';
 
@@ -92,6 +92,7 @@ const SidebarMenu = ({
         toggleSidebar();
     };
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
+    const menuItems = getMenuItems(currentUser);
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>

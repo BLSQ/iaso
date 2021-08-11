@@ -45,13 +45,14 @@ import InstancePopupComponent from '../../../instances/components/InstancePopupC
 import EditableGroup from './EditableGoup';
 import fitToBounds from './fitToBounds';
 
+import {
+    hasFeatureFlag,
+    EDIT_GEO_JSON_RIGHT,
+    EDIT_CATCHMENT_RIGHT,
+} from '../../../../utils/featureFlags';
+
 export const zoom = 5;
 export const padding = [75, 75];
-const EDIT_GEO_JSON_RIGHT = 'ALLOW_SHAPE_EDITION';
-const EDIT_CATCHMENT_RIGHT = 'ALLOW_CATCHMENT_EDITION';
-
-const hasFeatureFlag = (currentUser, featureKey) =>
-    Boolean(currentUser?.account?.feature_flags?.includes(featureKey));
 
 const buttonsInitialState = {
     location: {

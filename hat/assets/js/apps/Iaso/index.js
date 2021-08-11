@@ -20,6 +20,7 @@ export default function iasoApp(element) {
             component={props => (
                 <ProtectedRoute
                     {...props}
+                    featureFlag={routeConfig.featureFlag}
                     permission={routeConfig.permission}
                     component={routeConfig.component(props)}
                     isRootUrl={routeConfig.isRootUrl}

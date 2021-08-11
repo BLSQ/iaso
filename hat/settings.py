@@ -255,7 +255,7 @@ AUTH_CLASSES = [
 
 
 # Needed for PowerBI, used for the Polio project, which only support support BasicAuth.
-if PLUGIN_POLIO_ENABLED:
+if 'polio' in PLUGINS:
     AUTH_CLASSES.append(
         "rest_framework.authentication.BasicAuthentication",
     )

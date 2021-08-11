@@ -53,7 +53,8 @@ urlpatterns = [
 if settings.BEANSTALK_WORKER or settings.DEBUG:
     urlpatterns.append(url(r"^tasks/", include("beanstalk_worker.urls")))
 
-if settings.PLUGIN_POLIO_ENABLED:
+# FIXME TO REMOVE
+if 'polio' in settings.PLUGINS:
     urlpatterns.append(url(r"^dashboard/polio/list", include("plugins.polio.urls")))
 urlpatterns.append(url(r"^dashboard/", include("hat.dashboard.urls")))
 

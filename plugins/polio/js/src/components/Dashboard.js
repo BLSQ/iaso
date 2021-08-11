@@ -29,6 +29,7 @@ import {
 import merge from 'lodash.merge';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
+import Delete from '@material-ui/icons/Delete';
 
 import {
     DateInput,
@@ -482,7 +483,18 @@ const ScopeForm = () => {
                     {shapes &&
                         shapes
                             .filter(shape => group.org_units.includes(shape.id))
-                            .map(shape => <li key={shape.id}>{shape.name}</li>)}
+                            .map(shape => (
+                                <li key={shape.id}>
+                                    <Typography>
+                                        {shape.name}{' '}
+                                        <Delete
+                                            onClick={() =>
+                                                onSelectOrgUnit(shape)
+                                            }
+                                        />
+                                    </Typography>
+                                </li>
+                            ))}
                 </ul>
             </Grid>
             <Grid container>

@@ -7,7 +7,7 @@ from django.db import transaction
 
 from beanstalk_worker import task as task_decorator
 from hat.audit import models as audit_models
-from iaso.models.org_unit_search import build_org_units_queryset
+from iaso.api.org_unit_search import build_org_units_queryset
 from iaso.models import Task, OrgUnit, DataSource, OrgUnitType, Group
 
 
@@ -66,7 +66,7 @@ def org_units_bulk_update(
             base_queryset = queryset
             queryset = OrgUnit.objects.none()
             for search in searches:
-                search_queryset = build_org_units_queryset(base_queryset, search, profile, is_export=False, forms=[])
+                search_queryset = build_org_units_queryset(base_queryset, search, profile)
                 queryset = queryset.union(search_queryset)
 
     if not queryset:

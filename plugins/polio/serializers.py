@@ -171,6 +171,8 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
             update_regional_worksheet(regional_worksheet, region.name, region_districts)
             current_index += 1
 
+        spreadsheet.del_worksheet(regional_template_worksheet)
+
         return {"url": spreadsheet.url}
 
 

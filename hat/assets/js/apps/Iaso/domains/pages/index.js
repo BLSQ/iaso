@@ -8,29 +8,19 @@ import {
     ColumnText,
 } from 'bluesquare-components';
 import { makeStyles } from '@material-ui/core/styles';
-import {
-    Button,
-    Box,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
-} from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import moment from 'moment';
 import AddIcon from '@material-ui/icons/Add';
-import Grid from '@material-ui/core/Grid';
-import merge from 'lodash.merge';
-import get from 'lodash.get';
-import { Field, FormikProvider, useFormik } from 'formik';
-import * as yup from 'yup';
-import Typography from '@material-ui/core/Typography';
-import { Link } from 'react-router';
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from '../forms/messages';
-import { useGetPages } from './useGetPages';
-import { useSavePage } from './useSavePage';
-import { useRemovePage } from './useRemovePage';
+import MESSAGES from './messages';
+import { useGetPages } from './hooks/useGetPages';
+import { useRemovePage } from './hooks/useRemovePage';
+
+import DeleteConfirmDialog from './components/DeleteConfirmDialog';
+import CreateEditDialog from './components/CreateEditDialog';
+import PageActions from './components/PageActions';
+import PageAction from './components/PageAction';
+import { PAGES_TYPES } from './constants';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -39,166 +29,12 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const schema = yup.object().shape({
-    name: yup.string().trim().required(),
-    slug: yup.string().trim().required(),
-    content: yup.string().url().trim().required(),
-});
-
-const Form = ({ children }) => {
-    const classes = useStyles();
-
-    return (
-        <Box
-            component="form"
-            className={classes.form}
-            noValidate
-            autoComplete="off"
-        >
-            {children}
-        </Box>
-    );
-};
-
-export const TextInput = ({ field = {}, form = {}, ...props } = {}) => {
-    return (
-        <TextField
-            InputLabelProps={{
-                shrink: true,
-            }}
-            fullWidth
-            variant="outlined"
-            size="medium"
-            {...props}
-            {...field}
-            error={form.errors && Boolean(get(form.errors, field.name))}
-            helperText={form.errors && get(form.errors, field.name)}
-        />
-    );
-};
-
-const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
-    const classes = useStyles();
-
-    return (
-        <Dialog fullWidth open={isOpen} onBackdropClick={onClose}>
-            <DialogTitle className={classes.title}>
-                Are you sure you want to delete this page?
-            </DialogTitle>
-            <DialogContent className={classes.content}>
-                This operation cannot be undone
-            </DialogContent>
-            <DialogActions className={classes.action}>
-                <Button onClick={onClose} color="primary">
-                    No
-                </Button>
-                <Button onClick={onConfirm} color="primary" autoFocus>
-                    Yes
-                </Button>
-            </DialogActions>
-        </Dialog>
-    );
-};
-
-const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
-    const { mutate: savePage } = useSavePage();
-
-    const classes = useStyles();
-
-    const handleSubmit = (values, helpers) =>
-        savePage(values, {
-            onSuccess: () => {
-                helpers.resetForm();
-                onClose();
-            },
-        });
-
-    const defaultValues = {};
-
-    const initialValues = merge(selectedPage, defaultValues);
-
-    const formik = useFormik({
-        initialValues,
-        enableReinitialize: true,
-        validateOnBlur: true,
-        validationSchema: schema,
-        onSubmit: handleSubmit,
-    });
-
-    return (
-        <Dialog
-            fullWidth
-            maxWidth="lg"
-            open={isOpen}
-            onBackdropClick={onClose}
-            scroll="body"
-        >
-            <DialogTitle className={classes.title}>Create Page</DialogTitle>
-            <DialogContent className={classes.content}>
-                <FormikProvider value={formik}>
-                    <Form>
-                        <Grid container spacing={2}>
-                            <Grid xs={12} item>
-                                <Typography>Enter page information</Typography>
-                            </Grid>
-                            <Grid container direction="row" item spacing={2}>
-                                <Grid xs={12} md={12} item>
-                                    <Field
-                                        label="Name"
-                                        name="name"
-                                        component={TextInput}
-                                        className={classes.input}
-                                    />
-                                </Grid>
-                                <Grid xs={12} md={12} item>
-                                    <Field
-                                        label="Slug"
-                                        name="slug"
-                                        component={TextInput}
-                                        className={classes.input}
-                                    />
-                                </Grid>
-                                <Grid xs={12} md={12} item>
-                                    <Field
-                                        label="Url"
-                                        name="content"
-                                        component={TextInput}
-                                        className={classes.input}
-                                    />
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    </Form>
-                </FormikProvider>
-            </DialogContent>
-            <DialogActions className={classes.action}>
-                <Button
-                    onClick={onClose}
-                    color="primary"
-                    disabled={formik.isSubmitting}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    onClick={formik.handleSubmit}
-                    color="primary"
-                    variant="contained"
-                    autoFocus
-                    disabled={!formik.isValid || formik.isSubmitting}
-                >
-                    Confirm
-                </Button>
-            </DialogActions>
-        </Dialog>
-    );
-};
-
 const Pages = () => {
     const intl = useSafeIntl();
     const classes = useStyles();
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
-    const [selectedPageId, setSelectedPageId] = useState();
+    const [selectedPageSlug, setSelectedPageSlug] = useState();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
@@ -208,20 +44,20 @@ const Pages = () => {
     }, [setIsCreateEditDialogOpen]);
 
     const handleClickCreateButton = () => {
-        setSelectedPageId(undefined);
+        setSelectedPageSlug(undefined);
         openCreateEditDialog();
     };
 
     const handleClickEditRow = useCallback(
-        id => {
-            setSelectedPageId(id);
+        slug => {
+            setSelectedPageSlug(slug);
             openCreateEditDialog();
         },
-        [setSelectedPageId, openCreateEditDialog],
+        [setSelectedPageSlug, openCreateEditDialog],
     );
 
     const closeCreateEditDialog = () => {
-        setSelectedPageId(undefined);
+        setSelectedPageSlug(undefined);
         setIsCreateEditDialogOpen(false);
     };
 
@@ -236,11 +72,11 @@ const Pages = () => {
     }, [setIsConfirmDeleteDialogOpen]);
 
     const handleClickDeleteRow = useCallback(
-        id => {
-            setSelectedPageId(id);
+        slug => {
+            setSelectedPageSlug(slug);
             openDeleteConfirmDialog();
         },
-        [setSelectedPageId, openDeleteConfirmDialog],
+        [setSelectedPageSlug, openDeleteConfirmDialog],
     );
 
     const { query } = useGetPages({
@@ -251,11 +87,11 @@ const Pages = () => {
     const { data: pages = [], status } = query;
 
     const selectedPage = pages?.results?.find(
-        result => result.id === selectedPageId,
+        result => result.slug === selectedPageSlug,
     );
 
     const handleDeleteConfirmDialogConfirm = () => {
-        removePage(selectedPage.id, {
+        removePage(selectedPage?.slug, {
             onSuccess: () => {
                 closeDeleteConfirmDialog();
             },
@@ -265,34 +101,43 @@ const Pages = () => {
     const columns = useMemo(
         () => [
             {
-                Header: 'Name',
+                Header: intl.formatMessage(MESSAGES.name),
                 accessor: 'name',
+                sortable: false,
+            },
+            {
+                Header: intl.formatMessage(MESSAGES.type),
+                accessor: 'type',
+                sortable: false,
                 Cell: settings => {
-                    return <span>{settings.original.name}</span>;
+                    const pageType = PAGES_TYPES.find(
+                        pt => pt.value === settings.original.type,
+                    );
+                    return <span>{intl.formatMessage(pageType.label)}</span>;
                 },
             },
             {
-                Header: 'Address',
+                Header: intl.formatMessage(MESSAGES.address),
                 accessor: 'slug',
-                Cell: settings => {
-                    return <span>{settings.original.slug}</span>;
-                },
+                sortable: false,
             },
             {
-                Header: 'Last update',
+                Header: intl.formatMessage(MESSAGES.updatedAt),
                 accessor: 'updated_at',
+                sortable: false,
                 Cell: settings => {
                     return (
                         <ColumnText
                             text={moment(settings.original.updated_at).format(
-                                'DD/MM/YYYY HH:mm',
+                                'LTS',
                             )}
                         />
                     );
                 },
             },
             {
-                Header: 'Actions',
+                Header: intl.formatMessage(MESSAGES.actions),
+                sortable: false,
                 Cell: settings => {
                     return (
                         <>
@@ -303,6 +148,20 @@ const Pages = () => {
                                     onClick={() => {}}
                                 />
                             </a>
+                            <IconButtonComponent
+                                icon="edit"
+                                tooltipMessage={MESSAGES.edit}
+                                onClick={() =>
+                                    handleClickEditRow(settings.original.slug)
+                                }
+                            />
+                            <IconButtonComponent
+                                icon="delete"
+                                tooltipMessage={MESSAGES.delete}
+                                onClick={() =>
+                                    handleClickDeleteRow(settings.original.slug)
+                                }
+                            />
                         </>
                     );
                 },
@@ -346,6 +205,14 @@ const Pages = () => {
             <TopBar title={intl.formatMessage(MESSAGES.pages)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {status === 'loading' && <LoadingSpinner />}
+                <PageActions>
+                    <PageAction
+                        icon={AddIcon}
+                        onClick={handleClickCreateButton}
+                    >
+                        {intl.formatMessage(MESSAGES.create)}
+                    </PageAction>
+                </PageActions>
                 {status === 'success' && (
                     <Table
                         params={tableParams}

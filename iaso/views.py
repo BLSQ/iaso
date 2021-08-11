@@ -1,9 +1,9 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import resolve_url
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
-from iaso.models import Page, Account
+from iaso.models import Page, Account, TEXT, IFRAME
 
 from hat.__version__ import DEPLOYED_ON, DEPLOYED_BY, VERSION
 
@@ -15,6 +15,11 @@ def page(request, page_slug):
     print()
     if page.needs_authentication and ((not request.user.is_authenticated) or (request.user not in page.users.all())):
         return redirect_to_login(path, resolved_login_url, "next")
+    if page.type == IFRAME:
+        return render(request, "iaso/pages/iframe.html", {"src": page.content, "title": page.name})
+    if page.type == TEXT:
+        return render(request, "iaso/pages/text.html", {"text": page.content, "title": page.name})
+
     return HttpResponse(page.content)
 
 

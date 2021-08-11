@@ -1,14 +1,11 @@
 import re
 
-from django.db.models import Q, Count, Sum, Case, When, IntegerField
+from django.db.models import Q, Count, Sum, Case, When, IntegerField, Value
 
 from iaso.models import OrgUnit, Instance, DataSource
 
 
-# FIXME Not sure if it's the best place but needed to move it out of circular import
-
-
-def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TODO: move in viewset.get_queryset()
+def build_org_units_queryset(queryset, params, profile):
     validation_status = params.get("validation_status", OrgUnit.VALIDATION_VALID)
     has_instances = params.get("hasInstances", None)
     date_from = params.get("dateFrom", None)
@@ -161,18 +158,30 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
     if ignore_empty_names:
         queryset = queryset.filter(~Q(name=""))
 
-    queryset = queryset.annotate(
-        instances_count=Count(
-            "instance",
-            filter=(~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True)),
-        )
-    )
+    queryset = queryset.select_related("version__data_source")
+    queryset = queryset.select_related("org_unit_type")
 
-    if is_export:
+    queryset = queryset.prefetch_related("groups")
+    queryset = queryset.prefetch_related("parent")
+    queryset = queryset.prefetch_related("parent__parent")
+    queryset = queryset.prefetch_related("parent__parent__parent")
+    queryset = queryset.prefetch_related("parent__parent__parent__parent")
+
+    return queryset.distinct()
+
+
+def annotate_query(queryset, count_instances, count_per_form, forms):
+    if count_instances:
+        queryset = queryset.annotate(
+            instances_count=Count(
+                "instance",
+                filter=(~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True)),
+            )
+        )
+
+    if count_per_form:
         annotations = {
-            "form_"
-            + str(frm.id)
-            + "_instances": Sum(
+            f"form_{frm.id}_instances": Sum(
                 Case(
                     When(
                         Q(instance__form_id=frm.id)
@@ -189,6 +198,4 @@ def build_org_units_queryset(queryset, params, profile, is_export, forms):  # TO
         }
         queryset = queryset.annotate(**annotations)
 
-    queryset = queryset.select_related("version__data_source")
-    queryset = queryset.select_related("org_unit_type")
-    return queryset.distinct()
+    return queryset

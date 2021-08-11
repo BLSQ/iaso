@@ -54,8 +54,9 @@ case "$1" in
     ./manage.py runserver 0.0.0.0:8081
   ;;
   "start_webpack" )
-    # We only run this server if not testing prod config
+    # if TEST_PROD, make a static js bundle otherwhise launch js dev server
     if [ -n "$TEST_PROD" ]; then
+      npm run webpack-prod
       exit 0
     fi
 

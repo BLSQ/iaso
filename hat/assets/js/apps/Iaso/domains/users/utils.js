@@ -1,4 +1,5 @@
 import { routeConfigs } from '../../constants/routes';
+
 /**
  * check if user has the permission
  *

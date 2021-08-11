@@ -369,8 +369,8 @@ const RiskAssessmentForm = () => {
                         className={classes.input}
                     />
                     <Field
-                        label="Vials Requested (both rounds)"
-                        name={'vials_requested'}
+                        label="Doses Requested (both rounds)"
+                        name={'doses_requested'}
                         component={TextInput}
                         className={classes.input}
                     />

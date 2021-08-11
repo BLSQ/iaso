@@ -18,6 +18,7 @@ import { switchLocale } from '../../app/actions';
 import { setCookie, getCookie } from '../../../utils/cookies';
 
 import { setLocale } from '../../../utils/dates';
+import { hasFeatureFlag } from '../../../utils/featureFlags';
 
 class ProtectedRoute extends Component {
     componentDidMount() {
@@ -49,14 +50,23 @@ class ProtectedRoute extends Component {
     }
 
     render() {
-        const { component, currentUser, permission, activeLocale } = this.props;
+        const {
+            component,
+            currentUser,
+            permission,
+            activeLocale,
+            featureFlag,
+        } = this.props;
         const clonedProps = {
             ...this.props,
         };
         delete clonedProps.children;
-        const isAuthorized = permission
+        let isAuthorized = permission
             ? userHasPermission(permission, currentUser)
             : true;
+        if (featureFlag && !hasFeatureFlag(currentUser, featureFlag)) {
+            isAuthorized = false;
+        }
         if (!currentUser) {
             return null;
         }
@@ -78,6 +88,7 @@ ProtectedRoute.defaultProps = {
     currentUser: null,
     permission: null,
     isRootUrl: false,
+    featureFlag: null,
 };
 
 ProtectedRoute.propTypes = {
@@ -89,6 +100,7 @@ ProtectedRoute.propTypes = {
     isRootUrl: PropTypes.bool,
     activeLocale: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
+    featureFlag: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
 };
 
 const MapStateToProps = state => ({

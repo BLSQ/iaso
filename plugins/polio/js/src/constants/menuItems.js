@@ -134,16 +134,9 @@ export const menuItems = [
     {
         label: MESSAGES.pages,
         key: 'pages',
-        icon: 'list',
-        subMenu: [
-            {
-                label: MESSAGES.list,
-                path: '/dashboard/pages/list',
-                key: 'list',
-                // permission: paths.formsPath.permission,
-                icon: 'list',
-            },
-        ],
+        path: '/dashboard/pages',
+        icon: 'book',
+        // permission: paths.pagesPath.permission,
     },
 ];
 

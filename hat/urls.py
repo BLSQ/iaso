@@ -36,7 +36,7 @@ urlpatterns = [
         name="forgot_password_confirmation",
     ),
     url(
-        r"^reset-password-confirmation/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/",
+        r"^reset-password-confirmation/(?P<uidb64>[0-9A-Za-z_-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,50})/",
         auth.views.PasswordResetConfirmView.as_view(
             template_name="iaso/reset_password_confirmation.html", success_url="/reset-password-complete/"
         ),

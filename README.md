@@ -389,6 +389,27 @@ For python, we use django builtin test framework. Tests can be executed with
 docker-compose exec iaso ./manage.py test
 ```
 
+Translations
+------------
+
+The few translation for the Django side (login and reset password email etc..)
+are separated from the test. We only translate the tempalte for now
+not the python code (string on model or admin).
+
+When modifying or adding new strings to translate, use the following command to
+regenerate the translations:
+
+```manage.py makemessages --locale=fr --extension txt --extension html```
+
+This will update `hat/locale/fr/LC_MESSAGES/django.po` with the new strings to
+translate.
+
+After updating it with the translation you need to following command to have
+them reflected in the interface:
+
+```manage.py compilemessages```
+
+
 Code reloading
 --------------
 

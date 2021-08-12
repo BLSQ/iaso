@@ -51,6 +51,7 @@ case "$1" in
     export DEV_SERVER=true
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate --noinput
+    ./manage.py compilemessages
     ./manage.py runserver 0.0.0.0:8081
   ;;
   "start_webpack" )

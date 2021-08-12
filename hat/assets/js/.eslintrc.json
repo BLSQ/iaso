@@ -10,6 +10,7 @@
   ],
   "extends": [
     "airbnb",
+    "plugin:react-hooks/recommended",
     "prettier"
   ],
   "parserOptions": {

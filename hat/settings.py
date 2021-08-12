@@ -19,7 +19,6 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
-PLUGIN_POLIO_ENABLED = os.environ.get("PLUGIN_POLIO_ENABLED", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -136,10 +135,6 @@ INSTALLED_APPS = [
 # needed because we customize the comment model
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
-
-if PLUGIN_POLIO_ENABLED:
-    if "polio" not in PLUGINS:
-        PLUGINS.append("polio")
 
 print("Enabled plugins:", PLUGINS)
 for plugin_name in PLUGINS:

@@ -27,7 +27,6 @@ global.navigator = {
     language: 'en',
 };
 global.STATIC_URL = '';
-global.PLUGIN_POLIO_ENABLED = false;
 global.L = require('leaflet');
 
 copyProps(window, global);

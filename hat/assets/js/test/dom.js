@@ -26,7 +26,6 @@ global.navigator = {
     appName: 'Chrome',
     language: 'en',
 };
-global.STATIC_URL = '';
 global.L = require('leaflet');
 
 copyProps(window, global);

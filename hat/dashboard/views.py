@@ -13,7 +13,6 @@ def iaso(request: HttpRequest) -> HttpResponse:
         request,
         "iaso/index.html",
         {
-            "STATIC_URL": settings.STATIC_URL,
             "PLUGINS_ENABLED": settings.PLUGINS,
         },
     )

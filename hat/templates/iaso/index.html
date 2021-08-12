@@ -10,7 +10,6 @@
     {% block content %}
       <div id="app"></div>
       <script>
-        const STATIC_URL = '{{ STATIC_URL }}';
         const PLUGINS_ENABLED = {{ PLUGINS_ENABLED|safe }};
         window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED);
       </script>

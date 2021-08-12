@@ -4,6 +4,6 @@ describe('Main app component', () => {
     it('mount properly', () => {
         const app = document.createElement('DIV');
         app.id = 'app';
-        expect(ConnectedApp(app, '/dashboard')).to.be.undefined;
+        expect(ConnectedApp(app, [])).to.be.undefined;
     });
 });

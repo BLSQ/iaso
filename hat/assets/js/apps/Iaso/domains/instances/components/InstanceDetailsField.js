@@ -44,7 +44,6 @@ const InstanceDetailsField = ({ classes, label, value, Icon, valueTitle }) => (
         >
             <Typography
                 variant="body1"
-                noWrap
                 color="inherit"
                 title={valueTitle !== '' ? valueTitle : value}
             >

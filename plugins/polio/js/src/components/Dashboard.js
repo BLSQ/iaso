@@ -512,21 +512,21 @@ const ScopeForm = () => {
             </Grid>
             <Grid xs={3} item >
                 <TableContainer className={classes.districtList}>
-                    <MuiTable stickyHeader>
+                    <MuiTable stickyHeader size='small'>
                         <TableHead>
                             <TableRow>
-                                <TableCell onClick={handleSort}>
+                                <TableCell onClick={handleSort} variant="head">
                                     <Typography>Name</Typography>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell variant="head">
                                     Remove
                                 </TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {selectedShapes?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                            .map(shape => {
-                                        return (<TableRow key={shape.id}>
+                                            .map((shape,i) => {
+                                        return (<TableRow key={shape.id} className={i%2>0?classes.districtListRow:''}>
                                             <TableCell>{shape.name}</TableCell>
                                             <TableCell> 
                                                 <Clear

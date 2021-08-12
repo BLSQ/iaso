@@ -89,10 +89,25 @@ export const useStyles = makeStyles(theme => ({
         // below rule to remove useless scrollbar
         '& .MuiDialogContent-root': {
             overflowY:'visible'
-        }
+        },
+
     },
     districtList:{
         overflow:'auto',
-        maxHeight:'80vh',
+        height:'50vh',
+        '& thead tr th':{
+            boxShadow:`2px 2px ${theme.palette.ligthGray.main}`
+        },
+        '& .MuiSvgIcon-root':{
+            color:theme.palette.gray.main
+        }, 
+        '& tbody tr:hover':{
+            backgroundColor:theme.palette.action.hover
+        }
+    },
+    districtListRow:{
+        '& td': {
+            backgroundColor:theme.palette.ligthGray.main
+        },
     }
 }));

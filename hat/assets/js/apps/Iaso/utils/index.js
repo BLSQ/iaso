@@ -1,4 +1,5 @@
 import pluginsConfigs from '../../../../../../plugins';
+import { createContext } from 'react';
 
 export const capitalize = (text, keepEndCase = false) =>
     text
@@ -85,10 +86,7 @@ export const getIntegerArray = size =>
         .map((y, i) => size - i)
         .reverse();
 
-export const getPlugins = () => {
-    const pluginsKeys = process.env.PLUGINS_KEYS
-        ? process.env.PLUGINS_KEYS
-        : [];
+export const getPlugins = pluginsKeys => {
     const plugins = [];
     pluginsKeys.forEach(plugin => {
         const pluginConfig = pluginsConfigs[plugin];
@@ -98,3 +96,5 @@ export const getPlugins = () => {
     });
     return plugins;
 };
+
+export const PluginsContext = createContext({ plugins: [] });

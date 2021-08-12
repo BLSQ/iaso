@@ -1,5 +1,6 @@
 import { Button, CircularProgress, Grid, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
+import React, { useMemo, useState } from 'react';
 import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import {
@@ -7,7 +8,6 @@ import {
     useGetPreparednessData,
     useSurgeData,
 } from '../hooks/useGetPreparednessData';
-import { useMemo, useState } from 'react';
 
 export const PreparednessForm = () => {
     const classes = useStyles();
@@ -113,7 +113,7 @@ export const PreparednessForm = () => {
                                     : 'Enter Google Sheet url'
                             }
                             label="Preparedness Google Sheet URL"
-                            name={'preperadness_spreadsheet_url'}
+                            name="preperadness_spreadsheet_url"
                             component={TextInput}
                             disabled={isLoading || isGeneratingSpreadsheet}
                             className={classes.input}
@@ -124,8 +124,9 @@ export const PreparednessForm = () => {
                             xs={12}
                             md={4}
                             item
-                            direction={'column'}
-                            alignContent={'space-between'}
+                            container
+                            direction="column"
+                            alignContent="space-between"
                         >
                             <Button
                                 md={6}
@@ -151,8 +152,9 @@ export const PreparednessForm = () => {
                             xs={12}
                             md={4}
                             item
-                            direction={'column'}
-                            alignContent={'space-between'}
+                            direction="column"
+                            container
+                            alignContent="space-between"
                         >
                             <Button
                                 fullWidth
@@ -165,7 +167,7 @@ export const PreparednessForm = () => {
                             </Button>
                         </Grid>
                     )}
-                    {/*the padding bottom is a horrible quick fix to remove*/}
+                    {/* the padding bottom is a horrible quick fix to remove */}
                     <Grid xd={12} item style={{ paddingBottom: 20 }}>
                         {isLoading || isGeneratingSpreadsheet ? (
                             <CircularProgress />
@@ -210,14 +212,14 @@ export const PreparednessForm = () => {
                     <Grid xs={12} md={8} item>
                         <Field
                             label="Recruitment Surge Google Sheet URL"
-                            name={'surge_spreadsheet_url'}
+                            name="surge_spreadsheet_url"
                             component={TextInput}
                             disabled={isLoading}
                             className={classes.input}
                         />
                         <Field
                             label="Country Name in sheet"
-                            name={'country_name_in_surge_spreadsheet'}
+                            name="country_name_in_surge_spreadsheet"
                             component={TextInput}
                             disabled={isLoading}
                             className={classes.input}

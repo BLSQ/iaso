@@ -1,10 +1,10 @@
 from uuid import uuid4
 
+from django.core.mail import send_mail
 from django.db import models
 from django.utils.translation import gettext as _
 
 from iaso.models import Group, OrgUnit
-from django.core.mail import send_mail
 
 VIRUSES = [
     ("PV1", _("PV1")),

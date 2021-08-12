@@ -19,7 +19,7 @@ import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
-import { capitalize, getPlugins } from '../utils/index';
+import { capitalize } from '../utils/index';
 import { orgUnitFiltersWithPrefix, linksFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 
@@ -82,17 +82,6 @@ export const pagesPath = {
     featureFlag: SHOW_PAGES,
     params: [],
     component: props => <Pages {...props} />,
-};
-
-export const polioPath = {
-    baseUrl: baseUrls.polio,
-    permission: 'iaso_forms',
-    params: [],
-    component: () => {
-        window.location = '/dashboard/polio/list';
-
-        return <></>;
-    },
 };
 
 export const archivedPath = {
@@ -527,12 +516,8 @@ export const routeConfigs = [
     devicesPath,
     groupsPath,
     orgUnitTypesPath,
-    polioPath,
     pagesPath,
     page401,
     page404,
     page500,
-    ...getPlugins()
-        .map(plugin => plugin.routes)
-        .flat(),
 ];

@@ -7,9 +7,6 @@ var BundleTracker = require('webpack-bundle-tracker');
 var LOCALE = 'fr';
 var WEBPACK_URL = 'http://localhost:3000';
 
-const pluginsString = process.env.PLUGINS || '';
-const plugins = pluginsString.split(',');
-
 module.exports = {
     context: __dirname,
     mode: 'development',
@@ -88,9 +85,6 @@ module.exports = {
             filename: './assets/webpack/webpack-stats.json',
         }),
         new webpack.DefinePlugin({
-            'process.env': {
-                PLUGINS_KEYS: JSON.stringify(plugins),
-            },
             __LOCALE: JSON.stringify(LOCALE),
         }),
         // XLSX

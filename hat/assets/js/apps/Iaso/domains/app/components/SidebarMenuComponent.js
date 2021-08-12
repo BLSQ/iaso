@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 
@@ -32,6 +32,7 @@ import MESSAGES from './messages';
 
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 import { getDefaultSourceVersion } from '../../dataSources/utils';
+import { PluginsContext } from '../../../utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -91,8 +92,9 @@ const SidebarMenu = ({
     const onClick = () => {
         toggleSidebar();
     };
+    const { plugins } = useContext(PluginsContext);
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
-    const menuItems = getMenuItems(currentUser);
+    const menuItems = getMenuItems(currentUser, plugins);
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>

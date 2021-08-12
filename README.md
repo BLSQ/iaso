@@ -261,7 +261,7 @@ APP_ENV=local%
 ```
 
 in your root .env set
-```PLUGIN_POLIO_ENABLED=true```
+```PLUGINS=polio```
 
  
 Run commands inside the docker

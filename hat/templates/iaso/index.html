@@ -2,10 +2,6 @@
 {% load i18n %}
 {% load render_bundle from webpack_loader %}
 {% block extrajs %}
-  <script type="text/javascript">
-      const STATIC_URL = '{{ STATIC_URL }}';
-      const PLUGINS_ENABLED = {{ PLUGINS_ENABLED|safe }};
-  </script>
   {% render_bundle 'common' %}
   {% render_bundle 'iaso' %}
 {% endblock %}
@@ -14,7 +10,9 @@
     {% block content %}
       <div id="app"></div>
       <script>
-        window.iasoApp(document.getElementById('app'), '/dashboard');
+        const STATIC_URL = '{{ STATIC_URL }}';
+        const PLUGINS_ENABLED = {{ PLUGINS_ENABLED|safe }};
+        window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED);
       </script>
     {% endblock %}
   </section>

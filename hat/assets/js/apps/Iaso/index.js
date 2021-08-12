@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createContext } from 'react';
 import ReactDOM from 'react-dom';
 import { Route } from 'react-router';
 import { MuiThemeProvider } from '@material-ui/core/styles';
@@ -10,11 +10,17 @@ import { routeConfigs, getPath } from './constants/routes';
 import ProtectedRoute from './domains/users/components/ProtectedRoute';
 import { store, history } from './redux/store';
 import { addRoutes } from './routing/redirections';
+import { getPlugins, PluginsContext } from './utils';
 
 const queryClient = new QueryClient();
 
-export default function iasoApp(element) {
-    const baseRoutes = routeConfigs.map(routeConfig => (
+export default function iasoApp(element, enabledPluginsName) {
+    const plugins = getPlugins(enabledPluginsName);
+    const allRoutesConfigs = [
+        ...routeConfigs,
+        ...plugins.map(plugin => plugin.routes).flat(),
+    ];
+    const baseRoutes = allRoutesConfigs.map(routeConfig => (
         <Route
             path={getPath(routeConfig)}
             component={props => (
@@ -32,10 +38,12 @@ export default function iasoApp(element) {
 
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
-            <MuiThemeProvider theme={theme}>
-                <CssBaseline />
-                <App store={store} routes={routes} history={history} />
-            </MuiThemeProvider>
+            <PluginsContext.Provider value={{ plugins }}>
+                <MuiThemeProvider theme={theme}>
+                    <CssBaseline />
+                    <App store={store} routes={routes} history={history} />
+                </MuiThemeProvider>
+            </PluginsContext.Provider>
         </QueryClientProvider>,
         element,
     );

@@ -18,7 +18,6 @@ import BookIcon from '@material-ui/icons/Book';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
-import { getPlugins } from '../utils/index';
 import { hasFeatureFlag, SHOW_PAGES } from '../utils/featureFlags';
 
 import MESSAGES from './messages';
@@ -149,11 +148,8 @@ const menuItems = [
     },
 ];
 
-const pluginsMenu = getPlugins()
-    .map(plugin => plugin.menu)
-    .flat();
-
-const getMenuItems = currentUser => {
+const getMenuItems = (currentUser, enabledPlugins) => {
+    const pluginsMenu = enabledPlugins.map(plugin => plugin.menu).flat();
     const basicItems = [...menuItems];
     if (hasFeatureFlag(currentUser, SHOW_PAGES)) {
         basicItems.push({

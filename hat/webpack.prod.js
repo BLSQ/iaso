@@ -89,7 +89,7 @@ module.exports = {
                             plugins: [
                                 ['@babel/transform-runtime'],
                                 [
-                                    'react-intl',
+                                    'formatjs',
                                     {
                                         messagesDir: path.join(
                                             __dirname,

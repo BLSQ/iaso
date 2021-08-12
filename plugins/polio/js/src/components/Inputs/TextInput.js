@@ -1,6 +1,6 @@
 import React from 'react';
 import { TextField } from '@material-ui/core';
-import get from 'lodash.get';
+import { get } from 'lodash';
 
 export const TextInput = ({ field = {}, form = {}, ...props } = {}) => {
     return (

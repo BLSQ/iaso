@@ -26,7 +26,7 @@ import {
     Tabs,
     Typography,
 } from '@material-ui/core';
-import merge from 'lodash.merge';
+import { merge } from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
 

@@ -1,13 +1,15 @@
-from plugins.polio.preparedness.quota_manager import QuotaManager
 from datetime import datetime
+
 from django.core.management.base import BaseCommand
+
 from plugins.polio.models import Campaign, Preparedness
+from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.parser import (
     get_national_level_preparedness,
     get_regional_level_preparedness,
     open_sheet_by_url,
 )
-from plugins.polio.preparedness.calculator import get_preparedness_score
+from plugins.polio.preparedness.quota_manager import QuotaManager
 
 
 class Command(BaseCommand):

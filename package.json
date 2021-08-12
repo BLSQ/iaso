@@ -96,7 +96,6 @@
         "@babel/register": "^7.12.1",
         "@formatjs/cli": "^4.2.30",
         "@wojtekmaj/enzyme-adapter-react-17": "^0.6.2",
-        "babel-eslint": "^10.0.2",
         "babel-loader": "^8.0.6",
         "babel-plugin-require-context-hook": "^1.0.0",
         "babel-polyfill": "^6.26.0",

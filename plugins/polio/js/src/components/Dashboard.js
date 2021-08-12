@@ -550,24 +550,6 @@ const ScopeForm = () => {
                     onRowsPerPageChange={handleChangeRowsPerPage}
                     onChangeRowsPerPage={handleChangeRowsPerPage}>
                 </TablePagination>
-
-                {/* <ul>
-                    {shapes &&
-                        shapes
-                            .filter(shape => group.org_units.includes(shape.id))
-                            .map(shape => (
-                                <li key={shape.id}>
-                                    <Typography>
-                                        {shape.name}{' '}
-                                        <Delete
-                                            onClick={() =>
-                                                onSelectOrgUnit(shape)
-                                            }
-                                        />
-                                    </Typography>
-                                </li>
-                            ))}
-                </ul> */}
             </Grid>
             <Grid container>
                 <Grid xs={8} item>

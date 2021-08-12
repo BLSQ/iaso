@@ -9,12 +9,15 @@ export const MapComponent = ({ onSelectShape, shapes, getShapeStyle }) => {
     // When there is no data, bounds is undefined, so default center and zoom is used,
     // when the data get there, bounds change and the effect focus on it via the deps
     const bounds = useMemo(() => {
-        if (!shapes) {
+        if (!shapes || shapes.length === 0) {
             return null;
         }
         const bounds_list = shapes
             .map(orgunit => geoJSON(orgunit.geo_json).getBounds())
             .filter(b => b !== undefined);
+        if (bounds_list.length === 0) {
+            return null;
+        }
         const newBounds = bounds_list[0];
         newBounds.extend(bounds_list);
         return newBounds;

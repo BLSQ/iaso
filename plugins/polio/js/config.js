@@ -4,7 +4,7 @@ import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import { Dashboard } from './src/components/Dashboard';
 import MESSAGES from './src/constants/messages';
 
-const routes =  [
+const routes = [
     {
         baseUrl: 'polio/list',
         component: () => <Dashboard />,

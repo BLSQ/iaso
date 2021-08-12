@@ -516,7 +516,7 @@ const ScopeForm = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell onClick={handleSort} variant="head">
-                                    <Typography>Name</Typography>
+                                    <Typography>District</Typography>
                                 </TableCell>
                                 <TableCell variant="head">
                                     Remove

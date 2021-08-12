@@ -40,6 +40,7 @@ class Command(BaseCommand):
                 mapping_csv_reader = csv.reader(mappingfile, delimiter=";")
 
                 for row in list(mapping_csv_reader)[1:]:
+                    print(row)
                     row_name = row[0].strip()
                     xls_form_id = row[1].strip()
                     question_type = row[2].strip()
@@ -52,8 +53,9 @@ class Command(BaseCommand):
 
             option_mapping = defaultdict(dict)
             with open(options_file_name, encoding="utf-8-sig") as optionfile:
-                option_csv_reader = csv.reader(optionfile, delimiter=";")
+                option_csv_reader = csv.reader(optionfile, delimiter=",")
                 for row in list(option_csv_reader)[1:]:
+                    print(row)
                     t = row[0]
                     option = row[1]
                     form_value = row[2]
@@ -164,16 +166,20 @@ class Command(BaseCommand):
                                         value = row[col_indices[key]]
                                         value = value.strip()
                                         # print(m['xls_form_id'], value)
-                                        if value.upper() == "OUI":
-                                            value = 1
-                                            # print("oui")
-                                        if value.upper() == "NON":
-                                            value = 0
-                                            # print("non")
+
+                                        if callable(getattr(value, "upper", None)):
+                                            if value.upper() == "OUI":
+                                                value = 1
+                                                # print("oui")
+                                            elif value.upper() == "NON":
+                                                value = 0
+                                                # print("non")
 
                                         data[m["xls_form_id"]] = value
                                         # print("value for %s %s %s" % (key, m['xls_form_id'], value, ))
-                                    except:
+                                    except Exception as e:
+                                        # print("qmslkdjf EXCEPTION", e)
+                                        # print("value for %s %s %s" % (key, m['xls_form_id'], value,))
                                         pass
                                 uuid = str(uuid4())
                                 data["instanceID"] = "uuid:%s" % uuid

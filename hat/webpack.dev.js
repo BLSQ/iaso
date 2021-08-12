@@ -114,7 +114,7 @@ module.exports = {
                                 '@babel/preset-env',
                                 '@babel/preset-react',
                             ],
-                            plugins: [['@babel/transform-runtime']],
+                            plugins: ['@babel/transform-runtime', 'formatjs'],
                         },
                     },
                 ],

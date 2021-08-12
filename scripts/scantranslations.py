@@ -18,7 +18,7 @@ def generate_diff(keys, source_dict):
     return diff
 
 
-if len(sys.arv) < 4:
+if len(sys.argv) < 4:
     sys.exit("scan-translation <original_file> <new_file> <lang_key>")
 
 detected_translations = load_json(sys.argv[2])

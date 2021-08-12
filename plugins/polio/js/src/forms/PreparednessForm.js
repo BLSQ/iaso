@@ -124,6 +124,7 @@ export const PreparednessForm = () => {
                             xs={12}
                             md={4}
                             item
+                            container
                             direction="column"
                             alignContent="space-between"
                         >
@@ -152,6 +153,7 @@ export const PreparednessForm = () => {
                             md={4}
                             item
                             direction="column"
+                            container
                             alignContent="space-between"
                         >
                             <Button

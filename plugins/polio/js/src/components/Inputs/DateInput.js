@@ -8,7 +8,7 @@ export const DateInput = ({ field, form, ...props }) => {
     return (
         <TextInput
             className={classes.input}
-            id="date"
+            id={`date-${field.name}`}
             type="date"
             field={field}
             form={form}

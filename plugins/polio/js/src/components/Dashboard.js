@@ -978,16 +978,21 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
     useEffect(() => {
         setSelectedTab(0);
     }, [isOpen]);
-
     return (
         <Dialog
             fullWidth
             maxWidth="lg"
             open={isOpen}
-            onBackdropClick={onClose}
+            onClose={(event, reason) => {
+                if (reason === 'backdropClick') {
+                    onClose();
+                }
+            }}
             scroll="body"
         >
-            <DialogTitle className={classes.title}>Create campaign</DialogTitle>
+            <DialogTitle className={classes.title}>
+                {selectedCampaign?.id ? 'Edit' : 'Create'} campaign
+            </DialogTitle>
             <DialogContent className={classes.content}>
                 <Tabs
                     value={selectedTab}
@@ -1056,7 +1061,7 @@ const PageActions = ({ onSearch, children }) => {
             container
             className={classes.pageActions}
             spacing={4}
-            justify="flex-end"
+            justifyContent="flex-end"
             alignItems="center"
         >
             {onSearch && (
@@ -1064,7 +1069,13 @@ const PageActions = ({ onSearch, children }) => {
                     <SearchInput onChange={onSearch} />
                 </Grid>
             )}
-            <Grid item xs={4} container justify="flex-end" alignItems="center">
+            <Grid
+                item
+                xs={4}
+                container
+                justifyContent="flex-end"
+                alignItems="center"
+            >
                 {children}
             </Grid>
         </Grid>
@@ -1075,7 +1086,15 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
     const classes = useStyles();
 
     return (
-        <Dialog fullWidth open={isOpen} onBackdropClick={onClose}>
+        <Dialog
+            fullWidth
+            open={isOpen}
+            onClose={(event, reason) => {
+                if (reason === 'backdropClick') {
+                    onClose();
+                }
+            }}
+        >
             <DialogTitle className={classes.title}>
                 Are you sure you want to delete this campaign?
             </DialogTitle>

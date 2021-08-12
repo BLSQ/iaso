@@ -13,6 +13,7 @@ export const TextInput = ({ field = {}, form = {}, ...props } = {}) => {
             size="medium"
             {...props}
             {...field}
+            value={field.value || ''}
             error={form.errors && Boolean(get(form.errors, field.name))}
             helperText={form.errors && get(form.errors, field.name)}
         />

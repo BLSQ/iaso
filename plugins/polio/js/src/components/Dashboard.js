@@ -25,11 +25,18 @@ import {
     Tab,
     Tabs,
     Typography,
+    TableContainer,
+    Table as MuiTable,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableCell, 
+    TablePagination,
 } from '@material-ui/core';
 import merge from 'lodash.merge';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
-import Delete from '@material-ui/icons/Delete';
+import Clear from '@material-ui/icons/Clear';
 
 import {
     DateInput,
@@ -397,10 +404,14 @@ const separate = (array, referenceArray) => {
 };
 
 const ScopeForm = () => {
+    const classes = useStyles();
     const [selectRegion, setSelectRegion] = useState(false);
     const { values, setFieldValue } = useFormikContext();
     // Group contains selected orgunits
     const { group = { org_units: [] } } = values;
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [sortBy, setSortBy] = useState("asc");
 
     const { data: shapes, isFetching } = useGetRegionGeoJson(
         values.org_unit?.country_parent?.id ||
@@ -462,6 +473,27 @@ const ScopeForm = () => {
         [group, setFieldValue, selectRegion, shapes],
     );
 
+    const handleSort = useCallback(()=>{
+        if(sortBy==="asc"){
+            setSortBy("desc");
+        } else {
+            setSortBy("asc");
+        }
+    },[sortBy])
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+      };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const selectedShapes = sortBy==="asc"?
+        shapes?.filter(shape => group.org_units.includes(shape.id)):
+        shapes?.filter(shape => group.org_units.includes(shape.id)).reverse();
+    console.log(selectedShapes, Array.isArray(selectedShapes))
     return (
         <Grid container spacing={4}>
             <Grid xs={9} item>
@@ -478,8 +510,48 @@ const ScopeForm = () => {
                     getShapeStyle={getShapeStyle}
                 />
             </Grid>
-            <Grid xs={3} item>
-                <ul>
+            <Grid xs={3} item >
+                <TableContainer className={classes.districtList}>
+                    <MuiTable stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell onClick={handleSort}>
+                                    <Typography>Name</Typography>
+                                </TableCell>
+                                <TableCell>
+                                    Remove
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {selectedShapes?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                            .map(shape => {
+                                        return (<TableRow key={shape.id}>
+                                            <TableCell>{shape.name}</TableCell>
+                                            <TableCell> 
+                                                <Clear
+                                                onClick={() =>
+                                                    onSelectOrgUnit(shape)
+                                                }
+                                            /></TableCell>
+                                        </TableRow>)
+                                    })}
+                        </TableBody>
+                    </MuiTable>
+                </TableContainer>
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={selectedShapes?.length??0}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    labelRowsPerPage="Rows"
+                    onChangePage={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    onChangeRowsPerPage={handleChangeRowsPerPage}>
+                </TablePagination>
+
+                {/* <ul>
                     {shapes &&
                         shapes
                             .filter(shape => group.org_units.includes(shape.id))
@@ -495,7 +567,7 @@ const ScopeForm = () => {
                                     </Typography>
                                 </li>
                             ))}
-                </ul>
+                </ul> */}
             </Grid>
             <Grid container>
                 <Grid xs={8} item>
@@ -1013,6 +1085,7 @@ const CreateEditDialog = ({ isOpen, onClose, onConfirm, selectedCampaign }) => {
             open={isOpen}
             onBackdropClick={onClose}
             scroll="body"
+            className={classes.mainModal}
         >
             <DialogTitle className={classes.title}>Create campaign</DialogTitle>
             <DialogContent className={classes.content}>

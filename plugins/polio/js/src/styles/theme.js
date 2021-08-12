@@ -78,4 +78,21 @@ export const useStyles = makeStyles(theme => ({
     tabs: {
         borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
     },
+    mainModal:{
+        '& .MuiPaper-root.MuiDialog-paper.MuiDialog-paperScrollBody':{
+            maxWidth:'1380px'
+        },
+        // below rule to remove useless scrollbar
+        '& .MuiTablePagination-root': {
+            overflowX:'clip'
+        },
+        // below rule to remove useless scrollbar
+        '& .MuiDialogContent-root': {
+            overflowY:'visible'
+        }
+    },
+    districtList:{
+        overflow:'auto',
+        maxHeight:'80vh',
+    }
 }));

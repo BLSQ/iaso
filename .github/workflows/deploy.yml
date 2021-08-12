@@ -75,9 +75,6 @@ jobs:
           echo committing---------
           git add hat/assets/webpack/
 
-          PUBLIC_URL=https://iaso-campaigns.s3.amazonaws.com/iasostatics/ SKIP_PREFLIGHT_CHECK=true PLUGIN_POLIO_ENABLED='true' bash ./scripts/enable_plugins.sh
-          git add --force plugins/polio/static/
-          git add --force plugins/polio/templates/polio/index.html
           # add version in python
           scripts/set_version.sh
           git add hat/__version__.py

@@ -60,7 +60,6 @@ case "$1" in
       exit 0
     fi
 
-    ./scripts/enable_plugins.sh
     npm run webpack-server
   ;;
 

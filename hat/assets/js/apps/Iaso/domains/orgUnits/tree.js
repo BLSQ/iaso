@@ -7,7 +7,7 @@ import { TreeItem, TreeView } from '@material-ui/lab';
 import Grid from '@material-ui/core/Grid';
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import { geoJSON } from 'leaflet';
-import { sendRequest } from '../pages/networking';
+import { sendRequest } from '../pages/hooks/networking';
 
 const defaultConfig = {
     staleTime: 1000 * 60 * 1,

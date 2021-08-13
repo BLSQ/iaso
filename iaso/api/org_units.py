@@ -11,7 +11,6 @@ from django.http import StreamingHttpResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from iaso.models.org_unit_search import build_org_units_queryset
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.request import Request

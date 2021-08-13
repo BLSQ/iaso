@@ -141,7 +141,11 @@ const OrgUnitsMultiActionsDialog = ({
                 classes={{
                     paper: classes.paper,
                 }}
-                onClose={closeAndReset}
+                onClose={(event, reason) => {
+                    if (reason === 'backdropClick') {
+                        closeAndReset();
+                    }
+                }}
                 scroll="body"
             >
                 <DialogTitle className={classes.title}>

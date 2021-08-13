@@ -341,7 +341,7 @@ export class DataSourceDialogComponent extends Component {
                                 options={
                                     initialData
                                         ? initialData.versions.map(v => ({
-                                              label: v.number,
+                                              label: v.number.toString(),
                                               value: v.id,
                                           }))
                                         : []

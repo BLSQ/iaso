@@ -1,30 +1,28 @@
 {% load render_bundle from webpack_loader %}
 {% load i18n %}
 {% load static %}
+{% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE HTML>
-<html>
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
   <title>{% trans 'Iaso Dashboard' %}</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="">
   <meta name="keywords" content="">
-
+  {# favicon #}
   <link rel="icon" type="image/png" href="{% static 'images/iaso-favicon.png' %}">
+
   {% block extrajs %}
 
   {% endblock %}
   {% if DEV_SERVER %}
     <!-- this is for CSS Hot reloading in DEV -->
-    {% render_bundle 'common' %}
     {% render_bundle 'styles' %}
   {% else %}
     <!-- we're in the non dev-server part -->
     {% render_bundle 'styles' 'css' %}
   {% endif %}
-
-  {# favicon #}
-  <link rel="icon" href="" />
 
   {% block head %}
   {% endblock %}
@@ -33,8 +31,7 @@
   <meta data-qa="logged-in-marker" name="logged-in" content="{{ user.get_username }}">
   {% else %}
   <meta property="og:title" content="{% trans 'Welcome to the IASO Dashboard' %}" />
-  <meta property="og:description"
-    content="{% trans '' %}" />
+  <meta property="og:description" content="" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="" />
   <meta property="og:url" content="http://iaso.bluesquarehub.com" />
@@ -42,79 +39,6 @@
 </head>
 
 <body class="iaso">
-  <div class="browser-update" id="browser-update">
-    <p>
-      <b>Votre navigateur web est obsolète.</b> Mettez à jour votre navigateur pour plus de sécurité, rapidité et une meilleure expérience sur ce site.
-      <a class="browser-update-button browser-update-update" id="browser-updateul"
-        href="https://browser-update.org/update-browser.html" rel="noopener noreferrer">Mise à jour</a>
-    </p>
-
-    <style>
-      .browser-update {
-        display: none;
-        background: #edbc68 no-repeat 14px center url(https://browser-update.org/img/small/i.png);
-        background-position: 8px 17px;
-        position: fixed;
-        z-index: 111111;
-        width: 100%;
-        top: 0px;
-        left: 0px;
-        border-bottom: 1px solid #a29330;
-        text-align: left;
-        cursor: pointer;
-        background-color: #fff8ea;
-        font: 17px Calibri, Helvetica, Arial, sans-serif;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-      }
-
-      .browser-update p {
-        padding: 11px 12px 11px 30px;
-        margin: 0;
-        line-height: 1.7em;
-      }
-
-      .browser-update-button {
-        text-indent: 0;
-        color: #fff;
-        text-decoration: none;
-        box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
-        padding: 1px 10px;
-        border-radius: 4px;
-        font-weight: normal;
-        background: #5ab400;
-        white-space: nowrap;
-        margin: 0 2px;
-        display: inline-block;
-      }
-
-      .browser-update-update {
-        margin-left: 5px;
-      }
-
-      .browser-update-ignore {
-        background: #edbc68;
-      }
-
-      @media only screen and (max-width: 700px) {
-        .browser-update p {
-          padding: 5px 12px 5px 9px;
-          text-indent: 22px;
-          line-height: 1.3em;
-        }
-
-        .browser-update {
-          background-position: 9px 8px;
-        }
-      }
-
-      @media all and (-ms-high-contrast: none),
-      (-ms-high-contrast: active) {
-        .browser-update {
-          display: block;
-        }
-      }
-    </style>
-  </div>
   {% block body %}
   {% endblock %}
 </body>

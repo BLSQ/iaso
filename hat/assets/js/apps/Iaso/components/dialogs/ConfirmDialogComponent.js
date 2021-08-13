@@ -46,7 +46,14 @@ const ConfirmDialog = ({
             >
                 {btnMessage}
             </Button>
-            <Dialog open={open} onClick={() => handleClose(false)}>
+            <Dialog
+                open={open}
+                onClose={(event, reason) => {
+                    if (reason === 'backdropClick') {
+                        handleClose(false);
+                    }
+                }}
+            >
                 <DialogTitle>{question}</DialogTitle>
                 {message !== '' && (
                     <DialogContent>

@@ -27,8 +27,8 @@ export const useGetRegionGeoJson = region => {
         {
             enabled: Boolean(region) && isFetching,
             refetchOnWindowFocus: false,
-            staleTime: 1000*60*15, // in MS
-            cacheTime: 1000*60*5,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
         },
     );
 };

@@ -1,11 +1,11 @@
+import React, { useState, useEffect } from 'react';
+import { CircularProgress } from '@material-ui/core';
 import { Select } from './Select';
 import {
     useGetAllParentsOrgUnits,
     useGetOrgUnits,
 } from '../../hooks/useGetOrgUnits';
-import { useState, useEffect } from 'react';
 import { useGetAuthenticatedUser } from '../../hooks/useGetAuthenticatedUser';
-import { CircularProgress } from '@material-ui/core';
 
 export const OrgUnitsSelect = props => {
     const { level, source, onChange, value } = props;

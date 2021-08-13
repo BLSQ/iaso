@@ -19,10 +19,11 @@ import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
-import { capitalize, getPlugins } from '../utils/index';
+import { capitalize } from '../utils/index';
 import { orgUnitFiltersWithPrefix, linksFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
-import ViewPage from '../domains/pages/viewPage';
+
+import { SHOW_PAGES } from '../utils/featureFlags';
 
 const paginationPathParams = [
     {
@@ -75,31 +76,12 @@ export const formsPath = {
     isRootUrl: true,
 };
 
-export const viewPagePath = {
-    baseUrl: baseUrls.viewPage,
-    permission: 'iaso_pages',
-    params: [],
-    component: props => <ViewPage {...props} />,
-    isRootUrl: true,
-};
-
 export const pagesPath = {
     baseUrl: baseUrls.pages,
     permission: 'iaso_pages',
+    featureFlag: SHOW_PAGES,
     params: [],
     component: props => <Pages {...props} />,
-    isRootUrl: true,
-};
-
-export const polioPath = {
-    baseUrl: baseUrls.polio,
-    permission: 'iaso_forms',
-    params: [],
-    component: () => {
-        window.location = '/dashboard/polio/list';
-
-        return <></>;
-    },
 };
 
 export const archivedPath = {
@@ -534,13 +516,8 @@ export const routeConfigs = [
     devicesPath,
     groupsPath,
     orgUnitTypesPath,
-    polioPath,
     pagesPath,
-    viewPagePath,
     page401,
     page404,
     page500,
-    ...getPlugins()
-        .map(plugin => plugin.routes)
-        .flat(),
 ];

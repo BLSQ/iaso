@@ -94,7 +94,11 @@ const ImageGallery = ({
                     paper: classes.paper,
                 }}
                 open
-                onClose={() => closeLightbox()}
+                onClose={(event, reason) => {
+                    if (reason === 'backdropClick') {
+                        closeLightbox();
+                    }
+                }}
                 maxWidth="xl"
             >
                 <DialogContent className={classes.content}>

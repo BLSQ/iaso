@@ -81,7 +81,7 @@ db.sqlite3
 media
 
 ### Translations ###
-locale/
+*.mo
 
 # Deployment
 build_scripts/Dockerrun.aws.json

@@ -13,11 +13,12 @@ import GroupWork from '@material-ui/icons/GroupWork';
 import CategoryIcon from '@material-ui/icons/Category';
 import AssignmentRoundedIcon from '@material-ui/icons/AssignmentRounded';
 import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRounded';
+import BookIcon from '@material-ui/icons/Book';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
-import { getPlugins } from '../utils/index';
+import { hasFeatureFlag, SHOW_PAGES } from '../utils/featureFlags';
 
 import MESSAGES from './messages';
 
@@ -147,37 +148,18 @@ const menuItems = [
     },
 ];
 
-if (PLUGIN_POLIO_ENABLED === 'True') {
-    menuItems.push({
-        label: MESSAGES.polio,
-        key: 'polio',
-        icon: props => <DataSourceIcon {...props} />,
-        subMenu: [
-            {
-                label: MESSAGES.dashboard,
-                key: 'list',
-                permission: paths.formsPath.permission,
-                icon: props => <FormatListBulleted {...props} />,
-            },
-        ],
-    });
-    menuItems.push({
-        label: MESSAGES.pages,
-        key: 'pages',
-        icon: props => <DataSourceIcon {...props} />,
-        subMenu: [
-            {
-                label: MESSAGES.list,
-                key: 'list',
-                permission: paths.tasksPath.permission,
-                icon: props => <FormatListBulleted {...props} />,
-            },
-        ],
-    });
-}
+const getMenuItems = (currentUser, enabledPlugins) => {
+    const pluginsMenu = enabledPlugins.map(plugin => plugin.menu).flat();
+    const basicItems = [...menuItems];
+    if (hasFeatureFlag(currentUser, SHOW_PAGES)) {
+        basicItems.push({
+            label: MESSAGES.pages,
+            key: 'pages',
+            icon: props => <BookIcon {...props} />,
+            permission: paths.pagesPath.permission,
+        });
+    }
+    return [...basicItems, ...pluginsMenu];
+};
 
-const pluginsMenu = getPlugins()
-    .map(plugin => plugin.menu)
-    .flat();
-
-export default [...menuItems, ...pluginsMenu];
+export default getMenuItems;

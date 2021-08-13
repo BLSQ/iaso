@@ -5,7 +5,7 @@
 <div class="auth__container iasologin">
   <div class="auth__content">
     <header class="auth__header">
-      <h1 class="auth__heading"> <img src="{% static 'images/logo.png' %}" /></h1>
+      <h1 class="auth__heading"> <img alt="iaso logo" src="{% static 'images/logo.png' %}" /></h1>
       <p>{% trans 'An offspring of the <a href="https://www.trypelim.org">Trypelim</a> project' %}</p>
     </header>
     <div>
@@ -13,9 +13,7 @@
         {% if next %}
         {% if user.is_authenticated %}
         <p class="auth__text--warning">
-          {% blocktrans %}
-          Your account doesn't have access to this page. To proceed,
-          please login with an account that has access.
+          {% blocktrans %}Your account doesn't have access to this page. To proceed, please login with an account that has access.
           {% endblocktrans %}
         </p>
         {% else %}
@@ -26,9 +24,7 @@
         {% endif %}
         {% if form.errors %}
         <p class="auth__text--error">
-          {% blocktrans %}
-          Your username and password didn't match. Please try again.
-          {% endblocktrans %}
+          {% blocktrans %}Your username and password didn't match. Please try again.{% endblocktrans %}
         </p>
         {% endif %}
         {% csrf_token %}
@@ -45,20 +41,20 @@
   </div>
 </div>
 <script>
-
-  function togglePassword() {
-    const passwordField = document.getElementById('id_password');
-    if (passwordField.getAttribute('type') === 'password') {
-      passwordField.setAttribute('type', 'text');
-        document.getElementById('eye-icon').setAttribute('class', 'fa fa-eye-slash');
-    } else {
-      passwordField.setAttribute('type', 'password');
-      document.getElementById('eye-icon').setAttribute('class', 'fa fa-eye');
+    function togglePassword() {
+        const passwordField = document.getElementById("id_password");
+        if (passwordField.getAttribute("type") === "password") {
+            passwordField.setAttribute("type", "text");
+            document.getElementById("eye-icon").setAttribute("class", "fa fa-eye-slash");
+        } else {
+            passwordField.setAttribute("type", "password");
+            document.getElementById("eye-icon").setAttribute("class", "fa fa-eye");
+        }
     }
-  }
-  document.getElementById('display-password').addEventListener('click', function (e) {
-    e.preventDefault();
-    togglePassword();
-  })
+
+    document.getElementById("display-password").addEventListener("click", function(e) {
+        e.preventDefault();
+        togglePassword();
+    });
 </script>
 {% endblock %}

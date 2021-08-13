@@ -10,6 +10,9 @@ from plugins.polio.preparedness.parser import (
     open_sheet_by_url,
 )
 from plugins.polio.preparedness.quota_manager import QuotaManager
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -22,6 +25,7 @@ class Command(BaseCommand):
             preperadness_spreadsheet_url__isnull=False
         )
         campaigns_with_spreadsheet.update(preperadness_sync_status="QUEUED")
+        logger.info(campaigns_with_spreadsheet)
         for campaign in campaigns_with_spreadsheet:
             campaign.preperadness_sync_status = "ONGOING"
             campaign.save()
@@ -35,7 +39,7 @@ class Command(BaseCommand):
                 }
                 preparedness_data["totals"] = get_preparedness_score(preparedness_data)
 
-                Preparedness.objects.create(
+                preparedness = Preparedness.objects.create(
                     campaign=campaign,
                     spreadsheet_url=campaign.preperadness_spreadsheet_url,
                     national_score=preparedness_data["totals"]["national_score"],
@@ -44,12 +48,14 @@ class Command(BaseCommand):
                     payload=preparedness_data,
                 )
                 print(f"Campaign {campaign.pk} refreshed")
+                print(preparedness)
+
                 print(f"Requests sent {manager.total_requests}")
                 campaign.preperadness_sync_status = "FINISHED"
                 campaign.save()
             except Exception as e:
-                print(f"Campaign {campaign.pk} refresh failed")
-                print(e)
+                logger.error(f"Campaign {campaign.pk} refresh failed")
+                logger.exception(e)
                 campaign.preperadness_sync_status = "FAILURE"
                 campaign.save()
 

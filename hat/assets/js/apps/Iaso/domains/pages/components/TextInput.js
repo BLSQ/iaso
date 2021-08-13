@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { TextField } from '@material-ui/core';
-import get from 'lodash.get';
+import { get } from 'lodash';
 
 const TextInput = ({ field, form, label, multiline, ...props } = {}) => {
     const value = field.value || '';

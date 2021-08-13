@@ -13,11 +13,10 @@ import {
 } from '@material-ui/core';
 import isEqual from 'lodash/isEqual';
 import Grid from '@material-ui/core/Grid';
-import merge from 'lodash.merge';
+import { get, merge } from 'lodash';
 import { Field, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import Typography from '@material-ui/core/Typography';
-import get from 'lodash.get';
 
 import Form from './Form';
 import TextInput from './TextInput';

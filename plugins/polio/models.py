@@ -235,12 +235,21 @@ class Campaign(models.Model):
     # Rounds
     round_one = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_one", null=True, blank=True)
     round_two = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_two", null=True, blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     # Additional fields
     district_count = models.IntegerField(null=True, blank=True)
+    budget_first_draft_submitted_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Budget 1st Draft Submission"),
+    )
+    budget_rrt_oprtt_approval_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Budget Approval"),
+    )
     budget_submitted_at = models.DateField(
         null=True,
         blank=True,

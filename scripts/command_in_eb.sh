@@ -6,8 +6,8 @@ set  -o allexport
 cd /opt/python/current/app/
 source /opt/python/current/env
 if [[  $1 != "refresh_preparedness_data" || $PLUGINS  =~ "polio" ]]; then
-  python ./manage.py $@;
+  python ./manage.py "$@"
 else
-  echo "can execute $@"
+  echo "cannot execute " "$@"
 fi
 set  +o allexport

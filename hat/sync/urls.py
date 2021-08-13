@@ -1,5 +1,5 @@
-from django.conf.urls import url
+from django.urls import path
 from . import views
 
 
-urlpatterns = [url(r"^form_upload/$", views.form_upload, name="formupload")]
+urlpatterns = [path("form_upload/", views.form_upload, name="formupload")]

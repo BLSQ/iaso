@@ -84,7 +84,6 @@ class OrgunitsMap extends Component {
         super(props);
         this.state = {
             fittedToBounds: false,
-            key: 0,
         };
     }
 
@@ -246,7 +245,6 @@ class OrgunitsMap extends Component {
                     }
                 >
                     <Map
-                        key={this.state.key}
                         ref={ref => {
                             this.map = ref;
                         }}

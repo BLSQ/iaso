@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import { Map, TileLayer, GeoJSON, ScaleControl, Tooltip } from 'react-leaflet';
+import { connect } from 'react-redux';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import camelCase from 'lodash/camelCase';
 import isEqual from 'lodash/isEqual';
@@ -8,7 +8,7 @@ import isEqual from 'lodash/isEqual';
 import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import { injectIntl, commonStyles } from 'bluesquare-components';
+import { injectIntl, commonStyles, ErrorBoundary } from 'bluesquare-components';
 import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { locationsLimit } from '../../../constants/filters';
 
@@ -84,12 +84,13 @@ class OrgunitsMap extends Component {
         super(props);
         this.state = {
             fittedToBounds: false,
-            // comments: [],
+            key: 0,
         };
     }
 
     componentDidMount() {
         const { orgUnitTypes } = this.props;
+        console.log('orgUnitTypes', orgUnitTypes);
         if (orgUnitTypes.length === 0) {
             this.map.leafletElement.createPane('custom-shape-pane');
         } else {
@@ -110,8 +111,23 @@ class OrgunitsMap extends Component {
         );
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
         const { orgUnits } = this.props;
+        console.log('orgUnitTypes UPDATED', this.props.orgUnitTypes);
+        const oldOrgUnitTypes = prevProps.orgUnitTypes;
+        const { orgUnitTypes } = this.props;
+        if (!isEqual(oldOrgUnitTypes, orgUnitTypes)) {
+            if (orgUnitTypes.length === 0) {
+                this.map.leafletElement.createPane('custom-shape-pane');
+            } else {
+                orgUnitTypes.forEach(ot => {
+                    const otName = camelCase(ot.name);
+                    this.map.leafletElement.createPane(
+                        `custom-shape-pane-${otName}`,
+                    );
+                });
+            }
+        }
         const { fittedToBounds } = this.state;
         if (
             !fittedToBounds &&
@@ -123,6 +139,7 @@ class OrgunitsMap extends Component {
     }
 
     componentWillUnmount() {
+        console.log('UNMOUNTING');
         this.props.resetMapReducer();
     }
 
@@ -162,9 +179,32 @@ class OrgunitsMap extends Component {
 
     fitToBounds() {
         const { orgUnits } = this.props;
+        // console.log('FTB', this.map.leafletElement);
         const bounds = getOrgUnitsBounds(orgUnits);
+        let test;
         if (bounds) {
-            this.map.leafletElement.fitBounds(bounds, boundsOptions);
+            // console.log('CRASH');
+            try {
+                console.log(this.map.leafletElement.getPane());
+                test = this.map.leafletElement.fitBounds(bounds, boundsOptions);
+                console.log('TEST', test);
+            } catch (e) {
+                console.warn(e);
+                try {
+                    console.log('RETRY');
+                    test = this.map.leafletElement.fitBounds(
+                        bounds,
+                        boundsOptions,
+                    );
+                    console.log('TEST RETRY', test);
+                    this.setState(state => ({
+                        ...state,
+                        key: state.key + 1,
+                    }));
+                } catch (err) {
+                    console.warn(err);
+                }
+            }
         }
     }
 
@@ -198,6 +238,7 @@ class OrgunitsMap extends Component {
             this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }
         return (
+            // <ErrorBoundary>
             <Grid container spacing={0}>
                 <InnerDrawer
                     withTopBorder
@@ -230,7 +271,9 @@ class OrgunitsMap extends Component {
                         />
                     }
                 >
+                    {/* <ErrorBoundary> */}
                     <Map
+                        key={this.state.key}
                         ref={ref => {
                             this.map = ref;
                         }}
@@ -243,7 +286,11 @@ class OrgunitsMap extends Component {
                         keyboard={false}
                     >
                         <ScaleControl imperial={false} />
-                        <ZoomControl fitToBounds={() => this.fitToBounds()} />
+                        <ZoomControl
+                            fitToBounds={() => {
+                                return this.fitToBounds();
+                            }}
+                        />
                         <TileLayer
                             attribution={
                                 currentTile.attribution
@@ -340,8 +387,10 @@ class OrgunitsMap extends Component {
                                 ),
                             )}
                     </Map>
+                    {/* </ErrorBoundary> */}
                 </InnerDrawer>
             </Grid>
+            // {/* </ErrorBoundary> */}
         );
     }
 }

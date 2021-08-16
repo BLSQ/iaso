@@ -8,7 +8,7 @@ import isEqual from 'lodash/isEqual';
 import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import { injectIntl, commonStyles, ErrorBoundary } from 'bluesquare-components';
+import { injectIntl, commonStyles } from 'bluesquare-components';
 import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { locationsLimit } from '../../../constants/filters';
 
@@ -90,17 +90,7 @@ class OrgunitsMap extends Component {
 
     componentDidMount() {
         const { orgUnitTypes } = this.props;
-        console.log('orgUnitTypes', orgUnitTypes);
-        if (orgUnitTypes.length === 0) {
-            this.map.leafletElement.createPane('custom-shape-pane');
-        } else {
-            orgUnitTypes.forEach(ot => {
-                const otName = camelCase(ot.name);
-                this.map.leafletElement.createPane(
-                    `custom-shape-pane-${otName}`,
-                );
-            });
-        }
+        this.makePanes(orgUnitTypes);
         this.props.setCurrentSubOrgUnit(null);
     }
 
@@ -113,20 +103,12 @@ class OrgunitsMap extends Component {
 
     componentDidUpdate(prevProps) {
         const { orgUnits } = this.props;
-        console.log('orgUnitTypes UPDATED', this.props.orgUnitTypes);
-        const oldOrgUnitTypes = prevProps.orgUnitTypes;
         const { orgUnitTypes } = this.props;
+        const oldOrgUnitTypes = prevProps.orgUnitTypes;
+        // creating panes if navigating using deep linking or reloading, as orgUnitTypes
+        // are not available to componentDidMount in those cases
         if (!isEqual(oldOrgUnitTypes, orgUnitTypes)) {
-            if (orgUnitTypes.length === 0) {
-                this.map.leafletElement.createPane('custom-shape-pane');
-            } else {
-                orgUnitTypes.forEach(ot => {
-                    const otName = camelCase(ot.name);
-                    this.map.leafletElement.createPane(
-                        `custom-shape-pane-${otName}`,
-                    );
-                });
-            }
+            this.makePanes(orgUnitTypes);
         }
         const { fittedToBounds } = this.state;
         if (
@@ -139,7 +121,6 @@ class OrgunitsMap extends Component {
     }
 
     componentWillUnmount() {
-        console.log('UNMOUNTING');
         this.props.resetMapReducer();
     }
 
@@ -165,6 +146,19 @@ class OrgunitsMap extends Component {
         return currentColor;
     }
 
+    makePanes(orgUnitTypes) {
+        if (orgUnitTypes.length === 0) {
+            this.map.leafletElement.createPane('custom-shape-pane');
+        } else {
+            orgUnitTypes.forEach(ot => {
+                const otName = camelCase(ot.name);
+                this.map.leafletElement.createPane(
+                    `custom-shape-pane-${otName}`,
+                );
+            });
+        }
+    }
+
     fetchDetail(orgUnit) {
         const { dispatch } = this.props;
         // Removed this as it seems useless and create UI bugs
@@ -179,31 +173,12 @@ class OrgunitsMap extends Component {
 
     fitToBounds() {
         const { orgUnits } = this.props;
-        // console.log('FTB', this.map.leafletElement);
         const bounds = getOrgUnitsBounds(orgUnits);
-        let test;
         if (bounds) {
-            // console.log('CRASH');
             try {
-                console.log(this.map.leafletElement.getPane());
-                test = this.map.leafletElement.fitBounds(bounds, boundsOptions);
-                console.log('TEST', test);
+                this.map.leafletElement.fitBounds(bounds, boundsOptions);
             } catch (e) {
                 console.warn(e);
-                try {
-                    console.log('RETRY');
-                    test = this.map.leafletElement.fitBounds(
-                        bounds,
-                        boundsOptions,
-                    );
-                    console.log('TEST RETRY', test);
-                    this.setState(state => ({
-                        ...state,
-                        key: state.key + 1,
-                    }));
-                } catch (err) {
-                    console.warn(err);
-                }
             }
         }
     }
@@ -238,7 +213,6 @@ class OrgunitsMap extends Component {
             this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }
         return (
-            // <ErrorBoundary>
             <Grid container spacing={0}>
                 <InnerDrawer
                     withTopBorder
@@ -271,7 +245,6 @@ class OrgunitsMap extends Component {
                         />
                     }
                 >
-                    {/* <ErrorBoundary> */}
                     <Map
                         key={this.state.key}
                         ref={ref => {
@@ -387,10 +360,8 @@ class OrgunitsMap extends Component {
                                 ),
                             )}
                     </Map>
-                    {/* </ErrorBoundary> */}
                 </InnerDrawer>
             </Grid>
-            // {/* </ErrorBoundary> */}
         );
     }
 }

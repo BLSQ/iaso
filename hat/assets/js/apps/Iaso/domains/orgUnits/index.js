@@ -18,7 +18,6 @@ import {
     Table,
 } from 'bluesquare-components';
 
-import { ErrorBoundary } from 'bluesquare-components/dist/components/ErrorBoundary';
 import { fetchSources, fetchOrgUnitsList } from '../../utils/requests';
 
 import {

@@ -11,7 +11,6 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
     input[type="date"] {
         width: 320px;
         padding: 0.5em;
-        // background: $background-gray;
         border: 1px solid $gray;
         box-shadow: $input-inner-shadow;
         border-radius: 4px;
@@ -38,6 +37,7 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
 
     textarea {
         min-height: 100px;
+
         &.small {
             min-height: 50px;
         }
@@ -99,76 +99,6 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
         height: 15px;
         width: 50px;
         margin: 0 $padding-unit/5;
-    }
-
-    .button--export {
-        padding: $padding-unit/4;
-        width: ($map-sidebar-width - $padding-unit*2);
-        font-size: $font-size-xs;
-    }
-
-    .button--print {
-        margin-top: 4px;
-        width: ($map-sidebar-width - 50);
-        font-size: $font-size-xs;
-    }
-
-    .button--small {
-        font-size: $font-size-xs;
-    }
-
-    .button--save,
-    .button--edit {
-        margin-bottom: 4px;
-        width: ($map-sidebar-width - 50);
-        font-size: $font-size-xs;
-
-        &.small {
-            width: auto;
-            display: inline-block;
-            margin-left: 10px;
-            padding-left: 10px;
-            padding-right: 4px;
-        }
-
-        &:disabled {
-            background-color: #3f51b5 !important;
-            cursor: default;
-            opacity: 0.6;
-        }
-    }
-
-    .button--delete {
-        background-color: $red !important;
-
-        &--tiny {
-            padding: 0.5em;
-            font-size: $font-size-xs;
-
-            &:disabled {
-                background-color: $red !important;
-                cursor: default;
-                opacity: 0.6;
-            }
-        }
-
-        &:disabled {
-            background-color: $red !important;
-            cursor: default;
-            opacity: 0.6;
-        }
-    }
-
-
-    .button--edit--tiny {
-        padding: 0.5em;
-        font-size: $font-size-xs;
-    }
-
-    .button--delete--tiny {
-        background-color: $red ! important;
-        padding: 0.5em;
-        font-size: $font-size-xs;
     }
 
     button {

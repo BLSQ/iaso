@@ -94,17 +94,6 @@
     -webkit-animation: rotation 2s infinite;
 }
 
-#edit-button, #catches-button {
-    padding-right: 4px;
-    i {
-        margin-right: 0;
-    }
-}
-#catches-button {
-    position: absolute;
-    right: 6px;
-    top: 4px;
-}
 @-webkit-keyframes rotation {
     from {
         -webkit-transform: rotate(0deg);
@@ -114,11 +103,3 @@
     }
 }
 
-.button--save--tiny {
-    height: 33px;
-    font-size: 13px;
-    outline: none;
-    box-shadow: none;
-    z-index: 10;
-    position: relative;
-}

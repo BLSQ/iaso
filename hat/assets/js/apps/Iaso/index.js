@@ -1,4 +1,4 @@
-import React, { createContext } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import { Route } from 'react-router';
 import { MuiThemeProvider } from '@material-ui/core/styles';

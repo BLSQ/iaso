@@ -7,7 +7,6 @@ import { useDispatch } from 'react-redux';
 
 import {
     getTableUrl,
-    Table,
     getParamsKey,
     getTableParams,
     tableInitialResult,
@@ -15,6 +14,8 @@ import {
     selectionInitialState,
     commonStyles,
 } from 'bluesquare-components';
+
+import { Table } from './newTable/Table';
 
 // import Table from './TableComponent';
 import Filters from './TableFilters';

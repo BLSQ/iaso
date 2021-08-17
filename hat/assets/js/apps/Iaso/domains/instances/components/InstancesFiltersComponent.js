@@ -8,7 +8,6 @@ import { Button, makeStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 
 import Search from '@material-ui/icons/Search';
-
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import {
@@ -24,10 +23,6 @@ import {
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
 
-import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
-import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
-import { getOrgUnitParentsIds } from '../../orgUnits/utils';
-
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 import { redirectTo, redirectToReplace } from '../../../routing/actions';
@@ -35,6 +30,7 @@ import { redirectTo, redirectToReplace } from '../../../routing/actions';
 import { useInstancesFiltersData } from '../hooks';
 
 import MESSAGES from '../messages';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -53,6 +49,7 @@ const extendFilter = (searchParams, filter, onChange) => ({
     callback: (value, urlKey) => onChange(value, urlKey),
 });
 
+// TODO make better track of changes (search button activates too easily)
 const InstancesFiltersComponent = ({
     params: { formId },
     params,
@@ -113,16 +110,19 @@ const InstancesFiltersComponent = ({
         onSearch();
     };
 
-    const onSelectOrgUnit = orgUnit => {
-        const parentIds = getOrgUnitParentsIds(orgUnit);
-        parentIds.push(orgUnit.id);
-        const tempParams = {
-            ...params,
-            levels: parentIds.join(','),
-        };
-
-        dispatch(redirectTo(baseUrl, tempParams));
-        dispatch(setInstancesFilterUpdated(true));
+    const onSelectOrgUnitFromTree = orgUnit => {
+        if (orgUnit) {
+            const tempParams = { ...params, levels: [orgUnit.id] };
+            dispatch(redirectTo(baseUrl, tempParams));
+            dispatch(setInstancesFilterUpdated(true));
+        } else {
+            const noLevels = { ...params };
+            delete noLevels.levels;
+            dispatch(redirectTo(baseUrl, noLevels));
+            if (params.levels) {
+                dispatch(setInstancesFilterUpdated(true));
+            }
+        }
     };
 
     const onChange = (value, urlKey) => {
@@ -132,9 +132,9 @@ const InstancesFiltersComponent = ({
             ...params,
             [urlKey]: value,
         };
-
         dispatch(redirectToReplace(baseUrl, tempParams));
     };
+
     return (
         <div className={classes.marginBottomBig}>
             <Grid container spacing={4}>
@@ -198,22 +198,17 @@ const InstancesFiltersComponent = ({
                                 ]}
                                 onEnterPressed={() => handleSearch()}
                             />
-                            <OrgUnitSearch
-                                onSelectOrgUnit={ou => onSelectOrgUnit(ou)}
-                            />
-                            <OrgUnitsLevelsFiltersComponent
-                                onLatestIdChanged={() =>
-                                    dispatch(setInstancesFilterUpdated(true))
-                                }
-                                defaultVersion
-                                params={params}
-                                baseUrl={baseUrl}
+                            <OrgUnitTreeviewModal
+                                toggleOnLabelClick={false}
+                                titleMessage={MESSAGES.search}
+                                onConfirm={orgUnitId => {
+                                    onSelectOrgUnitFromTree(orgUnitId);
+                                }}
                             />
                         </Grid>
                     </Grid>
                 </Grid>
             </Grid>
-
             <Grid
                 container
                 spacing={4}

@@ -162,3 +162,15 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
             "updated_at",
             "groups",
         ]
+
+
+class OrgUnitTreeSearchSerializer(OrgUnitSerializer):
+    has_children = serializers.SerializerMethodField()
+
+    # probably a way to optimize that
+    def get_has_children(self, org_unit):
+        return org_unit.children().exists() if org_unit.path else False
+
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "parent", "has_children"]

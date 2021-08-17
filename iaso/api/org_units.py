@@ -17,7 +17,7 @@ from rest_framework.response import Response
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit import models as audit_models
 from iaso.api.common import safe_api_import
-from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer
+from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form
 from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
@@ -97,6 +97,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
+        tree_search = request.GET.get("treeSearch", None)
         direct_children = request.GET.get("onlyDirectChildren", False)
 
         if as_location:
@@ -159,6 +160,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 }
 
                 return Response(res)
+            elif tree_search:
+                org_units = OrgUnitTreeSearchSerializer(queryset, many=True).data
+                return Response({"orgunits": org_units})
             elif with_shapes:
                 org_units = []
                 for unit in queryset:

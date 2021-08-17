@@ -17,13 +17,13 @@ import { FormattedMessage } from 'react-intl';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
-import { rawTheme } from 'bluesquare-components';
-import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
-import InputComponent from '../../../components/forms/InputComponent';
-import OrgUnitTooltip from './OrgUnitTooltip';
-import { getRequest } from '../../../libs/Api';
-import { OrgUnitLabel } from '../utils';
-import MESSAGES from '../messages';
+import {
+    rawTheme,
+    LoadingSpinner,
+    SearchInput,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { MESSAGES } from './messages';
 
 const styles = theme => ({
     root: {
@@ -105,20 +105,24 @@ const styles = theme => ({
     },
 });
 
-const OrgUnitSearch = ({
+const DynamicSelect = ({
     classes,
-    onSelectOrgUnit,
+    onSelect,
     minResultCount,
     inputLabelObject,
     withSearchButton,
+    request,
+    makeDropDownText,
+    toolTip,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const [searchValue, setSearchValue] = useState('');
     const [resultsCount, setResultsCount] = useState(minResultCount);
     const [resultsCountChanged, setResultsCountChanged] = useState(false);
     const [isSearchActive, setIsSearchActive] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
-    const [isLoading, seIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const onChangeSearch = newSearchValue => {
         setSearchValue(newSearchValue);
         setSearchResults([]);
@@ -126,17 +130,16 @@ const OrgUnitSearch = ({
     };
     const handleSearch = () => {
         if (searchValue !== '') {
-            const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}","defaultVersion":"true"}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
-            seIsLoading(true);
-            getRequest(url).then(res => {
-                seIsLoading(false);
+            setIsLoading(true);
+            request(searchValue, resultsCount).then(res => {
+                setIsLoading(false);
                 setSearchResults(res.orgunits);
                 setHasSearched(true);
             });
         }
     };
-    const handleSelect = ou => {
-        onSelectOrgUnit(ou);
+    const handleSelect = element => {
+        onSelect(element);
         setIsSearchActive(false);
     };
     const handleResultCountChange = newResultCount => {
@@ -147,6 +150,15 @@ const OrgUnitSearch = ({
         setResultsCountChanged(false);
         handleSearch();
     };
+
+    const tooltipIcon = (
+        <InfoOutlinedIcon
+            fontSize="small"
+            style={{
+                color: rawTheme.palette.mediumGray.main,
+            }}
+        />
+    );
     return (
         <Box className={classes.root}>
             <ClickAwayListener onClickAway={() => setIsSearchActive(false)}>
@@ -155,16 +167,17 @@ const OrgUnitSearch = ({
                     onFocus={() => setIsSearchActive(true)}
                 >
                     <Box className={classes.searchBar}>
-                        <InputComponent
+                        <SearchInput
                             disabled={isLoading}
                             keyValue="orgUnitSearch"
-                            onChange={(key, value) => onChangeSearch(value)}
+                            onChange={value => {
+                                onChangeSearch(value);
+                            }}
                             value={searchValue}
                             type="search"
-                            label={inputLabelObject}
+                            label={formatMessage(inputLabelObject)}
                             onEnterPressed={() => handleSearch()}
                         />
-                        {/* //TODO make optional and default to false */}
                         {withSearchButton && (
                             <Button
                                 variant="contained"
@@ -201,36 +214,22 @@ const OrgUnitSearch = ({
                     {searchResults.length > 0 && isSearchActive && (
                         <Box className={classes.listContainer}>
                             <List className={classes.list}>
-                                {searchResults.map(ou => (
+                                {searchResults.map(element => (
                                     <ListItem
-                                        key={ou.id}
+                                        key={element.id}
                                         button
-                                        onClick={() => handleSelect(ou)}
+                                        onClick={() => handleSelect(element)}
                                         className="org-unit-item"
                                     >
                                         <ListItemText
                                             primary={
                                                 <Typography type="body2">
-                                                    <OrgUnitLabel
-                                                        orgUnit={ou}
-                                                        withType
-                                                    />
+                                                    {makeDropDownText(element)}
                                                 </Typography>
                                             }
                                         />
-                                        <OrgUnitTooltip
-                                            orgUnit={ou}
-                                            enterDelay={0}
-                                            enterNextDelay={0}
-                                        >
-                                            <InfoOutlinedIcon
-                                                fontSize="small"
-                                                style={{
-                                                    color: rawTheme.palette
-                                                        .mediumGray.main,
-                                                }}
-                                            />
-                                        </OrgUnitTooltip>
+                                        {toolTip &&
+                                            toolTip(element, tooltipIcon)}
                                     </ListItem>
                                 ))}
                             </List>
@@ -289,18 +288,25 @@ const OrgUnitSearch = ({
     );
 };
 
-OrgUnitSearch.defaultProps = {
+DynamicSelect.defaultProps = {
     minResultCount: 50,
-    inputLabelObject: MESSAGES.searchOrgUnit,
+    inputLabelObject: MESSAGES.search,
     withSearchButton: false,
+    toolTip: null,
+    onSelect: () => {},
 };
 
-OrgUnitSearch.propTypes = {
+DynamicSelect.propTypes = {
     classes: PropTypes.object.isRequired,
-    onSelectOrgUnit: PropTypes.func.isRequired,
+    onSelect: PropTypes.func,
     minResultCount: PropTypes.number,
     inputLabelObject: PropTypes.object,
     withSearchButton: PropTypes.bool,
+    request: PropTypes.func.isRequired,
+    makeDropDownText: PropTypes.func.isRequired,
+    toolTip: PropTypes.func,
 };
 
-export default withStyles(styles)(OrgUnitSearch);
+const dynamicSelect = withStyles(styles)(DynamicSelect);
+
+export { dynamicSelect as DynamicSelect };

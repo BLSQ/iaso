@@ -97,6 +97,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.filter.searchUser',
         defaultMessage: 'Search user',
     },
+    chooseLocation: {
+        id: 'iaso.users.dialog.chooseLocation',
+        defaultMessage: 'Select location(s)',
+    },
 });
 
 export default MESSAGES;

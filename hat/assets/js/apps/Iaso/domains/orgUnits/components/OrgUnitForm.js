@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
 import { withStyles, Button, Grid } from '@material-ui/core';
@@ -38,7 +38,7 @@ const OrgUnitForm = ({
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(initialFormState(orgUnit));
 
-    const [orgUnitModified, setOrgUnitModified] = React.useState(false);
+    const [orgUnitModified, setOrgUnitModified] = useState(false);
     const handleSave = () => {
         const newOrgUnit = mapValues(formState, v =>
             Object.prototype.hasOwnProperty.call(v, 'value') ? v.value : v,
@@ -81,6 +81,7 @@ const OrgUnitForm = ({
                 orgUnitTypes={orgUnitTypes}
                 groups={groups}
                 onChangeInfo={handleChangeInfo}
+                resetTrigger={!orgUnitModified}
             />
             <Grid
                 container

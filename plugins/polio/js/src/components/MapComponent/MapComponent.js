@@ -49,7 +49,10 @@ export const MapComponent = ({
             />
             {districtShapes &&
                 districtShapes.map(shape => (
-                    <Pane name="Districts">
+                    <Pane
+                        name={`Districts_${shape.id.toString()}`}
+                        key={`Districts_${shape.id.toString()}`}
+                    >
                         <GeoJSON
                             key={shape.id}
                             data={shape.geo_json}
@@ -62,7 +65,10 @@ export const MapComponent = ({
                 ))}
             {provinceShapes &&
                 provinceShapes.map(shape => (
-                    <Pane name="Provinces">
+                    <Pane
+                        name={`Provinces_${shape.id.toString()}`}
+                        key={`Provinces_${shape.id.toString()}`}
+                    >
                         <GeoJSON
                             key={shape.id}
                             data={shape.geo_json}

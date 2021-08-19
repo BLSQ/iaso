@@ -446,6 +446,7 @@ const ScopeForm = () => {
             'PROVINCE',
         );
 
+    console.log(districtShapes, provinceShapes);
     const isFetching = isFetchingDistricts || isFetchingProvinces;
 
     const toggleRegionSelect = () => {
@@ -519,6 +520,14 @@ const ScopeForm = () => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
+    const findProvince = useCallback(
+        shape => {
+            return provinceShapes.filter(
+                provinceShape => provinceShape.id === shape.parent_id,
+            )[0].name;
+        },
+        [provinceShapes],
+    );
 
     const selectedShapes =
         sortBy === 'asc'
@@ -555,6 +564,9 @@ const ScopeForm = () => {
                                 <TableCell onClick={handleSort} variant="head">
                                     <Typography>District</Typography>
                                 </TableCell>
+                                <TableCell onClick={handleSort} variant="head">
+                                    <Typography>Province</Typography>
+                                </TableCell>
                                 <TableCell variant="head">Remove</TableCell>
                             </TableRow>
                         </TableHead>
@@ -576,6 +588,9 @@ const ScopeForm = () => {
                                         >
                                             <TableCell>{shape.name}</TableCell>
                                             <TableCell>
+                                                {findProvince(shape)}
+                                            </TableCell>
+                                            <TableCell>
                                                 <Clear
                                                     onClick={() =>
                                                         onSelectOrgUnit(shape)
@@ -595,9 +610,10 @@ const ScopeForm = () => {
                     rowsPerPage={rowsPerPage}
                     page={page}
                     labelRowsPerPage="Rows"
-                    onChangePage={handleChangePage}
+                    // onChangePage={handleChangePage}
+                    onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    onChangeRowsPerPage={handleChangeRowsPerPage}
+                    // onChangeRowsPerPage={handleChangeRowsPerPage}
                 />
             </Grid>
             <Grid container>

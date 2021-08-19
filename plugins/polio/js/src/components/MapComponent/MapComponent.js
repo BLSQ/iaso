@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { Map, TileLayer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import React, { useEffect, useMemo, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
@@ -5,8 +6,8 @@ import { geoJSON } from 'leaflet';
 
 export const MapComponent = ({
     onSelectShape,
-    provinceShapes,
     districtShapes,
+    regionShapes,
     getShapeStyle,
 }) => {
     const map = useRef();
@@ -47,12 +48,24 @@ export const MapComponent = ({
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {districtShapes &&
-                districtShapes.map(shape => (
-                    <Pane
-                        name={`Districts_${shape.id.toString()}`}
-                        key={`Districts_${shape.id.toString()}`}
-                    >
+            <Pane name="Regions">
+                {regionShapes &&
+                    regionShapes.map(shape => (
+                        <GeoJSON
+                            key={shape.id}
+                            data={shape.geo_json}
+                            style={{
+                                color: 'grey',
+                                opacity: '1',
+                                fillColor: 'transparent',
+                            }}
+                            onClick={() => null}
+                        />
+                    ))}
+            </Pane>
+            <Pane name="Districts">
+                {districtShapes &&
+                    districtShapes.map(shape => (
                         <GeoJSON
                             key={shape.id}
                             data={shape.geo_json}
@@ -61,27 +74,8 @@ export const MapComponent = ({
                         >
                             <Tooltip>{shape.name}</Tooltip>
                         </GeoJSON>
-                    </Pane>
-                ))}
-            {provinceShapes &&
-                provinceShapes.map(shape => (
-                    <Pane
-                        name={`Provinces_${shape.id.toString()}`}
-                        key={`Provinces_${shape.id.toString()}`}
-                    >
-                        <GeoJSON
-                            key={shape.id}
-                            data={shape.geo_json}
-                            style={{
-                                zIndex: 2,
-                                color: 'black',
-                                opacity: '1',
-                                fillColor: 'transparent',
-                            }}
-                            onClick={() => null}
-                        />
-                    </Pane>
-                ))}
+                    ))}
+            </Pane>
         </Map>
     );
 };

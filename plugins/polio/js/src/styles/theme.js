@@ -55,7 +55,7 @@ export const useStyles = makeStyles(() => ({
     },
     districtList: {
         overflow: 'auto',
-        height: '50vh',
+        height: '500px',
         '& thead tr th': {
             boxShadow: `2px 2px ${theme.palette.ligthGray.main}`,
         },
@@ -69,6 +69,11 @@ export const useStyles = makeStyles(() => ({
     districtListRow: {
         '& td': {
             backgroundColor: theme.palette.ligthGray.main,
+        },
+    },
+    tablePagination: {
+        '& .MuiTablePagination-toolbar': {
+            overflowX: 'auto',
         },
     },
 }));

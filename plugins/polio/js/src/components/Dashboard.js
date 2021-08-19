@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Table,
@@ -32,11 +33,11 @@ import {
     TableRow,
     TableCell,
     TablePagination,
+    Tooltip,
 } from '@material-ui/core';
 import { merge } from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
-import Clear from '@material-ui/icons/Clear';
 
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
@@ -429,25 +430,21 @@ const ScopeForm = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [sortBy, setSortBy] = useState('asc');
+    const [sortFocus, setSortFocus] = useState('DISTRICT');
+    const country =
+        values.org_unit?.country_parent?.id ||
+        values.org_unit?.root?.id ||
+        values.org_unit?.id;
 
     const { data: districtShapes, isFetching: isFetchingDistricts } =
-        useGetGeoJson(
-            values.org_unit?.country_parent?.id ||
-                values.org_unit?.root?.id ||
-                values.org_unit?.id,
-            'DISTRICT',
-        );
+        useGetGeoJson(country, 'DISTRICT');
 
-    const { data: provinceShapes, isFetching: isFetchingProvinces } =
-        useGetGeoJson(
-            values.org_unit?.country_parent?.id ||
-                values.org_unit?.root?.id ||
-                values.org_unit?.id,
-            'PROVINCE',
-        );
+    const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
+        country,
+        'REGION',
+    );
 
-    console.log(districtShapes, provinceShapes);
-    const isFetching = isFetchingDistricts || isFetchingProvinces;
+    const isFetching = isFetchingDistricts || isFetchingRegions;
 
     const toggleRegionSelect = () => {
         setSelectRegion(!selectRegion);
@@ -462,38 +459,38 @@ const ScopeForm = () => {
         [group, values.org_unit?.id],
     );
 
+    const toggleRegion = (shape, allShapes, orgUnitsGroup) => {
+        const parentRegionShapes = allShapes
+            .filter(s => s.parent_id === shape.parent_id)
+            .map(s => s.id);
+        const { selected, unselected } = separate(
+            parentRegionShapes,
+            orgUnitsGroup,
+        );
+        const isRegionSelected = selected.length === parentRegionShapes.length;
+        if (isRegionSelected) {
+            return orgUnitsGroup.filter(
+                orgUnit => !parentRegionShapes.includes(orgUnit),
+            );
+        }
+        return [...orgUnitsGroup, ...unselected];
+    };
+
+    const toggleDistrict = (shape, orgUnitsGroup) => {
+        if (orgUnitsGroup.find(org_unit => shape.id === org_unit)) {
+            return orgUnitsGroup.filter(orgUnit => orgUnit !== shape.id);
+        }
+        return [...orgUnitsGroup, shape.id];
+    };
+
     const onSelectOrgUnit = useCallback(
         shape => {
-            // eslint-disable-next-line camelcase
             const { org_units } = group;
             let newOrgUnits;
             if (selectRegion) {
-                const parentProvinceShapes = districtShapes
-                    .filter(s => s.parent_id === shape.parent_id)
-                    .map(s => s.id);
-                const { selected, unselected } = separate(
-                    parentProvinceShapes,
-                    org_units,
-                );
-                const isRegionSelected =
-                    selected.length === parentProvinceShapes.length;
-                if (isRegionSelected) {
-                    newOrgUnits = org_units.filter(
-                        orgUnit => !parentProvinceShapes.includes(orgUnit),
-                    );
-                } else {
-                    // eslint-disable-next-line camelcase
-                    newOrgUnits = [...org_units, ...unselected];
-                }
-                // eslint-disable-next-line camelcase
-            } else if (org_units.find(org_unit => shape.id === org_unit)) {
-                newOrgUnits = org_units.filter(orgUnit => orgUnit !== shape.id);
-                // eslint-disable-next-line camelcase
-            } else if (org_units.find(org_unit => shape.id === org_unit)) {
-                newOrgUnits = org_units.filter(orgUnit => orgUnit !== shape.id);
+                newOrgUnits = toggleRegion(shape, districtShapes, org_units);
             } else {
-                // eslint-disable-next-line camelcase
-                newOrgUnits = [...org_units, shape.id];
+                newOrgUnits = toggleDistrict(shape, org_units);
             }
 
             setFieldValue('group', {
@@ -504,13 +501,50 @@ const ScopeForm = () => {
         [group, setFieldValue, selectRegion, districtShapes],
     );
 
-    const handleSort = useCallback(() => {
-        if (sortBy === 'asc') {
-            setSortBy('desc');
-        } else {
-            setSortBy('asc');
-        }
-    }, [sortBy]);
+    const removeDistrictFromTable = useCallback(
+        shape => {
+            const { org_units } = group;
+            const newOrgUnits = org_units.filter(
+                orgUnit => orgUnit !== shape.id,
+            );
+            setFieldValue('group', {
+                ...group,
+                org_units: newOrgUnits,
+            });
+        },
+        [group, setFieldValue],
+    );
+    const removeRegionFromTable = useCallback(
+        shape => {
+            const { org_units } = group;
+            const parentRegionShapes = districtShapes
+                .filter(s => s.parent_id === shape.parent_id)
+                .map(s => s.id);
+
+            const newOrgUnits = org_units.filter(
+                orgUnit => !parentRegionShapes.includes(orgUnit),
+            );
+
+            setFieldValue('group', {
+                ...group,
+                org_units: newOrgUnits,
+            });
+        },
+        [group, setFieldValue, districtShapes],
+    );
+
+    const handleSort = useCallback(
+        orgUnitType => {
+            if (sortFocus !== orgUnitType) {
+                setSortFocus(orgUnitType);
+            } else if (sortBy === 'asc') {
+                setSortBy('desc');
+            } else {
+                setSortBy('asc');
+            }
+        },
+        [sortBy, sortFocus],
+    );
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -520,26 +554,66 @@ const ScopeForm = () => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
-    const findProvince = useCallback(
+    const findRegion = useCallback(
         shape => {
-            return provinceShapes.filter(
-                provinceShape => provinceShape.id === shape.parent_id,
+            return regionShapes.filter(
+                regionShape => regionShape.id === shape.parent_id,
             )[0].name;
         },
-        [provinceShapes],
+        [regionShapes],
     );
+    const sortShapesForTable = useCallback(() => {
+        if (sortFocus === 'DISTRICT' && sortBy === 'asc') {
+            return districtShapes?.filter(shape =>
+                group.org_units.includes(shape.id),
+            );
+        }
+        if (sortFocus === 'DISTRICT' && sortBy === 'desc') {
+            return districtShapes
+                ?.filter(shape => group.org_units.includes(shape.id))
+                .reverse();
+        }
+        if (sortFocus === 'REGION' && sortBy === 'asc') {
+            return districtShapes
+                ?.filter(shape => group.org_units.includes(shape.id))
+                .sort(
+                    (shapeA, shapeB) => findRegion(shapeA) > findRegion(shapeB),
+                );
+        }
+        if (sortFocus === 'REGION' && sortBy === 'desc') {
+            return districtShapes
+                ?.filter(shape => group.org_units.includes(shape.id))
+                .sort(
+                    (shapeA, shapeB) => findRegion(shapeA) < findRegion(shapeB),
+                );
+        }
+        console.warn(
+            `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and DISTRICT|REGION`,
+        );
+        return null;
+    }, [sortBy, sortFocus, districtShapes, group.org_units, findRegion]);
 
-    const selectedShapes =
-        sortBy === 'asc'
-            ? districtShapes?.filter(shape =>
-                  group.org_units.includes(shape.id),
-              )
-            : districtShapes
-                  ?.filter(shape => group.org_units.includes(shape.id))
-                  .reverse();
+    const shapesForTable = sortShapesForTable();
+
+    const makeTableText = text => {
+        return (
+            <Tooltip placement="bottom" title={text}>
+                <Typography
+                    style={{
+                        maxWidth: '100px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    }}
+                >
+                    {text}
+                </Typography>
+            </Tooltip>
+        );
+    };
+
     return (
         <Grid container spacing={4}>
-            <Grid xs={9} item>
+            <Grid xs={8} item>
                 {isFetching && !districtShapes && <LoadingSpinner />}
                 {!isFetching && !districtShapes && (
                     // FIXME should not be needed
@@ -548,35 +622,41 @@ const ScopeForm = () => {
                     </Typography>
                 )}
                 <MapComponent
-                    // districtShapes={null}
                     districtShapes={districtShapes}
-                    provinceShapes={provinceShapes}
+                    regionShapes={regionShapes}
                     onSelectShape={onSelectOrgUnit}
                     getShapeStyle={getShapeStyle}
                 />
             </Grid>
 
-            <Grid xs={3} item>
+            <Grid xs={4} item>
                 <TableContainer className={classes.districtList}>
                     <MuiTable stickyHeader size="small">
                         <TableHead>
                             <TableRow>
-                                <TableCell onClick={handleSort} variant="head">
+                                <TableCell
+                                    onClick={() => handleSort('DISTRICT')}
+                                    variant="head"
+                                >
                                     <Typography>District</Typography>
                                 </TableCell>
-                                <TableCell onClick={handleSort} variant="head">
-                                    <Typography>Province</Typography>
+                                <TableCell
+                                    onClick={() => handleSort('REGION')}
+                                    variant="head"
+                                >
+                                    <Typography>Region</Typography>
                                 </TableCell>
-                                <TableCell variant="head">Remove</TableCell>
+                                <TableCell variant="head">Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {selectedShapes
+                            {shapesForTable
                                 ?.slice(
                                     page * rowsPerPage,
                                     page * rowsPerPage + rowsPerPage,
                                 )
                                 .map((shape, i) => {
+                                    const region = findRegion(shape);
                                     return (
                                         <TableRow
                                             key={shape.id}
@@ -586,14 +666,35 @@ const ScopeForm = () => {
                                                     : ''
                                             }
                                         >
-                                            <TableCell>{shape.name}</TableCell>
-                                            <TableCell>
-                                                {findProvince(shape)}
+                                            <TableCell style={{ width: '33%' }}>
+                                                {makeTableText(shape.name)}
                                             </TableCell>
-                                            <TableCell>
-                                                <Clear
+                                            <TableCell style={{ width: '33%' }}>
+                                                {makeTableText(region)}
+                                            </TableCell>
+                                            <TableCell
+                                                style={{ minWidth: '33%' }}
+                                            >
+                                                <IconButtonComponent
                                                     onClick={() =>
-                                                        onSelectOrgUnit(shape)
+                                                        removeDistrictFromTable(
+                                                            shape,
+                                                        )
+                                                    }
+                                                    icon="clear"
+                                                    tooltipMessage={
+                                                        MESSAGES.removeDistrict
+                                                    }
+                                                />
+                                                <IconButtonComponent
+                                                    onClick={() =>
+                                                        removeRegionFromTable(
+                                                            shape,
+                                                        )
+                                                    }
+                                                    icon="clearAll"
+                                                    tooltipMessage={
+                                                        MESSAGES.removeRegion
                                                     }
                                                 />
                                             </TableCell>
@@ -604,16 +705,15 @@ const ScopeForm = () => {
                     </MuiTable>
                 </TableContainer>
                 <TablePagination
+                    className={classes.tablePagination}
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={selectedShapes?.length ?? 0}
+                    count={shapesForTable?.length ?? 0}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     labelRowsPerPage="Rows"
-                    // onChangePage={handleChangePage}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    // onChangeRowsPerPage={handleChangeRowsPerPage}
                 />
             </Grid>
             <Grid container>
@@ -629,7 +729,7 @@ const ScopeForm = () => {
                                     color="primary"
                                 />
                             }
-                            label="Select province"
+                            label="Select region"
                         />
                     </FormGroup>
                 </Grid>

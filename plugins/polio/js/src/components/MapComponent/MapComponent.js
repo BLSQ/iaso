@@ -4,6 +4,11 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
 
+const findRegion = (shape, regionShapes) => {
+    return regionShapes.filter(
+        regionShape => regionShape.id === shape.parent_id,
+    )[0].name;
+};
 export const MapComponent = ({
     onSelectShape,
     districtShapes,
@@ -72,7 +77,15 @@ export const MapComponent = ({
                             style={() => getShapeStyle(shape)}
                             onClick={() => onSelectShape(shape)}
                         >
-                            <Tooltip>{shape.name}</Tooltip>
+                            <Tooltip>
+                                <span>{`District: ${shape.name}`} </span>
+                                <span>
+                                    {`Region: ${findRegion(
+                                        shape,
+                                        regionShapes,
+                                    )}`}{' '}
+                                </span>
+                            </Tooltip>
                         </GeoJSON>
                     ))}
             </Pane>

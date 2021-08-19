@@ -30,7 +30,7 @@ import {
     TableHead,
     TableBody,
     TableRow,
-    TableCell, 
+    TableCell,
     TablePagination,
 } from '@material-ui/core';
 import { merge } from 'lodash';
@@ -60,12 +60,13 @@ import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
 import { PreparednessForm } from '../forms/PreparednessForm';
-import { useGetRegionGeoJson } from '../hooks/useGetRegionGeoJson';
+import { useGetGeoJson } from '../hooks/useGetGeoJson';
 import MESSAGES from '../constants/messages';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 
+// eslint-disable-next-line camelcase
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
     ended_at: yup
@@ -295,9 +296,24 @@ const DetectionForm = () => {
     );
 };
 
-const selectedPathOptions = { color: 'lime' };
-const unselectedPathOptions = { color: 'gray' };
-const initialDistrict = { color: '#FF695C' };
+const selectedPathOptions = {
+    color: 'lime',
+    weight: '1',
+    opacity: '1',
+    zIndex: '1',
+};
+const unselectedPathOptions = {
+    color: 'gray',
+    weight: '1',
+    opacity: '1',
+    zIndex: '1',
+};
+const initialDistrict = {
+    color: '#FF695C',
+    weight: '1',
+    opacity: '1',
+    zIndex: '1',
+};
 
 const RiskAssessmentForm = () => {
     const classes = useStyles();
@@ -412,13 +428,25 @@ const ScopeForm = () => {
     const { group = { org_units: [] } } = values;
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [sortBy, setSortBy] = useState("asc");
+    const [sortBy, setSortBy] = useState('asc');
 
-    const { data: shapes, isFetching } = useGetRegionGeoJson(
-        values.org_unit?.country_parent?.id ||
-            values.org_unit?.root?.id ||
-            values.org_unit?.id,
-    );
+    const { data: districtShapes, isFetching: isFetchingDistricts } =
+        useGetGeoJson(
+            values.org_unit?.country_parent?.id ||
+                values.org_unit?.root?.id ||
+                values.org_unit?.id,
+            'DISTRICT',
+        );
+
+    const { data: provinceShapes, isFetching: isFetchingProvinces } =
+        useGetGeoJson(
+            values.org_unit?.country_parent?.id ||
+                values.org_unit?.root?.id ||
+                values.org_unit?.id,
+            'PROVINCE',
+        );
+
+    const isFetching = isFetchingDistricts || isFetchingProvinces;
 
     const toggleRegionSelect = () => {
         setSelectRegion(!selectRegion);
@@ -426,47 +454,45 @@ const ScopeForm = () => {
 
     const getShapeStyle = useCallback(
         shape => {
-            return group.org_units.includes(shape.id)
-                ? selectedPathOptions
-                : values.org_unit?.id === shape.id
-                ? initialDistrict
-                : unselectedPathOptions;
+            if (group.org_units.includes(shape.id)) return selectedPathOptions;
+            if (values.org_unit?.id === shape.id) return initialDistrict;
+            return unselectedPathOptions;
         },
         [group, values.org_unit?.id],
     );
 
     const onSelectOrgUnit = useCallback(
         shape => {
+            // eslint-disable-next-line camelcase
             const { org_units } = group;
             let newOrgUnits;
             if (selectRegion) {
-                const regionShapes = shapes
+                const parentProvinceShapes = districtShapes
                     .filter(s => s.parent_id === shape.parent_id)
                     .map(s => s.id);
                 const { selected, unselected } = separate(
-                    regionShapes,
+                    parentProvinceShapes,
                     org_units,
                 );
                 const isRegionSelected =
-                    selected.length === regionShapes.length;
+                    selected.length === parentProvinceShapes.length;
                 if (isRegionSelected) {
                     newOrgUnits = org_units.filter(
-                        orgUnit => !regionShapes.includes(orgUnit),
+                        orgUnit => !parentProvinceShapes.includes(orgUnit),
                     );
                 } else {
+                    // eslint-disable-next-line camelcase
                     newOrgUnits = [...org_units, ...unselected];
                 }
+                // eslint-disable-next-line camelcase
+            } else if (org_units.find(org_unit => shape.id === org_unit)) {
+                newOrgUnits = org_units.filter(orgUnit => orgUnit !== shape.id);
+                // eslint-disable-next-line camelcase
             } else if (org_units.find(org_unit => shape.id === org_unit)) {
                 newOrgUnits = org_units.filter(orgUnit => orgUnit !== shape.id);
             } else {
-                if (org_units.find(org_unit => shape.id === org_unit)) {
-                    newOrgUnits = org_units.filter(
-                        orgUnit => orgUnit !== shape.id,
-                    );
-                } else {
-                    newOrgUnits = [...org_units, shape.id];
-                }
-
+                // eslint-disable-next-line camelcase
+                newOrgUnits = [...org_units, shape.id];
             }
 
             setFieldValue('group', {
@@ -474,87 +500,105 @@ const ScopeForm = () => {
                 org_units: newOrgUnits,
             });
         },
-        [group, setFieldValue, selectRegion, shapes],
+        [group, setFieldValue, selectRegion, districtShapes],
     );
 
-    const handleSort = useCallback(()=>{
-        if(sortBy==="asc"){
-            setSortBy("desc");
+    const handleSort = useCallback(() => {
+        if (sortBy === 'asc') {
+            setSortBy('desc');
         } else {
-            setSortBy("asc");
+            setSortBy('asc');
         }
-    },[sortBy])
+    }, [sortBy]);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
-      };
+    };
 
-    const handleChangeRowsPerPage = (event) => {
+    const handleChangeRowsPerPage = event => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
 
-    const selectedShapes = sortBy==="asc"?
-        shapes?.filter(shape => group.org_units.includes(shape.id)):
-        shapes?.filter(shape => group.org_units.includes(shape.id)).reverse();
+    const selectedShapes =
+        sortBy === 'asc'
+            ? districtShapes?.filter(shape =>
+                  group.org_units.includes(shape.id),
+              )
+            : districtShapes
+                  ?.filter(shape => group.org_units.includes(shape.id))
+                  .reverse();
     return (
         <Grid container spacing={4}>
             <Grid xs={9} item>
-
-                {isFetching && !shapes && <LoadingSpinner />}
-                {!isFetching && !shapes && (
+                {isFetching && !districtShapes && <LoadingSpinner />}
+                {!isFetching && !districtShapes && (
                     // FIXME should not be needed
                     <Typography>
                         Please save the Campaign before selecting scope.
                     </Typography>
                 )}
                 <MapComponent
-                    shapes={shapes}
+                    // districtShapes={null}
+                    districtShapes={districtShapes}
+                    provinceShapes={provinceShapes}
                     onSelectShape={onSelectOrgUnit}
                     getShapeStyle={getShapeStyle}
                 />
             </Grid>
 
-            <Grid xs={3} item >
+            <Grid xs={3} item>
                 <TableContainer className={classes.districtList}>
-                    <MuiTable stickyHeader size='small'>
+                    <MuiTable stickyHeader size="small">
                         <TableHead>
                             <TableRow>
                                 <TableCell onClick={handleSort} variant="head">
                                     <Typography>District</Typography>
                                 </TableCell>
-                                <TableCell variant="head">
-                                    Remove
-                                </TableCell>
+                                <TableCell variant="head">Remove</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {selectedShapes?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                            .map((shape,i) => {
-                                        return (<TableRow key={shape.id} className={i%2>0?classes.districtListRow:''}>
+                            {selectedShapes
+                                ?.slice(
+                                    page * rowsPerPage,
+                                    page * rowsPerPage + rowsPerPage,
+                                )
+                                .map((shape, i) => {
+                                    return (
+                                        <TableRow
+                                            key={shape.id}
+                                            className={
+                                                i % 2 > 0
+                                                    ? classes.districtListRow
+                                                    : ''
+                                            }
+                                        >
                                             <TableCell>{shape.name}</TableCell>
-                                            <TableCell> 
+                                            <TableCell>
                                                 <Clear
-                                                onClick={() =>
-                                                    onSelectOrgUnit(shape)
-                                                }
-                                            /></TableCell>
-                                        </TableRow>)
-                                    })}
+                                                    onClick={() =>
+                                                        onSelectOrgUnit(shape)
+                                                    }
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                         </TableBody>
                     </MuiTable>
                 </TableContainer>
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={selectedShapes?.length??0}
+                    count={selectedShapes?.length ?? 0}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     labelRowsPerPage="Rows"
                     onChangePage={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    onChangeRowsPerPage={handleChangeRowsPerPage}>
-                </TablePagination>
+                    onChangeRowsPerPage={handleChangeRowsPerPage}
+                />
             </Grid>
             <Grid container>
                 <Grid xs={8} item>
@@ -569,12 +613,12 @@ const ScopeForm = () => {
                                     color="primary"
                                 />
                             }
-                            label="Select region"
+                            label="Select province"
                         />
                     </FormGroup>
                 </Grid>
                 <Grid xs={4} item>
-                    {shapes && isFetching && (
+                    {districtShapes && isFetching && (
                         <Typography align="right">Refreshing ...</Typography>
                     )}
                 </Grid>

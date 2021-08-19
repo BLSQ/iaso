@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-    Table,
+    // Table,
     LoadingSpinner,
     useSafeIntl,
     commonStyles,
@@ -11,6 +11,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import moment from 'moment';
 import AddIcon from '@material-ui/icons/Add';
+import { Table } from '../../components/tables/newTable/New';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { useGetPages } from './hooks/useGetPages';
@@ -111,7 +112,7 @@ const Pages = () => {
                 sortable: false,
                 Cell: settings => {
                     const pageType = PAGES_TYPES.find(
-                        pt => pt.value === settings.original.type,
+                        pt => pt.value === settings.cell.row.original.type,
                     );
                     return <span>{intl.formatMessage(pageType.label)}</span>;
                 },
@@ -128,9 +129,9 @@ const Pages = () => {
                 Cell: settings => {
                     return (
                         <ColumnText
-                            text={moment(settings.original.updated_at).format(
-                                'LTS',
-                            )}
+                            text={moment(
+                                settings.cell.row.original.updated_at,
+                            ).format('LTS')}
                         />
                     );
                 },
@@ -141,7 +142,9 @@ const Pages = () => {
                 Cell: settings => {
                     return (
                         <>
-                            <a href={`/pages/${settings.original.slug}`}>
+                            <a
+                                href={`/pages/${settings.cell.row.original.slug}`}
+                            >
                                 <IconButtonComponent
                                     icon="remove-red-eye"
                                     tooltipMessage={MESSAGES.viewPage}
@@ -152,14 +155,18 @@ const Pages = () => {
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
                                 onClick={() =>
-                                    handleClickEditRow(settings.original.slug)
+                                    handleClickEditRow(
+                                        settings.cell.row.original.slug,
+                                    )
                                 }
                             />
                             <IconButtonComponent
                                 icon="delete"
                                 tooltipMessage={MESSAGES.delete}
                                 onClick={() =>
-                                    handleClickDeleteRow(settings.original.slug)
+                                    handleClickDeleteRow(
+                                        settings.cell.row.original.slug,
+                                    )
                                 }
                             />
                         </>
@@ -179,6 +186,7 @@ const Pages = () => {
             if (newParams.pageSize !== pageSize) {
                 setPageSize(newParams.pageSize);
             }
+            console.log('newParams', newParams);
         },
         [page, pageSize],
     );

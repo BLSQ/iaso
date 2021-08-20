@@ -14,9 +14,10 @@ import {
     setTableSelection,
     commonStyles,
     injectIntl,
-    Table,
+    // Table,
 } from 'bluesquare-components';
 
+import { Table } from '../../components/tables/newTable/new/New';
 import { fetchSources, fetchOrgUnitsList } from '../../utils/requests';
 
 import {
@@ -485,7 +486,6 @@ class OrgUnits extends Component {
                                             baseUrl={baseUrl}
                                             params={params}
                                             marginTop={false}
-                                            countOnTop={false}
                                             multiSelect
                                             selection={selection}
                                             selectionActions={selectionActions}

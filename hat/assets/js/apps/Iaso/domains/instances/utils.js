@@ -19,7 +19,7 @@ const KeyValueFields = ({ entry }) =>
 const renderValue = (settings, c) => {
     const { key } = c;
     // TODO refactor to use camelCase
-    const { file_content } = settings.original;
+    const { file_content } = settings.cell.row.original;
     const value = file_content[key];
 
     if (hasNoValue(value)) {

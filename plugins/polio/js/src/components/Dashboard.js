@@ -1303,7 +1303,7 @@ export const Dashboard = () => {
                 Header: 'Name',
                 accessor: 'obr_name',
                 Cell: settings => {
-                    return <span>{settings.original.obr_name}</span>;
+                    return <span>{settings.cell.row.original.obr_name}</span>;
                 },
             },
             {
@@ -1323,8 +1323,8 @@ export const Dashboard = () => {
                     return (
                         <ColumnText
                             text={
-                                settings.original?.round_one?.started_at ??
-                                textPlaceholder
+                                settings.cell.row.original?.round_one
+                                    ?.started_at ?? textPlaceholder
                             }
                         />
                     );
@@ -1337,8 +1337,8 @@ export const Dashboard = () => {
                     return (
                         <ColumnText
                             text={
-                                settings.original?.round_two?.started_at ??
-                                textPlaceholder
+                                settings.cell.row.original?.round_two
+                                    ?.started_at ?? textPlaceholder
                             }
                         />
                     );
@@ -1350,7 +1350,9 @@ export const Dashboard = () => {
                 accessor: 'general_status',
                 Cell: settings => {
                     return (
-                        <ColumnText text={settings.original.general_status} />
+                        <ColumnText
+                            text={settings.cell.row.original.general_status}
+                        />
                     );
                 },
             },
@@ -1364,14 +1366,18 @@ export const Dashboard = () => {
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
                                 onClick={() =>
-                                    handleClickEditRow(settings.original.id)
+                                    handleClickEditRow(
+                                        settings.cell.row.original.id,
+                                    )
                                 }
                             />
                             <IconButtonComponent
                                 icon="delete"
                                 tooltipMessage={MESSAGES.delete}
                                 onClick={() =>
-                                    handleClickDeleteRow(settings.original.id)
+                                    handleClickDeleteRow(
+                                        settings.cell.row.original.id,
+                                    )
                                 }
                             />
                         </>

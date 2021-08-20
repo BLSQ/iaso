@@ -26,7 +26,7 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
         Cell: settings => (
             <div className="middle-align">
                 <StarsComponent
-                    score={settings.original.similarity_score}
+                    score={settings.cell.row.original.similarity_score}
                     bgColor={settings.index % 2 ? 'white' : '#f7f7f7'}
                     displayCount
                 />
@@ -38,8 +38,8 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
         accessor: 'destination__name',
         Cell: settings => (
             <span>
-                {settings.original.destination.name} /{' '}
-                {settings.original.source.name}
+                {settings.cell.row.original.destination.name} /{' '}
+                {settings.cell.row.original.source.name}
             </span>
         ),
     },
@@ -49,11 +49,11 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
         Cell: settings => (
             <span>
                 {`${formatMessage(MESSAGES.source)}: ${
-                    settings.original.source.source
+                    settings.cell.row.original.source.source
                 }`}
                 <br />
                 {`${formatMessage(MESSAGES.version)}: ${
-                    settings.original.source.version
+                    settings.cell.row.original.source.version
                 }`}
             </span>
         ),
@@ -64,11 +64,11 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
         Cell: settings => (
             <span>
                 {`${formatMessage(MESSAGES.source)}: ${
-                    settings.original.destination.source
+                    settings.cell.row.original.destination.source
                 }`}
                 <br />
                 {`${formatMessage(MESSAGES.version)}: ${
-                    settings.original.destination.version
+                    settings.cell.row.original.destination.version
                 }`}
             </span>
         ),
@@ -78,7 +78,9 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
         accessor: 'updated_at',
         Cell: settings => (
             <span>
-                {moment.unix(settings.original.updated_at).format('LTS')}
+                {moment
+                    .unix(settings.cell.row.original.updated_at)
+                    .format('LTS')}
             </span>
         ),
     },
@@ -86,16 +88,16 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
         Header: formatMessage(MESSAGES.algorithm),
         accessor: 'algorithm_run',
         Cell: settings =>
-            settings.original.algorithm_run
-                ? settings.original.algorithm_run.algorithm.description
+            settings.cell.row.original.algorithm_run
+                ? settings.cell.row.original.algorithm_run.algorithm.description
                 : '?',
     },
     {
         Header: formatMessage(MESSAGES.validator),
         accessor: 'validator',
         Cell: settings =>
-            settings.original.validator
-                ? getDisplayName(settings.original.validator)
+            settings.cell.row.original.validator
+                ? getDisplayName(settings.cell.row.original.validator)
                 : textPlaceholder,
     },
     {
@@ -104,8 +106,8 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
         Cell: settings => (
             <Checkbox
                 color="primary"
-                checked={settings.original.validated}
-                onChange={() => validateLink(settings.original)}
+                checked={settings.cell.row.original.validated}
+                onChange={() => validateLink(settings.cell.row.original)}
                 value="checked"
             />
         ),
@@ -140,8 +142,10 @@ export const runsTableColumns = (
         accessor: 'ended_at',
         Cell: settings => (
             <span>
-                {settings.original.ended_at ? (
-                    moment.unix(settings.original.ended_at).format('LTS')
+                {settings.cell.row.original.ended_at ? (
+                    moment
+                        .unix(settings.cell.row.original.ended_at)
+                        .format('LTS')
                 ) : (
                     <LoadingSpinner
                         fixed={false}
@@ -158,7 +162,9 @@ export const runsTableColumns = (
         accessor: 'created_at',
         Cell: settings => (
             <span>
-                {moment.unix(settings.original.created_at).format('LTS')}
+                {moment
+                    .unix(settings.cell.row.original.created_at)
+                    .format('LTS')}
             </span>
         ),
     },
@@ -166,7 +172,7 @@ export const runsTableColumns = (
         Header: formatMessage(MESSAGES.name),
         accessor: 'algorithm__name',
         Cell: settings => (
-            <span>{settings.original.algorithm.description}</span>
+            <span>{settings.cell.row.original.algorithm.description}</span>
         ),
     },
     {
@@ -174,8 +180,8 @@ export const runsTableColumns = (
         accessor: 'launcher',
         Cell: settings => (
             <span>
-                {settings.original.launcher
-                    ? getDisplayName(settings.original.launcher)
+                {settings.cell.row.original.launcher
+                    ? getDisplayName(settings.cell.row.original.launcher)
                     : textPlaceholder}
             </span>
         ),
@@ -186,13 +192,16 @@ export const runsTableColumns = (
         sortable: false,
         Cell: settings => (
             <span>
-                {settings.original.links_count === 0 && textPlaceholder}
-                {settings.original.links_count > 0 && (
+                {settings.cell.row.original.links_count === 0 &&
+                    textPlaceholder}
+                {settings.cell.row.original.links_count > 0 && (
                     <Link
                         size="small"
-                        onClick={() => onSelectRunLinks(settings.original)}
+                        onClick={() =>
+                            onSelectRunLinks(settings.cell.row.original)
+                        }
                     >
-                        {formatThousand(settings.original.links_count)}
+                        {formatThousand(settings.cell.row.original.links_count)}
                     </Link>
                 )}
             </span>
@@ -204,11 +213,11 @@ export const runsTableColumns = (
         Cell: settings => (
             <span>
                 {`${formatMessage(MESSAGES.source)}: ${
-                    settings.original.source.data_source.name
+                    settings.cell.row.original.source.data_source.name
                 }`}
                 <br />
                 {`${formatMessage(MESSAGES.version)}: ${
-                    settings.original.source.number
+                    settings.cell.row.original.source.number
                 }`}
             </span>
         ),
@@ -219,11 +228,11 @@ export const runsTableColumns = (
         Cell: settings => (
             <span>
                 {`${formatMessage(MESSAGES.source)}: ${
-                    settings.original.destination.data_source.name
+                    settings.cell.row.original.destination.data_source.name
                 }`}
                 <br />
                 {`${formatMessage(MESSAGES.version)}: ${
-                    settings.original.destination.number
+                    settings.cell.row.original.destination.number
                 }`}
             </span>
         ),
@@ -235,11 +244,11 @@ export const runsTableColumns = (
         Cell: settings => (
             <section>
                 <DeleteDialog
-                    disabled={Boolean(!settings.original.ended_at)}
+                    disabled={Boolean(!settings.cell.row.original.ended_at)}
                     titleMessage={MESSAGES.deleteRunTitle}
                     message={MESSAGES.deleteRunText}
                     onConfirm={closeDialog =>
-                        deleteRuns(settings.original).then(closeDialog)
+                        deleteRuns(settings.cell.row.original).then(closeDialog)
                     }
                 />
             </section>

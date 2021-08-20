@@ -8,8 +8,9 @@ import {
     // TopBar,
     LoadingSpinner,
     commonStyles,
-    Table,
+    // Table,
 } from 'bluesquare-components';
+import { Table } from '../../../components/tables/newTable/new/New';
 import {
     fetchGroups as fetchGroupsAction,
     deleteGroup as deleteGroupAction,

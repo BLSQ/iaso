@@ -39,8 +39,8 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             Header: formatMessage(MESSAGES.name),
             accessor: 'name',
             Cell: settings => (
-                <OrgUnitTooltip orgUnit={settings.original}>
-                    <span>{settings.original.name}</span>
+                <OrgUnitTooltip orgUnit={settings.cell.row.original}>
+                    <span>{settings.cell.row.original.name}</span>
                 </OrgUnitTooltip>
             ),
         },
@@ -48,14 +48,18 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             Header: formatMessage(MESSAGES.type),
             accessor: 'org_unit_type_id',
             Cell: settings => (
-                <section>{settings.original.org_unit_type_name}</section>
+                <section>
+                    {settings.cell.row.original.org_unit_type_name}
+                </section>
             ),
         },
         {
             Header: formatMessage(MESSAGES.groups),
             accessor: 'groups',
             Cell: settings => (
-                <section>{getOrgUnitGroups(settings.original)}</section>
+                <section>
+                    {getOrgUnitGroups(settings.cell.row.original)}
+                </section>
             ),
         },
         {
@@ -64,8 +68,9 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             sortable: false,
             Cell: settings => (
                 <section>
-                    {settings.original.source && settings.original.source}
-                    {!settings.original.source && textPlaceholder}
+                    {settings.cell.row.original.source &&
+                        settings.cell.row.original.source}
+                    {!settings.cell.row.original.source && textPlaceholder}
                 </section>
             ),
         },
@@ -73,7 +78,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             Header: formatMessage(MESSAGES.status),
             accessor: 'validation_status',
             Cell: settings => {
-                const status = settings.original.validation_status;
+                const status = settings.cell.row.original.validation_status;
                 return (
                     <span className={getStatusColor(status)}>
                         {getStatusMessage(status, formatMessage)}
@@ -84,14 +89,18 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
         {
             Header: formatMessage(MESSAGES.instances_count),
             accessor: 'instances_count',
-            Cell: settings => <span>{settings.original.instances_count}</span>,
+            Cell: settings => (
+                <span>{settings.cell.row.original.instances_count}</span>
+            ),
         },
         {
             Header: formatMessage(MESSAGES.updated_at),
             accessor: 'updated_at',
             Cell: settings => (
                 <section>
-                    {moment.unix(settings.original.updated_at).format('LTS')}
+                    {moment
+                        .unix(settings.cell.row.original.updated_at)
+                        .format('LTS')}
                 </section>
             ),
         },
@@ -100,7 +109,9 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             accessor: 'created_at',
             Cell: settings => (
                 <section>
-                    {moment.unix(settings.original.created_at).format('LTS')}
+                    {moment
+                        .unix(settings.cell.row.original.created_at)
+                        .format('LTS')}
                 </section>
             ),
         },
@@ -108,28 +119,28 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             Header: formatMessage(MESSAGES.action),
             resizable: false,
             sortable: false,
-            width: 150,
+            width: 200,
             Cell: settings => (
                 <section>
                     <IconButtonComponent
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/infos`}
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.cell.row.original.id}/tab/infos`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.details}
                     />
-                    {(settings.original.has_geo_json ||
+                    {(settings.cell.row.original.has_geo_json ||
                         Boolean(
-                            settings.original.latitude &&
-                                settings.original.longitude,
+                            settings.cell.row.original.latitude &&
+                                settings.cell.row.original.longitude,
                         )) && (
                         <IconButtonComponent
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/map`}
+                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.cell.row.original.id}/tab/map`}
                             icon="map"
                             tooltipMessage={MESSAGES.map}
                         />
                     )}
 
                     <IconButtonComponent
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/history`}
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.cell.row.original.id}/tab/history`}
                         icon="history"
                         tooltipMessage={MESSAGES.history}
                     />
@@ -147,11 +158,11 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
                 <section>
                     <span
                         style={
-                            settings.original.color
+                            settings.cell.row.original.color
                                 ? {
-                                      backgroundColor: `#${settings.original.color}`,
+                                      backgroundColor: `#${settings.cell.row.original.color}`,
                                       border: `2px solid ${Color(
-                                          `#${settings.original.color}`,
+                                          `#${settings.cell.row.original.color}`,
                                       ).darken(0.5)}`,
                                   }
                                 : {}
@@ -175,13 +186,17 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => [
         Header: formatMessage(MESSAGES.date),
         accessor: 'created_at',
         Cell: settings => (
-            <span>{moment(settings.original.created_at).format('LTS')}</span>
+            <span>
+                {moment(settings.cell.row.original.created_at).format('LTS')}
+            </span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.user),
         accessor: 'user__username',
-        Cell: settings => <span>{getDisplayName(settings.original.user)}</span>,
+        Cell: settings => (
+            <span>{getDisplayName(settings.cell.row.original.user)}</span>
+        ),
     },
     {
         expander: true,

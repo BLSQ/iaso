@@ -13,13 +13,13 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'status',
         Cell: settings => {
             const statusCode =
-                MESSAGES[settings.original.status.toLowerCase()] !== undefined
-                    ? settings.original.status
+                MESSAGES[settings.cell.row.original.status.toLowerCase()] !== undefined
+                    ? settings.cell.row.original.status
                     : 'UNKNOWN';
 
             return (
                 <span>
-                    {settings.original.name}
+                    {settings.cell.row.original.name}
                     <br />
                     <Chip
                         variant="outlined"
@@ -39,13 +39,13 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'progress',
         Cell: settings => (
             <span>
-                {settings.original.status === 'RUNNING' &&
-                settings.original.end_value > 0
-                    ? `${settings.original.progress_value}/${
-                          settings.original.end_value
+                {settings.cell.row.original.status === 'RUNNING' &&
+                settings.cell.row.original.end_value > 0
+                    ? `${settings.cell.row.original.progress_value}/${
+                          settings.cell.row.original.end_value
                       } (${Math.round(
-                          (settings.original.progress_value /
-                              settings.original.end_value) *
+                          (settings.cell.row.original.progress_value /
+                              settings.cell.row.original.end_value) *
                               100,
                       )}%)`
                     : '-'}
@@ -58,8 +58,8 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'message',
         Cell: settings => (
             <span>
-                {settings.original.status === 'RUNNING'
-                    ? settings.original.progress_message
+                {settings.cell.row.original.status === 'RUNNING'
+                    ? settings.cell.row.original.progress_message
                     : '-'}
             </span>
         ),
@@ -70,7 +70,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'created_at',
         Cell: settings => (
             <span>
-                {displayDateFromTimestamp(settings.original.created_at)}
+                {displayDateFromTimestamp(settings.cell.row.original.created_at)}
             </span>
         ),
     },
@@ -80,10 +80,10 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'started_at',
         Cell: settings => (
             <span>
-                {settings.original.status === 'QUEUED' ||
-                settings.original.started_at === null
+                {settings.cell.row.original.status === 'QUEUED' ||
+                settings.cell.row.original.started_at === null
                     ? '-'
-                    : displayDateFromTimestamp(settings.original.started_at)}
+                    : displayDateFromTimestamp(settings.cell.row.original.started_at)}
             </span>
         ),
     },
@@ -93,11 +93,11 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'ended_at',
         Cell: settings => (
             <span>
-                {settings.original.status === 'RUNNING' ||
-                settings.original.status === 'QUEUED' ||
-                settings.original.ended_at === null
+                {settings.cell.row.original.status === 'RUNNING' ||
+                settings.cell.row.original.status === 'QUEUED' ||
+                settings.cell.row.original.ended_at === null
                     ? '-'
-                    : displayDateFromTimestamp(settings.original.ended_at)}
+                    : displayDateFromTimestamp(settings.cell.row.original.ended_at)}
             </span>
         ),
     },
@@ -110,13 +110,13 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
             return (
                 <section>
                     {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
-                        settings.original.status,
+                        settings.cell.row.original.status,
                     ) === true &&
-                        settings.original.should_be_killed === false && (
+                        settings.cell.row.original.should_be_killed === false && (
                             <IconButtonComponent
                                 onClick={() =>
                                     killTaskAction({
-                                        id: settings.original.id,
+                                        id: settings.cell.row.original.id,
                                         should_be_killed: true,
                                     })
                                 }
@@ -124,8 +124,8 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
                                 tooltipMessage={MESSAGES.killTask}
                             />
                         )}
-                    {settings.original.should_be_killed === true &&
-                        settings.original.status === 'RUNNING' &&
+                    {settings.cell.row.original.should_be_killed === true &&
+                        settings.cell.row.original.status === 'RUNNING' &&
                         formatMessage(MESSAGES.killSignalSent)}
                 </section>
             );

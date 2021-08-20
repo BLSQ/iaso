@@ -25,7 +25,7 @@ const dataSourcesTableColumns = (
         Cell: settings =>
             defaultSourceVersion &&
             defaultSourceVersion.source &&
-            defaultSourceVersion.source.id === settings.original.id && (
+            defaultSourceVersion.source.id === settings.cell.row.original.id && (
                 <Tooltip title={formatMessage(MESSAGES.defaultSource)}>
                     <CheckCircleIcon color="primary" />
                 </Tooltip>
@@ -35,28 +35,28 @@ const dataSourcesTableColumns = (
         Header: formatMessage(MESSAGES.defaultVersion),
         accessor: 'default_version__number',
         Cell: settings => {
-            if (!settings.original.default_version) return textPlaceholder;
-            return <span>{settings.original.default_version.number}</span>;
+            if (!settings.cell.row.original.default_version) return textPlaceholder;
+            return <span>{settings.cell.row.original.default_version.number}</span>;
         },
     },
     {
         Header: formatMessage(MESSAGES.dataSourceName),
         accessor: 'name',
         Cell: settings => {
-            return <span>{settings.original.name}</span>;
+            return <span>{settings.cell.row.original.name}</span>;
         },
     },
     {
         Header: formatMessage(MESSAGES.dataSourceDescription),
         accessor: 'description',
-        Cell: settings => <span>{settings.original.description}</span>,
+        Cell: settings => <span>{settings.cell.row.original.description}</span>,
     },
     {
         Header: formatMessage(MESSAGES.dataSourceReadOnly),
         accessor: 'read_only',
         Cell: settings => (
             <span>
-                {settings.original.read_only === true
+                {settings.cell.row.original.read_only === true
                     ? formatMessage(MESSAGES.yes)
                     : formatMessage(MESSAGES.no)}
             </span>
@@ -67,7 +67,7 @@ const dataSourcesTableColumns = (
         resizable: false,
         sortable: false,
         Cell: settings => {
-            const sortedVersions = settings.original.versions.sort(
+            const sortedVersions = settings.cell.row.original.versions.sort(
                 (v1, v2) => v2.number - v1.number,
             );
             const latestVersion =
@@ -76,12 +76,12 @@ const dataSourcesTableColumns = (
                 ...MESSAGES.addTaskTitle,
                 values: {
                     title: formatMessage(MESSAGES.importFromDhis2),
-                    source: settings.original.name,
+                    source: settings.cell.row.original.name,
                     version: latestVersion + 1,
                 },
             };
             const defaultVersion =
-                settings.original.default_version?.number ?? null;
+                settings.cell.row.original.default_version?.number ?? null;
             return (
                 <section>
                     <DataSourceDialogComponent
@@ -93,16 +93,16 @@ const dataSourcesTableColumns = (
                             />
                         )}
                         initialData={{
-                            ...settings.original,
-                            projects: settings.original.projects.flat(),
+                            ...settings.cell.row.original,
+                            projects: settings.cell.row.original.projects.flat(),
                         }}
                         defaultSourceVersion={defaultSourceVersion}
                         titleMessage={MESSAGES.updateDataSource}
-                        key={settings.original.updated_at}
+                        key={settings.cell.row.original.updated_at}
                         onSuccess={() => setForceRefresh(true)}
                         sourceCredentials={
-                            settings.original.credentials
-                                ? settings.original.credentials
+                            settings.cell.row.original.credentials
+                                ? settings.cell.row.original.credentials
                                 : {}
                         }
                     />
@@ -116,12 +116,12 @@ const dataSourcesTableColumns = (
                         )}
                         defaultSourceVersion={defaultSourceVersion}
                         titleMessage={addTaskTitle}
-                        key={`${settings.original.updated_at} ${settings.original.id} addTask`}
-                        sourceId={settings.original.id}
+                        key={`${settings.cell.row.original.updated_at} ${settings.cell.row.original.id} addTask`}
+                        sourceId={settings.cell.row.original.id}
                         sourceVersion={latestVersion + 1}
                         sourceCredentials={
-                            settings.original.credentials
-                                ? settings.original.credentials
+                            settings.cell.row.original.credentials
+                                ? settings.cell.row.original.credentials
                                 : {}
                         }
                     />
@@ -134,11 +134,11 @@ const dataSourcesTableColumns = (
                             />
                         )}
                         titleMessage={MESSAGES.geoPkgTitle}
-                        sourceId={settings.original.id}
-                        sourceName={settings.original.name}
+                        sourceId={settings.cell.row.original.id}
+                        sourceName={settings.cell.row.original.name}
                         latestVersion={latestVersion}
                         defaultVersion={defaultVersion}
-                        projects={settings.original.projects.flat()}
+                        projects={settings.cell.row.original.projects.flat()}
                     />
                 </section>
             );

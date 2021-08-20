@@ -211,11 +211,13 @@ class Table extends Component {
                 Cell: settings => (
                     <Checkbox
                         color="primary"
-                        checked={this.isItemSelected(settings.original)}
+                        checked={this.isItemSelected(
+                            settings.cell.row.original,
+                        )}
                         onChange={event =>
                             this.onSelect(
                                 event.target.checked,
-                                settings.original,
+                                settings.cell.row.original,
                             )
                         }
                     />

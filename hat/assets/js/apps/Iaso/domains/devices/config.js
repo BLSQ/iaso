@@ -9,7 +9,7 @@ const devicesTableColumns = formatMessage => [
         accessor: 'imei',
 
         Cell: settings => {
-            return <span>{settings.original.imei}</span>;
+            return <span>{settings.cell.row.original.imei}</span>;
         },
     },
     {
@@ -20,7 +20,7 @@ const devicesTableColumns = formatMessage => [
             return (
                 <span>
                     {formatMessage(
-                        settings.original.test_device
+                        settings.cell.row.original.test_device
                             ? MESSAGES.yes
                             : MESSAGES.no,
                     )}
@@ -34,8 +34,8 @@ const devicesTableColumns = formatMessage => [
         accessor: 'last_owner',
         Cell: settings => (
             <span>
-                {settings.original.last_owner !== null &&
-                    `${settings.original.last_owner.first_name} ${settings.original.last_owner.last_name}`}
+                {settings.cell.row.original.last_owner !== null &&
+                    `${settings.cell.row.original.last_owner.first_name} ${settings.cell.row.original.last_owner.last_name}`}
             </span>
         ),
     },
@@ -45,8 +45,10 @@ const devicesTableColumns = formatMessage => [
         accessor: 'synched_at',
         Cell: settings => (
             <span>
-                {settings.original.synched_at !== null &&
-                    displayDateFromTimestamp(settings.original.synched_at)}
+                {settings.cell.row.original.synched_at !== null &&
+                    displayDateFromTimestamp(
+                        settings.cell.row.original.synched_at,
+                    )}
             </span>
         ),
     },
@@ -56,7 +58,9 @@ const devicesTableColumns = formatMessage => [
         accessor: 'created_at',
         Cell: settings => (
             <span>
-                {displayDateFromTimestamp(settings.original.created_at)}
+                {displayDateFromTimestamp(
+                    settings.cell.row.original.created_at,
+                )}
             </span>
         ),
     },
@@ -66,7 +70,9 @@ const devicesTableColumns = formatMessage => [
         accessor: 'updated_at',
         Cell: settings => (
             <span>
-                {displayDateFromTimestamp(settings.original.updated_at)}
+                {displayDateFromTimestamp(
+                    settings.cell.row.original.updated_at,
+                )}
             </span>
         ),
     },

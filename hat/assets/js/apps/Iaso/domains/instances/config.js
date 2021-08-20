@@ -19,20 +19,23 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
             Cell: settings => (
                 <section>
                     <IconButtonComponent
-                        url={`${baseUrls.instanceDetail}/instanceId/${settings.original.id}`}
+                        url={`${baseUrls.instanceDetail}/instanceId/${settings.cell.row.original.id}`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.view}
                     />
                     <IconButtonComponent
                         onClick={() =>
-                            window.open(settings.original.file_url, '_blank')
+                            window.open(
+                                settings.cell.row.original.file_url,
+                                '_blank',
+                            )
                         }
                         icon="xml"
                         tooltipMessage={MESSAGES.downloadXml}
                     />
-                    {settings.original.org_unit && (
+                    {settings.cell.row.original.org_unit && (
                         <IconButtonComponent
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.org_unit.id}`}
+                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.cell.row.original.org_unit.id}`}
                             icon="orgUnit"
                             tooltipMessage={MESSAGES.viewOrgUnit}
                         />
@@ -49,11 +52,15 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
             accessor: f.accessor || f.key,
             Cell: settings => (
                 <ColumnTextComponent
-                    title={f.title ? f.title(settings.original[f.key]) : null}
+                    title={
+                        f.title
+                            ? f.title(settings.cell.row.original[f.key])
+                            : null
+                    }
                     text={
                         f.render
-                            ? f.render(settings.original[f.key])
-                            : settings.original[f.key]
+                            ? f.render(settings.cell.row.original[f.key])
+                            : settings.cell.row.original[f.key]
                     }
                 />
             ),

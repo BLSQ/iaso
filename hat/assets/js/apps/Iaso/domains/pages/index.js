@@ -11,7 +11,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import moment from 'moment';
 import AddIcon from '@material-ui/icons/Add';
-import { Table } from '../../components/tables/newTable/New';
+import { Table } from '../../components/tables/newTable/new/New';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { useGetPages } from './hooks/useGetPages';
@@ -25,6 +25,7 @@ import { PAGES_TYPES } from './constants';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
+const DEFAULT_ORDER = '-updated_at';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -35,6 +36,7 @@ const Pages = () => {
     const classes = useStyles();
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
+    const [order, setOrder] = useState(DEFAULT_ORDER);
     const [selectedPageSlug, setSelectedPageSlug] = useState();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
@@ -83,6 +85,7 @@ const Pages = () => {
     const { query } = useGetPages({
         page,
         pageSize,
+        order,
     });
 
     const { data: pages = [], status } = query;
@@ -186,17 +189,21 @@ const Pages = () => {
             if (newParams.pageSize !== pageSize) {
                 setPageSize(newParams.pageSize);
             }
-            console.log('newParams', newParams);
+            if (newParams.order !== order) {
+                setOrder(newParams.order);
+            }
+            // console.log('newParams', newParams);
         },
-        [page, pageSize],
+        [page, pageSize, order],
     );
 
     const tableParams = useMemo(() => {
         return {
             pageSize,
             page,
+            order,
         };
-    }, [pageSize, page]);
+    }, [pageSize, page, order]);
 
     return (
         <>

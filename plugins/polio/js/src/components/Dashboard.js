@@ -637,16 +637,23 @@ const ScopeForm = () => {
                                 <TableCell
                                     onClick={() => handleSort('DISTRICT')}
                                     variant="head"
+                                    style={{ cursor: 'pointer' }}
                                 >
                                     <Typography>District</Typography>
                                 </TableCell>
                                 <TableCell
                                     onClick={() => handleSort('REGION')}
                                     variant="head"
+                                    style={{ cursor: 'pointer' }}
                                 >
                                     <Typography>Region</Typography>
                                 </TableCell>
-                                <TableCell variant="head">Actions</TableCell>
+                                <TableCell
+                                    variant="head"
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    Actions
+                                </TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -666,14 +673,27 @@ const ScopeForm = () => {
                                                     : ''
                                             }
                                         >
-                                            <TableCell style={{ width: '33%' }}>
+                                            <TableCell
+                                                style={{
+                                                    width: '33%',
+                                                    cursor: 'default',
+                                                }}
+                                            >
                                                 {makeTableText(shape.name)}
                                             </TableCell>
-                                            <TableCell style={{ width: '33%' }}>
+                                            <TableCell
+                                                style={{
+                                                    width: '33%',
+                                                    cursor: 'default',
+                                                }}
+                                            >
                                                 {makeTableText(region)}
                                             </TableCell>
                                             <TableCell
-                                                style={{ minWidth: '33%' }}
+                                                style={{
+                                                    minWidth: '33%',
+                                                    cursor: 'pointer',
+                                                }}
                                             >
                                                 <IconButtonComponent
                                                     onClick={() =>

@@ -3,27 +3,31 @@ import { Map, TileLayer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import React, { useEffect, useMemo, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
+import { arrayOf, func, object, objectOf, string } from 'prop-types';
 
-const findRegion = (shape, regionShapes) => {
-    return regionShapes.filter(
-        regionShape => regionShape.id === shape.parent_id,
+const findBackgroundShape = (shape, backgroundShapes) => {
+    return backgroundShapes.filter(
+        backgroundShape => backgroundShape.id === shape.parent_id,
     )[0].name;
 };
 export const MapComponent = ({
+    name,
     onSelectShape,
-    districtShapes,
-    regionShapes,
-    getShapeStyle,
+    mainLayer,
+    backgroundLayer,
+    getMainLayerStyle,
+    getBackgroundLayerStyle,
+    tooltipLabels,
 }) => {
     const map = useRef();
 
     // When there is no data, bounds is undefined, so default center and zoom is used,
     // when the data get there, bounds change and the effect focus on it via the deps
     const bounds = useMemo(() => {
-        if (!districtShapes || districtShapes.length === 0) {
+        if (!mainLayer || mainLayer.length === 0) {
             return null;
         }
-        const bounds_list = districtShapes
+        const bounds_list = mainLayer
             .map(orgunit => geoJSON(orgunit.geo_json).getBounds())
             .filter(b => b !== undefined);
         if (bounds_list.length === 0) {
@@ -32,7 +36,7 @@ export const MapComponent = ({
         const newBounds = bounds_list[0];
         newBounds.extend(bounds_list);
         return newBounds;
-    }, [districtShapes]);
+    }, [mainLayer]);
 
     useEffect(() => {
         if (bounds && bounds.isValid()) {
@@ -53,37 +57,37 @@ export const MapComponent = ({
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <Pane name="Regions">
-                {regionShapes &&
-                    regionShapes.map(shape => (
+            <Pane name={`BackgroundLayer-${name}`}>
+                {backgroundLayer &&
+                    backgroundLayer.map(shape => (
                         <GeoJSON
                             key={shape.id}
                             data={shape.geo_json}
-                            style={{
-                                color: 'grey',
-                                opacity: '1',
-                                fillColor: 'transparent',
-                            }}
+                            style={() => getBackgroundLayerStyle(shape)}
                             onClick={() => null}
                         />
                     ))}
             </Pane>
-            <Pane name="Districts">
-                {districtShapes &&
-                    districtShapes.map(shape => (
+            <Pane name={`MainLayer-${name}`}>
+                {mainLayer &&
+                    mainLayer.map(shape => (
                         <GeoJSON
                             key={shape.id}
                             data={shape.geo_json}
-                            style={() => getShapeStyle(shape)}
+                            style={() => getMainLayerStyle(shape)}
                             onClick={() => onSelectShape(shape)}
                         >
                             <Tooltip>
-                                <span>{`District: ${shape.name}`} </span>
                                 <span>
-                                    {`Region: ${findRegion(
+                                    {`${
+                                        tooltipLabels.background
+                                    }: ${findBackgroundShape(
                                         shape,
-                                        regionShapes,
-                                    )}`}{' '}
+                                        backgroundLayer,
+                                    )} > `}
+                                </span>
+                                <span>
+                                    {`${tooltipLabels.main}: ${shape.name}`}
                                 </span>
                             </Tooltip>
                         </GeoJSON>
@@ -91,4 +95,23 @@ export const MapComponent = ({
             </Pane>
         </Map>
     );
+};
+
+MapComponent.propTypes = {
+    name: string.isRequired,
+    onSelectShape: func,
+    mainLayer: arrayOf(object),
+    backgroundLayer: arrayOf(object),
+    getMainLayerStyle: func,
+    getBackgroundLayerStyle: func,
+    tooltipLabels: objectOf(string),
+};
+
+MapComponent.defaultProps = {
+    onSelectShape: () => null,
+    mainLayer: [],
+    backgroundLayer: [],
+    getMainLayerStyle: () => null,
+    getBackgroundLayerStyle: () => null,
+    tooltipLabels: { main: 'District', background: 'Region' },
 };

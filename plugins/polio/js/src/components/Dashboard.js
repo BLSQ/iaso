@@ -421,6 +421,12 @@ const separate = (array, referenceArray) => {
     return result;
 };
 
+const findRegion = (shape, regionShapes) => {
+    return regionShapes.filter(
+        regionShape => regionShape.id === shape.parent_id,
+    )[0].name;
+};
+
 const ScopeForm = () => {
     const classes = useStyles();
     const [selectRegion, setSelectRegion] = useState(false);
@@ -458,6 +464,14 @@ const ScopeForm = () => {
         },
         [group, values.org_unit?.id],
     );
+
+    const getBackgroundLayerStyle = () => {
+        return {
+            color: 'grey',
+            opacity: '1',
+            fillColor: 'transparent',
+        };
+    };
 
     const toggleRegion = (shape, allShapes, orgUnitsGroup) => {
         const parentRegionShapes = allShapes
@@ -554,14 +568,7 @@ const ScopeForm = () => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
-    const findRegion = useCallback(
-        shape => {
-            return regionShapes.filter(
-                regionShape => regionShape.id === shape.parent_id,
-            )[0].name;
-        },
-        [regionShapes],
-    );
+
     const sortShapesForTable = useCallback(() => {
         if (sortFocus === 'DISTRICT' && sortBy === 'asc') {
             return districtShapes?.filter(shape =>
@@ -577,21 +584,25 @@ const ScopeForm = () => {
             return districtShapes
                 ?.filter(shape => group.org_units.includes(shape.id))
                 .sort(
-                    (shapeA, shapeB) => findRegion(shapeA) > findRegion(shapeB),
+                    (shapeA, shapeB) =>
+                        findRegion(shapeA, regionShapes) >
+                        findRegion(shapeB, regionShapes),
                 );
         }
         if (sortFocus === 'REGION' && sortBy === 'desc') {
             return districtShapes
                 ?.filter(shape => group.org_units.includes(shape.id))
                 .sort(
-                    (shapeA, shapeB) => findRegion(shapeA) < findRegion(shapeB),
+                    (shapeA, shapeB) =>
+                        findRegion(shapeA, regionShapes) <
+                        findRegion(shapeB, regionShapes),
                 );
         }
         console.warn(
             `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and DISTRICT|REGION`,
         );
         return null;
-    }, [sortBy, sortFocus, districtShapes, group.org_units, findRegion]);
+    }, [sortBy, sortFocus, districtShapes, group.org_units, regionShapes]);
 
     const shapesForTable = sortShapesForTable();
 
@@ -622,10 +633,13 @@ const ScopeForm = () => {
                     </Typography>
                 )}
                 <MapComponent
-                    districtShapes={districtShapes}
-                    regionShapes={regionShapes}
+                    name="ScopeMap"
+                    mainLayer={districtShapes}
+                    backgroundLayer={regionShapes}
                     onSelectShape={onSelectOrgUnit}
-                    getShapeStyle={getShapeStyle}
+                    getMainLayerStyle={getShapeStyle}
+                    getBackgroundLayerStyle={getBackgroundLayerStyle}
+                    tooltipLabels={{ main: 'District', background: 'Region' }}
                 />
             </Grid>
 
@@ -663,7 +677,10 @@ const ScopeForm = () => {
                                     page * rowsPerPage + rowsPerPage,
                                 )
                                 .map((shape, i) => {
-                                    const region = findRegion(shape);
+                                    const region = findRegion(
+                                        shape,
+                                        regionShapes,
+                                    );
                                     return (
                                         <TableRow
                                             key={shape.id}

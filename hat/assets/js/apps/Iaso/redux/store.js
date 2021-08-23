@@ -6,7 +6,6 @@ import { createHistory } from 'history';
 import createStore from './createStore';
 
 import appReducer from '../domains/app/reducer';
-import { loadReducer } from './load';
 import { formsReducer, formsInitialState } from '../domains/forms/reducer';
 import {
     orgUnitsReducer,
@@ -58,7 +57,6 @@ let storeHistory = useRouterHistory(createHistory)({
 // TODO: to check, this initial state argument is probably useless
 const store = createStore(
     {
-        load: {},
         sidebar: sidebarMenuInitialState,
         forms: formsInitialState,
         orgUnits: orgUnitsInitialState,
@@ -78,7 +76,6 @@ const store = createStore(
     },
     {
         app: appReducer,
-        load: loadReducer,
         sidebar: sidebarMenuReducer,
         forms: formsReducer,
         orgUnits: orgUnitsReducer,

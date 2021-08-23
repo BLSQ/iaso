@@ -8,7 +8,7 @@
  * @returns {*}
  */
 export function commaSeparatedIdsToArray(string) {
-    // if (!string) return [];
+    if (!string) return [];
     return string
         .split(',')
         .filter(s => s !== '')

@@ -3,9 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-
-import { Grid } from '@material-ui/core';
-
+import { Grid, Typography, makeStyles, Box } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
@@ -17,9 +15,21 @@ import {
 
 import MESSAGES from '../messages';
 
+const styles = theme => ({
+    advancedSettings: {
+        color: theme.palette.primary.main,
+        alignSelf: 'center',
+        textAlign: 'right',
+        flex: '1',
+    },
+});
+const useStyles = makeStyles(styles);
+
 const FormForm = ({ currentForm, setFieldValue }) => {
+    const classes = useStyles();
     const intl = useSafeIntl();
     const [isSinglePerPeriodSet, setIsSinglePeriodSet] = useState(false);
+    const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
     const allProjects = useSelector(state => state.projects.allProjects);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
     const setPeriodType = value => {
@@ -182,54 +192,93 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                     }
                     label={MESSAGES.orgUnitsTypes}
                 />
-                <InputComponent
-                    keyValue="device_field"
-                    onChange={(key, value) => setFieldValue(key, value)}
-                    value={currentForm.device_field.value}
-                    errors={currentForm.device_field.errors}
-                    type="text"
-                    label={MESSAGES.deviceField}
-                />
-                <InputComponent
-                    keyValue="location_field"
-                    onChange={(key, value) => setFieldValue(key, value)}
-                    value={currentForm.location_field.value}
-                    errors={currentForm.location_field.errors}
-                    type="text"
-                    label={MESSAGES.locationField}
-                />
-                <InputComponent
-                    keyValue="derived"
-                    onChange={(key, value) => setFieldValue(key, value)}
-                    value={currentForm.derived.value}
-                    errors={currentForm.derived.errors}
-                    type="checkbox"
-                    required
-                    label={MESSAGES.derived}
-                />
-                <InputComponent
-                    multi
-                    clearable
-                    keyValue="label_keys"
-                    onChange={(key, value) => {
-                        setFieldValue(
-                            key,
-                            commaSeparatedIdsToStringArray(value),
-                        );
-                    }}
-                    value={currentForm.label_keys.value}
-                    errors={currentForm.fields.errors}
-                    type="select"
-                    options={currentForm.fields.value
-                        .map(field => ({
-                            label: field.label,
-                            value: field.name,
-                        }))
-                        .sort(
-                            (option1, option2) => option1.label > option2.label,
-                        )}
-                    label={MESSAGES.fields}
-                />
+                {showAdvancedSettings && (
+                    <>
+                        <InputComponent
+                            keyValue="device_field"
+                            onChange={(key, value) => setFieldValue(key, value)}
+                            value={currentForm.device_field.value}
+                            errors={currentForm.device_field.errors}
+                            type="text"
+                            label={MESSAGES.deviceField}
+                        />
+                        <InputComponent
+                            keyValue="location_field"
+                            onChange={(key, value) => setFieldValue(key, value)}
+                            value={currentForm.location_field.value}
+                            errors={currentForm.location_field.errors}
+                            type="text"
+                            label={MESSAGES.locationField}
+                        />
+                        <InputComponent
+                            multi
+                            clearable
+                            keyValue="label_keys"
+                            onChange={(key, value) => {
+                                setFieldValue(
+                                    key,
+                                    commaSeparatedIdsToStringArray(value),
+                                );
+                            }}
+                            value={currentForm.label_keys.value}
+                            errors={currentForm.fields.errors}
+                            type="select"
+                            options={currentForm.fields.value
+                                .map(field => ({
+                                    label: field.label,
+                                    value: field.name,
+                                }))
+                                .sort(
+                                    (option1, option2) =>
+                                        option1.label > option2.label,
+                                )}
+                            label={MESSAGES.fields}
+                        />
+                        <Box style={{ display: 'inline-flex', width: '100%' }}>
+                            <InputComponent
+                                keyValue="derived"
+                                onChange={(key, value) =>
+                                    setFieldValue(key, value)
+                                }
+                                value={currentForm.derived.value}
+                                errors={currentForm.derived.errors}
+                                type="checkbox"
+                                required
+                                label={MESSAGES.derived}
+                            />
+                            {/* Splitting the Typography to be able to align it with the checkbox */}
+                            <Typography
+                                className={classes.advancedSettings}
+                                variant="overline"
+                                onClick={() => setshowAdvancedSettings(false)}
+                            >
+                                {intl.formatMessage(
+                                    MESSAGES.hideAdvancedSettings,
+                                )}
+                            </Typography>
+                        </Box>
+                    </>
+                )}
+                {!showAdvancedSettings && (
+                    <Typography
+                        className={classes.advancedSettings}
+                        variant="overline"
+                        onClick={() => setshowAdvancedSettings(true)}
+                    >
+                        {intl.formatMessage(MESSAGES.showAdvancedSettings)}
+                    </Typography>
+                )}
+                {/* <Typography
+                    className={classes.advancedSettings}
+                    variant="overline"
+                    onClick={() =>
+                        setshowAdvancedSettings(!showAdvancedSettings)
+                    }
+                >
+                    {showAdvancedSettings
+                        ? intl.formatMessage(MESSAGES.hideAdvancedSettings)
+                        : intl.formatMessage(MESSAGES.showAdvancedSettings)}
+                </Typography> */}
             </Grid>
         </Grid>
     );

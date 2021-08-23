@@ -1,22 +1,18 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+// import { FormattedMessage } from 'react-intl';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import MaUTable from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
 import Checkbox from '@material-ui/core/Checkbox';
 import TablePagination from '@material-ui/core/TablePagination';
 import Paper from '@material-ui/core/Paper';
 import TableContainer from '@material-ui/core/TableContainer';
-import isEqual from 'lodash/isEqual';
 
 import {
     useSafeIntl,
     commonStyles,
-    SelectionSpeedDials,
+    // SelectionSpeedDials,
 } from 'bluesquare-components';
 import {
     useTable,
@@ -31,11 +27,12 @@ import {
     getParamsKey,
     getSort,
     getOrderArray,
-    defaultSelectionActions,
+    // defaultSelectionActions,
 } from '../tableUtils';
-import { formatThousand } from '../../../../utils';
+// import { formatThousand } from '../../../../utils';
 import { Head } from './Head';
 import { Body } from './Body';
+import { onSelect, isItemSelected, Select, getSelectionCol } from './Select';
 /**
  * Table component, no redux, no fetch, just displaying.
  * Multi selection is optionnal, if set to true you can add custom actions
@@ -93,7 +90,7 @@ const Table = ({
     pages,
     countOnTop,
     marginTop,
-    selection: { selectCount },
+    // selection: { selectCount },
     multiSelect,
     selectionActions,
     setTableSelection,
@@ -107,61 +104,11 @@ const Table = ({
         params[getParamsKey(paramsPrefix, 'pageSize')],
         10,
     );
-    const onSelect = (isSelected, item) => {
-        const selectedItems = [...selection.selectedItems];
-        const unSelectedItems = [...selection.unSelectedItems];
-        const { selectAll } = selection;
-        if (selectAll) {
-            if (!isSelected) {
-                unSelectedItems.push(item);
-            } else {
-                const itemIndex = unSelectedItems.findIndex(el =>
-                    isEqual(el, item),
-                );
-                if (itemIndex !== -1) {
-                    unSelectedItems.splice(itemIndex, 1);
-                }
-            }
-            setTableSelection('unselect', unSelectedItems, count);
-        } else {
-            if (isSelected) {
-                selectedItems.push(item);
-            } else {
-                const itemIndex = selectedItems.findIndex(el =>
-                    isEqual(el, item),
-                );
-                selectedItems.splice(itemIndex, 1);
-            }
-            setTableSelection('select', selectedItems);
-        }
-    };
 
-    const isItemSelected = item => {
-        const { selectedItems, unSelectedItems, selectAll } = selection;
-        if (!selectAll) {
-            return Boolean(selectedItems.find(el => isEqual(el, item)));
-        }
-        return !unSelectedItems.find(el => isEqual(el, item));
-    };
     if (multiSelect && !columns.find(c => c.accessor === 'selected')) {
-        columns.push({
-            Header: formatMessage(MESSAGES.selection),
-            accessor: 'selected',
-            width: 100,
-            sortable: false,
-            Cell: settings => (
-                <Checkbox
-                    color="primary"
-                    checked={isItemSelected(settings.cell.row.original)}
-                    onChange={event =>
-                        onSelect(
-                            event.target.checked,
-                            settings.cell.row.original,
-                        )
-                    }
-                />
-            ),
-        });
+        columns.push(
+            getSelectionCol(selection, setTableSelection, count, formatMessage),
+        );
     }
 
     const getPageIndex = () => {
@@ -240,18 +187,26 @@ const Table = ({
     };
     const rowsPerPage = parseInt(pageSize, 10);
 
-    let actions = [
-        ...defaultSelectionActions(
-            () => setTableSelection('selectAll', [], count),
-            () => setTableSelection('reset'),
-            formatMessage,
-        ),
-    ];
-    actions = actions.concat(selectionActions);
+    // let actions = [
+    //     ...defaultSelectionActions(
+    //         () => setTableSelection('selectAll', [], count),
+    //         () => setTableSelection('reset'),
+    //         formatMessage,
+    //     ),
+    // ];
+    // actions = actions.concat(selectionActions);
 
     return (
         <Box mt={marginTop ? 4 : 0} className={classes.root}>
-            {selectCount > 0 && (
+            <Select
+                count={count}
+                multiSelect={multiSelect}
+                selectionActions={selectionActions}
+                selection={selection}
+                setTableSelection={setTableSelection}
+                selectionActionMessage={selectionActionMessage}
+            />
+            {/* {selectCount > 0 && (
                 <span>
                     {`${formatThousand(selectCount)} `}
                     <FormattedMessage {...MESSAGES.selected} />
@@ -267,7 +222,7 @@ const Table = ({
                     selectionActionMessage ??
                     formatMessage(MESSAGES.selectionAction)
                 }
-            />
+            /> */}
             <Paper className={classes.paper}>
                 <TableContainer>
                     <MaUTable {...tableProps}>

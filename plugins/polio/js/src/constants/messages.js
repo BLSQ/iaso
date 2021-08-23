@@ -85,6 +85,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Pages',
         id: 'iaso.label.pages',
     },
+    removeDistrict: {
+        defaultMessage: 'Unselect district',
+        id: 'iaso.button.label.removeDistrict',
+    },
+    removeRegion: {
+        defaultMessage: 'Unselect region',
+        id: 'iaso.button.label.removeRegion',
+    },
 });
 
 export default MESSAGES;

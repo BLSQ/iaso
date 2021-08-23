@@ -35,10 +35,6 @@ import {
 } from './sidebarMenuReducer';
 import { snackBarsInitialState, snackBarsReducer } from './snackBarsReducer';
 import { devicesInitialState, devicesReducer } from './devicesReducer';
-import {
-    orgUnitsLevelsInitialState,
-    orgUnitsLevelsReducer,
-} from './orgUnitsLevelsReducer';
 import { routerInitialState, routerReducer } from './routerReducer';
 import { linksInitialState, linksReducer } from '../domains/links/reducer';
 import { usersReducer, usersInitialState } from '../domains/users/reducer';
@@ -75,7 +71,6 @@ const store = createStore(
         snackBar: snackBarsInitialState,
         map: mapInitialState,
         devices: devicesInitialState,
-        orgUnitsLevels: orgUnitsLevelsInitialState,
         routerCustom: routerInitialState,
         links: linksInitialState,
         users: usersInitialState,
@@ -97,7 +92,6 @@ const store = createStore(
         snackBar: snackBarsReducer,
         map: mapReducer,
         devices: devicesReducer,
-        orgUnitsLevels: orgUnitsLevelsReducer,
         routerCustom: routerReducer,
         links: linksReducer,
         users: usersReducer,

@@ -643,7 +643,7 @@ class OrgUnitDetail extends Component {
                                     ...onlyChildrenParams(
                                         'childrenParams',
                                         params,
-                                        currentOrgUnit,
+                                        params.orgUnitId,
                                     ),
                                 }}
                                 baseUrl={baseUrl}

@@ -449,6 +449,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.label.singlePerPeriodSelect',
         defaultMessage: 'Please select an answer',
     },
+    fields: {
+        id: 'iaso.form.label.fields',
+        defaultMessage: 'Default fields to display',
+    },
 });
 
 export default MESSAGES;

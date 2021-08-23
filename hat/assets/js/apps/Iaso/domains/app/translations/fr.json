@@ -49,6 +49,7 @@
     "iaso.exportRequest.last_export_success_at": "Dernier export réussi",
     "iaso.exportRequest.launcher": "Exporté par",
     "iaso.exportRequest.Status": "Status",
+    "iaso.form.label.fields": "Champs à afficher par défaut",
     "iaso.form.label.singlePerPeriodSelect": "Veuillez sélectionner une réponse",
     "iaso.forms.aliases": "Alias",
     "iaso.forms.all": "Tous",

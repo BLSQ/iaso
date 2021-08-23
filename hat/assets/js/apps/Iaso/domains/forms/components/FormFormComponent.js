@@ -10,7 +10,10 @@ import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import {
+    commaSeparatedIdsToArray,
+    commaSeparatedIdsToStringArray,
+} from '../../../utils/forms';
 
 import MESSAGES from '../messages';
 
@@ -203,6 +206,29 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                     type="checkbox"
                     required
                     label={MESSAGES.derived}
+                />
+                <InputComponent
+                    multi
+                    clearable
+                    keyValue="label_keys"
+                    onChange={(key, value) => {
+                        setFieldValue(
+                            key,
+                            commaSeparatedIdsToStringArray(value),
+                        );
+                    }}
+                    value={currentForm.label_keys.value}
+                    errors={currentForm.fields.errors}
+                    type="select"
+                    options={currentForm.fields.value
+                        .map(field => ({
+                            label: field.label,
+                            value: field.name,
+                        }))
+                        .sort(
+                            (option1, option2) => option1.label > option2.label,
+                        )}
+                    label={MESSAGES.fields}
                 />
             </Grid>
         </Grid>

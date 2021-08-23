@@ -50,6 +50,12 @@ const defaultForm = {
     periods_after_allowed: 0,
     device_field: 'deviceid',
     location_field: '',
+    fields: [
+        { name: 'kk_1', type: 'string', label: '6.What is love' },
+        { name: 'kk_2', type: 'string', label: "7.Baby don't hurt me" },
+        { name: 'kk_3', type: 'string', label: '8. No more' },
+    ],
+    label_keys: ['kk_2', 'kk_3'],
 };
 
 const initialFormState = (form = defaultForm) => ({
@@ -71,6 +77,8 @@ const initialFormState = (form = defaultForm) => ({
     periods_after_allowed: form.periods_after_allowed,
     device_field: form.device_field,
     location_field: form.location_field,
+    fields: form.fields ?? defaultForm.fields,
+    label_keys: form.label_keys ?? defaultForm.label_keys,
 });
 
 const FormDetail = ({ router, params }) => {
@@ -92,11 +100,14 @@ const FormDetail = ({ router, params }) => {
         let formData;
         if (params.formId === '0') {
             isUpdate = false;
-            formData = mapValues(omit(currentForm, ['form_id']), v => v.value);
+            formData = mapValues(
+                omit(currentForm, ['form_id', 'fields']),
+                v => v.value,
+            );
             saveForm = createForm(dispatch, formData);
         } else {
             isUpdate = true;
-            formData = mapValues(currentForm, v => v.value);
+            formData = mapValues(omit(currentForm, ['fields']), v => v.value);
             saveForm = updateForm(dispatch, currentForm.id.value, formData);
         }
         dispatch(setIsLoadingForm(true));

@@ -610,6 +610,7 @@ const ScopeForm = () => {
         return (
             <Tooltip placement="bottom" title={text}>
                 <Typography
+                    variant="overline"
                     style={{
                         maxWidth: '100px',
                         overflow: 'hidden',
@@ -664,7 +665,10 @@ const ScopeForm = () => {
                                 </TableCell>
                                 <TableCell
                                     variant="head"
-                                    style={{ cursor: 'pointer' }}
+                                    style={{
+                                        cursor: 'pointer',
+                                        textAlign: 'center',
+                                    }}
                                 >
                                     Actions
                                 </TableCell>

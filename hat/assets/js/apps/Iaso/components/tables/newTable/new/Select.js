@@ -1,14 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
-import { FormattedMessage } from 'react-intl';
 import Checkbox from '@material-ui/core/Checkbox';
 
 import { useSafeIntl, SelectionSpeedDials } from 'bluesquare-components';
 import { MESSAGES } from '../messages';
 
 import { selectionInitialState, defaultSelectionActions } from '../tableUtils';
-import { formatThousand } from '../../../../utils';
 
 const onSelect = ({
     isSelected,
@@ -85,7 +83,6 @@ const Select = ({
     setTableSelection,
     selection,
     selectionActionMessage,
-    selection: { selectCount },
 }) => {
     const intl = useSafeIntl();
     const { formatMessage } = intl;
@@ -100,25 +97,16 @@ const Select = ({
     actions = actions.concat(selectionActions);
 
     return (
-        <>
-            {selectCount > 0 && (
-                <span>
-                    {`${formatThousand(selectCount)} `}
-                    <FormattedMessage {...MESSAGES.selected} />
-                    {' - '}
-                </span>
-            )}
-            <SelectionSpeedDials
-                selection={selection}
-                hidden={!multiSelect}
-                actions={actions}
-                reset={() => setTableSelection('reset')}
-                actionMessage={
-                    selectionActionMessage ??
-                    formatMessage(MESSAGES.selectionAction)
-                }
-            />
-        </>
+        <SelectionSpeedDials
+            selection={selection}
+            hidden={!multiSelect}
+            actions={actions}
+            reset={() => setTableSelection('reset')}
+            actionMessage={
+                selectionActionMessage ??
+                formatMessage(MESSAGES.selectionAction)
+            }
+        />
     );
 };
 

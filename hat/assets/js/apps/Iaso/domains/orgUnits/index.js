@@ -486,6 +486,7 @@ class OrgUnits extends Component {
                                             baseUrl={baseUrl}
                                             params={params}
                                             marginTop={false}
+                                            countOnTop={false}
                                             multiSelect
                                             selection={selection}
                                             selectionActions={selectionActions}

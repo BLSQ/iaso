@@ -119,7 +119,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             Header: formatMessage(MESSAGES.action),
             resizable: false,
             sortable: false,
-            width: 200,
+            width: 250,
             Cell: settings => (
                 <section>
                     <IconButtonComponent

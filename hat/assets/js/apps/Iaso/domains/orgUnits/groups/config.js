@@ -1,7 +1,6 @@
 import React from 'react';
 import {
     IconButton as IconButtonComponent,
-    ColumnText as ColumnTextComponent,
     displayDateFromTimestamp,
     formatThousand,
     textPlaceholder,
@@ -14,11 +13,8 @@ const TableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
-        resizable: true,
-        style: { justifyContent: 'left' },
-        Cell: settings => (
-            <ColumnTextComponent text={settings.cell.row.original.name} />
-        ),
+        align: 'left',
+        Cell: settings => settings.cell.row.original.name,
     },
     {
         Header: formatMessage(MESSAGES.updatedAt),
@@ -33,7 +29,8 @@ const TableColumns = (formatMessage, component) => [
     },
     {
         Header: formatMessage(MESSAGES.sourceVersion),
-        accessor: '',
+        accessor: 'source_version',
+        sortable: false,
         Cell: settings => {
             const sourceVersion = settings.cell.row.original.source_version;
             const text =
@@ -41,17 +38,14 @@ const TableColumns = (formatMessage, component) => [
                     ? `${sourceVersion.data_source.name} - ${sourceVersion.number}`
                     : textPlaceholder;
 
-            return <ColumnTextComponent text={text} />;
+            return text;
         },
     },
     {
         Header: formatMessage(MESSAGES.sourceRef),
         accessor: 'source_ref',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.cell.row.original.source_ref || textPlaceholder}
-            />
-        ),
+        Cell: settings =>
+            settings.cell.row.original.source_ref || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.orgUnit),
@@ -64,6 +58,7 @@ const TableColumns = (formatMessage, component) => [
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
         Cell: settings => (

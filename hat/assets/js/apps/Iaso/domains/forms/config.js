@@ -6,7 +6,6 @@ import { Link } from 'react-router';
 import {
     textPlaceholder,
     IconButton as IconButtonComponent,
-    ColumnText as ColumnTextComponent,
 } from 'bluesquare-components';
 import FormVersionsDialog from './components/FormVersionsDialogComponent';
 import { baseUrls } from '../../constants/urls';
@@ -24,29 +23,20 @@ export const formVersionsTableColumns = (
     {
         Header: formatMessage(MESSAGES.version),
         accessor: 'version_id',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.cell.row.original.version_id || textPlaceholder}
-            />
-        ),
+        Cell: settings =>
+            settings.cell.row.original.version_id || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.startPeriod),
         accessor: 'start_period',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.cell.row.original.start_period || textPlaceholder}
-            />
-        ),
+        Cell: settings =>
+            settings.cell.row.original.start_period || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.endPeriod),
         accessor: 'end_period',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.cell.row.original.end_period || textPlaceholder}
-            />
-        ),
+        Cell: settings =>
+            settings.cell.row.original.end_period || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.actions),
@@ -57,7 +47,10 @@ export const formVersionsTableColumns = (
                 {settings.cell.row.original.xls_file && (
                     <IconButtonComponent
                         onClick={() =>
-                            window.open(settings.cell.row.original.xls_file, '_blank')
+                            window.open(
+                                settings.cell.row.original.xls_file,
+                                '_blank',
+                            )
                         }
                         icon="xls"
                         tooltipMessage={MESSAGES.xls_form_file}
@@ -99,29 +92,19 @@ const formsTableColumns = (
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
         style: { justifyContent: 'left' },
-        Cell: settings => <ColumnTextComponent text={settings.cell.row.original.name} />,
+        Cell: settings => settings.cell.row.original.name,
     },
     {
         Header: formatMessage(MESSAGES.created_at),
         accessor: 'created_at',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={moment
-                    .unix(settings.cell.row.original.created_at)
-                    .format('LTS')}
-            />
-        ),
+        Cell: settings =>
+            moment.unix(settings.cell.row.original.created_at).format('LTS'),
     },
     {
         Header: formatMessage(MESSAGES.updated_at),
         accessor: 'updated_at',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={moment
-                    .unix(settings.cell.row.original.updated_at)
-                    .format('LTS')}
-            />
-        ),
+        Cell: settings =>
+            moment.unix(settings.cell.row.original.updated_at).format('LTS'),
     },
     {
         Header: formatMessage(MESSAGES.instance_updated_at),
@@ -133,37 +116,28 @@ const formsTableColumns = (
                       .format('LTS')
                 : textPlaceholder;
 
-            return <ColumnTextComponent text={dateText} />;
+            return dateText;
         },
     },
     {
         Header: formatMessage(MESSAGES.type),
         sortable: false,
         accessor: 'org_unit_types',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.cell.row.original.org_unit_types
-                    .map(o => o.short_name)
-                    .join(', ')}
-            />
-        ),
+        Cell: settings =>
+            settings.cell.row.original.org_unit_types
+                .map(o => o.short_name)
+                .join(', '),
     },
     {
         Header: formatMessage(MESSAGES.records),
         accessor: 'instances_count',
-        Cell: settings => (
-            <ColumnTextComponent text={settings.cell.row.original.instances_count} />
-        ),
+        Cell: settings => settings.cell.row.original.instances_count,
     },
     {
         Header: formatMessage(MESSAGES.form_id),
         sortable: false,
         style: { justifyContent: 'left' },
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.cell.row.original.form_id || textPlaceholder}
-            />
-        ),
+        Cell: settings => settings.cell.row.original.form_id || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.latest_version_files),
@@ -172,20 +146,20 @@ const formsTableColumns = (
             settings.cell.row.original.latest_form_version !== null && (
                 <Grid container spacing={1} justifyContent="center">
                     <Grid item>
-                        <ColumnTextComponent
-                            text={
-                                settings.cell.row.original.latest_form_version.version_id
-                            }
-                        />
+                        {
+                            settings.cell.row.original.latest_form_version
+                                .version_id
+                        }
                     </Grid>
                     <Grid container spacing={1} justifyContent="center">
-                        {settings.cell.row.original.latest_form_version.xls_file && (
+                        {settings.cell.row.original.latest_form_version
+                            .xls_file && (
                             <Grid item>
                                 <Link
                                     download
                                     href={
-                                        settings.cell.row.original.latest_form_version
-                                            .xls_file
+                                        settings.cell.row.original
+                                            .latest_form_version.xls_file
                                     }
                                 >
                                     XLS
@@ -196,7 +170,8 @@ const formsTableColumns = (
                             <Link
                                 download
                                 href={
-                                    settings.cell.row.original.latest_form_version.file
+                                    settings.cell.row.original
+                                        .latest_form_version.file
                                 }
                             >
                                 XML
@@ -250,7 +225,9 @@ const formsTableColumns = (
                         titleMessage={MESSAGES.deleteFormTitle}
                         message={MESSAGES.deleteFormText}
                         onConfirm={closeDialog =>
-                            deleteForm(settings.cell.row.original.id).then(closeDialog)
+                            deleteForm(settings.cell.row.original.id).then(
+                                closeDialog,
+                            )
                         }
                     />
                 </section>

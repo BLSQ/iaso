@@ -1,7 +1,6 @@
 import React from 'react';
 import {
     IconButton as IconButtonComponent,
-    ColumnText as ColumnTextComponent,
     displayDateFromTimestamp,
     formatThousand,
 } from 'bluesquare-components';
@@ -15,54 +14,37 @@ const TableColumns = (formatMessage, component) => [
         accessor: 'name',
         sortable: false,
         style: { justifyContent: 'left' },
-        Cell: settings => (
-            <ColumnTextComponent text={settings.cell.row.original.name} />
-        ),
+        Cell: settings => settings.cell.row.original.name,
     },
     {
         Header: formatMessage(MESSAGES.shortName),
         accessor: 'short_name',
         sortable: false,
-        Cell: settings => (
-            <ColumnTextComponent text={settings.cell.row.original.short_name} />
-        ),
+        Cell: settings => settings.cell.row.original.short_name,
     },
     {
         Header: formatMessage(MESSAGES.validatedOrgUnitCount),
         accessor: 'units_count',
         sortable: false,
-        Cell: settings => (
-            <ColumnTextComponent
-                text={formatThousand(settings.cell.row.original.units_count)}
-            />
-        ),
+        Cell: settings =>
+            formatThousand(settings.cell.row.original.units_count),
     },
     {
         Header: formatMessage(MESSAGES.depth),
         headerInfo: formatMessage(MESSAGES.depthInfos),
         accessor: 'depth',
         sortable: false,
-        Cell: settings => (
-            <ColumnTextComponent
-                text={
-                    settings.cell.row.original.depth !== null
-                        ? settings.cell.row.original.depth
-                        : '-'
-                }
-            />
-        ),
+        Cell: settings =>
+            settings.cell.row.original.depth !== null
+                ? settings.cell.row.original.depth
+                : '-',
     },
     {
         Header: formatMessage(MESSAGES.projects),
         accessor: 'projects',
         sortable: false,
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.cell.row.original.projects
-                    .map(p => p.name)
-                    .join(', ')}
-            />
-        ),
+        Cell: settings =>
+            settings.cell.row.original.projects.map(p => p.name).join(', '),
     },
     {
         Header: formatMessage(MESSAGES.createdAt),

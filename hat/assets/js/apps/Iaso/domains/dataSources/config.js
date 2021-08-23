@@ -25,7 +25,8 @@ const dataSourcesTableColumns = (
         Cell: settings =>
             defaultSourceVersion &&
             defaultSourceVersion.source &&
-            defaultSourceVersion.source.id === settings.cell.row.original.id && (
+            defaultSourceVersion.source.id ===
+                settings.cell.row.original.id && (
                 <Tooltip title={formatMessage(MESSAGES.defaultSource)}>
                     <CheckCircleIcon color="primary" />
                 </Tooltip>
@@ -35,8 +36,11 @@ const dataSourcesTableColumns = (
         Header: formatMessage(MESSAGES.defaultVersion),
         accessor: 'default_version__number',
         Cell: settings => {
-            if (!settings.cell.row.original.default_version) return textPlaceholder;
-            return <span>{settings.cell.row.original.default_version.number}</span>;
+            if (!settings.cell.row.original.default_version)
+                return textPlaceholder;
+            return (
+                <span>{settings.cell.row.original.default_version.number}</span>
+            );
         },
     },
     {
@@ -94,7 +98,8 @@ const dataSourcesTableColumns = (
                         )}
                         initialData={{
                             ...settings.cell.row.original,
-                            projects: settings.cell.row.original.projects.flat(),
+                            projects:
+                                settings.cell.row.original.projects.flat(),
                         }}
                         defaultSourceVersion={defaultSourceVersion}
                         titleMessage={MESSAGES.updateDataSource}

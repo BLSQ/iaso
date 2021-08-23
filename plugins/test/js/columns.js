@@ -1,9 +1,4 @@
-import React from 'react';
 import moment from 'moment';
-import {
-    ColumnText as ColumnTextComponent,
-    displayDateFromTimestamp,
-} from 'bluesquare-components';
 import MESSAGES from './messages';
 
 const TableColumns = formatMessage => [
@@ -11,9 +6,7 @@ const TableColumns = formatMessage => [
         Header: formatMessage(MESSAGES.titleCol),
         accessor: 'title',
         style: { justifyContent: 'left' },
-        Cell: settings => (
-            <ColumnTextComponent text={settings.cell.row.original.title} />
-        ),
+        Cell: settings => settings.cell.row.original.title,
     },
     {
         Header: formatMessage(MESSAGES.author),

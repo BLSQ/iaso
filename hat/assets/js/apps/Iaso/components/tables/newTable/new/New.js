@@ -1,38 +1,35 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 // import { FormattedMessage } from 'react-intl';
-import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import MaUTable from '@material-ui/core/Table';
-import Checkbox from '@material-ui/core/Checkbox';
-import TablePagination from '@material-ui/core/TablePagination';
 import Paper from '@material-ui/core/Paper';
 import TableContainer from '@material-ui/core/TableContainer';
 
-import {
-    useSafeIntl,
-    commonStyles,
-    // SelectionSpeedDials,
-} from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
+
 import {
     useTable,
     usePagination,
     useSortBy,
     useResizeColumns,
 } from 'react-table';
-import { MESSAGES } from '../messages';
+
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE, DEFAULT_ORDER } from './constants';
 
 import {
     selectionInitialState,
     getParamsKey,
     getSort,
     getOrderArray,
-    // defaultSelectionActions,
 } from '../tableUtils';
-// import { formatThousand } from '../../../../utils';
+
 import { Head } from './Head';
 import { Body } from './Body';
-import { onSelect, isItemSelected, Select, getSelectionCol } from './Select';
+import { Select, getSelectionCol } from './Select';
+import { NoResult } from './NoResult';
+import { Count } from './Count';
+import { Pagination } from './Pagination';
 /**
  * Table component, no redux, no fetch, just displaying.
  * Multi selection is optionnal, if set to true you can add custom actions
@@ -66,68 +63,64 @@ import { onSelect, isItemSelected, Select, getSelectionCol } from './Select';
  *   @param {Function} setTableSelection
  */
 
-const DEFAULT_PAGE_SIZE = 10;
-const DEFAULT_PAGE = 1;
-const DEFAULT_ORDER = '-updated_at';
-
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    root: {
-        '& .MuiTableHead-root .MuiTableRow-root .MuiTableCell-head': {
-            fontWeight: 'bold',
-        },
-    },
-}));
-const Table = ({
-    params,
-    data,
-    count,
-    extraProps,
-    paramsPrefix,
-    columns,
-    redirectTo,
-    baseUrl,
-    pages,
-    countOnTop,
-    marginTop,
-    // selection: { selectCount },
-    multiSelect,
-    selectionActions,
-    setTableSelection,
-    selection,
-    selectionActionMessage,
-}) => {
+const Table = props => {
+    const {
+        params,
+        count,
+        extraProps,
+        paramsPrefix,
+        redirectTo,
+        baseUrl,
+        pages,
+        countOnTop,
+        marginTop,
+        multiSelect,
+        selectionActions,
+        setTableSelection,
+        selection,
+        selectionActionMessage,
+    } = props;
     const intl = useSafeIntl();
     const { formatMessage } = intl;
-    const classes = useStyles();
-    const urlPageSize = parseInt(
-        params[getParamsKey(paramsPrefix, 'pageSize')],
-        10,
-    );
 
-    if (multiSelect && !columns.find(c => c.accessor === 'selected')) {
-        columns.push(
-            getSelectionCol(selection, setTableSelection, count, formatMessage),
-        );
-    }
+    const columns = useMemo(() => {
+        const temp = [...props.columns];
+        if (
+            multiSelect &&
+            !props.columns.find(c => c.accessor === 'selected')
+        ) {
+            temp.push(
+                getSelectionCol(
+                    selection,
+                    setTableSelection,
+                    count,
+                    formatMessage,
+                ),
+            );
+        }
+        return temp;
+    }, [props.columns, multiSelect, selection]);
 
-    const getPageIndex = () => {
-        return params[getParamsKey(paramsPrefix, 'page')]
-            ? params[getParamsKey(paramsPrefix, 'page')] - 1
-            : DEFAULT_PAGE - 1;
-    };
-    const getPageSize = () => {
-        return (
-            urlPageSize ||
-            (extraProps && extraProps.defaultPageSize) ||
-            DEFAULT_PAGE_SIZE
+    const data = useMemo(() => props.data, [props.data]);
+
+    const initialState = useMemo(() => {
+        const urlPageSize = parseInt(
+            params[getParamsKey(paramsPrefix, 'pageSize')],
+            10,
         );
-    };
-    const getPageSort = () => {
-        return params[getParamsKey(paramsPrefix, 'order')]
-            ? getOrderArray(params[getParamsKey(paramsPrefix, 'order')])
-            : getOrderArray(DEFAULT_ORDER);
-    };
+        return {
+            pageIndex: params[getParamsKey(paramsPrefix, 'page')]
+                ? params[getParamsKey(paramsPrefix, 'page')] - 1
+                : DEFAULT_PAGE - 1,
+            pageSize:
+                urlPageSize ||
+                (extraProps && extraProps.defaultPageSize) ||
+                DEFAULT_PAGE_SIZE,
+            sortBy: params[getParamsKey(paramsPrefix, 'order')]
+                ? getOrderArray(params[getParamsKey(paramsPrefix, 'order')])
+                : getOrderArray(DEFAULT_ORDER),
+        };
+    }, [params, paramsPrefix, extraProps]);
 
     const {
         getTableProps,
@@ -142,11 +135,7 @@ const Table = ({
         {
             columns,
             data,
-            initialState: {
-                pageIndex: getPageIndex(),
-                pageSize: getPageSize(),
-                sortBy: getPageSort(),
-            },
+            initialState,
             disableMultiSort: true,
             manualPagination: true,
             manualSortBy: true,
@@ -187,17 +176,8 @@ const Table = ({
     };
     const rowsPerPage = parseInt(pageSize, 10);
 
-    // let actions = [
-    //     ...defaultSelectionActions(
-    //         () => setTableSelection('selectAll', [], count),
-    //         () => setTableSelection('reset'),
-    //         formatMessage,
-    //     ),
-    // ];
-    // actions = actions.concat(selectionActions);
-
     return (
-        <Box mt={marginTop ? 4 : 0} className={classes.root}>
+        <Box mt={marginTop ? 4 : 0} mb={4}>
             <Select
                 count={count}
                 multiSelect={multiSelect}
@@ -206,26 +186,13 @@ const Table = ({
                 setTableSelection={setTableSelection}
                 selectionActionMessage={selectionActionMessage}
             />
-            {/* {selectCount > 0 && (
-                <span>
-                    {`${formatThousand(selectCount)} `}
-                    <FormattedMessage {...MESSAGES.selected} />
-                    {' - '}
-                </span>
+            {countOnTop && (
+                <Count count={count} selectCount={selection.selectCount} />
             )}
-            <SelectionSpeedDials
-                selection={selection}
-                hidden={!multiSelect}
-                actions={actions}
-                reset={() => setTableSelection('reset')}
-                actionMessage={
-                    selectionActionMessage ??
-                    formatMessage(MESSAGES.selectionAction)
-                }
-            /> */}
-            <Paper className={classes.paper}>
+
+            <Paper elevation={3}>
                 <TableContainer>
-                    <MaUTable {...tableProps}>
+                    <MaUTable {...tableProps} stickyHeader>
                         <Head headerGroups={headerGroups} />
                         <Body
                             page={page}
@@ -235,29 +202,17 @@ const Table = ({
                         />
                     </MaUTable>
                 </TableContainer>
-                {data && data.length > 0 && (
-                    <TablePagination
-                        labelRowsPerPage="Rows per page"
-                        rowsPerPageOptions={[5, 10, 20, 30, 40, 50]}
-                        component="div"
-                        count={count}
-                        rowsPerPage={rowsPerPage}
-                        page={pageIndex}
-                        onPageChange={(event, newPage) => {
-                            onTableParamsChange('page', newPage + 1);
-                        }}
-                        onRowsPerPageChange={event => {
-                            onTableParamsChange('pageSize', event.target.value);
-                        }}
-                        nextIconButtonText="next"
-                        backIconButtonText="previous"
-                        labelDisplayedRows={({ from, to }) =>
-                            `Page: ${
-                                pageIndex + 1
-                            } --- ${from}-${to} of ${count} result(s), ${pages} page(s)`
-                        }
-                    />
-                )}
+                <NoResult data={data} />
+                <Pagination
+                    data={data}
+                    count={count}
+                    rowsPerPage={rowsPerPage}
+                    pageIndex={pageIndex}
+                    onTableParamsChange={onTableParamsChange}
+                    pages={pages}
+                    countOnTop={countOnTop}
+                    selectCount={selection.selectCount}
+                />
             </Paper>
         </Box>
     );

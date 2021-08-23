@@ -1,7 +1,6 @@
 import React from 'react';
 import orderBy from 'lodash/orderBy';
 
-import { ColumnText as ColumnTextComponent } from 'bluesquare-components';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 
 import { baseUrls } from '../../constants/urls';
@@ -50,20 +49,10 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
         columns.push({
             Header: formatMessage(MESSAGES[f.key]),
             accessor: f.accessor || f.key,
-            Cell: settings => (
-                <ColumnTextComponent
-                    title={
-                        f.title
-                            ? f.title(settings.cell.row.original[f.key])
-                            : null
-                    }
-                    text={
-                        f.render
-                            ? f.render(settings.cell.row.original[f.key])
-                            : settings.cell.row.original[f.key]
-                    }
-                />
-            ),
+            Cell: settings =>
+                f.render
+                    ? f.render(settings.cell.row.original[f.key])
+                    : settings.cell.row.original[f.key],
         }),
     );
     return columns;

@@ -107,12 +107,10 @@ const Pages = () => {
             {
                 Header: intl.formatMessage(MESSAGES.name),
                 accessor: 'name',
-                sortable: false,
             },
             {
                 Header: intl.formatMessage(MESSAGES.type),
                 accessor: 'type',
-                sortable: false,
                 Cell: settings => {
                     const pageType = PAGES_TYPES.find(
                         pt => pt.value === settings.cell.row.original.type,
@@ -123,12 +121,10 @@ const Pages = () => {
             {
                 Header: intl.formatMessage(MESSAGES.address),
                 accessor: 'slug',
-                sortable: false,
             },
             {
                 Header: intl.formatMessage(MESSAGES.updatedAt),
                 accessor: 'updated_at',
-                sortable: false,
                 Cell: settings => {
                     return (
                         <ColumnText
@@ -142,6 +138,7 @@ const Pages = () => {
             {
                 Header: intl.formatMessage(MESSAGES.actions),
                 sortable: false,
+                accessor: 'actions',
                 Cell: settings => {
                     return (
                         <>

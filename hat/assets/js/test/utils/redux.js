@@ -30,8 +30,6 @@ const mockStore = configureStore(middlewares);
 const getMockedStore = storeObject => mockStore(storeObject);
 
 const initialState = {
-    load: {},
-    currentUser: currentUserInitialState,
     sidebar: sidebarMenuInitialState,
     forms: formsInitialState,
     orgUnits: orgUnitsInitialState,

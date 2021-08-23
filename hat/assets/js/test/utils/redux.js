@@ -5,7 +5,6 @@ import { Provider } from 'react-redux';
 import { Link } from 'react-router';
 import { LinkProvider } from 'bluesquare-components';
 
-import { currentUserInitialState } from '../../apps/Iaso/redux/currentUserReducer';
 import { formsInitialState } from '../../apps/Iaso/domains/forms/reducer';
 import { orgUnitsInitialState } from '../../apps/Iaso/domains/orgUnits/reducer';
 import { projectsInitialState } from '../../apps/Iaso/domains/projects/reducer';

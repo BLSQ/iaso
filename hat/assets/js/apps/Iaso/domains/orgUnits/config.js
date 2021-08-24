@@ -1,13 +1,11 @@
 import React from 'react';
 import moment from 'moment';
-import { Tooltip } from '@material-ui/core';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 import Color from 'color';
 import {
     IconButton as IconButtonComponent,
     textPlaceholder,
+    Expander,
 } from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
 import OrgUnitTooltip from './components/OrgUnitTooltip';
@@ -202,19 +200,6 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => [
         expander: true,
         accessor: 'expander',
         width: 65,
-        // eslint-disable-next-line react/prop-types
-        Expander: ({ isExpanded }) =>
-            isExpanded ? (
-                <VisibilityOff />
-            ) : (
-                <Tooltip
-                    classes={{
-                        popper: classes.popperFixed,
-                    }}
-                    title={formatMessage(MESSAGES.details)}
-                >
-                    <Visibility />
-                </Tooltip>
-            ),
+        Expander,
     },
 ];

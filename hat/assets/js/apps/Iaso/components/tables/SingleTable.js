@@ -59,7 +59,6 @@ const SingleTable = ({
     const [didFetchData, setDidFetchData] = useState(false);
     const [firstLoad, setfFrstLoad] = useState(true);
     const [tableResults, setTableResults] = useState(tableInitialResult);
-    const [expanded, setExpanded] = useState({});
     const { list, pages, count } = tableResults;
 
     const dispatch = useDispatch();
@@ -129,17 +128,13 @@ const SingleTable = ({
     }, [forceRefresh]);
 
     const { limit } = tableParams;
-    let extraProps = {
+    const extraProps = {
         loading,
         defaultPageSize: defaultPageSize || limit,
     };
     if (subComponent) {
-        extraProps = {
-            ...extraProps,
-            SubComponent: ({ original }) => subComponent(original, handleFetch),
-            expanded,
-            onExpandedChange: newExpanded => setExpanded(newExpanded),
-        };
+        extraProps.SubComponent = original =>
+            subComponent(original, handleFetch);
     }
 
     const handleTableSelection = (

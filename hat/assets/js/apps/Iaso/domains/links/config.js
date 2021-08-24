@@ -2,15 +2,15 @@ import React from 'react';
 import moment from 'moment';
 import Link from '@material-ui/core/Link';
 import Checkbox from '@material-ui/core/Checkbox';
-import { Tooltip, Box } from '@material-ui/core';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import { Box } from '@material-ui/core';
 
 import {
     LoadingSpinner,
     formatThousand,
     textPlaceholder,
+    Expander,
 } from 'bluesquare-components';
+
 import getDisplayName from '../../utils/usersUtils';
 
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
@@ -18,7 +18,7 @@ import StarsComponent from '../../components/stars/StarsComponent';
 
 import MESSAGES from './messages';
 
-export const linksTableColumns = (formatMessage, validateLink, classes) => [
+export const linksTableColumns = (formatMessage, validateLink) => [
     {
         Header: formatMessage(MESSAGES.similarityScore),
         width: 170,
@@ -117,20 +117,7 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
         expander: true,
         accessor: 'expander',
         width: 65,
-        // eslint-disable-next-line react/prop-types
-        Expander: ({ isExpanded }) =>
-            isExpanded ? (
-                <VisibilityOff />
-            ) : (
-                <Tooltip
-                    classes={{
-                        popper: classes.popperFixed,
-                    }}
-                    title={formatMessage(MESSAGES.details)}
-                >
-                    <Visibility />
-                </Tooltip>
-            ),
+        Expander,
     },
 ];
 

@@ -35,7 +35,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
     const setPeriodType = value => {
         setFieldValue('period_type', value);
         if (value === null) {
-            setFieldValue('single_per_period', false);
+            setFieldValue('single_per_period', null);
             setFieldValue('periods_before_allowed', 0);
             setFieldValue('periods_after_allowed', 0);
         } else {
@@ -268,17 +268,6 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                         {intl.formatMessage(MESSAGES.showAdvancedSettings)}
                     </Typography>
                 )}
-                {/* <Typography
-                    className={classes.advancedSettings}
-                    variant="overline"
-                    onClick={() =>
-                        setshowAdvancedSettings(!showAdvancedSettings)
-                    }
-                >
-                    {showAdvancedSettings
-                        ? intl.formatMessage(MESSAGES.hideAdvancedSettings)
-                        : intl.formatMessage(MESSAGES.showAdvancedSettings)}
-                </Typography> */}
             </Grid>
         </Grid>
     );

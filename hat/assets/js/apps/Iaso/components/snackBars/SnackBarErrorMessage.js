@@ -4,7 +4,7 @@ import { Button, Tooltip, makeStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
-import { injectIntl, commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { closeFixedSnackbar } from '../../redux/snackBarsReducer';
 
@@ -27,8 +27,9 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const SnackBarErrorMessage = ({ errorLog, id, intl: { formatMessage } }) => {
+const SnackBarErrorMessage = ({ errorLog, id }) => {
     const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     if (!errorLog || errorLog === '') return null;
     const errorMessage =
@@ -80,7 +81,6 @@ SnackBarErrorMessage.defaultProps = {
 SnackBarErrorMessage.propTypes = {
     errorLog: PropTypes.any,
     id: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-    intl: PropTypes.object.isRequired,
 };
 
-export default injectIntl(SnackBarErrorMessage);
+export default SnackBarErrorMessage;

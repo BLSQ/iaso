@@ -2,18 +2,27 @@ import { useQuery } from 'react-query';
 import { sendRequest } from '../utils/networking';
 import { useGetAuthenticatedUser } from './useGetAuthenticatedUser';
 
-export const useGetRegionGeoJson = region => {
+export const useGetGeoJson = (country, orgUnitCategory) => {
     const { data: user = {}, isFetching } = useGetAuthenticatedUser();
     const source = user?.account?.default_version?.data_source?.id || '';
-    const params = {
+    const baseParams = {
         source,
         validation_status: 'all',
         asLocation: true,
         limit: 3000,
         order: 'id',
-        orgUnitParentId: region,
+        orgUnitParentId: country,
+    };
+    const districtParam = {
         orgUnitTypeCategory: 'DISTRICT',
     };
+    const provinceParam = {
+        orgUnitTypeId: 6,
+    };
+    const params =
+        orgUnitCategory === 'DISTRICT'
+            ? { ...baseParams, ...districtParam }
+            : { ...baseParams, ...provinceParam };
 
     return useQuery(
         ['geo_json', params],
@@ -25,7 +34,7 @@ export const useGetRegionGeoJson = region => {
             );
         },
         {
-            enabled: Boolean(region) && isFetching,
+            enabled: Boolean(country) && isFetching,
             refetchOnWindowFocus: false,
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,

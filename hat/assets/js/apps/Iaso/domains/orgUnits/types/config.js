@@ -12,8 +12,8 @@ const TableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
+        align: 'left',
         sortable: false,
-        style: { justifyContent: 'left' },
         Cell: settings => settings.cell.row.original.name,
     },
     {

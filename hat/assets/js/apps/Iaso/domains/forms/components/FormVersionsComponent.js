@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { Box, Typography } from '@material-ui/core';
 import { useSelector } from 'react-redux';
+import { useSafeIntl } from 'bluesquare-components';
 import { fetchList } from '../../../utils/requests';
 
 import SingleTable from '../../../components/tables/SingleTable';
@@ -12,7 +13,6 @@ import FormVersionsDialog from './FormVersionsDialogComponent';
 import { baseUrls } from '../../../constants/urls';
 
 import { formVersionsTableColumns } from '../config';
-import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
 
@@ -81,12 +81,14 @@ const FormVersionsComponent = ({
 
 FormVersionsComponent.defaultProps = {
     periodType: PERIOD_TYPE_DAY,
+    setForceRefresh: () => null,
+    forceRefresh: false,
 };
 
 FormVersionsComponent.propTypes = {
     periodType: PropTypes.string,
-    forceRefresh: PropTypes.bool.isRequired,
-    setForceRefresh: PropTypes.func.isRequired,
+    forceRefresh: PropTypes.bool,
+    setForceRefresh: PropTypes.func,
 };
 
 export default FormVersionsComponent;

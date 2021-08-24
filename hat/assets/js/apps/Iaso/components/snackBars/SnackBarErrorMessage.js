@@ -28,11 +28,12 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const SnackBarErrorMessage = ({ errorLog, id, intl: { formatMessage } }) => {
-    if (!errorLog || errorLog === '') return null;
     const classes = useStyles();
+    const dispatch = useDispatch();
+    if (!errorLog || errorLog === '') return null;
     const errorMessage =
         typeof errorLog === 'string' ? errorLog : JSON.stringify(errorLog);
-    const dispatch = useDispatch();
+
     const handleClick = e => {
         navigator.clipboard.writeText(errorMessage);
         e.target.focus();

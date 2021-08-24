@@ -19,7 +19,6 @@ function SnackBarButton(props) {
 SnackBarButton.propTypes = {
     messageKey: PropTypes.string.isRequired,
     onClick: PropTypes.func.isRequired,
-    intl: PropTypes.object.isRequired,
 };
 
 export default SnackBarButton;

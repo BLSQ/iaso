@@ -5,7 +5,6 @@ import {
     useSafeIntl,
     commonStyles,
     IconButton as IconButtonComponent,
-    ColumnText,
 } from 'bluesquare-components';
 import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
@@ -125,12 +124,8 @@ const Pages = () => {
                 Header: intl.formatMessage(MESSAGES.updatedAt),
                 accessor: 'updated_at',
                 Cell: settings => {
-                    return (
-                        <ColumnText
-                            text={moment(
-                                settings.row.original.updated_at,
-                            ).format('LTS')}
-                        />
+                    return moment(settings.row.original.updated_at).format(
+                        'LTS',
                     );
                 },
             },

@@ -2,9 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Table,
     textPlaceholder,
-    IconButton as IconButtonComponent,
-    ColumnText,
     LoadingSpinner,
+    IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 // import 'react-table/react-table.css';
 import {
@@ -1294,7 +1293,7 @@ export const Dashboard = () => {
                 sortable: false,
                 Cell: settings => {
                     const text =
-                        settings?.original?.top_level_org_unit_name ??
+                        settings?.row?.original?.top_level_org_unit_name ??
                         textPlaceholder;
                     return <span>{text}</span>;
                 },
@@ -1311,7 +1310,7 @@ export const Dashboard = () => {
                 accessor: 'cvdpv2_notified_at',
                 Cell: settings => {
                     const text =
-                        settings?.original?.cvdpv2_notified_at ??
+                        settings?.row?.original?.cvdpv2_notified_at ??
                         textPlaceholder;
                     return <span>{text}</span>;
                 },
@@ -1321,12 +1320,8 @@ export const Dashboard = () => {
                 accessor: 'round_one__started_at',
                 Cell: settings => {
                     return (
-                        <ColumnText
-                            text={
-                                settings.row.original?.round_one
-                                    ?.started_at ?? textPlaceholder
-                            }
-                        />
+                        settings?.row?.original?.round_one?.started_at ??
+                        textPlaceholder
                     );
                 },
             },
@@ -1335,12 +1330,8 @@ export const Dashboard = () => {
                 accessor: 'round_two__started_at',
                 Cell: settings => {
                     return (
-                        <ColumnText
-                            text={
-                                settings.row.original?.round_two
-                                    ?.started_at ?? textPlaceholder
-                            }
-                        />
+                        settings.row.original?.round_two?.started_at ??
+                        textPlaceholder
                     );
                 },
             },
@@ -1349,11 +1340,7 @@ export const Dashboard = () => {
                 sortable: false,
                 accessor: 'general_status',
                 Cell: settings => {
-                    return (
-                        <ColumnText
-                            text={settings.row.original.general_status}
-                        />
-                    );
+                    return settings.row.original.general_status;
                 },
             },
             {
@@ -1366,9 +1353,7 @@ export const Dashboard = () => {
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
                                 onClick={() =>
-                                    handleClickEditRow(
-                                        settings.row.original.id,
-                                    )
+                                    handleClickEditRow(settings.row.original.id)
                                 }
                             />
                             <IconButtonComponent

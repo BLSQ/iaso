@@ -650,18 +650,18 @@ const ScopeForm = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell
-                                    onClick={() => handleSort('DISTRICT')}
-                                    variant="head"
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <Typography>District</Typography>
-                                </TableCell>
-                                <TableCell
                                     onClick={() => handleSort('REGION')}
                                     variant="head"
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <Typography>Region</Typography>
+                                </TableCell>
+                                <TableCell
+                                    onClick={() => handleSort('DISTRICT')}
+                                    variant="head"
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <Typography>District</Typography>
                                 </TableCell>
                                 <TableCell
                                     variant="head"
@@ -700,7 +700,7 @@ const ScopeForm = () => {
                                                     cursor: 'default',
                                                 }}
                                             >
-                                                {makeTableText(shape.name)}
+                                                {makeTableText(region)}
                                             </TableCell>
                                             <TableCell
                                                 style={{
@@ -708,7 +708,7 @@ const ScopeForm = () => {
                                                     cursor: 'default',
                                                 }}
                                             >
-                                                {makeTableText(region)}
+                                                {makeTableText(shape.name)}
                                             </TableCell>
                                             <TableCell
                                                 style={{
@@ -718,17 +718,6 @@ const ScopeForm = () => {
                                             >
                                                 <IconButtonComponent
                                                     onClick={() =>
-                                                        removeDistrictFromTable(
-                                                            shape,
-                                                        )
-                                                    }
-                                                    icon="clear"
-                                                    tooltipMessage={
-                                                        MESSAGES.removeDistrict
-                                                    }
-                                                />
-                                                <IconButtonComponent
-                                                    onClick={() =>
                                                         removeRegionFromTable(
                                                             shape,
                                                         )
@@ -736,6 +725,17 @@ const ScopeForm = () => {
                                                     icon="clearAll"
                                                     tooltipMessage={
                                                         MESSAGES.removeRegion
+                                                    }
+                                                />
+                                                <IconButtonComponent
+                                                    onClick={() =>
+                                                        removeDistrictFromTable(
+                                                            shape,
+                                                        )
+                                                    }
+                                                    icon="clear"
+                                                    tooltipMessage={
+                                                        MESSAGES.removeDistrict
                                                     }
                                                 />
                                             </TableCell>

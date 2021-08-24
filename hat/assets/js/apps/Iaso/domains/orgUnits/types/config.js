@@ -14,20 +14,19 @@ const TableColumns = (formatMessage, component) => [
         accessor: 'name',
         align: 'left',
         sortable: false,
-        Cell: settings => settings.cell.row.original.name,
+        Cell: settings => settings.row.original.name,
     },
     {
         Header: formatMessage(MESSAGES.shortName),
         accessor: 'short_name',
         sortable: false,
-        Cell: settings => settings.cell.row.original.short_name,
+        Cell: settings => settings.row.original.short_name,
     },
     {
         Header: formatMessage(MESSAGES.validatedOrgUnitCount),
         accessor: 'units_count',
         sortable: false,
-        Cell: settings =>
-            formatThousand(settings.cell.row.original.units_count),
+        Cell: settings => formatThousand(settings.row.original.units_count),
     },
     {
         Header: formatMessage(MESSAGES.depth),
@@ -35,8 +34,8 @@ const TableColumns = (formatMessage, component) => [
         accessor: 'depth',
         sortable: false,
         Cell: settings =>
-            settings.cell.row.original.depth !== null
-                ? settings.cell.row.original.depth
+            settings.row.original.depth !== null
+                ? settings.row.original.depth
                 : '-',
     },
     {
@@ -44,7 +43,7 @@ const TableColumns = (formatMessage, component) => [
         accessor: 'projects',
         sortable: false,
         Cell: settings =>
-            settings.cell.row.original.projects.map(p => p.name).join(', '),
+            settings.row.original.projects.map(p => p.name).join(', '),
     },
     {
         Header: formatMessage(MESSAGES.createdAt),
@@ -52,9 +51,7 @@ const TableColumns = (formatMessage, component) => [
         sortable: false,
         Cell: settings => (
             <span>
-                {displayDateFromTimestamp(
-                    settings.cell.row.original.created_at,
-                )}
+                {displayDateFromTimestamp(settings.row.original.created_at)}
             </span>
         ),
     },
@@ -64,9 +61,7 @@ const TableColumns = (formatMessage, component) => [
         sortable: false,
         Cell: settings => (
             <span>
-                {displayDateFromTimestamp(
-                    settings.cell.row.original.updated_at,
-                )}
+                {displayDateFromTimestamp(settings.row.original.updated_at)}
             </span>
         ),
     },
@@ -84,19 +79,19 @@ const TableColumns = (formatMessage, component) => [
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
-                    orgUnitType={settings.cell.row.original}
+                    orgUnitType={settings.row.original}
                     titleMessage={MESSAGES.update}
-                    key={settings.cell.row.original.updated_at}
+                    key={settings.row.original.updated_at}
                     params={component.props.params}
                     onConfirmed={() => component.fetchOrgUnitTypes()}
                 />
                 <DeleteDialog
-                    disabled={settings.cell.row.original.instances_count > 0}
+                    disabled={settings.row.original.instances_count > 0}
                     titleMessage={MESSAGES.delete}
                     message={MESSAGES.deleteWarning}
                     onConfirm={closeDialog =>
                         component
-                            .deleteOrgUnitType(settings.cell.row.original)
+                            .deleteOrgUnitType(settings.row.original)
                             .then(closeDialog)
                     }
                 />

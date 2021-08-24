@@ -1303,7 +1303,7 @@ export const Dashboard = () => {
                 Header: 'Name',
                 accessor: 'obr_name',
                 Cell: settings => {
-                    return <span>{settings.cell.row.original.obr_name}</span>;
+                    return <span>{settings.row.original.obr_name}</span>;
                 },
             },
             {
@@ -1323,7 +1323,7 @@ export const Dashboard = () => {
                     return (
                         <ColumnText
                             text={
-                                settings.cell.row.original?.round_one
+                                settings.row.original?.round_one
                                     ?.started_at ?? textPlaceholder
                             }
                         />
@@ -1337,7 +1337,7 @@ export const Dashboard = () => {
                     return (
                         <ColumnText
                             text={
-                                settings.cell.row.original?.round_two
+                                settings.row.original?.round_two
                                     ?.started_at ?? textPlaceholder
                             }
                         />
@@ -1351,7 +1351,7 @@ export const Dashboard = () => {
                 Cell: settings => {
                     return (
                         <ColumnText
-                            text={settings.cell.row.original.general_status}
+                            text={settings.row.original.general_status}
                         />
                     );
                 },
@@ -1367,7 +1367,7 @@ export const Dashboard = () => {
                                 tooltipMessage={MESSAGES.edit}
                                 onClick={() =>
                                     handleClickEditRow(
-                                        settings.cell.row.original.id,
+                                        settings.row.original.id,
                                     )
                                 }
                             />
@@ -1376,7 +1376,7 @@ export const Dashboard = () => {
                                 tooltipMessage={MESSAGES.delete}
                                 onClick={() =>
                                     handleClickDeleteRow(
-                                        settings.cell.row.original.id,
+                                        settings.row.original.id,
                                     )
                                 }
                             />

@@ -98,17 +98,16 @@ export const getColumns = (
                     key: status.key,
                     Cell: settings => {
                         const value =
-                            settings.cell.row.original.months[month][status];
+                            settings.row.original.months[month][status];
                         if (!value) return textPlaceholder;
                         return (
                             <Link
                                 className={`${classes.linkButton}  
                                 ${value ? classes[status] : ''}`}
                                 to={getFormUrl(
-                                    settings.cell.row.original,
+                                    settings.row.original,
                                     status,
-                                    settings.cell.row.original.months[month]
-                                        .period,
+                                    settings.row.original.months[month].period,
                                 )}
                             >
                                 {value || '-'}
@@ -142,11 +141,11 @@ export const getColumns = (
             {
                 Header: '',
                 Cell: settings =>
-                    settings.cell.row.original.generate_derived ? (
+                    settings.row.original.generate_derived ? (
                         <IconButtonComponent
                             onClick={() =>
                                 onGenerateDerivedInstances(
-                                    settings.cell.row.original,
+                                    settings.row.original,
                                 )
                             }
                             icon="call-merge"

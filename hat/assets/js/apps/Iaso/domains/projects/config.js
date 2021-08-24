@@ -11,13 +11,13 @@ const projectsTableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.projectName),
         accessor: 'project__name',
-        Cell: settings => <span>{settings.cell.row.original.name}</span>,
+        Cell: settings => <span>{settings.row.original.name}</span>,
     },
     {
         Header: formatMessage(MESSAGES.appId),
         accessor: 'project__app_id',
         Cell: settings => (
-            <span>{settings.cell.row.original.app_id || textPlaceholder}</span>
+            <span>{settings.row.original.app_id || textPlaceholder}</span>
         ),
     },
     {
@@ -25,7 +25,7 @@ const projectsTableColumns = (formatMessage, component) => [
         accessor: 'project__needs_authentication',
         Cell: settings => (
             <span>
-                {settings.cell.row.original.feature_flags
+                {settings.row.original.feature_flags
                     .map(fF => fF.name)
                     .join(', ') || textPlaceholder}
             </span>
@@ -45,9 +45,9 @@ const projectsTableColumns = (formatMessage, component) => [
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
-                    initialData={settings.cell.row.original}
+                    initialData={settings.row.original}
                     titleMessage={MESSAGES.updateProject}
-                    key={settings.cell.row.original.updated_at}
+                    key={settings.row.original.updated_at}
                     params={component.props.params}
                     featureFlags={component.props.featureFlags}
                 />

@@ -12,33 +12,29 @@ const usersTableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.userName),
         accessor: 'user__username',
-        Cell: settings => <span>{settings.cell.row.original.user_name}</span>,
+        Cell: settings => <span>{settings.row.original.user_name}</span>,
     },
     {
         Header: formatMessage(MESSAGES.firstName),
         accessor: 'user__first_name',
         Cell: settings => (
-            <span>
-                {settings.cell.row.original.first_name || textPlaceholder}
-            </span>
+            <span>{settings.row.original.first_name || textPlaceholder}</span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.lastName),
         accessor: 'user__last_name',
         Cell: settings => (
-            <span>
-                {settings.cell.row.original.last_name || textPlaceholder}
-            </span>
+            <span>{settings.row.original.last_name || textPlaceholder}</span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.email),
         accessor: 'user__email',
         Cell: settings =>
-            settings.cell.row.original.email ? (
-                <a href={`mailto:${settings.cell.row.original.email}`}>
-                    {settings.cell.row.original.email}
+            settings.row.original.email ? (
+                <a href={`mailto:${settings.row.original.email}`}>
+                    {settings.row.original.email}
                 </a>
             ) : (
                 textPlaceholder
@@ -58,18 +54,18 @@ const usersTableColumns = (formatMessage, component) => [
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
-                    initialData={settings.cell.row.original}
+                    initialData={settings.row.original}
                     titleMessage={MESSAGES.updateUser}
-                    key={settings.cell.row.original.updated_at}
+                    key={settings.row.original.updated_at}
                     params={component.props.params}
                 />
                 <DeleteDialog
-                    disabled={settings.cell.row.original.instances_count > 0}
+                    disabled={settings.row.original.instances_count > 0}
                     titleMessage={MESSAGES.deleteUserTitle}
                     message={MESSAGES.deleteUserText}
                     onConfirm={closeDialog =>
                         component
-                            .deleteUser(settings.cell.row.original)
+                            .deleteUser(settings.row.original)
                             .then(closeDialog)
                     }
                 />

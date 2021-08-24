@@ -18,23 +18,23 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
             Cell: settings => (
                 <section>
                     <IconButtonComponent
-                        url={`${baseUrls.instanceDetail}/instanceId/${settings.cell.row.original.id}`}
+                        url={`${baseUrls.instanceDetail}/instanceId/${settings.row.original.id}`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.view}
                     />
                     <IconButtonComponent
                         onClick={() =>
                             window.open(
-                                settings.cell.row.original.file_url,
+                                settings.row.original.file_url,
                                 '_blank',
                             )
                         }
                         icon="xml"
                         tooltipMessage={MESSAGES.downloadXml}
                     />
-                    {settings.cell.row.original.org_unit && (
+                    {settings.row.original.org_unit && (
                         <IconButtonComponent
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.cell.row.original.org_unit.id}`}
+                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.org_unit.id}`}
                             icon="orgUnit"
                             tooltipMessage={MESSAGES.viewOrgUnit}
                         />
@@ -51,8 +51,8 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
             accessor: f.accessor || f.key,
             Cell: settings =>
                 f.render
-                    ? f.render(settings.cell.row.original[f.key])
-                    : settings.cell.row.original[f.key],
+                    ? f.render(settings.row.original[f.key])
+                    : settings.row.original[f.key],
         }),
     );
     return columns;

@@ -50,9 +50,7 @@ export const fillFields = async (component, fieldKeys) => {
 };
 
 export const colOriginal = original => ({
-    cell: {
-        row: {
-            original,
-        },
+    row: {
+        original,
     },
 });

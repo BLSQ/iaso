@@ -112,7 +112,7 @@ const Pages = () => {
                 accessor: 'type',
                 Cell: settings => {
                     const pageType = PAGES_TYPES.find(
-                        pt => pt.value === settings.cell.row.original.type,
+                        pt => pt.value === settings.row.original.type,
                     );
                     return <span>{intl.formatMessage(pageType.label)}</span>;
                 },
@@ -128,7 +128,7 @@ const Pages = () => {
                     return (
                         <ColumnText
                             text={moment(
-                                settings.cell.row.original.updated_at,
+                                settings.row.original.updated_at,
                             ).format('LTS')}
                         />
                     );
@@ -141,9 +141,7 @@ const Pages = () => {
                 Cell: settings => {
                     return (
                         <>
-                            <a
-                                href={`/pages/${settings.cell.row.original.slug}`}
-                            >
+                            <a href={`/pages/${settings.row.original.slug}`}>
                                 <IconButtonComponent
                                     icon="remove-red-eye"
                                     tooltipMessage={MESSAGES.viewPage}
@@ -155,7 +153,7 @@ const Pages = () => {
                                 tooltipMessage={MESSAGES.edit}
                                 onClick={() =>
                                     handleClickEditRow(
-                                        settings.cell.row.original.slug,
+                                        settings.row.original.slug,
                                     )
                                 }
                             />
@@ -164,7 +162,7 @@ const Pages = () => {
                                 tooltipMessage={MESSAGES.delete}
                                 onClick={() =>
                                     handleClickDeleteRow(
-                                        settings.cell.row.original.slug,
+                                        settings.row.original.slug,
                                     )
                                 }
                             />

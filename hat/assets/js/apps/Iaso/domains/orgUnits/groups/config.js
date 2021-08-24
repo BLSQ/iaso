@@ -14,16 +14,14 @@ const TableColumns = (formatMessage, component) => [
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
         align: 'left',
-        Cell: settings => settings.cell.row.original.name,
+        Cell: settings => settings.row.original.name,
     },
     {
         Header: formatMessage(MESSAGES.updatedAt),
         accessor: 'updated_at',
         Cell: settings => (
             <span>
-                {displayDateFromTimestamp(
-                    settings.cell.row.original.updated_at,
-                )}
+                {displayDateFromTimestamp(settings.row.original.updated_at)}
             </span>
         ),
     },
@@ -32,7 +30,7 @@ const TableColumns = (formatMessage, component) => [
         accessor: 'source_version',
         sortable: false,
         Cell: settings => {
-            const sourceVersion = settings.cell.row.original.source_version;
+            const sourceVersion = settings.row.original.source_version;
             const text =
                 sourceVersion !== null
                     ? `${sourceVersion.data_source.name} - ${sourceVersion.number}`
@@ -44,16 +42,13 @@ const TableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.sourceRef),
         accessor: 'source_ref',
-        Cell: settings =>
-            settings.cell.row.original.source_ref || textPlaceholder,
+        Cell: settings => settings.row.original.source_ref || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.orgUnit),
         accessor: 'org_unit_count',
         Cell: settings => (
-            <span>
-                {formatThousand(settings.cell.row.original.org_unit_count)}
-            </span>
+            <span>{formatThousand(settings.row.original.org_unit_count)}</span>
         ),
     },
     {
@@ -71,18 +66,18 @@ const TableColumns = (formatMessage, component) => [
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
-                    initialData={settings.cell.row.original}
+                    initialData={settings.row.original}
                     titleMessage={MESSAGES.update}
-                    key={settings.cell.row.original.updated_at}
+                    key={settings.row.original.updated_at}
                     params={component.props.params}
                 />
                 <DeleteDialog
-                    disabled={settings.cell.row.original.instances_count > 0}
+                    disabled={settings.row.original.instances_count > 0}
                     titleMessage={MESSAGES.delete}
                     message={MESSAGES.deleteWarning}
                     onConfirm={closeDialog =>
                         component
-                            .deleteGroup(settings.cell.row.original)
+                            .deleteGroup(settings.row.original)
                             .then(closeDialog)
                     }
                 />

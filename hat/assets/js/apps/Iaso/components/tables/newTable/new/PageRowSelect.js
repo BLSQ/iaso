@@ -7,7 +7,7 @@ import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
 import { useSafeIntl } from 'bluesquare-components';
 
-import { MESSAGES } from '../messages';
+import { MESSAGES } from './messages';
 
 const useStyles = makeStyles(theme => ({
     select: {

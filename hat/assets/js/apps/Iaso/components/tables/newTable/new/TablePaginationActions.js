@@ -13,7 +13,7 @@ import { PageSelect } from './PageSelect';
 import { PageRowSelect } from './PageRowSelect';
 import { Count } from './Count';
 
-import { MESSAGES } from '../messages';
+import { MESSAGES } from './messages';
 
 const useStyles = makeStyles(theme => ({
     root: {

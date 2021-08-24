@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-    // Table,
+    Table,
     LoadingSpinner,
     useSafeIntl,
     commonStyles,
@@ -11,7 +11,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import moment from 'moment';
 import AddIcon from '@material-ui/icons/Add';
-import { Table } from '../../components/tables/newTable/new/New';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { useGetPages } from './hooks/useGetPages';

@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment';
 import Link from '@material-ui/core/Link';
 import Checkbox from '@material-ui/core/Checkbox';
-import { Tooltip } from '@material-ui/core';
+import { Tooltip, Box } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
@@ -22,15 +22,16 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
     {
         Header: formatMessage(MESSAGES.similarityScore),
         width: 170,
+        align: 'center',
         accessor: 'similarity_score',
         Cell: settings => (
-            <div className="middle-align">
+            <Box display="flex" justifyContent="center">
                 <StarsComponent
                     score={settings.cell.row.original.similarity_score}
                     bgColor={settings.index % 2 ? 'white' : '#f7f7f7'}
                     displayCount
                 />
-            </div>
+            </Box>
         ),
     },
     {
@@ -114,6 +115,7 @@ export const linksTableColumns = (formatMessage, validateLink, classes) => [
     },
     {
         expander: true,
+        accessor: 'expander',
         width: 65,
         // eslint-disable-next-line react/prop-types
         Expander: ({ isExpanded }) =>

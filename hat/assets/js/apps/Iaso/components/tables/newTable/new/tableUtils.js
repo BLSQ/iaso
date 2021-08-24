@@ -2,7 +2,7 @@ import React from 'react';
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
 import { InfoHeader } from 'bluesquare-components';
-import { capitalize } from '../../../utils/index';
+import { capitalize } from '../../../../utils/index';
 
 const getTableUrl = (
     urlKey,
@@ -175,12 +175,6 @@ export const getTableParams = (
         newParams[f.apiUrlKey] = params[f.urlKey];
     });
     return newParams;
-};
-
-export const tableInitialResult = {
-    data: [],
-    pages: 0,
-    count: 0,
 };
 
 export const getColumnsHeadersInfos = columns => {

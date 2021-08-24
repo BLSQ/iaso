@@ -22,7 +22,8 @@ import {
     getParamsKey,
     getSort,
     getOrderArray,
-} from '../tableUtils';
+    getColumnsHeadersInfos,
+} from './tableUtils';
 
 import { Head } from './Head';
 import { Body } from './Body';
@@ -98,7 +99,7 @@ const Table = props => {
                 ),
             );
         }
-        return temp;
+        return getColumnsHeadersInfos(temp);
     }, [props.columns, multiSelect, selection]);
 
     const data = useMemo(() => props.data, [props.data]);

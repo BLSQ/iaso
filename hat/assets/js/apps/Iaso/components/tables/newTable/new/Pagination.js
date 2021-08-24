@@ -4,7 +4,7 @@ import TablePagination from '@material-ui/core/TablePagination';
 import { makeStyles } from '@material-ui/core/styles';
 import { useSafeIntl } from 'bluesquare-components';
 
-import { MESSAGES } from '../messages';
+import { MESSAGES } from './messages';
 import { ROWS_PER_PAGE_OPTIONS } from './constants';
 import { TablePaginationActions } from './TablePaginationActions';
 

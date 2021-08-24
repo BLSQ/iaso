@@ -4,7 +4,7 @@ import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 import { FormattedMessage } from 'react-intl';
 
-import { MESSAGES } from '../messages';
+import { MESSAGES } from './messages';
 
 const useStyles = makeStyles(theme => ({
     box: {

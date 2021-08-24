@@ -95,9 +95,10 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
-        width: 150,
+        width: 300,
         Cell: settings => {
             return (
                 <section>

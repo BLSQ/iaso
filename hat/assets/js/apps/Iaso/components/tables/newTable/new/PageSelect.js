@@ -5,7 +5,7 @@ import TextField from '@material-ui/core/TextField';
 import { makeStyles } from '@material-ui/core/styles';
 import { FormattedMessage } from 'react-intl';
 
-import { MESSAGES } from '../messages';
+import { MESSAGES } from './messages';
 
 const useStyles = makeStyles(() => ({
     input: {

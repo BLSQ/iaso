@@ -4,7 +4,7 @@ import Box from '@material-ui/core/Box';
 import { FormattedMessage } from 'react-intl';
 import { formatThousand } from '../../../../utils';
 
-import { MESSAGES } from '../messages';
+import { MESSAGES } from './messages';
 
 const Count = ({ count, selectCount }) => {
     return (

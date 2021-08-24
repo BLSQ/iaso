@@ -14,10 +14,9 @@ import {
     setTableSelection,
     commonStyles,
     injectIntl,
-    // Table,
+    Table,
 } from 'bluesquare-components';
 
-import { Table } from '../../components/tables/newTable/new/New';
 import { fetchSources, fetchOrgUnitsList } from '../../utils/requests';
 
 import {

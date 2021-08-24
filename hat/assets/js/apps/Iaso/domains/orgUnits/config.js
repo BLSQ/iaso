@@ -200,6 +200,7 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => [
     },
     {
         expander: true,
+        accessor: 'expander',
         width: 65,
         // eslint-disable-next-line react/prop-types
         Expander: ({ isExpanded }) =>

@@ -4,9 +4,9 @@ import isEqual from 'lodash/isEqual';
 import Checkbox from '@material-ui/core/Checkbox';
 
 import { useSafeIntl, SelectionSpeedDials } from 'bluesquare-components';
-import { MESSAGES } from '../messages';
+import { MESSAGES } from './messages';
 
-import { selectionInitialState, defaultSelectionActions } from '../tableUtils';
+import { selectionInitialState, defaultSelectionActions } from './tableUtils';
 
 const onSelect = ({
     isSelected,

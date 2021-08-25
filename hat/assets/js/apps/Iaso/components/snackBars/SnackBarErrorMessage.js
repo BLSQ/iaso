@@ -47,9 +47,7 @@ const SnackBarErrorMessage = ({ errorLog, id }) => {
             <Tooltip
                 size="small"
                 title={
-                    <p className={classes.errorMessage}>
-                        <pre>{errorMessage}</pre>
-                    </p>
+                    <pre className={classes.errorMessage}>{errorMessage}</pre>
                 }
                 className={classes.tooltip}
                 arrow

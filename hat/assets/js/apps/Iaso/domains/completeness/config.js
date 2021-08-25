@@ -86,6 +86,9 @@ export const getColumns = (
                     {formatMessage(MESSAGES[monthsList[month - 1]])}
                 </span>
             ),
+            sortable: false,
+            resizable: false,
+            accessor: `month-${month}`,
             columns: activeInstanceStatuses
                 .map(status => status.toLowerCase())
                 .map(status => ({
@@ -95,14 +98,18 @@ export const getColumns = (
                             title={formatMessage(MESSAGES[status])}
                         />
                     ),
+                    sortable: false,
+                    resizable: false,
+                    accessor: `month-${month}-${status}`,
                     key: status.key,
+                    align: 'center',
                     Cell: settings => {
                         const value =
                             settings.row.original.months[month][status];
                         if (!value) return textPlaceholder;
                         return (
                             <Link
-                                className={`${classes.linkButton}  
+                                className={`${classes.linkButton}
                                 ${value ? classes[status] : ''}`}
                                 to={getFormUrl(
                                     settings.row.original,
@@ -137,9 +144,11 @@ export const getColumns = (
                 {formatMessage(MESSAGES.actions)}
             </span>
         ),
+        accessor: 'actions',
         columns: [
             {
                 Header: '',
+                accessor: 'actions-1',
                 Cell: settings =>
                     settings.row.original.generate_derived ? (
                         <IconButtonComponent

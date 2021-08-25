@@ -33,7 +33,9 @@ const SnackBarErrorMessage = ({ errorLog, id }) => {
     const dispatch = useDispatch();
     if (!errorLog || errorLog === '') return null;
     const errorMessage =
-        typeof errorLog === 'string' ? errorLog : JSON.stringify(errorLog);
+        typeof errorLog === 'string'
+            ? errorLog
+            : JSON.stringify(errorLog, null, 1);
 
     const handleClick = e => {
         navigator.clipboard.writeText(errorMessage);
@@ -44,7 +46,11 @@ const SnackBarErrorMessage = ({ errorLog, id }) => {
         <>
             <Tooltip
                 size="small"
-                title={<p className={classes.errorMessage}>{errorMessage}</p>}
+                title={
+                    <p className={classes.errorMessage}>
+                        <pre>{errorMessage}</pre>
+                    </p>
+                }
                 className={classes.tooltip}
                 arrow
             >

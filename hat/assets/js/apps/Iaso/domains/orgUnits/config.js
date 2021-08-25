@@ -111,6 +111,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
         },
         {
             Header: formatMessage(MESSAGES.action),
+            accessor: 'actions',
             resizable: false,
             sortable: false,
             width: 250,

@@ -67,6 +67,7 @@ const TableColumns = (formatMessage, component) => [
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
         Cell: settings => (

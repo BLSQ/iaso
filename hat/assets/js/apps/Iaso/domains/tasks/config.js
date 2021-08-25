@@ -106,6 +106,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
         width: 150,

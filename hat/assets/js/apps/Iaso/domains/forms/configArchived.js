@@ -17,6 +17,7 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
     {
         Header: formatMessage(MESSAGES.form_id),
         sortable: false,
+        accessor: 'form_id',
         Cell: settings => settings.row.original.form_id || textPlaceholder,
     },
     {
@@ -35,6 +36,7 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
     },
     {
         Header: formatMessage(MESSAGES.latest_version_files),
+        accessor: 'latest_version_files',
         sortable: false,
         Cell: settings =>
             settings.row.original.latest_form_version !== null && (

@@ -1537,6 +1537,7 @@ export const Dashboard = () => {
             },
             {
                 Header: 'Actions',
+                accessor: 'actions',
                 sortable: false,
                 Cell: settings => {
                     return (

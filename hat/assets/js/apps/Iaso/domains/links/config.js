@@ -221,6 +221,7 @@ export const runsTableColumns = (
     },
     {
         resizable: false,
+        accessor: 'action',
         sortable: false,
         width: 100,
         Cell: settings => (

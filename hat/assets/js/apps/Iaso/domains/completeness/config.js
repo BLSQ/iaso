@@ -41,7 +41,7 @@ const getBaseColumns = formatMessage => [
         Header: formatMessage(MESSAGES.formsTitle),
         accessor: 'name',
         width: 300,
-        style: { justifyContent: 'left' },
+        align: 'left',
         resizable: true,
     },
 ];
@@ -123,14 +123,13 @@ export const getColumns = (
                     },
                     Footer: info => {
                         const counts = info.data.map(
-                            row => row._original.months[month][status],
+                            row => row.months[month][status],
                         );
                         const total = counts.reduce(
                             (sum, count) => count + sum,
                             0,
                         );
-
-                        return <span>{formatThousand(total)}</span>;
+                        return <>{formatThousand(total)}</>;
                     },
                     width: STATUS_COLUMN_SIZES[activePeriodType],
                 })),
@@ -165,7 +164,7 @@ export const getColumns = (
                     ),
             },
         ],
-        resizable: true,
+        resizable: false,
     });
 
     return columns;

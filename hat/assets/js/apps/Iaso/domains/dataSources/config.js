@@ -64,6 +64,7 @@ const dataSourcesTableColumns = (
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
         Cell: settings => {

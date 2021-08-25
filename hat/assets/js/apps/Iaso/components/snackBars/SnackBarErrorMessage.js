@@ -32,10 +32,20 @@ const SnackBarErrorMessage = ({ errorLog, id }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     if (!errorLog || errorLog === '') return null;
-    const errorMessage =
-        typeof errorLog === 'string'
-            ? errorLog
-            : JSON.stringify(errorLog, null, 1);
+
+    let errorMessage;
+    if (typeof errorLog === 'string') {
+        errorMessage = errorLog;
+    } else if (errorLog.name === 'ApiError' || errorLog.name === 'Error') {
+        // Bypass a strange bug in stringify that remove the message from Error
+        errorMessage = JSON.stringify(
+            { ...errorLog, message: errorLog.message },
+            null,
+            1,
+        );
+    } else {
+        errorMessage = JSON.stringify(errorLog, null, 1);
+    }
 
     const handleClick = e => {
         navigator.clipboard.writeText(errorMessage);

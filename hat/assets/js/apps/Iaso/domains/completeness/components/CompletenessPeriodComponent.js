@@ -50,8 +50,7 @@ const CompletenessPeriodComponent = ({
     onGenerateDerivedInstances,
     redirectTo,
 }) => {
-    const intl = useSafeIntl();
-    const { formatMessage } = intl;
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const onSelectCell = (form, status, period) => {
         redirectTo(baseUrls.instances, {
@@ -103,6 +102,7 @@ const CompletenessPeriodComponent = ({
                     redirectTo={() => null}
                     columns={columns}
                     showPagination={false}
+                    showFooter
                 />
             </section>
         </Paper>

@@ -122,14 +122,14 @@ export const getColumns = (
                         );
                     },
                     Footer: info => {
-                        const counts = info.data.map(
+                        const counts = info?.data?.map(
                             row => row.months[month][status],
                         );
-                        const total = counts.reduce(
+                        const total = counts?.reduce(
                             (sum, count) => count + sum,
                             0,
                         );
-                        return <>{formatThousand(total)}</>;
+                        return <>{total && formatThousand(total)}</>;
                     },
                     width: STATUS_COLUMN_SIZES[activePeriodType],
                 })),

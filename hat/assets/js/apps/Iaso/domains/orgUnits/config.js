@@ -52,6 +52,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
         {
             Header: formatMessage(MESSAGES.groups),
             accessor: 'groups',
+            width: 400,
             Cell: settings => (
                 <section>{getOrgUnitGroups(settings.row.original)}</section>
             ),

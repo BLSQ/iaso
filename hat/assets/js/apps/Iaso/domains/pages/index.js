@@ -181,7 +181,6 @@ const Pages = () => {
             if (newParams.order !== order) {
                 setOrder(newParams.order);
             }
-            // console.log('newParams', newParams);
         },
         [page, pageSize, order],
     );

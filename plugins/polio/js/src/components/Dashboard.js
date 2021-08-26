@@ -6,7 +6,6 @@ import {
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-// import 'react-table/react-table.css';
 import {
     Box,
     Button,

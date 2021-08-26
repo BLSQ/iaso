@@ -8,7 +8,7 @@ import { ZoomBar } from '../components/leaflet/zoom-bar';
 
 export const MESSAGES = defineMessages({
     'fit-to-bounds': {
-        defaultMessage: 'Center to relevant villages',
+        defaultMessage: 'Center the map',
         id: 'map.label.fitToBounds',
     },
     'box-zoom-title': {

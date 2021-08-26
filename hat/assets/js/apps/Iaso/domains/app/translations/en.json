@@ -551,7 +551,7 @@
     "map.draw.label.removeTooltip": "Click on a shape to delete it",
     "map.draw.label.save": "Save",
     "map.draw.label.undo": "Undo",
-    "map.label.fitToBounds": "Center card",
+    "map.label.fitToBounds": "Center the map",
     "map.label.zoom.box": "Draw a square to zoom",
     "map.label.zoom.info": "Current zoom level",
     "microplanning.label.layers": "Map layers",

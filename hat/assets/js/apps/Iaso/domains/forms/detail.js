@@ -31,6 +31,7 @@ import FormForm from './components/FormFormComponent';
 
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../constants/snackBars';
+import { fetchFormDetails } from './requests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -50,15 +51,11 @@ const defaultForm = {
     periods_after_allowed: 0,
     device_field: 'deviceid',
     location_field: '',
-    fields: [
-        { name: 'kk_1', type: 'string', label: '6.What is love' },
-        { name: 'kk_2', type: 'string', label: "7.Baby don't hurt me" },
-        { name: 'kk_3', type: 'string', label: '8. No more' },
-    ],
-    label_keys: ['kk_2', 'kk_3'],
+    possible_fields: [],
+    label_keys: [],
 };
 
-const initialFormState = (form = defaultForm) => ({
+const formatFormData = (form = defaultForm) => ({
     id: form.id,
     name: form.name,
     short_name: form.short_name,
@@ -77,7 +74,7 @@ const initialFormState = (form = defaultForm) => ({
     periods_after_allowed: form.periods_after_allowed,
     device_field: form.device_field,
     location_field: form.location_field,
-    fields: form.fields ?? defaultForm.fields,
+    possible_fields: form.fields ?? defaultForm.possible_fields,
     label_keys: form.label_keys ?? defaultForm.label_keys,
 });
 
@@ -85,14 +82,17 @@ const FormDetail = ({ router, params }) => {
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
     const allProjects = useSelector(state => state.projects.allProjects);
-    const initialData = useSelector(state => state.forms.current);
+    // const initialData = useSelector(state => state.forms.current);
+    const [form, setForm] = useState(undefined);
+    // console.log(initialData);
     const isLoading = useSelector(state => state.forms.isLoading);
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
     const dispatch = useDispatch();
     const intl = useSafeIntl();
     const classes = useStyles();
     const [currentForm, setFieldValue, setFieldErrors, setFormState] =
-        useFormState(initialFormState(initialData));
+        useFormState(formatFormData(form));
+    // useFormState(initialFormState(initialData));
 
     const onConfirm = async () => {
         let isUpdate;
@@ -101,13 +101,16 @@ const FormDetail = ({ router, params }) => {
         if (params.formId === '0') {
             isUpdate = false;
             formData = mapValues(
-                omit(currentForm, ['form_id', 'fields']),
+                omit(currentForm, ['form_id', 'possible_fields']),
                 v => v.value,
             );
             saveForm = createForm(dispatch, formData);
         } else {
             isUpdate = true;
-            formData = mapValues(omit(currentForm, ['fields']), v => v.value);
+            formData = mapValues(
+                omit(currentForm, ['possible_fields']),
+                v => v.value,
+            );
             saveForm = updateForm(dispatch, currentForm.id.value, formData);
         }
         dispatch(setIsLoadingForm(true));
@@ -138,7 +141,8 @@ const FormDetail = ({ router, params }) => {
     };
 
     const handleReset = () => {
-        setFormState(initialFormState(initialData));
+        setFormState(formatFormData(form));
+        // setFormState(initialFormState(initialData));
     };
 
     useEffect(() => {
@@ -154,15 +158,30 @@ const FormDetail = ({ router, params }) => {
             dispatch(setCurrentForm(undefined));
             dispatch(setIsLoadingForm(false));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // TODO replace with hook to get loading state
+    useEffect(() => {
+        const initializeState = async () => {
+            if (params.formId && params.formId !== '0') {
+                const data = await fetchFormDetails(params.formId);
+                setForm(data);
+            }
+        };
+        initializeState();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
-        setFormState(initialFormState(initialData));
-    }, [initialData]);
+        setFormState(formatFormData(form));
+        // setFormState(initialFormState(initialData));
+    }, [form, setFormState]);
 
     const isFormModified = !isEqual(
         mapValues(currentForm, v => v.value),
-        initialFormState(initialData),
+        formatFormData(form),
+        // initialFormState(initialData),
     );
 
     return (

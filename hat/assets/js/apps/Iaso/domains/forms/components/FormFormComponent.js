@@ -70,7 +70,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
             setFieldValue('single_per_period', null);
         }
     });
-
+    console.log('label_keys', currentForm.label_keys.value);
     return (
         <Grid container spacing={2} justifyContent="flex-start">
             <Grid xs={6} item>
@@ -221,9 +221,9 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                                 );
                             }}
                             value={currentForm.label_keys.value}
-                            errors={currentForm.fields.errors}
+                            errors={currentForm.possible_fields.errors}
                             type="select"
-                            options={currentForm.fields.value
+                            options={currentForm.possible_fields.value
                                 .map(field => ({
                                     label: field.label,
                                     value: field.name,

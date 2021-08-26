@@ -312,13 +312,11 @@ class Instances extends Component {
             intl: { formatMessage },
             redirectToReplace,
             params,
-            // currentForm,
         } = this.props;
 
         const tempVisibleColumns =
             this.state.periodType === null
-                ? // !currentForm || currentForm.period_type === null
-                  visibleColumns.filter(column => column.key !== 'period')
+                ? visibleColumns.filter(column => column.key !== 'period')
                 : visibleColumns;
 
         const newParams = {
@@ -363,18 +361,12 @@ class Instances extends Component {
             prevPathname,
             redirectTo,
         } = this.props;
-        console.log(
-            'instance current form',
-            this.state.periodType,
-            this.state.labelKeys,
-            this.state.formName,
-        );
+
         const { tab, tableColumns, visibleColumns, forceRefresh } = this.state;
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
                     title={`${formatMessage(MESSAGES.title)}: ${
-                        // currentForm ? currentForm.name : ''
                         this.state.formName
                     }`}
                     displayBackButton
@@ -538,7 +530,6 @@ class Instances extends Component {
 }
 Instances.defaultProps = {
     reduxPage: undefined,
-    // currentForm: undefined,
     prevPathname: null,
     instancesSmall: null,
 };
@@ -552,7 +543,6 @@ Instances.propTypes = {
     setInstances: PropTypes.func.isRequired,
     setInstancesSmallDict: PropTypes.func.isRequired,
     setCurrentForm: PropTypes.func.isRequired,
-    // currentForm: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     dispatch: PropTypes.func.isRequired,
@@ -561,7 +551,6 @@ Instances.propTypes = {
     router: PropTypes.object.isRequired,
     redirectToReplace: PropTypes.func.isRequired,
     prevPathname: PropTypes.any,
-    // fetchFormDetail: PropTypes.func.isRequired,
     createInstance: PropTypes.func.isRequired,
 };
 
@@ -569,7 +558,6 @@ const MapStateToProps = state => ({
     reduxPage: state.instances.instancesPage,
     instancesSmall: state.instances.instancesSmall,
     fetching: state.instances.fetching,
-    // currentForm: state.forms.current,
     prevPathname: state.routerCustom.prevPathname,
 });
 
@@ -587,7 +575,6 @@ const MapDispatchToProps = dispatch => ({
         dispatch(createInstance(currentForm, payload)),
     ...bindActionCreators(
         {
-            // fetchFormDetail: fetchFormDetailAction,
             redirectTo: redirectToAction,
             redirectToReplace: redirectToReplaceAction,
         },

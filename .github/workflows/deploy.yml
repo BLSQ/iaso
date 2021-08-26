@@ -73,13 +73,13 @@ jobs:
           echo diff-index echo 2---------
           git diff-index --quiet HEAD || echo "we should commit something 2"
           echo committing---------
-          git add hat/assets/webpack/
+          git add -f hat/assets/webpack/
 
           # add version in python
           scripts/set_version.sh
-          git add hat/__version__.py
+          git add -f hat/__version__.py
 
-          git diff-index --quiet HEAD || (git checkout -b github/assets-${GITHUB_RUN_NUMBER} && git commit -f -m "Build assets github action ${GITHUB_RUN_NUMBER}" && git push -u origin) || true
+          git diff-index --quiet HEAD || (git checkout -b github/assets-${GITHUB_RUN_NUMBER} && git commit -m "Build assets github action ${GITHUB_RUN_NUMBER}" && git push -u origin) || true
         env:
           CI: false
           GIT_AUTHOR_NAME: Github Bot

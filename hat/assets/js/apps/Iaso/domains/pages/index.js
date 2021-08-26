@@ -225,7 +225,6 @@ const Pages = () => {
                         redirectTo={onTableParamsChange}
                         columns={columns}
                         data={pages.results}
-                        watchToRender={tableParams}
                     />
                 )}
             </Box>

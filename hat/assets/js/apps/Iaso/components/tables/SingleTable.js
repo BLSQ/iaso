@@ -52,7 +52,6 @@ const SingleTable = ({
     setIsLoading,
     multiSelect,
     selectionActions,
-    watchToRender,
 }) => {
     const [loading, setLoading] = useState(false);
     const [selection, setSelection] = useState(selectionInitialState);
@@ -206,7 +205,6 @@ const SingleTable = ({
                             extraComponent,
                     )}
                     paramsPrefix={paramsPrefix}
-                    watchToRender={watchToRender}
                     params={params}
                 />
             )}
@@ -244,7 +242,6 @@ SingleTable.defaultProps = {
     setIsLoading: true,
     multiSelect: false,
     selectionActions: [],
-    watchToRender: null,
 };
 
 SingleTable.propTypes = {
@@ -274,7 +271,6 @@ SingleTable.propTypes = {
     setIsLoading: PropTypes.bool,
     multiSelect: PropTypes.bool,
     selectionActions: PropTypes.array,
-    watchToRender: PropTypes.any,
 };
 
 export default withRouter(SingleTable);

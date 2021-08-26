@@ -1623,7 +1623,6 @@ export const Dashboard = () => {
                         redirectTo={onTableParamsChange}
                         columns={columns}
                         data={campaigns.campaigns}
-                        watchToRender={tableParams}
                     />
                 )}
             </Box>

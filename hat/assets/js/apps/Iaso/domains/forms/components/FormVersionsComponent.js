@@ -57,7 +57,6 @@ const FormVersionsComponent = ({
                 )}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
-                watchToRender={periodType}
             />
             <Box
                 mt={2}

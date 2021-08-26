@@ -15,7 +15,8 @@ const CreateReAssignDialogComponent = ({
     currentInstance,
     onCreateOrReAssign,
 }) => {
-    const currentFormOrInstance = currentInstance || formType;
+    const currentFormOrInstanceProp = currentInstance || formType;
+    const currentFormOrInstance = { ...currentFormOrInstanceProp };
 
     // Begin check if this is a Form type
     if (
@@ -52,6 +53,7 @@ const CreateReAssignDialogComponent = ({
             });
             closeDialog();
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [fieldValue, orgUnitCopy.current],
     );
 

@@ -11,7 +11,6 @@ export const SET_SUB_ORG_UNIT = 'SET_SUB_ORG_UNIT';
 export const SET_FETCHING = 'SET_FETCHING';
 export const SET_FETCHING_DETAIL = 'SET_FETCHING_DETAIL';
 export const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
-export const SET_SOURCE_TYPES = 'SET_SOURCE_TYPES';
 export const SET_SOURCES = 'SET_SOURCES';
 export const SET_GROUPS = 'ORG_UNITS_SET_GROUPS';
 export const SET_ORG_UNITS_LIST_FETCHING = 'SET_ORG_UNITS_LIST_FETCHING';
@@ -69,11 +68,6 @@ export const setOrgUnitTypes = orgUnitTypes => ({
 export const setCurrentForms = currentForms => ({
     type: SET_CURRENT_FORMS,
     payload: currentForms,
-});
-
-export const setSourceTypes = sourceTypes => ({
-    type: SET_SOURCE_TYPES,
-    payload: sourceTypes,
 });
 
 export const setSources = sources => ({

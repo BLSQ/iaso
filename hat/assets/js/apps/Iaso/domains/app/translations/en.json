@@ -443,7 +443,6 @@
     "iaso.snackBar.fetchProfilesError": "An error occurred while fetching profiles list",
     "iaso.snackBar.fetchProjectsError": "An error occurred while fetching projects list",
     "iaso.snackBar.fetchSourcesError": "An error occurred while fetching sources list",
-    "iaso.snackBar.fetchSourceTypesError": "An error occurred while fetching sources types list",
     "iaso.snackBar.fetchTasksError": "An error occurred while fetching tasks list",
     "iaso.snackBar.generateDerivedRequestError": "Generation failed",
     "iaso.snackBar.generateDerivedRequestSuccess": "Generation scheduled",

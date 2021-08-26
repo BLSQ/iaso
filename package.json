@@ -56,6 +56,7 @@
         "leaflet.markercluster": "^1.4.1",
         "lodash": "^4.17.15",
         "moment": "^2.20.1",
+        "node-fetch": "^2.6.1",
         "notistack": "^0.8.9",
         "npm": "^7.11.2",
         "prop-types": "^15.7.2",

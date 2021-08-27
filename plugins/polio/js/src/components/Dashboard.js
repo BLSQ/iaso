@@ -66,6 +66,9 @@ import MESSAGES from '../constants/messages';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import ImportLineListDialog from './ImportLineListDialog';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import { FormattedMessage } from 'react-intl';
 
 // eslint-disable-next-line camelcase
 const round_shape = yup.object().shape({
@@ -1622,6 +1625,16 @@ export const Dashboard = () => {
                     <PageAction icon={DownloadIcon} onClick={exportToCSV}>
                         CSV
                     </PageAction>
+                    <ImportLineListDialog
+                        renderTrigger={({ openDialog }) => (
+                            <PageAction
+                                icon={CloudUploadIcon}
+                                onClick={openDialog}
+                            >
+                                Import
+                            </PageAction>
+                        )}
+                    />
                 </PageActions>
                 {status === 'success' && (
                     <Table

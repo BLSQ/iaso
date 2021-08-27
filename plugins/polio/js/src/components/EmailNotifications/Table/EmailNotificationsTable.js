@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     // LoadingSpinner,
     // Table,
@@ -30,6 +30,7 @@ export const EmailNotificationsTable = () => {
         page: 0,
         order: 'country_name',
     };
+    const [idToFetch, setIdToFetch] = useState(null);
 
     const columns = [
         {
@@ -70,9 +71,15 @@ export const EmailNotificationsTable = () => {
                 return (
                     <>
                         <EmailNotificationsModal
+                            blockFetch={settings.original.id !== idToFetch}
+                            onConfirm={() => null}
+                            countryId={settings.original.id}
                             renderTrigger={({ openDialog }) => (
                                 <IconButtonComponent
-                                    onClick={openDialog}
+                                    onClick={() => {
+                                        setIdToFetch(settings.original.id);
+                                        openDialog();
+                                    }}
                                     icon="edit"
                                     tooltipMessage={MESSAGES.edit}
                                 />
@@ -94,6 +101,7 @@ export const EmailNotificationsTable = () => {
                 pages={0}
                 baseUrl="/polio/config"
                 params={tableParams}
+                endPoinPath="/polio/config"
                 // isFullheight={false}
             />
         </div>

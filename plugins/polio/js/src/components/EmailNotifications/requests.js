@@ -11,3 +11,10 @@ export const getCountryUsersGroup = async () => {
         count: 0,
     };
 };
+
+export const getCountryConfigDetails = async id => {
+    return iasoGetRequest({
+        requestParams: { url: `/api/polio/countryusersgroup/${id}` },
+        disableSuccessSnackBar: true,
+    });
+};

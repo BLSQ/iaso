@@ -19,6 +19,11 @@ VACINES = [
     ("bOPV", _("bOPV")),
 ]
 
+LANGUAGES = [
+    ("FR", "Français"),
+    ("EN", "English"),
+]
+
 RESPONSIBLES = [
     ("WHO", _("WHO")),
     ("UNICEF", _("UNICEF")),
@@ -350,6 +355,7 @@ class Config(models.Model):
 class CountryUsersGroup(models.Model):
     users = models.ManyToManyField(User, blank=True)
     country = models.OneToOneField(OrgUnit, on_delete=models.CASCADE)
+    language = models.CharField(max_length=32, choices=LANGUAGES, default="EN")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 

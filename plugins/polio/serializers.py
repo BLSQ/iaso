@@ -27,7 +27,7 @@ class CountryUsersGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = CountryUsersGroup
         read_only_fields = ["id", "country", "created_at", "updated_at"]
-        fields = ["id", "country", "created_at", "updated_at", "country_name", "users"]
+        fields = ["id", "country", "language", "created_at", "updated_at", "country_name", "users"]
 
     def get_country_name(self, instance: CountryUsersGroup):
         return instance.country.name

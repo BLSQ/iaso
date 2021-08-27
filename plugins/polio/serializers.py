@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from rest_framework import serializers
 from iaso.models import Group, OrgUnit
 from .models import Preparedness, Round, Campaign, Surge, CountryUsersGroup
-
+from django.contrib.auth.models import User
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
@@ -21,16 +21,35 @@ from .preparedness.parser import (
 from .preparedness.spreadsheet_manager import *
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name"]
+
+
 class CountryUsersGroupSerializer(serializers.ModelSerializer):
     country_name = serializers.SerializerMethodField()
+    read_only_users_field = serializers.SerializerMethodField()
 
     class Meta:
         model = CountryUsersGroup
-        read_only_fields = ["id", "country", "created_at", "updated_at"]
-        fields = ["id", "country", "language", "created_at", "updated_at", "country_name", "users"]
+        read_only_fields = ["id", "country", "created_at", "updated_at", "read_only_user_field"]
+        fields = [
+            "id",
+            "country",
+            "language",
+            "created_at",
+            "updated_at",
+            "country_name",
+            "users",
+            "read_only_users_field",
+        ]
 
     def get_country_name(self, instance: CountryUsersGroup):
         return instance.country.name
+
+    def get_read_only_users_field(self, instance: CountryUsersGroup):
+        return [UserSerializer(user).data for user in instance.users.all()]
 
 
 class GroupSerializer(serializers.ModelSerializer):

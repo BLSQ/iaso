@@ -93,6 +93,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Unselect region',
         id: 'iaso.button.label.removeRegion',
     },
+    configuration: {
+        defaultMessage: 'Configuration',
+        id: 'iaso.label.configuration',
+    },
 });
 
 export default MESSAGES;

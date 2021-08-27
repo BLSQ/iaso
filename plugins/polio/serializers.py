@@ -1,14 +1,16 @@
-from datetime import datetime, timezone
-
-from django.db.transaction import atomic
 from django.utils.translation import gettext_lazy as _
 from gspread.exceptions import APIError
 from rest_framework import exceptions
-from rest_framework import serializers
-
-from iaso.models import Group, OrgUnit
 from plugins.polio.preparedness.calculator import get_preparedness_score
-from .models import Preparedness, Round, Campaign, Surge
+
+
+from django.db.transaction import atomic
+from datetime import datetime, timezone
+
+from rest_framework import serializers
+from iaso.models import Group, OrgUnit
+from .models import Preparedness, Round, Campaign, Surge, CountryUsersGroup
+
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
@@ -17,6 +19,18 @@ from .preparedness.parser import (
     parse_value,
 )
 from .preparedness.spreadsheet_manager import *
+
+
+class CountryUsersGroupSerializer(serializers.ModelSerializer):
+    country_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CountryUsersGroup
+        read_only_fields = ["id", "country", "created_at", "updated_at"]
+        fields = ["id", "country", "created_at", "updated_at", "country_name", "users"]
+
+    def get_country_name(self, instance: CountryUsersGroup):
+        return instance.country.name
 
 
 class GroupSerializer(serializers.ModelSerializer):

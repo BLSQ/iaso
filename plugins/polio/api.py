@@ -13,9 +13,14 @@ from rest_framework.response import Response
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
+
 from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer
-from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
-from .models import Campaign, Config
+from plugins.polio.serializers import (
+    SurgePreviewSerializer,
+    CampaignPreparednessSpreadsheetSerializer,
+    CountryUsersGroupSerializer,
+)
+from .models import Campaign, Config, CountryUsersGroup
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -80,6 +85,18 @@ class CampaignViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
+
+class CountryUsersGroupViewSet(ModelViewSet):
+    serializer_class = CountryUsersGroupSerializer
+    results_key = "country_users_group"
+    http_method_names = ["get", "put"]
+
+    def get_queryset(self):
+        countries = OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+        for country in countries:
+            CountryUsersGroup.objects.get_or_create(country=country)  # ensuring that such a model always exist
+        return CountryUsersGroup.objects.all()
 
 
 class IMViewSet(viewsets.ViewSet):
@@ -178,3 +195,4 @@ class IMViewSet(viewsets.ViewSet):
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/im", IMViewSet, basename="IM")
+router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")

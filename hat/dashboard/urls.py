@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.urls import re_path
 from . import views
 
 app_name = "dashboard"
 urlpatterns = [
-    url(r"^.*$", views.iaso, name="iaso"),
+    re_path(r"^.*$", views.iaso, name="iaso"),
 ]

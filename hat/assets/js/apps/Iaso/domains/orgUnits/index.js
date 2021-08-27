@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { withStyles, Box, Tabs, Tab } from '@material-ui/core';
-
+import { withStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
 import EditIcon from '@material-ui/icons/Edit';
@@ -32,7 +31,6 @@ import {
 import { orgUnitsTableColumns } from './config';
 
 import {
-    fetchLatestOrgUnitLevelId,
     decodeSearch,
     mapOrgUnitByLocation,
     encodeUriParams,
@@ -54,7 +52,6 @@ import {
     enqueueSnackbar,
     closeFixedSnackbar,
 } from '../../redux/snackBarsReducer';
-
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { locationLimitMax } from './constants/orgUnitConstants';
@@ -256,10 +253,7 @@ class OrgUnits extends Component {
         const searches = decodeSearch(params.searches);
 
         searches.forEach((s, i) => {
-            searches[i].orgUnitParentId = searches[i].levels
-                ? fetchLatestOrgUnitLevelId(searches[i].levels)
-                : null;
-
+            searches[i].orgUnitParentId = searches[i].levels;
             searches[i].dateFrom = getFromDateString(searches[i].dateFrom);
             searches[i].dateTo = getToDateString(searches[i].dateTo);
         });
@@ -421,121 +415,139 @@ class OrgUnits extends Component {
                         displayCounts
                     />
                 </TopBar>
-                <Box className={classes.containerFullHeightPadded}>
-                    {shouldRenderFilters &&
-                        decodeSearch(params.searches).map((s, searchIndex) => {
-                            const currentSearchIndex = parseInt(
-                                params.searchTabIndex,
-                                10,
-                            );
-                            return (
-                                <div
-                                    key={searchIndex}
-                                    className={
-                                        searchIndex !== currentSearchIndex
-                                            ? classes.hiddenOpacity
-                                            : null
-                                    }
-                                >
-                                    <OrgUnitsFiltersComponent
-                                        baseUrl={baseUrl}
-                                        params={params}
-                                        onSearch={() =>
-                                            this.onSearch(params.tab === 'map')
+                <Grid container spacing={4}>
+                    <Grid item xs={12}>
+                        <Box className={classes.containerFullHeightPadded}>
+                            {shouldRenderFilters &&
+                                decodeSearch(params.searches).map(
+                                    (s, searchIndex) => {
+                                        const currentSearchIndex = parseInt(
+                                            params.searchTabIndex,
+                                            10,
+                                        );
+                                        return (
+                                            <div
+                                                key={searchIndex}
+                                                className={
+                                                    searchIndex !==
+                                                    currentSearchIndex
+                                                        ? classes.hiddenOpacity
+                                                        : null
+                                                }
+                                            >
+                                                <OrgUnitsFiltersComponent
+                                                    baseUrl={baseUrl}
+                                                    params={params}
+                                                    onSearch={() =>
+                                                        this.onSearch(
+                                                            params.tab ===
+                                                                'map',
+                                                        )
+                                                    }
+                                                    currentTab={tab}
+                                                    searchIndex={searchIndex}
+                                                />
+                                            </div>
+                                        );
+                                    },
+                                )}
+                            {params.searchActive && (
+                                <>
+                                    <Tabs
+                                        value={tab}
+                                        classes={{
+                                            root: classes.tabs,
+                                        }}
+                                        className={classes.marginBottom}
+                                        indicatorColor="primary"
+                                        onChange={(event, newtab) =>
+                                            this.handleChangeTab(newtab)
                                         }
-                                        currentTab={tab}
-                                        searchIndex={searchIndex}
-                                    />
-                                </div>
-                            );
-                        })}
-                    {params.searchActive && (
-                        <>
-                            <Tabs
-                                value={tab}
-                                classes={{
-                                    root: classes.tabs,
-                                }}
-                                className={classes.marginBottom}
-                                indicatorColor="primary"
-                                onChange={(event, newtab) =>
-                                    this.handleChangeTab(newtab)
-                                }
-                            >
-                                <Tab
-                                    value="list"
-                                    label={formatMessage(MESSAGES.list)}
-                                />
-                                <Tab
-                                    value="map"
-                                    label={formatMessage(MESSAGES.map)}
-                                />
-                            </Tabs>
-                            {tab === 'list' && (
-                                <Table
-                                    data={orgunits || []}
-                                    pages={reduxPage.pages}
-                                    defaultSorted={[{ id: 'id', desc: false }]}
-                                    columns={tableColumns}
-                                    count={reduxPage.count}
-                                    baseUrl={baseUrl}
-                                    params={params}
-                                    marginTop={false}
-                                    countOnTop={false}
-                                    multiSelect
-                                    selection={selection}
-                                    selectionActions={selectionActions}
-                                    redirectTo={redirectTo}
-                                    setTableSelection={(
-                                        selectionType,
-                                        items,
-                                        totalCount,
-                                    ) =>
-                                        this.handleTableSelection(
-                                            selectionType,
-                                            items,
-                                            totalCount,
-                                        )
-                                    }
-                                />
+                                    >
+                                        <Tab
+                                            value="list"
+                                            label={formatMessage(MESSAGES.list)}
+                                        />
+                                        <Tab
+                                            value="map"
+                                            label={formatMessage(MESSAGES.map)}
+                                        />
+                                    </Tabs>
+                                    {tab === 'list' && (
+                                        <Table
+                                            data={orgunits || []}
+                                            pages={reduxPage.pages}
+                                            defaultSorted={[
+                                                { id: 'id', desc: false },
+                                            ]}
+                                            columns={tableColumns}
+                                            count={reduxPage.count}
+                                            baseUrl={baseUrl}
+                                            params={params}
+                                            marginTop={false}
+                                            countOnTop={false}
+                                            multiSelect
+                                            selection={selection}
+                                            selectionActions={selectionActions}
+                                            redirectTo={redirectTo}
+                                            setTableSelection={(
+                                                selectionType,
+                                                items,
+                                                totalCount,
+                                            ) =>
+                                                this.handleTableSelection(
+                                                    selectionType,
+                                                    items,
+                                                    totalCount,
+                                                )
+                                            }
+                                        />
+                                    )}
+                                    {tab === 'map' && !fetchingOrgUnitTypes && (
+                                        <div
+                                            className={
+                                                classes.containerMarginNeg
+                                            }
+                                        >
+                                            <OrgunitsMap
+                                                params={params}
+                                                baseUrl={baseUrl}
+                                                setFiltersUpdated={() =>
+                                                    this.props.setFiltersUpdated(
+                                                        true,
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                    )}
+                                    {tab === 'list' && reduxPage.count > 0 && (
+                                        <Box
+                                            mb={4}
+                                            mt={1}
+                                            display="flex"
+                                            justifyContent="flex-end"
+                                        >
+                                            <DownloadButtonsComponent
+                                                csvUrl={this.getEndpointUrl(
+                                                    true,
+                                                    'csv',
+                                                )}
+                                                xlsxUrl={this.getEndpointUrl(
+                                                    true,
+                                                    'xlsx',
+                                                )}
+                                                gpkgUrl={this.getEndpointUrl(
+                                                    true,
+                                                    'gpkg',
+                                                )}
+                                            />
+                                        </Box>
+                                    )}
+                                </>
                             )}
-                            {tab === 'map' && !fetchingOrgUnitTypes && (
-                                <div className={classes.containerMarginNeg}>
-                                    <OrgunitsMap
-                                        params={params}
-                                        baseUrl={baseUrl}
-                                        setFiltersUpdated={() =>
-                                            this.props.setFiltersUpdated(true)
-                                        }
-                                    />
-                                </div>
-                            )}
-                            {tab === 'list' && reduxPage.count > 0 && (
-                                <Box
-                                    mb={4}
-                                    mt={1}
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                >
-                                    <DownloadButtonsComponent
-                                        csvUrl={this.getEndpointUrl(
-                                            true,
-                                            'csv',
-                                        )}
-                                        xlsxUrl={this.getEndpointUrl(
-                                            true,
-                                            'xlsx',
-                                        )}
-                                        gpkgUrl={this.getEndpointUrl(
-                                            true,
-                                            'gpkg',
-                                        )}
-                                    />
-                                </Box>
-                            )}
-                        </>
-                    )}
-                </Box>
+                        </Box>
+                    </Grid>
+                </Grid>
             </>
         );
     }

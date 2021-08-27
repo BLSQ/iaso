@@ -1,29 +1,46 @@
 import React from 'react';
 
-import Grid from '@material-ui/core/Grid';
+import { Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
 import { injectIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
-import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 import MESSAGES from '../../forms/messages';
 import FormControlComponent from '../../../components/forms/FormControlComponent';
+import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
+
+// reformatting orgUnit name so the OU can be passed to the treeview modal
+// and selecting the parent for display
+const reformatOrgUnit = orgUnit => {
+    let copy = null;
+    if (orgUnit?.parent) {
+        // eslint-disable-next-line camelcase
+        copy = {
+            id: orgUnit?.parent.id,
+            name: orgUnit?.parent.name,
+            source: orgUnit?.parent.source,
+            source_id: orgUnit?.parent.source_id,
+            parent: orgUnit?.parent.parent,
+            parent_name: orgUnit?.parent.parent_name,
+        };
+    }
+    return copy;
+};
 
 const OrgUnitInfosComponent = ({
     orgUnit,
     onChangeInfo,
     orgUnitTypes,
     intl: { formatMessage },
-    baseUrl,
-    params,
     groups,
+    resetTrigger,
 }) => (
     <Grid container spacing={4}>
-        <Grid item xs={orgUnit.id ? 4 : 6}>
+        <Grid item xs={4}>
             <InputComponent
                 keyValue="name"
                 required
@@ -100,25 +117,22 @@ const OrgUnitInfosComponent = ({
                 type="arrayInput"
             />
         </Grid>
-        <Grid
-            item
-            xs={orgUnit.id ? 4 : 6}
-            container
-            style={{ paddingTop: '8px' }} // TODO: remove this with new org unit tree
-        >
+        <Grid item xs={4} container>
             <FormControlComponent errors={orgUnit.parent_id.errors}>
-                <OrgUnitsLevelsFiltersComponent
-                    onLatestIdChanged={latestId => {
-                        if (latestId !== orgUnit.parent_id.value) {
-                            onChangeInfo('parent_id', latestId);
+                <OrgUnitTreeviewModal
+                    toggleOnLabelClick={false}
+                    titleMessage={MESSAGES.selectParentOrgUnit}
+                    onConfirm={treeviewOrgUnit => {
+                        if (
+                            (treeviewOrgUnit ? treeviewOrgUnit.id : null) !==
+                            orgUnit.parent_id.value
+                        ) {
+                            onChangeInfo('parent_id', treeviewOrgUnit?.id);
                         }
                     }}
-                    params={params}
-                    defaultVersion={params.orgUnitId === '0'}
-                    baseUrl={baseUrl}
-                    showCurrentOrgUnit={false}
-                    currentOrgUnitId={orgUnit.id}
                     source={orgUnit.source_id}
+                    initialSelection={reformatOrgUnit(orgUnit)}
+                    resetTrigger={resetTrigger}
                 />
             </FormControlComponent>
         </Grid>
@@ -146,13 +160,15 @@ const OrgUnitInfosComponent = ({
 );
 
 OrgUnitInfosComponent.propTypes = {
-    params: PropTypes.object.isRequired,
-    baseUrl: PropTypes.string.isRequired,
     intl: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     groups: PropTypes.array.isRequired,
     onChangeInfo: PropTypes.func.isRequired,
+    resetTrigger: PropTypes.bool,
+};
+OrgUnitInfosComponent.defaultProps = {
+    resetTrigger: false,
 };
 
 export default injectIntl(OrgUnitInfosComponent);

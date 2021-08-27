@@ -16,7 +16,7 @@ export DEV_SERVER="true"
 export RDS_DB_NAME="iaso"
 export USE_S3="false"
 export RDS_PASSWORD="postgres"
-
+export PLUGINS="polio"
 set  -o allexport
 source .env
 

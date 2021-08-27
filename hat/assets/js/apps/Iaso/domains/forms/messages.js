@@ -401,6 +401,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.textSearch',
         defaultMessage: 'Text search',
     },
+    search: {
+        defaultMessage: 'Search',
+        id: 'iaso.label.search',
+    },
+    selectParentOrgUnit: {
+        defaultMessage: 'Select parent Org Unit',
+        id: 'iaso.label.selectParentOrgUnit',
+    },
     from: {
         id: 'iaso.label.from',
         defaultMessage: 'From',
@@ -436,10 +444,6 @@ const MESSAGES = defineMessages({
     endPeriod: {
         id: 'iaso.label.endPeriod',
         defaultMessage: 'end period',
-    },
-    viewPage: {
-        id: 'iaso.forms.viewpages',
-        defaultMessage: 'View page',
     },
     singlePerPeriodSelect: {
         id: 'iaso.form.label.singlePerPeriodSelect',

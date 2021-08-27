@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { Grid, Button, withStyles, Box } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
-import commonStyles from '../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 import { redirectTo as redirectToAction } from '../../routing/actions';
 
 import FiltersComponent from '../filters/FiltersComponent';

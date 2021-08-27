@@ -1,15 +1,14 @@
-from django.utils.translation import gettext_lazy as _
-from gspread.exceptions import APIError
-from rest_framework import serializers, exceptions
-
-from plugins.polio.preparedness.calculator import get_preparedness_score
-from django.db.transaction import atomic
 from datetime import datetime, timezone
 
+from django.db.transaction import atomic
+from django.utils.translation import gettext_lazy as _
+from gspread.exceptions import APIError
+from rest_framework import exceptions
 from rest_framework import serializers
-from iaso.models import Group, OrgUnit, org_unit, Page
-from .models import Preparedness, Round, Campaign, Surge
 
+from iaso.models import Group, OrgUnit
+from plugins.polio.preparedness.calculator import get_preparedness_score
+from .models import Preparedness, Round, Campaign, Surge
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
@@ -170,6 +169,8 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
             region_districts = districts.filter(parent=region)
             update_regional_worksheet(regional_worksheet, region.name, region_districts)
             current_index += 1
+
+        spreadsheet.del_worksheet(regional_template_worksheet)
 
         return {"url": spreadsheet.url}
 

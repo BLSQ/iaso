@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
@@ -33,13 +33,14 @@ import {
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
-import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import { decodeSearch, encodeUriSearches } from '../utils';
 import { useOrgUnitsFiltersData } from '../hooks';
 import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from '../messages';
+import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
+import { iasoGetRequest, useAPI } from '../../../utils/requests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -65,6 +66,27 @@ const extendFilter = (searchParams, filter, onChange, searchIndex) => ({
     value: searchParams[filter.urlKey],
     callback: (value, urlKey) => onChange(value, urlKey),
 });
+const extractIdFromParams = params => {
+    if (!params) return null;
+    return JSON.parse(params?.searches)[0]?.levels;
+};
+
+const useInitialOrgUnit = orgUnitId => {
+    const request = useCallback(async () => {
+        let data = null;
+        if (orgUnitId) {
+            data = await iasoGetRequest({
+                disableSuccessSnackBar: true,
+                requestParams: {
+                    url: `/api/orgunits/${orgUnitId}`,
+                },
+            });
+        }
+        return data;
+    }, [orgUnitId]);
+    const result = useAPI(request, null);
+    return result;
+};
 
 const OrgUnitsFiltersComponent = ({
     params,
@@ -72,6 +94,10 @@ const OrgUnitsFiltersComponent = ({
     searchIndex,
     onSearch,
 }) => {
+    const [initialOrgUnitId, setInitialOrgUnitId] = useState(
+        extractIdFromParams(params),
+    );
+    const { data: initialOrgUnit } = useInitialOrgUnit(initialOrgUnitId);
     const intl = useSafeIntl();
     const classes = useStyles();
     const [fetchingGroups, setFetchingGroups] = useState(false);
@@ -86,7 +112,6 @@ const OrgUnitsFiltersComponent = ({
     const fetchingOrgUnitTypes = useSelector(
         state => state.orgUnits.fetchingOrgUnitTypes,
     );
-
     const dispatch = useDispatch();
 
     useOrgUnitsFiltersData(
@@ -96,6 +121,12 @@ const OrgUnitsFiltersComponent = ({
     );
 
     const onChange = (value, urlKey) => {
+        if (urlKey === 'source') {
+            setInitialOrgUnitId(null);
+        }
+        if (urlKey === 'levels') {
+            setInitialOrgUnitId(value);
+        }
         if (urlKey !== 'color') {
             dispatch(setFiltersUpdated(true));
         } else if (isClusterActive) {
@@ -155,6 +186,17 @@ const OrgUnitsFiltersComponent = ({
     const currentColor = searchParams.color
         ? `#${searchParams.color}`
         : getChipColors(0);
+
+    const sourceFilter = extendFilter(
+        searchParams,
+        {
+            ...source(sources || [], false),
+            loading: !sources,
+        },
+        (value, urlKey) => onChange(value, urlKey),
+        searchIndex,
+    );
+
     return (
         <div className={classes.root}>
             <Grid container spacing={4}>
@@ -247,8 +289,7 @@ const OrgUnitsFiltersComponent = ({
                             />
                         </Grid>
                         <Grid item xs={6}>
-                            {/*  TODO: remove this with new org unit tree */}
-                            <Box mb="-12px">
+                            <Box>
                                 <FiltersComponent
                                     params={params}
                                     baseUrl={baseUrl}
@@ -260,27 +301,20 @@ const OrgUnitsFiltersComponent = ({
                                                 onChange(value, urlKey),
                                             searchIndex,
                                         ),
-                                        extendFilter(
-                                            searchParams,
-                                            {
-                                                ...source(sources || [], false),
-                                                loading: !sources,
-                                            },
-                                            (value, urlKey) =>
-                                                onChange(value, urlKey),
-                                            searchIndex,
-                                        ),
+                                        sourceFilter,
                                     ]}
                                 />
+                                <OrgUnitTreeviewModal
+                                    toggleOnLabelClick={false}
+                                    titleMessage={MESSAGES.search}
+                                    onConfirm={orgUnit => {
+                                        // TODO rename levels in to parent
+                                        onChange(orgUnit?.id, 'levels');
+                                    }}
+                                    source={sourceFilter.value}
+                                    initialSelection={initialOrgUnit}
+                                />
                             </Box>
-                            <OrgUnitsLevelsFiltersComponent
-                                onLevelsChange={levels =>
-                                    onChange(levels, 'levels')
-                                }
-                                params={params}
-                                baseUrl={baseUrl}
-                                searchIndex={searchIndex}
-                            />
                         </Grid>
                     </Grid>
                 </Grid>
@@ -307,9 +341,11 @@ const OrgUnitsFiltersComponent = ({
                         )}
                         color="primary"
                         onClick={() =>
-                            redirectTo(baseUrls.orgUnitDetails, {
-                                orgUnitId: '0',
-                            })
+                            dispatch(
+                                redirectTo(baseUrls.orgUnitDetails, {
+                                    orgUnitId: '0',
+                                }),
+                            )
                         }
                     >
                         <Add className={classes.buttonIcon} />

@@ -3,7 +3,12 @@ from typing import List
 
 import gspread
 from gspread.utils import rowcol_to_a1
-from gspread_formatting import get_conditional_format_rules, ConditionalFormatRule, GridRange, format_cell_ranges
+from gspread_formatting import (
+    get_conditional_format_rules,
+    ConditionalFormatRule,
+    GridRange,
+    format_cell_ranges,
+)
 
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.conditional_formatting import (
@@ -28,11 +33,11 @@ def create_spreadsheet(title: str):
     return spreadsheet
 
 
-def update_national_worksheet(sheet: gspread.Worksheet, country=None, **kwargs):
+def update_national_worksheet(sheet: gspread.Worksheet, country=None, payment_mode="", vacine=""):
     country_name = country.name if country else ""
     updates = [
-        {"range": "C4", "values": [[kwargs.get("payment_mode", "")]]},
-        {"range": "C11", "values": [[kwargs.get("vacine", "")]]},
+        {"range": "C4", "values": [[payment_mode]]},
+        {"range": "C11", "values": [[vacine]]},
         {"range": "C6", "values": [[country_name]]},
     ]
 
@@ -65,20 +70,20 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     final_column = 6 + region_districts.count()
     summary_range_a1 = [
         f"F11:{rowcol_to_a1(11, final_column)}",
-        f"F24:{rowcol_to_a1(24, final_column)}",
-        f"F30:{rowcol_to_a1(30, final_column)}",
-        f"F40:{rowcol_to_a1(40, final_column)}",
-        f"F50:{rowcol_to_a1(50, final_column)}",
-        f"F58:{rowcol_to_a1(58, final_column)}",
+        f"F22:{rowcol_to_a1(22, final_column)}",
+        f"F28:{rowcol_to_a1(28, final_column)}",
+        f"F38:{rowcol_to_a1(38, final_column)}",
+        f"F46:{rowcol_to_a1(46, final_column)}",
+        f"F54:{rowcol_to_a1(54, final_column)}",
     ]
+    # FIXME should better categorize what is date and what is value
     district_data_range = [
         f"F7:{rowcol_to_a1(10, final_column)}",
-        f"F16:{rowcol_to_a1(16, final_column)}",
-        f"F28:{rowcol_to_a1(29, final_column)}",
-        f"F35:{rowcol_to_a1(37, final_column)}",
-        f"F39:{rowcol_to_a1(39, final_column)}",
-        f"F44:{rowcol_to_a1(49, final_column)}",
-        f"F55:{rowcol_to_a1(56, final_column)}",
+        f"F17:{rowcol_to_a1(17, final_column)}",
+        f"F26:{rowcol_to_a1(27, final_column)}",
+        f"F33:{rowcol_to_a1(37, final_column)}",
+        f"F42:{rowcol_to_a1(43, final_column)}",
+        f"F51:{rowcol_to_a1(52, final_column)}",
     ]
 
     ranges = [GridRange.from_a1_range(data, sheet) for data in district_data_range]
@@ -86,9 +91,9 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     summary_ranges = [GridRange.from_a1_range(range_cell, sheet) for range_cell in summary_range_a1]
 
     non_blank_ranges = [
-        GridRange.from_a1_range(f"F17:{rowcol_to_a1(23, final_column)}", sheet),
-        GridRange.from_a1_range(f"F38:{rowcol_to_a1(38, final_column)}", sheet),
-        GridRange.from_a1_range(f"F57:{rowcol_to_a1(57, final_column)}", sheet),
+        GridRange.from_a1_range(f"F16:{rowcol_to_a1(21, final_column)}", sheet),
+        GridRange.from_a1_range(f"F36:{rowcol_to_a1(36, final_column)}", sheet),
+        GridRange.from_a1_range(f"F53:{rowcol_to_a1(57, final_column)}", sheet),
     ]
 
     custom_rules = (
@@ -99,9 +104,13 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
 
     [rules.append(rule) for rule in custom_rules]
 
-    format_cell_ranges(worksheet=sheet, ranges=[(range_cells, PERCENT_FORMAT) for range_cells in summary_range_a1])
     format_cell_ranges(
-        worksheet=sheet, ranges=[(range_cells, TEXT_CENTERED) for range_cells in summary_range_a1 + district_data_range]
+        worksheet=sheet,
+        ranges=[(range_cells, PERCENT_FORMAT) for range_cells in summary_range_a1],
+    )
+    format_cell_ranges(
+        worksheet=sheet,
+        ranges=[(range_cells, TEXT_CENTERED) for range_cells in summary_range_a1 + district_data_range],
     )
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
@@ -123,15 +132,33 @@ def generate_planning_coord_funding_section(col_index: int, district):
     }
 
 
+def generate_training_section(col_index: int, district_name: str):
+    return {
+        "range": get_range(col_index, 15, 22),
+        "values": map_to_column_value(
+            [
+                district_name,
+                None,
+                "0",
+                None,
+                None,
+                None,
+                None,
+                f"={rowcol_to_a1(17, col_index)}*0.1",
+            ]
+        ),
+    }
+
+
 def generate_monitoring_section(col_index: int, district_name):
     return {
-        "range": get_range(col_index, 27, 30),
+        "range": get_range(col_index, 25, 28),
         "values": map_to_column_value(
             [
                 district_name,
                 "0",
                 "0",
-                get_average_of_range(col_index, 28, 29),
+                get_average_of_range(col_index, 26, 27),
             ]
         ),
     }
@@ -139,17 +166,15 @@ def generate_monitoring_section(col_index: int, district_name):
 
 def generate_advocacy_section(col_index: int, district_name):
     return {
-        "range": get_range(col_index, 43, 50),
+        "range": get_range(col_index, 41, 46),
         "values": map_to_column_value(
             [
                 district_name,
                 "0",
                 "0",
-                "0",
-                "0",
-                "0",
-                "0",
-                get_average_of_range(col_index, 44, 45),
+                "",
+                "",
+                get_average_of_range(col_index, 42, 45),
             ]
         ),
     }
@@ -157,14 +182,14 @@ def generate_advocacy_section(col_index: int, district_name):
 
 def generate_adverse_section(col_index: int, district_name):
     return {
-        "range": get_range(col_index, 54, 58),
+        "range": get_range(col_index, 50, 54),
         "values": map_to_column_value(
             [
                 district_name,
                 "0",
                 "0",
                 "",
-                get_average_of_range(col_index, 55, 56),
+                get_average_of_range(col_index, 51, 53),
             ]
         ),
     }
@@ -172,7 +197,7 @@ def generate_adverse_section(col_index: int, district_name):
 
 def generate_vaccine_logistics_section(col_index: int, district_name):
     return {
-        "range": get_range(col_index, 34, 40),
+        "range": get_range(col_index, 32, 38),
         "values": map_to_column_value(
             [
                 district_name,
@@ -183,15 +208,6 @@ def generate_vaccine_logistics_section(col_index: int, district_name):
                 "0",
                 f"=AVERAGE({get_range(col_index, 35, 37)}, {rowcol_to_a1(39, col_index)})*0.1",
             ]
-        ),
-    }
-
-
-def generate_training_section(col_index: int, district_name: str):
-    return {
-        "range": get_range(col_index, 15, 24),
-        "values": map_to_column_value(
-            [district_name, "0", None, None, None, None, None, None, None, f"={rowcol_to_a1(16, col_index)}*0.1"]
         ),
     }
 
@@ -209,11 +225,19 @@ def get_conditional_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
         ConditionalFormatRule(ranges=ranges, booleanRule=get_between_rule(["0", "4"])),
         ConditionalFormatRule(
             ranges=ranges,
-            booleanRule=get_between_rule(["5", "8"], text_foreground_color=DARK_YELLOW, background_color=LIGHT_YELLOW),
+            booleanRule=get_between_rule(
+                ["5", "8"],
+                text_foreground_color=DARK_YELLOW,
+                background_color=LIGHT_YELLOW,
+            ),
         ),
         ConditionalFormatRule(
             ranges=ranges,
-            booleanRule=get_between_rule(["9", "10"], text_foreground_color=DARK_GREEN, background_color=LIGHT_GREEN),
+            booleanRule=get_between_rule(
+                ["9", "10"],
+                text_foreground_color=DARK_GREEN,
+                background_color=LIGHT_GREEN,
+            ),
         ),
     ]
 
@@ -231,13 +255,17 @@ def get_summary_conditional_rules(ranges: List[str]) -> List[ConditionalFormatRu
         ConditionalFormatRule(
             ranges=ranges,
             booleanRule=get_between_rule(
-                ["0.5", "0.79"], text_foreground_color=DARK_YELLOW, background_color=LIGHT_YELLOW
+                ["0.5", "0.79"],
+                text_foreground_color=DARK_YELLOW,
+                background_color=LIGHT_YELLOW,
             ),
         ),
         ConditionalFormatRule(
             ranges=ranges,
             booleanRule=get_between_rule(
-                ["0.8", "1.0"], text_foreground_color=DARK_GREEN, background_color=LIGHT_GREEN
+                ["0.8", "1.0"],
+                text_foreground_color=DARK_GREEN,
+                background_color=LIGHT_GREEN,
             ),
         ),
     ]

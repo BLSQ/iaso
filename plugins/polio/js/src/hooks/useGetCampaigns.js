@@ -9,8 +9,8 @@ export const useGetCampaigns = options => {
         search: options.searchQuery,
     };
 
-    const getURL = params => {
-        const filteredParams = Object.entries(params).filter(
+    const getURL = urlParams => {
+        const filteredParams = Object.entries(urlParams).filter(
             ([key, value]) => value !== undefined,
         );
 
@@ -18,11 +18,12 @@ export const useGetCampaigns = options => {
             Object.fromEntries(filteredParams),
         );
 
-        return '/api/polio/campaigns/?' + queryString.toString();
+        return `/api/polio/campaigns/?${queryString.toString()}`;
     };
 
     // adding the params to the queryKey to make sure it fetches when the query changes
     return {
+        // eslint-disable-next-line no-return-assign
         exportToCSV: () =>
             (window.location.href = `${getURL({
                 ...params,

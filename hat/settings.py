@@ -19,7 +19,6 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
-PLUGIN_POLIO_ENABLED = os.environ.get("PLUGIN_POLIO_ENABLED", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -84,6 +83,7 @@ LOGGING = {
         "rq": {"level": LOGGING_LEVEL},
         "hat": {"level": LOGGING_LEVEL},
         "iaso": {"level": LOGGING_LEVEL},
+        "plugins": {"level": LOGGING_LEVEL},
         "beanstalk_worker": {"level": LOGGING_LEVEL},
         #  Uncomment to print all sql query
         # 'django.db.backends': {'level': 'DEBUG'},
@@ -136,9 +136,6 @@ INSTALLED_APPS = [
 # needed because we customize the comment model
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
-
-if PLUGIN_POLIO_ENABLED:
-    INSTALLED_APPS.append("plugins.polio")
 
 print("Enabled plugins:", PLUGINS)
 for plugin_name in PLUGINS:
@@ -254,7 +251,7 @@ AUTH_CLASSES = [
 
 
 # Needed for PowerBI, used for the Polio project, which only support support BasicAuth.
-if PLUGIN_POLIO_ENABLED:
+if "polio" in PLUGINS:
     AUTH_CLASSES.append(
         "rest_framework.authentication.BasicAuthentication",
     )
@@ -301,7 +298,6 @@ else:
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "iaso/static"),
-    os.path.join(BASE_DIR, "plugins/polio/static/polio"),
     os.path.join(BASE_DIR, "hat/assets/webpack"),
 )
 

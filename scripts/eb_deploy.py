@@ -34,7 +34,7 @@ if __name__ == "__main__":
         print("No target env found for", sys.argv[1])
     else:
         for e in target_envs:
-            print("Deploying to", e)
+            print("Deploying to", e, flush=True)
             r = eb_deploy(e)
             if r != 0:
                 sys.exit(r)

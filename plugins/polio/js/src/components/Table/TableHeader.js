@@ -1,7 +1,7 @@
-import { makeStyles } from '@material-ui/core';
-import { Box, Typography } from '@material-ui/core';
+import React from 'react';
+import { makeStyles, Box, Typography } from '@material-ui/core';
 
-import commonStyles from '../../styles/common';
+import { commonStyles } from 'bluesquare-components';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

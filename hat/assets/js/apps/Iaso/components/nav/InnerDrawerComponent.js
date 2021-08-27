@@ -6,8 +6,7 @@ import { withStyles, Box, Grid, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import { commonStyles } from 'bluesquare-components';
-import { menuHeight } from '../../styles/innerDrawer';
+import { commonStyles, menuHeight } from 'bluesquare-components';
 
 import MESSAGES from './messages';
 

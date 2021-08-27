@@ -1,3 +1,4 @@
+import React from 'react';
 import { Select } from './Select';
 
 const PAYMENT = [
@@ -8,7 +9,7 @@ const PAYMENT = [
     {
         value: 'DFC',
         label: 'DFC',
-    }
+    },
 ];
 
 export const PaymentField = props => (

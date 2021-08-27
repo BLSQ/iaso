@@ -85,7 +85,11 @@ class MarkerMap extends Component {
             <div className={classes.mapContainer}>
                 <Dialog
                     open={displayTilePopup}
-                    onClick={() => this.toggleTilePopup()}
+                    onClose={(event, reason) => {
+                        if (reason === 'backdropClick') {
+                            this.toggleTilePopup();
+                        }
+                    }}
                 >
                     <div className={classes.tileSwitchContainer}>
                         <TileSwitch

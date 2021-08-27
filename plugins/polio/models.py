@@ -1,10 +1,10 @@
 from uuid import uuid4
 
+from django.core.mail import send_mail
 from django.db import models
 from django.utils.translation import gettext as _
 
 from iaso.models import Group, OrgUnit
-from django.core.mail import send_mail
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -185,7 +185,7 @@ class Campaign(models.Model):
         verbose_name=_("DG Authorization"),
     )
     verification_score = models.IntegerField(null=True, blank=True)
-    vials_requested = models.IntegerField(null=True, blank=True)
+    doses_requested = models.IntegerField(null=True, blank=True)
     # Preparedness
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
     preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
@@ -235,12 +235,21 @@ class Campaign(models.Model):
     # Rounds
     round_one = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_one", null=True, blank=True)
     round_two = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_two", null=True, blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     # Additional fields
     district_count = models.IntegerField(null=True, blank=True)
+    budget_first_draft_submitted_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Budget 1st Draft Submission"),
+    )
+    budget_rrt_oprtt_approval_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Budget Approval"),
+    )
     budget_submitted_at = models.DateField(
         null=True,
         blank=True,
@@ -265,10 +274,14 @@ class Campaign(models.Model):
         return OrgUnit.objects.filter(id__in=self.get_districts().values_list("parent_id", flat=True).distinct())
 
     def last_preparedness(self):
-        return self.preparedness_set.order_by("-created_at").first()
+        return (
+            self.preparedness_set.filter(spreadsheet_url=self.preperadness_spreadsheet_url)
+            .order_by("-created_at")
+            .first()
+        )
 
     def last_surge(self):
-        return self.surge_set.order_by("-created_at").first()
+        return self.surge_set.filter(spreadsheet_url=self.surge_spreadsheet_url).order_by("-created_at").first()
 
     def save(self, *args, **kwargs):
         if not self.created_at and self.gpei_email:

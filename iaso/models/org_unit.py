@@ -6,6 +6,7 @@ from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
+from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django_ltree.fields import PathField
 from django_ltree.models import TreeModel
@@ -133,7 +134,7 @@ class OrgUnitQuerySet(models.QuerySet):
             queryset = queryset.filter(version_id__in=version_ids)
 
             # If applicable, filter on the org units associated to the user
-            if user.iaso_profile.org_units.count() > 0:
+            if user.iaso_profile.org_units.exists():
                 queryset = queryset.hierarchy(user.iaso_profile.org_units.all())
 
         if app_id is not None:

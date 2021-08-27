@@ -117,6 +117,11 @@ class AddRunDialogComponent extends Component {
                     classes={{
                         paper: classes.paper,
                     }}
+                    onClose={(event, reason) => {
+                        if (reason === 'backdropClick') {
+                            this.toggleDialog();
+                        }
+                    }}
                     scroll="body"
                 >
                     <DialogTitle className={classes.title}>

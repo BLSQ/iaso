@@ -1053,6 +1053,7 @@ class Profile(models.Model):
             "is_superuser": self.user.is_superuser,
             "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
             "language": self.language,
+            "user_id": self.user.id,
         }
 
     def as_short_dict(self):
@@ -1063,6 +1064,7 @@ class Profile(models.Model):
             "last_name": self.user.last_name,
             "email": self.user.email,
             "language": self.language,
+            "user_id": self.user.id,
         }
 
 

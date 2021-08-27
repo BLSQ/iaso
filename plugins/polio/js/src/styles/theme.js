@@ -1,45 +1,7 @@
-import { createMuiTheme } from '@material-ui/core/styles';
 import { makeStyles } from '@material-ui/core';
-import commonStyles from './common';
+import { commonStyles, theme } from 'bluesquare-components';
 
-export const theme = createMuiTheme({
-    typography: {
-        useNextVariants: true,
-    },
-    textColor: '#333',
-    palette: {
-        // primary: {
-        //     main: '#82AE2E',
-        //     dark: 'darken(#82AE2E, 50%)',
-        //     contrastText: '#FFFFFF',
-        // },
-        // secondary: {
-        //     main: '#EA622A',
-        // },
-        gray: {
-            main: '#666',
-        },
-        mediumGray: {
-            main: '#A2A2A2',
-        },
-        ligthGray: {
-            main: '#F7F7F7',
-            border: 'rgba(0, 0, 0, 0.12)',
-            background: 'rgba(0, 0, 0, 0.012)',
-        },
-        error: {
-            main: 'rgb(215, 25, 28)',
-            background: 'rgba(215, 25, 28, 0.2)',
-            backgroundHard: 'rgba(215, 25, 28, 0.7)',
-        },
-        success: {
-            main: '#4caf50',
-            background: 'rgba(#4caf50, 0.2)',
-        },
-    },
-});
-
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles(() => ({
     ...commonStyles(theme),
     root: {
         flexGrow: 1,
@@ -77,5 +39,41 @@ export const useStyles = makeStyles(theme => ({
     },
     tabs: {
         borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+    },
+    mainModal: {
+        '& .MuiPaper-root.MuiDialog-paper.MuiDialog-paperScrollBody': {
+            maxWidth: '1380px',
+        },
+        // below rule to remove useless scrollbar
+        '& .MuiTablePagination-root': {
+            overflowX: 'clip',
+        },
+        // below rule to remove useless scrollbar
+        '& .MuiDialogContent-root': {
+            overflowY: 'visible',
+        },
+    },
+    districtList: {
+        overflow: 'auto',
+        height: '500px',
+        '& thead tr th': {
+            boxShadow: `2px 2px ${theme.palette.ligthGray.main}`,
+        },
+        '& .MuiSvgIcon-root': {
+            color: theme.palette.gray.main,
+        },
+        '& tbody tr:hover': {
+            backgroundColor: theme.palette.action.hover,
+        },
+    },
+    districtListRow: {
+        '& td': {
+            backgroundColor: theme.palette.ligthGray.main,
+        },
+    },
+    tablePagination: {
+        '& .MuiTablePagination-toolbar': {
+            overflowX: 'auto',
+        },
     },
 }));

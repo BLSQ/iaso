@@ -76,7 +76,11 @@ function DialogComponent({
                     classes={{
                         paper: classes.paper,
                     }}
-                    onClose={closeDialog}
+                    onClose={(event, reason) => {
+                        if (reason === 'backdropClick') {
+                            closeDialog();
+                        }
+                    }}
                     scroll="body"
                 >
                     {titleMessage && (

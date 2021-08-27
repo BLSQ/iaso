@@ -1,30 +1,30 @@
-from django.db import transaction
-from django.utils import timezone
-from rest_framework import viewsets, status, permissions
-from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from django.utils.translation import gettext as _
-from iaso.api.common import safe_api_import
-from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, DataSource
-from django.contrib.gis.geos import Point
-
-from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404
-
-from iaso.models.org_unit_search import build_org_units_queryset
-from iaso.utils import geojson_queryset
-from django.db.models import Q
-from copy import deepcopy
-from hat.audit import models as audit_models
-from time import gmtime, strftime
-from django.http import StreamingHttpResponse, HttpResponse
-from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 import json
-from django.db.models import Value, IntegerField
+from copy import deepcopy
+from time import gmtime, strftime
+
+from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
+from django.core.paginator import Paginator
+from django.db.models import Q, IntegerField, Value
+from django.http import StreamingHttpResponse, HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.utils.translation import gettext as _
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.audit import models as audit_models
+from iaso.api.common import safe_api_import
+from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer, OrgUnitTreeSearchSerializer
+from iaso.gpkg import org_units_to_gpkg_bytes
+from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form
+from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
+from iaso.utils import geojson_queryset
 
 
+# noinspection PyMethodMayBeStatic
 class HasOrgUnitPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if not (
@@ -46,6 +46,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
         return user_account.id in account_ids
 
 
+# noinspection PyMethodMayBeStatic
 class OrgUnitViewSet(viewsets.ViewSet):
     """Org units API
 
@@ -71,8 +72,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         Can serve theses formats, depending on the combination of GET Parameters:
          * Simple JSON (default) -> as_dict_for_mobile
-         * Paginated JSON (if a `limit` is passed) -> as_dict_with_parents
-         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed. -> as_small_dict
+         * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
+         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed. -> OrgUnitSmallSearchSerializer
          * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
          * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
          * GeoPackage format (if `gpkg` is passed)
@@ -96,34 +97,40 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
+        tree_search = request.GET.get("treeSearch", None)
         direct_children = request.GET.get("onlyDirectChildren", False)
-
-        queryset.prefetch_related("group_set")
 
         if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
 
-        searches = request.GET.get("searches", None)
-        counts = []
+        # Annotate number of instance per org unit to sort by it
+        order_by_instance_count = "instances_count" in order or "-instances_count" in order
+        count_instances = order_by_instance_count or is_export
+        count_per_form = csv_format or xlsx_format
+        # add annotation(s) if needed
+        queryset = annotate_query(queryset, count_instances, count_per_form, forms)
+
         if not request.user.is_anonymous:
             profile = request.user.iaso_profile
         else:
             profile = None
+
+        searches = request.GET.get("searches", None)
+        counts = []
+
         if searches:
             search_index = 0
             base_queryset = queryset
+            queryset = OrgUnit.objects.none()
             for search in json.loads(searches):
-                additional_queryset = build_org_units_queryset(
-                    base_queryset, search, profile, is_export, forms
-                ).annotate(search_index=Value(search_index, IntegerField()))
-                if search_index == 0:
-                    queryset = additional_queryset
-                else:
-                    queryset = queryset.union(additional_queryset)
-                counts.append({"index": search_index, "count": additional_queryset.count()})
+                sub_queryset = build_org_units_queryset(base_queryset, search, profile).annotate(
+                    search_index=Value(search_index, IntegerField())
+                )
+                counts.append({"index": search_index, "count": sub_queryset.count()})
+                queryset = queryset.union(sub_queryset)
                 search_index += 1
         else:
-            queryset = build_org_units_queryset(queryset, request.GET, profile, is_export, forms)
+            queryset = build_org_units_queryset(queryset, request.GET, profile)
 
         queryset = queryset.order_by(*order)
 
@@ -132,27 +139,31 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 limit = int(limit)
                 page_offset = int(page_offset)
                 paginator = Paginator(queryset, limit)
-                res = {"count": paginator.count}
-                res["counts"] = counts
+
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
+
                 if small_search:
-                    res["orgunits"] = map(lambda x: x.as_small_dict(), page.object_list)
+                    serializer = OrgUnitSmallSearchSerializer
                 else:
-                    res["orgunits"] = map(lambda x: x.as_dict_with_parents(light=False), page.object_list)
-
-                res["has_next"] = page.has_next()
-                res["has_previous"] = page.has_previous()
-                res["page"] = page_offset
-                res["pages"] = paginator.num_pages
-                res["limit"] = limit
-
-                res["orgunits"] = list(res["orgunits"])
+                    serializer = OrgUnitSearchSerializer
+                res = {
+                    "count": paginator.count,
+                    "counts": counts,
+                    "orgunits": serializer(page.object_list, many=True).data,
+                    "has_next": page.has_next(),
+                    "has_previous": page.has_previous(),
+                    "page": page_offset,
+                    "pages": paginator.num_pages,
+                    "limit": limit,
+                }
 
                 return Response(res)
+            elif tree_search:
+                org_units = OrgUnitTreeSearchSerializer(queryset, many=True).data
+                return Response({"orgunits": org_units})
             elif with_shapes:
-
                 org_units = []
                 for unit in queryset:
                     temp_org_unit = unit.as_dict()
@@ -181,12 +192,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         elif gpkg_format:
             return self.list_to_gpkg(queryset)
         else:
+            # When filtering the org units by group, the values_list will return the groups also filtered.
+            #  In order to get the all groups independently of filters, we should get the groups
+            # based on the org_unit FK.
 
-            """
-            When filtering the org units by group, the values_list will return the groups also filtered.
-            In order to get the all groups independently of filters, we should get the groups
-            based on the org_unit FK.
-            """
             org_ids = queryset.order_by("pk").values_list("pk", flat=True).distinct()
             groups = Group.objects.filter(org_units__id__in=list(org_ids)).only("id", "name").distinct("id")
 
@@ -211,11 +220,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"title": "Ref Ext parent 4", "width": 20},
             ]
             counts_by_forms = []
-            if is_export:
-                for frm in forms:
-                    columns.append({"title": "Total d'instances " + frm.name, "width": 15})
-                    counts_by_forms.append("form_" + str(frm.id) + "_instances")
-                columns.append({"title": "Total d'instances", "width": 15})
+            for frm in forms:
+                columns.append({"title": "Total d'instances " + frm.name, "width": 15})
+                counts_by_forms.append("form_" + str(frm.id) + "_instances")
+            columns.append({"title": "Total d'instances", "width": 15})
 
             for group in groups:
                 group.org_units__ids = list(group.org_units.values_list("id", flat=True))
@@ -262,14 +270,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 ]
                 return org_unit_values
 
-            # Django don't allow prefetch_related after an union
-            # so we will disable the optimisation in that case
-            # which will make it pretty slow. FIXME.
-            if not queryset.query.combinator:
-                queryset.prefetch_related("parent__parent__parent__parent").prefetch_related(
-                    "parent__parent__parent"
-                ).prefetch_related("parent__parent").prefetch_related("parent")
-
             if xlsx_format:
                 filename = filename + ".xlsx"
                 response = HttpResponse(
@@ -285,12 +285,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return response
 
     def list_to_gpkg(self, queryset):
-        # Django don't allow prefetch_related after an union
-        # so we will disable the optimisation in that case
-        # which will make it pretty slow. FIXME.
-        if not queryset.query.combinator:
-            queryset = queryset.prefetch_related("parent", "org_unit_type")
-
         response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
         filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"

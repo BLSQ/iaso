@@ -1,4 +1,4 @@
-from django.conf.urls import url, include
+from django.urls import path, include
 from django.contrib import auth
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -99,32 +99,32 @@ router.register(r"comments", CommentViewSet, basename="comments")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns = [
-    url(
-        r"^fill/(?P<form_uuid>[a-z0-9-]+)/(?P<org_unit_id>[0-9-]+)/(?P<period>[a-z0-9-]+)?$",
+    path(
+        "fill/<form_uuid>/<org_unit_id>/<period>",
         view=enketo_public_launch,
         name="enketo_public_launch",
     ),
-    url(r"^enketo/create/$", view=enketo_create_url, name="enketo-create-url"),
-    url(r"^enketo/public_create_url/$", view=enketo_public_create_url, name="enketo_public_create_url"),
-    url(r"^enketo/edit/(?P<instance_uuid>[a-z0-9-]+)/$", view=enketo_edit_url, name="enketo-edit-url"),
-    url(r"^enketo/formList$", view=enketo_form_list, name="enketo-form-list"),
-    url(r"^enketo/formDownload/$", view=enketo_form_download, name="enketo_form_download"),
-    url(r"^enketo/submission$", view=EnketoSubmissionAPIView.as_view(), name="enketo-submission"),
-    url(r"^logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
+    path("enketo/create/", view=enketo_create_url, name="enketo-create-url"),
+    path("enketo/public_create_url/", view=enketo_public_create_url, name="enketo_public_create_url"),
+    path("enketo/edit/<instance_uuid>/", view=enketo_edit_url, name="enketo-edit-url"),
+    path("enketo/formList", view=enketo_form_list, name="enketo-form-list"),
+    path("enketo/formDownload/", view=enketo_form_download, name="enketo_form_download"),
+    path("enketo/submission", view=EnketoSubmissionAPIView.as_view(), name="enketo-submission"),
+    path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
 ]
 
 
 def append_datasources_subresource(viewset, resource_name, urlpatterns):
     urlpatterns.append(
-        url(
-            r"^datasources/(?P<datasource_id>[a-z0-9-]+)/" + resource_name + r"/$",
+        path(
+            "datasources/<datasource_id>/" + resource_name + "/",
             view=viewset.as_view({"get": "list"}),
             name=resource_name,
         )
     )
     urlpatterns.append(
-        url(
-            r"^datasources/(?P<datasource_id>[a-z0-9-]+)/" + resource_name + r"\.(?P<format>[a-z0-9]+)/?$",
+        path(
+            "datasources/<datasource_id>/" + resource_name + ".<format>",
             view=viewset.as_view({"get": "list"}),
             name=resource_name,
         )
@@ -132,15 +132,14 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
 
 
 urlpatterns = urlpatterns + [
-    url("^token/$", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    url("^token/refresh/$", TokenRefreshView.as_view(), name="token_refresh"),
-    url(r"^", include(router.urls)),
+    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("", include(router.urls)),
 ]
 for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)
 
 append_datasources_subresource(HesabuDescriptorsViewSet, HesabuDescriptorsViewSet.resource, urlpatterns)
-
 
 ##########   creating algorithms in the database so that they will appear in the API  ##########
 try:

@@ -4,17 +4,25 @@ import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
-import { Grid } from '@material-ui/core';
+import { Grid, makeStyles } from '@material-ui/core';
 
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
-
 import MESSAGES from '../messages';
 
+const styles = {
+    radio: {
+        flexDirection: 'row',
+    },
+};
+
+const useStyles = makeStyles(styles);
+
 const FormForm = ({ currentForm, setFieldValue }) => {
+    const classes = useStyles();
     const intl = useSafeIntl();
     const [isSinglePerPeriodSet, setIsSinglePeriodSet] = useState(false);
     const allProjects = useSelector(state => state.projects.allProjects);
@@ -43,7 +51,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
             if (!isSinglePerPeriodSet) {
                 setIsSinglePeriodSet(true);
             }
-            setFieldValue(key, value);
+            setFieldValue(key, value === 'true');
         },
         [isSinglePerPeriodSet, setFieldValue],
     );
@@ -105,37 +113,40 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                             required
                         />
                     </Grid>
+                    <Grid item xs={6}>
+                        <InputComponent
+                            className={classes.radio}
+                            keyValue="single_per_period"
+                            name="single_per_period"
+                            disabled={currentForm.period_type.value === null}
+                            required
+                            onChange={setSinglePerPeriod}
+                            value={currentForm.single_per_period.value}
+                            errors={
+                                currentForm.single_per_period.value === null
+                                    ? [
+                                          intl.formatMessage(
+                                              MESSAGES.singlePerPeriodSelect,
+                                          ),
+                                      ]
+                                    : []
+                            }
+                            type="radio"
+                            options={[
+                                {
+                                    label: intl.formatMessage(MESSAGES.yes),
+                                    value: true,
+                                },
+                                {
+                                    label: intl.formatMessage(MESSAGES.no),
+                                    value: false,
+                                },
+                            ]}
+                            clearable={false}
+                            label={MESSAGES.singlePerPeriod}
+                        />
+                    </Grid>
                 </Grid>
-
-                <InputComponent
-                    keyValue="single_per_period"
-                    disabled={currentForm.period_type.value === null}
-                    required
-                    onChange={setSinglePerPeriod}
-                    value={currentForm.single_per_period.value}
-                    errors={
-                        currentForm.single_per_period.value === null
-                            ? [
-                                  intl.formatMessage(
-                                      MESSAGES.singlePerPeriodSelect,
-                                  ),
-                              ]
-                            : []
-                    }
-                    type="select"
-                    options={[
-                        {
-                            label: intl.formatMessage(MESSAGES.yes),
-                            value: true,
-                        },
-                        {
-                            label: intl.formatMessage(MESSAGES.no),
-                            value: false,
-                        },
-                    ]}
-                    clearable={false}
-                    label={MESSAGES.singlePerPeriod}
-                />
             </Grid>
             <Grid xs={6} item>
                 <InputComponent

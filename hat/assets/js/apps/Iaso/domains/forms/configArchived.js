@@ -7,18 +7,17 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import MESSAGES from './messages';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
 const archivedTableColumn = (formatMessage, restoreForm) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
-        Cell: settings => settings.row.original.name,
     },
     {
         Header: formatMessage(MESSAGES.form_id),
         sortable: false,
         accessor: 'form_id',
-        Cell: settings => settings.row.original.form_id || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.type),
@@ -32,7 +31,6 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
     {
         Header: formatMessage(MESSAGES.records),
         accessor: 'instances_count',
-        Cell: settings => settings.row.original.instances_count,
     },
     {
         Header: formatMessage(MESSAGES.latest_version_files),
@@ -76,20 +74,17 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
     {
         Header: formatMessage(MESSAGES.created_at),
         accessor: 'created_at',
-        Cell: settings =>
-            moment.unix(settings.row.original.created_at).format('LTS'),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.updated_at),
         accessor: 'updated_at',
-        Cell: settings =>
-            moment.unix(settings.row.original.updated_at).format('LTS'),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.deleted_at),
         accessor: 'deleted_at',
-        Cell: settings =>
-            moment.unix(settings.row.original.deleted_at).format('LTS'),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.actions),
@@ -97,17 +92,15 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
         resizable: false,
         sortable: false,
         width: 300,
-        Cell: settings => {
-            return (
-                <section>
-                    <IconButtonComponent
-                        onClick={() => restoreForm(settings.row.original.id)}
-                        icon="restore-from-trash"
-                        tooltipMessage={MESSAGES.restoreFormTooltip}
-                    />
-                </section>
-            );
-        },
+        Cell: settings => (
+            <section>
+                <IconButtonComponent
+                    onClick={() => restoreForm(settings.row.original.id)}
+                    icon="restore-from-trash"
+                    tooltipMessage={MESSAGES.restoreFormTooltip}
+                />
+            </section>
+        ),
     },
 ];
 export default archivedTableColumn;

@@ -1,55 +1,42 @@
 import React from 'react';
 import {
-    IconButton as IconButtonComponent,
-    displayDateFromTimestamp,
     formatThousand,
+    IconButton as IconButtonComponent,
     textPlaceholder,
 } from 'bluesquare-components';
 import GroupsDialog from './components/GroupsDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 
 const TableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
         align: 'left',
-        Cell: settings => settings.row.original.name,
     },
     {
         Header: formatMessage(MESSAGES.updatedAt),
         accessor: 'updated_at',
-        Cell: settings => (
-            <span>
-                {displayDateFromTimestamp(settings.row.original.updated_at)}
-            </span>
-        ),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.sourceVersion),
         accessor: 'source_version',
         sortable: false,
-        Cell: settings => {
-            const sourceVersion = settings.row.original.source_version;
-            const text =
-                sourceVersion !== null
-                    ? `${sourceVersion.data_source.name} - ${sourceVersion.number}`
-                    : textPlaceholder;
-
-            return text;
-        },
+        Cell: settings =>
+            settings.value !== null
+                ? `${settings.value.data_source.name} - ${settings.value.number}`
+                : textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.sourceRef),
         accessor: 'source_ref',
-        Cell: settings => settings.row.original.source_ref || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.orgUnit),
         accessor: 'org_unit_count',
-        Cell: settings => (
-            <span>{formatThousand(settings.row.original.org_unit_count)}</span>
-        ),
+        Cell: settings => formatThousand(settings.row.original.org_unit_count),
     },
     {
         Header: formatMessage(MESSAGES.actions),

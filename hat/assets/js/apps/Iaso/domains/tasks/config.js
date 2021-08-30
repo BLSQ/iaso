@@ -5,6 +5,7 @@ import {
     displayDateFromTimestamp,
 } from 'bluesquare-components';
 import MESSAGES from './messages';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
 const tasksTableColumns = (formatMessage, killTaskAction) => [
     {
@@ -69,11 +70,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         Header: formatMessage(MESSAGES.timeCreated),
         sortable: true,
         accessor: 'created_at',
-        Cell: settings => (
-            <span>
-                {displayDateFromTimestamp(settings.row.original.created_at)}
-            </span>
-        ),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.timeStart),
@@ -83,7 +80,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
             <span>
                 {settings.row.original.status === 'QUEUED' ||
                 settings.row.original.started_at === null
-                    ? '-'
+                    ? ''
                     : displayDateFromTimestamp(
                           settings.row.original.started_at,
                       )}

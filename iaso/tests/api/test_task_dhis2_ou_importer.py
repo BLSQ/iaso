@@ -58,9 +58,9 @@ class ApiDhis2ouimporterTestCase(APITestCase):
         task = self.assertValidTaskAndInDB(jr)
         self.assertEqual(task.launcher, self.user)
         self.assertEqual(task.params["kwargs"]["source_id"], source.id)
-        self.assertEqual(task.params["kwargs"]["dhis2_url"], None)
-        self.assertEqual(task.params["kwargs"]["dhis2_login"], None)
-        self.assertEqual(task.params["kwargs"]["dhis2_password"], None)
+        self.assertEqual(task.params["kwargs"]["url"], None)
+        self.assertEqual(task.params["kwargs"]["login"], None)
+        self.assertEqual(task.params["kwargs"]["password"], None)
 
     def test_not_ok_incomplete_credentials(self):
         project = m.Project.objects.create(name="test proj", app_id="app_id", account=self.account)
@@ -148,9 +148,9 @@ class ApiDhis2ouimporterTestCase(APITestCase):
         task = self.assertValidTaskAndInDB(jr)
         self.assertEqual(task.launcher, self.user)
         self.assertEqual(task.params["kwargs"]["source_id"], source.id)
-        self.assertEqual(task.params["kwargs"]["dhis2_url"], "override url")
-        self.assertEqual(task.params["kwargs"]["dhis2_login"], "override login")
-        self.assertEqual(task.params["kwargs"]["dhis2_password"], "override pwd")
+        self.assertEqual(task.params["kwargs"]["url"], "override url")
+        self.assertEqual(task.params["kwargs"]["login"], "override login")
+        self.assertEqual(task.params["kwargs"]["password"], "override pwd")
 
     def test_override_credentials_bad(self):
         """Document bad behaviour, if we only pass some credentials we accept it but we are not going to use it"""
@@ -176,9 +176,9 @@ class ApiDhis2ouimporterTestCase(APITestCase):
         task = self.assertValidTaskAndInDB(jr)
         self.assertEqual(task.launcher, self.user)
         self.assertEqual(task.params["kwargs"]["source_id"], source.id)
-        self.assertEqual(task.params["kwargs"]["dhis2_url"], "override url")
-        self.assertEqual(task.params["kwargs"]["dhis2_login"], None)
-        self.assertEqual(task.params["kwargs"]["dhis2_password"], "override pwd")
+        self.assertEqual(task.params["kwargs"]["url"], "override url")
+        self.assertEqual(task.params["kwargs"]["login"], None)
+        self.assertEqual(task.params["kwargs"]["password"], "override pwd")
 
     def assertValidTaskAndInDB(self, jr, status="QUEUED", name=None):
         task_dict = jr["task"]

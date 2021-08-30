@@ -80,12 +80,6 @@ export const userHasPermission = (
     return hasPermission;
 };
 
-export const getIntegerArray = size =>
-    Array(size)
-        .fill()
-        .map((y, i) => size - i)
-        .reverse();
-
 export const getPlugins = pluginsKeys => {
     const plugins = [];
     pluginsKeys.forEach(plugin => {

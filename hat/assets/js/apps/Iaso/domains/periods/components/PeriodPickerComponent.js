@@ -5,9 +5,8 @@ import PropTypes from 'prop-types';
 
 import { DatePicker, useSafeIntl, commonStyles } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
-// import DatePickerComponent from './DatePickerComponent';
 
-import { getYears, getIntegerArray } from '../../../utils';
+import { getYears } from '../../../utils';
 import { getPeriodPickerString } from '../utils';
 import { Period } from '../models';
 
@@ -104,8 +103,8 @@ const PeriodPicker = ({
                                 value={currentPeriod && currentPeriod.year}
                                 type="select"
                                 options={getYears(15, 10, true).map(y => ({
-                                    label: y,
-                                    value: y,
+                                    label: y.toString(),
+                                    value: y.toString(),
                                 }))}
                                 label={MESSAGES.year}
                             />
@@ -121,12 +120,14 @@ const PeriodPicker = ({
                                             currentPeriod && currentPeriod.month
                                         }
                                         type="select"
-                                        options={getIntegerArray(12).map(m => ({
-                                            label: intl.formatMessage(
-                                                MONTHS[m],
-                                            ),
-                                            value: m,
-                                        }))}
+                                        options={Object.entries(MONTHS).map(
+                                            ([value, month]) => ({
+                                                label: intl.formatMessage(
+                                                    month,
+                                                ),
+                                                value,
+                                            }),
+                                        )}
                                         label={MESSAGES.month}
                                     />
                                 )}
@@ -140,10 +141,12 @@ const PeriodPicker = ({
                                             currentPeriod.quarter
                                         }
                                         type="select"
-                                        options={getIntegerArray(4).map(q => ({
-                                            label: QUARTERS[q],
-                                            value: q,
-                                        }))}
+                                        options={Object.entries(QUARTERS).map(
+                                            ([value, label]) => ({
+                                                label,
+                                                value,
+                                            }),
+                                        )}
                                         label={MESSAGES.quarter}
                                     />
                                 )}
@@ -158,10 +161,12 @@ const PeriodPicker = ({
                                             currentPeriod.semester
                                         }
                                         type="select"
-                                        options={getIntegerArray(2).map(s => ({
-                                            label: SEMESTERS[s],
-                                            value: s,
-                                        }))}
+                                        options={Object.entries(SEMESTERS).map(
+                                            ([value, label]) => ({
+                                                label,
+                                                value,
+                                            }),
+                                        )}
                                         label={MESSAGES.six_month}
                                     />
                                 )}

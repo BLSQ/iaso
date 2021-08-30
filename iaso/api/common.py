@@ -1,12 +1,11 @@
-from datetime import datetime
 import logging
-
-logger = logging.getLogger(__name__)
+from datetime import datetime
 from functools import wraps
 from traceback import format_exc
-from django.utils.timezone import make_aware
-from django.db.models import ProtectedError
+
 from django.db import transaction
+from django.db.models import ProtectedError
+from django.utils.timezone import make_aware
 from rest_framework import serializers, pagination, exceptions, permissions
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -14,6 +13,7 @@ from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
 
 from hat.vector_control.models import APIImport
 
+logger = logging.getLogger(__name__)
 
 REQUEST_HEADER_INFO_KEYS = [
     "HTTP_COOKIE",

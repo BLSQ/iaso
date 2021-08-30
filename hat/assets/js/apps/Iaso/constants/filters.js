@@ -503,13 +503,12 @@ export const linksFiltersWithPrefix = (
         paramsPrefix,
     );
 
-export const onlyChildrenParams = (paramsPrefix, params, parent) => {
-    if (!parent) return null;
+export const onlyChildrenParams = (paramsPrefix, params, parentId) => {
     const onlyDirectChildren =
         params[getParamsKey(paramsPrefix, 'onlyDirectChildren')];
     return onlyDirectChildren === 'true' || onlyDirectChildren === undefined
-        ? { parent_id: parent.id }
-        : { orgUnitParentId: parent.id };
+        ? { parent_id: parentId }
+        : { orgUnitParentId: parentId };
 };
 
 export const runsFilters = props => {

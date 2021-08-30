@@ -64,6 +64,9 @@ import MESSAGES from '../constants/messages';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import ImportLineListDialog from './ImportLineListDialog';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import { FormattedMessage } from 'react-intl';
 
 // eslint-disable-next-line camelcase
 const round_shape = yup.object().shape({
@@ -648,18 +651,18 @@ const ScopeForm = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell
-                                    onClick={() => handleSort('DISTRICT')}
-                                    variant="head"
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <Typography>District</Typography>
-                                </TableCell>
-                                <TableCell
                                     onClick={() => handleSort('REGION')}
                                     variant="head"
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <Typography>Region</Typography>
+                                </TableCell>
+                                <TableCell
+                                    onClick={() => handleSort('DISTRICT')}
+                                    variant="head"
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <Typography>District</Typography>
                                 </TableCell>
                                 <TableCell
                                     variant="head"
@@ -698,7 +701,7 @@ const ScopeForm = () => {
                                                     cursor: 'default',
                                                 }}
                                             >
-                                                {makeTableText(shape.name)}
+                                                {makeTableText(region)}
                                             </TableCell>
                                             <TableCell
                                                 style={{
@@ -706,7 +709,7 @@ const ScopeForm = () => {
                                                     cursor: 'default',
                                                 }}
                                             >
-                                                {makeTableText(region)}
+                                                {makeTableText(shape.name)}
                                             </TableCell>
                                             <TableCell
                                                 style={{
@@ -716,17 +719,6 @@ const ScopeForm = () => {
                                             >
                                                 <IconButtonComponent
                                                     onClick={() =>
-                                                        removeDistrictFromTable(
-                                                            shape,
-                                                        )
-                                                    }
-                                                    icon="clear"
-                                                    tooltipMessage={
-                                                        MESSAGES.removeDistrict
-                                                    }
-                                                />
-                                                <IconButtonComponent
-                                                    onClick={() =>
                                                         removeRegionFromTable(
                                                             shape,
                                                         )
@@ -734,6 +726,17 @@ const ScopeForm = () => {
                                                     icon="clearAll"
                                                     tooltipMessage={
                                                         MESSAGES.removeRegion
+                                                    }
+                                                />
+                                                <IconButtonComponent
+                                                    onClick={() =>
+                                                        removeDistrictFromTable(
+                                                            shape,
+                                                        )
+                                                    }
+                                                    icon="clear"
+                                                    tooltipMessage={
+                                                        MESSAGES.removeDistrict
                                                     }
                                                 />
                                             </TableCell>
@@ -1613,6 +1616,16 @@ export const Dashboard = () => {
                     <PageAction icon={DownloadIcon} onClick={exportToCSV}>
                         CSV
                     </PageAction>
+                    <ImportLineListDialog
+                        renderTrigger={({ openDialog }) => (
+                            <PageAction
+                                icon={CloudUploadIcon}
+                                onClick={openDialog}
+                            >
+                                Import
+                            </PageAction>
+                        )}
+                    />
                 </PageActions>
                 {status === 'success' && (
                     <Table

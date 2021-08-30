@@ -34,16 +34,7 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
 
     This allow us to keep the conversion in one place, subclass if you want to serialize
     less or more field. See OrgUnitSearchParentSerializer for an example
-
-    search_index is a special case. It will be included if asked for in field and if present
-    on the instance, to mimic the old behavior
     """
-
-    def __init__(self, instance=None, *args, **kwargs):
-        super().__init__(instance, *args, **kwargs)
-
-        if "search_index" in self.fields and not hasattr(instance, "search_index"):
-            self.fields.pop("search_index")
 
     org_unit_type = OrgUnitTypeSerializer()
     groups = GroupSerializer(many=True)
@@ -95,7 +86,7 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
             "org_unit_type_name",
             "parent",
             "has_geo_json",
-            "search_index",  # May be dynamically removed
+            "search_index",
             "created_at",
             "org_unit_type_id",
         ]
@@ -153,7 +144,7 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
             "org_unit_type_name",
             "parent",
             "has_geo_json",
-            "search_index",  # May be dynamically removed
+            "search_index",
             "created_at",
             "source_id",
             "org_unit_type",

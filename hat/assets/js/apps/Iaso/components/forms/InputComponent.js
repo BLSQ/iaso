@@ -12,6 +12,7 @@ import {
     injectIntl,
     Select,
 } from 'bluesquare-components';
+import { FormControl, FormLabel } from '@material-ui/core';
 import MESSAGES from '../../domains/forms/messages';
 
 /**
@@ -49,15 +50,13 @@ class InputComponent extends Component {
             getOptionSelected,
             getOptionLabel,
             renderOption,
+            className,
         } = this.props;
         const { isFocused, displayPassword } = this.state;
-        let labelText;
-        if (type !== 'radio') {
-            labelText =
-                labelString !== ''
-                    ? labelString
-                    : formatMessage(label || MESSAGES[keyValue]);
-        }
+        const labelText =
+            labelString !== ''
+                ? labelString
+                : formatMessage(label || MESSAGES[keyValue]);
         const inputValue =
             value === null || typeof value === 'undefined' ? '' : value;
 
@@ -174,12 +173,22 @@ class InputComponent extends Component {
                 );
             case 'radio':
                 return (
-                    <Radio
-                        name={keyValue}
-                        onChange={newValue => onChange(keyValue, newValue)}
-                        options={options}
-                        value={value}
-                    />
+                    <FormControl
+                        component="fieldset"
+                        error={errors.length > 0}
+                        variant="outlined"
+                    >
+                        <FormLabel style={{ fontSize: 12 }} component="legend">
+                            {labelText}
+                        </FormLabel>
+                        <Radio
+                            className={className}
+                            name={keyValue}
+                            onChange={newValue => onChange(keyValue, newValue)}
+                            options={options}
+                            value={value}
+                        />
+                    </FormControl>
                 );
             default:
                 return null;
@@ -206,6 +215,7 @@ InputComponent.defaultProps = {
     getOptionLabel: null,
     getOptionSelected: null,
     renderOption: null,
+    className: '',
 };
 InputComponent.propTypes = {
     type: PropTypes.string,
@@ -229,6 +239,7 @@ InputComponent.propTypes = {
     getOptionLabel: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     getOptionSelected: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     renderOption: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+    className: PropTypes.string,
 };
 
 const translated = injectIntl(InputComponent);

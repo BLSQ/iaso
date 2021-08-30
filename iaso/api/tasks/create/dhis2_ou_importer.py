@@ -2,7 +2,7 @@ from rest_framework.response import Response
 
 from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
 from iaso.api.tasks import TaskSerializer
-from iaso.models import DataSource, SourceVersion
+from iaso.models import DataSource
 from rest_framework import viewsets, permissions, serializers
 from iaso.api.common import HasPermission
 import logging
@@ -40,13 +40,6 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
         ):
             raise serializers.ValidationError("No valid credentials exist for this source, please provide them")
 
-        source_id = attrs["source_id"]
-        if "source_version_number" in attrs:
-            versions = SourceVersion.objects.filter(data_source_id=source_id, number=attrs["source_version_number"])
-            for version in versions:
-                version_count = version.orgunit_set.all().count()
-                if version_count > 0:
-                    raise serializers.ValidationError(f"A non empty version exists with {version_count} orgunits")
         return validated_data
 
 

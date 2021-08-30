@@ -102,28 +102,6 @@ class ApiDhis2ouimporterTestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         self.assertValidTaskAndInDB(jr)
 
-    def test_fail_version_not_empty(self):
-        project = m.Project.objects.create(name="test proj", app_id="app_id", account=self.account)
-        credentials = m.ExternalCredentials.objects.create(
-            url="url", login="login", password="pwd", account=self.account
-        )
-        source = m.DataSource.objects.create(name="test source", credentials=credentials)
-        source.projects.add(project)
-        version = m.SourceVersion.objects.create(data_source=source, number=1)
-        m.OrgUnit.objects.create(name="hey", version=version)
-
-        self.client.force_authenticate(self.user)
-        response = self.client.post(
-            "/api/dhis2ouimporter/",
-            format="json",
-            data={
-                "source_id": source.id,
-                "source_version_number": 1,
-            },
-        )
-        jr = self.assertJSONResponse(response, 400)
-        self.assertEqual({"non_field_errors": ["A non empty version exists with 1 orgunits"]}, jr)
-
     def test_override_credentials(self):
         project = m.Project.objects.create(name="test proj", app_id="app_id", account=self.account)
         credentials = m.ExternalCredentials.objects.create(

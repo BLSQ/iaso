@@ -180,7 +180,7 @@ const formsTableColumns = (
         Header: formatMessage(MESSAGES.actions),
         resizable: false,
         sortable: false,
-        width: 300,
+        width: 250,
         accessor: 'actions',
         Cell: settings => {
             let urlToInstances = `${baseUrls.instances}/formId/${settings.row.original.id}`;

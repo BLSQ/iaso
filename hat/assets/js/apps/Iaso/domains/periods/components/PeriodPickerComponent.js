@@ -5,9 +5,8 @@ import PropTypes from 'prop-types';
 
 import { DatePicker, useSafeIntl, commonStyles } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
-// import DatePickerComponent from './DatePickerComponent';
 
-import { getYears, getIntegerArray } from '../../../utils';
+import { getYears } from '../../../utils';
 import { getPeriodPickerString } from '../utils';
 import { Period } from '../models';
 

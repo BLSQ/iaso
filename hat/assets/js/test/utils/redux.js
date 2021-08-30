@@ -5,7 +5,6 @@ import { Provider } from 'react-redux';
 import { Link } from 'react-router';
 import { LinkProvider } from 'bluesquare-components';
 
-import { currentUserInitialState } from '../../apps/Iaso/redux/currentUserReducer';
 import { formsInitialState } from '../../apps/Iaso/domains/forms/reducer';
 import { orgUnitsInitialState } from '../../apps/Iaso/domains/orgUnits/reducer';
 import { projectsInitialState } from '../../apps/Iaso/domains/projects/reducer';
@@ -15,7 +14,6 @@ import { mappingsInitialState } from '../../apps/Iaso/domains/mappings/reducer';
 import { sidebarMenuInitialState } from '../../apps/Iaso/redux/sidebarMenuReducer';
 import { snackBarsInitialState } from '../../apps/Iaso/redux/snackBarsReducer';
 import { devicesInitialState } from '../../apps/Iaso/redux/devicesReducer';
-import { orgUnitsLevelsInitialState } from '../../apps/Iaso/redux/orgUnitsLevelsReducer';
 import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
 import { linksInitialState } from '../../apps/Iaso/domains/links/reducer';
 import { usersInitialState } from '../../apps/Iaso/domains/users/reducer';
@@ -32,8 +30,6 @@ const mockStore = configureStore(middlewares);
 const getMockedStore = storeObject => mockStore(storeObject);
 
 const initialState = {
-    load: {},
-    currentUser: currentUserInitialState,
     sidebar: sidebarMenuInitialState,
     forms: formsInitialState,
     orgUnits: orgUnitsInitialState,
@@ -41,7 +37,6 @@ const initialState = {
     snackBar: snackBarsInitialState,
     map: mapInitialState,
     devices: devicesInitialState,
-    orgUnitsLevels: orgUnitsLevelsInitialState,
     routerCustom: routerInitialState,
     links: linksInitialState,
     users: usersInitialState,

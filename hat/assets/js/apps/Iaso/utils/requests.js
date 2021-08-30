@@ -53,19 +53,6 @@ export const fetchOrgUnitsTypes = dispatch =>
             throw error;
         });
 
-export const fetchSourceTypes = dispatch =>
-    getRequest('/api/sourcetypes/')
-        .then(sourceTypes => sourceTypes)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchSourceTypesError', null, error),
-                ),
-            );
-            console.error('Error while fetching source types list:', error);
-            throw error;
-        });
-
 export const fetchSources = dispatch =>
     getRequest('/api/datasources/')
         .then(res => res.sources)

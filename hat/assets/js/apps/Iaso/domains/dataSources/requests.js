@@ -34,26 +34,15 @@ export const useDhisOuImporterRequest = requestBody => {
     return useAPI(callback);
 };
 
-const postGeoPkg = async request => {
-    if (request) {
-        const file = { file: request.file };
-        const body = { ...request };
-        delete body.file;
-        return iasoPostRequest({
-            requestParams: {
-                url: '/api/tasks/create/importgpkg/',
-                body,
-                fileData: file,
-            },
-        });
-    }
-    return null;
-};
-
-export const useGeoPkgImport = request => {
-    const callback = useCallback(
-        async () => postGeoPkg(request),
-        [request, postGeoPkg],
-    );
-    return useAPI(callback);
+export const postGeoPkg = async request => {
+    const file = { file: request.file };
+    const body = { ...request };
+    delete body.file;
+    return iasoPostRequest({
+        requestParams: {
+            url: '/api/tasks/create/importgpkg/',
+            body,
+            fileData: file,
+        },
+    });
 };

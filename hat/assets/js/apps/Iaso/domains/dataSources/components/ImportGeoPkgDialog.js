@@ -1,24 +1,23 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid, Typography } from '@material-ui/core';
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+import { useMutation } from 'react-query';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
 import MESSAGES from '../messages';
-import { useGeoPkgImport } from '../requests';
 import InputComponent from '../../../components/forms/InputComponent';
+import { postGeoPkg } from '../requests';
 
-const initialFormState = () => {
-    return {
-        file: null,
-        project: null,
-    };
-};
+const initialFormState = () => ({
+    file: null,
+    project: null,
+});
 
 const ImportGeoPkgDialog = ({
     renderTrigger,
@@ -31,56 +30,36 @@ const ImportGeoPkgDialog = ({
     const [form, setFormField, _, setFormState] = useFormState(
         initialFormState(),
     );
-    const intl = useSafeIntl();
-    const [requestBody, setRequestBody] = useState(null);
-    const [redirect, setRedirect] = useState(false);
-    const [closeDialogCallback, setCloseDialogCallback] = useState(null);
-    const { data, isLoading } = useGeoPkgImport(requestBody);
+    const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
+    const mutation = useMutation(postGeoPkg);
+    const reset = () => {
+        setFormState(initialFormState());
+    };
 
-    const submit = useCallback(() => {
+    const submit = async (closeDialogCallBack, redirect = false) => {
         const body = {
             file: form.file.value,
             project: form.project.value,
             data_source: sourceId,
             version_number: versionNumber ? versionNumber.toString() : '',
         };
-        setRequestBody(body);
-    }, [form.file.value, form.project.value, sourceId]);
+        await mutation.mutateAsync(body);
+        closeDialogCallBack();
 
-    const reset = useCallback(() => {
-        setRequestBody(null);
-        setFormState(initialFormState());
-    }, [setFormState]);
-
-    const onConfirm = useCallback(
-        closeDialog => {
-            submit();
-            setCloseDialogCallback(() => closeDialog);
-        },
-        [submit],
-    );
-    const onRedirect = useCallback(
-        closeDialog => {
-            onConfirm(closeDialog);
-            setRedirect(true);
-        },
-        [onConfirm],
-    );
-
-    useEffect(() => {
-        if (data) {
-            closeDialogCallback();
-            if (redirect) {
-                dispatch(
-                    redirectTo(baseUrls.tasks, {
-                        order: '-created_at',
-                    }),
-                );
-            }
+        if (redirect) {
+            dispatch(redirectTo(baseUrls.tasks, {}));
             reset();
         }
-    }, [closeDialogCallback, data, reset, redirect]);
+    };
+
+    const onConfirm = async closeDialog => {
+        await submit(closeDialog);
+    };
+
+    const onRedirect = async closeDialog => {
+        await submit(closeDialog, true);
+    };
 
     const titleMessage = versionNumber ? (
         <FormattedMessage
@@ -93,7 +72,7 @@ const ImportGeoPkgDialog = ({
     );
 
     const allowConfirm = Boolean(
-        !isLoading && form.file.value && form.project.value,
+        !mutation.isLoading && form.file.value && form.project.value,
     );
     return (
         <ConfirmCancelDialogComponent
@@ -109,7 +88,7 @@ const ImportGeoPkgDialog = ({
             onAdditionalButtonClick={onRedirect}
             onClosed={reset}
         >
-            {isLoading && <LoadingSpinner />}
+            {mutation.isLoading && <LoadingSpinner />}
             <Grid container spacing={4}>
                 <Grid item>
                     <Typography>
@@ -141,7 +120,7 @@ const ImportGeoPkgDialog = ({
                         keyValue="project"
                         value={form.project.value}
                         errors={form.project.errors}
-                        labelString={intl.formatMessage(MESSAGES.project)}
+                        labelString={formatMessage(MESSAGES.project)}
                         options={projects.map(project => ({
                             label: project.name,
                             value: project.id,

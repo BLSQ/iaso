@@ -69,6 +69,7 @@ export function FormsChipsFilterComponent(props) {
 
 FormsChipsFilterComponent.defaultProps = {
     currentForms: null,
+    setFormsSelected: () => null,
 };
 
 FormsChipsFilterComponent.propTypes = {
@@ -76,7 +77,7 @@ FormsChipsFilterComponent.propTypes = {
     currentForms: PropTypes.any,
     currentOrgUnit: PropTypes.object.isRequired,
     formsSelected: PropTypes.array.isRequired,
-    setFormsSelected: PropTypes.func.isRequired,
+    setFormsSelected: PropTypes.func,
     dispatch: PropTypes.func.isRequired,
     fitToBounds: PropTypes.func.isRequired,
 };

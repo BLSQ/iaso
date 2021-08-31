@@ -1,13 +1,11 @@
 import React from 'react';
 import moment from 'moment';
-import { Tooltip } from '@material-ui/core';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 import Color from 'color';
 import {
     IconButton as IconButtonComponent,
     textPlaceholder,
+    Expander,
 } from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
 import OrgUnitTooltip from './components/OrgUnitTooltip';
@@ -39,8 +37,8 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             Header: formatMessage(MESSAGES.name),
             accessor: 'name',
             Cell: settings => (
-                <OrgUnitTooltip orgUnit={settings.original}>
-                    <span>{settings.original.name}</span>
+                <OrgUnitTooltip orgUnit={settings.row.original}>
+                    <span>{settings.row.original.name}</span>
                 </OrgUnitTooltip>
             ),
         },
@@ -48,14 +46,15 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             Header: formatMessage(MESSAGES.type),
             accessor: 'org_unit_type_id',
             Cell: settings => (
-                <section>{settings.original.org_unit_type_name}</section>
+                <section>{settings.row.original.org_unit_type_name}</section>
             ),
         },
         {
             Header: formatMessage(MESSAGES.groups),
             accessor: 'groups',
+            width: 400,
             Cell: settings => (
-                <section>{getOrgUnitGroups(settings.original)}</section>
+                <section>{getOrgUnitGroups(settings.row.original)}</section>
             ),
         },
         {
@@ -64,8 +63,9 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             sortable: false,
             Cell: settings => (
                 <section>
-                    {settings.original.source && settings.original.source}
-                    {!settings.original.source && textPlaceholder}
+                    {settings.row.original.source &&
+                        settings.row.original.source}
+                    {!settings.row.original.source && textPlaceholder}
                 </section>
             ),
         },
@@ -73,7 +73,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             Header: formatMessage(MESSAGES.status),
             accessor: 'validation_status',
             Cell: settings => {
-                const status = settings.original.validation_status;
+                const status = settings.row.original.validation_status;
                 return (
                     <span className={getStatusColor(status)}>
                         {getStatusMessage(status, formatMessage)}
@@ -84,14 +84,18 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
         {
             Header: formatMessage(MESSAGES.instances_count),
             accessor: 'instances_count',
-            Cell: settings => <span>{settings.original.instances_count}</span>,
+            Cell: settings => (
+                <span>{settings.row.original.instances_count}</span>
+            ),
         },
         {
             Header: formatMessage(MESSAGES.updated_at),
             accessor: 'updated_at',
             Cell: settings => (
                 <section>
-                    {moment.unix(settings.original.updated_at).format('LTS')}
+                    {moment
+                        .unix(settings.row.original.updated_at)
+                        .format('LTS')}
                 </section>
             ),
         },
@@ -100,36 +104,39 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             accessor: 'created_at',
             Cell: settings => (
                 <section>
-                    {moment.unix(settings.original.created_at).format('LTS')}
+                    {moment
+                        .unix(settings.row.original.created_at)
+                        .format('LTS')}
                 </section>
             ),
         },
         {
             Header: formatMessage(MESSAGES.action),
+            accessor: 'actions',
             resizable: false,
             sortable: false,
-            width: 150,
+            width: 250,
             Cell: settings => (
                 <section>
                     <IconButtonComponent
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/infos`}
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/infos`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.details}
                     />
-                    {(settings.original.has_geo_json ||
+                    {(settings.row.original.has_geo_json ||
                         Boolean(
-                            settings.original.latitude &&
-                                settings.original.longitude,
+                            settings.row.original.latitude &&
+                                settings.row.original.longitude,
                         )) && (
                         <IconButtonComponent
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/map`}
+                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/map`}
                             icon="map"
                             tooltipMessage={MESSAGES.map}
                         />
                     )}
 
                     <IconButtonComponent
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/history`}
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/history`}
                         icon="history"
                         tooltipMessage={MESSAGES.history}
                     />
@@ -147,11 +154,11 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
                 <section>
                     <span
                         style={
-                            settings.original.color
+                            settings.row.original.color
                                 ? {
-                                      backgroundColor: `#${settings.original.color}`,
+                                      backgroundColor: `#${settings.row.original.color}`,
                                       border: `2px solid ${Color(
-                                          `#${settings.original.color}`,
+                                          `#${settings.row.original.color}`,
                                       ).darken(0.5)}`,
                                   }
                                 : {}
@@ -175,30 +182,22 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => [
         Header: formatMessage(MESSAGES.date),
         accessor: 'created_at',
         Cell: settings => (
-            <span>{moment(settings.original.created_at).format('LTS')}</span>
+            <span>
+                {moment(settings.row.original.created_at).format('LTS')}
+            </span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.user),
         accessor: 'user__username',
-        Cell: settings => <span>{getDisplayName(settings.original.user)}</span>,
+        Cell: settings => (
+            <span>{getDisplayName(settings.row.original.user)}</span>
+        ),
     },
     {
         expander: true,
+        accessor: 'expander',
         width: 65,
-        // eslint-disable-next-line react/prop-types
-        Expander: ({ isExpanded }) =>
-            isExpanded ? (
-                <VisibilityOff />
-            ) : (
-                <Tooltip
-                    classes={{
-                        popper: classes.popperFixed,
-                    }}
-                    title={formatMessage(MESSAGES.details)}
-                >
-                    <Visibility />
-                </Tooltip>
-            ),
+        Expander,
     },
 ];

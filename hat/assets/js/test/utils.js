@@ -15,16 +15,6 @@ export function renderWithIntl(Component, props) {
     );
     return TestUtils.renderIntoDocument(temp);
 }
-// TODO delete dead code
-// export function renderWithDOMNode(Component, props, node) {
-//     return ReactDOM.render(
-//         // eslint-disable-line
-//         <IntlProvider locale="en" messages={{}}>
-//             <Component {...props} />
-//         </IntlProvider>,
-//         node,
-//     );
-// }
 
 export function withQueryClientProvider(component) {
     return (
@@ -68,3 +58,9 @@ export const fillFields = async (component, fieldKeys) => {
         await awaitUseEffect(component);
     }
 };
+
+export const colOriginal = original => ({
+    row: {
+        original,
+    },
+});

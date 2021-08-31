@@ -33,10 +33,6 @@ const baseUrl = baseUrls.algos;
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
 }));
 
 const Runs = ({ params }) => {

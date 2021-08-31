@@ -181,7 +181,6 @@ const AddTask = ({
             renderTrigger={renderTrigger}
             titleMessage={titleMessage}
             onConfirm={onConfirm}
-            // eslint-disable-next-line no-unused-vars
             onClosed={reset}
             confirmMessage={MESSAGES.launch}
             cancelMessage={MESSAGES.cancel}

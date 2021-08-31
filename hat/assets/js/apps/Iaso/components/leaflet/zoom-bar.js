@@ -1,3 +1,7 @@
+import L from 'leaflet';
+import location from '../../images/location.svg';
+import square from '../../images/square.svg';
+
 /*
  * In react use the <ZoomControl> component from mapUtils instead !
  *  from L.Control.ZoomBar
@@ -9,8 +13,6 @@
  * - Fit to relevant bounds, requires `fitToBounds` option (function),
  *     without it, it's not going to be included in the bar.
  */
-
-import L from 'leaflet';
 
 export const ZoomBar = L.Control.Zoom.extend({
     options: {
@@ -59,7 +61,7 @@ export const ZoomBar = L.Control.Zoom.extend({
         );
 
         this._zoomBoxButton = this._createButton(
-            '',
+            `<img src="${square}"/>`,
             options.zoomBoxTitle,
             `${className}-box`,
             container,
@@ -69,22 +71,11 @@ export const ZoomBar = L.Control.Zoom.extend({
 
         if (options.fitToBounds) {
             this._fitToBoundsButton = this._createButton(
-                '',
+                `<img src="${location}"/>`,
                 options.fitToBoundsTitle,
                 `${className}-fit`,
                 container,
                 options.fitToBounds,
-                this,
-            );
-        }
-
-        if (options.withVillageSearch) {
-            this._searchButton = this._createButton(
-                '',
-                options.searchTitle,
-                `${className}-search`,
-                container,
-                options.onSearch,
                 this,
             );
         }

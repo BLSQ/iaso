@@ -17,7 +17,20 @@ const routes = [
         baseUrl: 'polio/config',
         component: () => <EmailNotificationConfig />,
         permission: 'iaso_forms',
-        params: [],
+        params: [
+            {
+                isRequired: false,
+                key: 'order',
+            },
+            {
+                isRequired: false,
+                key: 'pageSize',
+            },
+            {
+                isRequired: false,
+                key: 'page',
+            },
+        ],
     },
 ];
 

@@ -98,7 +98,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.configuration',
     },
     configEmailNotif: {
-        defaultMessage: 'Configure country',
+        defaultMessage: 'Configure country: {country}',
         id: 'iaso.label.configEmailNotif',
     },
     confirm: {
@@ -108,6 +108,14 @@ const MESSAGES = defineMessages({
     cancel: {
         defaultMessage: 'Cancel',
         id: 'iaso.label.cancel',
+    },
+    selectUsers: {
+        id: 'iaso.select.label.selectUsers',
+        defaultMessage: 'Select users',
+    },
+    selectLanguage: {
+        id: 'iaso.select.label.selectLanguage',
+        defaultMessage: 'Select language',
     },
 });
 

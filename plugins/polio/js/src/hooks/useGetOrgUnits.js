@@ -42,7 +42,7 @@ export const useGetAllParentsOrgUnits = initialOrgUnit => {
 
             const result = await sendRequest(
                 'GET',
-                `/api/orgunits/${initialOrgUnit}`,
+                `/api/orgunits/${initialOrgUnit}/`,
             );
 
             const initialState = [result.id];

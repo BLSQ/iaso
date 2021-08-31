@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { makeStyles } from '@material-ui/core';
-
 import PropTypes from 'prop-types';
 
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { saveLink, fetchLinks } from '../../utils/requests';
 
 import { linksTableColumns } from './config';
@@ -24,16 +22,7 @@ import MESSAGES from './messages';
 
 const baseUrl = baseUrls.links;
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
-}));
-
 export const Links = ({ params, router }) => {
-    const classes = useStyles();
     const intl = useSafeIntl();
     const dispatch = useDispatch();
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
@@ -70,11 +59,7 @@ export const Links = ({ params, router }) => {
         });
     };
     const [tableColumns] = useState(
-        linksTableColumns(
-            intl.formatMessage,
-            link => validateLink(link),
-            classes,
-        ),
+        linksTableColumns(intl.formatMessage, link => validateLink(link)),
     );
 
     const onDataLoaded = () => {

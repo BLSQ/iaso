@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 
-import { withStyles, Container, Grid, Divider } from '@material-ui/core';
+import { withStyles, Container, Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -68,77 +68,66 @@ class LogsDetails extends Component {
         } = this.props;
         const { log, loading } = this.state;
         return (
-            <>
-                <Divider />
-                <Container maxWidth={false} className={classes.root}>
-                    {loading && (
-                        <LoadingSpinner
-                            message={formatMessage(MESSAGES.loading)}
-                        />
-                    )}
-                    {log && (
-                        <>
-                            {log.past_value.length > 0 &&
-                                log.new_value.length > 0 && (
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={6}>
-                                            <LogCompareComponent
-                                                title={formatMessage(
-                                                    MESSAGES.before,
-                                                )}
-                                                log={log.past_value}
-                                                compareLog={log.new_value}
-                                                goToRevision={goToRevision}
+            <Container maxWidth={false} className={classes.root}>
+                {loading && (
+                    <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
+                )}
+                {log && (
+                    <>
+                        {log.past_value.length > 0 && log.new_value.length > 0 && (
+                            <Grid container spacing={2}>
+                                <Grid item xs={6}>
+                                    <LogCompareComponent
+                                        title={formatMessage(MESSAGES.before)}
+                                        log={log.past_value}
+                                        compareLog={log.new_value}
+                                        goToRevision={goToRevision}
+                                    />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <LogCompareComponent
+                                        title={formatMessage(MESSAGES.after)}
+                                        log={log.new_value}
+                                        compareLog={log.past_value}
+                                        goToRevision={goToRevision}
+                                    />
+                                </Grid>
+                            </Grid>
+                        )}
+                        {log.past_value.length > 0 &&
+                            log.new_value.length === 0 && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={6}>
+                                        <h4 className="margin-bottom">
+                                            <FormattedMessage
+                                                {...MESSAGES.deleted}
                                             />
-                                        </Grid>
-                                        <Grid item xs={6}>
-                                            <LogCompareComponent
-                                                title={formatMessage(
-                                                    MESSAGES.after,
-                                                )}
-                                                log={log.new_value}
-                                                compareLog={log.past_value}
-                                                goToRevision={goToRevision}
-                                            />
-                                        </Grid>
+                                        </h4>
+                                        <LogCompareComponent
+                                            log={log.past_value}
+                                        />
                                     </Grid>
-                                )}
-                            {log.past_value.length > 0 &&
-                                log.new_value.length === 0 && (
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={6}>
-                                            <h4 className="margin-bottom">
-                                                <FormattedMessage
-                                                    {...MESSAGES.deleted}
-                                                />
-                                            </h4>
-                                            <LogCompareComponent
-                                                log={log.past_value}
+                                </Grid>
+                            )}
+                        {log.past_value.length === 0 &&
+                            log.new_value.length > 0 && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={6}>
+                                        <h4 className="margin-bottom">
+                                            <FormattedMessage
+                                                {...MESSAGES.created}
                                             />
-                                        </Grid>
+                                        </h4>
+                                        <LogCompareComponent
+                                            log={log.new_value}
+                                            goToRevision={goToRevision}
+                                        />
                                     </Grid>
-                                )}
-                            {log.past_value.length === 0 &&
-                                log.new_value.length > 0 && (
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={6}>
-                                            <h4 className="margin-bottom">
-                                                <FormattedMessage
-                                                    {...MESSAGES.created}
-                                                />
-                                            </h4>
-                                            <LogCompareComponent
-                                                log={log.new_value}
-                                                goToRevision={goToRevision}
-
-                                            />
-                                        </Grid>
-                                    </Grid>
-                                )}
-                        </>
-                    )}
-                </Container>
-            </>
+                                </Grid>
+                            )}
+                    </>
+                )}
+            </Container>
         );
     }
 }

@@ -131,3 +131,5 @@ lintErrors.html
 
 # translations scan temporary files
 /hat/assets/js/apps/Iaso/domains/app/translations/extracted/
+
+hat/assets/webpack/

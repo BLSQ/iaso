@@ -5,7 +5,6 @@ import DevicesList from './index';
 
 import { mockGetRequestsList } from '../../../../test/utils/requests';
 import { renderWithStore } from '../../../../test/utils/redux';
-import { renderWithMuiTheme } from '../../../../test/utils/muiTheme';
 
 const requests = [
     {
@@ -25,11 +24,7 @@ describe('Devices component', () => {
 
     it('mounts properly', () => {
         const connectedWrapper = mount(
-            renderWithMuiTheme(
-                renderWithStore(
-                    <DevicesList params={{ order: '-created_at' }} />,
-                ),
-            ),
+            renderWithStore(<DevicesList params={{ order: '-created_at' }} />),
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });

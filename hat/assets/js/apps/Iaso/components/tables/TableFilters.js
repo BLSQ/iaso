@@ -1,14 +1,11 @@
 import React from 'react';
 import { FormattedMessage, defineMessages } from 'react-intl';
-import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
 import { Grid, Button, withStyles, Box } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
 import { commonStyles } from 'bluesquare-components';
-import { redirectTo as redirectToAction } from '../../routing/actions';
 
 import FiltersComponent from '../filters/FiltersComponent';
 
@@ -120,16 +117,4 @@ Filters.propTypes = {
     extraComponent: PropTypes.node,
 };
 
-const MapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            redirectTo: redirectToAction,
-        },
-        dispatch,
-    ),
-});
-
-export default connect(
-    () => ({}),
-    MapDispatchToProps,
-)(withStyles(styles)(Filters));
+export default withStyles(styles)(Filters);

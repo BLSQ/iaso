@@ -34,4 +34,5 @@ class PagesViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        return Page.objects.filter(users=user).order_by("created_at").all()
+        order = self.request.query_params.get("order", "created_at").split(",")
+        return Page.objects.filter(users=user).order_by(*order).all()

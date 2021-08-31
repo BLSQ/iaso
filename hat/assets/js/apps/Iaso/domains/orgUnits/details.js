@@ -683,14 +683,8 @@ class OrgUnitDetail extends Component {
                                     { id: 'similarity_score', desc: false },
                                 ]}
                                 columns={handleFetch =>
-                                    linksTableColumns(
-                                        formatMessage,
-                                        link =>
-                                            this.validateLink(
-                                                link,
-                                                handleFetch,
-                                            ),
-                                        classes,
+                                    linksTableColumns(formatMessage, link =>
+                                        this.validateLink(link, handleFetch),
                                     )
                                 }
                                 subComponent={(link, handleFetch) =>

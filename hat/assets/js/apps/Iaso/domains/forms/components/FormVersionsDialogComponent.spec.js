@@ -9,7 +9,6 @@ import IconButtonComponent from '../../../components/buttons/IconButtonComponent
 import PeriodPicker from '../../periods/components/PeriodPickerComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { renderWithStore } from '../../../../../test/utils/redux';
-import { renderWithMuiTheme } from '../../../../../test/utils/muiTheme';
 import formVersionFixture from '../fixtures/formVersions.json';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
 import MESSAGES from '../messages';
@@ -36,13 +35,42 @@ const awaitUseEffect = async wrapper => {
 
 const getConnectedWrapper = () =>
     mount(
-        renderWithMuiTheme(
-            renderWithStore(
-                <MuiPickersUtilsProvider utils={MomentUtils} locale="en">
+        renderWithStore(
+            <MuiPickersUtilsProvider utils={MomentUtils} locale="en">
+                <FormVersionsDialog
+                    formId={formId}
+                    formVersion={fakeFormVersion}
+                    titleMessage={MESSAGES.createFormVersion}
+                    renderTrigger={({ openDialog }) => (
+                        <IconButtonComponent
+                            id="open-dialog"
+                            onClick={openDialog}
+                            icon="edit"
+                            tooltipMessage={MESSAGES.createFormVersion}
+                        />
+                    )}
+                    onConfirmed={() => null}
+                    periodType={PERIOD_TYPE_DAY}
+                />
+            </MuiPickersUtilsProvider>,
+            {
+                forms: {
+                    current: undefined,
+                },
+            },
+        ),
+    );
+
+describe('FormVersionsDialog connected component', () => {
+    describe('with a new form version', () => {
+        before(() => {
+            connectedWrapper = mount(
+                renderWithStore(
                     <FormVersionsDialog
                         formId={formId}
-                        formVersion={fakeFormVersion}
                         titleMessage={MESSAGES.createFormVersion}
+                        onConfirmed={() => null}
+                        periodType={PERIOD_TYPE_DAY}
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
                                 id="open-dialog"
@@ -51,45 +79,12 @@ const getConnectedWrapper = () =>
                                 tooltipMessage={MESSAGES.createFormVersion}
                             />
                         )}
-                        onConfirmed={() => null}
-                        periodType={PERIOD_TYPE_DAY}
-                    />
-                </MuiPickersUtilsProvider>,
-                {
-                    forms: {
-                        current: undefined,
-                    },
-                },
-            ),
-        ),
-    );
-
-describe('FormVersionsDialog connected component', () => {
-    describe('with a new form version', () => {
-        before(() => {
-            connectedWrapper = mount(
-                renderWithMuiTheme(
-                    renderWithStore(
-                        <FormVersionsDialog
-                            formId={formId}
-                            titleMessage={MESSAGES.createFormVersion}
-                            onConfirmed={() => null}
-                            periodType={PERIOD_TYPE_DAY}
-                            renderTrigger={({ openDialog }) => (
-                                <IconButtonComponent
-                                    id="open-dialog"
-                                    onClick={openDialog}
-                                    icon="edit"
-                                    tooltipMessage={MESSAGES.createFormVersion}
-                                />
-                            )}
-                        />,
-                        {
-                            forms: {
-                                current: undefined,
-                            },
+                    />,
+                    {
+                        forms: {
+                            current: undefined,
                         },
-                    ),
+                    },
                 ),
             );
             inputComponent = connectedWrapper.find('#open-dialog').at(0);

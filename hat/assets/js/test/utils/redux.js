@@ -24,6 +24,8 @@ import { orgUnitsTypesInitialState } from '../../apps/Iaso/domains/orgUnits/type
 
 import { renderWithIntl } from './intl';
 
+import { renderWithMuiTheme } from './muiTheme';
+
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
@@ -51,7 +53,7 @@ const initialState = {
 export const renderWithStore = (component, state = null) => (
     <Provider store={getMockedStore({ ...initialState, ...state })}>
         <LinkProvider linkComponent={Link}>
-            {renderWithIntl(component)}
+            {renderWithMuiTheme(renderWithIntl(component))}
         </LinkProvider>
     </Provider>
 );

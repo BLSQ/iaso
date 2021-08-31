@@ -35,10 +35,10 @@ const useStyles = makeStyles(theme => ({
 const tasksTableColumns = source => [
     {
         Header: <FormattedMessage {...MESSAGES.defaultVersion} />,
-        accessor: '',
+        accessor: 'id',
         sortable: false,
         Cell: settings =>
-            source.default_version?.id === settings.original.id && (
+            source.default_version?.id === settings.value && (
                 <Tooltip
                     title={<FormattedMessage {...MESSAGES.defaultVersion} />}
                 >
@@ -69,6 +69,7 @@ const tasksTableColumns = source => [
     },
     {
         Header: <FormattedMessage id="iaso.label.actions" />,
+        accessor: 'actions',
         sortable: false,
         Cell: settings =>
             source.read_only ? (

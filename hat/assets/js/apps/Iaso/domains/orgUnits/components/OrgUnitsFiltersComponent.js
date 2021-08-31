@@ -66,10 +66,6 @@ const extendFilter = (searchParams, filter, onChange, searchIndex) => ({
     value: searchParams[filter.urlKey],
     callback: (value, urlKey) => onChange(value, urlKey),
 });
-const extractIdFromParams = (params, searchIndex) => {
-    if (!params) return null;
-    return JSON.parse(params?.searches)[searchIndex]?.levels;
-};
 
 const useInitialOrgUnit = orgUnitId => {
     const request = useCallback(async () => {
@@ -94,8 +90,10 @@ const OrgUnitsFiltersComponent = ({
     searchIndex,
     onSearch,
 }) => {
+    const initalSearches = [...decodeSearch(params.searches)];
+    const searchParams = initalSearches[searchIndex];
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(
-        extractIdFromParams(params, searchIndex),
+        searchParams?.levels,
     );
     const { data: initialOrgUnit } = useInitialOrgUnit(initialOrgUnitId);
     const intl = useSafeIntl();
@@ -181,8 +179,7 @@ const OrgUnitsFiltersComponent = ({
         }
         onSearch();
     };
-    const searches = [...decodeSearch(params.searches)];
-    const searchParams = searches[searchIndex];
+
     const currentColor = searchParams.color
         ? `#${searchParams.color}`
         : getChipColors(0);

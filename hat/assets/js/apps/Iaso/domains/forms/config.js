@@ -6,7 +6,6 @@ import { Link } from 'react-router';
 import {
     textPlaceholder,
     IconButton as IconButtonComponent,
-    ColumnText as ColumnTextComponent,
 } from 'bluesquare-components';
 import FormVersionsDialog from './components/FormVersionsDialogComponent';
 import { baseUrls } from '../../constants/urls';
@@ -24,29 +23,17 @@ export const formVersionsTableColumns = (
     {
         Header: formatMessage(MESSAGES.version),
         accessor: 'version_id',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.version_id || textPlaceholder}
-            />
-        ),
+        Cell: settings => settings.row.original.version_id || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.startPeriod),
         accessor: 'start_period',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.start_period || textPlaceholder}
-            />
-        ),
+        Cell: settings => settings.row.original.start_period || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.endPeriod),
         accessor: 'end_period',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.end_period || textPlaceholder}
-            />
-        ),
+        Cell: settings => settings.row.original.end_period || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.actions),
@@ -54,10 +41,13 @@ export const formVersionsTableColumns = (
         sortable: false,
         Cell: settings => (
             <section>
-                {settings.original.xls_file && (
+                {settings.row.original.xls_file && (
                     <IconButtonComponent
                         onClick={() =>
-                            window.open(settings.original.xls_file, '_blank')
+                            window.open(
+                                settings.row.original.xls_file,
+                                '_blank',
+                            )
                         }
                         icon="xls"
                         tooltipMessage={MESSAGES.xls_form_file}
@@ -72,16 +62,16 @@ export const formVersionsTableColumns = (
                         />
                     )}
                     onConfirmed={() => setForceRefresh(true)}
-                    formVersion={settings.original}
+                    formVersion={settings.row.original}
                     periodType={periodType}
                     formId={formId}
                     titleMessage={{
                         ...MESSAGES.updateFormVersion,
                         values: {
-                            version_id: settings.original.version_id,
+                            version_id: settings.row.original.version_id,
                         },
                     }}
-                    key={settings.original.updated_at}
+                    key={settings.row.original.updated_at}
                 />
             </section>
         ),
@@ -99,93 +89,72 @@ const formsTableColumns = (
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
         style: { justifyContent: 'left' },
-        Cell: settings => <ColumnTextComponent text={settings.original.name} />,
+        Cell: settings => settings.row.original.name,
     },
     {
         Header: formatMessage(MESSAGES.created_at),
         accessor: 'created_at',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={moment
-                    .unix(settings.original.created_at)
-                    .format('LTS')}
-            />
-        ),
+        Cell: settings =>
+            moment.unix(settings.row.original.created_at).format('LTS'),
     },
     {
         Header: formatMessage(MESSAGES.updated_at),
         accessor: 'updated_at',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={moment
-                    .unix(settings.original.updated_at)
-                    .format('LTS')}
-            />
-        ),
+        Cell: settings =>
+            moment.unix(settings.row.original.updated_at).format('LTS'),
     },
     {
         Header: formatMessage(MESSAGES.instance_updated_at),
         accessor: 'instance_updated_at',
         Cell: settings => {
-            const dateText = settings.original.instance_updated_at
+            const dateText = settings.row.original.instance_updated_at
                 ? moment
-                      .unix(settings.original.instance_updated_at)
+                      .unix(settings.row.original.instance_updated_at)
                       .format('LTS')
                 : textPlaceholder;
 
-            return <ColumnTextComponent text={dateText} />;
+            return dateText;
         },
     },
     {
         Header: formatMessage(MESSAGES.type),
         sortable: false,
         accessor: 'org_unit_types',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.org_unit_types
-                    .map(o => o.short_name)
-                    .join(', ')}
-            />
-        ),
+        Cell: settings =>
+            settings.row.original.org_unit_types
+                .map(o => o.short_name)
+                .join(', '),
     },
     {
         Header: formatMessage(MESSAGES.records),
         accessor: 'instances_count',
-        Cell: settings => (
-            <ColumnTextComponent text={settings.original.instances_count} />
-        ),
+        Cell: settings => settings.row.original.instances_count,
     },
     {
         Header: formatMessage(MESSAGES.form_id),
+        accessor: 'form_id',
         sortable: false,
         style: { justifyContent: 'left' },
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.form_id || textPlaceholder}
-            />
-        ),
+        Cell: settings => settings.row.original.form_id || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.latest_version_files),
+        accessor: 'latest_version_files',
         sortable: false,
         Cell: settings =>
-            settings.original.latest_form_version !== null && (
+            settings.row.original.latest_form_version !== null && (
                 <Grid container spacing={1} justifyContent="center">
                     <Grid item>
-                        <ColumnTextComponent
-                            text={
-                                settings.original.latest_form_version.version_id
-                            }
-                        />
+                        {settings.row.original.latest_form_version.version_id}
                     </Grid>
                     <Grid container spacing={1} justifyContent="center">
-                        {settings.original.latest_form_version.xls_file && (
+                        {settings.row.original.latest_form_version.xls_file && (
                             <Grid item>
                                 <Link
                                     download
                                     href={
-                                        settings.original.latest_form_version
-                                            .xls_file
+                                        settings.row.original
+                                            .latest_form_version.xls_file
                                     }
                                 >
                                     XLS
@@ -196,7 +165,8 @@ const formsTableColumns = (
                             <Link
                                 download
                                 href={
-                                    settings.original.latest_form_version.file
+                                    settings.row.original.latest_form_version
+                                        .file
                                 }
                             >
                                 XML
@@ -210,9 +180,10 @@ const formsTableColumns = (
         Header: formatMessage(MESSAGES.actions),
         resizable: false,
         sortable: false,
-        width: 215,
+        width: 250,
+        accessor: 'actions',
         Cell: settings => {
-            let urlToInstances = `${baseUrls.instances}/formId/${settings.original.id}`;
+            let urlToInstances = `${baseUrls.instances}/formId/${settings.row.original.id}`;
             if (
                 component &&
                 component.state &&
@@ -234,14 +205,14 @@ const formsTableColumns = (
                     />
                     {showEditAction && (
                         <IconButtonComponent
-                            url={`${baseUrls.formDetail}/formId/${settings.original.id}`}
+                            url={`${baseUrls.formDetail}/formId/${settings.row.original.id}`}
                             icon="edit"
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
                     {showMappingAction && (
                         <IconButtonComponent
-                            url={`/forms/mappings/formId/${settings.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                            url={`/forms/mappings/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
                             icon="dhis"
                             tooltipMessage={MESSAGES.dhis2Mappings}
                         />
@@ -250,7 +221,9 @@ const formsTableColumns = (
                         titleMessage={MESSAGES.deleteFormTitle}
                         message={MESSAGES.deleteFormText}
                         onConfirm={closeDialog =>
-                            deleteForm(settings.original.id).then(closeDialog)
+                            deleteForm(settings.row.original.id).then(
+                                closeDialog,
+                            )
                         }
                     />
                 </section>

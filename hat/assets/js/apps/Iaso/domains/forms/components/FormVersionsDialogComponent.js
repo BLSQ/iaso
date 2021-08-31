@@ -219,12 +219,14 @@ const FormVersionsDialogComponent = ({
 
 FormVersionsDialogComponent.defaultProps = {
     formVersion: emptyVersion(),
+    periodType: '',
+    formId: 0,
 };
 
 FormVersionsDialogComponent.propTypes = {
-    periodType: PropTypes.string.isRequired,
+    periodType: PropTypes.string,
     formVersion: PropTypes.object,
-    formId: PropTypes.number.isRequired,
+    formId: PropTypes.number,
     titleMessage: PropTypes.object.isRequired,
     renderTrigger: PropTypes.func.isRequired,
     onConfirmed: PropTypes.func.isRequired,

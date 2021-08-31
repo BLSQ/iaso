@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import models
 from django.utils.translation import gettext as _
@@ -361,3 +362,9 @@ class CountryUsersGroup(models.Model):
 
     def __str__(self):
         return str(self.country)
+class LineListImport(models.Model):
+    file = models.FileField(upload_to="uploads/linelist/% Y/% m/% d/")
+    import_result = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)

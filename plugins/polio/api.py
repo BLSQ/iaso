@@ -21,6 +21,9 @@ from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
 )
 from .models import Campaign, Config, CountryUsersGroup
+from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer, LineListImportSerializer
+from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
+from .models import Campaign, Config, LineListImport
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -97,6 +100,12 @@ class CountryUsersGroupViewSet(ModelViewSet):
         for country in countries:
             CountryUsersGroup.objects.get_or_create(country=country)  # ensuring that such a model always exist
         return CountryUsersGroup.objects.all()
+class LineListImportViewSet(ModelViewSet):
+    serializer_class = LineListImportSerializer
+    results_key = "imports"
+
+    def get_queryset(self):
+        return LineListImport.objects.all()
 
 
 class IMViewSet(viewsets.ViewSet):
@@ -196,3 +205,4 @@ router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/im", IMViewSet, basename="IM")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
+router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")

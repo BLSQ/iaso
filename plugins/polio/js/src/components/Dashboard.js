@@ -3,11 +3,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Table,
     textPlaceholder,
-    IconButton as IconButtonComponent,
-    ColumnText,
     LoadingSpinner,
+    IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import 'react-table/react-table.css';
 import {
     Box,
     Button,
@@ -66,6 +64,9 @@ import MESSAGES from '../constants/messages';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import ImportLineListDialog from './ImportLineListDialog';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import { FormattedMessage } from 'react-intl';
 
 // eslint-disable-next-line camelcase
 const round_shape = yup.object().shape({
@@ -1486,7 +1487,7 @@ export const Dashboard = () => {
                 sortable: false,
                 Cell: settings => {
                     const text =
-                        settings?.original?.top_level_org_unit_name ??
+                        settings?.row?.original?.top_level_org_unit_name ??
                         textPlaceholder;
                     return <span>{text}</span>;
                 },
@@ -1495,7 +1496,7 @@ export const Dashboard = () => {
                 Header: 'Name',
                 accessor: 'obr_name',
                 Cell: settings => {
-                    return <span>{settings.original.obr_name}</span>;
+                    return <span>{settings.row.original.obr_name}</span>;
                 },
             },
             {
@@ -1503,7 +1504,7 @@ export const Dashboard = () => {
                 accessor: 'cvdpv2_notified_at',
                 Cell: settings => {
                     const text =
-                        settings?.original?.cvdpv2_notified_at ??
+                        settings?.row?.original?.cvdpv2_notified_at ??
                         textPlaceholder;
                     return <span>{text}</span>;
                 },
@@ -1513,12 +1514,8 @@ export const Dashboard = () => {
                 accessor: 'round_one__started_at',
                 Cell: settings => {
                     return (
-                        <ColumnText
-                            text={
-                                settings.original?.round_one?.started_at ??
-                                textPlaceholder
-                            }
-                        />
+                        settings?.row?.original?.round_one?.started_at ??
+                        textPlaceholder
                     );
                 },
             },
@@ -1527,12 +1524,8 @@ export const Dashboard = () => {
                 accessor: 'round_two__started_at',
                 Cell: settings => {
                     return (
-                        <ColumnText
-                            text={
-                                settings.original?.round_two?.started_at ??
-                                textPlaceholder
-                            }
-                        />
+                        settings.row.original?.round_two?.started_at ??
+                        textPlaceholder
                     );
                 },
             },
@@ -1541,13 +1534,12 @@ export const Dashboard = () => {
                 sortable: false,
                 accessor: 'general_status',
                 Cell: settings => {
-                    return (
-                        <ColumnText text={settings.original.general_status} />
-                    );
+                    return settings.row.original.general_status;
                 },
             },
             {
                 Header: 'Actions',
+                accessor: 'actions',
                 sortable: false,
                 Cell: settings => {
                     return (
@@ -1556,14 +1548,16 @@ export const Dashboard = () => {
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
                                 onClick={() =>
-                                    handleClickEditRow(settings.original.id)
+                                    handleClickEditRow(settings.row.original.id)
                                 }
                             />
                             <IconButtonComponent
                                 icon="delete"
                                 tooltipMessage={MESSAGES.delete}
                                 onClick={() =>
-                                    handleClickDeleteRow(settings.original.id)
+                                    handleClickDeleteRow(
+                                        settings.row.original.id,
+                                    )
                                 }
                             />
                         </>
@@ -1622,6 +1616,16 @@ export const Dashboard = () => {
                     <PageAction icon={DownloadIcon} onClick={exportToCSV}>
                         CSV
                     </PageAction>
+                    <ImportLineListDialog
+                        renderTrigger={({ openDialog }) => (
+                            <PageAction
+                                icon={CloudUploadIcon}
+                                onClick={openDialog}
+                            >
+                                Import
+                            </PageAction>
+                        )}
+                    />
                 </PageActions>
                 {status === 'success' && (
                     <Table
@@ -1632,7 +1636,6 @@ export const Dashboard = () => {
                         redirectTo={onTableParamsChange}
                         columns={columns}
                         data={campaigns.campaigns}
-                        watchToRender={tableParams}
                     />
                 )}
             </Box>

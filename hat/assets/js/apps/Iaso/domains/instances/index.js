@@ -73,10 +73,6 @@ const asBackendStatus = status => {
 
 const styles = theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
     selectColmunsContainer: {
         paddingRight: theme.spacing(4),
         position: 'relative',

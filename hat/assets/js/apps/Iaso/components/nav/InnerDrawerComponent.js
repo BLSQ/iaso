@@ -32,6 +32,13 @@ const styles = theme => ({
         paddingRight: theme.spacing(1),
         paddingLeft: theme.spacing(1),
     },
+    hiddenOpacity: {
+        position: 'absolute',
+        top: 0,
+        left: -5000,
+        zIndex: -10,
+        opacity: 0,
+    },
 });
 
 class InnerDrawer extends Component {
@@ -166,7 +173,7 @@ class InnerDrawer extends Component {
                                         width="100%"
                                         className={
                                             activeOption !== 'filters'
-                                                ? 'hidden-opacity'
+                                                ? classes.hiddenOpacity
                                                 : ''
                                         }
                                     >

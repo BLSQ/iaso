@@ -21,9 +21,8 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { formsFilters } from '../../constants/filters';
 
-const baseUrl = baseUrls.forms;
-
 const Forms = ({ params, showOnlyDeleted }) => {
+    const baseUrl = showOnlyDeleted ? baseUrls.archived : baseUrls.forms;
     const intl = useSafeIntl();
     const dispatch = useDispatch();
     const [forceRefresh, setForceRefresh] = useState(false);

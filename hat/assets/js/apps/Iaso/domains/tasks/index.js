@@ -20,10 +20,6 @@ const baseUrl = baseUrls.tasks;
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginBottom: theme.spacing(2),
-    },
 }));
 
 const Tasks = () => {

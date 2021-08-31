@@ -46,7 +46,7 @@
         "@material-ui/lab": "^4.0.0-alpha.48",
         "@material-ui/pickers": "^3.2.10",
         "babel-plugin-formatjs": "^10.3.4",
-        "bluesquare-components": "github:BLSQ/bluesquare-components#IA-650-react-table",
+        "bluesquare-components": "github:BLSQ/bluesquare-components",
         "classnames": "^2.2.6",
         "color": "^3.1.2",
         "font-awesome": "^4.7.0",

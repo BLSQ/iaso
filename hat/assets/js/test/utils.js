@@ -4,6 +4,8 @@ import TestUtils, { act } from 'react-dom/test-utils';
 import { IntlProvider } from 'react-intl';
 import { Provider } from 'react-redux';
 import InputComponent from '../apps/Iaso/components/forms/InputComponent';
+import { QueryClient, QueryClientProvider } from 'react-query';
+const queryClient = new QueryClient();
 
 export function renderWithIntl(Component, props) {
     const temp = (
@@ -23,6 +25,14 @@ export function renderWithIntl(Component, props) {
 //         node,
 //     );
 // }
+
+export function withQueryClientProvider(component) {
+    return (
+        <QueryClientProvider client={queryClient}>
+            {component}
+        </QueryClientProvider>
+    );
+}
 
 export function renderWithStore(store, component, node = null) {
     const wrappedComp = (

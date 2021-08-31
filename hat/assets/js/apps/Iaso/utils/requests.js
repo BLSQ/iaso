@@ -180,7 +180,7 @@ export const fetchInstancesAsLocationsByForm = (
     orgUnit,
     fitToBounds = () => null,
 ) => {
-    const url = `/api/instances?as_location=true&form_id=${form.id}&orgUnitId=${orgUnit.id}`;
+    const url = `/api/instances/?as_location=true&form_id=${form.id}&orgUnitId=${orgUnit.id}`;
     return getRequest(url)
         .then(data => {
             fitToBounds();
@@ -209,7 +209,7 @@ export const fetchAssociatedOrgUnits = (
     orgUnit,
     fitToBounds = () => null,
 ) => {
-    const url = `/api/orgunits?linkedTo=${orgUnit.id}&linkValidated=False&linkSource=${source.id}&validation_status=all`;
+    const url = `/api/orgunits/?linkedTo=${orgUnit.id}&linkValidated=False&linkSource=${source.id}&validation_status=all`;
 
     return getRequest(url)
         .then(data => {

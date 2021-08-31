@@ -303,7 +303,7 @@ const OrgUnitsFiltersComponent = ({
                                 />
                                 <OrgUnitTreeviewModal
                                     toggleOnLabelClick={false}
-                                    titleMessage={MESSAGES.search}
+                                    titleMessage={MESSAGES.parent}
                                     onConfirm={orgUnit => {
                                         // TODO rename levels in to parent
                                         onChange(orgUnit?.id, 'levels');

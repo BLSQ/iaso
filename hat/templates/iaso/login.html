@@ -13,7 +13,8 @@
         {% if next %}
         {% if user.is_authenticated %}
         <p class="auth__text--warning">
-          {% blocktrans %}Your account doesn't have access to this page. To proceed, please login with an account that has access.
+          {% blocktrans %}Your account doesn't have access to this page. To proceed, please login with an account that
+          has access.
           {% endblocktrans %}
         </p>
         {% else %}
@@ -32,7 +33,8 @@
         <input type="hidden" name="next" value="{{ next }}" />
         <button type="submit" class="button">{% trans 'Login' %}</button>
         <button id="display-password">
-          <i class="fa fa-eye" id="eye-icon" aria-hidden="true"></i>
+          {% include "./icons/eye.html" %}
+          {% include "./icons/eye-slash.html" %}
         </button>
         <p class="login-link"><a href="{% url 'forgot_password' %}">{% trans 'Forgot password' %}</a></p>
       </form>
@@ -41,20 +43,22 @@
   </div>
 </div>
 <script>
-    function togglePassword() {
-        const passwordField = document.getElementById("id_password");
-        if (passwordField.getAttribute("type") === "password") {
-            passwordField.setAttribute("type", "text");
-            document.getElementById("eye-icon").setAttribute("class", "fa fa-eye-slash");
-        } else {
-            passwordField.setAttribute("type", "password");
-            document.getElementById("eye-icon").setAttribute("class", "fa fa-eye");
-        }
+  function togglePassword() {
+    const passwordField = document.getElementById("id_password");
+    if (passwordField.getAttribute("type") === "password") {
+      passwordField.setAttribute("type", "text");
+      document.getElementById("eye").setAttribute("class", "hidden");
+      document.getElementById("eye-slash").setAttribute("class", "");
+    } else {
+      passwordField.setAttribute("type", "password");
+      document.getElementById("eye").setAttribute("class", "");
+      document.getElementById("eye-slash").setAttribute("class", "hidden");
     }
+  }
 
-    document.getElementById("display-password").addEventListener("click", function(e) {
-        e.preventDefault();
-        togglePassword();
-    });
+  document.getElementById("display-password").addEventListener("click", function (e) {
+    e.preventDefault();
+    togglePassword();
+  });
 </script>
 {% endblock %}

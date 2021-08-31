@@ -66,9 +66,9 @@ const extendFilter = (searchParams, filter, onChange, searchIndex) => ({
     value: searchParams[filter.urlKey],
     callback: (value, urlKey) => onChange(value, urlKey),
 });
-const extractIdFromParams = params => {
+const extractIdFromParams = (params, searchIndex) => {
     if (!params) return null;
-    return JSON.parse(params?.searches)[0]?.levels;
+    return JSON.parse(params?.searches)[searchIndex]?.levels;
 };
 
 const useInitialOrgUnit = orgUnitId => {
@@ -95,7 +95,7 @@ const OrgUnitsFiltersComponent = ({
     onSearch,
 }) => {
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(
-        extractIdFromParams(params),
+        extractIdFromParams(params, searchIndex),
     );
     const { data: initialOrgUnit } = useInitialOrgUnit(initialOrgUnitId);
     const intl = useSafeIntl();

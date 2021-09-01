@@ -4,7 +4,6 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import { withRouter } from 'react-router';
-import moment from 'moment';
 import { object } from 'prop-types';
 import { getCountryUsersGroup, getAllUsers } from '../requests';
 import MESSAGES from '../../../constants/messages';
@@ -27,7 +26,7 @@ const EmailNotificationsTable = ({ params }) => {
     const tableParams = {
         pageSize: params.pageSize ?? 0,
         page: params.page ?? 0,
-        order: params.order ?? 'created_at',
+        order: 'country__name', // Watch out, needs 2 underscores
     };
     const { data: allUsers } = useAPI(getAllUsers);
     const [forceRefresh, setForceRefresh] = useState(false);
@@ -39,8 +38,8 @@ const EmailNotificationsTable = ({ params }) => {
     const columns = [
         {
             Header: 'Country',
-            accessor: 'country_name',
-            sortable: false,
+            accessor: 'country__name', // Watch out, needs 2 underscores
+            sortable: true,
             align: 'left',
             Cell: settings => {
                 const text =
@@ -63,22 +62,11 @@ const EmailNotificationsTable = ({ params }) => {
         },
         {
             Header: 'Language',
-            sortable: false,
+            sortable: true,
             accessor: 'language',
             Cell: settings => {
                 const text = settings.row.original.language ?? textPlaceholder;
                 return text;
-            },
-        },
-        {
-            Header: 'Created',
-            accessor: 'created_at',
-            sortable: true,
-            Cell: settings => {
-                const createdAt = moment(
-                    settings.row.original.created_at,
-                ).format('LTS');
-                return createdAt;
             },
         },
         {

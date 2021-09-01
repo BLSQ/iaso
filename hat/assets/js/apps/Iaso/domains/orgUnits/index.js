@@ -554,6 +554,7 @@ class OrgUnits extends Component {
 }
 OrgUnits.defaultProps = {
     reduxPage: undefined,
+    currentUser: undefined,
 };
 
 OrgUnits.propTypes = {
@@ -573,7 +574,7 @@ OrgUnits.propTypes = {
     filtersUpdated: PropTypes.bool.isRequired,
     setFiltersUpdated: PropTypes.func.isRequired,
     searchCounts: PropTypes.array.isRequired,
-    currentUser: PropTypes.object.isRequired,
+    currentUser: PropTypes.object,
 };
 
 const MapStateToProps = state => ({

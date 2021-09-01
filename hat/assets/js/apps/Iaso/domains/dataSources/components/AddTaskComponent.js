@@ -1,16 +1,17 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
+import React, { useCallback, useState } from 'react';
 import { Grid, Typography } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { LoadingSpinner } from 'bluesquare-components';
+import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
+import { useMutation } from 'react-query';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 import { Checkboxes } from '../../../components/forms/Checkboxes';
 import { redirectTo } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
-import { useDhisOuImporterRequest } from '../requests';
+import { sendDhisOuImporterRequest } from '../requests';
 import { useFormState } from '../../../hooks/form';
 
 const initialFormState = sourceCredentials => {
@@ -33,87 +34,33 @@ const AddTask = ({
     const [form, setFormField, _, setFormState] = useFormState(
         initialFormState(sourceCredentials),
     );
-    const [redirect, setRedirect] = useState(false);
-    const [requestBody, setRequestBody] = useState();
-    const [closeDialogCallback, setCloseDialogCallback] = useState(null);
     const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(
         sourceCredentials.is_valid,
     );
     const dispatch = useDispatch();
-    // TODO add and return reset function
-    const { isLoading, data: dhisOu } = useDhisOuImporterRequest(requestBody);
+    const mutation = useMutation(sendDhisOuImporterRequest);
 
-    const titleMessage = sourceVersionNumber ? (
-        <FormattedMessage
-            id="update"
-            defaultMessage="Update version {version}"
-            values={{ version: sourceVersionNumber }}
-        />
-    ) : (
-        <FormattedMessage
-            id="create"
-            defaultMessage="Create a new version from DHIS2"
-        />
-    );
-    const submit = useCallback(() => {
-        const body = {
-            source_id: sourceId,
-            source_version_number: sourceVersionNumber,
-            force: false,
-            validate_status: form.validate_status.value,
-            continue_on_error: form.continue_on_error.value,
-        };
-        if (!withExistingDhis2Settings) {
-            body.dhis2_password = form.dhis2_password.value;
-            body.dhis2_url = form.dhis2_url.value;
-            body.dhis2_login = form.dhis2_login.value;
-            setWithExistingDhis2Settings(true);
-        }
-        setRequestBody(body);
-    }, [
-        sourceId,
-        sourceVersionNumber,
-        form.dhis2_url.value,
-        form.dhis2_login.value,
-        form.dhis2_password.value,
-        form.validate_status.value,
-        form.continue_on_error.value,
-        withExistingDhis2Settings,
-    ]);
-
-    // TODO check if sourceCredentials doesn't make reset refresh too many times
     const reset = useCallback(() => {
-        setRequestBody(null);
         setFormState(initialFormState(sourceCredentials));
     }, [sourceCredentials]);
 
-    const onConfirm = useCallback(
-        closeDialog => {
-            submit();
-            setCloseDialogCallback(() => closeDialog);
-        },
-        [submit],
-    );
-
-    const onRedirect = useCallback(
-        closeDialog => {
-            onConfirm(closeDialog);
-            setRedirect(true);
-        },
-        [onConfirm],
-    );
-
-    const formIsValid = Boolean(
-        withExistingDhis2Settings ||
-            (form.dhis2_url.value &&
-                form.dhis2_login.value &&
-                form.dhis2_password.value),
-    );
-    const allowConfirm = !isLoading && formIsValid;
-
-    useEffect(() => {
-        if (dhisOu) {
-            closeDialogCallback();
+    const submit = useCallback(
+        async (closeDialogCallBack, redirect = false) => {
+            const body = {
+                source_id: sourceId,
+                source_version_number: sourceVersionNumber,
+                force: false,
+                validate_status: form.validate_status.value,
+                continue_on_error: form.continue_on_error.value,
+            };
+            if (!withExistingDhis2Settings) {
+                body.dhis2_password = form.dhis2_password.value;
+                body.dhis2_url = form.dhis2_url.value;
+                body.dhis2_login = form.dhis2_login.value;
+                setWithExistingDhis2Settings(true);
+            }
+            await mutation.mutateAsync(body);
+            closeDialogCallBack();
             if (redirect) {
                 dispatch(
                     redirectTo(baseUrls.tasks, {
@@ -122,8 +69,40 @@ const AddTask = ({
                 );
             }
             reset();
-        }
-    }, [closeDialogCallback, dhisOu, reset, redirect]);
+        },
+        [
+            sourceId,
+            sourceVersionNumber,
+            form.dhis2_url.value,
+            form.dhis2_login.value,
+            form.dhis2_password.value,
+            form.validate_status.value,
+            form.continue_on_error.value,
+            withExistingDhis2Settings,
+        ],
+    );
+
+    const onConfirm = useCallback(
+        async closeDialog => {
+            await submit(closeDialog);
+        },
+        [submit],
+    );
+
+    const onRedirect = useCallback(
+        async closeDialog => {
+            await submit(closeDialog, true);
+        },
+        [submit],
+    );
+
+    const formIsValid = Boolean(
+        withExistingDhis2Settings ||
+            (form.dhis2_url.value &&
+                form.dhis2_login.value &&
+                form.dhis2_password.value),
+    );
+    const allowConfirm = !mutation.isLoading && formIsValid;
 
     const renderDefaultLayout = showDefaultOverride => {
         const checkboxes = [
@@ -191,7 +170,6 @@ const AddTask = ({
             renderTrigger={renderTrigger}
             titleMessage={titleMessage}
             onConfirm={onConfirm}
-            // eslint-disable-next-line no-unused-vars
             onClosed={reset}
             confirmMessage={MESSAGES.launch}
             cancelMessage={MESSAGES.cancel}
@@ -201,7 +179,7 @@ const AddTask = ({
             additionalMessage={MESSAGES.goToCurrentTask}
             onAdditionalButtonClick={onRedirect}
         >
-            {isLoading && <LoadingSpinner />}
+            {mutation.isLoading && <LoadingSpinner />}
 
             <Grid container spacing={4}>
                 <Grid item>

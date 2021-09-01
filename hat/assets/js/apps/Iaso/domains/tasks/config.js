@@ -7,9 +7,9 @@ import MESSAGES from './messages';
 
 function getStatusMessageKey(settings) {
     // Return default message key if not in message
-    return MESSAGES[settings.original.status.toLowerCase()] !== undefined
-      ? settings.original.status.toLowerCase()
-      : "unknown";
+    return MESSAGES[settings.row.original.status.toLowerCase()] !== undefined
+        ? settings.row.original.status.toLowerCase()
+        : 'unknown';
 }
 
 const tasksTableColumns = (formatMessage, killTaskAction) => [
@@ -17,34 +17,34 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         Header: formatMessage(MESSAGES.name),
         sortable: true,
         accessor: 'name',
-        Cell: settings => settings.original.name,
     },
     {
         Header: formatMessage(MESSAGES.launcher),
         sortable: true,
         accessor: 'launcher',
-        Cell: settings => settings.original.launcher?.username,
+        Cell: settings => settings.row.original.launcher?.username,
     },
     {
         Header: formatMessage(MESSAGES.progress),
         sortable: true,
         accessor: 'status',
         Cell: settings => {
-            return <span>
-                {settings.original.status === "RUNNING" &&
-                settings.original.end_value > 0
-                  ? `${settings.original.progress_value}/${
-                    settings.original.end_value
-                  } (${Math.round(
-                    (settings.original.progress_value /
-                      settings.original.end_value) *
-                    100
-                  )}%)`
-                  : formatMessage(
-                    MESSAGES[getStatusMessageKey(settings)]
-                  )}
-            </span>;
-
+            return (
+                <span>
+                    {settings.row.original.status === 'RUNNING' &&
+                    settings.row.original.end_value > 0
+                        ? `${settings.row.original.progress_value}/${
+                              settings.row.original.end_value
+                          } (${Math.round(
+                              (settings.row.original.progress_value /
+                                  settings.row.original.end_value) *
+                                  100,
+                          )}%)`
+                        : formatMessage(
+                              MESSAGES[getStatusMessageKey(settings)],
+                          )}
+                </span>
+            );
         },
     },
     {
@@ -52,9 +52,11 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         sortable: false,
         accessor: 'message',
         Cell: settings => (
-            <>
-                {settings.original.progress_message}
-            </>
+            <span>
+                {settings.row.original.status === 'RUNNING'
+                    ? settings.row.original.progress_message
+                    : '-'}
+            </span>
         ),
     },
 
@@ -64,7 +66,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'created_at',
         Cell: settings => (
             <span>
-                {displayDateFromTimestamp(settings.original.created_at)}
+                {displayDateFromTimestamp(settings.row.original.created_at)}
             </span>
         ),
     },
@@ -74,10 +76,12 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'started_at',
         Cell: settings => (
             <span>
-                {settings.original.status === 'QUEUED' ||
-                settings.original.started_at === null
+                {settings.row.original.status === 'QUEUED' ||
+                settings.row.original.started_at === null
                     ? '-'
-                    : displayDateFromTimestamp(settings.original.started_at)}
+                    : displayDateFromTimestamp(
+                          settings.row.original.started_at,
+                      )}
             </span>
         ),
     },
@@ -87,16 +91,17 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'ended_at',
         Cell: settings => (
             <span>
-                {settings.original.status === 'RUNNING' ||
-                settings.original.status === 'QUEUED' ||
-                settings.original.ended_at === null
+                {settings.row.original.status === 'RUNNING' ||
+                settings.row.original.status === 'QUEUED' ||
+                settings.row.original.ended_at === null
                     ? '-'
-                    : displayDateFromTimestamp(settings.original.ended_at)}
+                    : displayDateFromTimestamp(settings.row.original.ended_at)}
             </span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
         width: 150,
@@ -104,13 +109,13 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
             return (
                 <section>
                     {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
-                        settings.original.status,
+                        settings.row.original.status,
                     ) === true &&
-                        settings.original.should_be_killed === false && (
+                        settings.row.original.should_be_killed === false && (
                             <IconButtonComponent
                                 onClick={() =>
                                     killTaskAction({
-                                        id: settings.original.id,
+                                        id: settings.row.original.id,
                                         should_be_killed: true,
                                     })
                                 }
@@ -118,8 +123,8 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
                                 tooltipMessage={MESSAGES.killTask}
                             />
                         )}
-                    {settings.original.should_be_killed === true &&
-                        settings.original.status === 'RUNNING' &&
+                    {settings.row.original.should_be_killed === true &&
+                        settings.row.original.status === 'RUNNING' &&
                         formatMessage(MESSAGES.killSignalSent)}
                 </section>
             );

@@ -1,7 +1,6 @@
 import React from 'react';
 import {
     IconButton as IconButtonComponent,
-    ColumnText as ColumnTextComponent,
     displayDateFromTimestamp,
     formatThousand,
     textPlaceholder,
@@ -14,49 +13,47 @@ const TableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
-        style: { justifyContent: 'left' },
-        Cell: settings => <ColumnTextComponent text={settings.original.name} />,
+        align: 'left',
+        Cell: settings => settings.row.original.name,
     },
     {
         Header: formatMessage(MESSAGES.updatedAt),
         accessor: 'updated_at',
         Cell: settings => (
             <span>
-                {displayDateFromTimestamp(settings.original.updated_at)}
+                {displayDateFromTimestamp(settings.row.original.updated_at)}
             </span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.sourceVersion),
-        accessor: '',
+        accessor: 'source_version',
+        sortable: false,
         Cell: settings => {
-            const sourceVersion = settings.original.source_version;
+            const sourceVersion = settings.row.original.source_version;
             const text =
                 sourceVersion !== null
                     ? `${sourceVersion.data_source.name} - ${sourceVersion.number}`
                     : textPlaceholder;
 
-            return <ColumnTextComponent text={text} />;
+            return text;
         },
     },
     {
         Header: formatMessage(MESSAGES.sourceRef),
         accessor: 'source_ref',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.source_ref || textPlaceholder}
-            />
-        ),
+        Cell: settings => settings.row.original.source_ref || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.orgUnit),
         accessor: 'org_unit_count',
         Cell: settings => (
-            <span>{formatThousand(settings.original.org_unit_count)}</span>
+            <span>{formatThousand(settings.row.original.org_unit_count)}</span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
         Cell: settings => (
@@ -69,18 +66,18 @@ const TableColumns = (formatMessage, component) => [
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
-                    initialData={settings.original}
+                    initialData={settings.row.original}
                     titleMessage={MESSAGES.update}
-                    key={settings.original.updated_at}
+                    key={settings.row.original.updated_at}
                     params={component.props.params}
                 />
                 <DeleteDialog
-                    disabled={settings.original.instances_count > 0}
+                    disabled={settings.row.original.instances_count > 0}
                     titleMessage={MESSAGES.delete}
                     message={MESSAGES.deleteWarning}
                     onConfirm={closeDialog =>
                         component
-                            .deleteGroup(settings.original)
+                            .deleteGroup(settings.row.original)
                             .then(closeDialog)
                     }
                 />

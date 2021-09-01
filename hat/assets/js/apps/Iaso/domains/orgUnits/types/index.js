@@ -32,10 +32,6 @@ const baseUrl = baseUrls.orgUnitTypes;
 
 const styles = theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
 });
 
 class OrgUnitTypes extends Component {

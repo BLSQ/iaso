@@ -1,5 +1,3 @@
-from django.test import tag
-
 from ..models import OrgUnit, Form, Instance, OrgUnitType, Account, Project, SourceVersion, DataSource
 from math import floor
 from rest_framework.test import APIClient

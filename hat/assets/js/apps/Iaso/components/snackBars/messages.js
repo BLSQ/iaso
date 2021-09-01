@@ -54,10 +54,6 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Failed to upload to enketo, either the record is currently edited or enketo is not available',
     },
-    fetchSourceTypesError: {
-        id: 'iaso.snackBar.fetchSourceTypesError',
-        defaultMessage: 'An error occurred while fetching sources types list',
-    },
     fetchSourcesError: {
         id: 'iaso.snackBar.fetchSourcesError',
         defaultMessage: 'An error occurred while fetching sources list',

@@ -5,6 +5,8 @@ import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 
 import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
 
+import { colOriginal } from '../../../../../test/utils';
+
 let cols;
 let wrapper;
 let button;
@@ -31,38 +33,39 @@ describe('Org unit types config', () => {
     it('should render a component if Cell is defined', () => {
         cols.forEach(c => {
             if (c.Cell) {
-                const cell = c.Cell({
-                    original: {
-                        projects: [
-                            {
-                                name: 'LINK',
-                            },
-                        ],
-                    },
-                });
+                const cell = c.Cell(
+                    colOriginal({
+                        name: 'LINK',
+                        short_name: 'GANONDORF',
+                        depth: 0,
+                        projects: [],
+                    }),
+                );
                 expect(cell).to.exist;
             }
         });
     });
     it('should render a component if Cell is defined and no depth', () => {
         const depthColumn = cols[3];
-        wrapper = shallow(
-            depthColumn.Cell({
-                original: {
-                    depth: null,
-                },
+        const cell = depthColumn.Cell(
+            colOriginal({
+                name: 'LINK',
+                short_name: 'GANONDORF',
+                depth: null,
+                projects: [],
             }),
         );
-        expect(wrapper).to.exist;
+
+        expect(cell).to.exist;
     });
     it('should call fetchOrgUnitTypes on click on onConfirmed', () => {
         const actionColumn = cols[cols.length - 1];
         wrapper = shallow(
-            actionColumn.Cell({
-                original: {
+            actionColumn.Cell(
+                colOriginal({
                     projects: [],
-                },
-            }),
+                }),
+            ),
         );
         orgUnitsTypesDialog = wrapper.find(OrgUnitsTypesDialog);
 
@@ -89,11 +92,11 @@ describe('Org unit types config', () => {
         const actionColumn = cols[cols.length - 1];
         const closeDialogSpy = sinon.spy();
         wrapper = shallow(
-            actionColumn.Cell({
-                original: {
+            actionColumn.Cell(
+                colOriginal({
                     projects: [],
-                },
-            }),
+                }),
+            ),
         );
         const deleteDialog = wrapper.find(DeleteDialog);
 

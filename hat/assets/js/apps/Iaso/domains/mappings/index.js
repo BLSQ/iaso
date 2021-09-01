@@ -28,10 +28,6 @@ const baseUrl = baseUrls.mappings;
 
 const styles = theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
 });
 
 class Mappings extends Component {

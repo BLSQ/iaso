@@ -26,13 +26,6 @@ export const sendDhisOuImporterRequest = async requestBody => {
     }
     return null;
 };
-export const useDhisOuImporterRequest = requestBody => {
-    const callback = useCallback(
-        async () => sendDhisOuImporterRequest(requestBody),
-        [requestBody, sendDhisOuImporterRequest],
-    );
-    return useAPI(callback);
-};
 
 export const postGeoPkg = async request => {
     const file = { file: request.file };

@@ -18,10 +18,6 @@ const baseUrl = baseUrls.orgUnitDetails;
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginBottom: theme.spacing(2),
-    },
 }));
 
 const Logs = ({ goToRevision, logObjectId }) => {

@@ -5,7 +5,6 @@ import {
     SET_ORG_UNIT,
     SET_FETCHING,
     SET_ORG_UNIT_TYPES,
-    SET_SOURCE_TYPES,
     SET_SOURCES,
     SET_GROUPS,
     SET_ORG_UNITS_LIST_FETCHING,
@@ -40,7 +39,6 @@ export const orgUnitsInitialState = {
         counts: [],
     },
     orgUnitTypes: [],
-    sourceTypes: [],
     sources: null,
     orgUnitLevel: [],
     orgUnitsLocations: {
@@ -87,11 +85,6 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_CURRENT_FORMS: {
             const currentForms = action.payload;
             return { ...state, currentForms };
-        }
-
-        case SET_SOURCE_TYPES: {
-            const sourceTypes = action.payload;
-            return { ...state, sourceTypes };
         }
 
         case SET_SOURCES: {

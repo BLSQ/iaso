@@ -112,7 +112,7 @@ class ChipsFilterComponent extends Component {
                     ))}
                 {notSelectedItems.length > 0 && (
                     <InputComponent
-                        keyValue="form_id"
+                        keyValue={`${locationsKey}-not-selected`}
                         onChange={(key, formId) => this.onAdd(formId)}
                         value={null}
                         type="select"

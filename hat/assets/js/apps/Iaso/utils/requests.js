@@ -53,19 +53,6 @@ export const fetchOrgUnitsTypes = dispatch =>
             throw error;
         });
 
-export const fetchSourceTypes = dispatch =>
-    getRequest('/api/sourcetypes/')
-        .then(sourceTypes => sourceTypes)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchSourceTypesError', null, error),
-                ),
-            );
-            console.error('Error while fetching source types list:', error);
-            throw error;
-        });
-
 export const fetchSources = dispatch =>
     getRequest('/api/datasources/')
         .then(res => res.sources)
@@ -193,7 +180,7 @@ export const fetchInstancesAsLocationsByForm = (
     orgUnit,
     fitToBounds = () => null,
 ) => {
-    const url = `/api/instances?as_location=true&form_id=${form.id}&orgUnitId=${orgUnit.id}`;
+    const url = `/api/instances/?as_location=true&form_id=${form.id}&orgUnitId=${orgUnit.id}`;
     return getRequest(url)
         .then(data => {
             fitToBounds();
@@ -222,7 +209,7 @@ export const fetchAssociatedOrgUnits = (
     orgUnit,
     fitToBounds = () => null,
 ) => {
-    const url = `/api/orgunits?linkedTo=${orgUnit.id}&linkValidated=False&linkSource=${source.id}&validation_status=all`;
+    const url = `/api/orgunits/?linkedTo=${orgUnit.id}&linkValidated=False&linkSource=${source.id}&validation_status=all`;
 
     return getRequest(url)
         .then(data => {

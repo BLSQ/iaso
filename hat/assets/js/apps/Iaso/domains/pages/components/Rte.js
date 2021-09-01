@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import ReactQuill from 'react-quill';
+import { useQuill } from 'react-quilljs';
 import { makeStyles } from '@material-ui/core/styles';
 import { FormControl, FormLabel } from '@material-ui/core';
+import isEqual from 'lodash/isEqual';
 
-import 'react-quill/dist/quill.snow.css';
+import 'quill/dist/quill.snow.css';
 
 const useStyles = makeStyles(theme => ({
     formControl: {
@@ -33,34 +34,50 @@ const useStyles = makeStyles(theme => ({
 const Rte = ({ label, field, form } = {}) => {
     const value = field.value || '';
     const classes = useStyles();
+
+    const theme = 'snow';
+    const modules = {
+        toolbar: [
+            [{ header: [1, 2, 3, 4, 5, 6, false] }],
+            ['bold', 'italic', 'underline'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [
+                { align: '' },
+                { align: 'center' },
+                { align: 'right' },
+                { align: 'justify' },
+            ],
+            ['link', 'image'],
+            [{ color: [] }],
+            ['clean'],
+        ],
+    };
+
+    const { quill, quillRef } = useQuill({
+        theme,
+        modules,
+    });
+    useEffect(() => {
+        if (quill && !isEqual(value, quill.root.innerHTML)) {
+            quill.clipboard.dangerouslyPasteHTML(value);
+        }
+    }, [quill, value]);
+
+    useEffect(() => {
+        if (quill) {
+            quill.on('text-change', () => {
+                form.setFieldValue(field.name, quill.root.innerHTML);
+            });
+        }
+    }, [quill]);
+
     return (
         <FormControl component="fieldset" className={classes.formControl}>
             <FormLabel className={classes.label} component="legend">
                 {label}
             </FormLabel>
             <div className={classes.root}>
-                <ReactQuill
-                    modules={{
-                        toolbar: {
-                            container: [
-                                [{ header: [1, 2, 3, 4, 5, 6, false] }],
-                                ['bold', 'italic', 'underline'],
-                                [{ list: 'ordered' }, { list: 'bullet' }],
-                                [
-                                    { align: '' },
-                                    { align: 'center' },
-                                    { align: 'right' },
-                                    { align: 'justify' },
-                                ],
-                                ['link', 'image'],
-                                [{ color: [] }],
-                                ['clean'],
-                            ],
-                        },
-                    }}
-                    value={value}
-                    onChange={data => form.setFieldValue(field.name, data)}
-                />
+                <div ref={quillRef} />
             </div>
         </FormControl>
     );

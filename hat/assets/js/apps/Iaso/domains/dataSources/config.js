@@ -22,7 +22,7 @@ const dataSourcesTableColumns = (
         Cell: settings =>
             defaultSourceVersion &&
             defaultSourceVersion.source &&
-            defaultSourceVersion.source.id === settings.original.id && (
+            defaultSourceVersion.source.id === settings.row.original.id && (
                 <Tooltip title={formatMessage(MESSAGES.defaultSource)}>
                     <CheckCircleIcon color="primary" />
                 </Tooltip>
@@ -32,28 +32,28 @@ const dataSourcesTableColumns = (
         Header: formatMessage(MESSAGES.defaultVersion),
         accessor: 'default_version__number',
         Cell: settings => {
-            if (!settings.original.default_version) return textPlaceholder;
-            return <span>{settings.original.default_version.number}</span>;
+            if (!settings.row.original.default_version) return textPlaceholder;
+            return <span>{settings.row.original.default_version.number}</span>;
         },
     },
     {
         Header: formatMessage(MESSAGES.dataSourceName),
         accessor: 'name',
         Cell: settings => {
-            return <span>{settings.original.name}</span>;
+            return <span>{settings.row.original.name}</span>;
         },
     },
     {
         Header: formatMessage(MESSAGES.dataSourceDescription),
         accessor: 'description',
-        Cell: settings => <span>{settings.original.description}</span>,
+        Cell: settings => <span>{settings.row.original.description}</span>,
     },
     {
         Header: formatMessage(MESSAGES.dataSourceReadOnly),
         accessor: 'read_only',
         Cell: settings => (
             <span>
-                {settings.original.read_only === true
+                {settings.row.original.read_only === true
                     ? formatMessage(MESSAGES.yes)
                     : formatMessage(MESSAGES.no)}
             </span>
@@ -61,6 +61,7 @@ const dataSourcesTableColumns = (
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
         Cell: settings => {
@@ -75,16 +76,16 @@ const dataSourcesTableColumns = (
                             />
                         )}
                         initialData={{
-                            ...settings.original,
-                            projects: settings.original.projects.flat(),
+                            ...settings.row.original,
+                            projects: settings.row.original.projects.flat(),
                         }}
                         defaultSourceVersion={defaultSourceVersion}
                         titleMessage={MESSAGES.updateDataSource}
-                        key={settings.original.updated_at}
+                        key={settings.row.original.updated_at}
                         onSuccess={() => setForceRefresh(true)}
                         sourceCredentials={
-                            settings.original.credentials
-                                ? settings.original.credentials
+                            settings.row.original.credentials
+                                ? settings.row.original.credentials
                                 : {}
                         }
                     />

@@ -11,7 +11,7 @@ const useStyles = makeStyles(theme => ({
         flex: 1,
         height: '68px',
         border: '1px solid rgba(0,0,0,0.02)',
-        backgroundColor: 'rgba(0,0,0,0.03)',
+        backgroundColor: theme.palette.ligthGray.background,
     },
     odd: {
         backgroundColor: 'rgba(255, 255, 255, 1)',

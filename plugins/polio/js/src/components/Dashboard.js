@@ -1485,84 +1485,46 @@ export const Dashboard = () => {
                 Header: 'Country',
                 accessor: 'top_level_org_unit_name',
                 sortable: false,
-                Cell: settings => {
-                    const text =
-                        settings?.row?.original?.top_level_org_unit_name ??
-                        textPlaceholder;
-                    return <span>{text}</span>;
-                },
             },
             {
                 Header: 'Name',
                 accessor: 'obr_name',
-                Cell: settings => {
-                    return <span>{settings.row.original.obr_name}</span>;
-                },
             },
             {
                 Header: 'cVDPV2 Notification Date',
                 accessor: 'cvdpv2_notified_at',
-                Cell: settings => {
-                    const text =
-                        settings?.row?.original?.cvdpv2_notified_at ??
-                        textPlaceholder;
-                    return <span>{text}</span>;
-                },
             },
             {
                 Header: 'Round 1',
                 accessor: 'round_one__started_at',
-                Cell: settings => {
-                    return (
-                        settings?.row?.original?.round_one?.started_at ??
-                        textPlaceholder
-                    );
-                },
             },
             {
                 Header: 'Round 2',
                 accessor: 'round_two__started_at',
-                Cell: settings => {
-                    return (
-                        settings.row.original?.round_two?.started_at ??
-                        textPlaceholder
-                    );
-                },
             },
             {
                 Header: 'Status',
                 sortable: false,
                 accessor: 'general_status',
-                Cell: settings => {
-                    return settings.row.original.general_status;
-                },
             },
             {
                 Header: 'Actions',
-                accessor: 'actions',
+                accessor: 'id',
                 sortable: false,
-                Cell: settings => {
-                    return (
-                        <>
-                            <IconButtonComponent
-                                icon="edit"
-                                tooltipMessage={MESSAGES.edit}
-                                onClick={() =>
-                                    handleClickEditRow(settings.row.original.id)
-                                }
-                            />
-                            <IconButtonComponent
-                                icon="delete"
-                                tooltipMessage={MESSAGES.delete}
-                                onClick={() =>
-                                    handleClickDeleteRow(
-                                        settings.row.original.id,
-                                    )
-                                }
-                            />
-                        </>
-                    );
-                },
+                Cell: settings => (
+                    <>
+                        <IconButtonComponent
+                            icon="edit"
+                            tooltipMessage={MESSAGES.edit}
+                            onClick={() => handleClickEditRow(settings.value)}
+                        />
+                        <IconButtonComponent
+                            icon="delete"
+                            tooltipMessage={MESSAGES.delete}
+                            onClick={() => handleClickDeleteRow(settings.value)}
+                        />
+                    </>
+                ),
             },
         ],
         [handleClickDeleteRow, handleClickEditRow],

@@ -28,14 +28,18 @@ class ProtectedRoute extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { isRootUrl, permission, redirectTo, currentUser } = this.props;
-        if (currentUser !== prevProps.currentUser) {
+        const { isRootUrl, permission, redirectTo, currentUser, allRoutes } =
+            this.props;
+        if (currentUser && currentUser !== prevProps.currentUser) {
             const isAuthorized = permission
                 ? userHasPermission(permission, currentUser)
                 : true;
             if (!isAuthorized && isRootUrl) {
-                // TODO prevent crash if !user
-                const newBaseUrl = getFirstAllowedUrl(permission, currentUser);
+                const newBaseUrl = getFirstAllowedUrl(
+                    permission,
+                    currentUser,
+                    allRoutes,
+                );
                 if (newBaseUrl) {
                     redirectTo(newBaseUrl, {});
                 }
@@ -89,6 +93,7 @@ ProtectedRoute.defaultProps = {
     permission: null,
     isRootUrl: false,
     featureFlag: null,
+    allRoutes: [],
 };
 
 ProtectedRoute.propTypes = {
@@ -101,6 +106,7 @@ ProtectedRoute.propTypes = {
     activeLocale: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     featureFlag: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+    allRoutes: PropTypes.array,
 };
 
 const MapStateToProps = state => ({

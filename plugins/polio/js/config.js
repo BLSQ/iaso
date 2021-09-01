@@ -8,7 +8,7 @@ const routes = [
     {
         baseUrl: 'polio/list',
         component: () => <Dashboard />,
-        permission: 'iaso_forms',
+        permission: 'iaso_polio',
         params: [],
     },
 ];
@@ -22,7 +22,7 @@ const menu = [
             {
                 label: MESSAGES.dashboard,
                 key: 'list',
-                permission: 'iaso_forms',
+                permission: 'iaso_polio',
                 icon: props => <FormatListBulleted {...props} />,
             },
         ],

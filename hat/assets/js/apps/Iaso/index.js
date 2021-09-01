@@ -36,6 +36,7 @@ export default function iasoApp(element, enabledPluginsName) {
                     permission={routeConfig.permission}
                     component={routeConfig.component(props)}
                     isRootUrl={routeConfig.isRootUrl}
+                    allRoutes={allRoutesConfigs}
                 />
             )}
         />

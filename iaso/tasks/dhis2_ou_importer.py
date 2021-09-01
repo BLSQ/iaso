@@ -13,7 +13,6 @@ from beanstalk_worker import task_decorator
 from django.contrib.gis.geos import Point, MultiPolygon, Polygon
 from django.utils.timezone import now
 
-
 from dhis2 import Api
 
 import logging
@@ -26,6 +25,7 @@ except ImportError:
     TypedDict = type
 
 logger = logging.getLogger(__name__)
+
 
 #  Define a few types around the Dhis2 API format to help dev
 
@@ -307,15 +307,13 @@ def import_orgunits_and_groups(
     unknown_unit_type.projects.set(source.projects.all())
 
     group_dict = {}
-    unit_dict = {}
-
-    # for cache
-    existing_ou_refs = [ou.source_ref for ou in version.orgunit_set.all()]
+    unit_dict = {ou.source_ref: ou for ou in version.orgunit_set.all()}
+    created_ou = {}
 
     for row in orgunits:
         # In update mode we only create non present OrgUnit but we don't update existing one.
         # in not update mode the version should be empty, so explode
-        if row["id"].strip() in existing_ou_refs:
+        if row["id"].strip() in unit_dict:
             if update_mode:
                 skip_count += 1
                 continue
@@ -327,6 +325,7 @@ def import_orgunits_and_groups(
                 row, source, version, unit_dict, group_dict, group_type_dict, validate, unknown_unit_type
             )
             unit_dict[org_unit.source_ref] = org_unit
+            created_ou[org_unit.source_ref] = org_unit
 
         except Exception as e:
             logger.exception(f"Error importing row {index:d}: {row}")
@@ -336,7 +335,7 @@ def import_orgunits_and_groups(
 
         # log progress every 100 orgunits
         if index % 100 == 0:
-            res_string = "%.2f sec, processed %i org units" % (time.time() - start, index)
+            res_string = "%.2f sec, processed %i org units" % (time.time() - start, index + 1)
             task.report_progress_and_stop_if_killed(
                 progress_message=res_string, progress_value=index, end_value=len(orgunits)
             )
@@ -345,10 +344,14 @@ def import_orgunits_and_groups(
 
     logger.debug(f"Created {index} OrgUnits")
 
+    task.report_progress_and_stop_if_killed(
+        progress_message=f"Created {index} OrgUnits", progress_value=index, end_value=index
+    )
+
     # Create a group that represent all the Orgunit imported
-    if unit_dict and update_mode:
+    if created_ou and update_mode:
         g = Group.objects.create(name=f"Imported on {now().isoformat()}", source_version=version)
-        g.org_units.set(unit_dict.values())
+        g.org_units.set(created_ou.values())
 
     load_groupsets(api, version, group_dict)
     return error_count, unit_dict

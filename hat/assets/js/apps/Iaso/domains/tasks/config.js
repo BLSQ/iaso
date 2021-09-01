@@ -5,12 +5,20 @@ import {
 } from 'bluesquare-components';
 import MESSAGES from './messages';
 
-function getStatusMessageKey(settings) {
-    // Return default message key if not in message
-    return MESSAGES[settings.row.original.status.toLowerCase()] !== undefined
-        ? settings.row.original.status.toLowerCase()
-        : 'unknown';
-}
+const getTranslatedStatusMessage = (formatMessage, status) => {
+    // Return untranslated status if not translation available
+    return MESSAGES[status.toLowerCase()]
+        ? formatMessage(MESSAGES[status.toLowerCase()])
+        : status;
+};
+
+const safePercent = (a, b) => {
+    if (b === 0) {
+        return '';
+    }
+    const percent = 100 * (a / b);
+    return `${percent.toFixed(2)}%`;
+};
 
 const tasksTableColumns = (formatMessage, killTaskAction) => [
     {
@@ -22,7 +30,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         Header: formatMessage(MESSAGES.launcher),
         sortable: true,
         accessor: 'launcher',
-        Cell: settings => settings.row.original.launcher?.username,
+        Cell: settings => settings.value?.username,
     },
     {
         Header: formatMessage(MESSAGES.progress),
@@ -31,17 +39,17 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         Cell: settings => {
             return (
                 <span>
-                    {settings.row.original.status === 'RUNNING' &&
+                    {settings.value === 'RUNNING' &&
                     settings.row.original.end_value > 0
                         ? `${settings.row.original.progress_value}/${
                               settings.row.original.end_value
-                          } (${Math.round(
-                              (settings.row.original.progress_value /
-                                  settings.row.original.end_value) *
-                                  100,
-                          )}%)`
-                        : formatMessage(
-                              MESSAGES[getStatusMessageKey(settings)],
+                          } (${safePercent(
+                              settings.row.original.progress_value,
+                              settings.row.original.end_value,
+                          )})`
+                        : getTranslatedStatusMessage(
+                              formatMessage,
+                              settings.value,
                           )}
                 </span>
             );
@@ -51,15 +59,11 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         Header: formatMessage(MESSAGES.message),
         sortable: false,
         accessor: 'message',
-        Cell: settings => (
-            <span>
-                {settings.row.original.status === 'RUNNING'
-                    ? settings.row.original.progress_message
-                    : '-'}
-            </span>
-        ),
+        Cell: settings =>
+            settings.row.original.status === 'RUNNING'
+                ? settings.row.original.progress_message
+                : '-',
     },
-
     {
         Header: formatMessage(MESSAGES.timeCreated),
         sortable: true,
@@ -105,30 +109,28 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         resizable: false,
         sortable: false,
         width: 150,
-        Cell: settings => {
-            return (
-                <section>
-                    {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
-                        settings.row.original.status,
-                    ) === true &&
-                        settings.row.original.should_be_killed === false && (
-                            <IconButtonComponent
-                                onClick={() =>
-                                    killTaskAction({
-                                        id: settings.row.original.id,
-                                        should_be_killed: true,
-                                    })
-                                }
-                                icon="stop"
-                                tooltipMessage={MESSAGES.killTask}
-                            />
-                        )}
-                    {settings.row.original.should_be_killed === true &&
-                        settings.row.original.status === 'RUNNING' &&
-                        formatMessage(MESSAGES.killSignalSent)}
-                </section>
-            );
-        },
+        Cell: settings => (
+            <section>
+                {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
+                    settings.row.original.status,
+                ) === true &&
+                    settings.row.original.should_be_killed === false && (
+                        <IconButtonComponent
+                            onClick={() =>
+                                killTaskAction({
+                                    id: settings.row.original.id,
+                                    should_be_killed: true,
+                                })
+                            }
+                            icon="stop"
+                            tooltipMessage={MESSAGES.killTask}
+                        />
+                    )}
+                {settings.row.original.should_be_killed === true &&
+                    settings.row.original.status === 'RUNNING' &&
+                    formatMessage(MESSAGES.killSignalSent)}
+            </section>
+        ),
     },
 ];
 export default tasksTableColumns;

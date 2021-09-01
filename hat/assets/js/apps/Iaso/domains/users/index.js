@@ -27,10 +27,6 @@ const baseUrl = baseUrls.users;
 
 const styles = theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
 });
 
 class Users extends Component {

@@ -16,7 +16,6 @@ import {
     commonStyles,
 } from 'bluesquare-components';
 
-// import Table from './TableComponent';
 import Filters from './TableFilters';
 
 import DownloadButtonsComponent from '../buttons/DownloadButtonsComponent';
@@ -53,14 +52,12 @@ const SingleTable = ({
     setIsLoading,
     multiSelect,
     selectionActions,
-    watchToRender,
 }) => {
     const [loading, setLoading] = useState(false);
     const [selection, setSelection] = useState(selectionInitialState);
     const [didFetchData, setDidFetchData] = useState(false);
     const [firstLoad, setfFrstLoad] = useState(true);
     const [tableResults, setTableResults] = useState(tableInitialResult);
-    const [expanded, setExpanded] = useState({});
     const { list, pages, count } = tableResults;
 
     const dispatch = useDispatch();
@@ -130,17 +127,13 @@ const SingleTable = ({
     }, [forceRefresh]);
 
     const { limit } = tableParams;
-    let extraProps = {
+    const extraProps = {
         loading,
         defaultPageSize: defaultPageSize || limit,
     };
     if (subComponent) {
-        extraProps = {
-            ...extraProps,
-            SubComponent: ({ original }) => subComponent(original, handleFetch),
-            expanded,
-            onExpandedChange: newExpanded => setExpanded(newExpanded),
-        };
+        extraProps.SubComponent = original =>
+            subComponent(original, handleFetch);
     }
 
     const handleTableSelection = (
@@ -212,7 +205,6 @@ const SingleTable = ({
                             extraComponent,
                     )}
                     paramsPrefix={paramsPrefix}
-                    watchToRender={watchToRender}
                     params={params}
                 />
             )}
@@ -250,7 +242,6 @@ SingleTable.defaultProps = {
     setIsLoading: true,
     multiSelect: false,
     selectionActions: [],
-    watchToRender: null,
 };
 
 SingleTable.propTypes = {
@@ -280,7 +271,6 @@ SingleTable.propTypes = {
     setIsLoading: PropTypes.bool,
     multiSelect: PropTypes.bool,
     selectionActions: PropTypes.array,
-    watchToRender: PropTypes.any,
 };
 
 export default withRouter(SingleTable);

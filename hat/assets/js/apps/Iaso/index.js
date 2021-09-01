@@ -12,7 +12,13 @@ import { store, history } from './redux/store';
 import { addRoutes } from './routing/redirections';
 import { getPlugins, PluginsContext } from './utils';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+        },
+    },
+});
 
 export default function iasoApp(element, enabledPluginsName) {
     const plugins = getPlugins(enabledPluginsName);

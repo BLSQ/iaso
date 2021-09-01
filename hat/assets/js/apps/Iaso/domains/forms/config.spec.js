@@ -7,6 +7,8 @@ import FormVersionsDialog from './components/FormVersionsDialogComponent';
 import formsFixture from './fixtures/forms.json';
 import formVersionsfixture from './fixtures/formVersions.json';
 
+import { colOriginal } from '../../../../test/utils';
+
 const defaultProps = {
     state: {
         currentOrgUnit: undefined,
@@ -41,9 +43,7 @@ describe('Forms config', () => {
         it('should render a component if Cell is defined', () => {
             formVersionscolumns.forEach(c => {
                 if (c.Cell) {
-                    const cell = c.Cell({
-                        original: fakeFormVersion,
-                    });
+                    const cell = c.Cell(colOriginal(fakeFormVersion));
                     expect(cell).to.exist;
                 }
             });
@@ -51,20 +51,16 @@ describe('Forms config', () => {
         it('should render a component if Cell is defined and missing start_period, end_period and version_id', () => {
             formVersionscolumns.forEach(c => {
                 if (c.Cell) {
-                    const cell = c.Cell({
-                        original: formVersionsfixture.form_versions[1],
-                    });
+                    const cell = c.Cell(
+                        colOriginal(formVersionsfixture.form_versions[1]),
+                    );
                     expect(cell).to.exist;
                 }
             });
         });
         it('should open a tab on click on xls icon', () => {
             actionColumn = formVersionscolumns[formVersionscolumns.length - 1];
-            wrapper = shallow(
-                actionColumn.Cell({
-                    original: fakeFormVersion,
-                }),
-            );
+            wrapper = shallow(actionColumn.Cell(colOriginal(fakeFormVersion)));
             xlsButton = wrapper.find(IconButton);
 
             expect(xlsButton).to.have.lengthOf(1);
@@ -95,9 +91,7 @@ describe('Forms config', () => {
         it('should render a component if Cell is defined', () => {
             columns.forEach(c => {
                 if (c.Cell) {
-                    const cell = c.Cell({
-                        original: fakeForm,
-                    });
+                    const cell = c.Cell(colOriginal(fakeForm));
                     expect(cell).to.exist;
                 }
             });
@@ -105,12 +99,12 @@ describe('Forms config', () => {
         it('should render a component if Cell is defined and no from id', () => {
             columns.forEach(c => {
                 if (c.Cell) {
-                    const cell = c.Cell({
-                        original: {
+                    const cell = c.Cell(
+                        colOriginal({
                             ...fakeForm,
                             form_id: 0,
-                        },
-                    });
+                        }),
+                    );
                     expect(cell).to.exist;
                 }
             });
@@ -120,9 +114,7 @@ describe('Forms config', () => {
             delete tempForm.instance_updated_at;
             columns.forEach(c => {
                 if (c.Cell) {
-                    const cell = c.Cell({
-                        original: tempForm,
-                    });
+                    const cell = c.Cell(colOriginal(tempForm));
                     expect(cell).to.exist;
                 }
             });
@@ -144,11 +136,7 @@ describe('Forms config', () => {
                 );
                 tempForm.instances_count = 0;
                 actionColumn = columns[columns.length - 1];
-                wrapper = shallow(
-                    actionColumn.Cell({
-                        original: tempForm,
-                    }),
-                );
+                wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));
 
                 const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
                 expect(redEyeIcon).to.have.lengthOf(1);
@@ -174,11 +162,7 @@ describe('Forms config', () => {
                     false,
                 );
                 actionColumn = columns[columns.length - 1];
-                wrapper = shallow(
-                    actionColumn.Cell({
-                        original: tempForm,
-                    }),
-                );
+                wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));
                 const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
                 expect(redEyeIcon.prop('url')).to.equal(
                     'instances/formId/69/levels/1',
@@ -200,9 +184,7 @@ describe('Forms config', () => {
         it('should render a component if Cell is defined', () => {
             columns.forEach(c => {
                 if (c.Cell) {
-                    const cell = c.Cell({
-                        original: fakeForm,
-                    });
+                    const cell = c.Cell(colOriginal(fakeForm));
                     expect(cell).to.exist;
                 }
             });
@@ -210,12 +192,7 @@ describe('Forms config', () => {
         it('should render a component if Cell is defined and no form id', () => {
             columns.forEach(c => {
                 if (c.Cell) {
-                    const cell = c.Cell({
-                        original: {
-                            ...fakeForm,
-                            form_id: 0,
-                        },
-                    });
+                    const cell = c.Cell(colOriginal(fakeForm));
                     expect(cell).to.exist;
                 }
             });
@@ -225,9 +202,7 @@ describe('Forms config', () => {
             delete tempForm.instance_updated_at;
             columns.forEach(c => {
                 if (c.Cell) {
-                    const cell = c.Cell({
-                        original: tempForm,
-                    });
+                    const cell = c.Cell(colOriginal(tempForm));
                     expect(cell).to.exist;
                 }
             });
@@ -235,11 +210,7 @@ describe('Forms config', () => {
         describe('action colmumn', () => {
             it('should render restore icon', () => {
                 actionColumn = columns[columns.length - 1];
-                wrapper = shallow(
-                    actionColumn.Cell({
-                        original: fakeForm,
-                    }),
-                );
+                wrapper = shallow(actionColumn.Cell(colOriginal(fakeForm)));
                 restoreIcon = wrapper.find('[icon="restore-from-trash"]');
                 expect(restoreIcon).to.have.lengthOf(1);
             });

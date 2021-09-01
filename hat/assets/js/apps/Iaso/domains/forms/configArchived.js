@@ -5,65 +5,51 @@ import { Link } from 'react-router';
 import {
     textPlaceholder,
     IconButton as IconButtonComponent,
-    ColumnText as ColumnTextComponent,
 } from 'bluesquare-components';
 import MESSAGES from './messages';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
 const archivedTableColumn = (formatMessage, restoreForm) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
-        Cell: settings => <ColumnTextComponent text={settings.original.name} />,
     },
     {
         Header: formatMessage(MESSAGES.form_id),
         sortable: false,
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.form_id || textPlaceholder}
-            />
-        ),
+        accessor: 'form_id',
     },
     {
         Header: formatMessage(MESSAGES.type),
         sortable: false,
         accessor: 'org_unit_types',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={settings.original.org_unit_types
-                    .map(o => o.short_name)
-                    .join(', ')}
-            />
-        ),
+        Cell: settings =>
+            settings.row.original.org_unit_types
+                .map(o => o.short_name)
+                .join(', '),
     },
     {
         Header: formatMessage(MESSAGES.records),
         accessor: 'instances_count',
-        Cell: settings => (
-            <ColumnTextComponent text={settings.original.instances_count} />
-        ),
     },
     {
         Header: formatMessage(MESSAGES.latest_version_files),
+        accessor: 'latest_version_files',
         sortable: false,
         Cell: settings =>
-            settings.original.latest_form_version !== null && (
+            settings.row.original.latest_form_version !== null && (
                 <Grid container spacing={1} justifyContent="center">
                     <Grid item>
-                        <ColumnTextComponent
-                            text={
-                                settings.original.latest_form_version.version_id
-                            }
-                        />
+                        {settings.row.original.latest_form_version.version_id}
                     </Grid>
                     <Grid container spacing={1} justifyContent="center">
-                        {settings.original.latest_form_version.xls_file && (
+                        {settings.row.original.latest_form_version.xls_file && (
                             <Grid item>
                                 <Link
                                     download
                                     href={
-                                        settings.original.latest_form_version
-                                            .xls_file
+                                        settings.row.original
+                                            .latest_form_version.xls_file
                                     }
                                 >
                                     XLS
@@ -74,7 +60,8 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
                             <Link
                                 download
                                 href={
-                                    settings.original.latest_form_version.file
+                                    settings.row.original.latest_form_version
+                                        .file
                                 }
                             >
                                 XML
@@ -87,52 +74,33 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
     {
         Header: formatMessage(MESSAGES.created_at),
         accessor: 'created_at',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={moment
-                    .unix(settings.original.created_at)
-                    .format('LTS')}
-            />
-        ),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.updated_at),
         accessor: 'updated_at',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={moment
-                    .unix(settings.original.updated_at)
-                    .format('LTS')}
-            />
-        ),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.deleted_at),
         accessor: 'deleted_at',
-        Cell: settings => (
-            <ColumnTextComponent
-                text={moment
-                    .unix(settings.original.deleted_at)
-                    .format('LTS')}
-            />
-        ),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
-        width: 150,
-        Cell: settings => {
-            return (
-                <section>
-                    <IconButtonComponent
-                        onClick={() => restoreForm(settings.original.id)}
-                        icon="restore-from-trash"
-                        tooltipMessage={MESSAGES.restoreFormTooltip}
-                    />
-                </section>
-            );
-        },
+        width: 300,
+        Cell: settings => (
+            <section>
+                <IconButtonComponent
+                    onClick={() => restoreForm(settings.row.original.id)}
+                    icon="restore-from-trash"
+                    tooltipMessage={MESSAGES.restoreFormTooltip}
+                />
+            </section>
+        ),
     },
 ];
 export default archivedTableColumn;

@@ -10,29 +10,21 @@ import MESSAGES from './messages';
 const projectsTableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.projectName),
-        accessor: 'project__name',
-        Cell: settings => <span>{settings.original.name}</span>,
+        accessor: 'name',
     },
     {
         Header: formatMessage(MESSAGES.appId),
-        accessor: 'project__app_id',
-        Cell: settings => (
-            <span>{settings.original.app_id || textPlaceholder}</span>
-        ),
+        accessor: 'app_id',
     },
     {
         Header: formatMessage(MESSAGES.featureFlags),
-        accessor: 'project__needs_authentication',
-        Cell: settings => (
-            <span>
-                {settings.original.feature_flags
-                    .map(fF => fF.name)
-                    .join(', ') || textPlaceholder}
-            </span>
-        ),
+        accessor: 'feature_flags',
+        Cell: settings =>
+            settings.value.map(fF => fF.name).join(', ') || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
         Cell: settings => (
@@ -45,9 +37,9 @@ const projectsTableColumns = (formatMessage, component) => [
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
-                    initialData={settings.original}
+                    initialData={settings.row.original}
                     titleMessage={MESSAGES.updateProject}
-                    key={settings.original.updated_at}
+                    key={settings.row.original.updated_at}
                     params={component.props.params}
                     featureFlags={component.props.featureFlags}
                 />

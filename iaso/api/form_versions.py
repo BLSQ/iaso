@@ -1,7 +1,7 @@
 import typing
 from rest_framework import serializers, parsers, permissions
 
-from iaso.models import Form, FormVersion, MappingVersion
+from iaso.models import Form, FormVersion
 from django.db.models.functions import Concat
 from django.db.models import Value, Count
 from django.db.models import BooleanField
@@ -12,6 +12,7 @@ from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, 
 from .forms import HasFormPermission
 
 
+# noinspection PyMethodMayBeStatic
 class FormVersionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = FormVersion
@@ -81,8 +82,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         return [f.as_dict() for f in obj.mapping_versions.all()]
 
     def validate(self, data: typing.MutableMapping):
-        #  TO_DO: validate start en end period (is a period and start before end)
+        # TODO: validate start en end period (is a period and start before end)
         if self.context["request"].method == "PUT":
+            # Skip validation for update, permission in that case is checked via the get_queryset.
             return data
         form = data["form"]
         # validate form (access check)
@@ -133,6 +135,7 @@ class FormVersionsViewSet(ModelViewSet):
     GET /api/formversions/
     GET /api/formversions/<id>
     POST /api/formversions/
+    PUT /api/formversions/<id>  -- can only update start_period and end_period
     """
 
     serializer_class = FormVersionSerializer

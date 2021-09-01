@@ -19,6 +19,9 @@ export const useGetPages = options => {
         limit: options.pageSize,
         page: options.page,
     };
+    if (options.order && options.order !== '') {
+        params.order = options.order;
+    }
 
     const getURL = urlParams => {
         const filteredParams = Object.entries(urlParams).filter(

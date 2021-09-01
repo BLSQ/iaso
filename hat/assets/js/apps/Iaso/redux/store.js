@@ -6,11 +6,6 @@ import { createHistory } from 'history';
 import createStore from './createStore';
 
 import appReducer from '../domains/app/reducer';
-import { loadReducer } from './load';
-import {
-    currentUserReducer,
-    currentUserInitialState,
-} from './currentUserReducer';
 import { formsReducer, formsInitialState } from '../domains/forms/reducer';
 import {
     orgUnitsReducer,
@@ -35,10 +30,6 @@ import {
 } from './sidebarMenuReducer';
 import { snackBarsInitialState, snackBarsReducer } from './snackBarsReducer';
 import { devicesInitialState, devicesReducer } from './devicesReducer';
-import {
-    orgUnitsLevelsInitialState,
-    orgUnitsLevelsReducer,
-} from './orgUnitsLevelsReducer';
 import { routerInitialState, routerReducer } from './routerReducer';
 import { linksInitialState, linksReducer } from '../domains/links/reducer';
 import { usersReducer, usersInitialState } from '../domains/users/reducer';
@@ -66,8 +57,6 @@ let storeHistory = useRouterHistory(createHistory)({
 // TODO: to check, this initial state argument is probably useless
 const store = createStore(
     {
-        load: {},
-        currentUser: currentUserInitialState,
         sidebar: sidebarMenuInitialState,
         forms: formsInitialState,
         orgUnits: orgUnitsInitialState,
@@ -75,7 +64,6 @@ const store = createStore(
         snackBar: snackBarsInitialState,
         map: mapInitialState,
         devices: devicesInitialState,
-        orgUnitsLevels: orgUnitsLevelsInitialState,
         routerCustom: routerInitialState,
         links: linksInitialState,
         users: usersInitialState,
@@ -88,8 +76,6 @@ const store = createStore(
     },
     {
         app: appReducer,
-        load: loadReducer,
-        currentUser: currentUserReducer,
         sidebar: sidebarMenuReducer,
         forms: formsReducer,
         orgUnits: orgUnitsReducer,
@@ -97,7 +83,6 @@ const store = createStore(
         snackBar: snackBarsReducer,
         map: mapReducer,
         devices: devicesReducer,
-        orgUnitsLevels: orgUnitsLevelsReducer,
         routerCustom: routerReducer,
         links: linksReducer,
         users: usersReducer,

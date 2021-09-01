@@ -1,12 +1,11 @@
+/* eslint-disable camelcase */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Table,
     textPlaceholder,
-    IconButton as IconButtonComponent,
-    ColumnText,
     LoadingSpinner,
+    IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import 'react-table/react-table.css';
 import {
     Box,
     Button,
@@ -30,13 +29,13 @@ import {
     TableHead,
     TableBody,
     TableRow,
-    TableCell, 
+    TableCell,
     TablePagination,
+    Tooltip,
 } from '@material-ui/core';
 import { merge } from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
-import Clear from '@material-ui/icons/Clear';
 
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
@@ -60,12 +59,16 @@ import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
 import { PreparednessForm } from '../forms/PreparednessForm';
-import { useGetRegionGeoJson } from '../hooks/useGetRegionGeoJson';
+import { useGetGeoJson } from '../hooks/useGetGeoJson';
 import MESSAGES from '../constants/messages';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import ImportLineListDialog from './ImportLineListDialog';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import { FormattedMessage } from 'react-intl';
 
+// eslint-disable-next-line camelcase
 const round_shape = yup.object().shape({
     started_at: yup.date().nullable(),
     ended_at: yup
@@ -295,9 +298,24 @@ const DetectionForm = () => {
     );
 };
 
-const selectedPathOptions = { color: 'lime' };
-const unselectedPathOptions = { color: 'gray' };
-const initialDistrict = { color: '#FF695C' };
+const selectedPathOptions = {
+    color: 'lime',
+    weight: '1',
+    opacity: '1',
+    zIndex: '1',
+};
+const unselectedPathOptions = {
+    color: 'gray',
+    weight: '1',
+    opacity: '1',
+    zIndex: '1',
+};
+const initialDistrict = {
+    color: '#FF695C',
+    weight: '1',
+    opacity: '1',
+    zIndex: '1',
+};
 
 const RiskAssessmentForm = () => {
     const classes = useStyles();
@@ -404,6 +422,12 @@ const separate = (array, referenceArray) => {
     return result;
 };
 
+const findRegion = (shape, regionShapes) => {
+    return regionShapes.filter(
+        regionShape => regionShape.id === shape.parent_id,
+    )[0].name;
+};
+
 const ScopeForm = () => {
     const classes = useStyles();
     const [selectRegion, setSelectRegion] = useState(false);
@@ -412,13 +436,22 @@ const ScopeForm = () => {
     const { group = { org_units: [] } } = values;
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [sortBy, setSortBy] = useState("asc");
-
-    const { data: shapes, isFetching } = useGetRegionGeoJson(
+    const [sortBy, setSortBy] = useState('asc');
+    const [sortFocus, setSortFocus] = useState('DISTRICT');
+    const country =
         values.org_unit?.country_parent?.id ||
-            values.org_unit?.root?.id ||
-            values.org_unit?.id,
+        values.org_unit?.root?.id ||
+        values.org_unit?.id;
+
+    const { data: districtShapes, isFetching: isFetchingDistricts } =
+        useGetGeoJson(country, 'DISTRICT');
+
+    const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
+        country,
+        'REGION',
     );
+
+    const isFetching = isFetchingDistricts || isFetchingRegions;
 
     const toggleRegionSelect = () => {
         setSelectRegion(!selectRegion);
@@ -426,47 +459,53 @@ const ScopeForm = () => {
 
     const getShapeStyle = useCallback(
         shape => {
-            return group.org_units.includes(shape.id)
-                ? selectedPathOptions
-                : values.org_unit?.id === shape.id
-                ? initialDistrict
-                : unselectedPathOptions;
+            if (group.org_units.includes(shape.id)) return selectedPathOptions;
+            if (values.org_unit?.id === shape.id) return initialDistrict;
+            return unselectedPathOptions;
         },
         [group, values.org_unit?.id],
     );
+
+    const getBackgroundLayerStyle = () => {
+        return {
+            color: 'grey',
+            opacity: '1',
+            fillColor: 'transparent',
+        };
+    };
+
+    const toggleRegion = (shape, allShapes, orgUnitsGroup) => {
+        const parentRegionShapes = allShapes
+            .filter(s => s.parent_id === shape.parent_id)
+            .map(s => s.id);
+        const { selected, unselected } = separate(
+            parentRegionShapes,
+            orgUnitsGroup,
+        );
+        const isRegionSelected = selected.length === parentRegionShapes.length;
+        if (isRegionSelected) {
+            return orgUnitsGroup.filter(
+                orgUnit => !parentRegionShapes.includes(orgUnit),
+            );
+        }
+        return [...orgUnitsGroup, ...unselected];
+    };
+
+    const toggleDistrict = (shape, orgUnitsGroup) => {
+        if (orgUnitsGroup.find(org_unit => shape.id === org_unit)) {
+            return orgUnitsGroup.filter(orgUnit => orgUnit !== shape.id);
+        }
+        return [...orgUnitsGroup, shape.id];
+    };
 
     const onSelectOrgUnit = useCallback(
         shape => {
             const { org_units } = group;
             let newOrgUnits;
             if (selectRegion) {
-                const regionShapes = shapes
-                    .filter(s => s.parent_id === shape.parent_id)
-                    .map(s => s.id);
-                const { selected, unselected } = separate(
-                    regionShapes,
-                    org_units,
-                );
-                const isRegionSelected =
-                    selected.length === regionShapes.length;
-                if (isRegionSelected) {
-                    newOrgUnits = org_units.filter(
-                        orgUnit => !regionShapes.includes(orgUnit),
-                    );
-                } else {
-                    newOrgUnits = [...org_units, ...unselected];
-                }
-            } else if (org_units.find(org_unit => shape.id === org_unit)) {
-                newOrgUnits = org_units.filter(orgUnit => orgUnit !== shape.id);
+                newOrgUnits = toggleRegion(shape, districtShapes, org_units);
             } else {
-                if (org_units.find(org_unit => shape.id === org_unit)) {
-                    newOrgUnits = org_units.filter(
-                        orgUnit => orgUnit !== shape.id,
-                    );
-                } else {
-                    newOrgUnits = [...org_units, shape.id];
-                }
-
+                newOrgUnits = toggleDistrict(shape, org_units);
             }
 
             setFieldValue('group', {
@@ -474,87 +513,250 @@ const ScopeForm = () => {
                 org_units: newOrgUnits,
             });
         },
-        [group, setFieldValue, selectRegion, shapes],
+        [group, setFieldValue, selectRegion, districtShapes],
     );
 
-    const handleSort = useCallback(()=>{
-        if(sortBy==="asc"){
-            setSortBy("desc");
-        } else {
-            setSortBy("asc");
-        }
-    },[sortBy])
+    const removeDistrictFromTable = useCallback(
+        shape => {
+            const { org_units } = group;
+            const newOrgUnits = org_units.filter(
+                orgUnit => orgUnit !== shape.id,
+            );
+            setFieldValue('group', {
+                ...group,
+                org_units: newOrgUnits,
+            });
+        },
+        [group, setFieldValue],
+    );
+    const removeRegionFromTable = useCallback(
+        shape => {
+            const { org_units } = group;
+            const parentRegionShapes = districtShapes
+                .filter(s => s.parent_id === shape.parent_id)
+                .map(s => s.id);
+
+            const newOrgUnits = org_units.filter(
+                orgUnit => !parentRegionShapes.includes(orgUnit),
+            );
+
+            setFieldValue('group', {
+                ...group,
+                org_units: newOrgUnits,
+            });
+        },
+        [group, setFieldValue, districtShapes],
+    );
+
+    const handleSort = useCallback(
+        orgUnitType => {
+            if (sortFocus !== orgUnitType) {
+                setSortFocus(orgUnitType);
+            } else if (sortBy === 'asc') {
+                setSortBy('desc');
+            } else {
+                setSortBy('asc');
+            }
+        },
+        [sortBy, sortFocus],
+    );
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
-      };
+    };
 
-    const handleChangeRowsPerPage = (event) => {
+    const handleChangeRowsPerPage = event => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
 
-    const selectedShapes = sortBy==="asc"?
-        shapes?.filter(shape => group.org_units.includes(shape.id)):
-        shapes?.filter(shape => group.org_units.includes(shape.id)).reverse();
+    const sortShapesForTable = useCallback(() => {
+        if (sortFocus === 'DISTRICT' && sortBy === 'asc') {
+            return districtShapes?.filter(shape =>
+                group.org_units.includes(shape.id),
+            );
+        }
+        if (sortFocus === 'DISTRICT' && sortBy === 'desc') {
+            return districtShapes
+                ?.filter(shape => group.org_units.includes(shape.id))
+                .reverse();
+        }
+        if (sortFocus === 'REGION' && sortBy === 'asc') {
+            return districtShapes
+                ?.filter(shape => group.org_units.includes(shape.id))
+                .sort(
+                    (shapeA, shapeB) =>
+                        findRegion(shapeA, regionShapes) >
+                        findRegion(shapeB, regionShapes),
+                );
+        }
+        if (sortFocus === 'REGION' && sortBy === 'desc') {
+            return districtShapes
+                ?.filter(shape => group.org_units.includes(shape.id))
+                .sort(
+                    (shapeA, shapeB) =>
+                        findRegion(shapeA, regionShapes) <
+                        findRegion(shapeB, regionShapes),
+                );
+        }
+        console.warn(
+            `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and DISTRICT|REGION`,
+        );
+        return null;
+    }, [sortBy, sortFocus, districtShapes, group.org_units, regionShapes]);
+
+    const shapesForTable = sortShapesForTable();
+
+    const makeTableText = text => {
+        return (
+            <Tooltip placement="bottom" title={text}>
+                <Typography
+                    variant="overline"
+                    style={{
+                        maxWidth: '100px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    }}
+                >
+                    {text}
+                </Typography>
+            </Tooltip>
+        );
+    };
+
     return (
         <Grid container spacing={4}>
-            <Grid xs={9} item>
-
-                {isFetching && !shapes && <LoadingSpinner />}
-                {!isFetching && !shapes && (
+            <Grid xs={8} item>
+                {isFetching && !districtShapes && <LoadingSpinner />}
+                {!isFetching && !districtShapes && (
                     // FIXME should not be needed
                     <Typography>
                         Please save the Campaign before selecting scope.
                     </Typography>
                 )}
                 <MapComponent
-                    shapes={shapes}
+                    name="ScopeMap"
+                    mainLayer={districtShapes}
+                    backgroundLayer={regionShapes}
                     onSelectShape={onSelectOrgUnit}
-                    getShapeStyle={getShapeStyle}
+                    getMainLayerStyle={getShapeStyle}
+                    getBackgroundLayerStyle={getBackgroundLayerStyle}
+                    tooltipLabels={{ main: 'District', background: 'Region' }}
                 />
             </Grid>
 
-            <Grid xs={3} item >
+            <Grid xs={4} item>
                 <TableContainer className={classes.districtList}>
-                    <MuiTable stickyHeader size='small'>
+                    <MuiTable stickyHeader size="small">
                         <TableHead>
                             <TableRow>
-                                <TableCell onClick={handleSort} variant="head">
+                                <TableCell
+                                    onClick={() => handleSort('REGION')}
+                                    variant="head"
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <Typography>Region</Typography>
+                                </TableCell>
+                                <TableCell
+                                    onClick={() => handleSort('DISTRICT')}
+                                    variant="head"
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <Typography>District</Typography>
                                 </TableCell>
-                                <TableCell variant="head">
-                                    Remove
+                                <TableCell
+                                    variant="head"
+                                    style={{
+                                        cursor: 'pointer',
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    Actions
                                 </TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {selectedShapes?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                            .map((shape,i) => {
-                                        return (<TableRow key={shape.id} className={i%2>0?classes.districtListRow:''}>
-                                            <TableCell>{shape.name}</TableCell>
-                                            <TableCell> 
-                                                <Clear
-                                                onClick={() =>
-                                                    onSelectOrgUnit(shape)
-                                                }
-                                            /></TableCell>
-                                        </TableRow>)
-                                    })}
+                            {shapesForTable
+                                ?.slice(
+                                    page * rowsPerPage,
+                                    page * rowsPerPage + rowsPerPage,
+                                )
+                                .map((shape, i) => {
+                                    const region = findRegion(
+                                        shape,
+                                        regionShapes,
+                                    );
+                                    return (
+                                        <TableRow
+                                            key={shape.id}
+                                            className={
+                                                i % 2 > 0
+                                                    ? classes.districtListRow
+                                                    : ''
+                                            }
+                                        >
+                                            <TableCell
+                                                style={{
+                                                    width: '33%',
+                                                    cursor: 'default',
+                                                }}
+                                            >
+                                                {makeTableText(region)}
+                                            </TableCell>
+                                            <TableCell
+                                                style={{
+                                                    width: '33%',
+                                                    cursor: 'default',
+                                                }}
+                                            >
+                                                {makeTableText(shape.name)}
+                                            </TableCell>
+                                            <TableCell
+                                                style={{
+                                                    minWidth: '33%',
+                                                    cursor: 'pointer',
+                                                }}
+                                            >
+                                                <IconButtonComponent
+                                                    onClick={() =>
+                                                        removeRegionFromTable(
+                                                            shape,
+                                                        )
+                                                    }
+                                                    icon="clearAll"
+                                                    tooltipMessage={
+                                                        MESSAGES.removeRegion
+                                                    }
+                                                />
+                                                <IconButtonComponent
+                                                    onClick={() =>
+                                                        removeDistrictFromTable(
+                                                            shape,
+                                                        )
+                                                    }
+                                                    icon="clear"
+                                                    tooltipMessage={
+                                                        MESSAGES.removeDistrict
+                                                    }
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                         </TableBody>
                     </MuiTable>
                 </TableContainer>
                 <TablePagination
+                    className={classes.tablePagination}
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={selectedShapes?.length??0}
+                    count={shapesForTable?.length ?? 0}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     labelRowsPerPage="Rows"
-                    onChangePage={handleChangePage}
+                    onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    onChangeRowsPerPage={handleChangeRowsPerPage}>
-                </TablePagination>
+                />
             </Grid>
             <Grid container>
                 <Grid xs={8} item>
@@ -574,7 +776,7 @@ const ScopeForm = () => {
                     </FormGroup>
                 </Grid>
                 <Grid xs={4} item>
-                    {shapes && isFetching && (
+                    {districtShapes && isFetching && (
                         <Typography align="right">Refreshing ...</Typography>
                     )}
                 </Grid>
@@ -1283,91 +1485,46 @@ export const Dashboard = () => {
                 Header: 'Country',
                 accessor: 'top_level_org_unit_name',
                 sortable: false,
-                Cell: settings => {
-                    const text =
-                        settings?.original?.top_level_org_unit_name ??
-                        textPlaceholder;
-                    return <span>{text}</span>;
-                },
             },
             {
                 Header: 'Name',
                 accessor: 'obr_name',
-                Cell: settings => {
-                    return <span>{settings.original.obr_name}</span>;
-                },
             },
             {
                 Header: 'cVDPV2 Notification Date',
                 accessor: 'cvdpv2_notified_at',
-                Cell: settings => {
-                    const text =
-                        settings?.original?.cvdpv2_notified_at ??
-                        textPlaceholder;
-                    return <span>{text}</span>;
-                },
             },
             {
                 Header: 'Round 1',
                 accessor: 'round_one__started_at',
-                Cell: settings => {
-                    return (
-                        <ColumnText
-                            text={
-                                settings.original?.round_one?.started_at ??
-                                textPlaceholder
-                            }
-                        />
-                    );
-                },
             },
             {
                 Header: 'Round 2',
                 accessor: 'round_two__started_at',
-                Cell: settings => {
-                    return (
-                        <ColumnText
-                            text={
-                                settings.original?.round_two?.started_at ??
-                                textPlaceholder
-                            }
-                        />
-                    );
-                },
             },
             {
                 Header: 'Status',
                 sortable: false,
                 accessor: 'general_status',
-                Cell: settings => {
-                    return (
-                        <ColumnText text={settings.original.general_status} />
-                    );
-                },
             },
             {
                 Header: 'Actions',
+                accessor: 'id',
                 sortable: false,
-                Cell: settings => {
-                    return (
-                        <>
-                            <IconButtonComponent
-                                icon="edit"
-                                tooltipMessage={MESSAGES.edit}
-                                onClick={() =>
-                                    handleClickEditRow(settings.original.id)
-                                }
-                            />
-                            <IconButtonComponent
-                                icon="delete"
-                                tooltipMessage={MESSAGES.delete}
-                                onClick={() =>
-                                    handleClickDeleteRow(settings.original.id)
-                                }
-                            />
-                        </>
-                    );
-                },
+                Cell: settings => (
+                    <>
+                        <IconButtonComponent
+                            icon="edit"
+                            tooltipMessage={MESSAGES.edit}
+                            onClick={() => handleClickEditRow(settings.value)}
+                        />
+                        <IconButtonComponent
+                            icon="delete"
+                            tooltipMessage={MESSAGES.delete}
+                            onClick={() => handleClickDeleteRow(settings.value)}
+                        />
+                    </>
+                ),
             },
         ],
         [handleClickDeleteRow, handleClickEditRow],
@@ -1421,6 +1578,16 @@ export const Dashboard = () => {
                     <PageAction icon={DownloadIcon} onClick={exportToCSV}>
                         CSV
                     </PageAction>
+                    <ImportLineListDialog
+                        renderTrigger={({ openDialog }) => (
+                            <PageAction
+                                icon={CloudUploadIcon}
+                                onClick={openDialog}
+                            >
+                                Import
+                            </PageAction>
+                        )}
+                    />
                 </PageActions>
                 {status === 'success' && (
                     <Table
@@ -1431,7 +1598,6 @@ export const Dashboard = () => {
                         redirectTo={onTableParamsChange}
                         columns={columns}
                         data={campaigns.campaigns}
-                        watchToRender={tableParams}
                     />
                 )}
             </Box>

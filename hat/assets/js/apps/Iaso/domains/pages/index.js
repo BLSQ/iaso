@@ -5,7 +5,6 @@ import {
     useSafeIntl,
     commonStyles,
     IconButton as IconButtonComponent,
-    ColumnText,
 } from 'bluesquare-components';
 import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
@@ -21,9 +20,11 @@ import CreateEditDialog from './components/CreateEditDialog';
 import PageActions from './components/PageActions';
 import PageAction from './components/PageAction';
 import { PAGES_TYPES } from './constants';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
+const DEFAULT_ORDER = '-updated_at';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -34,6 +35,7 @@ const Pages = () => {
     const classes = useStyles();
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
+    const [order, setOrder] = useState(DEFAULT_ORDER);
     const [selectedPageSlug, setSelectedPageSlug] = useState();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
@@ -82,6 +84,7 @@ const Pages = () => {
     const { query } = useGetPages({
         page,
         pageSize,
+        order,
     });
 
     const { data: pages = [], status } = query;
@@ -103,15 +106,13 @@ const Pages = () => {
             {
                 Header: intl.formatMessage(MESSAGES.name),
                 accessor: 'name',
-                sortable: false,
             },
             {
                 Header: intl.formatMessage(MESSAGES.type),
                 accessor: 'type',
-                sortable: false,
                 Cell: settings => {
                     const pageType = PAGES_TYPES.find(
-                        pt => pt.value === settings.original.type,
+                        pt => pt.value === settings.row.original.type,
                     );
                     return <span>{intl.formatMessage(pageType.label)}</span>;
                 },
@@ -119,29 +120,20 @@ const Pages = () => {
             {
                 Header: intl.formatMessage(MESSAGES.address),
                 accessor: 'slug',
-                sortable: false,
             },
             {
                 Header: intl.formatMessage(MESSAGES.updatedAt),
                 accessor: 'updated_at',
-                sortable: false,
-                Cell: settings => {
-                    return (
-                        <ColumnText
-                            text={moment(settings.original.updated_at).format(
-                                'LTS',
-                            )}
-                        />
-                    );
-                },
+                Cell: DateTimeCell,
             },
             {
                 Header: intl.formatMessage(MESSAGES.actions),
                 sortable: false,
+                accessor: 'actions',
                 Cell: settings => {
                     return (
                         <>
-                            <a href={`/pages/${settings.original.slug}`}>
+                            <a href={`/pages/${settings.row.original.slug}`}>
                                 <IconButtonComponent
                                     icon="remove-red-eye"
                                     tooltipMessage={MESSAGES.viewPage}
@@ -152,14 +144,18 @@ const Pages = () => {
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
                                 onClick={() =>
-                                    handleClickEditRow(settings.original.slug)
+                                    handleClickEditRow(
+                                        settings.row.original.slug,
+                                    )
                                 }
                             />
                             <IconButtonComponent
                                 icon="delete"
                                 tooltipMessage={MESSAGES.delete}
                                 onClick={() =>
-                                    handleClickDeleteRow(settings.original.slug)
+                                    handleClickDeleteRow(
+                                        settings.row.original.slug,
+                                    )
                                 }
                             />
                         </>
@@ -179,16 +175,20 @@ const Pages = () => {
             if (newParams.pageSize !== pageSize) {
                 setPageSize(newParams.pageSize);
             }
+            if (newParams.order !== order) {
+                setOrder(newParams.order);
+            }
         },
-        [page, pageSize],
+        [page, pageSize, order],
     );
 
     const tableParams = useMemo(() => {
         return {
             pageSize,
             page,
+            order,
         };
-    }, [pageSize, page]);
+    }, [pageSize, page, order]);
 
     return (
         <>
@@ -222,7 +222,6 @@ const Pages = () => {
                         redirectTo={onTableParamsChange}
                         columns={columns}
                         data={pages.results}
-                        watchToRender={tableParams}
                     />
                 )}
             </Box>

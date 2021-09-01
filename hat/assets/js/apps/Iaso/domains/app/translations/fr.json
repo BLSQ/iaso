@@ -448,7 +448,6 @@
     "iaso.snackBar.fetchProfilesError": "Une erreur est survenue en récupérant la liste des profiles",
     "iaso.snackBar.fetchProjectsError": "Une erreur est survenue en récupérant la liste des projects",
     "iaso.snackBar.fetchSourcesError": "Une erreur est survenue en récupérant la liste des sources",
-    "iaso.snackBar.fetchSourceTypesError": "Une erreur est survenue en récupérant la liste des types de sources",
     "iaso.snackBar.fetchTasksError": "Une erreur est survenue en récupérant la liste des tâches",
     "iaso.snackBar.generateDerivedRequestError": "Une erreur est survenue lors de la création des soumissions dérivées",
     "iaso.snackBar.generateDerivedRequestSuccess": "La création des soumissions dérivées est terminée avec succès",

@@ -13,9 +13,9 @@ from rest_framework.response import Response
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
-from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer
+from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer, LineListImportSerializer
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
-from .models import Campaign, Config
+from .models import Campaign, Config, LineListImport
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -80,6 +80,14 @@ class CampaignViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
+
+class LineListImportViewSet(ModelViewSet):
+    serializer_class = LineListImportSerializer
+    results_key = "imports"
+
+    def get_queryset(self):
+        return LineListImport.objects.all()
 
 
 class IMViewSet(viewsets.ViewSet):
@@ -178,3 +186,4 @@ class IMViewSet(viewsets.ViewSet):
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/im", IMViewSet, basename="IM")
+router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")

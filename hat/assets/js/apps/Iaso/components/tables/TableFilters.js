@@ -1,14 +1,11 @@
 import React from 'react';
-import { FormattedMessage, defineMessages } from 'react-intl';
-import { bindActionCreators } from 'redux';
+import { defineMessages, FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
-import { Grid, Button, withStyles, Box } from '@material-ui/core';
+import { Box, Button, Grid, makeStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
 import { commonStyles } from 'bluesquare-components';
-import { redirectTo as redirectToAction } from '../../routing/actions';
 
 import FiltersComponent from '../filters/FiltersComponent';
 
@@ -19,18 +16,17 @@ const MESSAGES = defineMessages({
     },
 });
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    column: {
-        '&>section': {
-            width: '100%',
-        },
+    icon: {
+        color: theme.palette.ligthGray.border,
+        fontWeight: 'light',
+        fontSize: 150,
     },
-});
+}));
 
 const Filters = ({
     params,
-    classes,
     baseUrl,
     redirectTo,
     onSearch,
@@ -42,13 +38,14 @@ const Filters = ({
     const [filtersUpdated, setFiltersUpdated] = React.useState(
         !defaultFiltersUpdated,
     );
+    const classes = useStyles();
     const handleSearch = () => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const tempParams = {
                 ...params,
+                page: 1,
             };
-            tempParams.page = 1;
             if (!tempParams.searchActive && toggleActiveSearch) {
                 tempParams.searchActive = true;
             }
@@ -109,7 +106,6 @@ Filters.defaultProps = {
 };
 
 Filters.propTypes = {
-    classes: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
@@ -120,16 +116,4 @@ Filters.propTypes = {
     extraComponent: PropTypes.node,
 };
 
-const MapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            redirectTo: redirectToAction,
-        },
-        dispatch,
-    ),
-});
-
-export default connect(
-    () => ({}),
-    MapDispatchToProps,
-)(withStyles(styles)(Filters));
+export default Filters;

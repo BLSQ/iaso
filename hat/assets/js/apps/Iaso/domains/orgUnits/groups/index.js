@@ -30,10 +30,6 @@ const baseUrl = baseUrls.groups;
 
 const styles = theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
 });
 
 class Groups extends Component {

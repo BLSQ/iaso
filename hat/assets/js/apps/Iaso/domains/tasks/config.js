@@ -5,6 +5,7 @@ import {
     displayDateFromTimestamp,
 } from 'bluesquare-components';
 import MESSAGES from './messages';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
 const tasksTableColumns = (formatMessage, killTaskAction) => [
     {
@@ -13,13 +14,14 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'status',
         Cell: settings => {
             const statusCode =
-                MESSAGES[settings.original.status.toLowerCase()] !== undefined
-                    ? settings.original.status
+                MESSAGES[settings.row.original.status.toLowerCase()] !==
+                undefined
+                    ? settings.row.original.status
                     : 'UNKNOWN';
 
             return (
                 <span>
-                    {settings.original.name}
+                    {settings.row.original.name}
                     <br />
                     <Chip
                         variant="outlined"
@@ -39,13 +41,13 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'progress',
         Cell: settings => (
             <span>
-                {settings.original.status === 'RUNNING' &&
-                settings.original.end_value > 0
-                    ? `${settings.original.progress_value}/${
-                          settings.original.end_value
+                {settings.row.original.status === 'RUNNING' &&
+                settings.row.original.end_value > 0
+                    ? `${settings.row.original.progress_value}/${
+                          settings.row.original.end_value
                       } (${Math.round(
-                          (settings.original.progress_value /
-                              settings.original.end_value) *
+                          (settings.row.original.progress_value /
+                              settings.row.original.end_value) *
                               100,
                       )}%)`
                     : '-'}
@@ -58,8 +60,8 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'message',
         Cell: settings => (
             <span>
-                {settings.original.status === 'RUNNING'
-                    ? settings.original.progress_message
+                {settings.row.original.status === 'RUNNING'
+                    ? settings.row.original.progress_message
                     : '-'}
             </span>
         ),
@@ -68,11 +70,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         Header: formatMessage(MESSAGES.timeCreated),
         sortable: true,
         accessor: 'created_at',
-        Cell: settings => (
-            <span>
-                {displayDateFromTimestamp(settings.original.created_at)}
-            </span>
-        ),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.timeStart),
@@ -80,10 +78,12 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'started_at',
         Cell: settings => (
             <span>
-                {settings.original.status === 'QUEUED' ||
-                settings.original.started_at === null
-                    ? '-'
-                    : displayDateFromTimestamp(settings.original.started_at)}
+                {settings.row.original.status === 'QUEUED' ||
+                settings.row.original.started_at === null
+                    ? ''
+                    : displayDateFromTimestamp(
+                          settings.row.original.started_at,
+                      )}
             </span>
         ),
     },
@@ -93,16 +93,17 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'ended_at',
         Cell: settings => (
             <span>
-                {settings.original.status === 'RUNNING' ||
-                settings.original.status === 'QUEUED' ||
-                settings.original.ended_at === null
+                {settings.row.original.status === 'RUNNING' ||
+                settings.row.original.status === 'QUEUED' ||
+                settings.row.original.ended_at === null
                     ? '-'
-                    : displayDateFromTimestamp(settings.original.ended_at)}
+                    : displayDateFromTimestamp(settings.row.original.ended_at)}
             </span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
         width: 150,
@@ -110,13 +111,13 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
             return (
                 <section>
                     {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
-                        settings.original.status,
+                        settings.row.original.status,
                     ) === true &&
-                        settings.original.should_be_killed === false && (
+                        settings.row.original.should_be_killed === false && (
                             <IconButtonComponent
                                 onClick={() =>
                                     killTaskAction({
-                                        id: settings.original.id,
+                                        id: settings.row.original.id,
                                         should_be_killed: true,
                                     })
                                 }
@@ -124,8 +125,8 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
                                 tooltipMessage={MESSAGES.killTask}
                             />
                         )}
-                    {settings.original.should_be_killed === true &&
-                        settings.original.status === 'RUNNING' &&
+                    {settings.row.original.should_be_killed === true &&
+                        settings.row.original.status === 'RUNNING' &&
                         formatMessage(MESSAGES.killSignalSent)}
                 </section>
             );

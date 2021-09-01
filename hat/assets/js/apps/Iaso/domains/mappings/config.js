@@ -1,10 +1,8 @@
 import React from 'react';
-import {
-    IconButton as IconButtonComponent,
-    displayDateFromTimestamp,
-} from 'bluesquare-components';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
 const safePercent = (a, b) => {
     if (b === 0) {
@@ -23,7 +21,7 @@ const mappingsTableColumns = formatMessage => [
         Cell: settings => (
             <section>
                 <IconButtonComponent
-                    url={`${baseUrls.mappingDetail}/mappingVersionId/${settings.original.id}`}
+                    url={`${baseUrls.mappingDetail}/mappingVersionId/${settings.row.original.id}`}
                     icon="remove-red-eye"
                     tooltipMessage={MESSAGES.view}
                 />
@@ -32,56 +30,46 @@ const mappingsTableColumns = formatMessage => [
     },
     {
         Header: formatMessage(MESSAGES.name),
-        accessor: 'form_version__form__name',
+        id: 'form_version__form__name',
         style: { justifyContent: 'left' },
-        Cell: settings => (
-            <span>{settings.original.form_version.form.name}</span>
-        ),
+        accessor: row => row.form_version.form.name,
     },
     {
         Header: formatMessage(MESSAGES.version),
-        accessor: 'form_version__version_id',
-        Cell: settings => (
-            <span>{settings.original.form_version.version_id}</span>
-        ),
+        id: 'form_version__version_id',
+        accessor: row => row.form_version.version_id,
     },
 
     {
         Header: formatMessage(MESSAGES.type),
-        accessor: 'mapping__mapping_type',
-        Cell: settings => <span>{settings.original.mapping.mapping_type}</span>,
+        id: 'mapping__mapping_type',
+        accessor: row => row.mapping.mapping_type,
     },
     {
         Header: formatMessage(MESSAGES.mappedQuestions),
+        sortable: false,
         accessor: 'mapped_questions',
-        Cell: settings => <span>{settings.original.mapped_questions}</span>,
     },
     {
         Header: formatMessage(MESSAGES.totalQuestions),
+        sortable: false,
         accessor: 'total_questions',
-        Cell: settings => <span>{settings.original.total_questions}</span>,
     },
     {
         Header: formatMessage(MESSAGES.coverage),
         accessor: 'coverage',
-        Cell: settings => (
-            <span>
-                {safePercent(
-                    settings.original.mapped_questions,
-                    settings.original.total_questions,
-                )}
-            </span>
-        ),
+        sortable: false,
+        Cell: settings =>
+            safePercent(
+                settings.row.original.mapped_questions,
+                settings.row.original.total_questions,
+            ),
     },
 
     {
         Header: formatMessage(MESSAGES.updatedAt),
         accessor: 'updated_at',
-        Cell: settings => (
-            <span>
-                {displayDateFromTimestamp(settings.original.updated_at)}
-            </span>
-        ),
+        Cell: DateTimeCell,
     },
 ];
 export default mappingsTableColumns;

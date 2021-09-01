@@ -7,7 +7,11 @@ import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { mockPostRequest } from '../../../../../test/utils/requests';
 import { renderWithStore } from '../../../../../test/utils/redux';
-import { awaitUseEffect, fillFields } from '../../../../../test/utils';
+import {
+    awaitUseEffect,
+    fillFields,
+    withQueryClientProvider,
+} from '../../../../../test/utils';
 
 const existingCredentials = {
     name: 'Goron',
@@ -25,24 +29,26 @@ let confirmCancelDialogComponent;
 const renderWrapper = credentials => {
     connectedWrapper = mount(
         renderWithStore(
-            <AddTask
-                sourceId={SOURCE_ID}
-                sourceVersion={SOURCE_VERSION}
-                titleMessage={{ id: 'Title', defaultMessage: 'Title' }}
-                onConfirmed={() => null}
-                sourceCredentials={credentials}
-                renderTrigger={({ openDialog }) => (
-                    <IconButtonComponent
-                        id="open-dialog"
-                        onClick={openDialog}
-                        icon="edit"
-                        tooltipMessage={{
-                            id: 'tooltip',
-                            defaultMessage: 'tooltip',
-                        }}
-                    />
-                )}
-            />,
+            withQueryClientProvider(
+                <AddTask
+                    sourceId={SOURCE_ID}
+                    sourceVersion={SOURCE_VERSION}
+                    titleMessage={{ id: 'Title', defaultMessage: 'Title' }}
+                    onConfirmed={() => null}
+                    sourceCredentials={credentials}
+                    renderTrigger={({ openDialog }) => (
+                        <IconButtonComponent
+                            id="open-dialog"
+                            onClick={openDialog}
+                            icon="edit"
+                            tooltipMessage={{
+                                id: 'tooltip',
+                                defaultMessage: 'tooltip',
+                            }}
+                        />
+                    )}
+                />,
+            ),
         ),
     );
     inputComponent = connectedWrapper.find('#open-dialog').at(0);
@@ -78,9 +84,10 @@ describe('AddTaskComponent', () => {
 
         it('onConfirm should submit form with source credentials', async () => {
             confirmCancelDialogComponent.props().onConfirm(() => null);
+
             await awaitUseEffect(connectedWrapper);
             await awaitUseEffect(connectedWrapper);
-            expect(nock.activeMocks()).to.have.lengthOf(0);
+            expect(nock.activeMocks()).to.be.empty;
         });
 
         it('displays necessary fields when unselecting defaults', async () => {

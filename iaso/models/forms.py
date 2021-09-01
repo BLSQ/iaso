@@ -182,7 +182,7 @@ def _reformat_questions(questions):
 
 
 class FormVersionManager(models.Manager):
-    def create_for_form_and_survey(self, *, form: Form, survey: parsing.Survey, **kwargs):
+    def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
         with transaction.atomic():
             latest_version = self.latest_version(form)
 
@@ -243,7 +243,6 @@ class FormVersion(models.Model):
     def as_dict(self):
         return {
             "id": self.id,
-            "version_id": self.version_id,
             "version_id": self.version_id,
             "file": self.file.url,
             "xls_file": self.xls_file.url if self.xls_file else None,

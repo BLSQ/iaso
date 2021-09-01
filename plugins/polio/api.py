@@ -96,7 +96,9 @@ class CountryUsersGroupViewSet(ModelViewSet):
     http_method_names = ["get", "put"]
 
     def get_queryset(self):
-        countries = OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+        countries = OrgUnit.objects.filter_for_user_and_app_id(self.request.user).filter(
+            org_unit_type__category="COUNTRY"
+        )
         for country in countries:
             CountryUsersGroup.objects.get_or_create(country=country)  # ensuring that such a model always exist
         return CountryUsersGroup.objects.all()

@@ -36,6 +36,7 @@ import {
 import { merge } from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';

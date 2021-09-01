@@ -94,7 +94,7 @@ const ImportGeoPkgDialog = ({
                     <Typography>
                         <FormattedMessage
                             id="gpkg.explication"
-                            defaultMessage="Import OrgUnits from a GeoPackage file, all the OrgUnits present in the fill will be updated.
+                            defaultMessage="Import OrgUnits from a GeoPackage file, all the OrgUnits present in the file will be updated.
                              The file must be correctly formatted.
                              "
                         />

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { Grid, Typography } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { LoadingSpinner } from 'bluesquare-components';
@@ -40,61 +40,43 @@ const AddTask = ({
     const dispatch = useDispatch();
     const mutation = useMutation(sendDhisOuImporterRequest);
 
-    const reset = useCallback(() => {
+    const reset = () => {
         setFormState(initialFormState(sourceCredentials));
-    }, [sourceCredentials]);
+        setWithExistingDhis2Settings(true);
+    };
 
-    const submit = useCallback(
-        async (closeDialogCallBack, redirect = false) => {
-            const body = {
-                source_id: sourceId,
-                source_version_number: sourceVersionNumber,
-                force: false,
-                validate_status: form.validate_status.value,
-                continue_on_error: form.continue_on_error.value,
-            };
-            if (!withExistingDhis2Settings) {
-                body.dhis2_password = form.dhis2_password.value;
-                body.dhis2_url = form.dhis2_url.value;
-                body.dhis2_login = form.dhis2_login.value;
-                setWithExistingDhis2Settings(true);
-            }
-            await mutation.mutateAsync(body);
-            closeDialogCallBack();
-            if (redirect) {
-                dispatch(
-                    redirectTo(baseUrls.tasks, {
-                        order: '-created_at',
-                    }),
-                );
-            }
-            reset();
-        },
-        [
-            sourceId,
-            sourceVersionNumber,
-            form.dhis2_url.value,
-            form.dhis2_login.value,
-            form.dhis2_password.value,
-            form.validate_status.value,
-            form.continue_on_error.value,
-            withExistingDhis2Settings,
-        ],
-    );
+    const submit = async (closeDialogCallBack, redirect = false) => {
+        const body = {
+            source_id: sourceId,
+            source_version_number: sourceVersionNumber,
+            force: false,
+            validate_status: form.validate_status.value,
+            continue_on_error: form.continue_on_error.value,
+        };
+        if (!withExistingDhis2Settings) {
+            body.dhis2_password = form.dhis2_password.value;
+            body.dhis2_url = form.dhis2_url.value;
+            body.dhis2_login = form.dhis2_login.value;
+        }
+        await mutation.mutateAsync(body);
+        closeDialogCallBack();
+        if (redirect) {
+            dispatch(
+                redirectTo(baseUrls.tasks, {
+                    order: '-created_at',
+                }),
+            );
+        }
+        reset();
+    };
 
-    const onConfirm = useCallback(
-        async closeDialog => {
-            await submit(closeDialog);
-        },
-        [submit],
-    );
+    const onConfirm = async closeDialog => {
+        await submit(closeDialog);
+    };
 
-    const onRedirect = useCallback(
-        async closeDialog => {
-            await submit(closeDialog, true);
-        },
-        [submit],
-    );
+    const onRedirect = async closeDialog => {
+        await submit(closeDialog, true);
+    };
 
     const titleMessage = sourceVersionNumber ? (
         <FormattedMessage

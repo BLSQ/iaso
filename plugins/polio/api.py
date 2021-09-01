@@ -50,7 +50,6 @@ class CampaignViewSet(ModelViewSet):
     serializer_class = CampaignSerializer
     results_key = "campaigns"
     remove_results_key_if_paginated = True
-    filters.OrderingFilter.ordering_param = "order"
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend]
     ordering_fields = [
         "obr_name",
@@ -94,7 +93,6 @@ class CountryUsersGroupViewSet(ModelViewSet):
     serializer_class = CountryUsersGroupSerializer
     results_key = "country_users_group"
     http_method_names = ["get", "put"]
-    filters.OrderingFilter.ordering_param = "order"  # BAD
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["country__name"]
 

@@ -30,12 +30,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CountryUsersGroupSerializer(serializers.ModelSerializer):
-    country_name = serializers.SerializerMethodField()
-    read_only_users_field = serializers.SerializerMethodField()
+    read_only_users_field = UserSerializer(source="users", many=True, read_only=True)
+    country_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
 
     class Meta:
         model = CountryUsersGroup
-        read_only_fields = ["id", "country", "created_at", "updated_at", "read_only_user_field"]
+        read_only_fields = ["id", "country", "created_at", "updated_at", "read_only_users_field"]
         fields = [
             "id",
             "country",
@@ -46,12 +46,6 @@ class CountryUsersGroupSerializer(serializers.ModelSerializer):
             "users",
             "read_only_users_field",
         ]
-
-    def get_country_name(self, instance: CountryUsersGroup):
-        return instance.country.name
-
-    def get_read_only_users_field(self, instance: CountryUsersGroup):
-        return [UserSerializer(user).data for user in instance.users.all()]
 
 
 def _error(message, exc=None):

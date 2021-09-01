@@ -96,6 +96,19 @@ const AddTask = ({
         [submit],
     );
 
+    const titleMessage = sourceVersionNumber ? (
+        <FormattedMessage
+            id="update"
+            defaultMessage="Update version {version}"
+            values={{ version: sourceVersionNumber }}
+        />
+    ) : (
+        <FormattedMessage
+            id="create"
+            defaultMessage="Create a new version from DHIS2"
+        />
+    );
+
     const formIsValid = Boolean(
         withExistingDhis2Settings ||
             (form.dhis2_url.value &&

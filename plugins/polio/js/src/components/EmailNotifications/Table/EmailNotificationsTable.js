@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-    // LoadingSpinner,
-    // Table,
     textPlaceholder,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import { makeStyles } from '@material-ui/core';
 import { withRouter } from 'react-router';
 import moment from 'moment';
 import { object } from 'prop-types';
@@ -15,15 +12,11 @@ import { EmailNotificationsModal } from '../EmailNotificationsModal';
 import SingleTable from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
 import { useAPI } from '../../../../../../../hat/assets/js/apps/Iaso/utils/requests';
 
-const styles = {
-    emailTable: {
-        '& .rt-tbody': {
-            maxHeight: '75vh',
-        },
-    },
+const makeUserNameToDisplay = user => {
+    if (user.first_name && user.last_name)
+        return ` ${user.first_name} ${user.last_name}`;
+    return ` ${user.username}`;
 };
-
-const useStyles = makeStyles(styles);
 
 const allLanguages = [
     { value: 'EN', label: 'EN' },
@@ -31,7 +24,6 @@ const allLanguages = [
 ];
 
 const EmailNotificationsTable = ({ params }) => {
-    const classes = useStyles();
     const tableParams = {
         pageSize: params.pageSize ?? 0,
         page: params.page ?? 0,
@@ -49,6 +41,7 @@ const EmailNotificationsTable = ({ params }) => {
             Header: 'Country',
             accessor: 'country_name',
             sortable: false,
+            align: 'left',
             Cell: settings => {
                 const text =
                     settings?.row?.original?.country_name ?? textPlaceholder;
@@ -59,10 +52,12 @@ const EmailNotificationsTable = ({ params }) => {
             Header: 'Users',
             accessor: 'read_only_users_field',
             sortable: false,
+            align: 'left',
             Cell: settings => {
                 const userNames = settings.row.original.read_only_users_field
-                    .map(user => user.username)
-                    .toString();
+                    .map(makeUserNameToDisplay)
+                    .toString()
+                    .trim();
                 return userNames;
             },
         },
@@ -118,19 +113,17 @@ const EmailNotificationsTable = ({ params }) => {
         },
     ];
     return (
-        <div className={classes.emailTable}>
-            <SingleTable
-                multiselect={false}
-                fetchItems={getCountryUsersGroup}
-                dataKey="country_users_group"
-                columns={columns}
-                baseUrl="/polio/config"
-                params={tableParams}
-                endPointPath="polio/countryusersgroup"
-                forceRefresh={forceRefresh}
-                onForceRefreshDone={() => setForceRefresh(false)}
-            />
-        </div>
+        <SingleTable
+            multiselect={false}
+            fetchItems={getCountryUsersGroup}
+            dataKey="country_users_group"
+            columns={columns}
+            baseUrl="/polio/config"
+            params={tableParams}
+            endPointPath="polio/countryusersgroup"
+            forceRefresh={forceRefresh}
+            onForceRefreshDone={() => setForceRefresh(false)}
+        />
     );
 };
 

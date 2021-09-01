@@ -9,6 +9,23 @@ import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { useFormState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/form';
 
+const makeDropDownListName = user => {
+    if (user.first_name && user.last_name)
+        return `${user.first_name} ${user.last_name}`;
+    return `${user.user_name}`;
+};
+
+const makeDropDownListItem = user => {
+    return {
+        value: user.user_id,
+        label: makeDropDownListName(user),
+    };
+};
+
+const makeDropDownList = allUsers => {
+    return allUsers.map(makeDropDownListItem);
+};
+
 const initialState = (language, users) => ({
     language: language ?? '',
     users: users ?? [],
@@ -122,12 +139,7 @@ export const EmailNotificationsModal = ({
                     onChange={(_, value) =>
                         setConfig('users', commaSeparatedIdsToArray(value))
                     }
-                    options={allUsers.map(user => {
-                        return {
-                            value: user.user_id,
-                            label: user.user_name,
-                        };
-                    })}
+                    options={makeDropDownList(allUsers)}
                     multi
                 />
                 <InputComponent

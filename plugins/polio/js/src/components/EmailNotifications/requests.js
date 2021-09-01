@@ -10,9 +10,16 @@ export const getCountryUsersGroup = async (_dispatch, url) => {
     });
     return {
         country_users_group: data.country_users_group,
-        pages: data.pages, // TODO add to API
-        count: data.count, // TODO add to API
+        pages: data.pages,
+        count: data.count,
     };
+};
+
+export const getAllUsers = async () => {
+    return iasoGetRequest({
+        requestParams: { url: '/api/profiles' },
+        disableSuccessSnackBar: true,
+    });
 };
 
 export const getCountryConfigDetails = async id => {

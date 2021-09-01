@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     // LoadingSpinner,
     // Table,
@@ -9,10 +9,11 @@ import {
 import { makeStyles } from '@material-ui/core';
 import { withRouter } from 'react-router';
 import moment from 'moment';
-import { getCountryUsersGroup } from '../requests';
+import { getCountryUsersGroup, getAllUsers } from '../requests';
 import MESSAGES from '../../../constants/messages';
 import { EmailNotificationsModal } from '../EmailNotificationsModal';
 import SingleTable from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
+import { useAPI } from '../../../../../../../hat/assets/js/apps/Iaso/utils/requests';
 
 const styles = {
     emailTable: {
@@ -24,6 +25,11 @@ const styles = {
 
 const useStyles = makeStyles(styles);
 
+const allLanguages = [
+    { value: 'EN', label: 'EN' },
+    { value: 'FR', label: 'FR' },
+];
+
 const EmailNotificationsTable = ({ params }) => {
     const classes = useStyles();
     const tableParams = {
@@ -31,8 +37,12 @@ const EmailNotificationsTable = ({ params }) => {
         page: params.page ?? 0,
         order: params.order ?? 'created_at',
     };
+    const { data: allUsers } = useAPI(getAllUsers);
     const [forceRefresh, setForceRefresh] = useState(false);
-    // const [idToFetch, setIdToFetch] = useState(null);
+
+    useEffect(() => {
+        if (allUsers) setForceRefresh(true);
+    }, [allUsers]);
 
     const columns = [
         {
@@ -89,6 +99,8 @@ const EmailNotificationsTable = ({ params }) => {
                             countryId={settings.row.original.id}
                             language={settings.row.original.language}
                             users={settings.row.original.users}
+                            allUsers={allUsers?.profiles}
+                            allLanguages={allLanguages}
                             renderTrigger={({ openDialog }) => (
                                 <IconButtonComponent
                                     onClick={() => {

@@ -1,10 +1,17 @@
 import React, { useCallback, useState, useEffect } from 'react';
+import { isEqual } from 'lodash';
 import ConfirmCancelDialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../constants/messages';
 import { getCountryConfigDetails, putCountryConfigDetails } from './requests';
 import { useAPI } from '../../../../../../hat/assets/js/apps/Iaso/utils/requests';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
+import { useFormState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/form';
+
+const initialState = (language, users) => ({
+    language: language ?? '',
+    users: users ?? [],
+});
 
 export const EmailNotificationsModal = ({
     renderTrigger,
@@ -12,6 +19,8 @@ export const EmailNotificationsModal = ({
     language,
     users,
     notifyParent,
+    allUsers,
+    allLanguages,
 }) => {
     const [blockFetch, setBlockFetch] = useState(true);
     const { data: countryDetails } = useAPI(
@@ -19,47 +28,75 @@ export const EmailNotificationsModal = ({
         countryId,
         { preventTrigger: blockFetch, additionalDependencies: [] },
     );
-    // TODO useFormState to get errors array
-    const [selectedUsers, setSelectedUsers] = useState(users);
-    const [selectedLanguage, setSelectedLanguage] = useState(language);
-
-    console.log('language', language, 'selectedLanguage', selectedLanguage);
+    const [config, setConfig] = useFormState(initialState(language, users));
+    const [allowConfirm, setAllowConfirm] = useState(false);
 
     const onConfirm = useCallback(
         async closeDialog => {
             const result = await putCountryConfigDetails({
                 id: countryId,
-                users: selectedUsers,
-                language: selectedLanguage,
+                users: config.users.value,
+                language: config.language.value,
             });
-            setSelectedLanguage(result.language);
-            setSelectedUsers(result.users);
+            setConfig('users', result.users);
+            setConfig('language', result.language);
             notifyParent();
             closeDialog();
         },
-        [countryId, selectedUsers, selectedLanguage, notifyParent],
+        [countryId, config.users, config.language, notifyParent, setConfig],
     );
-    const reset = useCallback(() => {
-        console.log('reset');
-        setSelectedUsers(users);
-        setSelectedLanguage(language);
-    }, [users, language]);
 
-    useEffect(() => {
-        setSelectedUsers(users);
-        setSelectedLanguage(language);
-    }, [language, users]);
+    const syncStateWithProps = useCallback(() => {
+        setConfig('users', users);
+        setConfig('language', language);
+    }, [language, users, setConfig]);
+
+    const reset = useCallback(() => {
+        syncStateWithProps();
+        setAllowConfirm(false);
+    }, [syncStateWithProps]);
+
+    const handleAllowConfirm = useCallback(() => {
+        if (
+            allowConfirm &&
+            config.language.value === language &&
+            isEqual(config.users.value, users)
+        ) {
+            setAllowConfirm(false);
+        } else if (
+            !allowConfirm &&
+            (config.language.value !== language ||
+                !isEqual(config.users.value, users))
+        ) {
+            setAllowConfirm(true);
+        }
+    }, [
+        allowConfirm,
+        config.language.value,
+        config.users.value,
+        users,
+        language,
+    ]);
+
+    const handleModalOpen = useCallback(
+        ({ openDialog }) => {
+            return renderTrigger({
+                openDialog: () => {
+                    setBlockFetch(false);
+                    openDialog();
+                },
+            });
+        },
+        [renderTrigger],
+    );
+
+    useEffect(syncStateWithProps, [syncStateWithProps]);
+
+    useEffect(handleAllowConfirm, [handleAllowConfirm]);
 
     return (
         <ConfirmCancelDialogComponent
-            renderTrigger={({ openDialog }) => {
-                return renderTrigger({
-                    openDialog: () => {
-                        setBlockFetch(false);
-                        openDialog();
-                    },
-                });
-            }}
+            renderTrigger={handleModalOpen}
             titleMessage={{
                 ...MESSAGES.configEmailNotif,
                 values: { country: countryDetails?.country_name },
@@ -72,42 +109,42 @@ export const EmailNotificationsModal = ({
                 closeDialog();
                 reset();
             }}
-            allowConfirm
+            allowConfirm={allowConfirm}
         >
             <div>
                 <InputComponent
                     type="select"
-                    options={countryDetails?.read_only_users_field.map(user => {
-                        return { value: user.id, label: user.username };
-                    })}
-                    value={selectedUsers}
-                    multi
-                    label={MESSAGES.selectUsers}
-                    onChange={(_, value) =>
-                        setSelectedUsers(commaSeparatedIdsToArray(value))
-                    }
                     keyValue="users"
+                    label={MESSAGES.selectUsers}
+                    errors={config.users.errors}
+                    value={config.users.value}
+                    onChange={(_, value) =>
+                        setConfig('users', commaSeparatedIdsToArray(value))
+                    }
+                    options={
+                        allUsers
+                            ? allUsers.map(user => {
+                                  return {
+                                      value: user.user_id,
+                                      label: user.user_name,
+                                  };
+                              })
+                            : []
+                    }
+                    multi
                 />
                 <InputComponent
-                    keyValue="language"
                     type="select"
-                    options={[
-                        { value: 'EN', label: 'EN' },
-                        { value: 'FR', label: 'FR' },
-                    ]}
-                    value={selectedLanguage}
+                    keyValue="language"
+                    label={MESSAGES.selectLanguage}
+                    value={config.language.value}
+                    errors={config.language.errors}
+                    onChange={(_, value) => setConfig('language', value)}
+                    options={allLanguages}
                     multi={false}
                     clearable={false}
-                    label={MESSAGES.selectLanguage}
-                    onChange={(_, value) => setSelectedLanguage(value)}
                 />
             </div>
         </ConfirmCancelDialogComponent>
     );
 };
-
-// onConfirm={onConfirm}
-// // eslint-disable-next-line no-unused-vars
-// onClosed={reset}
-
-// allowConfirm={allowConfirm}

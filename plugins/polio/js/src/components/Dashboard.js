@@ -65,8 +65,6 @@ import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import ImportLineListDialog from './ImportLineListDialog';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import { FormattedMessage } from 'react-intl';
 
 // eslint-disable-next-line camelcase
 const round_shape = yup.object().shape({

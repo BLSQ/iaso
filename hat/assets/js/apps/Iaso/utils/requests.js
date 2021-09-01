@@ -248,7 +248,7 @@ export const fetchAssociatedDataSources = (dispatch, orgUnitId) => {
         });
 };
 
-export const fetchForms = (dispatch, url = '/api/forms/') =>
+export const fetchForms = (dispatch, url = '/api/forms') =>
     getRequest(url)
         .then(forms => forms)
         .catch(error => {

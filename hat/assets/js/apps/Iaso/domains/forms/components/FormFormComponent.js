@@ -17,11 +17,17 @@ import {
 
 import MESSAGES from '../messages';
 
-const styles = {
+const styles = theme => ({
     radio: {
         flexDirection: 'row',
     },
-};
+    advancedSettings: {
+        color: theme.palette.primary.main,
+        alignSelf: 'center',
+        textAlign: 'right',
+        flex: '1',
+    },
+});
 
 const useStyles = makeStyles(styles);
 
@@ -70,7 +76,6 @@ const FormForm = ({ currentForm, setFieldValue }) => {
             setFieldValue('single_per_period', null);
         }
     });
-    console.log('label_keys', currentForm.label_keys.value);
     return (
         <Grid container spacing={2} justifyContent="flex-start">
             <Grid xs={6} item>

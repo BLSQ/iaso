@@ -74,7 +74,7 @@ const formatFormData = (form = defaultForm) => ({
     periods_after_allowed: form.periods_after_allowed,
     device_field: form.device_field,
     location_field: form.location_field,
-    possible_fields: form.fields ?? defaultForm.possible_fields,
+    possible_fields: form.possible_fields ?? defaultForm.possible_fields,
     label_keys: form.label_keys ?? defaultForm.label_keys,
 });
 
@@ -167,6 +167,7 @@ const FormDetail = ({ router, params }) => {
             if (params.formId && params.formId !== '0') {
                 const data = await fetchFormDetails(params.formId);
                 setForm(data);
+                console.log('data', data);
             }
         };
         initializeState();
@@ -174,6 +175,7 @@ const FormDetail = ({ router, params }) => {
     }, []);
 
     useEffect(() => {
+        console.log('form', formatFormData(form));
         setFormState(formatFormData(form));
         // setFormState(initialFormState(initialData));
     }, [form, setFormState]);
@@ -219,7 +221,7 @@ const FormDetail = ({ router, params }) => {
                     )}
                     <Button
                         data-id="form-detail-confirm"
-                        disabled={!isFormModified}
+                        disabled={!isFormModified} // FIXME: broken by the single_per_period feature IA-477
                         variant="contained"
                         className={classes.marginLeft}
                         color="primary"

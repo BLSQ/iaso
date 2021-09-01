@@ -12,6 +12,7 @@ import SingleTable from '../../../../../../../hat/assets/js/apps/Iaso/components
 import { useAPI } from '../../../../../../../hat/assets/js/apps/Iaso/utils/requests';
 
 const makeUserNameToDisplay = user => {
+    if (user.email) return ` ${user.email}`;
     if (user.first_name && user.last_name)
         return ` ${user.first_name} ${user.last_name}`;
     return ` ${user.username}`;
@@ -38,7 +39,8 @@ const EmailNotificationsTable = ({ params }) => {
     const columns = [
         {
             Header: 'Country',
-            accessor: 'country__name', // Watch out, needs 2 underscores
+            id: 'country__name',
+            accessor: 'country_name', // Watch out, needs 2 underscores
             sortable: true,
             align: 'left',
             Cell: settings => {

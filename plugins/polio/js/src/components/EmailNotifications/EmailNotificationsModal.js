@@ -9,21 +9,18 @@ import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { useFormState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/form';
 
-const makeDropDownListName = user => {
-    if (user.first_name && user.last_name)
-        return `${user.first_name} ${user.last_name}`;
-    return `${user.user_name}`;
-};
-
 const makeDropDownListItem = user => {
     return {
         value: user.user_id,
-        label: makeDropDownListName(user),
+        label: user.email,
     };
 };
 
 const makeDropDownList = allUsers => {
-    return allUsers.map(makeDropDownListItem);
+    return allUsers
+        .filter(user => Boolean(user.email))
+        .map(makeDropDownListItem)
+        .sort((a, b) => a.label >= b.label);
 };
 
 const initialState = (language, users) => ({

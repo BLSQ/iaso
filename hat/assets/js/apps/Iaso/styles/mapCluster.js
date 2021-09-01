@@ -1,7 +1,7 @@
 export const styles = {
     '.marker-cluster,.marker-custom': {
         backgroundClip: 'padding-box',
-        borderradius: '100%',
+        borderRadius: '100%',
     },
 
     '.marker-cluster div,.marker-custom div': {

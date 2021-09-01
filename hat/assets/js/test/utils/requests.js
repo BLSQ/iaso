@@ -1,6 +1,6 @@
 const nock = require('nock');
 
-const baseUrl = 'http://localhost:80';
+export const baseUrl = 'http://localhost:80';
 export const mockPutRequest = (url, body = []) => {
     return nock(baseUrl)
         .put(url, () => true)

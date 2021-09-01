@@ -2,20 +2,15 @@ import logging
 from datetime import datetime, timezone
 
 import pandas as pd
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.transaction import atomic
 from django.utils.translation import gettext_lazy as _
 from gspread.exceptions import APIError
 from rest_framework import exceptions
-from plugins.polio.preparedness.calculator import get_preparedness_score
-
-
-from django.db.transaction import atomic
-from datetime import datetime, timezone
-
 from rest_framework import serializers
+
 from iaso.models import Group, OrgUnit
-from django.contrib.auth.models import User
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from .models import Preparedness, Round, Campaign, Surge, CountryUsersGroup, LineListImport, VIRUSES
 from .preparedness.parser import (

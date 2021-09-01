@@ -4,8 +4,13 @@ import {
 } from '../../../../../../hat/assets/js/apps/Iaso/utils/requests';
 
 export const getCountryUsersGroup = async (_dispatch, url) => {
+    // FIXME temporary hack due to SingleTable bug
+    let filteredUrl = url;
+    if (url.includes('-created_at')) {
+        filteredUrl = url.replace('-created_at', 'country__name');
+    }
     const data = await iasoGetRequest({
-        requestParams: { url },
+        requestParams: { url: filteredUrl },
         disableSuccessSnackBar: true,
     });
     return {

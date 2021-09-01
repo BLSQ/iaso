@@ -59,7 +59,6 @@ const SingleTable = ({
     const [firstLoad, setfFrstLoad] = useState(true);
     const [tableResults, setTableResults] = useState(tableInitialResult);
     const { list, pages, count } = tableResults;
-
     const dispatch = useDispatch();
     const classes = useStyles();
 

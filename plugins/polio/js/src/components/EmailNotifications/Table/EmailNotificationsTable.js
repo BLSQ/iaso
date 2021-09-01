@@ -50,7 +50,7 @@ const EmailNotificationsTable = ({ params }) => {
             },
         },
         {
-            Header: 'Users',
+            Header: 'Users to notify',
             accessor: 'read_only_users_field',
             sortable: false,
             align: 'left',
@@ -109,7 +109,7 @@ const EmailNotificationsTable = ({ params }) => {
             dataKey="country_users_group"
             columns={columns}
             baseUrl="/polio/config"
-            params={tableParams}
+            params={tableParams} // FIXME currently useless prop because of SingleTable bug
             endPointPath="polio/countryusersgroup"
             forceRefresh={forceRefresh}
             onForceRefreshDone={() => setForceRefresh(false)}

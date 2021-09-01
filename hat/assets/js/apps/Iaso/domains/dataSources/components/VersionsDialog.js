@@ -15,7 +15,6 @@ import { FormattedMessage } from 'react-intl';
 import {
     commonStyles,
     DHIS2Svg,
-    displayDateFromTimestamp,
     IconButton as IconButtonComponent,
     Table,
 } from 'bluesquare-components';
@@ -25,6 +24,7 @@ import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -55,7 +55,7 @@ const tableColumns = source => [
         ),
         accessor: 'created_at',
         sortable: false,
-        Cell: settings => displayDateFromTimestamp(settings.value),
+        Cell: DateTimeCell,
     },
     {
         Header: (

@@ -100,8 +100,12 @@ class CountryUsersGroupViewSet(ModelViewSet):
             org_unit_type__category="COUNTRY"
         )
         for country in countries:
-            CountryUsersGroup.objects.get_or_create(country=country)  # ensuring that such a model always exist
-        return CountryUsersGroup.objects.all()
+            cug, created = CountryUsersGroup.objects.get_or_create(
+                country=country
+            )  # ensuring that such a model always exist
+            if created:
+                print(f"created {cug}")
+        return CountryUsersGroup.objects.filter(country__in=countries)
 
 
 class LineListImportViewSet(ModelViewSet):

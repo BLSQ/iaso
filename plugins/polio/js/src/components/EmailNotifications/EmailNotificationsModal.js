@@ -1,5 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { isEqual } from 'lodash';
+import { arrayOf, object, func, string, number } from 'prop-types';
 import ConfirmCancelDialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../constants/messages';
 import { getCountryConfigDetails, putCountryConfigDetails } from './requests';
@@ -121,16 +122,12 @@ export const EmailNotificationsModal = ({
                     onChange={(_, value) =>
                         setConfig('users', commaSeparatedIdsToArray(value))
                     }
-                    options={
-                        allUsers
-                            ? allUsers.map(user => {
-                                  return {
-                                      value: user.user_id,
-                                      label: user.user_name,
-                                  };
-                              })
-                            : []
-                    }
+                    options={allUsers.map(user => {
+                        return {
+                            value: user.user_id,
+                            label: user.user_name,
+                        };
+                    })}
                     multi
                 />
                 <InputComponent
@@ -147,4 +144,20 @@ export const EmailNotificationsModal = ({
             </div>
         </ConfirmCancelDialogComponent>
     );
+};
+
+EmailNotificationsModal.propTypes = {
+    renderTrigger: func.isRequired,
+    countryId: number.isRequired,
+    language: string,
+    users: arrayOf(number).isRequired,
+    notifyParent: func,
+    allUsers: arrayOf(object),
+    allLanguages: arrayOf(object).isRequired,
+};
+
+EmailNotificationsModal.defaultProps = {
+    notifyParent: () => null,
+    allUsers: [],
+    language: '',
 };

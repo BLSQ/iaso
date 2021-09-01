@@ -5,10 +5,10 @@ import {
     textPlaceholder,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-// import { useAPI } from '../../../../../../../hat/assets/js/apps/Iaso/utils/requests';
 import { makeStyles } from '@material-ui/core';
 import { withRouter } from 'react-router';
 import moment from 'moment';
+import { object } from 'prop-types';
 import { getCountryUsersGroup, getAllUsers } from '../requests';
 import MESSAGES from '../../../constants/messages';
 import { EmailNotificationsModal } from '../EmailNotificationsModal';
@@ -137,3 +137,7 @@ const EmailNotificationsTable = ({ params }) => {
 const TableWithRouter = withRouter(EmailNotificationsTable);
 
 export { TableWithRouter as EmailNotificationsTable };
+
+EmailNotificationsTable.propTypes = {
+    params: object.isRequired,
+};

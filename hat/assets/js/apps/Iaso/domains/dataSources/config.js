@@ -98,7 +98,7 @@ const dataSourcesTableColumns = (
                             />
                         )}
                         defaultSourceVersion={defaultSourceVersion}
-                        source={settings.original}
+                        source={settings.row.original}
                     />
                 </section>
             );

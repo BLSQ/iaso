@@ -13,7 +13,6 @@ import Public from '@material-ui/icons/Public';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { FormattedMessage } from 'react-intl';
 import {
-    ColumnText,
     commonStyles,
     DHIS2Svg,
     displayDateFromTimestamp,
@@ -65,7 +64,6 @@ const tasksTableColumns = source => [
         ),
         accessor: 'description',
         sortable: false,
-        Cell: settings => <ColumnText text={settings.value ?? ''} />,
     },
     {
         Header: <FormattedMessage id="iaso.label.actions" />,
@@ -85,7 +83,7 @@ const tasksTableColumns = source => [
                             />
                         )}
                         sourceId={source.id}
-                        sourceVersionNumber={settings.original.number}
+                        sourceVersionNumber={settings.row.original.number}
                         sourceCredentials={source.credentials ?? {}}
                     />
                     <ImportGeoPkgDialog
@@ -98,7 +96,7 @@ const tasksTableColumns = source => [
                         )}
                         sourceId={source.id}
                         sourceName={source.name}
-                        versionNumber={settings.original.number}
+                        versionNumber={settings.row.original.number}
                         projects={source.projects.flat()}
                     />
                 </>

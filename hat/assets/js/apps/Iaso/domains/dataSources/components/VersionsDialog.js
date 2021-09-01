@@ -18,7 +18,6 @@ import {
     displayDateFromTimestamp,
     IconButton as IconButtonComponent,
     Table,
-    useSafeIntl,
 } from 'bluesquare-components';
 import 'react-table';
 
@@ -31,7 +30,7 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const tasksTableColumns = source => [
+const tableColumns = source => [
     {
         Header: <FormattedMessage {...MESSAGES.defaultVersion} />,
         accessor: 'id',
@@ -106,7 +105,6 @@ const tasksTableColumns = source => [
 
 const VersionsDialog = ({ renderTrigger, source }) => {
     const classes = useStyles();
-    const intl = useSafeIntl();
 
     const titleMessage = (
         <FormattedMessage
@@ -135,7 +133,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
             <Table
                 data={source.versions}
                 baseUrl=""
-                columns={tasksTableColumns(source, intl.formatMessage)}
+                columns={tableColumns(source)}
                 redirectTo={() => {}}
                 pages={0}
             />

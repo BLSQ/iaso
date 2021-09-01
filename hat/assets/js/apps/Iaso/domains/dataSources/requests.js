@@ -15,16 +15,12 @@ import { iasoPostRequest } from '../../utils/requests';
  * @returns {Object} request's response
  */
 
-export const sendDhisOuImporterRequest = async requestBody => {
-    if (requestBody) {
-        return iasoPostRequest({
-            requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
-            errorKeyMessage: 'dhisouimporterError',
-            consoleError: 'DHIS OU Importer',
-        });
-    }
-    return null;
-};
+export const sendDhisOuImporterRequest = async requestBody =>
+    iasoPostRequest({
+        requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
+        errorKeyMessage: 'dhisouimporterError',
+        consoleError: 'DHIS OU Importer',
+    });
 
 export const postGeoPkg = async request => {
     const file = { file: request.file };

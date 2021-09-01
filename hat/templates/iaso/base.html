@@ -1,4 +1,3 @@
-{% load render_bundle from webpack_loader %}
 {% load i18n %}
 {% load static %}
 {% get_current_language as LANGUAGE_CODE %}
@@ -14,16 +13,7 @@
   <link rel="icon" type="image/png" href="{% static 'images/iaso-favicon.png' %}">
 
   {% block extrajs %}
-
   {% endblock %}
-  {% if DEV_SERVER %}
-    <!-- this is for CSS Hot reloading in DEV -->
-    {% render_bundle 'styles' %}
-  {% else %}
-    <!-- we're in the non dev-server part -->
-    {% render_bundle 'styles' 'css' %}
-  {% endif %}
-
   {% block head %}
   {% endblock %}
 
@@ -42,5 +32,4 @@
   {% block body %}
   {% endblock %}
 </body>
-
 </html>

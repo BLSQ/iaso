@@ -53,11 +53,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
     {
         Header: formatMessage(MESSAGES.message),
         sortable: false,
-        accessor: 'message',
-        Cell: settings =>
-            settings.row.original.status === 'RUNNING'
-                ? settings.row.original.progress_message
-                : '-',
+        accessor: 'progress_message',
     },
     {
         Header: formatMessage(MESSAGES.launcher),

@@ -94,7 +94,7 @@ class CountryUsersGroupViewSet(ModelViewSet):
     results_key = "country_users_group"
     http_method_names = ["get", "put"]
     filter_backends = [filters.OrderingFilter]
-    ordering_fields = ["country__name"]
+    ordering_fields = ["country__name", "language"]
 
     def get_queryset(self):
         countries = OrgUnit.objects.filter_for_user_and_app_id(self.request.user).filter(

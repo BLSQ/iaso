@@ -138,7 +138,9 @@ const testRequestOfType = requestType => () => {
         });
         it('throws error', async () => {
             const error = await sendFailingRequest(makeRequest(requestType));
-            expect(error.message).to.equal(API_ERROR_MESSAGE);
+            expect(error.message).to.equal(
+                `request to http://localhost:80/api/fail failed, reason: ${API_ERROR_MESSAGE}`,
+            );
         });
         it('displays snack bar', async () => {
             await sendFailingRequest(makeRequest(requestType));

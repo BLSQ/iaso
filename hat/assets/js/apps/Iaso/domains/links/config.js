@@ -9,6 +9,7 @@ import {
     formatThousand,
     textPlaceholder,
     Expander,
+    displayDateFromTimestamp,
 } from 'bluesquare-components';
 
 import getDisplayName from '../../utils/usersUtils';
@@ -17,6 +18,7 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import StarsComponent from '../../components/stars/StarsComponent';
 
 import MESSAGES from './messages';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
 export const linksTableColumns = (formatMessage, validateLink) => [
     {
@@ -24,17 +26,15 @@ export const linksTableColumns = (formatMessage, validateLink) => [
         width: 170,
         align: 'center',
         accessor: 'similarity_score',
-        Cell: settings => {
-            return (
-                <Box display="flex" justifyContent="center">
-                    <StarsComponent
-                        score={settings.row.original.similarity_score}
-                        bgColor={settings.row.index % 2 ? 'white' : '#f7f7f7'}
-                        displayCount
-                    />
-                </Box>
-            );
-        },
+        Cell: settings => (
+            <Box display="flex" justifyContent="center">
+                <StarsComponent
+                    score={settings.row.original.similarity_score}
+                    bgColor={settings.row.index % 2 ? 'white' : '#f7f7f7'}
+                    displayCount
+                />
+            </Box>
+        ),
     },
     {
         Header: formatMessage(MESSAGES.name),
@@ -79,27 +79,16 @@ export const linksTableColumns = (formatMessage, validateLink) => [
     {
         Header: formatMessage(MESSAGES.updatedAt),
         accessor: 'updated_at',
-        Cell: settings => (
-            <span>
-                {moment.unix(settings.row.original.updated_at).format('LTS')}
-            </span>
-        ),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.algorithm),
-        accessor: 'algorithm_run',
-        Cell: settings =>
-            settings.row.original.algorithm_run
-                ? settings.row.original.algorithm_run.algorithm.description
-                : '?',
+        id: 'algorithm_run',
+        accessor: row => (row.algorithm_run ? description : '?'),
     },
     {
         Header: formatMessage(MESSAGES.validator),
         accessor: 'validator',
-        Cell: settings =>
-            settings.row.original.validator
-                ? getDisplayName(settings.row.original.validator)
-                : textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.validated),
@@ -132,7 +121,7 @@ export const runsTableColumns = (
         Cell: settings => (
             <span>
                 {settings.row.original.ended_at ? (
-                    moment.unix(settings.row.original.ended_at).format('LTS')
+                    displayDateFromTimestamp(settings.value)
                 ) : (
                     <LoadingSpinner
                         fixed={false}
@@ -147,29 +136,18 @@ export const runsTableColumns = (
     {
         Header: formatMessage(MESSAGES.launchedAt),
         accessor: 'created_at',
-        Cell: settings => (
-            <span>
-                {moment.unix(settings.row.original.created_at).format('LTS')}
-            </span>
-        ),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.name),
-        accessor: 'algorithm__name',
-        Cell: settings => (
-            <span>{settings.row.original.algorithm.description}</span>
-        ),
+        id: 'algorithm__name',
+        accessor: row => row.algorithm.description,
     },
     {
         Header: formatMessage(MESSAGES.launcher),
-        accessor: 'launcher',
-        Cell: settings => (
-            <span>
-                {settings.row.original.launcher
-                    ? getDisplayName(settings.row.original.launcher)
-                    : textPlaceholder}
-            </span>
-        ),
+        id: 'launcher',
+        Cell: settings =>
+            settings.value ? getDisplayName(settings.value) : textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.links),

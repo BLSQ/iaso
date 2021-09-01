@@ -2,13 +2,12 @@ import React from 'react';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { Tooltip } from '@material-ui/core';
 
-import {
-    IconButton as IconButtonComponent,
-    textPlaceholder,
-} from 'bluesquare-components';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
+// eslint-disable-next-line import/no-named-as-default-member,import/no-named-as-default
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import MESSAGES from './messages';
 import { VersionsDialog } from './components/VersionsDialog';
+import { YesNoCell } from '../../components/Cells/YesNoCell';
 
 const dataSourcesTableColumns = (
     formatMessage,
@@ -20,9 +19,7 @@ const dataSourcesTableColumns = (
         accessor: 'defaultSource',
         sortable: false,
         Cell: settings =>
-            defaultSourceVersion &&
-            defaultSourceVersion.source &&
-            defaultSourceVersion.source.id === settings.row.original.id && (
+            defaultSourceVersion?.source?.id === settings.row.original.id && (
                 <Tooltip title={formatMessage(MESSAGES.defaultSource)}>
                     <CheckCircleIcon color="primary" />
                 </Tooltip>
@@ -30,34 +27,21 @@ const dataSourcesTableColumns = (
     },
     {
         Header: formatMessage(MESSAGES.defaultVersion),
-        accessor: 'default_version__number',
-        Cell: settings => {
-            if (!settings.row.original.default_version) return textPlaceholder;
-            return <span>{settings.row.original.default_version.number}</span>;
-        },
+        id: 'default_version__number',
+        accessor: row => row.default_version?.number,
     },
     {
         Header: formatMessage(MESSAGES.dataSourceName),
         accessor: 'name',
-        Cell: settings => {
-            return <span>{settings.row.original.name}</span>;
-        },
     },
     {
         Header: formatMessage(MESSAGES.dataSourceDescription),
         accessor: 'description',
-        Cell: settings => <span>{settings.row.original.description}</span>,
     },
     {
         Header: formatMessage(MESSAGES.dataSourceReadOnly),
         accessor: 'read_only',
-        Cell: settings => (
-            <span>
-                {settings.row.original.read_only === true
-                    ? formatMessage(MESSAGES.yes)
-                    : formatMessage(MESSAGES.no)}
-            </span>
-        ),
+        Cell: YesNoCell,
     },
     {
         Header: formatMessage(MESSAGES.actions),

@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         id: 'blsq.treeview.search.options.label.clear',
         defaultMessage: 'Clear',
     },
+    search: {
+        id: 'blsq.treeview.search.inputLabelObject',
+        defaultMessage: 'Enter search term',
+    },
 });
 
 export { MESSAGES };

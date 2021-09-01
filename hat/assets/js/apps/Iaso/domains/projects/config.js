@@ -10,26 +10,17 @@ import MESSAGES from './messages';
 const projectsTableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.projectName),
-        accessor: 'project__name',
-        Cell: settings => <span>{settings.row.original.name}</span>,
+        accessor: 'name',
     },
     {
         Header: formatMessage(MESSAGES.appId),
-        accessor: 'project__app_id',
-        Cell: settings => (
-            <span>{settings.row.original.app_id || textPlaceholder}</span>
-        ),
+        accessor: 'app_id',
     },
     {
         Header: formatMessage(MESSAGES.featureFlags),
-        accessor: 'project__needs_authentication',
-        Cell: settings => (
-            <span>
-                {settings.row.original.feature_flags
-                    .map(fF => fF.name)
-                    .join(', ') || textPlaceholder}
-            </span>
-        ),
+        accessor: 'feature_flags',
+        Cell: settings =>
+            settings.value.map(fF => fF.name).join(', ') || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.actions),

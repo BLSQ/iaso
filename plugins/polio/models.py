@@ -362,6 +362,8 @@ class CountryUsersGroup(models.Model):
 
     def __str__(self):
         return str(self.country)
+
+
 class LineListImport(models.Model):
     file = models.FileField(upload_to="uploads/linelist/% Y/% m/% d/")
     import_result = models.JSONField()

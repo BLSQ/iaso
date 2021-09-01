@@ -57,6 +57,8 @@ class CountryUsersGroupSerializer(serializers.ModelSerializer):
 
     def get_read_only_users_field(self, instance: CountryUsersGroup):
         return [UserSerializer(user).data for user in instance.users.all()]
+
+
 def _error(message, exc=None):
     errors = {"file": [message]}
     if exc:

@@ -100,6 +100,8 @@ class CountryUsersGroupViewSet(ModelViewSet):
         for country in countries:
             CountryUsersGroup.objects.get_or_create(country=country)  # ensuring that such a model always exist
         return CountryUsersGroup.objects.all()
+
+
 class LineListImportViewSet(ModelViewSet):
     serializer_class = LineListImportSerializer
     results_key = "imports"

@@ -94,6 +94,9 @@ class CountryUsersGroupViewSet(ModelViewSet):
     serializer_class = CountryUsersGroupSerializer
     results_key = "country_users_group"
     http_method_names = ["get", "put"]
+    filters.OrderingFilter.ordering_param = "order"  # BAD
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["country__name"]
 
     def get_queryset(self):
         countries = OrgUnit.objects.filter_for_user_and_app_id(self.request.user).filter(

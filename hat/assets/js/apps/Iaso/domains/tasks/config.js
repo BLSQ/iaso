@@ -27,12 +27,6 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         accessor: 'name',
     },
     {
-        Header: formatMessage(MESSAGES.launcher),
-        sortable: true,
-        accessor: 'launcher',
-        Cell: settings => settings.value?.username,
-    },
-    {
         Header: formatMessage(MESSAGES.progress),
         sortable: true,
         accessor: 'status',
@@ -63,6 +57,12 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
             settings.row.original.status === 'RUNNING'
                 ? settings.row.original.progress_message
                 : '-',
+    },
+    {
+        Header: formatMessage(MESSAGES.launcher),
+        sortable: true,
+        accessor: 'launcher',
+        Cell: settings => settings.value?.username,
     },
     {
         Header: formatMessage(MESSAGES.timeCreated),

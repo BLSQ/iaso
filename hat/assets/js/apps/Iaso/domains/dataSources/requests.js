@@ -1,5 +1,4 @@
-import { useCallback } from 'react';
-import { iasoPostRequest, useAPI } from '../../utils/requests';
+import { iasoPostRequest } from '../../utils/requests';
 
 /**
  *

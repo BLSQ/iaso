@@ -317,6 +317,24 @@ class InstancesViewSet(viewsets.ViewSet):
         r = df.to_json(orient="table")
         return HttpResponse(r, content_type="application/json")
 
+    @action(detail=False)
+    def stats_sum(self, request):
+        projects = request.user.iaso_profile.account.project_set.all()
+        projects_ids = list(projects.values_list("id", flat=True))
+        QUERY = """
+        select DATE_TRUNC('day', created_at) as period,
+        count(*)                        as value
+        from iaso_instance
+        where created_at > now() - interval '2700 days'
+        and project_id = ANY (%s)
+        group by DATE_TRUNC('day', created_at)
+        order by 1"""
+        df = pd.read_sql_query(QUERY, connection, params=[projects_ids])
+        df["total"] = df["value"].cumsum()
+        df["name"] = df["period"].apply(lambda x: x.strftime("%Y-%m-%d"))
+        r = df.to_json(orient="table")
+        return HttpResponse(r, content_type="application/json")
+
 
 def import_data(instances, user, app_id):
     project = Project.objects.get_for_user_and_app_id(user, app_id)

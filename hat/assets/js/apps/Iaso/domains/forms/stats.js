@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import { InstancesPerFormGraph } from '../../components/instancesGraph';
 import MESSAGES from './messages';
+import { InstancesTotalGraph } from '../../components/instancesTotalGraph';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -25,6 +26,9 @@ const FormsStats = () => {
             <TopBar title={formatMessage(MESSAGES.statsTitle)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container>
+                    <Grid xs={6} item className={classes.card}>
+                        <InstancesTotalGraph />
+                    </Grid>
                     <Grid xs={6} item className={classes.card}>
                         <InstancesPerFormGraph />
                     </Grid>

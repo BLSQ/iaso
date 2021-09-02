@@ -1,26 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { useQuery } from 'react-query';
-import {
-    fetchCompleteness,
-    generateDerivedInstances as generateDerivedInstancesAction,
-} from './actions';
+import { fetchCompleteness } from './actions';
 import TopBar from '../../components/nav/TopBarComponent';
-import { redirectTo as redirectToAction } from '../../routing/actions';
 import CompletenessListComponent from './components/CompletenessListComponent';
 
 import MESSAGES from './messages';
 
-const Completeness = ({
-    onGenerateDerivedInstances,
-    dispatch,
-    params,
-    redirectTo,
-}) => {
+const Completeness = ({ dispatch, params }) => {
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useQuery(
         ['completness'],
@@ -39,8 +29,6 @@ const Completeness = ({
                 <CompletenessListComponent
                     completenessList={data}
                     params={params}
-                    redirectTo={redirectTo}
-                    onGenerateDerivedInstances={onGenerateDerivedInstances}
                 />
             )}
         </>
@@ -49,20 +37,11 @@ const Completeness = ({
 
 Completeness.propTypes = {
     params: PropTypes.object.isRequired,
-    redirectTo: PropTypes.func.isRequired,
-    onGenerateDerivedInstances: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = () => ({});
 
 const mapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            redirectTo: redirectToAction,
-            onGenerateDerivedInstances: generateDerivedInstancesAction,
-        },
-        dispatch,
-    ),
     dispatch,
 });
 

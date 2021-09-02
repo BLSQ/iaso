@@ -3,8 +3,12 @@ import PropTypes from 'prop-types';
 import { Paper, Typography, Grid, makeStyles } from '@material-ui/core';
 
 import { useSafeIntl, commonStyles, Table } from 'bluesquare-components';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
 import { getColumns } from '../config';
 import { baseUrls } from '../../../constants/urls';
+import { redirectTo as redirectToAction } from '../../../routing/actions';
+import { generateDerivedInstances as generateDerivedInstancesAction } from '../actions';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -117,4 +121,20 @@ CompletenessPeriodComponent.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     onGenerateDerivedInstances: PropTypes.func.isRequired,
 };
-export default CompletenessPeriodComponent;
+
+const MapStateToProps = () => ({});
+
+const mapDispatchToProps = dispatch => ({
+    ...bindActionCreators(
+        {
+            redirectTo: redirectToAction,
+            onGenerateDerivedInstances: generateDerivedInstancesAction,
+        },
+        dispatch,
+    ),
+});
+
+export default connect(
+    MapStateToProps,
+    mapDispatchToProps,
+)(CompletenessPeriodComponent);

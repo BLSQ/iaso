@@ -29,7 +29,7 @@ export const InstancesPerFormGraph = () => {
     return (
         <>
             <Typography variant="h5">New instances per month</Typography>
-            {isLoading && <LoadingSpinner />}
+            {isLoading && <LoadingSpinner fixed={false} />}
             {data && (
                 <ResponsiveContainer width="100%" height="90%">
                     <BarChart

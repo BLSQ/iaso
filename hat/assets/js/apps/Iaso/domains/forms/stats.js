@@ -10,9 +10,7 @@ import { InstancesTotalGraph } from '../../components/instancesTotalGraph';
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     card: {
-        border: 'gray solid',
         height: '500px',
-        borderRadius: 5,
         padding: 10,
     },
 }));

@@ -12,8 +12,13 @@ import { useDispatch } from 'react-redux';
 import { useMutation, useQueryClient } from 'react-query';
 import { getColumns } from '../config';
 import { baseUrls } from '../../../constants/urls';
-import { generateDerivedInstances as onGenerateDerivedInstances } from '../actions';
 import { redirectTo } from '../../../routing/actions';
+import { postRequest } from '../../../libs/Api';
+import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
+import {
+    errorSnackBar,
+    succesfullSnackBar,
+} from '../../../constants/snackBars';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -62,12 +67,22 @@ const CompletenessPeriodComponent = ({
 
     const mutation = useMutation(
         ['completness', 'generate'],
-        onGenerateDerivedInstances(dispatch),
-        {
-            onSuccess: () => {
-                // invalide the completness cache, replace the old manual fetchCompletness
-                queryClient.invalidateQueries(['completness']);
-            },
+        async derivedrequest => {
+            try {
+                await postRequest('/api/derivedinstances/', derivedrequest);
+                await queryClient.invalidateQueries(['completness']);
+                dispatch(
+                    enqueueSnackbar(
+                        succesfullSnackBar('generateDerivedRequestSuccess'),
+                    ),
+                );
+            } catch (err) {
+                dispatch(
+                    enqueueSnackbar(
+                        errorSnackBar('generateDerivedRequestError', null, err),
+                    ),
+                );
+            }
         },
     );
     const { formatMessage } = useSafeIntl();

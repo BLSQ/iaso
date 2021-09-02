@@ -1,6 +1,7 @@
 import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
+import FormsStats from '../domains/forms/stats';
 import OrgUnits from '../domains/orgUnits';
 import Links from '../domains/links';
 import Runs from '../domains/links/Runs';
@@ -20,11 +21,10 @@ import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
-import { orgUnitFiltersWithPrefix, linksFiltersWithPrefix } from './filters';
+import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
-import Home from '../domains/home';
 
 const paginationPathParams = [
     {
@@ -223,6 +223,13 @@ export const instanceDetailPath = {
             key: 'instanceId',
         },
     ],
+};
+
+export const formsStatsPath = {
+    baseUrl: baseUrls.formsStats,
+    permission: 'iaso_forms',
+    component: () => <FormsStats />,
+    params: [],
 };
 
 export const orgUnitsPath = {
@@ -479,12 +486,6 @@ export const orgUnitTypesPath = {
     ],
 };
 
-export const homePath = {
-    baseUrl: baseUrls.home,
-    component: () => <Home />,
-    params: [],
-};
-
 export const page401 = {
     baseUrl: baseUrls.error401,
     component: () => <PageError errorCode="401" />,
@@ -505,9 +506,9 @@ export const page500 = {
 
 export const routeConfigs = [
     formsPath,
-    homePath,
     archivedPath,
     formDetailPath,
+    formsStatsPath,
     mappingsPath,
     mappingDetailPath,
     instancesPath,

@@ -15,12 +15,12 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const Home = () => {
+const FormsStats = () => {
     const classes = useStyles();
 
     return (
         <>
-            <TopBar title="Dashboard" />
+            <TopBar title="Form Stats" />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container>
                     <Grid xs={6} item className={classes.card}>
@@ -31,4 +31,4 @@ const Home = () => {
         </>
     );
 };
-export default Home;
+export default FormsStats;

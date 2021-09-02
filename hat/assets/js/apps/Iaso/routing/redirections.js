@@ -32,7 +32,7 @@ const addRoutes = baseRoutes =>
             path={baseUrls.orgUnitTypes}
             to={`${baseUrls.orgUnitTypes}/order/name/pageSize/20/page/1`}
         />,
-        // <Redirect path="/*" to={baseUrls.error404} />,
+        <Redirect path="/*" to={baseUrls.error404} />,
     ]);
 
 export { addRoutes };

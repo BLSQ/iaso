@@ -14,25 +14,16 @@ const stopFetchingCompleteness = () => ({
     type: STOP_FETCHING_COMPLETENESS,
 });
 
-const setCompleteness = data => ({
-    type: SET_COMPLETENESS,
-    payload: data,
-});
-
-export const fetchCompleteness = () => dispatch => {
-    dispatch(startFetchingCompleteness());
+export const fetchCompleteness = dispatch => () => {
     return getRequest('/api/completeness/')
-        .then(res => dispatch(setCompleteness(res.completeness)))
+        .then(res => res.completeness)
         .catch(err =>
             dispatch(
                 enqueueSnackbar(
                     errorSnackBar('fetchCompletenessError', null, err),
                 ),
             ),
-        )
-        .then(() => {
-            dispatch(stopFetchingCompleteness());
-        });
+        );
 };
 
 export const generateDerivedInstances = derivedrequest => dispatch => {

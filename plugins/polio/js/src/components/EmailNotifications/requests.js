@@ -17,22 +17,6 @@ export const getCountryUsersGroup = async params => {
         count: data.count,
     };
 };
-// export const getCountryUsersGroup = async (_dispatch, url) => {
-//     // FIXME temporary hack due to SingleTable bug
-//     let filteredUrl = url;
-//     if (url.includes('-created_at')) {
-//         filteredUrl = url.replace('-created_at', 'country__name');
-//     }
-//     const data = await iasoGetRequest({
-//         requestParams: { url: filteredUrl },
-//         disableSuccessSnackBar: true,
-//     });
-//     return {
-//         country_users_group: data.country_users_group,
-//         pages: data.pages,
-//         count: data.count,
-//     };
-// };
 
 export const getAllUsers = async () => {
     return iasoGetRequest({

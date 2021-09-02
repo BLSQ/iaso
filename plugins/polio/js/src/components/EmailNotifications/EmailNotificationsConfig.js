@@ -17,6 +17,6 @@ EmailNotificationConfig.propTypes = {
     params: PropTypes.object.isRequired,
 };
 
-const addRouter = withRouter(EmailNotificationConfig);
+const emailConfigWithRouter = withRouter(EmailNotificationConfig);
 
-export { addRouter as EmailNotificationConfig };
+export { emailConfigWithRouter as EmailNotificationConfig };

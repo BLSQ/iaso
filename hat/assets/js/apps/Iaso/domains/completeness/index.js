@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import { injectIntl, LoadingSpinner } from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import {
     fetchCompleteness as fetchCompletenessAction,
     generateDerivedInstances as generateDerivedInstancesAction,
@@ -14,16 +14,15 @@ import CompletenessListComponent from './components/CompletenessListComponent';
 
 import MESSAGES from './messages';
 
-const Completeness = props => {
-    useEffect(() => props.fetchCompleteness(), []);
-
-    const {
-        params,
-        intl: { formatMessage },
-        completeness,
-        redirectTo,
-        onGenerateDerivedInstances,
-    } = props;
+const Completeness = ({
+    completeness,
+    fetchCompleteness,
+    onGenerateDerivedInstances,
+    params,
+    redirectTo,
+}) => {
+    useEffect(() => fetchCompleteness(), []);
+    const { formatMessage } = useSafeIntl();
 
     return (
         <>
@@ -43,7 +42,6 @@ const Completeness = props => {
 };
 
 Completeness.propTypes = {
-    intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     completeness: PropTypes.object.isRequired,
     fetchCompleteness: PropTypes.func.isRequired,
@@ -66,7 +64,4 @@ const mapDispatchToProps = dispatch => ({
     ),
 });
 
-export default connect(
-    MapStateToProps,
-    mapDispatchToProps,
-)(injectIntl(Completeness));
+export default connect(MapStateToProps, mapDispatchToProps)(Completeness);

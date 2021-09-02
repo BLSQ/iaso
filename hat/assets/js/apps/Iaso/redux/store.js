@@ -38,10 +38,6 @@ import {
     periodsReducer,
 } from '../domains/periods/reducer';
 import {
-    completenessInitialState,
-    reducer as completenessReducer,
-} from '../domains/completeness/reducer';
-import {
     groupsInitialState,
     reducer as groupsReducer,
 } from '../domains/orgUnits/groups/reducer';
@@ -68,7 +64,6 @@ const store = createStore(
         links: linksInitialState,
         users: usersInitialState,
         periods: periodsInitialState,
-        completeness: completenessInitialState,
         projects: projectsInitialState,
         mappings: mappingsInitialState,
         groups: groupsInitialState,
@@ -87,7 +82,6 @@ const store = createStore(
         links: linksReducer,
         users: usersReducer,
         periods: periodsReducer,
-        completeness: completenessReducer,
         projects: projectsReducer,
         mappings: mappingReducer,
         groups: groupsReducer,

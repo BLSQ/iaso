@@ -1,10 +1,8 @@
 import React from 'react';
-import moment from 'moment';
 
 import Color from 'color';
 import {
     IconButton as IconButtonComponent,
-    textPlaceholder,
     Expander,
 } from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
@@ -12,6 +10,7 @@ import OrgUnitTooltip from './components/OrgUnitTooltip';
 import getDisplayName from '../../utils/usersUtils';
 import MESSAGES from './messages';
 import { getStatusMessage, getOrgUnitGroups } from './utils';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
 export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
     const getStatusColor = status => {
@@ -44,71 +43,41 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
         },
         {
             Header: formatMessage(MESSAGES.type),
-            accessor: 'org_unit_type_id',
-            Cell: settings => (
-                <section>{settings.row.original.org_unit_type_name}</section>
-            ),
+            accessor: 'org_unit_type_name',
         },
         {
             Header: formatMessage(MESSAGES.groups),
             accessor: 'groups',
             width: 400,
-            Cell: settings => (
-                <section>{getOrgUnitGroups(settings.row.original)}</section>
-            ),
+            Cell: settings => getOrgUnitGroups(settings.row.original),
         },
         {
             Header: formatMessage(MESSAGES.source),
             accessor: 'source',
             sortable: false,
-            Cell: settings => (
-                <section>
-                    {settings.row.original.source &&
-                        settings.row.original.source}
-                    {!settings.row.original.source && textPlaceholder}
-                </section>
-            ),
         },
         {
             Header: formatMessage(MESSAGES.status),
             accessor: 'validation_status',
-            Cell: settings => {
-                const status = settings.row.original.validation_status;
-                return (
-                    <span className={getStatusColor(status)}>
-                        {getStatusMessage(status, formatMessage)}
-                    </span>
-                );
-            },
+            Cell: settings => (
+                <span className={getStatusColor(settings.value)}>
+                    {getStatusMessage(settings.value, formatMessage)}
+                </span>
+            ),
         },
         {
             Header: formatMessage(MESSAGES.instances_count),
             accessor: 'instances_count',
-            Cell: settings => (
-                <span>{settings.row.original.instances_count}</span>
-            ),
         },
         {
             Header: formatMessage(MESSAGES.updated_at),
             accessor: 'updated_at',
-            Cell: settings => (
-                <section>
-                    {moment
-                        .unix(settings.row.original.updated_at)
-                        .format('LTS')}
-                </section>
-            ),
+            Cell: DateTimeCell,
         },
         {
             Header: formatMessage(MESSAGES.created_at),
             accessor: 'created_at',
-            Cell: settings => (
-                <section>
-                    {moment
-                        .unix(settings.row.original.created_at)
-                        .format('LTS')}
-                </section>
-            ),
+            Cell: DateTimeCell,
         },
         {
             Header: formatMessage(MESSAGES.action),
@@ -181,18 +150,12 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => [
     {
         Header: formatMessage(MESSAGES.date),
         accessor: 'created_at',
-        Cell: settings => (
-            <span>
-                {moment(settings.row.original.created_at).format('LTS')}
-            </span>
-        ),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.user),
         accessor: 'user__username',
-        Cell: settings => (
-            <span>{getDisplayName(settings.row.original.user)}</span>
-        ),
+        Cell: settings => getDisplayName(settings.row.original.user),
     },
     {
         expander: true,

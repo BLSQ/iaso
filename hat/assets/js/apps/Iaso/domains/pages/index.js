@@ -20,6 +20,7 @@ import CreateEditDialog from './components/CreateEditDialog';
 import PageActions from './components/PageActions';
 import PageAction from './components/PageAction';
 import { PAGES_TYPES } from './constants';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -123,11 +124,7 @@ const Pages = () => {
             {
                 Header: intl.formatMessage(MESSAGES.updatedAt),
                 accessor: 'updated_at',
-                Cell: settings => {
-                    return moment(settings.row.original.updated_at).format(
-                        'LTS',
-                    );
-                },
+                Cell: DateTimeCell,
             },
             {
                 Header: intl.formatMessage(MESSAGES.actions),

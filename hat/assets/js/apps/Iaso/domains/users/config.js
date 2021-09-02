@@ -11,31 +11,26 @@ import MESSAGES from './messages';
 const usersTableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.userName),
-        accessor: 'user__username',
-        Cell: settings => <span>{settings.row.original.user_name}</span>,
+        id: 'user__username',
+        accessor: 'user_name',
     },
     {
         Header: formatMessage(MESSAGES.firstName),
-        accessor: 'user__first_name',
-        Cell: settings => (
-            <span>{settings.row.original.first_name || textPlaceholder}</span>
-        ),
+        id: 'user__first_name',
+        accessor: 'first_name',
     },
     {
         Header: formatMessage(MESSAGES.lastName),
-        accessor: 'user__last_name',
-        Cell: settings => (
-            <span>{settings.row.original.last_name || textPlaceholder}</span>
-        ),
+        id: 'user__last_name',
+        accessor: 'last_name',
     },
     {
         Header: formatMessage(MESSAGES.email),
-        accessor: 'user__email',
+        id: 'user__email',
+        accessor: 'email',
         Cell: settings =>
-            settings.row.original.email ? (
-                <a href={`mailto:${settings.row.original.email}`}>
-                    {settings.row.original.email}
-                </a>
+            settings.value ? (
+                <a href={`mailto:${settings.value}`}>{settings.value}</a>
             ) : (
                 textPlaceholder
             ),

@@ -1,9 +1,10 @@
 import React from 'react';
 import { Box, Grid } from '@material-ui/core';
-import { commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { makeStyles } from '@material-ui/core/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import { InstancesPerFormGraph } from '../../components/instancesGraph';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -17,10 +18,11 @@ const useStyles = makeStyles(theme => ({
 
 const FormsStats = () => {
     const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
 
     return (
         <>
-            <TopBar title="Form Stats" />
+            <TopBar title={formatMessage(MESSAGES.statsTitle)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container>
                     <Grid xs={6} item className={classes.card}>

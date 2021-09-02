@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -14,37 +14,33 @@ import CompletenessListComponent from './components/CompletenessListComponent';
 
 import MESSAGES from './messages';
 
-class Completeness extends Component {
-    componentDidMount() {
-        this.props.fetchCompleteness();
-    }
+const Completeness = props => {
+    useEffect(() => props.fetchCompleteness(), []);
 
-    render() {
-        const {
-            params,
-            intl: { formatMessage },
-            completeness,
-            redirectTo,
-            onGenerateDerivedInstances,
-        } = this.props;
+    const {
+        params,
+        intl: { formatMessage },
+        completeness,
+        redirectTo,
+        onGenerateDerivedInstances,
+    } = props;
 
-        return (
-            <>
-                {completeness.fetching && <LoadingSpinner />}
-                <TopBar
-                    title={formatMessage(MESSAGES.completeness)}
-                    displayBackButton={false}
-                />
-                <CompletenessListComponent
-                    completenessList={completeness.list}
-                    params={params}
-                    redirectTo={redirectTo}
-                    onGenerateDerivedInstances={onGenerateDerivedInstances}
-                />
-            </>
-        );
-    }
-}
+    return (
+        <>
+            {completeness.fetching && <LoadingSpinner />}
+            <TopBar
+                title={formatMessage(MESSAGES.completeness)}
+                displayBackButton={false}
+            />
+            <CompletenessListComponent
+                completenessList={completeness.list}
+                params={params}
+                redirectTo={redirectTo}
+                onGenerateDerivedInstances={onGenerateDerivedInstances}
+            />
+        </>
+    );
+};
 
 Completeness.propTypes = {
     intl: PropTypes.object.isRequired,

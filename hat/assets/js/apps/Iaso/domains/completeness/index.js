@@ -14,7 +14,7 @@ import { errorSnackBar } from '../../constants/snackBars';
 const Completeness = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const { data, isFetching } = useQuery(['completness'], () =>
+    const { data = [], isFetching } = useQuery(['completness'], () =>
         getRequest('/api/completeness/')
             .then(res => res.completeness)
             .catch(err =>
@@ -33,12 +33,11 @@ const Completeness = ({ params }) => {
                 title={formatMessage(MESSAGES.completeness)}
                 displayBackButton={false}
             />
-            {data && (
-                <CompletenessListComponent
-                    completenessList={data}
-                    params={params}
-                />
-            )}
+
+            <CompletenessListComponent
+                completenessList={data}
+                params={params}
+            />
         </>
     );
 };

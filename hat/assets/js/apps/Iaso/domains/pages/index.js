@@ -169,7 +169,6 @@ const Pages = () => {
         [handleClickDeleteRow, handleClickEditRow],
     );
 
-    // The naming is aligned with the names in Table
     const onTableParamsChange = useCallback(
         (baseUrl, newParams) => {
             if (newParams.page !== page) {

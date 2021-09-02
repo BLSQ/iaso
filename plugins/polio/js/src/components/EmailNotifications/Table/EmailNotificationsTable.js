@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     textPlaceholder,
     IconButton as IconButtonComponent,
+    Table,
 } from 'bluesquare-components';
-import { withRouter } from 'react-router';
 import { object } from 'prop-types';
+import { useDispatch } from 'react-redux';
 import { getCountryUsersGroup, getAllUsers } from '../requests';
 import MESSAGES from '../../../constants/messages';
 import { EmailNotificationsModal } from '../EmailNotificationsModal';
-import SingleTable from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
 import { useAPI } from '../../../../../../../hat/assets/js/apps/Iaso/utils/requests';
+// import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
+import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 
 const makeUserNameToDisplay = user => {
     if (user.email) return ` ${user.email}`;
@@ -24,17 +26,30 @@ const allLanguages = [
 ];
 
 const EmailNotificationsTable = ({ params }) => {
-    const tableParams = {
-        pageSize: params.pageSize ?? 0,
-        page: params.page ?? 0,
-        order: 'country__name', // Watch out, needs 2 underscores
-    };
+    const dispatch = useDispatch();
+    const [refresh, setRefresh] = useState(false);
+    const tableParams = useMemo(
+        () => ({
+            order: params.order ?? 'country__name', // Watch out, needs 2 underscores
+            page: params.page ?? 1,
+            pageSize: params.pageSize ?? 10,
+        }),
+        [params.order, params.page, params.pageSize],
+    );
     const { data: allUsers } = useAPI(getAllUsers);
-    const [forceRefresh, setForceRefresh] = useState(false);
+    const { data: tableData } = useAPI(getCountryUsersGroup, tableParams, {
+        preventTrigger: false,
+        additionalDependencies: [refresh],
+    });
+    const redirectTo = (baseUrl, newParams) => {
+        dispatch(redirectToReplace(baseUrl, newParams));
+    };
+    // const [forceRefresh, setForceRefresh] = useState(false);
 
-    useEffect(() => {
-        if (allUsers) setForceRefresh(true);
-    }, [allUsers]);
+    // useEffect(() => {
+    //     if (allUsers) setForceRefresh(true);
+    // }, [allUsers]);
+    // const onTableParamsChange = handleTableDeepLink('/polio/config');
 
     const columns = [
         {
@@ -79,7 +94,7 @@ const EmailNotificationsTable = ({ params }) => {
                 return (
                     <>
                         <EmailNotificationsModal
-                            notifyParent={() => setForceRefresh(true)}
+                            notifyParent={() => setRefresh(!refresh)}
                             onConfirm={() => null}
                             countryId={settings.row.original.id}
                             language={settings.row.original.language}
@@ -102,24 +117,32 @@ const EmailNotificationsTable = ({ params }) => {
             },
         },
     ];
+    console.log('tableData', tableData);
     return (
-        <SingleTable
-            multiselect={false}
-            fetchItems={getCountryUsersGroup}
-            dataKey="country_users_group"
+        <Table
+            // key={`EmailTable ${renderCount.toString()}`}
+            // fetchItems={getCountryUsersGroup}
+            // dataKey="country_users_group"
+            data={tableData?.country_users_group ?? []}
+            params={tableParams}
             columns={columns}
-            baseUrl="/polio/config"
-            params={tableParams} // FIXME currently useless prop because of SingleTable bug
-            endPointPath="polio/countryusersgroup"
-            forceRefresh={forceRefresh}
-            onForceRefreshDone={() => setForceRefresh(false)}
+            baseUrl="polio/config"
+            // endPointPath="polio/countryusersgroup"
+            // forceRefresh={forceRefresh}
+            // onForceRefreshDone={() => setForceRefresh(false)}
+            // onTableParamsChange={onTableParamsChange}
+            redirectTo={redirectTo}
+            pages={tableData?.pages ?? 1}
+            count={tableData?.count ?? 1}
+            multiselect={false}
         />
     );
 };
 
-const TableWithRouter = withRouter(EmailNotificationsTable);
+// const TableWithRouter = withRouter(EmailNotificationsTable);
 
-export { TableWithRouter as EmailNotificationsTable };
+// export { TableWithRouter as EmailNotificationsTable };
+export { EmailNotificationsTable };
 
 EmailNotificationsTable.propTypes = {
     params: object.isRequired,

@@ -55,8 +55,8 @@ export const EmailNotificationsModal = ({
             });
             setConfig('users', result.users);
             setConfig('language', result.language);
-            notifyParent();
             closeDialog();
+            notifyParent();
         },
         [countryId, config.users, config.language, notifyParent, setConfig],
     );

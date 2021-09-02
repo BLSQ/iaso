@@ -24,11 +24,11 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'pageSize',
+                key: 'page',
             },
             {
                 isRequired: false,
-                key: 'page',
+                key: 'pageSize',
             },
         ],
     },

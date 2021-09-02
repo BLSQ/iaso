@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-
+import { useDispatch } from 'react-redux';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { useQuery } from 'react-query';
 import { fetchCompleteness } from './actions';
@@ -10,8 +9,9 @@ import CompletenessListComponent from './components/CompletenessListComponent';
 
 import MESSAGES from './messages';
 
-const Completeness = ({ dispatch, params }) => {
+const Completeness = ({ params }) => {
     const { formatMessage } = useSafeIntl();
+    const dispatch = useDispatch();
     const { data, isFetching } = useQuery(
         ['completness'],
         fetchCompleteness(dispatch),
@@ -39,10 +39,4 @@ Completeness.propTypes = {
     params: PropTypes.object.isRequired,
 };
 
-const MapStateToProps = () => ({});
-
-const mapDispatchToProps = dispatch => ({
-    dispatch,
-});
-
-export default connect(MapStateToProps, mapDispatchToProps)(Completeness);
+export default Completeness;

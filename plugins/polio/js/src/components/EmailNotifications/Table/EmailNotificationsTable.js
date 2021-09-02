@@ -2,14 +2,13 @@ import React, { useMemo, useState } from 'react';
 import {
     textPlaceholder,
     IconButton as IconButtonComponent,
-    Table,
 } from 'bluesquare-components';
 import { object } from 'prop-types';
 import { getCountryUsersGroup, getAllUsers } from '../requests';
 import MESSAGES from '../../../constants/messages';
 import { EmailNotificationsModal } from '../EmailNotificationsModal';
 import { useAPI } from '../../../../../../../hat/assets/js/apps/Iaso/utils/requests';
-import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
+import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
 const makeUserNameToDisplay = user => {
     if (user.email) return ` ${user.email}`;
@@ -38,8 +37,6 @@ export const EmailNotificationsTable = ({ params }) => {
         preventTrigger: false,
         additionalDependencies: [refresh],
     });
-
-    const onTableParamsChange = handleTableDeepLink('polio/config');
 
     const columns = [
         {
@@ -82,38 +79,35 @@ export const EmailNotificationsTable = ({ params }) => {
             accessor: 'actions',
             Cell: settings => {
                 return (
-                    <>
-                        <EmailNotificationsModal
-                            notifyParent={() => setRefresh(!refresh)}
-                            onConfirm={() => null}
-                            countryId={settings.row.original.id}
-                            language={settings.row.original.language}
-                            users={settings.row.original.users}
-                            allUsers={allUsers?.profiles}
-                            allLanguages={allLanguages}
-                            renderTrigger={({ openDialog }) => (
-                                <IconButtonComponent
-                                    onClick={() => {
-                                        openDialog();
-                                    }}
-                                    icon="edit"
-                                    tooltipMessage={MESSAGES.edit}
-                                    size="small"
-                                />
-                            )}
-                        />
-                    </>
+                    <EmailNotificationsModal
+                        notifyParent={() => setRefresh(!refresh)}
+                        onConfirm={() => null}
+                        countryId={settings.row.original.id}
+                        language={settings.row.original.language}
+                        users={settings.row.original.users}
+                        allUsers={allUsers?.profiles}
+                        allLanguages={allLanguages}
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={() => {
+                                    openDialog();
+                                }}
+                                icon="edit"
+                                tooltipMessage={MESSAGES.edit}
+                                size="small"
+                            />
+                        )}
+                    />
                 );
             },
         },
     ];
     return (
-        <Table
+        <TableWithDeepLink
             data={tableData?.country_users_group ?? []}
             params={tableParams}
             columns={columns}
             baseUrl="polio/config"
-            onTableParamsChange={onTableParamsChange}
             pages={tableData?.pages ?? 1}
             count={tableData?.count ?? 1}
             multiselect={false}

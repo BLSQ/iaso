@@ -66,11 +66,11 @@ const CompletenessPeriodComponent = ({
     const queryClient = useQueryClient();
 
     const mutation = useMutation(
-        ['completness', 'generate'],
+        ['completeness', 'generate'],
         async derivedrequest => {
             try {
                 await postRequest('/api/derivedinstances/', derivedrequest);
-                await queryClient.invalidateQueries(['completness']);
+                await queryClient.invalidateQueries(['completeness']);
                 dispatch(
                     enqueueSnackbar(
                         succesfullSnackBar('generateDerivedRequestSuccess'),

@@ -1,3 +1,4 @@
+import pandas as pd
 from django.db import connection
 from django.contrib.gis.geos import Point
 from rest_framework import viewsets, permissions
@@ -291,17 +292,30 @@ class InstancesViewSet(viewsets.ViewSet):
             status=201,
         )
 
+    QUERY = """
+    select DATE_TRUNC('month', created_at) as month,
+           (select name from iaso_form where id = iaso_instance.form_id),
+           count(*)                        as value
+    from iaso_instance
+    where created_at > '2019-01-01'
+      and project_id = ANY (%s)
+      and form_id is not null
+    group by DATE_TRUNC('month', created_at), form_id
+    order by DATE_TRUNC('month', created_at)"""
+
     @action(detail=False)
     def stats(self, request):
         projects = request.user.iaso_profile.account.project_set.all()
         projects_ids = list(projects.values_list("id", flat=True))
-        cur = connection.cursor()
-        cur.execute(
-            "select DATE_TRUNC('month',created_at), count(*) from iaso_instance where created_at > '2019-01-01' and project_id = ANY(%s) group by DATE_TRUNC('month', created_at)  order by DATE_TRUNC('month', created_at)",
-            [projects_ids],
-        )
-        res = cur.fetchall()
-        return Response({"instances_per_month": res})
+
+        df = pd.read_sql_query(self.QUERY, connection, params=[projects_ids])
+        df = df.pivot(index="month", columns="name", values="value")
+        df.index = df.index.to_period("M")
+        df = df.sort_index()
+        df = df.reindex(pd.period_range(df.index[0], df.index[-1], freq="M"))
+        df["name"] = df.index.astype(str)
+        r = df.to_json(orient="table")
+        return HttpResponse(r, content_type="application/json")
 
 
 def import_data(instances, user, app_id):

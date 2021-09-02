@@ -24,6 +24,7 @@ import { orgUnitFiltersWithPrefix, linksFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
+import Home from '../domains/home';
 
 const paginationPathParams = [
     {
@@ -478,6 +479,12 @@ export const orgUnitTypesPath = {
     ],
 };
 
+export const homePath = {
+    baseUrl: baseUrls.home,
+    component: () => <Home />,
+    params: [],
+};
+
 export const page401 = {
     baseUrl: baseUrls.error401,
     component: () => <PageError errorCode="401" />,
@@ -498,6 +505,7 @@ export const page500 = {
 
 export const routeConfigs = [
     formsPath,
+    homePath,
     archivedPath,
     formDetailPath,
     mappingsPath,

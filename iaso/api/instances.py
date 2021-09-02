@@ -1,5 +1,7 @@
+from django.db import connection
 from django.contrib.gis.geos import Point
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.decorators import action
@@ -288,6 +290,18 @@ class InstancesViewSet(viewsets.ViewSet):
             },
             status=201,
         )
+
+    @action(detail=False)
+    def stats(self, request):
+        projects = request.user.iaso_profile.account.project_set.all()
+        projects_ids = list(projects.values_list("id", flat=True))
+        cur = connection.cursor()
+        cur.execute(
+            "select DATE_TRUNC('month',created_at), count(*) from iaso_instance where created_at > '2019-01-01' and project_id = ANY(%s) group by DATE_TRUNC('month', created_at)  order by DATE_TRUNC('month', created_at)",
+            [projects_ids],
+        )
+        res = cur.fetchall()
+        return Response({"instances_per_month": res})
 
 
 def import_data(instances, user, app_id):

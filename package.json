@@ -49,6 +49,7 @@
         "bluesquare-components": "github:BLSQ/bluesquare-components",
         "classnames": "^2.2.6",
         "color": "^3.1.2",
+        "d3-time": "^3.0.0",
         "font-awesome": "^4.7.0",
         "formik": "^2.2.9",
         "leaflet": "^1.6.0",

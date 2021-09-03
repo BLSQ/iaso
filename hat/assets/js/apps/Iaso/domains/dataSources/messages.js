@@ -1,14 +1,6 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
-    yes: {
-        defaultMessage: 'Yes',
-        id: 'iaso.label.yes',
-    },
-    no: {
-        defaultMessage: 'No',
-        id: 'iaso.label.no',
-    },
     actions: {
         defaultMessage: 'Actions',
         id: 'iaso.label.actions',

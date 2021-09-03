@@ -55,6 +55,7 @@
         "leaflet.markercluster": "^1.4.1",
         "lodash": "^4.17.15",
         "moment": "^2.20.1",
+        "node-fetch": "^2.6.1",
         "notistack": "^0.8.9",
         "npm": "^7.11.2",
         "prop-types": "^15.7.2",
@@ -77,7 +78,6 @@
         "react-table": "^7.7.0",
         "redux": "^4.0.5",
         "redux-thunk": "^2.3.0",
-        "superagent": "^5.1.0",
         "use-debounce": "^7.0.0",
         "video.js": "^7.10.2",
         "yup": "^0.32.9"

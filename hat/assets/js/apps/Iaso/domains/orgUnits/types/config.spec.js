@@ -31,32 +31,24 @@ describe('Org unit types config', () => {
         expect(cols).to.have.lengthOf(8);
     });
     it('should render a component if Cell is defined', () => {
+        const settings = colOriginal({
+            name: 'LINK',
+            short_name: 'GANONDORF',
+            depth: 0,
+            projects: [],
+        });
         cols.forEach(c => {
             if (c.Cell) {
-                const cell = c.Cell(
-                    colOriginal({
-                        name: 'LINK',
-                        short_name: 'GANONDORF',
-                        depth: 0,
-                        projects: [],
-                    }),
-                );
+                const cell = c.Cell({
+                    ...settings,
+                    value:
+                        typeof c.accessor === 'function'
+                            ? c.accessor(settings.row.original)
+                            : settings.row.original[c.accessor],
+                });
                 expect(cell).to.exist;
             }
         });
-    });
-    it('should render a component if Cell is defined and no depth', () => {
-        const depthColumn = cols[3];
-        const cell = depthColumn.Cell(
-            colOriginal({
-                name: 'LINK',
-                short_name: 'GANONDORF',
-                depth: null,
-                projects: [],
-            }),
-        );
-
-        expect(cell).to.exist;
     });
     it('should call fetchOrgUnitTypes on click on onConfirmed', () => {
         const actionColumn = cols[cols.length - 1];

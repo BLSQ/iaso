@@ -65,26 +65,23 @@ const CompletenessPeriodComponent = ({
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
 
-    const mutation = useMutation(
-        ['completeness', 'generate'],
-        async derivedrequest => {
-            try {
-                await postRequest('/api/derivedinstances/', derivedrequest);
-                await queryClient.invalidateQueries(['completeness']);
-                dispatch(
-                    enqueueSnackbar(
-                        succesfullSnackBar('generateDerivedRequestSuccess'),
-                    ),
-                );
-            } catch (err) {
-                dispatch(
-                    enqueueSnackbar(
-                        errorSnackBar('generateDerivedRequestError', null, err),
-                    ),
-                );
-            }
-        },
-    );
+    const mutation = useMutation(async derivedrequest => {
+        try {
+            await postRequest('/api/derivedinstances/', derivedrequest);
+            await queryClient.invalidateQueries(['completeness']);
+            dispatch(
+                enqueueSnackbar(
+                    succesfullSnackBar('generateDerivedRequestSuccess'),
+                ),
+            );
+        } catch (err) {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('generateDerivedRequestError', null, err),
+                ),
+            );
+        }
+    });
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const onSelectCell = (form, status, selectedPeriod) => {

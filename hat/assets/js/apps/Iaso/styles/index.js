@@ -8,6 +8,11 @@ export const getOverridedTheme = theme => ({
             '@global': {
                 ...mapCluster,
                 ...mapCustomControl,
+                body: {
+                    height: '100vh',
+                    overflow: 'hidden',
+                    lineHeight: 1,
+                },
             },
         },
     },

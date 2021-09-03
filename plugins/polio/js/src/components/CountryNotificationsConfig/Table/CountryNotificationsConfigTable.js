@@ -91,6 +91,7 @@ const CountryNotificationsConfigTable = ({ params }) => {
                         notifyParent={() => setRefresh(!refresh)}
                         onConfirm={() => null}
                         countryId={settings.row.original.id}
+                        countryName={settings.row.original.country_name}
                         language={settings.row.original.language}
                         users={settings.row.original.users}
                         allUsers={allUsers?.profiles}

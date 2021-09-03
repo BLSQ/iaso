@@ -31,18 +31,13 @@ const initialState = (language, users) => ({
 export const CountryNotificationsConfigModal = ({
     renderTrigger,
     countryId,
+    countryName,
     language,
     users,
     notifyParent,
     allUsers,
     allLanguages,
 }) => {
-    const [blockFetch, setBlockFetch] = useState(true);
-    const { data: countryDetails, isLoading } = useAPI(
-        getCountryConfigDetails,
-        countryId,
-        { preventTrigger: blockFetch, additionalDependencies: [] },
-    );
     const [config, setConfig] = useFormState(initialState(language, users));
 
     const onConfirm = useCallback(
@@ -70,9 +65,7 @@ export const CountryNotificationsConfigModal = ({
     }, [syncStateWithProps]);
 
     let allowConfirm = false;
-    if (isLoading) {
-        allowConfirm = false;
-    } else if (
+    if (
         config.language.value === language &&
         isEqual(config.users.value, users)
     ) {
@@ -81,26 +74,14 @@ export const CountryNotificationsConfigModal = ({
         allowConfirm = true;
     }
 
-    const handleModalOpen = useCallback(
-        ({ openDialog }) => {
-            return renderTrigger({
-                openDialog: () => {
-                    setBlockFetch(false);
-                    openDialog();
-                },
-            });
-        },
-        [renderTrigger],
-    );
-
     useEffect(syncStateWithProps, [syncStateWithProps]);
 
     return (
         <ConfirmCancelDialogComponent
-            renderTrigger={handleModalOpen}
+            renderTrigger={renderTrigger}
             titleMessage={{
                 ...MESSAGES.configEmailNotif,
-                values: { country: countryDetails?.country_name },
+                values: { country:countryName },
             }}
             confirmMessage={MESSAGES.confirm}
             cancelMessage={MESSAGES.cancel}
@@ -149,6 +130,7 @@ CountryNotificationsConfigModal.propTypes = {
     notifyParent: func,
     allUsers: arrayOf(object),
     allLanguages: arrayOf(object).isRequired,
+    countryName:string.isRequired,
 };
 
 CountryNotificationsConfigModal.defaultProps = {

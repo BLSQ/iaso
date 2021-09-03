@@ -1,6 +1,6 @@
 import tempfile
 
-from beanstalk_worker import task as task_decorator
+from beanstalk_worker import task_decorator
 from iaso.gpkg.import_gpkg import import_gpkg_file2
 from iaso.models import Task
 from iaso.models.import_gpkg import ImportGPKG
@@ -31,4 +31,4 @@ def import_gpkg_task(import_gpkg_id: int, task: Task):
             user=user,
         )
 
-        task.report_success(message=f"Import {total} OrgUnits")
+        task.report_success(message=f"Imported {total} OrgUnits")

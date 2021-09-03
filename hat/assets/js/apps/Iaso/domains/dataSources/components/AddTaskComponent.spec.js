@@ -17,6 +17,7 @@ const existingCredentials = {
     name: 'Goron',
     login: 'Daruk',
     url: '/api/divinebeast/vahnaboris',
+    is_valid: true,
 };
 
 const SOURCE_ID = 1;
@@ -123,6 +124,9 @@ describe('AddTaskComponent', () => {
             connectedWrapper.update();
             await fillFields(connectedWrapper, credentialsFieldKeys);
             await awaitUseEffect(connectedWrapper);
+            confirmCancelDialogComponent = connectedWrapper.find(
+                ConfirmCancelDialogComponent,
+            );
             expect(confirmCancelDialogComponent.exists()).to.equal(true);
             expect(confirmCancelDialogComponent.props().allowConfirm).to.equal(
                 true,

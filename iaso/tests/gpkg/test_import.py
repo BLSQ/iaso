@@ -244,6 +244,39 @@ class GPKGImport(TestCase):
         out.refresh_from_db()
         self.assertEqual(out.projects.count(), 1)
 
+    def test_without_version_number(self):
+        # If version number is None, it should create a new version after the last one on this source
+        source_name = "hey"
+        source = m.DataSource.objects.create(name=source_name)
+        m.SourceVersion.objects.create(number=16, data_source=source)
+        m.SourceVersion.objects.create(number=11, data_source=source)
+        other_source = m.DataSource.objects.create(name="other source")
+        m.SourceVersion.objects.create(number=17, data_source=other_source)
+        m.SourceVersion.objects.create(number=18, data_source=other_source)
+
+        import_gpkg_file(
+            "./iaso/tests/fixtures/gpkg/minimal_simplified.gpkg",
+            project_id=self.project.id,
+            source_name=source_name,
+            version_number=None,
+            validation_status="VALID",
+        )
+
+        source = m.DataSource.objects.get(name=source_name)
+
+        self.assertEqual(m.SourceVersion.objects.count(), 5)
+        self.assertEqual(source.versions.all().count(), 3)
+        self.assertQuerysetEqual(source.versions.all().order_by("number"), [11, 16, 17], lambda x: x.number)
+
+        self.assertEqual(m.OrgUnitType.objects.count(), 3)
+        self.assertEqual(m.OrgUnit.objects.all().count(), 4)
+        self.assertEqual(m.Group.objects.all().count(), 2)
+
+        self.assertEqual(4, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(
+            2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
+        )
+
 
 class GPKGImportSimplifiedGroup(TestCase):
     """Tests case around minimal_simplified_group.gpk
@@ -256,8 +289,8 @@ class GPKGImportSimplifiedGroup(TestCase):
         cls.project = m.Project.objects.create(name="Project 1", account=cls.account, app_id="test_app_id")
         version_number = 1
         cls.source_name = "test source"
-        source = m.DataSource.objects.create(name=cls.source_name)
-        cls.version = m.SourceVersion.objects.create(number=version_number, data_source=source)
+        cls.source = m.DataSource.objects.create(name=cls.source_name)
+        cls.version = m.SourceVersion.objects.create(number=version_number, data_source=cls.source)
 
     def test_import_orgunit_exisiting_group(self):
         group = m.Group.objects.create(source_ref="group_not_in_gpkg", source_version=self.version)

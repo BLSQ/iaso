@@ -1,5 +1,4 @@
-import { useCallback } from 'react';
-import { iasoPostRequest, useAPI } from '../../utils/requests';
+import { iasoPostRequest } from '../../utils/requests';
 
 /**
  *
@@ -16,37 +15,22 @@ import { iasoPostRequest, useAPI } from '../../utils/requests';
  * @returns {Object} request's response
  */
 
-export const sendDhisOuImporterRequest = async requestBody => {
-    if (requestBody) {
-        return iasoPostRequest({
-            requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
-            errorKeyMessage: 'dhisouimporterError',
-            consoleError: 'DHIS OU Importer',
-        });
-    }
-    return null;
-};
+export const sendDhisOuImporterRequest = async requestBody =>
+    iasoPostRequest({
+        requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
+        errorKeyMessage: 'dhisouimporterError',
+        consoleError: 'DHIS OU Importer',
+    });
 
-const postGeoPkg = async request => {
-    if (request) {
-        const file = { file: request.file };
-        const body = { ...request };
-        delete body.file;
-        return iasoPostRequest({
-            requestParams: {
-                url: '/api/tasks/create/importgpkg/',
-                body,
-                fileData: file,
-            },
-        });
-    }
-    return null;
-};
-
-export const useGeoPkgImport = request => {
-    const callback = useCallback(
-        async () => postGeoPkg(request),
-        [request, postGeoPkg],
-    );
-    return useAPI(callback)?.data;
+export const postGeoPkg = async request => {
+    const file = { file: request.file };
+    const body = { ...request };
+    delete body.file;
+    return iasoPostRequest({
+        requestParams: {
+            url: '/api/tasks/create/importgpkg/',
+            body,
+            fileData: file,
+        },
+    });
 };

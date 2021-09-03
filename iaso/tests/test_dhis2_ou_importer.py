@@ -9,35 +9,78 @@ from iaso.models import OrgUnit, Group, GroupSet, Task, Account, DataSource, SUC
 from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
 from iaso.test import TestCase
 
+from hat.audit.models import Modification
+from iaso import models as m
 
-class CommandTests(TestCase):
+
+class DHIS2TestMixin:
     def fixture_json(self, name):
         with open("./iaso/tests/fixtures/dhis2/" + name + ".json") as json_file:
             return json.load(json_file)
 
-    @responses.activate
-    def test_command(self):
-        out = StringIO()
-
-        # fixture file based on https://play.dhis2.org/2.30/api/organisationUnits.json?fields=id%2Cname%2Cpath%2Ccoordinates%2Cgeometry%2Cparent%2CorganisationUnitGroups%5Bid%2Cname%5D&filter=id:in:[ImspTQPwCqd,kJq2mPyFEHo,KXSqt7jv6DU,LOpWauwwghf]
+    def setup_responses(self, orgunit_fixture_name, groupsets_fixture_name):
+        """Assume @responses.activate in the calling test function"""
+        orgunit_response_content = self.fixture_json(orgunit_fixture_name)
 
         responses.add(
             responses.GET,
             "https://play.dhis2.org/2.30/api/organisationUnits.json"
             "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
             "&pageSize=500&page=1&totalPages=True",
-            json=self.fixture_json("orgunits"),
+            json=orgunit_response_content,
             status=200,
         )
+
+        empty_groupset_response = {"organisationUnitGroupSets": []}
+        if groupsets_fixture_name:
+            groupsets_response_content = self.fixture_json(groupsets_fixture_name)
+        else:
+            groupsets_response_content = empty_groupset_response
 
         responses.add(
             responses.GET,
             "https://play.dhis2.org/2.30/api/organisationUnitGroupSets.json"
             "?paging=false&fields=id,name,organisationUnitGroups[id,name]",
-            json=self.fixture_json("groupsets"),
+            json=groupsets_response_content,
             status=200,
         )
 
+    # copy from orgunit api test, can refactor
+    def counts(self) -> dict:
+        return {
+            m.OrgUnit: m.OrgUnit.objects.count(),
+            m.OrgUnitType: m.OrgUnitType.objects.count(),
+            m.Group: m.Group.objects.count(),
+            m.GroupSet: m.GroupSet.objects.count(),
+            Modification: Modification.objects.count(),
+        }
+
+    def assertNoCreation(self):
+        self.assertEqual(self.old_counts, self.counts())
+
+    def assertCreated(self: TestCase, createds: dict):
+        new_counts = self.counts()
+        diff = {}
+
+        for model in new_counts.keys():
+            diff[model] = new_counts[model] - self.old_counts[model]
+            if model not in createds and diff[model] == 0:
+                del diff[model]
+
+        self.assertDictEqual(createds, diff, diff)
+
+
+class CommandTests(TestCase, DHIS2TestMixin):
+    @responses.activate
+    def test_command(self):
+        # fixture files based on
+        # https://play.dhis2.org/2.30/api/organisationUnits.json?
+        # fields=id%2Cname%2Cpath%2Ccoordinates%2Cgeometry%2Cparent%2CorganisationUnitGroups%5Bid%2Cname%5D
+        # &filter=id:in:[ImspTQPwCqd,kJq2mPyFEHo,KXSqt7jv6DU,LOpWauwwghf]
+        self.setup_responses(orgunit_fixture_name="orgunits", groupsets_fixture_name="groupsets")
+        self.old_counts = self.counts()
+
+        out = StringIO()
         management.call_command(
             "dhis2_ou_importer",
             stdout=out,
@@ -51,6 +94,15 @@ class CommandTests(TestCase):
 
         if environ.get("DEBUG_TEST") is not None:
             print(out.getvalue())
+
+        self.assertCreated(
+            {
+                m.OrgUnit: 4,
+                m.OrgUnitType: 1,
+                m.Group: 18,
+                m.GroupSet: 4,
+            }
+        )
 
         created_orgunits_qs = OrgUnit.objects.order_by("id")
         created_orgunits = [entry for entry in created_orgunits_qs.values("source_ref", "name")]
@@ -91,7 +143,11 @@ class CommandTests(TestCase):
             ],
         )
         facility_type = groupsets_qs.get(name="Facility Type")
-        self.assertEquals([x.name for x in facility_type.groups.all()], ["CHP", "MCHP", "Clinic", "Hospital", "CHC"])
+        self.assertQuerysetEqual(
+            facility_type.groups.all().order_by("name"),
+            ["CHC", "CHP", "Clinic", "Hospital", "MCHP"],
+            transform=lambda x: x.name,
+        )
 
         # assert that path has been generated for all org units
         self.assertEquals(0, OrgUnit.objects.filter(path=None).count())
@@ -100,28 +156,13 @@ class CommandTests(TestCase):
     def test_stranges_geom(self):
         """Testfile with Shape with hole and with multi polygon"""
         out = StringIO()
-
-        responses.add(
-            responses.GET,
-            "https://play.dhis2.org/2.36/api/organisationUnits.json"
-            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
-            "&pageSize=500&page=1&totalPages=True",
-            json=self.fixture_json("orgunits_strange_geom"),
-            status=200,
-        )
-
-        responses.add(
-            responses.GET,
-            "https://play.dhis2.org/2.36/api/organisationUnitGroupSets.json"
-            "?paging=false&fields=id,name,organisationUnitGroups[id,name]",
-            json={"organisationUnitGroupSets": []},
-            status=200,
-        )
+        self.setup_responses(orgunit_fixture_name="orgunits_strange_geom", groupsets_fixture_name=None)
+        self.old_counts = self.counts()
 
         management.call_command(
             "dhis2_ou_importer",
             stdout=out,
-            dhis2_url="https://play.dhis2.org/2.36",
+            dhis2_url="https://play.dhis2.org/2.30",
             dhis2_user="admin",
             dhis2_password="district",
             source_name="play",
@@ -131,6 +172,13 @@ class CommandTests(TestCase):
 
         if environ.get("DEBUG_TEST") is not None:
             print(out.getvalue())
+        self.assertCreated(
+            {
+                m.OrgUnit: 4,
+                m.OrgUnitType: 1,
+                m.Group: 2,  # there is 2 group on OrgUnit C
+            }
+        )
 
         created_orgunits_qs = OrgUnit.objects.order_by("id")
 
@@ -157,42 +205,25 @@ class CommandTests(TestCase):
         self.assertEqual(len(ou_c.geom.coords[1]), 2)
 
 
-class TaskTests(TestCase):
+class TaskTests(TestCase, DHIS2TestMixin):
     """FIXME this is a copy of the CommandTest adapted for task, we have to keep them in sync"""
 
-    def fixture_json(self, name):
-        with open("./iaso/tests/fixtures/dhis2/" + name + ".json") as json_file:
-            return json.load(json_file)
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = Account.objects.create(name="a")
+        cls.user = cls.create_user_with_profile(username="link", account=cls.account)
+        cls.source = DataSource.objects.create(name="play")
+
+    def setUp(self):
+        self.old_counts = self.counts()
 
     @responses.activate
     def test_import(self):
-        # fixture file based on
-        # https://play.dhis2.org/2.30/api/organisationUnits.json?fields=id%2Cname%2Cpath%2Ccoordinates%2Cgeometry%2Cparent%2CorganisationUnitGroups%5Bid%2Cname%5D&filter=id:in:[ImspTQPwCqd,kJq2mPyFEHo,KXSqt7jv6DU,LOpWauwwghf]
+        self.setup_responses(orgunit_fixture_name="orgunits", groupsets_fixture_name="groupsets")
 
-        responses.add(
-            responses.GET,
-            "https://play.dhis2.org/2.30/api/organisationUnits.json"
-            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
-            "&pageSize=500&page=1&totalPages=True",
-            json=self.fixture_json("orgunits"),
-            status=200,
-        )
-
-        responses.add(
-            responses.GET,
-            "https://play.dhis2.org/2.30/api/organisationUnitGroupSets.json"
-            "?paging=false&fields=id,name,organisationUnitGroups[id,name]",
-            json=self.fixture_json("groupsets"),
-            status=200,
-        )
-
-        account = Account.objects.create(name="a")
-        user = self.create_user_with_profile(username="link", account=account)
-        source = DataSource.objects.create(name="play")
-
-        task = Task.objects.create(name="dhis2_ou_importer", launcher=user, account=account)
+        task = Task.objects.create(name="dhis2_ou_importer", launcher=self.user, account=self.account)
         dhis2_ou_importer(
-            source_id=source.id,
+            source_id=self.source.id,
             source_version_number=1,
             force=False,
             validate=False,
@@ -205,7 +236,17 @@ class TaskTests(TestCase):
         )
 
         task.refresh_from_db()
-        self.assertEquals(task.status, SUCCESS)
+        self.assertEquals(task.status, SUCCESS, task.result)
+
+        self.assertCreated(
+            {
+                m.OrgUnit: 4,
+                m.OrgUnitType: 1,
+                m.Group: 18,
+                m.GroupSet: 4,
+            }
+        )
+
         created_orgunits_qs = OrgUnit.objects.order_by("id")
         created_orgunits = [entry for entry in created_orgunits_qs.values("source_ref", "name")]
 
@@ -249,3 +290,184 @@ class TaskTests(TestCase):
 
         # assert that path has been generated for all org units
         self.assertEquals(0, OrgUnit.objects.filter(path=None).count())
+
+    @responses.activate
+    def test_update(self):
+        """Testfile with Shape with hole and with multi polygon"""
+        self.setup_responses(orgunit_fixture_name="orgunits_strange_geom", groupsets_fixture_name=None)
+
+        # Existing version with data
+        version = m.SourceVersion.objects.create(data_source=self.source, number=1)
+
+        OrgUnit.objects.create(name="original c", source_ref="c", version=version)
+        OrgUnit.objects.create(name="original d", source_ref="d", version=version)
+
+        self.old_counts = self.counts()
+
+        task = Task.objects.create(name="dhis2_ou_importer", launcher=self.user, account=self.account)
+        dhis2_ou_importer(
+            source_id=self.source.id,
+            source_version_number=1,
+            force=False,
+            validate=False,
+            continue_on_error=False,
+            url="https://play.dhis2.org/2.30",
+            login="admin",
+            password="district",
+            update_mode=True,
+            task=task,
+            _immediate=True,
+        )
+
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS", task.result)
+        self.assertCreated(
+            {
+                m.OrgUnit: 2,
+                m.OrgUnitType: 1,
+                m.Group: 1,  # there is 2 group on OrgUnit C, they are skipped since we skipped C
+            }
+        )
+
+        g = m.Group.objects.latest("id")
+        self.assertEqual(g.org_units.count(), 2)
+        self.assertTrue(g.name.startswith("Imported on"))
+
+        ou_a = OrgUnit.objects.get(source_ref="a")
+        self.assertEqual(ou_a.name, "Simple square")
+        self.assertEqual(ou_a.geom.area, 1)
+
+        ou_b = OrgUnit.objects.get(source_ref="b")
+        self.assertEqual(ou_b.name, "Simple square with a hole")
+        self.assertAlmostEqual(ou_b.geom.area, 0.6400000000000033)
+
+        # didn't touch the existing
+        ou_d = OrgUnit.objects.get(source_ref="d")
+        self.assertEqual(ou_d.name, "original d")
+        self.assertEqual(ou_d.geom, None)
+
+        ou_c = OrgUnit.objects.get(source_ref="c")
+        self.assertEqual(ou_c.geom, None)
+        self.assertEqual(ou_c.name, "original c")
+
+        self.assertEqual(OrgUnit.objects.count(), 4)
+
+    @responses.activate
+    def test_update_non_existing(self):
+        """Testfile with Shape with hole and with multi polygon"""
+        self.setup_responses(orgunit_fixture_name="orgunits_strange_geom", groupsets_fixture_name=None)
+
+        task = Task.objects.create(name="dhis2_ou_importer", launcher=self.user, account=self.account)
+        dhis2_ou_importer(
+            source_id=self.source.id,
+            source_version_number=1,
+            force=False,
+            validate=False,
+            continue_on_error=False,
+            url="https://play.dhis2.org/2.30",
+            login="admin",
+            password="district",
+            update_mode=True,
+            task=task,
+            _immediate=True,
+        )
+
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS", task.result)
+        self.assertCreated(
+            {
+                m.OrgUnit: 4,
+                m.OrgUnitType: 1,
+                m.Group: 3,  # there are 2 groups on OrgUnit C
+            }
+        )
+
+        created_orgunits_qs = OrgUnit.objects.order_by("id")
+
+        ou_a = created_orgunits_qs.get(source_ref="a")
+        self.assertEqual(ou_a.name, "Simple square")
+        self.assertEqual(ou_a.geom.area, 1)
+
+        ou_b = created_orgunits_qs.get(source_ref="b")
+        self.assertEqual(ou_b.name, "Simple square with a hole")
+        self.assertAlmostEqual(ou_b.geom.area, 0.6400000000000033)
+
+        ou_d = created_orgunits_qs.get(source_ref="d")
+        self.assertEqual(ou_d.name, "Two polygon of area 1 each")
+        self.assertAlmostEqual(ou_d.geom.area, 2)
+        self.assertEqual(len(ou_d.geom.coords), 2)
+        self.assertEqual(len(ou_d.geom.coords[0]), 1)
+        self.assertEqual(len(ou_d.geom.coords[1]), 1)
+
+        ou_c = created_orgunits_qs.get(source_ref="c")
+        self.assertAlmostEqual(ou_c.geom.area, 0.019948936631078506)
+        self.assertEqual(ou_c.name, "Multi 2 polygon with one hole each")
+        self.assertEqual(len(ou_c.geom.coords), 2)
+        self.assertEqual(len(ou_c.geom.coords[0]), 2)
+        self.assertEqual(len(ou_c.geom.coords[1]), 2)
+
+        g = m.Group.objects.latest("id")
+        self.assertEqual(g.org_units.count(), 4)
+        self.assertTrue(g.name.startswith("Imported on"))
+
+    @responses.activate
+    def test_update_no_new(self):
+        self.setup_responses(orgunit_fixture_name="orgunits_strange_geom", groupsets_fixture_name=None)
+
+        # Existing version with data
+        version = m.SourceVersion.objects.create(data_source=self.source, number=1)
+
+        OrgUnit.objects.create(name="original a", source_ref="a", version=version)
+        OrgUnit.objects.create(name="original b", source_ref="b", version=version)
+        OrgUnit.objects.create(name="original c", source_ref="c", version=version)
+        OrgUnit.objects.create(name="original d", source_ref="d", version=version)
+
+        self.old_counts = self.counts()
+
+        task = Task.objects.create(name="dhis2_ou_importer", launcher=self.user, account=self.account)
+        dhis2_ou_importer(
+            source_id=self.source.id,
+            source_version_number=1,
+            force=False,
+            validate=False,
+            continue_on_error=False,
+            url="https://play.dhis2.org/2.30",
+            login="admin",
+            password="district",
+            update_mode=True,
+            task=task,
+            _immediate=True,
+        )
+
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS", task.result)
+        self.assertCreated(
+            {
+                m.OrgUnit: 0,
+                m.OrgUnitType: 1,
+                m.Group: 0,  # there is 2 group on OrgUnit C, they are skipped since we skipped C
+            }
+        )
+
+        # There is no 'imported on' group since we don't create new orgunits
+        groups = m.Group.objects.filter(name__startswith="Imported on")
+        self.assertEqual(groups.count(), 0)
+
+        # didn't touch the existing
+        ou_a = OrgUnit.objects.get(source_ref="a")
+        self.assertEqual(ou_a.name, "original a")
+        self.assertEqual(ou_a.geom, None)
+
+        ou_b = OrgUnit.objects.get(source_ref="b")
+        self.assertEqual(ou_b.name, "original b")
+        self.assertEqual(ou_b.geom, None)
+
+        ou_d = OrgUnit.objects.get(source_ref="d")
+        self.assertEqual(ou_d.name, "original d")
+        self.assertEqual(ou_d.geom, None)
+
+        ou_c = OrgUnit.objects.get(source_ref="c")
+        self.assertEqual(ou_c.geom, None)
+        self.assertEqual(ou_c.name, "original c")
+
+        self.assertEqual(OrgUnit.objects.count(), 4)

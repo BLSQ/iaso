@@ -350,7 +350,7 @@ def import_orgunits_and_groups(
 
     # Create a group that represent all the Orgunit imported
     if created_ou and update_mode:
-        g = Group.objects.create(name=f"Imported on {now().isoformat()}", source_version=version)
+        g = Group.objects.create(name=f"Imported on {now().strftime('%d/%m/%Y %H:%M:%S')}", source_version=version)
         g.org_units.set(created_ou.values())
 
     load_groupsets(api, version, group_dict)

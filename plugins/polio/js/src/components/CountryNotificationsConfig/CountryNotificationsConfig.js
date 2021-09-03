@@ -8,7 +8,7 @@ import { CountryNotificationsConfigTable } from './Table/CountryNotificationsCon
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-export const CountryNotificationsConfig = ({ params }) => {
+export const CountryNotificationsConfig = () => {
     const classes = useStyles();
     return (
         <div>
@@ -20,7 +20,4 @@ export const CountryNotificationsConfig = ({ params }) => {
     );
 };
 
-CountryNotificationsConfig.propTypes = {
-    params: PropTypes.object.isRequired,
-};
 

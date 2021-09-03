@@ -5,8 +5,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { object } from 'prop-types';
-import { getCountryUsersGroup, getAllUsers } from '../requests';
 import { withRouter } from 'react-router';
+import { getCountryUsersGroup, getAllUsers } from '../requests';
 import MESSAGES from '../../../constants/messages';
 import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
 import { useAPI } from '../../../../../../../hat/assets/js/apps/Iaso/utils/requests';
@@ -36,10 +36,14 @@ const CountryNotificationsConfigTable = ({ params }) => {
         [params.order, params.page, params.pageSize],
     );
     const { data: allUsers } = useAPI(getAllUsers);
-    const { data: tableData, isLoading } = useAPI(getCountryUsersGroup, tableParams, {
-        preventTrigger: false,
-        additionalDependencies: [refresh],
-    });
+    const { data: tableData, isLoading } = useAPI(
+        getCountryUsersGroup,
+        tableParams,
+        {
+            preventTrigger: false,
+            additionalDependencies: [refresh],
+        },
+    );
 
     const columns = [
         {
@@ -115,7 +119,9 @@ const CountryNotificationsConfigTable = ({ params }) => {
             pages={tableData?.pages ?? 1}
             count={tableData?.count ?? 1}
             multiselect={false}
-            extraProps={isLoading}
+            extraProps={{
+                loading: isLoading,
+            }}
         />
     );
 };
@@ -125,4 +131,4 @@ CountryNotificationsConfigTable.propTypes = {
 };
 
 const tableWithRouter = withRouter(CountryNotificationsConfigTable);
-export {tableWithRouter as CountryNotificationsConfigTable}
+export { tableWithRouter as CountryNotificationsConfigTable };

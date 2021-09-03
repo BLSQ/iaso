@@ -24,7 +24,6 @@ const useStyles = makeStyles(styles);
 const FormForm = ({ currentForm, setFieldValue }) => {
     const classes = useStyles();
     const intl = useSafeIntl();
-    const [isSinglePerPeriodSet, setIsSinglePeriodSet] = useState(false);
     const allProjects = useSelector(state => state.projects.allProjects);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
     const setPeriodType = value => {
@@ -46,25 +45,6 @@ const FormForm = ({ currentForm, setFieldValue }) => {
     if (currentForm.project_ids.value.length > 0) {
         projects = currentForm.project_ids.value.join(',');
     }
-    const setSinglePerPeriod = useCallback(
-        (key, value) => {
-            if (!isSinglePerPeriodSet) {
-                setIsSinglePeriodSet(true);
-            }
-            setFieldValue(key, value === 'true');
-        },
-        [isSinglePerPeriodSet, setFieldValue],
-    );
-
-    // Running the effect at every render otherwise it's overwritten when the page loads
-    useEffect(() => {
-        if (
-            !isSinglePerPeriodSet &&
-            currentForm.single_per_period.value !== null
-        ) {
-            setFieldValue('single_per_period', null);
-        }
-    });
 
     return (
         <Grid container spacing={2} justifyContent="flex-start">
@@ -120,7 +100,9 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                             name="single_per_period"
                             disabled={currentForm.period_type.value === null}
                             required
-                            onChange={setSinglePerPeriod}
+                            onChange={(key, value) => {
+                                setFieldValue(key, value === 'true');
+                            }}
                             value={currentForm.single_per_period.value}
                             errors={
                                 currentForm.single_per_period.value === null

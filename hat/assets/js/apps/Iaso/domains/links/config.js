@@ -1,5 +1,4 @@
 import React from 'react';
-import moment from 'moment';
 import Link from '@material-ui/core/Link';
 import Checkbox from '@material-ui/core/Checkbox';
 import { Box } from '@material-ui/core';
@@ -84,7 +83,10 @@ export const linksTableColumns = (formatMessage, validateLink) => [
     {
         Header: formatMessage(MESSAGES.algorithm),
         id: 'algorithm_run',
-        accessor: row => (row.algorithm_run ? description : '?'),
+        accessor: row =>
+            row.algorithm_run?.description
+                ? row.algorithm_run.description
+                : '?',
     },
     {
         Header: formatMessage(MESSAGES.validator),

@@ -8,8 +8,17 @@
  * @returns {*}
  */
 export function commaSeparatedIdsToArray(string) {
+    if (!string) return [];
     return string
         .split(',')
         .filter(s => s !== '')
         .map(Number);
+}
+
+export function commaSeparatedIdsToStringArray(string) {
+    if (!string) return [];
+    return string
+        .split(',')
+        .filter(s => s !== '')
+        .sort();
 }

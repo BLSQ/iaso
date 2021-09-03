@@ -13,6 +13,14 @@ from rest_framework.response import Response
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
+
+from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer
+from plugins.polio.serializers import (
+    SurgePreviewSerializer,
+    CampaignPreparednessSpreadsheetSerializer,
+    CountryUsersGroupSerializer,
+)
+from .models import Campaign, Config, CountryUsersGroup
 from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer, LineListImportSerializer
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
 from .models import Campaign, Config, LineListImport
@@ -42,7 +50,6 @@ class CampaignViewSet(ModelViewSet):
     serializer_class = CampaignSerializer
     results_key = "campaigns"
     remove_results_key_if_paginated = True
-    filters.OrderingFilter.ordering_param = "order"
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend]
     ordering_fields = [
         "obr_name",
@@ -80,6 +87,26 @@ class CampaignViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
+
+class CountryUsersGroupViewSet(ModelViewSet):
+    serializer_class = CountryUsersGroupSerializer
+    results_key = "country_users_group"
+    http_method_names = ["get", "put"]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["country__name", "language"]
+
+    def get_queryset(self):
+        countries = OrgUnit.objects.filter_for_user_and_app_id(self.request.user).filter(
+            org_unit_type__category="COUNTRY"
+        )
+        for country in countries:
+            cug, created = CountryUsersGroup.objects.get_or_create(
+                country=country
+            )  # ensuring that such a model always exist
+            if created:
+                print(f"created {cug}")
+        return CountryUsersGroup.objects.filter(country__in=countries)
 
 
 class LineListImportViewSet(ModelViewSet):
@@ -186,4 +213,5 @@ class IMViewSet(viewsets.ViewSet):
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/im", IMViewSet, basename="IM")
+router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")

@@ -11,7 +11,7 @@ import ProtectedRoute from './domains/users/components/ProtectedRoute';
 import { store, history } from './redux/store';
 import { addRoutes } from './routing/redirections';
 import { getPlugins, PluginsContext } from './utils';
-import { getOverridedTheme } from './styles';
+import { getOverriddenTheme } from './styles';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -45,7 +45,7 @@ export default function iasoApp(element, enabledPluginsName) {
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>
-                <MuiThemeProvider theme={getOverridedTheme(theme)}>
+                <MuiThemeProvider theme={getOverriddenTheme(theme)}>
                     <CssBaseline />
                     <App store={store} routes={routes} history={history} />
                 </MuiThemeProvider>

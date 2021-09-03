@@ -1,7 +1,7 @@
 import { styles as mapCluster } from './mapCluster';
 import { styles as mapCustomControl } from './mapCustomControl';
 
-export const getOverridedTheme = theme => ({
+export const getOverriddenTheme = theme => ({
     ...theme,
     overrides: {
         MuiCssBaseline: {

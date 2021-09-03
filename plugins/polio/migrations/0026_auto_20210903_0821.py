@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polio', '0025_merge_20210901_1222'),
+        ("polio", "0025_merge_20210901_1222"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='countryusersgroup',
-            name='language',
-            field=models.CharField(choices=[('FR', 'Français'), ('EN', 'English')], default='EN', max_length=32),
+            model_name="countryusersgroup",
+            name="language",
+            field=models.CharField(choices=[("FR", "Français"), ("EN", "English")], default="EN", max_length=32),
         ),
     ]

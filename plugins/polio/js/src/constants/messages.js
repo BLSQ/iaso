@@ -117,6 +117,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.select.label.selectLanguage',
         defaultMessage: 'Select language',
     },
+    country: {
+        id: 'iaso.table.label.country',
+        defaultMessage: 'Country',
+    },
+    usersToNotify: {
+        id: 'iaso.table.label.usersToNotify',
+        defaultMessage: 'Users to notify',
+    },
+    language: {
+        id: 'iaso.table.label.language',
+        defaultMessage: 'Language',
+    },
+    actions: {
+        id: 'iaso.table.label.actions',
+        defaultMessage: 'Actions',
+    },
 });
 
 export default MESSAGES;

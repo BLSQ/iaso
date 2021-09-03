@@ -28,7 +28,7 @@ const initialState = (language, users) => ({
     users: users ?? [],
 });
 
-export const EmailNotificationsModal = ({
+export const CountryNotificationsConfigModal = ({
     renderTrigger,
     countryId,
     language,
@@ -38,13 +38,12 @@ export const EmailNotificationsModal = ({
     allLanguages,
 }) => {
     const [blockFetch, setBlockFetch] = useState(true);
-    const { data: countryDetails } = useAPI(
+    const { data: countryDetails, isLoading } = useAPI(
         getCountryConfigDetails,
         countryId,
         { preventTrigger: blockFetch, additionalDependencies: [] },
     );
     const [config, setConfig] = useFormState(initialState(language, users));
-    const [allowConfirm, setAllowConfirm] = useState(false);
 
     const onConfirm = useCallback(
         async closeDialog => {
@@ -68,30 +67,19 @@ export const EmailNotificationsModal = ({
 
     const reset = useCallback(() => {
         syncStateWithProps();
-        setAllowConfirm(false);
     }, [syncStateWithProps]);
 
-    const handleAllowConfirm = useCallback(() => {
-        if (
-            allowConfirm &&
-            config.language.value === language &&
-            isEqual(config.users.value, users)
-        ) {
-            setAllowConfirm(false);
-        } else if (
-            !allowConfirm &&
-            (config.language.value !== language ||
-                !isEqual(config.users.value, users))
-        ) {
-            setAllowConfirm(true);
-        }
-    }, [
-        allowConfirm,
-        config.language.value,
-        config.users.value,
-        users,
-        language,
-    ]);
+    let allowConfirm = false;
+    if (isLoading) {
+        allowConfirm = false;
+    } else if (
+        config.language.value === language &&
+        isEqual(config.users.value, users)
+    ) {
+        allowConfirm = false;
+    } else {
+        allowConfirm = true;
+    }
 
     const handleModalOpen = useCallback(
         ({ openDialog }) => {
@@ -106,8 +94,6 @@ export const EmailNotificationsModal = ({
     );
 
     useEffect(syncStateWithProps, [syncStateWithProps]);
-
-    useEffect(handleAllowConfirm, [handleAllowConfirm]);
 
     return (
         <ConfirmCancelDialogComponent
@@ -155,7 +141,7 @@ export const EmailNotificationsModal = ({
     );
 };
 
-EmailNotificationsModal.propTypes = {
+CountryNotificationsConfigModal.propTypes = {
     renderTrigger: func.isRequired,
     countryId: number.isRequired,
     language: string,
@@ -165,7 +151,7 @@ EmailNotificationsModal.propTypes = {
     allLanguages: arrayOf(object).isRequired,
 };
 
-EmailNotificationsModal.defaultProps = {
+CountryNotificationsConfigModal.defaultProps = {
     notifyParent: () => null,
     allUsers: [],
     language: '',

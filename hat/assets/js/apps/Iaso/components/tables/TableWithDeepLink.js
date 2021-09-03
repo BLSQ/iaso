@@ -7,7 +7,10 @@ export const TableWithDeepLink = ({ baseUrl, ...props }) => {
     const onTableParamsChange = handleTableDeepLink(baseUrl);
     const newProps = { ...props };
     newProps.onTableParamsChange = onTableParamsChange;
-    return <Table {...newProps} />;
+    return (
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        <Table {...props} onTableParamsChange={handleTableDeepLink(baseUrl)} />
+    );
 };
 
 TableWithDeepLink.propTypes = {

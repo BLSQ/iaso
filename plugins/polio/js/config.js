@@ -3,7 +3,7 @@ import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import SettingsIcon from '@material-ui/icons/Settings';
 import { Dashboard } from './src/components/Dashboard';
-import { EmailNotificationConfig } from './src/components/EmailNotifications/EmailNotificationsConfig';
+import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
 import MESSAGES from './src/constants/messages';
 
 const routes = [
@@ -15,7 +15,7 @@ const routes = [
     },
     {
         baseUrl: 'polio/config',
-        component: () => <EmailNotificationConfig />,
+        component: () => <CountryNotificationsConfig />,
         permission: 'iaso_forms',
         params: [
             {

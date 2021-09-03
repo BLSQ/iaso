@@ -4,27 +4,29 @@ import { withRouter } from 'react-router';
 import { Box, makeStyles } from '@material-ui/core';
 import { commonStyles } from 'bluesquare-components';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { EmailNotificationsTable } from './Table/EmailNotificationsTable';
+import { CountryNotificationsConfigTable } from './Table/CountryNotificationsConfigTable';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-const EmailNotificationConfig = ({ params }) => {
+const CountryNotificationsConfig = ({ params }) => {
     const classes = useStyles();
     return (
         <div>
             <TopBar title="Configuration" displayBackButton={false} />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <EmailNotificationsTable params={params} />
+                <CountryNotificationsConfigTable params={params} />
             </Box>
         </div>
     );
 };
 
-EmailNotificationConfig.propTypes = {
+CountryNotificationsConfig.propTypes = {
     params: PropTypes.object.isRequired,
 };
 
-const emailConfigWithRouter = withRouter(EmailNotificationConfig);
+const countryNotificationsConfigWithRouter = withRouter(
+    CountryNotificationsConfig,
+);
 
-export { emailConfigWithRouter as EmailNotificationConfig };
+export { countryNotificationsConfigWithRouter as CountryNotificationsConfig };

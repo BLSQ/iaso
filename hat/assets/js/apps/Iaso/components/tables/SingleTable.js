@@ -56,7 +56,7 @@ const SingleTable = ({
     const [loading, setLoading] = useState(false);
     const [selection, setSelection] = useState(selectionInitialState);
     const [didFetchData, setDidFetchData] = useState(false);
-    const [firstLoad, setfFirstLoad] = useState(true);
+    const [firstLoad, setFirstLoad] = useState(true);
     const [tableResults, setTableResults] = useState(tableInitialResult);
     const { list, pages, count } = tableResults;
     const dispatch = useDispatch();
@@ -92,7 +92,7 @@ const SingleTable = ({
         }
 
         if (firstLoad) {
-            setfFirstLoad(false);
+            setFirstLoad(false);
         }
     };
 
@@ -103,7 +103,7 @@ const SingleTable = ({
         if (!firstLoad || (searchActive && firstLoad)) {
             handleFetch();
         } else if (!searchActive && firstLoad) {
-            setfFirstLoad(false);
+            setFirstLoad(false);
         }
     }, [
         params[getParamsKey(paramsPrefix, 'pageSize')],

@@ -2,11 +2,12 @@ import React, { useMemo, useState } from 'react';
 import {
     textPlaceholder,
     IconButton as IconButtonComponent,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { object } from 'prop-types';
 import { getCountryUsersGroup, getAllUsers } from '../requests';
 import MESSAGES from '../../../constants/messages';
-import { EmailNotificationsModal } from '../EmailNotificationsModal';
+import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
 import { useAPI } from '../../../../../../../hat/assets/js/apps/Iaso/utils/requests';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
@@ -22,7 +23,8 @@ const allLanguages = [
     { value: 'FR', label: 'FR' },
 ];
 
-export const EmailNotificationsTable = ({ params }) => {
+export const CountryNotificationsConfigTable = ({ params }) => {
+    const { formatMessage } = useSafeIntl();
     const [refresh, setRefresh] = useState(false);
     const tableParams = useMemo(
         () => ({
@@ -40,7 +42,7 @@ export const EmailNotificationsTable = ({ params }) => {
 
     const columns = [
         {
-            Header: 'Country',
+            Header: formatMessage(MESSAGES.country),
             id: 'country__name',
             accessor: 'country_name', // Watch out, needs 2 underscores
             sortable: true,
@@ -52,8 +54,9 @@ export const EmailNotificationsTable = ({ params }) => {
             },
         },
         {
-            Header: 'Users to notify',
+            Header: formatMessage(MESSAGES.usersToNotify),
             accessor: 'read_only_users_field',
+            width: 100,
             sortable: false,
             align: 'left',
             Cell: settings => {
@@ -65,7 +68,7 @@ export const EmailNotificationsTable = ({ params }) => {
             },
         },
         {
-            Header: 'Language',
+            Header: formatMessage(MESSAGES.language),
             sortable: true,
             accessor: 'language',
             Cell: settings => {
@@ -74,12 +77,12 @@ export const EmailNotificationsTable = ({ params }) => {
             },
         },
         {
-            Header: 'Actions',
+            Header: formatMessage(MESSAGES.actions),
             sortable: false,
             accessor: 'actions',
             Cell: settings => {
                 return (
-                    <EmailNotificationsModal
+                    <CountryNotificationsConfigModal
                         notifyParent={() => setRefresh(!refresh)}
                         onConfirm={() => null}
                         countryId={settings.row.original.id}
@@ -115,6 +118,6 @@ export const EmailNotificationsTable = ({ params }) => {
     );
 };
 
-EmailNotificationsTable.propTypes = {
+CountryNotificationsConfigTable.propTypes = {
     params: object.isRequired,
 };

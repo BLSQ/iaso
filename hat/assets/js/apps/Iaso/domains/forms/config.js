@@ -1,18 +1,15 @@
 import React from 'react';
-import moment from 'moment';
 import { Grid } from '@material-ui/core';
 import { Link } from 'react-router';
 
-import {
-    textPlaceholder,
-    IconButton as IconButtonComponent,
-} from 'bluesquare-components';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import FormVersionsDialog from './components/FormVersionsDialogComponent';
 import { baseUrls } from '../../constants/urls';
 import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
 export const formVersionsTableColumns = (
     formatMessage,
@@ -23,17 +20,14 @@ export const formVersionsTableColumns = (
     {
         Header: formatMessage(MESSAGES.version),
         accessor: 'version_id',
-        Cell: settings => settings.row.original.version_id || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.startPeriod),
         accessor: 'start_period',
-        Cell: settings => settings.row.original.start_period || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.endPeriod),
         accessor: 'end_period',
-        Cell: settings => settings.row.original.end_period || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.actions),
@@ -89,32 +83,21 @@ const formsTableColumns = (
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
         style: { justifyContent: 'left' },
-        Cell: settings => settings.row.original.name,
     },
     {
         Header: formatMessage(MESSAGES.created_at),
         accessor: 'created_at',
-        Cell: settings =>
-            moment.unix(settings.row.original.created_at).format('LTS'),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.updated_at),
         accessor: 'updated_at',
-        Cell: settings =>
-            moment.unix(settings.row.original.updated_at).format('LTS'),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.instance_updated_at),
         accessor: 'instance_updated_at',
-        Cell: settings => {
-            const dateText = settings.row.original.instance_updated_at
-                ? moment
-                      .unix(settings.row.original.instance_updated_at)
-                      .format('LTS')
-                : textPlaceholder;
-
-            return dateText;
-        },
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.type),
@@ -128,14 +111,12 @@ const formsTableColumns = (
     {
         Header: formatMessage(MESSAGES.records),
         accessor: 'instances_count',
-        Cell: settings => settings.row.original.instances_count,
     },
     {
         Header: formatMessage(MESSAGES.form_id),
         accessor: 'form_id',
         sortable: false,
         style: { justifyContent: 'left' },
-        Cell: settings => settings.row.original.form_id || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.latest_version_files),

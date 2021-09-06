@@ -15,6 +15,7 @@ class QuotaManager:
 
     def increase(self, by=1):
         self.total_requests += by
+        print(f"sleep {INCREASE_SLEEP_PERIOD_IN_SECONDS * by}")
         sleep(INCREASE_SLEEP_PERIOD_IN_SECONDS * by)
         limit = int(self.quota_read_limit - self.quota_read_limit * THRESHOLD)
         if self.total_requests % limit in range(0, by):

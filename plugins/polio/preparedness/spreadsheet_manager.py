@@ -50,13 +50,13 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     updates = [
         {"range": "c4", "values": [[region_name]]},
     ]
+    sheet.insert_cols([[]] * region_districts.count(), 7)
 
     rules = get_conditional_format_rules(sheet)
     rules.clear()
 
     for idx, district in enumerate(region_districts):
         col_index = 7 + idx
-        sheet.insert_cols([[]], col_index)
         first_district_cell = rowcol_to_a1(7, col_index)
         district_name_cell = f"={first_district_cell}"
 
@@ -108,11 +108,8 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
 
     format_cell_ranges(
         worksheet=sheet,
-        ranges=[(range_cells, PERCENT_FORMAT) for range_cells in summary_range_a1],
-    )
-    format_cell_ranges(
-        worksheet=sheet,
-        ranges=[(range_cells, TEXT_CENTERED) for range_cells in summary_range_a1 + district_data_range],
+        ranges=[(range_cells, PERCENT_FORMAT) for range_cells in summary_range_a1]
+        + [(range_cells, TEXT_CENTERED) for range_cells in summary_range_a1 + district_data_range],
     )
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")

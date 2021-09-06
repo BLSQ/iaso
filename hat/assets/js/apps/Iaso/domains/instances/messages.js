@@ -305,6 +305,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.deleteInstanceWarning',
         defaultMessage: 'This operation cannot be undone.',
     },
+    noOrgUnitType: {
+        id: 'iaso.instance.label.noOrgUnitType',
+        defaultMessage: 'OrgUnit type not specified',
+    },
 });
 
 export default MESSAGES;

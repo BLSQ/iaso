@@ -114,6 +114,7 @@
     "iaso.instance.instanceEditAction": "Modifier les réponses via Enketo",
     "iaso.instance.instanceExportAction": "Export instance",
     "iaso.instance.instanceReAssignAction": "Modifier la période et/ou l'orgUnit",
+    "iaso.instance.label.noOrgUnitType": "OrgUnit type not specified",
     "iaso.instance.missingFile": "Cannot find an instance with a file",
     "iaso.instance.missingGeolocation": "Cannot find an instance with geolocation",
     "iaso.instance.org_unit": "Org unit",

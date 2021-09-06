@@ -1,6 +1,9 @@
 import React from 'react';
 import CallMade from '@material-ui/icons/CallMade';
 import moment from 'moment';
+import { Tooltip } from '@material-ui/core';
+import { truncateText, textPlaceholder } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import instancesTableColumns from './config';
 import MESSAGES from './messages';
 import DeleteDialog from './components/DeleteInstanceDialog';
@@ -71,7 +74,23 @@ export const getInstancesColumns = (
                     class: 'small',
                     sortable: false,
                     accessor: c.key,
-                    Header: c.label || c.key,
+                    Header: (
+                        <Tooltip
+                            title={
+                                <FormattedMessage
+                                    {...MESSAGES.instanceHeaderTooltip}
+                                    values={{
+                                        label: c.label ?? textPlaceholder,
+                                        key: c.key,
+                                    }}
+                                />
+                            }
+                        >
+                            <span>
+                                {c.label ? truncateText(c.label, 25) : c.key}
+                            </span>
+                        </Tooltip>
+                    ),
                     Cell: settings => renderValue(settings, c),
                 });
             }
@@ -119,6 +138,7 @@ export const getInstancesVisibleColumns = ({
             });
         });
     }
+    console.log('newColumns', newColumns);
     return newColumns;
 };
 

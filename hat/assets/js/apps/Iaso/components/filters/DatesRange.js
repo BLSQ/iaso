@@ -6,11 +6,7 @@ import { FormControl, Grid, Tooltip, IconButton } from '@material-ui/core';
 import Clear from '@material-ui/icons/Clear';
 import { injectIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
-import {
-    getUrlParamDateObject,
-    getDisplayedDateFormat,
-    dateFormat,
-} from '../../utils/dates';
+import { getUrlParamDateObject, dateFormat } from '../../utils/dates';
 
 const useStyles = makeStyles(theme => ({
     formControl: {

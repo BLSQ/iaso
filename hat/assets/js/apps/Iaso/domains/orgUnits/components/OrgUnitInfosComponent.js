@@ -5,12 +5,14 @@ import { Grid } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
-import { injectIntl } from 'bluesquare-components';
+import {
+    injectIntl,
+    FormControl as FormControlComponent,
+} from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 import MESSAGES from '../../forms/messages';
-import FormControlComponent from '../../../components/forms/FormControlComponent';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 
 // reformatting orgUnit name so the OU can be passed to the treeview modal

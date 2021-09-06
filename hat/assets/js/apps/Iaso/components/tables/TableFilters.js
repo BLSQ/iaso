@@ -5,9 +5,10 @@ import PropTypes from 'prop-types';
 import { Box, Button, Grid, makeStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
-import { commonStyles } from 'bluesquare-components';
-
-import FiltersComponent from '../filters/FiltersComponent';
+import {
+    commonStyles,
+    Filters as FiltersComponent,
+} from 'bluesquare-components';
 
 const MESSAGES = defineMessages({
     search: {

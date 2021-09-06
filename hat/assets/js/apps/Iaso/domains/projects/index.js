@@ -8,7 +8,6 @@ import {
     injectIntl,
     commonStyles,
     LoadingSpinner,
-    // TopBar,
     Table,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';

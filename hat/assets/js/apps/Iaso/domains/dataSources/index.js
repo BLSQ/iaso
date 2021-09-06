@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
     AddButton as AddButtonComponent,
     useSafeIntl,
-    TopBar,
 } from 'bluesquare-components';
+
+import TopBar from '../../components/nav/TopBarComponent';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { fetchAllDataSources } from '../../utils/requests';

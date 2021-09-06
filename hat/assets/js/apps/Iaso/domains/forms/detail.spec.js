@@ -2,9 +2,9 @@ import React from 'react';
 import nock from 'nock';
 
 import { expect } from 'chai';
+import { LoadingSpinner } from 'bluesquare-components';
 import Detail from './detail';
 import SingleTable from '../../components/tables/SingleTable';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import { renderWithStore } from '../../../../test/utils/redux';
 import {
     mockGetRequestsList,

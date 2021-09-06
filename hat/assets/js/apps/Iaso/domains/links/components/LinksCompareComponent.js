@@ -12,9 +12,9 @@ import {
     Grid,
     Typography,
 } from '@material-ui/core';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import LinksValue from './LinksValueComponent';
-import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 
 import MESSAGES from '../messages';
 

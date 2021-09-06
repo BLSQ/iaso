@@ -1,8 +1,8 @@
 import React from 'react';
 import nock from 'nock';
 import { expect } from 'chai';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { AddTask } from './AddTaskComponent';
-import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { mockPostRequest } from '../../../../../test/utils/requests';

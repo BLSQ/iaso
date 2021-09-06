@@ -7,7 +7,7 @@ import grey from '@material-ui/core/colors/grey';
 
 import PropTypes from 'prop-types';
 
-import LoadingSpinner from '../LoadingSpinnerComponent';
+import { LoadingSpinner } from 'bluesquare-components';
 import { getFileName } from '../../utils/filesUtils';
 
 const styles = () => ({

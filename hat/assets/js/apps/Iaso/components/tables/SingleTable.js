@@ -18,7 +18,7 @@ import {
 
 import Filters from './TableFilters';
 
-import DownloadButtonsComponent from '../buttons/DownloadButtonsComponent';
+import DownloadButtonsComponent from '../DownloadButtonsComponent';
 import { redirectToReplace } from '../../routing/actions';
 
 const useStyles = makeStyles(theme => ({

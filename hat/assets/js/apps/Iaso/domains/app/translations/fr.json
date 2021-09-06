@@ -116,6 +116,7 @@
     "iaso.instance.instanceEditAction": "Modifier les réponses via Enketo",
     "iaso.instance.instanceExportAction": "Exporter la soumission",
     "iaso.instance.instanceReAssignAction": "Modifier la période et/ou l'orgUnit",
+    "iaso.instance.label.noOrgUnitType": "Type de l'OrgUnit non-précisé",
     "iaso.instance.missingFile": "Aucune fichier trouvé",
     "iaso.instance.missingGeolocation": "Aucune soumission trouvée avec une localisation",
     "iaso.instance.org_unit": "Unités d’organisation (org unit)",

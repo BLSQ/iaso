@@ -37,7 +37,7 @@ const InstanceDetailsLocation = ({
                 {orgUnitTree.map(ou => (
                     <InstanceDetailsField
                         key={ou.id}
-                        label={ou.org_unit_type.name}
+                        label={ou.org_unit_type?.name ?? MESSAGES.noOrgUnitType}
                         valueTitle={
                             <OrgUnitLabel orgUnit={ou} withType={false} />
                         }

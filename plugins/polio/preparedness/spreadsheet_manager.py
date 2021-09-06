@@ -22,6 +22,7 @@ from plugins.polio.preparedness.conditional_formatting import (
     PERCENT_FORMAT,
     TEXT_CENTERED,
 )
+from plugins.polio.preparedness.quota_manager import QuotaManager
 
 PREPAREDNESS_TEMPLATE_ID = os.environ.get("PREPAREDNESS_TEMPLATE_ID", None)
 
@@ -45,6 +46,7 @@ def update_national_worksheet(sheet: gspread.Worksheet, country=None, payment_mo
 
 
 def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region_districts):
+    quota = QuotaManager()
     updates = [
         {"range": "c4", "values": [[region_name]]},
     ]
@@ -115,6 +117,7 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
     rules.save()
+    quota.increase(1)
 
 
 def generate_planning_coord_funding_section(col_index: int, district):

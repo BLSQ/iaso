@@ -454,7 +454,6 @@
     "iaso.snackBar.fetchTasksError": "An error occurred while fetching tasks list",
     "iaso.snackBar.generateDerivedRequestError": "Generation failed",
     "iaso.snackBar.generateDerivedRequestSuccess": "Generation scheduled",
-    "iaso.snackBar.ignoredTaskErrorCode": "Update ignored",
     "iaso.snackBar.locationLimitWarning": "Display too much items on the map can reduce the performance",
     "iaso.snackBar.patchTaskError": "Error occurred while updating the task.",
     "iaso.snackBar.patchTaskSuccess": "The task has been updated.",

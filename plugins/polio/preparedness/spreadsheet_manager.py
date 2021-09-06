@@ -114,7 +114,8 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
     rules.save()
-    quota.increase(1)
+    # we do 6 request: duplicate sheet, insetCol (2), getConditionalFormating, add values, addFormating, addConditionalFormatting.
+    quota.increase(6)
 
 
 def generate_planning_coord_funding_section(col_index: int, district):

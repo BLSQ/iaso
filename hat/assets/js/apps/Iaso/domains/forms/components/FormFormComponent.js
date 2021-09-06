@@ -30,6 +30,11 @@ const styles = theme => ({
 });
 
 const useStyles = makeStyles(styles);
+const formatBooleanForRadio = value => {
+    if (value === true) return 'true';
+    if (value === false) return 'false';
+    return null;
+};
 
 const FormForm = ({ currentForm, setFieldValue }) => {
     const classes = useStyles();
@@ -113,7 +118,9 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                             onChange={(key, value) => {
                                 setFieldValue(key, value === 'true');
                             }}
-                            value={currentForm.single_per_period.value}
+                            value={formatBooleanForRadio(
+                                currentForm.single_per_period.value,
+                            )}
                             errors={
                                 currentForm.single_per_period.value === null
                                     ? [
@@ -127,11 +134,11 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                             options={[
                                 {
                                     label: intl.formatMessage(MESSAGES.yes),
-                                    value: true,
+                                    value: 'true',
                                 },
                                 {
                                     label: intl.formatMessage(MESSAGES.no),
-                                    value: false,
+                                    value: 'false',
                                 },
                             ]}
                             clearable={false}

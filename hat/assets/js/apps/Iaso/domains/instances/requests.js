@@ -16,3 +16,16 @@ export const fetchFormDetailsForInstance = formId => {
         return response;
     });
 };
+
+export const fetchPossibleFields = async formId => {
+    if (!formId) return null;
+    const response = await iasoGetRequest({
+        requestParams: {
+            url: `/api/forms/${formId}/?fields=possible_fields`,
+        },
+        disableSuccessSnackBar: true,
+        errorKeyMessage: 'Error fetching possible fields',
+        consoleError: 'fetchPossibleFields',
+    });
+    return response.possible_fields;
+};

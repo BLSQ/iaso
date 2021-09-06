@@ -20,14 +20,10 @@ import {
     createInstance,
 } from './actions';
 import {
-    setCurrentForm,
-    // fetchFormDetail as fetchFormDetailAction,
-} from '../forms/actions';
-import {
     redirectTo as redirectToAction,
     redirectToReplace as redirectToReplaceAction,
 } from '../../routing/actions';
-import { fetchFormDetailsForInstance } from './requests';
+import { fetchFormDetailsForInstance, fetchPossibleFields } from './requests';
 import {
     fetchInstancesAsDict,
     fetchInstancesAsSmallDict,
@@ -89,13 +85,14 @@ class Instances extends Component {
         super(props);
         this.state = {
             tableColumns: [],
-            tab: props.params.tab ? props.params.tab : 'list',
+            tab: props.params.tab ?? 'list',
             visibleColumns: [],
             forceRefresh: false,
             labelKeys: [],
             formName: '',
             period: { periodType: null },
             formId: '',
+            possibleFields: null,
         };
     }
 
@@ -119,15 +116,14 @@ class Instances extends Component {
     async componentDidMount() {
         const {
             params: { formId, tab },
-            // fetchFormDetail,
         } = this.props;
 
         this.fetchInstances(tab !== 'map');
         if (tab === 'map') {
             this.fetchSmallInstances();
         }
-        // TODO replace with custom fetch
         const formDetails = await fetchFormDetailsForInstance(formId);
+        const possibleFields = await fetchPossibleFields(formId);
         this.setState(state => {
             return {
                 ...state,
@@ -136,12 +132,13 @@ class Instances extends Component {
                     formName: formDetails.name,
                     formId: formDetails.id,
                     periodType: formDetails.period_type,
+                    possibleFields,
                 },
             };
         });
     }
 
-    componentDidUpdate(prevProps) {
+    async componentDidUpdate(prevProps) {
         const {
             params,
             reduxPage,
@@ -149,6 +146,12 @@ class Instances extends Component {
             instancesSmall,
         } = this.props;
         const { tableColumns } = this.state;
+        let { possibleFields } = { ...this.state };
+        if (!possibleFields) {
+            possibleFields = await fetchPossibleFields(
+                this.props.params.formId,
+            );
+        }
         if (
             params.pageSize !== prevProps.params.pageSize ||
             params.formId !== prevProps.params.formId ||
@@ -175,12 +178,14 @@ class Instances extends Component {
             },${this.state.labelKeys.join(',')}`;
             enrichedParams.columns = columnsWithLabelKeys;
             this.changeVisibleColumns(
-                getInstancesVisibleColumns(
+                getInstancesVisibleColumns({
                     formatMessage,
-                    reduxPage.list[0],
-                    enrichedParams,
+                    instance: reduxPage.list[0],
+                    columns: enrichedParams.columns,
+                    order: enrichedParams.order,
                     defaultOrder,
-                ),
+                    possibleFields,
+                }),
             );
         }
     }
@@ -261,7 +266,6 @@ class Instances extends Component {
 
     goBack() {
         const { params, router } = this.props;
-        this.props.setCurrentForm(undefined);
         this.props.setInstances([], params, 0, 0);
         router.goBack();
     }
@@ -357,7 +361,6 @@ class Instances extends Component {
             prevPathname,
             redirectTo,
         } = this.props;
-
         const { tab, tableColumns, visibleColumns, forceRefresh } = this.state;
         return (
             <section className={classes.relativeContainer}>
@@ -538,7 +541,6 @@ Instances.propTypes = {
     params: PropTypes.object.isRequired,
     setInstances: PropTypes.func.isRequired,
     setInstancesSmallDict: PropTypes.func.isRequired,
-    setCurrentForm: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     dispatch: PropTypes.func.isRequired,
@@ -559,7 +561,6 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setCurrentForm: form => dispatch(setCurrentForm(form)),
     resetInstances: () => dispatch(resetInstances()),
     setInstances: (instances, params, count, pages) =>
         dispatch(setInstances(instances, true, params, count, pages)),

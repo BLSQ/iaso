@@ -1,5 +1,6 @@
 import React from 'react';
 import CallMade from '@material-ui/icons/CallMade';
+import moment from 'moment';
 import instancesTableColumns from './config';
 import MESSAGES from './messages';
 import DeleteDialog from './components/DeleteInstanceDialog';
@@ -16,9 +17,13 @@ const KeyValueFields = ({ entry }) =>
         </>
     ));
 
+const formatValue = value => {
+    if (moment(value).isValid()) return moment(value).format('LTS');
+    return value;
+};
 const renderValue = (settings, c) => {
     const { key } = c;
-    // TODO refactor to use camelCase
+    // eslint-disable-next-line camelcase
     const { file_content } = settings.row.original;
     const value = file_content[key];
 
@@ -37,7 +42,7 @@ const renderValue = (settings, c) => {
             </pre>
         );
     }
-    return <span>{value}</span>;
+    return <span>{formatValue(value)}</span>;
 };
 
 export const getInstancesColumns = (
@@ -78,12 +83,14 @@ export const getInstancesColumns = (
 export const getMetasColumns = () =>
     [...instancesTableColumns()].map(c => c.accessor);
 
-export const getInstancesVisibleColumns = (
+export const getInstancesVisibleColumns = ({
     formatMessage,
     instance,
-    { columns = undefined, order },
+    columns = undefined,
+    order,
     defaultOrder,
-) => {
+    possibleFields,
+}) => {
     const activeOrders = (order || defaultOrder).split(',');
     const metasColumns = [
         ...instancesTableColumns(formatMessage).filter(
@@ -100,15 +107,16 @@ export const getInstancesVisibleColumns = (
             activeOrders.indexOf(`-${c.accessor}`) !== -1,
     }));
     if (instance) {
-        Object.keys(instance.file_content).forEach(k => {
-            if (k !== 'meta' && k !== 'uuid') {
-                newColumns.push({
-                    key: k,
-                    label: k, // TO-DO: get field label from API
-                    active: columns !== undefined && columns.includes(k),
-                    disabled: false,
-                });
-            }
+        possibleFields.forEach(field => {
+            const label = field.label.includes(':')
+                ? field.label.split(':')[0]
+                : field.label;
+            newColumns.push({
+                key: field.name,
+                label,
+                active: columns !== undefined && columns.includes(field.name),
+                disabled: false,
+            });
         });
     }
     return newColumns;

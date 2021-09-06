@@ -78,7 +78,7 @@ const currentForm = {
     periods_after_allowed: { value: 0 },
     device_field: { value: 'deviceid' },
     label_keys: { value: 'blue candle' },
-    fields: {
+    possible_fields: {
         value: [
             { label: 'blue candle', name: 'bc', type: 'string' },
             { label: 'boomerang', name: 'bg', type: 'string' },
@@ -151,7 +151,7 @@ describe.only('FormFormComponent connected component', () => {
                 element.props().onChange(i.keyValue, i.newValue);
                 connectedWrapper.update();
             });
-            expect(setFieldValueSpy.callCount).to.equal(16);
+            expect(setFieldValueSpy.callCount).to.equal(17);
         });
         it('mount properly without org_unit_type_ids and project_ids', () => {
             connectedWrapper = mount(

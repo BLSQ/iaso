@@ -93,7 +93,7 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     non_blank_ranges = [
         GridRange.from_a1_range(f"F16:{rowcol_to_a1(21, final_column)}", sheet),
         GridRange.from_a1_range(f"F36:{rowcol_to_a1(36, final_column)}", sheet),
-        GridRange.from_a1_range(f"F53:{rowcol_to_a1(57, final_column)}", sheet),
+        GridRange.from_a1_range(f"F53:{rowcol_to_a1(53, final_column)}", sheet),
     ]
 
     custom_rules = (

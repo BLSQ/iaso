@@ -14,7 +14,6 @@ import {
     commonStyles,
     LoadingSpinner,
     IconButton as IconButtonComponent,
-    // TopBar,
     ExportButton as ExportButtonComponent,
 } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';

@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import { withStyles, Box, Grid } from '@material-ui/core';
 import {
     injectIntl,
-    // TopBar,
     LoadingSpinner,
     commonStyles,
     Table,

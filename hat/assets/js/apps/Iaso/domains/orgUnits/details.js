@@ -12,7 +12,6 @@ import {
     createUrl,
     injectIntl,
     commonStyles,
-    // TopBar,
     LoadingSpinner,
 } from 'bluesquare-components';
 import { alpha } from '@material-ui/core/styles/colorManipulator';

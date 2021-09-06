@@ -247,7 +247,7 @@ describe('Detail form connected component', () => {
                     },
                 ),
             );
-            const loader = connectedWrapper.find(LoadingSpinner);
+            const loader = connectedWrapper.find(LoadingSpinner).at(0);
             expect(loader).to.have.lengthOf(1);
             sinon.restore();
         });

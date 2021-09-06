@@ -151,9 +151,7 @@ describe.only('FormFormComponent connected component', () => {
                 element.props().onChange(i.keyValue, i.newValue);
                 connectedWrapper.update();
             });
-            // Count went from 16 to 17 switching to Select input because there's an additional call in a useEffect hook
-            // Count went from 17 to 19 because clicking on advancedSettings button triggered a useEffect and we added an inputField
-            expect(setFieldValueSpy.callCount).to.equal(19);
+            expect(setFieldValueSpy.callCount).to.equal(16);
         });
         it('mount properly without org_unit_type_ids and project_ids', () => {
             connectedWrapper = mount(

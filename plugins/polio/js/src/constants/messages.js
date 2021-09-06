@@ -93,6 +93,46 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Unselect region',
         id: 'iaso.button.label.removeRegion',
     },
+    confirm: {
+        defaultMessage: 'Confirm',
+        id: 'iaso.label.confirm',
+    },
+    cancel: {
+        defaultMessage: 'Cancel',
+        id: 'iaso.label.cancel',
+    },
+    configuration: {
+        defaultMessage: 'Configuration',
+        id: 'iaso.polio.label.configuration',
+    },
+    configEmailNotif: {
+        defaultMessage: 'Configure country: {country}',
+        id: 'iaso.polio.label.configEmailNotif',
+    },
+    selectUsers: {
+        id: 'iaso.polio.select.label.selectUsers',
+        defaultMessage: 'Select users',
+    },
+    selectLanguage: {
+        id: 'iaso.polio.select.label.selectLanguage',
+        defaultMessage: 'Select language',
+    },
+    country: {
+        id: 'iaso.polio.table.label.country',
+        defaultMessage: 'Country',
+    },
+    usersToNotify: {
+        id: 'iaso.polio.table.label.usersToNotify',
+        defaultMessage: 'Users to notify',
+    },
+    language: {
+        id: 'iaso.polio.table.label.language',
+        defaultMessage: 'Language',
+    },
+    actions: {
+        id: 'iaso.polio.table.label.actions',
+        defaultMessage: 'Actions',
+    },
 });
 
 export default MESSAGES;

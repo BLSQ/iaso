@@ -29,7 +29,11 @@
     line-height: 1.3;
   }
 }
-
+.errorlist {
+  color: $red;
+  padding: 0 0 $padding-unit / 2 $padding-unit / 2;
+  font-size: 14px !important;
+}
 .auth__form {
   background: white;
   border-radius: 4px;
@@ -74,46 +78,24 @@
   }
 }
 
-.helptext {
-  ul {
-    padding: $padding-unit / 2 0 0 $padding-unit / 2;
-    font-size: 14px;
-    line-height: 1.3;
-  }
-}
-
-.errorlist {
-  color: $red;
-  padding: 0 0 $padding-unit / 2 $padding-unit / 2;
-  font-size: 14px !important;
-}
 
 $right-icon-position : 40px;
 
 #display-password {
   position: absolute;
   width: auto;
-  bottom: 133px;
+  bottom: 131px;
   right: $right-icon-position;
 
-  &.id_new_password1 {
-    top: 225px;
-    right: $right-icon-position;
-    bottom: auto;
+  .hidden {
+    display: none;
   }
 
-  &.id_old_password {
-    top: 145px;
-    right: $right-icon-position;
-    bottom: 102px;
-    bottom: auto;
+  svg {
+    width: auto;
+    height: 15px;
+    margin-bottom: -2px;
   }
-}
-
-.auth__footer {
-  color: white;
-  text-align: center;
-  margin-top: $padding-unit/1.5;
 }
 
 .auth__message {

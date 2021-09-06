@@ -1,10 +1,9 @@
 import React from 'react';
-
 import PropTypes from 'prop-types';
-
 import { Button, withStyles } from '@material-ui/core';
-
 import SaveAlt from '@material-ui/icons/SaveAlt';
+import { ExcellSvg } from 'bluesquare-components';
+import PublicIcon from '@material-ui/icons/Public';
 
 const styles = theme => ({
     button: {
@@ -12,6 +11,11 @@ const styles = theme => ({
         '& svg, & i': {
             marginRight: theme.spacing(1),
         },
+    },
+    icon: {
+        height: theme.spacing(3),
+        width: 'auto',
+        marginRight: theme.spacing(1),
     },
 });
 
@@ -39,7 +43,7 @@ function DownloadButtonsComponent(props) {
                     window.location.href = xlsxUrl;
                 }}
             >
-                <i className="fa fa-file-excel-o" />
+                <ExcellSvg className={classes.icon} />
                 XLSX
             </Button>
             {gpkgUrl !== null && (
@@ -51,7 +55,7 @@ function DownloadButtonsComponent(props) {
                         window.location.href = gpkgUrl;
                     }}
                 >
-                    <i className="fa fa-globe" />
+                    <PublicIcon className={classes.icon} />
                     GPKG
                 </Button>
             )}

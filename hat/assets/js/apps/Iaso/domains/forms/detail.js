@@ -46,7 +46,7 @@ const defaultForm = {
     project_ids: [],
     period_type: null,
     derived: false,
-    single_per_period: false,
+    single_per_period: null,
     periods_before_allowed: 0,
     periods_after_allowed: 0,
     device_field: 'deviceid',

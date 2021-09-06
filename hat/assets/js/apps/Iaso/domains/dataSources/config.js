@@ -6,8 +6,7 @@ import { IconButton as IconButtonComponent } from 'bluesquare-components';
 // eslint-disable-next-line import/no-named-as-default-member,import/no-named-as-default
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import MESSAGES from './messages';
-import { AddTask } from './components/AddTaskComponent';
-import { ImportGeoPkgDialog } from './components/ImportGeoPkgDialog';
+import { VersionsDialog } from './components/VersionsDialog';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
 
 const dataSourcesTableColumns = (
@@ -50,21 +49,6 @@ const dataSourcesTableColumns = (
         resizable: false,
         sortable: false,
         Cell: settings => {
-            const sortedVersions = settings.row.original.versions.sort(
-                (v1, v2) => v2.number - v1.number,
-            );
-            const latestVersion =
-                sortedVersions.length > 0 ? sortedVersions[0].number : 0;
-            const addTaskTitle = {
-                ...MESSAGES.addTaskTitle,
-                values: {
-                    title: formatMessage(MESSAGES.importFromDhis2),
-                    source: settings.row.original.name,
-                    version: latestVersion + 1,
-                },
-            };
-            const defaultVersion =
-                settings.row.original.default_version?.number ?? null;
             return (
                 <section>
                     <DataSourceDialogComponent
@@ -89,39 +73,16 @@ const dataSourcesTableColumns = (
                                 : {}
                         }
                     />
-                    <AddTask
+                    <VersionsDialog
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
                                 onClick={openDialog}
-                                icon="download"
-                                tooltipMessage={MESSAGES.importFromDhis2}
+                                icon="history" // FIXME replace by formatListNumberedIcon when merged in bluesquare
+                                tooltipMessage={MESSAGES.versions}
                             />
                         )}
                         defaultSourceVersion={defaultSourceVersion}
-                        titleMessage={addTaskTitle}
-                        key={`${settings.row.original.updated_at} ${settings.row.original.id} addTask`}
-                        sourceId={settings.row.original.id}
-                        sourceVersion={latestVersion + 1}
-                        sourceCredentials={
-                            settings.row.original.credentials
-                                ? settings.row.original.credentials
-                                : {}
-                        }
-                    />
-                    <ImportGeoPkgDialog
-                        renderTrigger={({ openDialog }) => (
-                            <IconButtonComponent
-                                onClick={openDialog}
-                                icon="globe"
-                                tooltipMessage={MESSAGES.importGeoPkg}
-                            />
-                        )}
-                        titleMessage={MESSAGES.geoPkgTitle}
-                        sourceId={settings.row.original.id}
-                        sourceName={settings.row.original.name}
-                        latestVersion={latestVersion}
-                        defaultVersion={defaultVersion}
-                        projects={settings.row.original.projects.flat()}
+                        source={settings.row.original}
                     />
                 </section>
             );

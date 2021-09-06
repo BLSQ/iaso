@@ -53,6 +53,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Nom & Status',
         id: 'iaso.tasks.status',
     },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.tasks.name',
+    },
+    launcher: {
+        defaultMessage: 'User',
+        id: 'iaso.tasks.launcher',
+    },
     progress: {
         defaultMessage: 'Progress',
         id: 'iaso.tasks.progress',

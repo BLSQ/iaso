@@ -1,5 +1,5 @@
-import pluginsConfigs from '../../../../../../plugins';
 import { createContext } from 'react';
+import pluginsConfigs from '../../../../../../plugins';
 
 export const capitalize = (text, keepEndCase = false) =>
     text

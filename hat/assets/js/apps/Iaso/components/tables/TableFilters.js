@@ -18,6 +18,11 @@ const MESSAGES = defineMessages({
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    column: {
+        '&>section': {
+            width: '100%',
+        },
+    },
     icon: {
         color: theme.palette.ligthGray.border,
         fontWeight: 'light',
@@ -38,6 +43,7 @@ const Filters = ({
     const [filtersUpdated, setFiltersUpdated] = React.useState(
         !defaultFiltersUpdated,
     );
+
     const classes = useStyles();
     const handleSearch = () => {
         if (filtersUpdated) {

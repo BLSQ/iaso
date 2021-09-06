@@ -10,5 +10,4 @@ export const killTask = task => dispatch =>
         'patchTaskSuccess',
         'patchTaskError',
         null,
-        'ignoredTaskErrorCode',
     ).then(res => res);

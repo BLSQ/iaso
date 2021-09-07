@@ -7,7 +7,11 @@ import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
 import isEqual from 'lodash/isEqual';
 
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    commonStyles,
+    LoadingSpinner,
+} from 'bluesquare-components';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
 import { redirectToReplace } from '../../routing/actions';
@@ -25,7 +29,6 @@ import { useFormState } from '../../hooks/form';
 import { baseUrls } from '../../constants/urls';
 
 import { createForm, updateForm } from '../../utils/requests';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import FormVersions from './components/FormVersionsComponent';
 import FormForm from './components/FormFormComponent';
 

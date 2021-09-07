@@ -3,11 +3,13 @@ import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { Box, Typography } from '@material-ui/core';
 import { useSelector } from 'react-redux';
-import { useSafeIntl } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    AddButton as AddButtonComponent,
+} from 'bluesquare-components';
 import { fetchList } from '../../../utils/requests';
 
 import SingleTable from '../../../components/tables/SingleTable';
-import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
 import FormVersionsDialog from './FormVersionsDialogComponent';
 
 import { baseUrls } from '../../../constants/urls';

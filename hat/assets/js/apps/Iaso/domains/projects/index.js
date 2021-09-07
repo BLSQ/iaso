@@ -8,8 +8,8 @@ import {
     injectIntl,
     commonStyles,
     LoadingSpinner,
-    // TopBar,
     Table,
+    AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import {
     fetchAllApps as fetchAllAppsAction,
@@ -18,8 +18,6 @@ import {
 
 import TopBar from '../../components/nav/TopBarComponent';
 import ProjectsDialog from './components/ProjectsDialog';
-import AddButtonComponent from '../../components/buttons/AddButtonComponent';
-
 import { baseUrls } from '../../constants/urls';
 
 import projectsTableColumns from './config';

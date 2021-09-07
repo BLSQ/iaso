@@ -5,7 +5,7 @@ import { bindActionCreators } from 'redux';
 import { Grid, Box, withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
-import { commonStyles } from 'bluesquare-components';
+import { commonStyles, LoadingSpinner } from 'bluesquare-components';
 import {
     setCurrentMappingVersion as setCurrentMappingVersionAction,
     fetchMappingVersionDetail as fetchMappingVersionDetailAction,
@@ -16,7 +16,6 @@ import {
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import RecursiveTreeView from './components/RecursiveTreeView';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';

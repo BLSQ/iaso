@@ -11,7 +11,11 @@ import Grid from '@material-ui/core/Grid';
 import Add from '@material-ui/icons/Add';
 import Search from '@material-ui/icons/Search';
 import classNames from 'classnames';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    useSafeIntl,
+    Filters as FiltersComponent,
+} from 'bluesquare-components';
 import { redirectTo } from '../../../routing/actions';
 import { getChipColors, chipColors } from '../../../constants/chipColors';
 
@@ -31,7 +35,6 @@ import {
     setFetchingOrgUnitTypes,
 } from '../actions';
 
-import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
 
 import { decodeSearch, encodeUriSearches } from '../utils';

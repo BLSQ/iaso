@@ -15,6 +15,7 @@ import {
     commonStyles,
     injectIntl,
     Table,
+    LoadingSpinner,
 } from 'bluesquare-components';
 
 import { fetchSources, fetchOrgUnitsList } from '../../utils/requests';
@@ -38,9 +39,8 @@ import {
 } from './utils';
 import { getFromDateString, getToDateString } from '../../utils/dates';
 
-import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
 import OrgUnitsMultiActionsDialog from './components/OrgUnitsMultiActionsDialog';

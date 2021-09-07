@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { useSafeIntl } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    AddButton as AddButtonComponent,
+} from 'bluesquare-components';
 import { setForms } from './actions';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
@@ -12,7 +15,6 @@ import formsTableColumns from './config';
 import archivedFormsTableColumns from './configArchived';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import { deleteForm, restoreForm, fetchForms } from '../../utils/requests';
 

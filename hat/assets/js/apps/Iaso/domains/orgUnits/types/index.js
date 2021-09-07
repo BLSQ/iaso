@@ -5,10 +5,10 @@ import { connect } from 'react-redux';
 import { withStyles, Box, Grid } from '@material-ui/core';
 import {
     injectIntl,
-    // TopBar,
     LoadingSpinner,
     commonStyles,
     Table,
+    AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import {
     fetchOrgUnitTypes as fetchOrgUnitTypesAction,
@@ -19,7 +19,6 @@ import { fetchAllProjects as fetchAllProjectsAction } from '../../projects/actio
 import TopBar from '../../../components/nav/TopBarComponent';
 
 import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
-import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
 
 import { baseUrls } from '../../../constants/urls';
 

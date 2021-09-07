@@ -1,8 +1,8 @@
 import React from 'react';
 import nock from 'nock';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { renderWithStore } from '../../../../../test/utils/redux';
 import UsersDialog from './UsersDialog';
-import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 import MESSAGES from '../messages';
 import { mockRequest } from '../../../../../test/utils/requests';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';

@@ -9,7 +9,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import { injectIntl } from 'bluesquare-components';
+import { injectIntl, InnerDrawer } from 'bluesquare-components';
 import {
     mapOrgUnitByLocation,
     colorClusterCustomMarker,
@@ -19,7 +19,6 @@ import {
 import { getMarkerList } from '../../utils';
 
 import TileSwitch from '../../../../components/maps/tools/TileSwitchComponent';
-import InnerDrawer from '../../../../components/nav/InnerDrawerComponent';
 import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../OrgunitOptionSaveComponent';
 import OrgUnitTypeChipsFilterComponent from '../OrgUnitTypeChipsFilterComponent';

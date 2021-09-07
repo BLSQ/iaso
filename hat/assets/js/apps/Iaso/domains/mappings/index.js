@@ -10,7 +10,6 @@ import {
     injectIntl,
     commonStyles,
     LoadingSpinner,
-    // TopBar,
     Table,
 } from 'bluesquare-components';
 import { redirectTo as redirectToAction } from '../../routing/actions';

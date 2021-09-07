@@ -4,8 +4,6 @@ import { connect } from 'react-redux';
 import { Map, ScaleControl, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { InnerDrawer, injectIntl } from 'bluesquare-components';
-// import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
-// import injectIntl from '../../../libs/intl/injectIntl';
 import { Grid, Divider } from '@material-ui/core';
 
 import {

@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { DialogContentText } from '@material-ui/core';
 
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
-import IconButtonComponent from '../buttons/IconButtonComponent';
 
 import MESSAGES from './messages';
 

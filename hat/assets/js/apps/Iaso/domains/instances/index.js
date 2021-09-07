@@ -11,6 +11,8 @@ import {
     commonStyles,
     injectIntl,
     ColumnsSelectDrawer,
+    LoadingSpinner,
+    AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import {
     resetInstances,
@@ -40,12 +42,10 @@ import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 import { getFromDateString, getToDateString } from '../../utils/dates';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 import SingleTable from '../../components/tables/SingleTable';
 

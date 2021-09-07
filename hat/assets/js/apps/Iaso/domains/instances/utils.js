@@ -70,7 +70,6 @@ export const getInstancesColumns = (
         .filter(c => !c.meta)
         .forEach(c => {
             if (c.active) {
-                console.log('C', c, c.label, c.key);
                 childrenArray.push({
                     class: 'small',
                     sortable: false,
@@ -88,7 +87,7 @@ export const getInstancesColumns = (
                             }
                         >
                             <span>
-                                {c.label.trim()
+                                {c.label?.trim()
                                     ? truncateText(c.label, 25)
                                     : c.key}
                             </span>
@@ -104,7 +103,12 @@ export const getInstancesColumns = (
 
 export const getMetasColumns = () =>
     [...instancesTableColumns()].map(c => c.accessor);
-
+const formatLabel = field => {
+    if (!field.label) return field.key;
+    if (!field.label.trim()) return field.key;
+    if (field.label.includes(':')) return field.label.split(':')[0];
+    return field.label;
+};
 export const getInstancesVisibleColumns = ({
     formatMessage,
     instance,
@@ -130,9 +134,7 @@ export const getInstancesVisibleColumns = ({
     }));
     if (instance) {
         possibleFields.forEach(field => {
-            const label = field.label.includes(':')
-                ? field.label.split(':')[0]
-                : field.label;
+            const label = formatLabel(field);
             newColumns.push({
                 key: field.name,
                 label,

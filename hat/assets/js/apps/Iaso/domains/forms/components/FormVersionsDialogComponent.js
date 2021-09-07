@@ -74,13 +74,13 @@ const FormVersionsDialogComponent = ({
                 data.end_period = formState.end_period.value;
             }
             if (!formVersion.id) {
-                savePromise = createFormVersion(dispatch, {
+                savePromise = createFormVersion({
                     xls_file: formState.xls_file.value,
                     data,
                 });
             } else {
                 data.id = formVersion.id;
-                savePromise = updateFormVersion(dispatch, data);
+                savePromise = updateFormVersion(data);
             }
             try {
                 await savePromise;

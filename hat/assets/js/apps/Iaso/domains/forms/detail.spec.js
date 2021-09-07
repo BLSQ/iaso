@@ -19,11 +19,11 @@ const orgUnitTypesActions = require('../orgUnits/types/actions');
 const redirectActions = require('../../routing/actions');
 const requestsStub = require('../../utils/requests');
 
+const newName = 'ZELDA';
+const fakeForm = formsFixture.forms[0];
+const formId = 69;
+
 const requests = theId => [
-    {
-        url: `/api/forms/${theId}/`,
-        body: {},
-    },
     {
         url: `/api/orgunittypes/`,
         body: {
@@ -43,16 +43,16 @@ const requests = theId => [
             pages: 0,
         },
     },
+    {
+        url: `/api/forms/${theId}/?fields=id,name,org_unit_types,projects,period_type,derived,single_per_period,periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,possible_fields`,
+        body: fakeForm,
+    },
 ];
 
 let connectedWrapper;
 let singleTable;
 let topBar;
 let redirectAction;
-
-const newName = 'ZELDA';
-const fakeForm = formsFixture.forms[0];
-const formId = '69';
 
 const resetAndMock = theId => {
     nock.cleanAll();
@@ -200,10 +200,10 @@ describe('Detail form connected component', () => {
             connectedWrapper.update();
             inputName = connectedWrapper.find('[keyValue="name"]').at(0);
             expect(inputName.props().value).to.equal(newName);
-            cancelButton.props().onClick();
+            cancelButton.simulate('click');
             connectedWrapper.update();
             inputName = connectedWrapper.find('[keyValue="name"]').at(0);
-            expect(inputName.props().value).to.equal(fakeForm.name);
+            expect(inputName.props().value).to.equal('');
             expect(connectedWrapper.exists()).to.equal(true);
         });
 
@@ -314,6 +314,7 @@ describe('Detail form connected component', () => {
         describe('SingleTable', () => {
             it('should render', () => {
                 singleTable = connectedWrapper.find(SingleTable);
+                connectedWrapper.update();
                 expect(singleTable).to.have.lengthOf(1);
             });
         });

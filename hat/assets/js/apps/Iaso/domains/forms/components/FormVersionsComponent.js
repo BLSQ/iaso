@@ -1,8 +1,7 @@
 import React from 'react';
-import PropTypes, { string } from 'prop-types';
+import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { Box, Typography } from '@material-ui/core';
-import { useSelector } from 'react-redux';
 import {
     useSafeIntl,
     AddButton as AddButtonComponent,
@@ -29,6 +28,7 @@ const FormVersionsComponent = ({
     const intl = useSafeIntl();
 
     if (!formId) return null;
+
     return (
         <Box mt={4}>
             <Typography color="primary" variant="h5">

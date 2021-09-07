@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
@@ -145,9 +145,9 @@ const FormDetail = ({ router, params }) => {
         setIsLoading(false);
     };
 
-    const handleReset = () => {
+    const handleReset = useCallback(() => {
         setFormState(formatFormData(form));
-    };
+    }, [form, setFormState]);
 
     useEffect(() => {
         if (!allProjects) {
@@ -167,7 +167,6 @@ const FormDetail = ({ router, params }) => {
         mapValues(currentForm, v => v.value),
         formatFormData(form),
     );
-
     return (
         <>
             <TopBar
@@ -216,7 +215,7 @@ const FormDetail = ({ router, params }) => {
                     periodType={currentForm.period_type.value || undefined}
                     forceRefresh={forceRefreshVersions}
                     setForceRefresh={setForceRefreshVersions}
-                    formId={currentForm.id.value}
+                    formId={params.formId}
                 />
             </Box>
         </>

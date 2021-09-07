@@ -11,12 +11,7 @@ import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
 import { redirectToReplace } from '../../routing/actions';
-import {
-    fetchFormDetail,
-    setIsLoadingForm,
-    setCurrentForm,
-    setForms,
-} from './actions';
+import { setForms } from './actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -24,7 +19,7 @@ import { useFormState } from '../../hooks/form';
 
 import { baseUrls } from '../../constants/urls';
 
-import { createForm, updateForm } from '../../utils/requests';
+import { createForm, updateForm, useAPI } from '../../utils/requests';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import FormVersions from './components/FormVersionsComponent';
 import FormForm from './components/FormFormComponent';
@@ -38,7 +33,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const defaultForm = {
-    id: '',
+    id: null,
     name: '',
     short_name: '',
     depth: null,
@@ -55,44 +50,52 @@ const defaultForm = {
     label_keys: [],
 };
 
-const formatFormData = (form = defaultForm) => ({
-    id: form.id,
-    name: form.name,
-    short_name: form.short_name,
-    depth: form.depth,
-    org_unit_type_ids: form.org_unit_types
-        ? form.org_unit_types.map(ot => ot.id)
-        : [],
-    project_ids: form.projects ? form.projects.map(p => p.id) : [],
-    period_type:
-        form.period_type && form.period_type !== ''
-            ? form.period_type
-            : undefined,
-    derived: form.derived,
-    single_per_period: form.single_per_period,
-    periods_before_allowed: form.periods_before_allowed,
-    periods_after_allowed: form.periods_after_allowed,
-    device_field: form.device_field,
-    location_field: form.location_field,
-    possible_fields: form.possible_fields ?? defaultForm.possible_fields,
-    label_keys: form.label_keys ?? defaultForm.label_keys,
-});
+const formatFormData = value => {
+    let form = value;
+    if (!form) form = defaultForm;
+    return {
+        id: form.id,
+        name: form.name,
+        short_name: form.short_name,
+        depth: form.depth,
+        org_unit_type_ids: form.org_unit_types
+            ? form.org_unit_types.map(ot => ot.id)
+            : [],
+        project_ids: form.projects ? form.projects.map(p => p.id) : [],
+        period_type:
+            form.period_type && form.period_type !== ''
+                ? form.period_type
+                : undefined,
+        derived: form.derived,
+        single_per_period: form.single_per_period,
+        periods_before_allowed: form.periods_before_allowed,
+        periods_after_allowed: form.periods_after_allowed,
+        device_field: form.device_field,
+        location_field: form.location_field,
+        possible_fields: form.possible_fields ?? defaultForm.possible_fields,
+        label_keys: form.label_keys ?? defaultForm.label_keys,
+    };
+};
 
 const FormDetail = ({ router, params }) => {
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
     const allProjects = useSelector(state => state.projects.allProjects);
-    // const initialData = useSelector(state => state.forms.current);
-    const [form, setForm] = useState(undefined);
-    // console.log(initialData);
-    const isLoading = useSelector(state => state.forms.isLoading);
+    const { data: form, isLoading: isFormLoading } = useAPI(
+        fetchFormDetails,
+        params.formId,
+        {
+            preventTrigger: !(params.formId && params.formId !== '0'),
+            additionalDependencies: [],
+        },
+    );
+    const [isLoading, setIsLoading] = useState(false);
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
     const dispatch = useDispatch();
     const intl = useSafeIntl();
     const classes = useStyles();
     const [currentForm, setFieldValue, setFieldErrors, setFormState] =
         useFormState(formatFormData(form));
-    // useFormState(initialFormState(initialData));
 
     const onConfirm = async () => {
         let isUpdate;
@@ -113,11 +116,10 @@ const FormDetail = ({ router, params }) => {
             );
             saveForm = updateForm(dispatch, currentForm.id.value, formData);
         }
-        dispatch(setIsLoadingForm(true));
+        setIsLoading(true);
         let savedFormData;
         try {
             savedFormData = await saveForm;
-            dispatch(setCurrentForm(savedFormData));
             dispatch(enqueueSnackbar(succesfullSnackBar()));
             if (!isUpdate) {
                 dispatch(
@@ -137,12 +139,11 @@ const FormDetail = ({ router, params }) => {
                 );
             }
         }
-        dispatch(setIsLoadingForm(false));
+        setIsLoading(false);
     };
 
     const handleReset = () => {
         setFormState(formatFormData(form));
-        // setFormState(initialFormState(initialData));
     };
 
     useEffect(() => {
@@ -152,38 +153,16 @@ const FormDetail = ({ router, params }) => {
         if (!allOrgUnitTypes) {
             dispatch(fetchAllOrgUnitTypes());
         }
-        if (params.formId && params.formId !== '0') {
-            dispatch(fetchFormDetail(params.formId));
-        } else {
-            dispatch(setCurrentForm(undefined));
-            dispatch(setIsLoadingForm(false));
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // TODO replace with hook to get loading state
-    useEffect(() => {
-        const initializeState = async () => {
-            if (params.formId && params.formId !== '0') {
-                const data = await fetchFormDetails(params.formId);
-                setForm(data);
-                console.log('data', data);
-            }
-        };
-        initializeState();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
-        console.log('form', formatFormData(form));
         setFormState(formatFormData(form));
-        // setFormState(initialFormState(initialData));
     }, [form, setFormState]);
 
     const isFormModified = !isEqual(
         mapValues(currentForm, v => v.value),
         formatFormData(form),
-        // initialFormState(initialData),
     );
 
     return (
@@ -201,7 +180,7 @@ const FormDetail = ({ router, params }) => {
                     }
                 }}
             />
-            {isLoading && <LoadingSpinner />}
+            {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <FormForm
                     currentForm={currentForm}
@@ -234,6 +213,7 @@ const FormDetail = ({ router, params }) => {
                     periodType={currentForm.period_type.value || undefined}
                     forceRefresh={forceRefreshVersions}
                     setForceRefresh={setForceRefreshVersions}
+                    formId={currentForm.id.value}
                 />
             </Box>
         </>

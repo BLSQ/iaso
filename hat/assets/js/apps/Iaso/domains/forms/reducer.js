@@ -1,8 +1,6 @@
-import { SET_FORMS, SET_CURRENT_FORM, SET_IS_LOADING_FORM } from './actions';
+import { SET_FORMS } from './actions';
 
 export const formsInitialState = {
-    current: undefined,
-    isLoading: true,
     formsPage: {
         list: null,
         count: 0,
@@ -22,15 +20,6 @@ export const formsReducer = (state = formsInitialState, action = {}) => {
                     pages,
                 },
             };
-        }
-
-        case SET_CURRENT_FORM: {
-            const current = action.payload;
-            return { ...state, current };
-        }
-        case SET_IS_LOADING_FORM: {
-            const isLoading = action.payload;
-            return { ...state, isLoading };
         }
         default:
             return state;

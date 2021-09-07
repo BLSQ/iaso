@@ -88,7 +88,7 @@ const currentForm = {
 };
 
 const setFieldValueSpy = sinon.spy();
-describe.only('FormFormComponent connected component', () => {
+describe('FormFormComponent connected component', () => {
     describe('with a full form', () => {
         before(() => {
             connectedWrapper = mount(

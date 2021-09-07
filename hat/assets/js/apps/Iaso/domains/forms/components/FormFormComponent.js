@@ -61,10 +61,6 @@ const FormForm = ({ currentForm, setFieldValue }) => {
     if (currentForm.project_ids.value.length > 0) {
         projects = currentForm.project_ids.value.join(',');
     }
-    console.log(
-        'empty fields',
-        currentForm.possible_fields.value.filter(field => field.label === ' '),
-    );
 
     return (
         <Grid container spacing={2} justifyContent="flex-start">

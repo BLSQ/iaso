@@ -44,6 +44,7 @@ const requests = theId => [
         },
     },
     {
+        // eslint-disable-next-line max-len
         url: `/api/forms/${theId}/?fields=id,name,org_unit_types,projects,period_type,derived,single_per_period,periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,possible_fields`,
         body: fakeForm,
     },

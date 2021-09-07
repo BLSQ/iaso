@@ -93,6 +93,7 @@ const FormDetail = ({ router, params }) => {
         },
     );
     const [isLoading, setIsLoading] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
     const dispatch = useDispatch();
     const intl = useSafeIntl();
@@ -143,11 +144,20 @@ const FormDetail = ({ router, params }) => {
             }
         }
         setIsLoading(false);
+        setIsSaved(true);
     };
 
     const handleReset = useCallback(() => {
         setFormState(formatFormData(form));
     }, [form, setFormState]);
+
+    const onChange = useCallback(
+        (keyValue, value) => {
+            setFieldValue(keyValue, value);
+            if (isSaved) setIsSaved(false);
+        },
+        [isSaved, setFieldValue],
+    );
 
     useEffect(() => {
         if (!allProjects) {
@@ -163,10 +173,11 @@ const FormDetail = ({ router, params }) => {
         setFormState(formatFormData(form));
     }, [form, setFormState]);
 
-    const isFormModified = !isEqual(
-        mapValues(currentForm, v => v.value),
-        formatFormData(form),
-    );
+    const isFormModified =
+        !isEqual(
+            mapValues(currentForm, v => v.value),
+            formatFormData(form),
+        ) && !isSaved;
     return (
         <>
             <TopBar
@@ -184,10 +195,7 @@ const FormDetail = ({ router, params }) => {
             />
             {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <FormForm
-                    currentForm={currentForm}
-                    setFieldValue={setFieldValue}
-                />
+                <FormForm currentForm={currentForm} setFieldValue={onChange} />
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {!currentForm.id.value !== '' && (
                         <Button
@@ -202,7 +210,7 @@ const FormDetail = ({ router, params }) => {
                     )}
                     <Button
                         data-id="form-detail-confirm"
-                        disabled={!isFormModified} // FIXME: broken by the single_per_period feature IA-477
+                        disabled={!isFormModified}
                         variant="contained"
                         className={classes.marginLeft}
                         color="primary"
@@ -215,7 +223,7 @@ const FormDetail = ({ router, params }) => {
                     periodType={currentForm.period_type.value || undefined}
                     forceRefresh={forceRefreshVersions}
                     setForceRefresh={setForceRefreshVersions}
-                    formId={params.formId}
+                    formId={parseInt(params.formId, 10)}
                 />
             </Box>
         </>

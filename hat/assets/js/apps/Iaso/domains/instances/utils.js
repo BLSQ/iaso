@@ -70,6 +70,7 @@ export const getInstancesColumns = (
         .filter(c => !c.meta)
         .forEach(c => {
             if (c.active) {
+                console.log('C', c, c.label, c.key);
                 childrenArray.push({
                     class: 'small',
                     sortable: false,
@@ -80,14 +81,16 @@ export const getInstancesColumns = (
                                 <FormattedMessage
                                     {...MESSAGES.instanceHeaderTooltip}
                                     values={{
-                                        label: c.label ?? textPlaceholder,
+                                        label: c.label,
                                         key: c.key,
                                     }}
                                 />
                             }
                         >
                             <span>
-                                {c.label ? truncateText(c.label, 25) : c.key}
+                                {c.label.trim()
+                                    ? truncateText(c.label, 25)
+                                    : c.key}
                             </span>
                         </Tooltip>
                     ),

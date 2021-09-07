@@ -196,7 +196,7 @@ const OrgUnitsFiltersComponent = ({
         (value, urlKey) => onChange(value, urlKey),
         searchIndex,
     );
-
+    console.log('searchParams', searchParams);
     return (
         <div className={classes.root}>
             <Grid container spacing={4}>
@@ -210,6 +210,13 @@ const OrgUnitsFiltersComponent = ({
                                 search(),
                                 (value, urlKey) =>
                                     handleSearchFilterChange(value, urlKey),
+                                searchIndex,
+                            ),
+                            sourceFilter,
+                            extendFilter(
+                                searchParams,
+                                status(intl.formatMessage),
+                                (value, urlKey) => onChange(value, urlKey),
                                 searchIndex,
                             ),
                             extendFilter(
@@ -247,8 +254,53 @@ const OrgUnitsFiltersComponent = ({
                         />
                     </div>
                 </Grid>
-                <Grid item xs={8}>
-                    <Grid container item xs={12}>
+
+                <Grid item xs={4}>
+                    <FiltersComponent
+                        params={params}
+                        baseUrl={baseUrl}
+                        filters={[
+                            extendFilter(
+                                searchParams,
+                                location(intl.formatMessage),
+                                (value, urlKey) => onChange(value, urlKey),
+                                searchIndex,
+                            ),
+                            extendFilter(
+                                searchParams,
+                                shape(intl.formatMessage),
+                                (value, urlKey) => onChange(value, urlKey),
+                                searchIndex,
+                            ),
+                        ]}
+                    />
+                    <Box>
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.parent}
+                            onConfirm={orgUnit => {
+                                // TODO rename levels in to parent
+                                onChange(orgUnit?.id, 'levels');
+                            }}
+                            source={sourceFilter.value}
+                            initialSelection={initialOrgUnit}
+                        />
+                    </Box>
+                </Grid>
+                <Grid item xs={4}>
+                    <FiltersComponent
+                        params={params}
+                        baseUrl={baseUrl}
+                        filters={[
+                            extendFilter(
+                                searchParams,
+                                hasInstances(intl.formatMessage),
+                                (value, urlKey) => onChange(value, urlKey),
+                                searchIndex,
+                            ),
+                        ]}
+                    />
+                    <Box mt={-3}>
                         <DatesRange
                             onChangeDate={(key, value) => {
                                 onChange(value, key);
@@ -256,67 +308,7 @@ const OrgUnitsFiltersComponent = ({
                             dateFrom={searchParams.dateFrom}
                             dateTo={searchParams.dateTo}
                         />
-                    </Grid>
-
-                    <Grid container spacing={4}>
-                        <Grid item xs={6}>
-                            <FiltersComponent
-                                params={params}
-                                baseUrl={baseUrl}
-                                filters={[
-                                    extendFilter(
-                                        searchParams,
-                                        location(intl.formatMessage),
-                                        (value, urlKey) =>
-                                            onChange(value, urlKey),
-                                        searchIndex,
-                                    ),
-                                    extendFilter(
-                                        searchParams,
-                                        shape(intl.formatMessage),
-                                        (value, urlKey) =>
-                                            onChange(value, urlKey),
-                                        searchIndex,
-                                    ),
-                                    extendFilter(
-                                        searchParams,
-                                        hasInstances(intl.formatMessage),
-                                        (value, urlKey) =>
-                                            onChange(value, urlKey),
-                                        searchIndex,
-                                    ),
-                                ]}
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <Box>
-                                <FiltersComponent
-                                    params={params}
-                                    baseUrl={baseUrl}
-                                    filters={[
-                                        extendFilter(
-                                            searchParams,
-                                            status(intl.formatMessage),
-                                            (value, urlKey) =>
-                                                onChange(value, urlKey),
-                                            searchIndex,
-                                        ),
-                                        sourceFilter,
-                                    ]}
-                                />
-                                <OrgUnitTreeviewModal
-                                    toggleOnLabelClick={false}
-                                    titleMessage={MESSAGES.parent}
-                                    onConfirm={orgUnit => {
-                                        // TODO rename levels in to parent
-                                        onChange(orgUnit?.id, 'levels');
-                                    }}
-                                    source={sourceFilter.value}
-                                    initialSelection={initialOrgUnit}
-                                />
-                            </Box>
-                        </Grid>
-                    </Grid>
+                    </Box>
                 </Grid>
             </Grid>
 

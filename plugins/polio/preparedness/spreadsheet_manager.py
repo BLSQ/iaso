@@ -24,11 +24,22 @@ from plugins.polio.preparedness.conditional_formatting import (
 )
 
 PREPAREDNESS_TEMPLATE_ID = os.environ.get("PREPAREDNESS_TEMPLATE_ID", None)
+PREPAREDNESS_TEMPLATE_FR_ID = os.environ.get("PREPAREDNESS_TEMPLATE_FR_ID", None)
 
 
-def create_spreadsheet(title: str):
+def create_spreadsheet(title: str, lang: str):
     client = get_client()
-    spreadsheet = client.copy(PREPAREDNESS_TEMPLATE_ID, title, copy_permissions=True)
+    if lang == "EN":
+        template = PREPAREDNESS_TEMPLATE_ID
+    elif lang == "FR":
+        template = PREPAREDNESS_TEMPLATE_FR_ID
+    else:
+        raise Exception(f"Template for {lang} not found")
+
+    if not template:
+        raise Exception(f"Template for {lang} not found")
+
+    spreadsheet = client.copy(template, title, copy_permissions=True)
     spreadsheet.share(None, perm_type="anyone", role="writer")
     return spreadsheet
 

@@ -138,7 +138,6 @@ export const getInstancesVisibleColumns = ({
             });
         });
     }
-    console.log('newColumns', newColumns);
     return newColumns;
 };
 

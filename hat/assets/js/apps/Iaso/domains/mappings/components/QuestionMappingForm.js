@@ -1,7 +1,8 @@
 import Alert from '@material-ui/lab/Alert';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { Select } from 'bluesquare-components';
+import { LoadingSpinner, Select } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import { isMapped, isNeverMapped } from '../question_mappings';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';
@@ -9,6 +10,7 @@ import HesabuHint from './HesabuHint';
 import ObjectDumper from './ObjectDumper';
 import Descriptor from '../descriptor';
 import EventTrackerProgramForm from './EventTrackerProgramForm';
+import MESSAGES from '../messages';
 
 const iasoFieldOptions = [
     { value: undefined, label: "Use the value from the form's answer" },
@@ -150,7 +152,7 @@ const Dhis2ProgramDataElementSearch = ({
             }
             label="Search for tracker data element (and combo) by name, code or id"
             onChange={onChange}
-            // TODO find a better way to format/concat theis string
+            // eslint-disable-next-line max-len
             fields="id,name,programStages[id,name,programStageDataElements[compulsory,code,dataElement[id,name,code,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]]]]"
             mapOptions={mapToMappingProgramElements}
             fetchFromPromise={(
@@ -187,7 +189,7 @@ const QuestionMappingForm = ({
     const [fieldType, setFieldType] = React.useState(fieldTypeOptions[1]);
 
     if (indexedQuestions === undefined) {
-        return <>Loading...</>;
+        return <LoadingSpinner />;
     }
     const withinRepeatGroup = Descriptor.withinRepeatGroup(
         question,
@@ -252,11 +254,13 @@ const QuestionMappingForm = ({
         <>
             {questionMapping.id && (
                 <>
-                    <h3>Current Mapping</h3>
+                    <h3>
+                        <FormattedMessage {...MESSAGES.currentMapping} />
+                    </h3>
                     <ObjectDumper object={questionMapping} />
                 </>
             )}
-
+            {/* TODO see if this needs translation */}
             <div>
                 withinRepeatGroup ? {withinRepeatGroup}{' '}
                 {JSON.stringify(repeatGroupMapping)}
@@ -277,7 +281,7 @@ const QuestionMappingForm = ({
                         className="button"
                         onClick={() => onUnmapQuestionMapping(questionMapping)}
                     >
-                        Remove mapping
+                        <FormattedMessage {...MESSAGES.removeMapping} />
                     </button>
                 </>
             )}
@@ -286,18 +290,22 @@ const QuestionMappingForm = ({
                     className="button"
                     onClick={() => onNeverMapQuestionMapping(questionMapping)}
                 >
-                    Will never map
+                    <FormattedMessage {...MESSAGES.willNeverMap} />
                 </button>
             )}
             {isNeverMapped(questionMapping) && (
                 <Alert severity="info">
-                    This question is considered to be never mapped but you can
-                    change your mind
+                    <FormattedMessage
+                        {...MESSAGES.neverMapAlert}
+                        values={{ breakLine: <br /> }}
+                    />
                 </Alert>
             )}
             <br />
             <br />
-            <h3>Change the mapping to existing one :</h3>
+            <h3>
+                <FormattedMessage {...MESSAGES.changeMapping} />
+            </h3>
             {mapping.mapping.mapping_type === 'AGGREGATE' && (
                 <Dhis2SearchComponent
                     key={question.name}
@@ -309,7 +317,7 @@ const QuestionMappingForm = ({
                             ? question.name
                             : undefined
                     }
-                    label="Search for data element (and combo) by name, code or id"
+                    label={<FormattedMessage {...MESSAGES.searchDataElement} />}
                     filter={
                         // TODO not working endpoint send the first filter
                         mapping.mapping_type === 'AGGREGATE'
@@ -362,7 +370,11 @@ const QuestionMappingForm = ({
                                     programId={programId}
                                 />
                             )}
-                            <p>Use instance property to fill in this answer</p>
+                            <p>
+                                <FormattedMessage
+                                    {...MESSAGES.useInstanceProperty}
+                                />
+                            </p>
                             <Select
                                 options={iasoFieldOptions}
                                 value={iasoField}
@@ -381,7 +393,9 @@ const QuestionMappingForm = ({
             {newQuestionMapping && (
                 <>
                     <br />
-                    <h3>Proposed new one :</h3>
+                    <h3>
+                        <FormattedMessage {...MESSAGES.proposedNewOne} />
+                    </h3>
                     <br />
                     <ObjectDumper object={newQuestionMapping} />
                     <HesabuHint
@@ -418,7 +432,7 @@ const QuestionMappingForm = ({
                             onConfirmedQuestionMapping(item);
                         }}
                     >
-                        Confirm
+                        <FormattedMessage {...MESSAGES.confirm} />
                     </button>
                 </>
             )}

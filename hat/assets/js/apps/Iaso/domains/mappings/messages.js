@@ -73,6 +73,44 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.trackerEntityIdentifier',
         defaultMessage: 'Tracked entity identitifier',
     },
+    currentMapping: {
+        id: 'iaso.mappings.currentMapping',
+        defaultMessage: 'Current mapping',
+    },
+    removeMapping: {
+        id: 'iaso.mappings.removeMapping',
+        defaultMessage: 'Remove mapping',
+    },
+    willNeverMap: {
+        id: 'iaso.mappings.willNeverMap',
+        defaultMessage: 'Will never map',
+    },
+    neverMapAlert: {
+        id: 'iaso.mappings.neverMapAlert',
+        defaultMessage:
+            'This question is considered to be never mapped but you can{breakLine}change your mind',
+    },
+    changeMapping: {
+        id: 'iaso.mappings.changeMapping',
+        defaultMessage: 'Change the mapping to existing one :',
+    },
+    searchDataElement: {
+        id: 'iaso.mappings.label.searchDataElement',
+        defaultMessage:
+            'Search for data element (and combo) by name, code or id',
+    },
+    useInstanceProperty: {
+        id: 'iaso.mappings.useInstanceProperty',
+        defaultMessage: 'Use instance property to fill in this answer',
+    },
+    proposedNewOne: {
+        id: 'iaso.mappings.proposedNewOne',
+        defaultMessage: 'Proposed new one :',
+    },
+    confirm: {
+        id: 'iaso.mappings.confirm',
+        defaultMessage: 'Confirm',
+    },
 });
 
 export default MESSAGES;

@@ -50,8 +50,8 @@ const Forms = ({ params, showOnlyDeleted }) => {
     useEffect(() => {
         dispatch(fetchAllProjects());
         dispatch(fetchAllOrgUnitTypes());
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
     return (
         <>
             <TopBar title={intl.formatMessage(MESSAGES.title)} />

@@ -63,20 +63,20 @@ class Command(BaseCommand):
         print(json.dumps(mapping, indent=4))
         print("******** Mapped questions")
         form = Form.objects.get(form_id=options["form_id"])
-        for field in form.fields:
+        for field in form.possible_fields:
             if field in mapping["question_mappings"]:
                 de = mapping["question_mappings"][field]
                 print(field, de["id"], de["name"])
         print("******** Unmapped questions")
         form = Form.objects.get(form_id=options["form_id"])
-        for field in form.fields:
+        for field in form.possible_fields:
             if not field in mapping["question_mappings"]:
                 status = "ERROR no corresponding"
                 if not (field in usual_ona_meta or field in usual_dc_meta):
                     print(field, status)
         print("******** Unmapped questions but might be ok")
         form = Form.objects.get(form_id=options["form_id"])
-        for field in form.fields:
+        for field in form.possible_fields:
             if not field in mapping["question_mappings"]:
                 status = "ERROR no corresponding"
                 if field in usual_ona_meta or field in usual_dc_meta:

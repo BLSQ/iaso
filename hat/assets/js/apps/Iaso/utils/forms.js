@@ -14,7 +14,6 @@ export function commaSeparatedIdsToArray(string) {
         .filter(s => s !== '')
         .map(Number);
 }
-
 export function commaSeparatedIdsToStringArray(string) {
     if (!string) return [];
     return string

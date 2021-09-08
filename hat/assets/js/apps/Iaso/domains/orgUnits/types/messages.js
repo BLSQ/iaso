@@ -31,11 +31,11 @@ const MESSAGES = defineMessages({
     },
     updatedAt: {
         id: 'iaso.forms.updated_at',
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
     },
     createdAt: {
         id: 'iaso.label.created',
-        defaultMessage: 'Created at',
+        defaultMessage: 'Created',
     },
     orgUnit: {
         id: 'iaso.label.orgUnit',

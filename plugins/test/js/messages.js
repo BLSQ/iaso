@@ -19,11 +19,11 @@ const MESSAGES = defineMessages({
     },
     updatedAt: {
         id: 'iaso.forms.updated_at',
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
     },
     createdAt: {
         id: 'iaso.forms.created_at',
-        defaultMessage: 'Created at',
+        defaultMessage: 'Created',
     },
     author: {
         id: 'iaso.plugin.author',

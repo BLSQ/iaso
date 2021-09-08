@@ -75,7 +75,7 @@ const MESSAGES = defineMessages({
     },
     deleted_at: {
         id: 'iaso.forms.deleted_at',
-        defaultMessage: 'Deleted at',
+        defaultMessage: 'Deleted',
     },
     updateFormVersion: {
         id: 'iaso.formversions.update',

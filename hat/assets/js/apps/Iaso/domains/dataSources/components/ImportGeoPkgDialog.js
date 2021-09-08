@@ -63,7 +63,7 @@ const ImportGeoPkgDialog = ({
 
     const titleMessage = versionNumber ? (
         <FormattedMessage
-            id="update_from_gpkg"
+            id="iaso.geopPckg.label.updateFromGpkg"
             defaultMessage="Update {sourceName} - {versionNumber}"
             values={{ sourceName, versionNumber }}
         />
@@ -93,16 +93,16 @@ const ImportGeoPkgDialog = ({
                 <Grid item>
                     <Typography>
                         <FormattedMessage
-                            id="gpkg.explication"
-                            defaultMessage="Import OrgUnits from a GeoPackage file, all the OrgUnits present in the file will be updated.
-                             The file must be correctly formatted.
-                             "
+                            id="iaso.datasources.label.gpkg_explication"
+                            // eslint-disable-next-line max-len
+                            defaultMessage="Import OrgUnits from a GeoPackage file, all the OrgUnits present in the file will be updated.{breakingLine}The file must be correctly formatted.{breakingLine}"
+                            values={{ breakingLine: <br /> }}
                         />
                     </Typography>
                     <Typography>
                         <FormattedMessage
-                            id="import_task_explication"
-                            defaultMessage="The import will be realised in the background and can take a dozen minutes to complete."
+                            id="iaso.datasources.label.import_task_explication"
+                            defaultMessage="The import will be processed in the background and can take a dozen minutes to complete."
                         />
                     </Typography>
                 </Grid>

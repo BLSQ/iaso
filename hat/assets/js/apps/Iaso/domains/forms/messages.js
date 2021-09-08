@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
     },
+    statsTitle: {
+        defaultMessage: 'Form Stats',
+        id: 'iaso.forms.stats.title',
+    },
     createForm: {
         defaultMessage: 'Create form',
         id: 'iaso.forms.create',

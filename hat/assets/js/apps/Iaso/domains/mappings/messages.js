@@ -34,7 +34,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.coverage',
     },
     updatedAt: {
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
         id: 'iaso.label.updated_at',
     },
     dhis2Mappings: {

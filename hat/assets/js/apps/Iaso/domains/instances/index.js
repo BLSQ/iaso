@@ -355,7 +355,6 @@ class Instances extends Component {
             reduxPage,
             instancesSmall,
             fetching,
-            // currentForm,
             intl: { formatMessage },
             router,
             prevPathname,

@@ -2,7 +2,7 @@ import React from 'react';
 import CallMade from '@material-ui/icons/CallMade';
 import moment from 'moment';
 import { Tooltip } from '@material-ui/core';
-import { truncateText, textPlaceholder } from 'bluesquare-components';
+import { truncateText } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import instancesTableColumns from './config';
 import MESSAGES from './messages';

@@ -11,11 +11,9 @@ import Grid from '@material-ui/core/Grid';
 import Add from '@material-ui/icons/Add';
 import Search from '@material-ui/icons/Search';
 import classNames from 'classnames';
-import {
-    commonStyles,
-    useSafeIntl,
-    Filters as FiltersComponent,
-} from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+
+import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { redirectTo } from '../../../routing/actions';
 import { getChipColors, chipColors } from '../../../constants/chipColors';
 

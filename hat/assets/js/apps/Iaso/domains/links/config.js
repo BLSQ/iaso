@@ -47,7 +47,7 @@ export const linksTableColumns = (formatMessage, validateLink) => [
     },
     {
         Header: formatMessage(MESSAGES.origin),
-        accessor: 'source__source',
+        accessor: 'source__version',
         Cell: settings => (
             <span>
                 {`${formatMessage(MESSAGES.source)}: ${
@@ -62,7 +62,7 @@ export const linksTableColumns = (formatMessage, validateLink) => [
     },
     {
         Header: formatMessage(MESSAGES.destination),
-        accessor: 'destination__source',
+        accessor: 'destination__version',
         Cell: settings => (
             <span>
                 {`${formatMessage(MESSAGES.source)}: ${

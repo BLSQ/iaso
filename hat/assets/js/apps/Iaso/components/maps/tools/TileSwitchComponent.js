@@ -12,6 +12,7 @@ import Typography from '@material-ui/core/Typography';
 
 import PropTypes from 'prop-types';
 import { injectIntl, commonStyles } from 'bluesquare-components';
+import { innerDrawerStyles } from '../../nav/InnerDrawer/styles';
 import { setCurrentTile } from '../../../redux/mapReducer';
 
 import tiles from '../../../constants/mapTiles';
@@ -20,6 +21,7 @@ import MESSAGES from '../messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    ...innerDrawerStyles(theme),
     list: {
         padding: theme.spacing(0, 0, 2, 0),
     },

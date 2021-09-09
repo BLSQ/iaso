@@ -310,10 +310,11 @@ class InstancesViewSet(viewsets.ViewSet):
 
         df = pd.read_sql_query(self.QUERY, connection, params=[projects_ids])
         df = df.pivot(index="month", columns="name", values="value")
-        df.index = df.index.to_period("M")
-        df = df.sort_index()
-        df = df.reindex(pd.period_range(df.index[0], df.index[-1], freq="M"))
-        df["name"] = df.index.astype(str)
+        if not df.empty:
+            df.index = df.index.to_period("M")
+            df = df.sort_index()
+            df = df.reindex(pd.period_range(df.index[0], df.index[-1], freq="M"))
+            df["name"] = df.index.astype(str)
         r = df.to_json(orient="table")
         return HttpResponse(r, content_type="application/json")
 

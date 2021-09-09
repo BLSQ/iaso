@@ -84,9 +84,7 @@ export const linksTableColumns = (formatMessage, validateLink) => [
         Header: formatMessage(MESSAGES.algorithm),
         id: 'algorithm_run',
         accessor: row =>
-            row.algorithm_run?.description
-                ? row.algorithm_run.description
-                : '?',
+            row.algorithm_run ? row.algorithm_run.algorithm.description : '-',
     },
     {
         Header: formatMessage(MESSAGES.validator),

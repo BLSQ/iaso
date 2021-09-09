@@ -366,6 +366,7 @@
     "iaso.orgUnits.removeFromGroups": "Retirer du(des) groupe(s)",
     "iaso.orgUnits.search": "Rechercher une unité d'organisation",
     "iaso.orgUnits.selectionAction": "Avec la sélection d'unité d'organisation",
+    "iaso.orgUnits.selectOrgUnit": "Merci de sélectionner une unité d'organisation",
     "iaso.orgUnits.shortName": "Nom raccourci",
     "iaso.orgUnits.source": "Source",
     "iaso.orgUnits.sourceLower": "source",

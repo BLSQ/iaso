@@ -8,7 +8,7 @@ import isEqual from 'lodash/isEqual';
 import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import { injectIntl, commonStyles, InnerDrawer } from 'bluesquare-components';
+import { injectIntl, commonStyles } from 'bluesquare-components';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { locationsLimit } from '../../../constants/filters';
 
@@ -27,6 +27,7 @@ import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
+import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import OrgUnitPopupComponent from './OrgUnitPopupComponent';
 
 import { fetchOrgUnitDetail } from '../../../utils/requests';
@@ -213,6 +214,7 @@ class OrgunitsMap extends Component {
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
+                    defaultActiveOption="comments"
                     withTopBorder
                     settingsOptionComponent={
                         <>

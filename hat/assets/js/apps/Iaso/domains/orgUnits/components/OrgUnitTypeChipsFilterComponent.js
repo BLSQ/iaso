@@ -16,9 +16,11 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { getOtChipColors } from '../../../constants/chipColors';
 
 import MESSAGES from '../messages';
+import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    ...innerDrawerStyles(theme),
     content: {
         padding: theme.spacing(0, 3, 2, 3),
     },

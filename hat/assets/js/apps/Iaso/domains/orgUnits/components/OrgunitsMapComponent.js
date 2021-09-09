@@ -27,7 +27,7 @@ import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
-import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
+import InnerDrawer from '../../../components/nav/InnerDrawer';
 import OrgUnitPopupComponent from './OrgUnitPopupComponent';
 
 import { fetchOrgUnitDetail } from '../../../utils/requests';
@@ -35,14 +35,16 @@ import { getChipColors } from '../../../constants/chipColors';
 import { getColorsFromParams, decodeSearch } from '../utils';
 import MESSAGES from '../messages';
 import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
+import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
 
 const boundsOptions = {
     padding: [50, 50],
 };
 const styles = theme => ({
     ...commonStyles(theme),
+    ...innerDrawerStyles(theme),
     innerDrawerToolbar: {
-        ...commonStyles(theme).innerDrawerToolbar,
+        ...innerDrawerStyles(theme).innerDrawerToolbar,
         '& section': {
             width: '100%',
         },

@@ -25,7 +25,7 @@ import OrgUnitTypeChipsFilterComponent from '../OrgUnitTypeChipsFilterComponent'
 import FormsChipsFilterComponent from '../../../forms/components/FormsChipsFilterComponent';
 import SourcesChipsFilterComponent from '../../../../components/filters/chips/SourcesChipsFilterComponent';
 import MarkerComponent from '../../../../components/maps/markers/MarkerComponent';
-import InnerDrawer from '../../../../components/nav/InnerDrawerComponent';
+import InnerDrawer from '../../../../components/nav/InnerDrawer';
 
 import OrgUnitPopupComponent from '../OrgUnitPopupComponent';
 import setDrawMessages from '../../../../utils/map/drawMapMessages';

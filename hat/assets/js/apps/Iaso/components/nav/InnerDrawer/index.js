@@ -6,11 +6,14 @@ import { withStyles, Box, Grid, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import { commonStyles, menuHeight } from 'bluesquare-components';
+import { commonStyles } from 'bluesquare-components';
 
-import MESSAGES from './messages';
+import MESSAGES from '../messages';
+
+import { innerDrawerStyles, menuHeight } from './styles';
 
 const styles = theme => ({
+    ...innerDrawerStyles(theme),
     ...commonStyles(theme),
     boxContent: {
         width: '100%',

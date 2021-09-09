@@ -18,7 +18,7 @@ import { setCurrentInstance } from '../actions';
 import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
-import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
+import InnerDrawer from '../../../components/nav/InnerDrawer';
 
 import InstancePopupComponent from './InstancePopupComponent';
 import { warningSnackBar } from '../../../constants/snackBars';

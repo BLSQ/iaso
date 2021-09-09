@@ -314,6 +314,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.comments',
         defaultMessage: 'Comments',
     },
+    selectOrgUnit: {
+        id: 'iaso.orgUnits.selectOrgUnit',
+        defaultMessage: 'Please select an Org Unit',
+    },
 });
 
 export default MESSAGES;

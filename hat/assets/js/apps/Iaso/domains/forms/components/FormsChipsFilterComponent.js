@@ -12,10 +12,12 @@ import { setFormsSelected } from '../../orgUnits/actions';
 import ChipsFilterComponent from '../../../components/filters/chips/ChipsFilterComponent';
 
 import { fetchInstancesAsLocationsByForm } from '../../../utils/requests';
+import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
 
 import MESSAGES from '../messages';
 
 const styles = theme => ({
+    ...innerDrawerStyles(theme),
     ...commonStyles(theme),
     content: {
         padding: theme.spacing(0, 3, 2, 3),

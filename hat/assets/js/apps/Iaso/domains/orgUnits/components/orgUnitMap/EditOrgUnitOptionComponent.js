@@ -10,9 +10,11 @@ import MarkerInputs from './MarkerInputs';
 import ShapesButtons from './ShapesButtons';
 
 import MESSAGES from '../../messages';
+import { innerDrawerStyles } from '../../../../components/nav/InnerDrawer/styles';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    ...innerDrawerStyles(theme),
     button: {
         width: '100%',
     },

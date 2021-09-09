@@ -30,7 +30,7 @@ export const InstancesPerFormGraph = () => {
         <>
             <Typography variant="h5">
                 <FormattedMessage
-                    id="iaso.form.stats.instances_per_month_title"
+                    id="iaso.form.stats.submissionsPerMonthTitle"
                     defaultMessage="New submissions per month"
                 />
             </Typography>

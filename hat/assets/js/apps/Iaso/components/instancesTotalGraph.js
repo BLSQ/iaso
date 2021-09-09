@@ -28,7 +28,7 @@ export const InstancesTotalGraph = () => {
         <>
             <Typography variant="h5">
                 <FormattedMessage
-                    id="iaso.form.stats.all_submission_title"
+                    id="iaso.form.stats.allSubmissionsTitle"
                     defaultMessage="All Submissions"
                 />
             </Typography>

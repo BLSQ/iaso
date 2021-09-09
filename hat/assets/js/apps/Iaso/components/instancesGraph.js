@@ -11,9 +11,10 @@ import {
     XAxis,
     YAxis,
 } from 'recharts';
+import { Typography } from '@material-ui/core';
+import { FormattedMessage } from 'react-intl';
 import { getChipColors } from '../constants/chipColors';
 import { iasoGetRequest } from '../utils/requests';
-import { Typography } from '@material-ui/core';
 
 export const InstancesPerFormGraph = () => {
     const { data, isLoading } = useQuery(['instances', 'stats'], () =>
@@ -24,11 +25,15 @@ export const InstancesPerFormGraph = () => {
             disableSuccessSnackBar: true,
         }),
     );
-    console.count('InstancesPerFormGraph RERENDER');
 
     return (
         <>
-            <Typography variant="h5">New instances per month</Typography>
+            <Typography variant="h5">
+                <FormattedMessage
+                    id="iaso.form.stats.submissionsPerMonthTitle"
+                    defaultMessage="New submissions per month"
+                />
+            </Typography>
             {isLoading && <LoadingSpinner fixed={false} />}
             {data && (
                 <ResponsiveContainer width="100%" height="90%">
@@ -44,10 +49,10 @@ export const InstancesPerFormGraph = () => {
                         }}
                     >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
+                        {data.data?.length > 0 && <XAxis dataKey="name" />}
                         <YAxis />
                         <Tooltip />
-                        {/*<Legend />*/}
+                        {/* <Legend /> */}
                         {data.schema.fields
                             .filter(f => f.type === 'number')
                             .map((f, i) => (

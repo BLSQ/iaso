@@ -12,6 +12,7 @@ import {
 import { iasoGetRequest } from '../utils/requests';
 import { Typography } from '@material-ui/core';
 import { LoadingSpinner } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 
 export const InstancesTotalGraph = () => {
     const { data, isLoading } = useQuery(['instances', 'stats_sum'], () =>
@@ -22,11 +23,15 @@ export const InstancesTotalGraph = () => {
             disableSuccessSnackBar: true,
         }),
     );
-    console.count('InstancesTotalGraph RERENDER');
 
     return (
         <>
-            <Typography variant="h5">All Submissions</Typography>
+            <Typography variant="h5">
+                <FormattedMessage
+                    id="iaso.form.stats.allSubmissionsTitle"
+                    defaultMessage="All Submissions"
+                />
+            </Typography>
             {isLoading && <LoadingSpinner fixed={false} />}
             {data && (
                 <ResponsiveContainer width="100%" height="90%">

@@ -83,7 +83,7 @@
     "iaso.forms.source.snis": "SNIS",
     "iaso.forms.source.ucla": "UCLA",
     "iaso.forms.status": "Statut",
-    "iaso.form.stats.all_submission_title": "Toutes les soumissions",
+    "iaso.form.stats.all_submission_title": "Nombre total de soumissions",
     "iaso.form.stats.instances_per_month_title": "Nouvelles soumissions par mois",
     "iaso.forms.subSource": "Sous-source",
     "iaso.forms.textSearch": "Recherche textuelle",

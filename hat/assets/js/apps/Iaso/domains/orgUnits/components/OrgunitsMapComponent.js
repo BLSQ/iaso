@@ -8,12 +8,8 @@ import isEqual from 'lodash/isEqual';
 import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import {
-    injectIntl,
-    commonStyles,
-    InnerDrawer,
-    Filters as FiltersComponent,
-} from 'bluesquare-components';
+import { injectIntl, commonStyles, InnerDrawer } from 'bluesquare-components';
+import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { locationsLimit } from '../../../constants/filters';
 
 import {

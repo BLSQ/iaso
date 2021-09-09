@@ -49,10 +49,10 @@ export const InstancesPerFormGraph = () => {
                         }}
                     >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
+                        {data.data?.length > 0 && <XAxis dataKey="name" />}
                         <YAxis />
                         <Tooltip />
-                        {/*<Legend />*/}
+                        {/* <Legend /> */}
                         {data.schema.fields
                             .filter(f => f.type === 'number')
                             .map((f, i) => (

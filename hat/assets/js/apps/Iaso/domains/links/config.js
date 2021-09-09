@@ -172,6 +172,7 @@ export const runsTableColumns = (
     },
     {
         Header: formatMessage(MESSAGES.origin),
+        id: 'version_1',
         accessor: 'source',
         Cell: settings => (
             <span>
@@ -187,6 +188,7 @@ export const runsTableColumns = (
     },
     {
         Header: formatMessage(MESSAGES.destination),
+        id: 'version_2',
         accessor: 'destination',
         Cell: settings => (
             <span>

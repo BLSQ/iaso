@@ -97,6 +97,7 @@
     "iaso.forms.source.snis": "SNIS",
     "iaso.forms.source.ucla": "UCLA",
     "iaso.forms.source_ref": "Référence externe",
+    "iaso.forms.stats.title": "Statistiques pour les formulaires",
     "iaso.forms.status": "Statut",
     "iaso.forms.subSource": "Sous-source",
     "iaso.forms.textSearch": "Recherche textuelle",

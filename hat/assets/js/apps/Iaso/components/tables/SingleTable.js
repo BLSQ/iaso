@@ -130,7 +130,7 @@ const SingleTable = ({
     const extraProps = {
         loading,
         defaultPageSize: defaultPageSize || limit,
-        propsToWatch,
+        propsToWatch, // IA-763: pass an extra props that will be watched in table component to force the render
     };
     if (subComponent) {
         extraProps.SubComponent = original =>

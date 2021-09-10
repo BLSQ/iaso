@@ -91,6 +91,7 @@ export const linksTableColumns = (formatMessage, validateLink) => [
     {
         Header: formatMessage(MESSAGES.validator),
         accessor: 'validator',
+        Cell: settings => getDisplayName(settings.value),
     },
     {
         Header: formatMessage(MESSAGES.validated),

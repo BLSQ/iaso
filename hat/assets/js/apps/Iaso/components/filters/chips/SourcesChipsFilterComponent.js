@@ -13,11 +13,13 @@ import ChipsFilterComponent from './ChipsFilterComponent';
 import { fetchAssociatedOrgUnits } from '../../../utils/requests';
 
 import { getSourcesWithoutCurrentSource } from '../../../domains/orgUnits/utils';
+import { innerDrawerStyles } from '../../nav/InnerDrawer/styles';
 
 import MESSAGES from '../messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    ...innerDrawerStyles(theme),
     content: {
         padding: theme.spacing(0, 3, 2, 3),
     },

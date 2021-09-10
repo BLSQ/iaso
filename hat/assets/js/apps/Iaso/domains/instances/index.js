@@ -22,14 +22,10 @@ import {
     createInstance,
 } from './actions';
 import {
-    setCurrentForm,
-    fetchFormDetail as fetchFormDetailAction,
-} from '../forms/actions';
-import {
     redirectTo as redirectToAction,
     redirectToReplace as redirectToReplaceAction,
 } from '../../routing/actions';
-
+import { fetchFormDetailsForInstance, fetchPossibleFields } from './requests';
 import {
     fetchInstancesAsDict,
     fetchInstancesAsSmallDict,
@@ -89,10 +85,14 @@ class Instances extends Component {
         super(props);
         this.state = {
             tableColumns: [],
-            tab: props.params.tab ? props.params.tab : 'list',
+            tab: props.params.tab ?? 'list',
             visibleColumns: [],
             forceRefresh: false,
             labelKeys: [],
+            formName: '',
+            period: { periodType: null },
+            formId: '',
+            possibleFields: null,
         };
     }
 
@@ -116,21 +116,29 @@ class Instances extends Component {
     async componentDidMount() {
         const {
             params: { formId, tab },
-            fetchFormDetail,
         } = this.props;
 
         this.fetchInstances(tab !== 'map');
         if (tab === 'map') {
             this.fetchSmallInstances();
         }
-        const formDetails = await fetchFormDetail(formId);
-        const labelKeys = formDetails.label_keys ?? [];
+        const formDetails = await fetchFormDetailsForInstance(formId);
+        const possibleFields = await fetchPossibleFields(formId);
         this.setState(state => {
-            return { ...state, labelKeys };
+            return {
+                ...state,
+                ...{
+                    labelKeys: formDetails.label_keys ?? [],
+                    formName: formDetails.name,
+                    formId: formDetails.id,
+                    periodType: formDetails.period_type,
+                    possibleFields,
+                },
+            };
         });
     }
 
-    componentDidUpdate(prevProps) {
+    async componentDidUpdate(prevProps) {
         const {
             params,
             reduxPage,
@@ -138,6 +146,12 @@ class Instances extends Component {
             instancesSmall,
         } = this.props;
         const { tableColumns } = this.state;
+        let { possibleFields } = { ...this.state };
+        if (!possibleFields) {
+            possibleFields = await fetchPossibleFields(
+                this.props.params.formId,
+            );
+        }
         if (
             params.pageSize !== prevProps.params.pageSize ||
             params.formId !== prevProps.params.formId ||
@@ -164,12 +178,14 @@ class Instances extends Component {
             },${this.state.labelKeys.join(',')}`;
             enrichedParams.columns = columnsWithLabelKeys;
             this.changeVisibleColumns(
-                getInstancesVisibleColumns(
+                getInstancesVisibleColumns({
                     formatMessage,
-                    reduxPage.list[0],
-                    enrichedParams,
+                    instance: reduxPage.list[0],
+                    columns: enrichedParams.columns,
+                    order: enrichedParams.order,
                     defaultOrder,
-                ),
+                    possibleFields,
+                }),
             );
         }
     }
@@ -250,7 +266,6 @@ class Instances extends Component {
 
     goBack() {
         const { params, router } = this.props;
-        this.props.setCurrentForm(undefined);
         this.props.setInstances([], params, 0, 0);
         router.goBack();
     }
@@ -297,11 +312,10 @@ class Instances extends Component {
             intl: { formatMessage },
             redirectToReplace,
             params,
-            currentForm,
         } = this.props;
 
         const tempVisibleColumns =
-            !currentForm || currentForm.period_type === null
+            this.state.periodType === null
                 ? visibleColumns.filter(column => column.key !== 'period')
                 : visibleColumns;
 
@@ -341,19 +355,17 @@ class Instances extends Component {
             reduxPage,
             instancesSmall,
             fetching,
-            currentForm,
             intl: { formatMessage },
             router,
             prevPathname,
             redirectTo,
         } = this.props;
-
         const { tab, tableColumns, visibleColumns, forceRefresh } = this.state;
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
                     title={`${formatMessage(MESSAGES.title)}: ${
-                        currentForm ? currentForm.name : ''
+                        this.state.formName
                     }`}
                     displayBackButton
                     goBack={() => {
@@ -428,7 +440,7 @@ class Instances extends Component {
                                 className={classes.textAlignRight}
                             >
                                 <div className={classes.paddingBottomBig}>
-                                    {currentForm && (
+                                    {this.state.periodType && (
                                         <CreateReAssignDialogComponent
                                             titleMessage={
                                                 MESSAGES.instanceCreationDialogTitle
@@ -436,7 +448,11 @@ class Instances extends Component {
                                             confirmMessage={
                                                 MESSAGES.instanceCreateAction
                                             }
-                                            formType={currentForm}
+                                            formType={{
+                                                periodType:
+                                                    this.state.periodType,
+                                                id: this.state.formId,
+                                            }}
                                             onCreateOrReAssign={
                                                 this.props.createInstance
                                             }
@@ -512,7 +528,6 @@ class Instances extends Component {
 }
 Instances.defaultProps = {
     reduxPage: undefined,
-    currentForm: undefined,
     prevPathname: null,
     instancesSmall: null,
 };
@@ -525,8 +540,6 @@ Instances.propTypes = {
     params: PropTypes.object.isRequired,
     setInstances: PropTypes.func.isRequired,
     setInstancesSmallDict: PropTypes.func.isRequired,
-    setCurrentForm: PropTypes.func.isRequired,
-    currentForm: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     dispatch: PropTypes.func.isRequired,
@@ -535,7 +548,6 @@ Instances.propTypes = {
     router: PropTypes.object.isRequired,
     redirectToReplace: PropTypes.func.isRequired,
     prevPathname: PropTypes.any,
-    fetchFormDetail: PropTypes.func.isRequired,
     createInstance: PropTypes.func.isRequired,
 };
 
@@ -543,13 +555,11 @@ const MapStateToProps = state => ({
     reduxPage: state.instances.instancesPage,
     instancesSmall: state.instances.instancesSmall,
     fetching: state.instances.fetching,
-    currentForm: state.forms.current,
     prevPathname: state.routerCustom.prevPathname,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setCurrentForm: form => dispatch(setCurrentForm(form)),
     resetInstances: () => dispatch(resetInstances()),
     setInstances: (instances, params, count, pages) =>
         dispatch(setInstances(instances, true, params, count, pages)),
@@ -561,7 +571,6 @@ const MapDispatchToProps = dispatch => ({
         dispatch(createInstance(currentForm, payload)),
     ...bindActionCreators(
         {
-            fetchFormDetail: fetchFormDetailAction,
             redirectTo: redirectToAction,
             redirectToReplace: redirectToReplaceAction,
         },

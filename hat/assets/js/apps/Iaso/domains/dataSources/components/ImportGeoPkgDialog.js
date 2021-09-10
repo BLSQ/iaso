@@ -63,12 +63,12 @@ const ImportGeoPkgDialog = ({
 
     const titleMessage = versionNumber ? (
         <FormattedMessage
-            id="iaso.geopPckg.label.updateFromGpkg"
+            id="iaso.datasource.gpkg.title.update"
             defaultMessage="Update {sourceName} - {versionNumber}"
             values={{ sourceName, versionNumber }}
         />
     ) : (
-        MESSAGES.geoPkgTitle
+        MESSAGES.gpkgTitle
     );
 
     const allowConfirm = Boolean(
@@ -93,7 +93,7 @@ const ImportGeoPkgDialog = ({
                 <Grid item>
                     <Typography>
                         <FormattedMessage
-                            id="iaso.datasources.label.gpkg_explication"
+                            id="iaso.datasources.gpkg.explication"
                             // eslint-disable-next-line max-len
                             defaultMessage="Import OrgUnits from a GeoPackage file, all the OrgUnits present in the file will be updated.{breakingLine}The file must be correctly formatted.{breakingLine}"
                             values={{ breakingLine: <br /> }}
@@ -101,7 +101,7 @@ const ImportGeoPkgDialog = ({
                     </Typography>
                     <Typography>
                         <FormattedMessage
-                            id="iaso.datasources.label.import_task_explication"
+                            id="iaso.datasources.gpkg.importTaskExplication"
                             defaultMessage="The import will be processed in the background and can take a dozen minutes to complete."
                         />
                     </Typography>
@@ -110,7 +110,7 @@ const ImportGeoPkgDialog = ({
                     <FileInputComponent
                         keyValue="file"
                         value={form.file.value}
-                        label={MESSAGES.gpkgFormFile}
+                        label={MESSAGES.gpkgChooseFile}
                         errors={form.file.errors}
                         required
                         onChange={setFormField}

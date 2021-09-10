@@ -101,7 +101,7 @@ const tableColumns = source => [
                             <IconButtonComponent
                                 onClick={openDialog}
                                 icon="globe"
-                                tooltipMessage={MESSAGES.importGeoPkg}
+                                tooltipMessage={MESSAGES.gpkgTooltip}
                             />
                         )}
                         sourceId={source.id}

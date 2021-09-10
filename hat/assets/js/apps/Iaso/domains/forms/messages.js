@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
     },
+    statsTitle: {
+        defaultMessage: 'Form Stats',
+        id: 'iaso.forms.stats.title',
+    },
     createForm: {
         defaultMessage: 'Create form',
         id: 'iaso.forms.create',
@@ -448,6 +452,18 @@ const MESSAGES = defineMessages({
     singlePerPeriodSelect: {
         id: 'iaso.form.label.singlePerPeriodSelect',
         defaultMessage: 'Please select an answer',
+    },
+    fields: {
+        id: 'iaso.form.label.fields',
+        defaultMessage: 'Default fields to display',
+    },
+    showAdvancedSettings: {
+        id: 'iaso.form.label.showAdvancedSettings',
+        defaultMessage: 'Show advanced settings',
+    },
+    hideAdvancedSettings: {
+        id: 'iaso.form.label.hideAdvancedSettings',
+        defaultMessage: 'Hide advanced settings',
     },
 });
 

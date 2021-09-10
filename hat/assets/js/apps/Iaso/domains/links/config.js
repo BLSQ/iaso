@@ -47,7 +47,7 @@ export const linksTableColumns = (formatMessage, validateLink) => [
     },
     {
         Header: formatMessage(MESSAGES.origin),
-        accessor: 'source__source',
+        accessor: 'source__version',
         Cell: settings => (
             <span>
                 {`${formatMessage(MESSAGES.source)}: ${
@@ -62,7 +62,7 @@ export const linksTableColumns = (formatMessage, validateLink) => [
     },
     {
         Header: formatMessage(MESSAGES.destination),
-        accessor: 'destination__source',
+        accessor: 'destination__version',
         Cell: settings => (
             <span>
                 {`${formatMessage(MESSAGES.source)}: ${
@@ -84,13 +84,12 @@ export const linksTableColumns = (formatMessage, validateLink) => [
         Header: formatMessage(MESSAGES.algorithm),
         id: 'algorithm_run',
         accessor: row =>
-            row.algorithm_run?.description
-                ? row.algorithm_run.description
-                : '?',
+            row.algorithm_run ? row.algorithm_run.algorithm.description : '-',
     },
     {
         Header: formatMessage(MESSAGES.validator),
         accessor: 'validator',
+        Cell: settings => settings.value && getDisplayName(settings.value),
     },
     {
         Header: formatMessage(MESSAGES.validated),
@@ -147,7 +146,7 @@ export const runsTableColumns = (
     },
     {
         Header: formatMessage(MESSAGES.launcher),
-        id: 'launcher',
+        accessor: 'launcher',
         Cell: settings =>
             settings.value ? getDisplayName(settings.value) : textPlaceholder,
     },
@@ -171,6 +170,7 @@ export const runsTableColumns = (
     },
     {
         Header: formatMessage(MESSAGES.origin),
+        id: 'version_1',
         accessor: 'source',
         Cell: settings => (
             <span>
@@ -186,6 +186,7 @@ export const runsTableColumns = (
     },
     {
         Header: formatMessage(MESSAGES.destination),
+        id: 'version_2',
         accessor: 'destination',
         Cell: settings => (
             <span>

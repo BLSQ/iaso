@@ -1,6 +1,7 @@
 import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
+import FormsStats from '../domains/forms/stats';
 import OrgUnits from '../domains/orgUnits';
 import Links from '../domains/links';
 import Runs from '../domains/links/Runs';
@@ -20,7 +21,7 @@ import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
-import { orgUnitFiltersWithPrefix, linksFiltersWithPrefix } from './filters';
+import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
@@ -222,6 +223,13 @@ export const instanceDetailPath = {
             key: 'instanceId',
         },
     ],
+};
+
+export const formsStatsPath = {
+    baseUrl: baseUrls.formsStats,
+    permission: 'iaso_forms',
+    component: () => <FormsStats />,
+    params: [],
 };
 
 export const orgUnitsPath = {
@@ -500,6 +508,7 @@ export const routeConfigs = [
     formsPath,
     archivedPath,
     formDetailPath,
+    formsStatsPath,
     mappingsPath,
     mappingDetailPath,
     instancesPath,

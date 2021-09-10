@@ -44,10 +44,12 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
         {
             Header: formatMessage(MESSAGES.type),
             accessor: 'org_unit_type_name',
+            id: 'org_unit_type__name',
         },
         {
             Header: formatMessage(MESSAGES.groups),
             accessor: 'groups',
+            sortable: false,
             width: 400,
             Cell: settings => getOrgUnitGroups(settings.row.original),
         },

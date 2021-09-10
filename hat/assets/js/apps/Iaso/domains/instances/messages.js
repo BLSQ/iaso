@@ -309,6 +309,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.label.noOrgUnitType',
         defaultMessage: 'OrgUnit type not specified',
     },
+    instanceHeaderTooltip: {
+        id: 'iaso.instance.table.label.instanceHeaderTooltip',
+        defaultMessage: 'Label: {label} - Name: {key}',
+    },
 });
 
 export default MESSAGES;

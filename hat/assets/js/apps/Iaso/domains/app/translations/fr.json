@@ -1,4 +1,5 @@
 {
+    "PeriodSelectorComponent.label.apply": "Appliquer",
     "blsq.treeview.label.selectMultiple": "Sélectionner des Org Unit(s)",
     "blsq.treeview.label.selectSingle": "Sélectionner une Org Unit",
     "blsq.treeview.loading": "Chargement",

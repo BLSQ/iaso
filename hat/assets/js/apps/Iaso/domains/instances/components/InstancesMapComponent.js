@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Map, ScaleControl, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { InnerDrawer, injectIntl } from 'bluesquare-components';
+import { injectIntl } from 'bluesquare-components';
 import { Grid, Divider } from '@material-ui/core';
 
 import {
@@ -18,6 +18,8 @@ import { setCurrentInstance } from '../actions';
 import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+import InnerDrawer from '../../../components/nav/InnerDrawer';
+
 import InstancePopupComponent from './InstancePopupComponent';
 import { warningSnackBar } from '../../../constants/snackBars';
 import {
@@ -26,7 +28,6 @@ import {
 } from '../../../redux/snackBarsReducer';
 
 import { fetchInstanceDetail } from '../../../utils/requests';
-import DrawerMessages from '../../../components/nav/messages';
 
 const boundsOptions = { padding: [50, 50] };
 
@@ -91,16 +92,13 @@ class InstancesMap extends Component {
             <Grid container spacing={0}>
                 <InnerDrawer
                     withTopBorder
-                    settingsOption={{
-                        component: (
-                            <>
-                                <TileSwitch />
-                                <Divider />
-                                <ClusterSwitch />
-                            </>
-                        ),
-                        message: DrawerMessages.settings,
-                    }}
+                    settingsOptionComponent={
+                        <>
+                            <TileSwitch />
+                            <Divider />
+                            <ClusterSwitch />
+                        </>
+                    }
                 >
                     <Map
                         ref={ref => {

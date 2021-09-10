@@ -3,6 +3,7 @@ export const baseUrls = {
     archived: 'forms/archived',
     formDetail: 'forms/detail',
     mappings: 'forms/mappings',
+    formsStats: 'forms/stats',
     mappingDetail: 'forms/mapping',
     instances: 'instances',
     instanceDetail: 'instance',

@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { Box, Typography } from '@material-ui/core';
-import { useSelector } from 'react-redux';
 import {
     useSafeIntl,
     AddButton as AddButtonComponent,
@@ -24,12 +23,12 @@ const FormVersionsComponent = ({
     forceRefresh,
     setForceRefresh,
     periodType,
+    formId,
 }) => {
     const intl = useSafeIntl();
 
-    const currentForm = useSelector(state => state.forms.current);
+    if (!formId) return null;
 
-    if (!currentForm || (currentForm && !currentForm.id)) return null;
     return (
         <Box mt={4}>
             <Typography color="primary" variant="h5">
@@ -45,7 +44,7 @@ const FormVersionsComponent = ({
                 fetchItems={(d, url) =>
                     fetchList(
                         d,
-                        `${url}&form_id=${currentForm.id}`,
+                        `${url}&form_id=${formId}`,
                         'fetchFormVersionsError',
                         'form versions',
                     )
@@ -54,7 +53,7 @@ const FormVersionsComponent = ({
                 columns={formVersionsTableColumns(
                     intl.formatMessage,
                     setForceRefresh,
-                    currentForm.id,
+                    formId,
                     periodType,
                 )}
                 forceRefresh={forceRefresh}
@@ -67,7 +66,7 @@ const FormVersionsComponent = ({
                 display="flex"
             >
                 <FormVersionsDialog
-                    formId={currentForm.id}
+                    formId={formId}
                     periodType={periodType}
                     titleMessage={MESSAGES.createFormVersion}
                     renderTrigger={({ openDialog }) => (
@@ -84,12 +83,14 @@ FormVersionsComponent.defaultProps = {
     periodType: PERIOD_TYPE_DAY,
     setForceRefresh: () => null,
     forceRefresh: false,
+    formId: null,
 };
 
 FormVersionsComponent.propTypes = {
     periodType: PropTypes.string,
     forceRefresh: PropTypes.bool,
     setForceRefresh: PropTypes.func,
+    formId: PropTypes.number,
 };
 
 export default FormVersionsComponent;

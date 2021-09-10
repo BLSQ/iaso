@@ -158,10 +158,11 @@ def map_coordinates(row, org_unit):
 
 def map_geometry(row: DhisOrgunit, org_unit: OrgUnit):
     if "geometry" in row:
-        coordinates = row["geometry"]["coordinates"]
-        feature_type = row["geometry"]["type"]
-
+        feature_type = None
+        coordinates = None
         try:
+            coordinates = row["geometry"]["coordinates"]
+            feature_type = row["geometry"]["type"]
             if feature_type == "Point" and coordinates:
                 # No altitude in DHIS2, but mandatory in Iaso
                 org_unit.location = Point(coordinates[0], coordinates[1], 0)

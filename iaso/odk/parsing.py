@@ -52,13 +52,16 @@ def to_json_dict(form_version):  # TODO: remove
 
 
 def visit(node, questions_by_name):
-    parent = node["type"] == "survey" or node["type"] == "group"
+    parent = node.get("type", None) is not None and (node["type"] == "survey" or node["type"] == "group")
     if parent:
         if "children" in node:
             for child in node["children"]:
                 visit(child, questions_by_name)
     else:
-        questions_by_name[node["name"]] = node
+        try:
+            questions_by_name[node["name"]] = node
+        except:
+            print("error", node)
 
 
 def to_questions_by_name(form_descriptor):

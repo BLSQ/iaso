@@ -27,7 +27,12 @@ const requests = [
         },
     },
     {
-        url: `/api/forms/${formId}/`,
+        url: `/api/forms/${formId}/?fields=name,period_type,label_keys,id`,
+        body: {},
+    },
+    // Nock complains if we don't list this call, but it doesn't intercept it, hence the value of 1 line 70
+    {
+        url: `/api/forms/${formId}/?fields=possible_fields`,
         body: {},
     },
     {
@@ -62,6 +67,6 @@ describe('Instances connected component', () => {
         expect(connectedWrapper.exists()).to.equal(true);
     });
     it('should connect and call the api', () => {
-        expect(nock.activeMocks()).to.have.lengthOf(0);
+        expect(nock.activeMocks()).to.have.lengthOf(1);
     });
 });

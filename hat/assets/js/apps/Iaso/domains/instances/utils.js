@@ -103,10 +103,28 @@ export const getInstancesColumns = (
 
 export const getMetasColumns = () =>
     [...instancesTableColumns()].map(c => c.accessor);
-const formatLabel = field => {
+
+const localizeLabel = (field, locale) => {
+    let result;
+    try {
+        const localeOptions = JSON.parse(field.label);
+        if (locale === 'fr') {
+            result = localeOptions.French;
+        } else {
+            result = localeOptions.English;
+        }
+    } catch (e) {
+        result = field.key;
+    }
+    return result;
+};
+
+const formatLabel = (field, locale) => {
+    if (field.label.charAt(0) === '{') return localizeLabel(field, locale);
     if (!field.label) return field.key;
     if (!field.label.trim()) return field.key;
     if (field.label.includes(':')) return field.label.split(':')[0];
+    if (field.label.includes('$')) return field.label.split('$')[0];
     return field.label;
 };
 export const getInstancesVisibleColumns = ({
@@ -116,6 +134,7 @@ export const getInstancesVisibleColumns = ({
     order,
     defaultOrder,
     possibleFields,
+    locale,
 }) => {
     const activeOrders = (order || defaultOrder).split(',');
     const columnsNames = columns ? columns.split(',') : [];
@@ -136,7 +155,7 @@ export const getInstancesVisibleColumns = ({
 
     if (instance) {
         possibleFields.forEach(field => {
-            const label = formatLabel(field);
+            const label = formatLabel(field, locale);
             newColumns.push({
                 key: field.name,
                 label,

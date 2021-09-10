@@ -21,6 +21,9 @@ from .preparedness.parser import (
     parse_value,
 )
 from .preparedness.spreadsheet_manager import *
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -267,7 +270,16 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         campaign = validated_data.get("campaign")
-        spreadsheet = create_spreadsheet(campaign.obr_name)
+
+        lang = "EN"
+        try:
+            country = campaign.country()
+            cug = CountryUsersGroup.objects.get(country=country)
+            lang = cug.language
+        except Exception as e:
+            logger.exception(e)
+            logger.error(f"Could not find template language for {campaign}")
+        spreadsheet = create_spreadsheet(campaign.obr_name, lang)
 
         update_national_worksheet(
             spreadsheet.worksheet("National"),

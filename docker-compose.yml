@@ -27,6 +27,7 @@ services:
       - db
     environment: &hat_environment
       PREPAREDNESS_TEMPLATE_ID:
+      PREPAREDNESS_TEMPLATE_FR_ID:
       PLUGINS:
       GOOGLE_API_KEY_BASE64:
       IASO_ENVIRONMENT: "development"

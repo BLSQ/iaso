@@ -80,13 +80,13 @@ const AddTask = ({
 
     const titleMessage = sourceVersionNumber ? (
         <FormattedMessage
-            id="update"
+            id="iaso.sourceVersion.label.update"
             defaultMessage="Update version {version}"
             values={{ version: sourceVersionNumber }}
         />
     ) : (
         <FormattedMessage
-            id="create"
+            id="iaso.sourceVersion.label.create"
             defaultMessage="Create a new version from DHIS2"
         />
     );
@@ -181,19 +181,19 @@ const AddTask = ({
                     <Typography>
                         {sourceVersionNumber ? (
                             <FormattedMessage
-                                id="update_explication"
+                                id="iaso.sourceVersion.label.update_explication"
                                 defaultMessage="Update this version by syncing with DHIS2. New Orgunit from DHIS2 will be imported but OrgUnit already present on this version won't be modified."
                             />
                         ) : (
                             <FormattedMessage
-                                id="create_explication"
+                                id="iaso.sourceVersion.label.create_explication"
                                 defaultMessage="Import OrgUnits from a DHIS2 server."
                             />
                         )}
                     </Typography>
                     <Typography>
                         <FormattedMessage
-                            id="import_task_explication"
+                            id="iaso.sourceVersion.label.import_task_explication"
                             defaultMessage="The import will be realised in the background and can take a dozen minutes to complete."
                         />
                     </Typography>

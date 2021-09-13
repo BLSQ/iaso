@@ -35,7 +35,7 @@ const MESSAGES = defineMessages({
     },
     updatedAt: {
         id: 'iaso.forms.updated_at',
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
     },
     orgUnit: {
         id: 'iaso.label.orgUnit',

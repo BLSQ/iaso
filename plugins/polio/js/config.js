@@ -2,7 +2,9 @@ import React from 'react';
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import SettingsIcon from '@material-ui/icons/Settings';
+import CalendarToday from '@material-ui/icons/CalendarToday';
 import { Dashboard } from './src/components/Dashboard';
+import { Calendar } from './src/pages/Calendar';
 import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
 import MESSAGES from './src/constants/messages';
 
@@ -32,6 +34,12 @@ const routes = [
             },
         ],
     },
+    {
+        baseUrl: 'polio/calendar',
+        component: () => <Calendar />,
+        permission: 'iaso_forms',
+        params: [],
+    },
 ];
 
 const menu = [
@@ -51,6 +59,12 @@ const menu = [
                 key: 'config',
                 permission: 'iaso_forms',
                 icon: props => <SettingsIcon {...props} />,
+            },
+            {
+                label: MESSAGES.calendar,
+                key: 'calendar',
+                permission: 'iaso_forms',
+                icon: props => <CalendarToday {...props} />,
             },
         ],
     },

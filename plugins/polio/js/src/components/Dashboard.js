@@ -2,7 +2,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Table,
-    textPlaceholder,
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';

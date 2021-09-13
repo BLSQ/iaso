@@ -421,6 +421,7 @@
     "iaso.permissions.projects": "Projets",
     "iaso.permissions.sources": "Sources",
     "iaso.permissions.users": "Utilisateurs",
+    "iaso.polio.calendar": "Calendrier",
     "iaso.polio.label.configEmailNotif": "Configurer le pays: {country}",
     "iaso.polio.label.configuration": "Configuration",
     "iaso.polio.select.label.selectLanguage": "Sélectionner la langue",

@@ -133,6 +133,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.table.label.actions',
         defaultMessage: 'Actions',
     },
+    calendar: {
+        id: 'iaso.polio.calendar',
+        defaultMessage: 'Calendar',
+    },
 });
 
 export default MESSAGES;

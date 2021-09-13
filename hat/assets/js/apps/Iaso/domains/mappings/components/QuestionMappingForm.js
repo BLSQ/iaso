@@ -1,8 +1,9 @@
 import Alert from '@material-ui/lab/Alert';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { LoadingSpinner, Select } from 'bluesquare-components';
+import { LoadingSpinner, Select, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+import { Button } from '@material-ui/core';
 import { isMapped, isNeverMapped } from '../question_mappings';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';
@@ -12,16 +13,6 @@ import Descriptor from '../descriptor';
 import EventTrackerProgramForm from './EventTrackerProgramForm';
 import MESSAGES from '../messages';
 
-const iasoFieldOptions = [
-    { value: undefined, label: "Use the value from the form's answer" },
-    { value: 'instance.org_unit.source_ref', label: 'Instance orgunit' },
-];
-
-const fieldTypeOptions = [
-    { value: 'trackedEntityAttribute', label: 'Tracked Entity Attribute' },
-    { value: 'dataElement', label: 'Program data element' },
-];
-
 const Dhis2ProgramTrackedEntityAttributeSearch = ({
     questionMapping,
     mapping,
@@ -29,6 +20,7 @@ const Dhis2ProgramTrackedEntityAttributeSearch = ({
     question,
     programId,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const mapToTrackedEntityTypeAttributes = (options, input) => {
         const token = input ? input.toLowerCase() : '';
         const results = [];
@@ -63,7 +55,7 @@ const Dhis2ProgramTrackedEntityAttributeSearch = ({
                     ? question.name
                     : undefined
             }
-            label="Search for tracked entity type attribute"
+            label={formatMessage(MESSAGES.searchTrackedEntity)}
             onChange={onChange}
             fields="programTrackedEntityAttributes[name,code,trackedEntityAttribute[id,generated,name,code,valueType,optionSet[id,name,code,options[id,code,name]]]]"
             mapOptions={mapToTrackedEntityTypeAttributes}
@@ -92,6 +84,7 @@ const Dhis2ProgramDataElementSearch = ({
     question,
     programId,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const mapToMappingProgramElements = (options, input) => {
         const token = input ? input.toLowerCase() : '';
         const results = [];
@@ -150,7 +143,7 @@ const Dhis2ProgramDataElementSearch = ({
                     ? question.name
                     : undefined
             }
-            label="Search for tracker data element (and combo) by name, code or id"
+            label={formatMessage(MESSAGES.searchTracker)}
             onChange={onChange}
             // eslint-disable-next-line max-len
             fields="id,name,programStages[id,name,programStageDataElements[compulsory,code,dataElement[id,name,code,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]]]]"
@@ -182,11 +175,13 @@ const QuestionMappingForm = ({
     onUnmapQuestionMapping,
     onNeverMapQuestionMapping,
     hesabuDescriptor,
+    fieldOptions, // should be ordered so state is initalized with 1st element
+    fieldTypeOptions, // should be ordered so state is initalized with 1st element
 }) => {
     const questionMapping = mapping.question_mappings[question.name] || {};
     const [newQuestionMapping, setNewQuestionMapping] = React.useState();
-    const [iasoField, setIasoField] = React.useState(iasoFieldOptions[0]);
-    const [fieldType, setFieldType] = React.useState(fieldTypeOptions[1]);
+    const [iasoField, setIasoField] = React.useState(fieldOptions[0]);
+    const [fieldType, setFieldType] = React.useState(fieldTypeOptions[0]);
 
     if (indexedQuestions === undefined) {
         return <LoadingSpinner />;
@@ -261,10 +256,7 @@ const QuestionMappingForm = ({
                 </>
             )}
             {/* TODO see if this needs translation */}
-            <div>
-                withinRepeatGroup ? {withinRepeatGroup}{' '}
-                {JSON.stringify(repeatGroupMapping)}
-            </div>
+            <div>{JSON.stringify(repeatGroupMapping)}</div>
 
             {isMapped(questionMapping) && (
                 <>
@@ -277,21 +269,25 @@ const QuestionMappingForm = ({
                         hesabuDescriptor={hesabuDescriptor}
                     />
                     <br />
-                    <button
-                        className="button"
+                    <Button
+                        // className="button"
+                        color="primary"
+                        variant="contained"
                         onClick={() => onUnmapQuestionMapping(questionMapping)}
                     >
                         <FormattedMessage {...MESSAGES.removeMapping} />
-                    </button>
+                    </Button>
                 </>
             )}
             {!isMapped(questionMapping) && !isNeverMapped(questionMapping) && (
-                <button
-                    className="button"
+                <Button
+                    // className="button"
+                    color="primary"
+                    variant="contained"
                     onClick={() => onNeverMapQuestionMapping(questionMapping)}
                 >
                     <FormattedMessage {...MESSAGES.willNeverMap} />
-                </button>
+                </Button>
             )}
             {isNeverMapped(questionMapping) && (
                 <Alert severity="info">
@@ -376,7 +372,7 @@ const QuestionMappingForm = ({
                                 />
                             </p>
                             <Select
-                                options={iasoFieldOptions}
+                                options={fieldOptions}
                                 value={iasoField}
                                 onChange={setIasoField}
                             />
@@ -407,8 +403,10 @@ const QuestionMappingForm = ({
                         mappingVersion={mappingVersion}
                     />
                     <br />
-                    <button
+                    <Button
                         className="button"
+                        variant="contained"
+                        color="primary"
                         disabled={!newQuestionMapping}
                         onClick={() => {
                             let item = newQuestionMapping;
@@ -433,7 +431,7 @@ const QuestionMappingForm = ({
                         }}
                     >
                         <FormattedMessage {...MESSAGES.confirm} />
-                    </button>
+                    </Button>
                 </>
             )}
         </>
@@ -442,6 +440,8 @@ const QuestionMappingForm = ({
 
 QuestionMappingForm.defaultProps = {
     hesabuDescriptor: [],
+    fieldOptions: [],
+    fieldTypeOptions: [],
 };
 
 QuestionMappingForm.propTypes = {
@@ -453,5 +453,7 @@ QuestionMappingForm.propTypes = {
     onUnmapQuestionMapping: PropTypes.func.isRequired,
     onNeverMapQuestionMapping: PropTypes.func.isRequired,
     hesabuDescriptor: PropTypes.array,
+    fieldOptions: PropTypes.array,
+    fieldTypeOptions: PropTypes.array,
 };
 export default QuestionMappingForm;

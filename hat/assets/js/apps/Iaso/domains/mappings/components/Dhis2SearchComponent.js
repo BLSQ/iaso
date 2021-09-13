@@ -6,7 +6,14 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 
 import throttle from 'lodash/throttle';
 
-const fetchFrom = (input, filter, pageSize, resourceName, dataSourceId, fields) =>
+const fetchFrom = (
+    input,
+    filter,
+    pageSize,
+    resourceName,
+    dataSourceId,
+    fields,
+) =>
     Promise.all([
         fetch(
             `/api/datasources/${dataSourceId}/${resourceName}.json?filter=name:ilike:${input}&fields=${
@@ -44,7 +51,7 @@ const Dhis2Search = props => {
 
     const [options, setOptions] = React.useState([]);
     // TODO confirm this is dead code
-        // const [_selectedOption, setSelectedOption] = React.useState([]);
+    // const [_selectedOption, setSelectedOption] = React.useState([]);
     const handleChange = event => {
         setInputValue(event.target.value);
     };
@@ -71,7 +78,8 @@ const Dhis2Search = props => {
     );
     React.useEffect(() => {
         setInputValue(defaultValue);
-    }, [setInputValue]);
+    }, [setInputValue, defaultValue]);
+
     React.useEffect(() => {
         let active = true;
         if (inputValue === '') {

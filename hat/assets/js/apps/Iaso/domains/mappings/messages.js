@@ -111,6 +111,83 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.confirm',
         defaultMessage: 'Confirm',
     },
+    loading: {
+        id: 'iaso.mappings.label.loading',
+        defaultMessage: 'Loading',
+    },
+    mapping: {
+        id: 'iaso.mappings.label.mapping',
+        defaultMessage: 'Mapping: {name}, {id} - {type}',
+    },
+    searchTrackedEntity: {
+        id: 'iaso.mappings.label.searchTrackedEntity',
+        defaultMessage: 'Search for tracked entity type attribute',
+    },
+    searchTracker: {
+        id: 'iaso.mappings.label.searchTracker',
+        defaultMessage:
+            'Search for tracker data element (and combo) by name, code or id',
+    },
+    source: {
+        id: 'iaso.mappings.label.source',
+        defaultMessage: 'Source',
+    },
+    formVersion: {
+        id: 'iaso.mappings.label.formVersion',
+        defaultMessage: 'Form version',
+    },
+    dataset: {
+        id: 'iaso.mappings.label.dataset',
+        defaultMessage: 'Dataset',
+    },
+    program: {
+        id: 'iaso.mappings.label.program',
+        defaultMessage: 'Program',
+    },
+    relationshipType: {
+        id: 'iaso.mappings.label.relationshipType',
+        defaultMessage: 'Relationship type',
+    },
+    atLeastAMapping: {
+        id: 'iaso.mappings.label.atLeastAMapping',
+        defaultMessage: 'at least a mapping',
+    },
+    noMapping: {
+        id: 'iaso.mappings.label.noMapping',
+        defaultMessage: 'no mapping',
+    },
+    duplicateMappingAlert: {
+        id: 'iaso.mappings.label.duplicateMappingAlert',
+        defaultMessage: 'Duplicate mapping ! Will be used in both {duplicates}',
+    },
+    proposedNewMapping: {
+        id: 'iaso.mappings.label.proposedNewMapping',
+        defaultMessage: 'Proposed new mapping',
+    },
+    hesabuHint: {
+        id: 'iaso.mappings.label.hesabuHint',
+        defaultMessage: 'Hesabu hint, this element is used by',
+    },
+    options: {
+        id: 'iaso.mappings.label.options',
+        defaultMessage: 'Options :',
+    },
+    useValueFromForm: {
+        id: 'iaso.mappings.label.useValueFromForm',
+        defaultMessage: "Use the value from the form's answer",
+    },
+    instanceOrgUnit: {
+        id: 'iaso.mappings.label.instanceOrgUnit',
+        defaultMessage: 'Instance orgunit',
+    },
+    trackedEntityAttribute: {
+        id: 'iaso.mappings.label.trackedEntityAttribute',
+        defaultMessage: 'Tracked Entity Attribute',
+    },
+    programDataElement: {
+        id: 'iaso.mappings.label.programDataElement',
+        defaultMessage: 'Program data element',
+    },
 });
 
 export default MESSAGES;

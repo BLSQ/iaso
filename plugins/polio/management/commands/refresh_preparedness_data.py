@@ -9,7 +9,6 @@ from plugins.polio.preparedness.parser import (
     get_regional_level_preparedness,
     open_sheet_by_url,
 )
-from plugins.polio.preparedness.quota_manager import QuotaManager
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -20,7 +19,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         started_at = datetime.now()
-        manager = QuotaManager()
         campaigns_with_spreadsheet = Campaign.objects.only("id", "preperadness_spreadsheet_url").filter(
             preperadness_spreadsheet_url__isnull=False
         )
@@ -34,8 +32,8 @@ class Command(BaseCommand):
             try:
                 sheet = open_sheet_by_url(campaign.preperadness_spreadsheet_url)
                 preparedness_data = {
-                    "national": get_national_level_preparedness(sheet, manager=manager),
-                    **get_regional_level_preparedness(sheet, manager=manager),
+                    "national": get_national_level_preparedness(sheet),
+                    **get_regional_level_preparedness(sheet),
                 }
                 preparedness_data["totals"] = get_preparedness_score(preparedness_data)
 
@@ -50,7 +48,6 @@ class Command(BaseCommand):
                 print(f"Campaign {campaign.pk} refreshed")
                 print(preparedness)
 
-                print(f"Requests sent {manager.total_requests}")
                 campaign.preperadness_sync_status = "FINISHED"
                 campaign.save()
             except Exception as e:

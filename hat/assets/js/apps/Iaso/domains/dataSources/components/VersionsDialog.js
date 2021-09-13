@@ -45,13 +45,21 @@ const tableColumns = source => [
             ),
     },
     {
-        Header: <FormattedMessage id="number" defaultMessage="Number" />,
+        Header: (
+            <FormattedMessage
+                id="iaso.versionsDialog.label.number"
+                defaultMessage="Number"
+            />
+        ),
         sortable: false,
         accessor: 'number',
     },
     {
         Header: (
-            <FormattedMessage id="created_at" defaultMessage="Created at" />
+            <FormattedMessage
+                id="iaso.versionsDialog.label.createdAt"
+                defaultMessage="Created"
+            />
         ),
         accessor: 'created_at',
         sortable: false,
@@ -59,7 +67,10 @@ const tableColumns = source => [
     },
     {
         Header: (
-            <FormattedMessage id="description" defaultMessage="Description" />
+            <FormattedMessage
+                id="iaso.versionsDialog.label.description"
+                defaultMessage="Description"
+            />
         ),
         accessor: 'description',
         sortable: false,
@@ -90,7 +101,7 @@ const tableColumns = source => [
                             <IconButtonComponent
                                 onClick={openDialog}
                                 icon="globe"
-                                tooltipMessage={MESSAGES.importGeoPkg}
+                                tooltipMessage={MESSAGES.gpkgTooltip}
                             />
                         )}
                         sourceId={source.id}
@@ -108,7 +119,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
 
     const titleMessage = (
         <FormattedMessage
-            id="dialog_versions"
+            id="iaso.versionsDialog.label.dialogVersions"
             defaultMessage="Versions on source: {source}"
             values={{
                 source: source.name,
@@ -140,7 +151,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
             {source.versions.length === 0 && (
                 <Typography style={{ padding: 5 }}>
                     <FormattedMessage
-                        id="datasource.no_version"
+                        id="iaso.versionsDialog.label.datasource.noVersion"
                         defaultMessage="This datasource is empty, please create a versions using one of the buttons below"
                     />
                 </Typography>
@@ -152,8 +163,8 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                             <DHIS2Svg />
                             &nbsp;
                             <FormattedMessage
-                                id="new_version_dhis2"
-                                defaultMessage=" New version from DHIS2"
+                                id="iaso.versionsDialog.label.newVersionDhis2"
+                                defaultMessage="New version from DHIS2"
                             />
                         </Button>
                     )}
@@ -166,8 +177,8 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                             <Public />
                             &nbsp;
                             <FormattedMessage
-                                id="new_version_gpkg"
-                                defaultMessage=" New version from a Geopackage"
+                                id="iaso.versionsDialog.label.newVersionGpkg"
+                                defaultMessage="New version from a Geopackage"
                             />
                         </Button>
                     )}

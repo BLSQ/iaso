@@ -22,14 +22,24 @@ from plugins.polio.preparedness.conditional_formatting import (
     PERCENT_FORMAT,
     TEXT_CENTERED,
 )
-from plugins.polio.preparedness.quota_manager import QuotaManager
 
 PREPAREDNESS_TEMPLATE_ID = os.environ.get("PREPAREDNESS_TEMPLATE_ID", None)
+PREPAREDNESS_TEMPLATE_FR_ID = os.environ.get("PREPAREDNESS_TEMPLATE_FR_ID", None)
 
 
-def create_spreadsheet(title: str):
+def create_spreadsheet(title: str, lang: str):
     client = get_client()
-    spreadsheet = client.copy(PREPAREDNESS_TEMPLATE_ID, title, copy_permissions=True)
+    if lang == "EN":
+        template = PREPAREDNESS_TEMPLATE_ID
+    elif lang == "FR":
+        template = PREPAREDNESS_TEMPLATE_FR_ID
+    else:
+        raise Exception(f"Template for {lang} not found")
+
+    if not template:
+        raise Exception(f"Template for {lang} not found")
+
+    spreadsheet = client.copy(template, title, copy_permissions=True)
     spreadsheet.share(None, perm_type="anyone", role="writer")
     return spreadsheet
 
@@ -46,7 +56,6 @@ def update_national_worksheet(sheet: gspread.Worksheet, country=None, payment_mo
 
 
 def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region_districts):
-    quota = QuotaManager()
     updates = [
         {"range": "c4", "values": [[region_name]]},
     ]
@@ -114,8 +123,6 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
     rules.save()
-    # we do 6 request: duplicate sheet, insetCol (2), getConditionalFormating, add values, addFormating, addConditionalFormatting.
-    quota.increase(6)
 
 
 def generate_planning_coord_funding_section(col_index: int, district):

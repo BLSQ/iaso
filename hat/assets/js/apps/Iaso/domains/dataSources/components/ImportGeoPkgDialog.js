@@ -63,12 +63,12 @@ const ImportGeoPkgDialog = ({
 
     const titleMessage = versionNumber ? (
         <FormattedMessage
-            id="update_from_gpkg"
+            id="iaso.datasource.gpkg.title.update"
             defaultMessage="Update {sourceName} - {versionNumber}"
             values={{ sourceName, versionNumber }}
         />
     ) : (
-        MESSAGES.geoPkgTitle
+        MESSAGES.gpkgTitle
     );
 
     const allowConfirm = Boolean(
@@ -93,16 +93,16 @@ const ImportGeoPkgDialog = ({
                 <Grid item>
                     <Typography>
                         <FormattedMessage
-                            id="gpkg.explication"
-                            defaultMessage="Import OrgUnits from a GeoPackage file, all the OrgUnits present in the file will be updated.
-                             The file must be correctly formatted.
-                             "
+                            id="iaso.datasources.gpkg.explication"
+                            // eslint-disable-next-line max-len
+                            defaultMessage="Import OrgUnits from a GeoPackage file, all the OrgUnits present in the file will be updated.{breakingLine}The file must be correctly formatted.{breakingLine}"
+                            values={{ breakingLine: <br /> }}
                         />
                     </Typography>
                     <Typography>
                         <FormattedMessage
-                            id="import_task_explication"
-                            defaultMessage="The import will be realised in the background and can take a dozen minutes to complete."
+                            id="iaso.datasources.gpkg.importTaskExplication"
+                            defaultMessage="The import will be processed in the background and can take a dozen minutes to complete."
                         />
                     </Typography>
                 </Grid>
@@ -110,7 +110,7 @@ const ImportGeoPkgDialog = ({
                     <FileInputComponent
                         keyValue="file"
                         value={form.file.value}
-                        label={MESSAGES.gpkgFormFile}
+                        label={MESSAGES.gpkgChooseFile}
                         errors={form.file.errors}
                         required
                         onChange={setFormField}

@@ -71,7 +71,7 @@ const MESSAGES = defineMessages({
     },
     created_at: {
         id: 'iaso.forms.created_at',
-        defaultMessage: 'Created at',
+        defaultMessage: 'Created',
     },
     update: {
         id: 'iaso.forms.update',
@@ -79,7 +79,7 @@ const MESSAGES = defineMessages({
     },
     deleted_at: {
         id: 'iaso.forms.deleted_at',
-        defaultMessage: 'Deleted at',
+        defaultMessage: 'Deleted',
     },
     updateFormVersion: {
         id: 'iaso.formversions.update',
@@ -131,7 +131,7 @@ const MESSAGES = defineMessages({
     },
     updated_at: {
         id: 'iaso.forms.updated_at',
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
     },
     subSource: {
         id: 'iaso.forms.subSource',

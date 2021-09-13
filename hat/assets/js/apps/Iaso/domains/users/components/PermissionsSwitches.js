@@ -70,7 +70,11 @@ class PermissionsSwitches extends Component {
                                         color="primary"
                                     />
                                 }
-                                label={p.name}
+                                label={
+                                    <FormattedMessage
+                                        {...MESSAGES[p.codename]}
+                                    />
+                                }
                             />
                         </div>
                     ))}

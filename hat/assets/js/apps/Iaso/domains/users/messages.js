@@ -101,6 +101,37 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.dialog.chooseLocation',
         defaultMessage: 'Select location(s)',
     },
+    iaso_completeness: {
+        id: 'iaso.permissions.completeness',
+        defaultMessage: 'Complétude des données',
+    },
+    iaso_mappings: {
+        id: 'iaso.permissions.mappings',
+        defaultMessage: 'Correspondances avec DHIS2',
+    },
+    iaso_links: {
+        id: 'iaso.permissions.links',
+        defaultMessage: 'Correspondances sources',
+    },
+    iaso_forms: { id: 'iaso.permissions.forms', defaultMessage: 'Formulaires' },
+    iaso_pages: { id: 'iaso.permissions.pages', defaultMessage: 'Pages' },
+    iaso_projects: {
+        id: 'iaso.permissions.projects',
+        defaultMessage: 'Projets',
+    },
+    iaso_sources: { id: 'iaso.permissions.sources', defaultMessage: 'Sources' },
+    iaso_data_tasks: {
+        id: 'iaso.permissions.dataTasks',
+        defaultMessage: 'Tâches',
+    },
+    iaso_org_units: {
+        id: 'iaso.permissions.orgUnits',
+        defaultMessage: "Unités d'organisation",
+    },
+    iaso_users: {
+        id: 'iaso.permissions.users',
+        defaultMessage: 'Utilisateurs',
+    },
 });
 
 export default MESSAGES;

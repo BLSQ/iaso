@@ -118,6 +118,7 @@ export const getInstancesVisibleColumns = ({
     possibleFields,
 }) => {
     const activeOrders = (order || defaultOrder).split(',');
+    const columnsNames = columns ? columns.split(',') : [];
     const metasColumns = [
         ...instancesTableColumns(formatMessage).filter(
             c => c.accessor !== 'actions',
@@ -126,19 +127,20 @@ export const getInstancesVisibleColumns = ({
     const newColumns = metasColumns.map(c => ({
         key: c.accessor,
         label: c.Header,
-        active: columns !== undefined && columns.includes(c.accessor),
+        active: columnsNames.includes(c.accessor),
         meta: true,
         disabled:
             activeOrders.indexOf(c.accessor) !== -1 ||
             activeOrders.indexOf(`-${c.accessor}`) !== -1,
     }));
+
     if (instance) {
         possibleFields.forEach(field => {
             const label = formatLabel(field);
             newColumns.push({
                 key: field.name,
                 label,
-                active: columns !== undefined && columns.includes(field.name),
+                active: columnsNames.includes(field.name),
                 disabled: false,
             });
         });

@@ -104,16 +104,15 @@ export const getInstancesColumns = (
 export const getMetasColumns = () =>
     [...instancesTableColumns()].map(c => c.accessor);
 
+const labelLocales = { fr: 'French', en: 'English' };
+
 const localizeLabel = (field, locale) => {
     const formattedlabel = field.label.replaceAll("'", '"');
     let result;
     try {
         const localeOptions = JSON.parse(formattedlabel);
-        if (locale === 'fr') {
-            result = localeOptions.French;
-        } else {
-            result = localeOptions.English;
-        }
+        const localeKey = labelLocales[locale] ?? labelLocales.en;
+        result = localeOptions[localeKey];
     } catch (e) {
         // some fields are using single quotes. Logging just for info, this can be deleted if it clutters the console
         console.warn('Error parsing JSON', field.label);

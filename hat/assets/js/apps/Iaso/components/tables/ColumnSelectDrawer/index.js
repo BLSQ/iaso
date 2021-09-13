@@ -7,9 +7,7 @@ import {
     IconButton,
     List,
     ListItem,
-    ListItemText,
     Divider,
-    Switch,
     InputBase,
     Tooltip,
 } from '@material-ui/core';
@@ -22,9 +20,9 @@ import {
     injectIntl,
 } from 'bluesquare-components';
 
-import { truncateText } from 'bluesquare-components/dist/utils';
 import { MESSAGES } from './messages';
 import { styles } from './styles';
+import { ColumnDrawerSwitch } from './ColumnDrawerSwitch';
 
 const filterResults = (searchString, options) => {
     let displayedOptions = [...options];
@@ -127,51 +125,29 @@ const ColumnsSelectDrawer = ({
                                                 className={classes.listItem}
                                             >
                                                 {inView && (
-                                                    <>
-                                                        <Switch
-                                                            disabled={
-                                                                activeOptionsCount ===
-                                                                    minColumns &&
-                                                                o.active
-                                                            }
-                                                            size="small"
-                                                            checked={o.active}
-                                                            onChange={handleChangeOptions(
-                                                                o.index,
-                                                            )}
-                                                            color="primary"
-                                                            inputProps={{
-                                                                'aria-label':
-                                                                    o.label,
-                                                            }}
-                                                            className={
-                                                                classes.switch
-                                                            }
-                                                        />
-                                                        <Tooltip
-                                                            title={
-                                                                o.label ?? o.key
-                                                            }
-                                                            placement="bottom-start"
-                                                        >
-                                                            <ListItemText
-                                                                style={{
-                                                                    cursor: 'default',
-                                                                }}
-                                                                primary={
-                                                                    o.label
-                                                                        ? truncateText(
-                                                                              o.label,
-                                                                              40,
-                                                                          )
-                                                                        : o.key
-                                                                }
-                                                                secondary={
-                                                                    o.key
-                                                                }
-                                                            />
-                                                        </Tooltip>
-                                                    </>
+                                                    <ColumnDrawerSwitch
+                                                        disabled={
+                                                            activeOptionsCount ===
+                                                                minColumns &&
+                                                            o.active
+                                                        }
+                                                        checked={o.active}
+                                                        onChange={handleChangeOptions(
+                                                            o.index,
+                                                        )}
+                                                        className={
+                                                            classes.switch
+                                                        }
+                                                        toolTipTitle={
+                                                            o.label ?? o.key
+                                                        }
+                                                        primaryText={
+                                                            o.label
+                                                                ? o.label
+                                                                : o.key
+                                                        }
+                                                        secondaryText={o.key}
+                                                    />
                                                 )}
                                                 {!inView && (
                                                     <>

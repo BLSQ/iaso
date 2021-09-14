@@ -16,7 +16,7 @@ const routes = [
     {
         baseUrl: 'polio/config',
         component: () => <CountryNotificationsConfig />,
-        permission: 'iaso_forms',
+        permission: 'iaso_polio',
         params: [
             {
                 isRequired: false,
@@ -49,7 +49,7 @@ const menu = [
             {
                 label: MESSAGES.configuration,
                 key: 'config',
-                permission: 'iaso_forms',
+                permission: 'iaso_polio',
                 icon: props => <SettingsIcon {...props} />,
             },
         ],

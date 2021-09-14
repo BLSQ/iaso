@@ -38,7 +38,7 @@ export const sendRequest = async (method, path, body) => {
 const MESSAGES = defineMessages({
     defaultMutationApiError: {
         id: 'iaso.snackBar.error',
-        defaultMessage: 'An error occured while saving',
+        defaultMessage: 'An error occurred while saving',
     },
     defaultMutationApiSuccess: {
         id: 'iaso.snackBar.successful',

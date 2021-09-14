@@ -20,7 +20,14 @@ export const sendRequest = async (method, path, body) => {
     const response = await fetch(path, requestInit);
 
     if (!response.ok) {
-        throw await response.json();
+        let res;
+        try {
+            res = await response.json();
+        } catch {
+            res = new Error('Api Error');
+        }
+
+        throw res;
     }
 
     if (response.status === 204) return;

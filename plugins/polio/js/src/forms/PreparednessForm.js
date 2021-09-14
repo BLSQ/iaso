@@ -28,6 +28,7 @@ export const PreparednessForm = () => {
     const {
         mutate: generateSpreadsheetMutation,
         isLoading: isGeneratingSpreadsheet,
+        error: generationError,
     } = useGeneratePreparednessSheet(values.id);
 
     const { preperadness_spreadsheet_url = '' } = values;
@@ -176,6 +177,12 @@ export const PreparednessForm = () => {
                                 {isError && (
                                     <Typography color="error">
                                         {error.non_field_errors}
+                                    </Typography>
+                                )}
+                                {generationError && (
+                                    <Typography color="error">
+                                        Error Generating preparedness:{' '}
+                                        {generationError.message}
                                     </Typography>
                                 )}
                                 {totalSummary && (

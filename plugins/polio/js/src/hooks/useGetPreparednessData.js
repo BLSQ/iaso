@@ -1,8 +1,7 @@
-import { useMutation } from 'react-query';
 import { sendRequest, useSnackMutation } from '../utils/networking';
 
 export const useGetPreparednessData = () => {
-    return useMutation(googleSheetURL =>
+    return useSnackMutation(googleSheetURL =>
         sendRequest('POST', '/api/polio/campaigns/preview_preparedness/', {
             google_sheet_url: googleSheetURL,
         }),
@@ -22,7 +21,7 @@ export const useGeneratePreparednessSheet = campaign_id => {
 };
 
 export const useSurgeData = () => {
-    return useMutation((body, countryName) =>
+    return useSnackMutation((body, countryName) =>
         sendRequest('POST', '/api/polio/campaigns/preview_surge/', body),
     );
 };

@@ -418,6 +418,7 @@
     "iaso.permissions.mappings": "Mappings with DHIS2",
     "iaso.permissions.orgUnits": "Organisation units",
     "iaso.permissions.pages": "Pages",
+    "iaso.permissions.polio": "Polio campaign management",
     "iaso.permissions.projects": "Projects",
     "iaso.permissions.sources": "Sources",
     "iaso.permissions.users": "Users",

@@ -68,9 +68,13 @@ export const useSnackMutation = (
             return null;
         },
         onSuccess: (data, variables, context) => {
-            dispatch(
-                enqueueSnackbar(succesfullSnackBar(null, snackSuccessMessage)),
-            );
+            if (snackSuccessMessage) {
+                dispatch(
+                    enqueueSnackbar(
+                        succesfullSnackBar(null, snackSuccessMessage),
+                    ),
+                );
+            }
             if (invalidateQueryKey) {
                 queryClient.invalidateQueries(invalidateQueryKey);
             }

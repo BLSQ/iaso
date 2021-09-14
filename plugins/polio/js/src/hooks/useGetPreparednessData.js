@@ -1,10 +1,14 @@
 import { sendRequest, useSnackMutation } from '../utils/networking';
 
+// This retrieve data but since it contact data from an external service this is
+// implemented as a post
 export const useGetPreparednessData = () => {
-    return useSnackMutation(googleSheetURL =>
-        sendRequest('POST', '/api/polio/campaigns/preview_preparedness/', {
-            google_sheet_url: googleSheetURL,
-        }),
+    return useSnackMutation(
+        googleSheetURL =>
+            sendRequest('POST', '/api/polio/campaigns/preview_preparedness/', {
+                google_sheet_url: googleSheetURL,
+            }),
+        null,
     );
 };
 
@@ -20,8 +24,12 @@ export const useGeneratePreparednessSheet = campaign_id => {
     );
 };
 
+// This retrieve data but since it contact data from an external service this is
+// implemented as a post
 export const useSurgeData = () => {
-    return useSnackMutation((body, countryName) =>
-        sendRequest('POST', '/api/polio/campaigns/preview_surge/', body),
+    return useSnackMutation(
+        (body, countryName) =>
+            sendRequest('POST', '/api/polio/campaigns/preview_surge/', body),
+        null,
     );
 };

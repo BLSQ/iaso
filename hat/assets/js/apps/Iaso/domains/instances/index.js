@@ -90,9 +90,9 @@ class Instances extends Component {
             forceRefresh: false,
             labelKeys: [],
             formName: '',
-            period: { periodType: null },
             formId: '',
             possibleFields: null,
+            periodType: null,
         };
     }
 
@@ -440,29 +440,26 @@ class Instances extends Component {
                                 className={classes.textAlignRight}
                             >
                                 <div className={classes.paddingBottomBig}>
-                                    {this.state.periodType && (
-                                        <CreateReAssignDialogComponent
-                                            titleMessage={
-                                                MESSAGES.instanceCreationDialogTitle
-                                            }
-                                            confirmMessage={
-                                                MESSAGES.instanceCreateAction
-                                            }
-                                            formType={{
-                                                periodType:
-                                                    this.state.periodType,
-                                                id: this.state.formId,
-                                            }}
-                                            onCreateOrReAssign={
-                                                this.props.createInstance
-                                            }
-                                            renderTrigger={({ openDialog }) => (
-                                                <AddButtonComponent
-                                                    onClick={openDialog}
-                                                />
-                                            )}
-                                        />
-                                    )}
+                                    <CreateReAssignDialogComponent
+                                        titleMessage={
+                                            MESSAGES.instanceCreationDialogTitle
+                                        }
+                                        confirmMessage={
+                                            MESSAGES.instanceCreateAction
+                                        }
+                                        formType={{
+                                            periodType: this.state.periodType,
+                                            id: this.state.formId,
+                                        }}
+                                        onCreateOrReAssign={
+                                            this.props.createInstance
+                                        }
+                                        renderTrigger={({ openDialog }) => (
+                                            <AddButtonComponent
+                                                onClick={openDialog}
+                                            />
+                                        )}
+                                    />
                                     <DownloadButtonsComponent
                                         csvUrl={this.getEndpointUrl(
                                             true,

@@ -126,26 +126,28 @@ export const PreparednessForm = () => {
                             md={4}
                             item
                             container
-                            direction="column"
+                            direction="row"
                             alignContent="space-between"
                         >
-                            <Button
-                                md={6}
-                                target="_blank"
-                                href={preperadness_spreadsheet_url}
-                                color="primary"
-                            >
-                                Access data
-                            </Button>
-                            <Button
-                                md={6}
-                                variant="contained"
-                                color="primary"
-                                disabled={isLoading || isProcessingData}
-                                onClick={refreshData}
-                            >
-                                Refresh Preparedness data
-                            </Button>
+                            <Grid item md={6}>
+                                <Button
+                                    target="_blank"
+                                    href={preperadness_spreadsheet_url}
+                                    color="primary"
+                                >
+                                    Access data
+                                </Button>
+                            </Grid>
+                            <Grid item md={6}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    disabled={isLoading || isProcessingData}
+                                    onClick={refreshData}
+                                >
+                                    Refresh Preparedness data
+                                </Button>
+                            </Grid>
                         </Grid>
                     )}
                     {values.id && !preperadness_spreadsheet_url?.trim().length && (

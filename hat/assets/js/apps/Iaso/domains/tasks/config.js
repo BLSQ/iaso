@@ -1,5 +1,4 @@
 import React from 'react';
-import Chip from '@material-ui/core/Chip';
 import {
     IconButton as IconButtonComponent,
     displayDateFromTimestamp,
@@ -7,64 +6,60 @@ import {
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
+const getTranslatedStatusMessage = (formatMessage, status) => {
+    // Return untranslated status if not translation available
+    return MESSAGES[status.toLowerCase()]
+        ? formatMessage(MESSAGES[status.toLowerCase()])
+        : status;
+};
+
+const safePercent = (a, b) => {
+    if (b === 0) {
+        return '';
+    }
+    const percent = 100 * (a / b);
+    return `${percent.toFixed(2)}%`;
+};
+
 const tasksTableColumns = (formatMessage, killTaskAction) => [
     {
-        Header: formatMessage(MESSAGES.status),
+        Header: formatMessage(MESSAGES.name),
+        sortable: true,
+        accessor: 'name',
+    },
+    {
+        Header: formatMessage(MESSAGES.progress),
         sortable: true,
         accessor: 'status',
         Cell: settings => {
-            const statusCode =
-                MESSAGES[settings.row.original.status.toLowerCase()] !==
-                undefined
-                    ? settings.row.original.status
-                    : 'UNKNOWN';
-
             return (
                 <span>
-                    {settings.row.original.name}
-                    <br />
-                    <Chip
-                        variant="outlined"
-                        color="primary"
-                        size="small"
-                        label={formatMessage(
-                            MESSAGES[statusCode.toLowerCase()],
-                        )}
-                    />
+                    {settings.value === 'RUNNING' &&
+                    settings.row.original.end_value > 0
+                        ? `${settings.row.original.progress_value}/${
+                              settings.row.original.end_value
+                          } (${safePercent(
+                              settings.row.original.progress_value,
+                              settings.row.original.end_value,
+                          )})`
+                        : getTranslatedStatusMessage(
+                              formatMessage,
+                              settings.value,
+                          )}
                 </span>
             );
         },
     },
     {
-        Header: formatMessage(MESSAGES.progress),
-        sortable: false,
-        accessor: 'progress',
-        Cell: settings => (
-            <span>
-                {settings.row.original.status === 'RUNNING' &&
-                settings.row.original.end_value > 0
-                    ? `${settings.row.original.progress_value}/${
-                          settings.row.original.end_value
-                      } (${Math.round(
-                          (settings.row.original.progress_value /
-                              settings.row.original.end_value) *
-                              100,
-                      )}%)`
-                    : '-'}
-            </span>
-        ),
-    },
-    {
         Header: formatMessage(MESSAGES.message),
         sortable: false,
-        accessor: 'message',
-        Cell: settings => (
-            <span>
-                {settings.row.original.status === 'RUNNING'
-                    ? settings.row.original.progress_message
-                    : '-'}
-            </span>
-        ),
+        accessor: 'progress_message',
+    },
+    {
+        Header: formatMessage(MESSAGES.launcher),
+        sortable: true,
+        accessor: 'launcher',
+        Cell: settings => settings.value?.username,
     },
     {
         Header: formatMessage(MESSAGES.timeCreated),
@@ -107,30 +102,28 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         resizable: false,
         sortable: false,
         width: 150,
-        Cell: settings => {
-            return (
-                <section>
-                    {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
-                        settings.row.original.status,
-                    ) === true &&
-                        settings.row.original.should_be_killed === false && (
-                            <IconButtonComponent
-                                onClick={() =>
-                                    killTaskAction({
-                                        id: settings.row.original.id,
-                                        should_be_killed: true,
-                                    })
-                                }
-                                icon="stop"
-                                tooltipMessage={MESSAGES.killTask}
-                            />
-                        )}
-                    {settings.row.original.should_be_killed === true &&
-                        settings.row.original.status === 'RUNNING' &&
-                        formatMessage(MESSAGES.killSignalSent)}
-                </section>
-            );
-        },
+        Cell: settings => (
+            <section>
+                {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
+                    settings.row.original.status,
+                ) === true &&
+                    settings.row.original.should_be_killed === false && (
+                        <IconButtonComponent
+                            onClick={() =>
+                                killTaskAction({
+                                    id: settings.row.original.id,
+                                    should_be_killed: true,
+                                })
+                            }
+                            icon="stop"
+                            tooltipMessage={MESSAGES.killTask}
+                        />
+                    )}
+                {settings.row.original.should_be_killed === true &&
+                    settings.row.original.status === 'RUNNING' &&
+                    formatMessage(MESSAGES.killSignalSent)}
+            </section>
+        ),
     },
 ];
 export default tasksTableColumns;

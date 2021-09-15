@@ -36,6 +36,7 @@ import {
 import { merge } from 'lodash';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
@@ -65,8 +66,6 @@ import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import ImportLineListDialog from './ImportLineListDialog';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import { FormattedMessage } from 'react-intl';
 
 // eslint-disable-next-line camelcase
 const round_shape = yup.object().shape({

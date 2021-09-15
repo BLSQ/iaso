@@ -24,11 +24,22 @@ from plugins.polio.preparedness.conditional_formatting import (
 )
 
 PREPAREDNESS_TEMPLATE_ID = os.environ.get("PREPAREDNESS_TEMPLATE_ID", None)
+PREPAREDNESS_TEMPLATE_FR_ID = os.environ.get("PREPAREDNESS_TEMPLATE_FR_ID", None)
 
 
-def create_spreadsheet(title: str):
+def create_spreadsheet(title: str, lang: str):
     client = get_client()
-    spreadsheet = client.copy(PREPAREDNESS_TEMPLATE_ID, title, copy_permissions=True)
+    if lang == "EN":
+        template = PREPAREDNESS_TEMPLATE_ID
+    elif lang == "FR":
+        template = PREPAREDNESS_TEMPLATE_FR_ID
+    else:
+        raise Exception(f"Template for {lang} not found")
+
+    if not template:
+        raise Exception(f"Template for {lang} not found")
+
+    spreadsheet = client.copy(template, title, copy_permissions=True)
     spreadsheet.share(None, perm_type="anyone", role="writer")
     return spreadsheet
 
@@ -48,13 +59,13 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     updates = [
         {"range": "c4", "values": [[region_name]]},
     ]
+    sheet.insert_cols([[]] * region_districts.count(), 7)
 
     rules = get_conditional_format_rules(sheet)
     rules.clear()
 
     for idx, district in enumerate(region_districts):
         col_index = 7 + idx
-        sheet.insert_cols([[]], col_index)
         first_district_cell = rowcol_to_a1(7, col_index)
         district_name_cell = f"={first_district_cell}"
 
@@ -93,7 +104,7 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     non_blank_ranges = [
         GridRange.from_a1_range(f"F16:{rowcol_to_a1(21, final_column)}", sheet),
         GridRange.from_a1_range(f"F36:{rowcol_to_a1(36, final_column)}", sheet),
-        GridRange.from_a1_range(f"F53:{rowcol_to_a1(57, final_column)}", sheet),
+        GridRange.from_a1_range(f"F53:{rowcol_to_a1(53, final_column)}", sheet),
     ]
 
     custom_rules = (
@@ -106,11 +117,8 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
 
     format_cell_ranges(
         worksheet=sheet,
-        ranges=[(range_cells, PERCENT_FORMAT) for range_cells in summary_range_a1],
-    )
-    format_cell_ranges(
-        worksheet=sheet,
-        ranges=[(range_cells, TEXT_CENTERED) for range_cells in summary_range_a1 + district_data_range],
+        ranges=[(range_cells, PERCENT_FORMAT) for range_cells in summary_range_a1]
+        + [(range_cells, TEXT_CENTERED) for range_cells in summary_range_a1 + district_data_range],
     )
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")

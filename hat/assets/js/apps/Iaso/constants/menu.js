@@ -14,6 +14,7 @@ import CategoryIcon from '@material-ui/icons/Category';
 import AssignmentRoundedIcon from '@material-ui/icons/AssignmentRounded';
 import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRounded';
 import BookIcon from '@material-ui/icons/Book';
+import AssessmentIcon from '@material-ui/icons/Assessment';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
@@ -35,6 +36,12 @@ const menuItems = [
                 permission: paths.formsPath.permission,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
+            },
+            {
+                label: MESSAGES.formsStats,
+                permission: paths.formsStatsPath.permission,
+                key: 'stats',
+                icon: props => <AssessmentIcon {...props} />,
             },
             {
                 label: MESSAGES.dhis2Mappings,

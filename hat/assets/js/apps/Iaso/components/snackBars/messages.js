@@ -252,7 +252,7 @@ const MESSAGES = defineMessages({
     saveMultiEditOrgUnitsLaunched: {
         defaultMessage:
             'The modifications to the org units will take a few minutes to take effect',
-        id: 'iaso.snackBar.saveMultiEditOrgUnitsLaunch',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsLaunched',
     },
     saveMultiEditOrgUnitsError: {
         defaultMessage: 'An error occurred while saving selected org units',
@@ -266,10 +266,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while deleting group',
         id: 'iaso.snackBar.deleteGroupError',
     },
-    ignoredTaskErrorCode: {
-        defaultMessage: 'Patching ignored',
-        id: 'iaso.snackBar.ignoredTaskErrorCode',
-    },
+
     patchTaskError: {
         defaultMessage: 'Error Patching task',
         id: 'iaso.snackBar.patchTaskError',
@@ -293,6 +290,22 @@ const MESSAGES = defineMessages({
     fetchFormVersionsError: {
         id: 'iaso.snackBar.fetchFormVersionsError',
         defaultMessage: 'An error occurred while fetching form versions',
+    },
+    fetchCurrentUser: {
+        defaultMessage: 'An error occurred while fetching current user',
+        id: 'iaso.snackBar.fetchCurrentUser',
+    },
+    fetchLogsError: {
+        id: 'iaso.snackBar.fetchLogsError',
+        defaultMessage: 'An error occurred while fetching logs',
+    },
+    fetchMappingsError: {
+        id: 'iaso.snackBar.fetchMappingsError',
+        defaultMessage: 'An error occurred while fetching mappings',
+    },
+    retrieveTaskError: {
+        id: 'iaso.snackBar.fetchMappingsError',
+        defaultMessage: 'An error occurred while fetching task',
     },
 });
 

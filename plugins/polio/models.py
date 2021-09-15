@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import models
 from django.utils.translation import gettext as _
-
+from django.contrib.auth.models import User
 from iaso.models import Group, OrgUnit
 
 VIRUSES = [
@@ -18,6 +18,11 @@ VACINES = [
     ("mOPV2", _("mOPV2")),
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
+]
+
+LANGUAGES = [
+    ("FR", "Français"),
+    ("EN", "English"),
 ]
 
 RESPONSIBLES = [
@@ -346,6 +351,17 @@ class Config(models.Model):
 
     def __str__(self):
         return self.slug
+
+
+class CountryUsersGroup(models.Model):
+    users = models.ManyToManyField(User, blank=True)
+    country = models.OneToOneField(OrgUnit, on_delete=models.CASCADE)
+    language = models.CharField(max_length=32, choices=LANGUAGES, default="EN")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.country)
 
 
 class LineListImport(models.Model):

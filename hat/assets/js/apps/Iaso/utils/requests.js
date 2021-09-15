@@ -248,7 +248,7 @@ export const fetchAssociatedDataSources = (dispatch, orgUnitId) => {
         });
 };
 
-export const fetchForms = (dispatch, url = '/api/forms/') =>
+export const fetchForms = (dispatch, url = '/api/forms') =>
     getRequest(url)
         .then(forms => forms)
         .catch(error => {
@@ -460,12 +460,12 @@ export const restoreForm = (dispatch, formId) =>
         throw error;
     });
 
-export const createFormVersion = (dispatch, formVersionData) => {
+export const createFormVersion = formVersionData => {
     const { data } = formVersionData;
     const fileData = { xls_file: formVersionData.xls_file };
 
     return postRequest('/api/formversions/', data, fileData).catch(error => {
-        dispatch(
+        storeDispatch(
             enqueueSnackbar(
                 errorSnackBar('createFormVersionError', null, error),
             ),
@@ -474,10 +474,10 @@ export const createFormVersion = (dispatch, formVersionData) => {
     });
 };
 
-export const updateFormVersion = (dispatch, formVersion) =>
+export const updateFormVersion = formVersion =>
     putRequest(`/api/formversions/${formVersion.id}/`, formVersion).catch(
         error => {
-            dispatch(
+            storeDispatch(
                 enqueueSnackbar(
                     errorSnackBar('updateFormVersionError', null, error),
                 ),

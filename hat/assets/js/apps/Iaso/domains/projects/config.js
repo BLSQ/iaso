@@ -19,6 +19,7 @@ const projectsTableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.featureFlags),
         accessor: 'feature_flags',
+        sortable: false,
         Cell: settings =>
             settings.value.map(fF => fF.name).join(', ') || textPlaceholder,
     },

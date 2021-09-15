@@ -35,7 +35,7 @@ const ProjectIds = ({ keyValue, value, onChange, errors, options, label }) => {
             label={label}
             type="select"
             multi
-            clearable
+            required
         />
     );
 };

@@ -8,11 +8,11 @@ import { Grid, Button, withStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
 import { commonStyles } from 'bluesquare-components';
+
 import { redirectTo as redirectToAction } from '../../../../routing/actions';
+import FiltersComponent from '../../../../components/filters/FiltersComponent';
 
 import { search } from '../../../../constants/filters';
-
-import FiltersComponent from '../../../../components/filters/FiltersComponent';
 
 import MESSAGES from '../messages';
 
@@ -46,7 +46,12 @@ const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
                     />
                 </Grid>
             </Grid>
-            <Grid container spacing={4} justifyContent="flex-end" alignItems="center">
+            <Grid
+                container
+                spacing={4}
+                justifyContent="flex-end"
+                alignItems="center"
+            >
                 <Grid
                     item
                     xs={2}

@@ -98,6 +98,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.importFromDhis2',
         defaultMessage: 'Import from DHIS2',
     },
+    updateFromDhis2: {
+        id: 'iaso.dataSources.updateFromDhis2',
+        defaultMessage: 'Update version from DHIS2',
+    },
     useDefaultDhisSettings: {
         id: 'iaso.dataSources.useDefaultDhisSettings',
         defaultMessage: 'Use default DHIS settings',
@@ -110,8 +114,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.addAskTitle',
         defaultMessage: '{title} - Source: {source} - Version: {version}',
     },
-    gpkgFormFile: {
-        id: 'iaso.datasources.label.gpkgFormFile',
+    gpkgChooseFile: {
+        id: 'iaso.datasources.gpkg.chooseFile',
         defaultMessage: 'Choose file',
     },
     versionNumber: {
@@ -122,13 +126,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.project',
         defaultMessage: 'Project',
     },
-    geoPkgTitle: {
-        id: 'iaso.datasources.label.geoPkgTitle',
+    gpkgTitle: {
+        id: 'iaso.datasources.gpkg.title',
         defaultMessage: 'Import from GeoPackage',
     },
-    importGeoPkg: {
-        id: 'iaso.datasources.geoPkg',
-        defaultMessage: 'Import GeoPackage',
+    gpkgTooltip: {
+        id: 'iaso.datasources.gpkg.tooltip',
+        defaultMessage: 'Import from a GeoPackage file',
+    },
+    versions: {
+        id: 'iaso.datasources.version',
+        defaultMessage: 'Versions',
     },
 });
 

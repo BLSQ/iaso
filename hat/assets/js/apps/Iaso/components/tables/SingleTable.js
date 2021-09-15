@@ -18,7 +18,7 @@ import {
 
 import Filters from './TableFilters';
 
-import DownloadButtonsComponent from '../buttons/DownloadButtonsComponent';
+import DownloadButtonsComponent from '../DownloadButtonsComponent';
 import { redirectToReplace } from '../../routing/actions';
 
 const useStyles = makeStyles(theme => ({
@@ -52,14 +52,14 @@ const SingleTable = ({
     setIsLoading,
     multiSelect,
     selectionActions,
+    propsToWatch,
 }) => {
     const [loading, setLoading] = useState(false);
     const [selection, setSelection] = useState(selectionInitialState);
     const [didFetchData, setDidFetchData] = useState(false);
-    const [firstLoad, setfFrstLoad] = useState(true);
+    const [firstLoad, setFirstLoad] = useState(true);
     const [tableResults, setTableResults] = useState(tableInitialResult);
     const { list, pages, count } = tableResults;
-
     const dispatch = useDispatch();
     const classes = useStyles();
 
@@ -73,7 +73,7 @@ const SingleTable = ({
     );
 
     const handleFetch = () => {
-        if (results && results.list && firstLoad && !forceRefresh) {
+        if (results?.list && firstLoad && !forceRefresh) {
             setTableResults(results);
         } else {
             const url = getTableUrl(endPointPath, tableParams);
@@ -93,7 +93,7 @@ const SingleTable = ({
         }
 
         if (firstLoad) {
-            setfFrstLoad(false);
+            setFirstLoad(false);
         }
     };
 
@@ -104,7 +104,7 @@ const SingleTable = ({
         if (!firstLoad || (searchActive && firstLoad)) {
             handleFetch();
         } else if (!searchActive && firstLoad) {
-            setfFrstLoad(false);
+            setFirstLoad(false);
         }
     }, [
         params[getParamsKey(paramsPrefix, 'pageSize')],
@@ -130,6 +130,7 @@ const SingleTable = ({
     const extraProps = {
         loading,
         defaultPageSize: defaultPageSize || limit,
+        propsToWatch, // IA-763: pass an extra props that will be watched in table component to force the render
     };
     if (subComponent) {
         extraProps.SubComponent = original =>
@@ -242,6 +243,7 @@ SingleTable.defaultProps = {
     setIsLoading: true,
     multiSelect: false,
     selectionActions: [],
+    propsToWatch: null,
 };
 
 SingleTable.propTypes = {
@@ -271,6 +273,7 @@ SingleTable.propTypes = {
     setIsLoading: PropTypes.bool,
     multiSelect: PropTypes.bool,
     selectionActions: PropTypes.array,
+    propsToWatch: PropTypes.any,
 };
 
 export default withRouter(SingleTable);

@@ -12,7 +12,6 @@ import {
     createUrl,
     injectIntl,
     commonStyles,
-    // TopBar,
     LoadingSpinner,
 } from 'bluesquare-components';
 import { alpha } from '@material-ui/core/styles/colorManipulator';
@@ -614,6 +613,7 @@ class OrgUnitDetail extends Component {
                                 exportButton={false}
                                 baseUrl={baseUrl}
                                 endPointPath="forms"
+                                propsToWatch={params.tab}
                                 fetchItems={fetchForms}
                                 columns={this.state.tableColumns}
                                 results={reduxPage}
@@ -642,6 +642,7 @@ class OrgUnitDetail extends Component {
                                         params.orgUnitId,
                                     ),
                                 }}
+                                propsToWatch={params.tab}
                                 baseUrl={baseUrl}
                                 endPointPath="orgunits"
                                 fetchItems={fetchOrgUnitsList}
@@ -667,6 +668,7 @@ class OrgUnitDetail extends Component {
                                 apiParams={{
                                     orgUnitId: currentOrgUnit.id,
                                 }}
+                                propsToWatch={params.tab}
                                 filters={linksFiltersWithPrefix(
                                     'linksParams',
                                     algorithmRuns,

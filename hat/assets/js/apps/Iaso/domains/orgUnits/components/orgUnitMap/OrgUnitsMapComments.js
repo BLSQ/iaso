@@ -1,11 +1,17 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { CommentWithThread, AddComment } from 'bluesquare-components';
+import {
+    CommentWithThread,
+    AddComment,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { Pagination } from '@material-ui/lab';
 import { Box, Typography, makeStyles } from '@material-ui/core';
 
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useGetComments, postComment } from '../../../../utils/requests';
+
+import MESSAGES from '../../messages';
 
 const styles = {
     commentsBlock: { marginBottom: '7px' },
@@ -48,6 +54,7 @@ const OrgUnitsMapComments = ({
     inlineTextAreaButton,
     getOrgUnitFromStore,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const globalStateOrgUnit = useSelector(
         state => state.orgUnits.currentSubOrgUnit,
@@ -127,8 +134,9 @@ const OrgUnitsMapComments = ({
     return (
         <>
             <Box px={2} component="div" className={classes.header}>
-                <Typography variant="h5">
-                    {orgUnitToUse?.name ?? 'Please select an Org Unit'}
+                <Typography variant="body1">
+                    {orgUnitToUse?.name ??
+                        formatMessage(MESSAGES.selectOrgUnit)}
                 </Typography>
                 {orgUnitToUse && (
                     <AddComment

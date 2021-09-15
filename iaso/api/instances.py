@@ -1,5 +1,8 @@
+import pandas as pd
+from django.db import connection
 from django.contrib.gis.geos import Point
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.decorators import action
@@ -94,12 +97,13 @@ class InstancesViewSet(viewsets.ViewSet):
         profile = request.user.iaso_profile
         queryset = queryset.filter(project__account=profile.account)
 
-        queryset = queryset.exclude(file="").exclude(device__test_device=True).order_by(*orders)
+        queryset = queryset.exclude(file="").exclude(device__test_device=True)
 
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
         queryset = queryset.for_filters(**filters)
+        queryset = queryset.order_by(*orders)
 
         if csv_format is None and xlsx_format is None:
             if limit:
@@ -288,6 +292,50 @@ class InstancesViewSet(viewsets.ViewSet):
             },
             status=201,
         )
+
+    QUERY = """
+    select DATE_TRUNC('month', created_at) as month,
+           (select name from iaso_form where id = iaso_instance.form_id),
+           count(*)                        as value
+    from iaso_instance
+    where created_at > '2019-01-01'
+      and project_id = ANY (%s)
+      and form_id is not null
+    group by DATE_TRUNC('month', created_at), form_id
+    order by DATE_TRUNC('month', created_at)"""
+
+    @action(detail=False)
+    def stats(self, request):
+        projects = request.user.iaso_profile.account.project_set.all()
+        projects_ids = list(projects.values_list("id", flat=True))
+
+        df = pd.read_sql_query(self.QUERY, connection, params=[projects_ids])
+        df = df.pivot(index="month", columns="name", values="value")
+        if not df.empty:
+            df.index = df.index.to_period("M")
+            df = df.sort_index()
+            df = df.reindex(pd.period_range(df.index[0], df.index[-1], freq="M"))
+            df["name"] = df.index.astype(str)
+        r = df.to_json(orient="table")
+        return HttpResponse(r, content_type="application/json")
+
+    @action(detail=False)
+    def stats_sum(self, request):
+        projects = request.user.iaso_profile.account.project_set.all()
+        projects_ids = list(projects.values_list("id", flat=True))
+        QUERY = """
+        select DATE_TRUNC('day', created_at) as period,
+        count(*)                        as value
+        from iaso_instance
+        where created_at > now() - interval '2700 days'
+        and project_id = ANY (%s)
+        group by DATE_TRUNC('day', created_at)
+        order by 1"""
+        df = pd.read_sql_query(QUERY, connection, params=[projects_ids])
+        df["total"] = df["value"].cumsum()
+        df["name"] = df["period"].apply(lambda x: x.strftime("%Y-%m-%d"))
+        r = df.to_json(orient="table")
+        return HttpResponse(r, content_type="application/json")
 
 
 def import_data(instances, user, app_id):

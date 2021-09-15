@@ -1,7 +1,6 @@
 $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
 
 .auth__container {
-
     input[type="text"],
     input[type="time"],
     input[type="number"],
@@ -83,10 +82,6 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
         }
     }
 
-    .form__wrapper {
-        margin-bottom: $padding-unit;
-    }
-
     form.inline {
         label {
             display: inline-block;
@@ -109,52 +104,5 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
         }
     }
 
-    .check-box__container {
-        display: inline-block;
 
-        label {
-            display: inline-block !important;
-            font-size: 12px;
-        }
-
-        >span {
-            display: inline-block;
-            position: relative;
-        }
-    }
-
-    .check-box__icon {
-        position: relative;
-        top: 6px;
-        margin-left: 10px;
-        fill: $gray;
-
-        &.primary {
-            fill: $blue;
-        }
-    }
-
-    .check-box__input_hidden {
-        position: absolute !important;
-        opacity: 0 !important;
-        top: 0 !important;
-        right: 0 !important;
-        height: 100% !important;
-        width: 30px !important;
-        cursor: pointer;
-
-
-        &.disabled {
-
-            cursor: not-allowed;
-        }
-    }
-
-    .icon-green {
-        fill: $green;
-    }
-
-    .icon-error {
-        fill: $red;
-    }
 }

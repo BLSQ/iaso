@@ -1,8 +1,8 @@
 import React from 'react';
 import nock from 'nock';
 import { expect } from 'chai';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { AddTask } from './AddTaskComponent';
-import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { mockPostRequest } from '../../../../../test/utils/requests';
@@ -17,6 +17,7 @@ const existingCredentials = {
     name: 'Goron',
     login: 'Daruk',
     url: '/api/divinebeast/vahnaboris',
+    is_valid: true,
 };
 
 const SOURCE_ID = 1;
@@ -123,6 +124,9 @@ describe('AddTaskComponent', () => {
             connectedWrapper.update();
             await fillFields(connectedWrapper, credentialsFieldKeys);
             await awaitUseEffect(connectedWrapper);
+            confirmCancelDialogComponent = connectedWrapper.find(
+                ConfirmCancelDialogComponent,
+            );
             expect(confirmCancelDialogComponent.exists()).to.equal(true);
             expect(confirmCancelDialogComponent.props().allowConfirm).to.equal(
                 true,

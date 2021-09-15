@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
     },
+    statsTitle: {
+        defaultMessage: 'Form Stats',
+        id: 'iaso.forms.stats.title',
+    },
     createForm: {
         defaultMessage: 'Create form',
         id: 'iaso.forms.create',
@@ -67,7 +71,7 @@ const MESSAGES = defineMessages({
     },
     created_at: {
         id: 'iaso.forms.created_at',
-        defaultMessage: 'Created at',
+        defaultMessage: 'Created',
     },
     update: {
         id: 'iaso.forms.update',
@@ -75,7 +79,7 @@ const MESSAGES = defineMessages({
     },
     deleted_at: {
         id: 'iaso.forms.deleted_at',
-        defaultMessage: 'Deleted at',
+        defaultMessage: 'Deleted',
     },
     updateFormVersion: {
         id: 'iaso.formversions.update',
@@ -127,7 +131,7 @@ const MESSAGES = defineMessages({
     },
     updated_at: {
         id: 'iaso.forms.updated_at',
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
     },
     subSource: {
         id: 'iaso.forms.subSource',
@@ -448,6 +452,18 @@ const MESSAGES = defineMessages({
     singlePerPeriodSelect: {
         id: 'iaso.form.label.singlePerPeriodSelect',
         defaultMessage: 'Please select an answer',
+    },
+    fields: {
+        id: 'iaso.form.label.fields',
+        defaultMessage: 'Default fields to display',
+    },
+    showAdvancedSettings: {
+        id: 'iaso.form.label.showAdvancedSettings',
+        defaultMessage: 'Show advanced settings',
+    },
+    hideAdvancedSettings: {
+        id: 'iaso.form.label.hideAdvancedSettings',
+        defaultMessage: 'Hide advanced settings',
     },
 });
 

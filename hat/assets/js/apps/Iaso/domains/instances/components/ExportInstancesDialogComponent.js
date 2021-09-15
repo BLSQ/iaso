@@ -3,10 +3,7 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import {
-    injectIntl,
-    ExportButton as ExportButtonComponent,
-} from 'bluesquare-components';
+import { injectIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { createExportRequest as createExportRequestAction } from '../actions';
@@ -23,10 +20,9 @@ const ExportInstancesDialogComponent = ({
     const [forceExport, setForceExport] = React.useState(false);
     const onConfirm = closeDialog => {
         const filterParams = getFilters();
-        createExportRequest(
-            { forceExport, ...filterParams },
-            selection,
-        ).then(() => closeDialog());
+        createExportRequest({ forceExport, ...filterParams }, selection).then(
+            () => closeDialog(),
+        );
     };
     const onClosed = () => {
         setForceExport(false);

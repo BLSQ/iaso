@@ -6,7 +6,6 @@ import { Box, Button, Grid, makeStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
 import { commonStyles } from 'bluesquare-components';
-
 import FiltersComponent from '../filters/FiltersComponent';
 
 const MESSAGES = defineMessages({
@@ -18,6 +17,11 @@ const MESSAGES = defineMessages({
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    column: {
+        '&>section': {
+            width: '100%',
+        },
+    },
     icon: {
         color: theme.palette.ligthGray.border,
         fontWeight: 'light',
@@ -38,6 +42,7 @@ const Filters = ({
     const [filtersUpdated, setFiltersUpdated] = React.useState(
         !defaultFiltersUpdated,
     );
+
     const classes = useStyles();
     const handleSearch = () => {
         if (filtersUpdated) {

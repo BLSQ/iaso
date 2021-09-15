@@ -95,11 +95,11 @@ const MESSAGES = defineMessages({
     },
     created_at: {
         id: 'iaso.instance.created_at',
-        defaultMessage: 'Created at',
+        defaultMessage: 'Created',
     },
     updated_at: {
         id: 'iaso.instance.updated_at',
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
     },
     files: {
         id: 'iaso.instance.files',
@@ -304,6 +304,14 @@ const MESSAGES = defineMessages({
     deleteInstanceWarning: {
         id: 'iaso.instance.deleteInstanceWarning',
         defaultMessage: 'This operation cannot be undone.',
+    },
+    noOrgUnitType: {
+        id: 'iaso.instance.label.noOrgUnitType',
+        defaultMessage: 'OrgUnit type not specified',
+    },
+    instanceHeaderTooltip: {
+        id: 'iaso.instance.table.label.instanceHeaderTooltip',
+        defaultMessage: 'Label: {label} - Name: {key}',
     },
 });
 

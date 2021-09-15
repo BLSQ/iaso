@@ -154,11 +154,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.sourceRef',
     },
     updated_at: {
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
         id: 'iaso.label.updated_at',
     },
     created_at: {
-        defaultMessage: 'Created at',
+        defaultMessage: 'Created',
         id: 'iaso.label.created_at',
     },
     details: {
@@ -313,6 +313,10 @@ const MESSAGES = defineMessages({
     comments: {
         id: 'iaso.label.comments',
         defaultMessage: 'Comments',
+    },
+    selectOrgUnit: {
+        id: 'iaso.orgUnits.selectOrgUnit',
+        defaultMessage: 'Please select an Org Unit',
     },
 });
 

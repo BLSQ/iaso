@@ -19,13 +19,14 @@ import {
 import { getMarkerList } from '../../utils';
 
 import TileSwitch from '../../../../components/maps/tools/TileSwitchComponent';
-import InnerDrawer from '../../../../components/nav/InnerDrawerComponent';
 import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../OrgunitOptionSaveComponent';
 import OrgUnitTypeChipsFilterComponent from '../OrgUnitTypeChipsFilterComponent';
 import FormsChipsFilterComponent from '../../../forms/components/FormsChipsFilterComponent';
 import SourcesChipsFilterComponent from '../../../../components/filters/chips/SourcesChipsFilterComponent';
 import MarkerComponent from '../../../../components/maps/markers/MarkerComponent';
+import InnerDrawer from '../../../../components/nav/InnerDrawer';
+
 import OrgUnitPopupComponent from '../OrgUnitPopupComponent';
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
 import { resetMapReducer } from '../../../../redux/mapReducer';
@@ -336,6 +337,7 @@ class OrgUnitMapComponent extends Component {
                     setCurrentOption={option => this.setCurrentOption(option)}
                     settingsDisabled={actionBusy}
                     filtersDisabled={actionBusy}
+                    defaultActiveOption="filters"
                     commentsDisabled={actionBusy}
                     footerComponent={
                         <OrgunitOptionSaveComponent

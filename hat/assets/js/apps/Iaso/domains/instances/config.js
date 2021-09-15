@@ -1,7 +1,7 @@
 import React from 'react';
 import orderBy from 'lodash/orderBy';
 
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 
 import { baseUrls } from '../../constants/urls';
 import { INSTANCE_METAS_FIELDS } from './constants';

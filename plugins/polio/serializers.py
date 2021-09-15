@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timezone
 
 import pandas as pd
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.transaction import atomic
 from django.utils.translation import gettext_lazy as _
@@ -11,7 +12,7 @@ from rest_framework import serializers
 
 from iaso.models import Group, OrgUnit
 from plugins.polio.preparedness.calculator import get_preparedness_score
-from .models import Preparedness, Round, Campaign, Surge, LineListImport, VIRUSES
+from .models import Preparedness, Round, Campaign, Surge, CountryUsersGroup, LineListImport, VIRUSES
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
@@ -20,6 +21,34 @@ from .preparedness.parser import (
     parse_value,
 )
 from .preparedness.spreadsheet_manager import *
+from logging import getLogger
+
+logger = getLogger(__name__)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "email"]
+
+
+class CountryUsersGroupSerializer(serializers.ModelSerializer):
+    read_only_users_field = UserSerializer(source="users", many=True, read_only=True)
+    country_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
+
+    class Meta:
+        model = CountryUsersGroup
+        read_only_fields = ["id", "country", "created_at", "updated_at", "read_only_users_field"]
+        fields = [
+            "id",
+            "country",
+            "language",
+            "created_at",
+            "updated_at",
+            "country_name",
+            "users",
+            "read_only_users_field",
+        ]
 
 
 def _error(message, exc=None):
@@ -241,7 +270,16 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         campaign = validated_data.get("campaign")
-        spreadsheet = create_spreadsheet(campaign.obr_name)
+
+        lang = "EN"
+        try:
+            country = campaign.country()
+            cug = CountryUsersGroup.objects.get(country=country)
+            lang = cug.language
+        except Exception as e:
+            logger.exception(e)
+            logger.error(f"Could not find template language for {campaign}")
+        spreadsheet = create_spreadsheet(campaign.obr_name, lang)
 
         update_national_worksheet(
             spreadsheet.worksheet("National"),

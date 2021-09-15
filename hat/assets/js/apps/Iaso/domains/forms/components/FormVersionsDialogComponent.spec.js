@@ -4,8 +4,8 @@ import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 
 import { expect } from 'chai';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import FormVersionsDialog from './FormVersionsDialogComponent';
-import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 import PeriodPicker from '../../periods/components/PeriodPickerComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { renderWithStore } from '../../../../../test/utils/redux';

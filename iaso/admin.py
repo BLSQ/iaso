@@ -189,6 +189,12 @@ class TaskAdmin(admin.ModelAdmin):
     list_filter = ("account", "status", "name")
 
 
+class SourceVersionAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at",)
+    list_display = ("id", "data_source", "number", "created_at")
+    list_filter = ("data_source",)
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -198,7 +204,7 @@ admin.site.register(AccountFeatureFlag)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(FeatureFlag, FeatureFlagAdmin)
 admin.site.register(Device)
-admin.site.register(SourceVersion)
+admin.site.register(SourceVersion, SourceVersionAdmin)
 admin.site.register(DataSource)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)

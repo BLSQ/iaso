@@ -5,10 +5,10 @@ import { connect } from 'react-redux';
 import { withStyles, Box, Grid } from '@material-ui/core';
 import {
     injectIntl,
-    // TopBar,
     LoadingSpinner,
     commonStyles,
     Table,
+    AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import {
     fetchGroups as fetchGroupsAction,
@@ -17,7 +17,6 @@ import {
 import TopBar from '../../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
 import GroupsDialog from './components/GroupsDialog';
-import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
 
 import { baseUrls } from '../../../constants/urls';
 

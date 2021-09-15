@@ -52,93 +52,12 @@ p {
   color: $orange;
 }
 
-@mixin text--success {
-  color: $green;
-}
-
-@mixin text--standard { /* useful for resetting text in e.g. form elements */
-  font-family: $body-font-family;
-  font-size: $font-size-standard;
-  color: $text-color;
-}
-
-@mixin text--label {
-  font-size: $font-size-xs;
-  color: $mid-gray;
-  text-transform: uppercase;
-  letter-spacing: 0.7px;
-}
-
-@mixin text--caption {
-  font-size: $font-size-xs;
-  font-style: normal;
-  font-weight: normal;
-}
-
-@mixin white-text-dark-background {
-  color: white;
-  -webkit-font-smoothing: antialiased;
-}
-
-@mixin text--center {
-  text-align: center;
-}
-
-@mixin text--x-small {
-  font-size: $font-size-xs;
-}
-
-@mixin text--small {
-  font-size: $font-size-s;
-}
-
-@mixin heading--small {
-  font-size: $font-size-s;
-  font-weight: bold;
-}
-
-@mixin heading--medium {
-  font-size: $font-size-standard;
-  font-weight: bold;
-}
-
 .text--error {
   @include text--error;
 }
 
 .text--warning {
   @include text--warning;
-}
-
-.text--success {
-  @include text--success;
-}
-
-.text--label {
-  @include text--label;
-}
-
-.text--small {
-  font-size: $font-size-s;
-}
-
-.text--explanation {
-  font-size: $font-size-s;
-  font-style: italic;
-}
-
-.divider {
-  display: block;
-  margin-top: $padding-unit;
-  margin-bottom: $padding-unit;
-  border-bottom: 1px solid $gray;
-}
-
-.text--marked {
-  background-color: $background-highlight-gray;
-  border: 1px solid $gray;
-  padding: 5px;
-  border-radius: 5px;
 }
 
 .error {
@@ -148,10 +67,6 @@ p {
 
 .pointer {
   cursor: pointer;
-}
-
-.forbid-pointer {
-  cursor: not-allowed;
 }
 
 .success {

@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 
@@ -6,11 +6,14 @@ import { withStyles, Box, Grid, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import { commonStyles, menuHeight } from 'bluesquare-components';
+import { commonStyles } from 'bluesquare-components';
 
-import MESSAGES from './messages';
+import MESSAGES from '../messages';
+
+import { innerDrawerStyles, menuHeight } from './styles';
 
 const styles = theme => ({
+    ...innerDrawerStyles(theme),
     ...commonStyles(theme),
     boxContent: {
         width: '100%',
@@ -45,7 +48,7 @@ class InnerDrawer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            activeOption: props.filtersOptionComponent ? 'filters' : 'comments',
+            activeOption: props.defaultActiveOption,
         };
     }
 
@@ -97,71 +100,74 @@ class InnerDrawer extends Component {
                             lg={3}
                             className={classes.innerDrawerToolContainer}
                         >
-                            <Tabs
-                                classes={{
-                                    root: classes.innerDrawerTabs,
-                                }}
-                                value={activeOption}
-                                indicatorColor="primary"
-                                onChange={(event, newtab) =>
-                                    this.toggleOption(newtab)
-                                }
-                            >
-                                {filtersOptionComponent && (
-                                    <Tab
-                                        classes={{
-                                            root: classes.innerDrawerTab,
-                                        }}
-                                        disabled={filtersDisabled}
-                                        value="filters"
-                                        label={
-                                            <FormattedMessage
-                                                {...MESSAGES.filters}
-                                            />
-                                        }
-                                    />
-                                )}
-                                {editOptionComponent && (
-                                    <Tab
-                                        classes={{
-                                            root: classes.innerDrawerTab,
-                                        }}
-                                        value="edit"
-                                        label={
-                                            <FormattedMessage
-                                                {...MESSAGES.edit}
-                                            />
-                                        }
-                                    />
-                                )}
-                                {commentsOptionComponent && (
-                                    <Tab
-                                        classes={{
-                                            root: classes.innerDrawerTab,
-                                        }}
-                                        value="comments"
-                                        disabled={commentsDisabled}
-                                        label={
-                                            <FormattedMessage
-                                                {...MESSAGES.comments}
-                                            />
-                                        }
-                                    />
-                                )}
-                                <Tab
+                            {(filtersOptionComponent ||
+                                editOptionComponent ||
+                                commentsOptionComponent) && (
+                                <Tabs
                                     classes={{
-                                        root: classes.innerDrawerTab,
+                                        root: classes.innerDrawerTabs,
                                     }}
-                                    disabled={settingsDisabled}
-                                    value="settings"
-                                    label={
-                                        <FormattedMessage
-                                            {...MESSAGES.settings}
-                                        />
+                                    value={activeOption}
+                                    indicatorColor="primary"
+                                    onChange={(event, newtab) =>
+                                        this.toggleOption(newtab)
                                     }
-                                />
-                            </Tabs>
-                            {/* } */}
+                                >
+                                    {filtersOptionComponent && (
+                                        <Tab
+                                            classes={{
+                                                root: classes.innerDrawerTab,
+                                            }}
+                                            disabled={filtersDisabled}
+                                            value="filters"
+                                            label={
+                                                <FormattedMessage
+                                                    {...MESSAGES.filters}
+                                                />
+                                            }
+                                        />
+                                    )}
+                                    {editOptionComponent && (
+                                        <Tab
+                                            classes={{
+                                                root: classes.innerDrawerTab,
+                                            }}
+                                            value="edit"
+                                            label={
+                                                <FormattedMessage
+                                                    {...MESSAGES.edit}
+                                                />
+                                            }
+                                        />
+                                    )}
+                                    {commentsOptionComponent && (
+                                        <Tab
+                                            classes={{
+                                                root: classes.innerDrawerTab,
+                                            }}
+                                            value="comments"
+                                            disabled={commentsDisabled}
+                                            label={
+                                                <FormattedMessage
+                                                    {...MESSAGES.comments}
+                                                />
+                                            }
+                                        />
+                                    )}
+                                    <Tab
+                                        classes={{
+                                            root: classes.innerDrawerTab,
+                                        }}
+                                        disabled={settingsDisabled}
+                                        value="settings"
+                                        label={
+                                            <FormattedMessage
+                                                {...MESSAGES.settings}
+                                            />
+                                        }
+                                    />
+                                </Tabs>
+                            )}
                             <Box
                                 display="flex"
                                 flexWrap="wrap"
@@ -226,6 +232,7 @@ InnerDrawer.defaultProps = {
     commentsDisabled: false,
     setCurrentOption: () => null,
     withTopBorder: false,
+    defaultActiveOption: 'settings',
 };
 
 InnerDrawer.propTypes = {
@@ -241,6 +248,7 @@ InnerDrawer.propTypes = {
     commentsDisabled: PropTypes.bool,
     setCurrentOption: PropTypes.func,
     withTopBorder: PropTypes.bool,
+    defaultActiveOption: PropTypes.string,
 };
 
 const MapDispatchToProps = dispatch => ({

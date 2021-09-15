@@ -1,9 +1,9 @@
 import React from 'react';
 import nock from 'nock';
+import { AddButton as AddButtonComponent } from 'bluesquare-components';
 
 import Forms from './index';
 import TopBar from '../../components/nav/TopBarComponent';
-import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import { renderWithStore } from '../../../../test/utils/redux';
 import { mockGetRequestsList } from '../../../../test/utils/requests';

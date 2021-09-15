@@ -20,6 +20,13 @@ const styles = theme => ({
     },
 });
 
+const permissionLabel = permissionCodeName =>
+    MESSAGES[permissionCodeName] ? (
+        <FormattedMessage {...MESSAGES[permissionCodeName]} />
+    ) : (
+        permissionCodeName
+    );
+
 class PermissionsSwitches extends Component {
     componentDidMount() {
         const { fetchPermissions, permissions } = this.props;
@@ -70,7 +77,7 @@ class PermissionsSwitches extends Component {
                                         color="primary"
                                     />
                                 }
-                                label={p.name}
+                                label={permissionLabel(p.codename)}
                             />
                         </div>
                     ))}

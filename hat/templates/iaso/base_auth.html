@@ -1,0 +1,13 @@
+{# This template is for pure HTML pages (not react)  e.g login, etc.. #}
+{% extends 'iaso/base.html' %}
+{% block head %}
+  {% load render_bundle from webpack_loader %}
+
+  {% if DEV_SERVER %}
+    <!-- this is for CSS Hot reloading in DEV -->
+    {% render_bundle 'styles' %}
+  {% else %}
+    <!-- we're in the non dev-server part -->
+    {% render_bundle 'styles' 'css' %}
+  {% endif %}
+{% endblock %}

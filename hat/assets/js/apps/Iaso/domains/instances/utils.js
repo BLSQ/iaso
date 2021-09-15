@@ -1,5 +1,9 @@
 import React from 'react';
 import CallMade from '@material-ui/icons/CallMade';
+import moment from 'moment';
+import { Tooltip } from '@material-ui/core';
+import { truncateText } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import instancesTableColumns from './config';
 import MESSAGES from './messages';
 import DeleteDialog from './components/DeleteInstanceDialog';
@@ -16,9 +20,13 @@ const KeyValueFields = ({ entry }) =>
         </>
     ));
 
+const formatValue = value => {
+    if (moment(value).isValid()) return moment(value).format('LTS');
+    return value;
+};
 const renderValue = (settings, c) => {
     const { key } = c;
-    // TODO refactor to use camelCase
+    // eslint-disable-next-line camelcase
     const { file_content } = settings.row.original;
     const value = file_content[key];
 
@@ -37,7 +45,7 @@ const renderValue = (settings, c) => {
             </pre>
         );
     }
-    return <span>{value}</span>;
+    return <span>{formatValue(value)}</span>;
 };
 
 export const getInstancesColumns = (
@@ -66,7 +74,25 @@ export const getInstancesColumns = (
                     class: 'small',
                     sortable: false,
                     accessor: c.key,
-                    Header: c.label || c.key,
+                    Header: (
+                        <Tooltip
+                            title={
+                                <FormattedMessage
+                                    {...MESSAGES.instanceHeaderTooltip}
+                                    values={{
+                                        label: c.label,
+                                        key: c.key,
+                                    }}
+                                />
+                            }
+                        >
+                            <span>
+                                {c.label?.trim()
+                                    ? truncateText(c.label, 25)
+                                    : c.key}
+                            </span>
+                        </Tooltip>
+                    ),
                     Cell: settings => renderValue(settings, c),
                 });
             }
@@ -77,14 +103,22 @@ export const getInstancesColumns = (
 
 export const getMetasColumns = () =>
     [...instancesTableColumns()].map(c => c.accessor);
-
-export const getInstancesVisibleColumns = (
+const formatLabel = field => {
+    if (!field.label) return field.key;
+    if (!field.label.trim()) return field.key;
+    if (field.label.includes(':')) return field.label.split(':')[0];
+    return field.label;
+};
+export const getInstancesVisibleColumns = ({
     formatMessage,
     instance,
-    { columns = undefined, order },
+    columns = undefined,
+    order,
     defaultOrder,
-) => {
+    possibleFields,
+}) => {
     const activeOrders = (order || defaultOrder).split(',');
+    const columnsNames = columns ? columns.split(',') : [];
     const metasColumns = [
         ...instancesTableColumns(formatMessage).filter(
             c => c.accessor !== 'actions',
@@ -93,22 +127,22 @@ export const getInstancesVisibleColumns = (
     const newColumns = metasColumns.map(c => ({
         key: c.accessor,
         label: c.Header,
-        active: columns !== undefined && columns.includes(c.accessor),
+        active: columnsNames.includes(c.accessor),
         meta: true,
         disabled:
             activeOrders.indexOf(c.accessor) !== -1 ||
             activeOrders.indexOf(`-${c.accessor}`) !== -1,
     }));
+
     if (instance) {
-        Object.keys(instance.file_content).forEach(k => {
-            if (k !== 'meta' && k !== 'uuid') {
-                newColumns.push({
-                    key: k,
-                    label: k, // TO-DO: get field label from API
-                    active: columns !== undefined && columns.includes(k),
-                    disabled: false,
-                });
-            }
+        possibleFields.forEach(field => {
+            const label = formatLabel(field);
+            newColumns.push({
+                key: field.name,
+                label,
+                active: columnsNames.includes(field.name),
+                disabled: false,
+            });
         });
     }
     return newColumns;

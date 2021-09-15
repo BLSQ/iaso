@@ -9,7 +9,7 @@ import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import { injectIntl, commonStyles } from 'bluesquare-components';
-import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
+import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { locationsLimit } from '../../../constants/filters';
 
 import {
@@ -27,22 +27,24 @@ import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
+import InnerDrawer from '../../../components/nav/InnerDrawer';
 import OrgUnitPopupComponent from './OrgUnitPopupComponent';
-import FiltersComponent from '../../../components/filters/FiltersComponent';
 
 import { fetchOrgUnitDetail } from '../../../utils/requests';
 import { getChipColors } from '../../../constants/chipColors';
 import { getColorsFromParams, decodeSearch } from '../utils';
 import MESSAGES from '../messages';
 import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
+import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
 
 const boundsOptions = {
     padding: [50, 50],
 };
 const styles = theme => ({
     ...commonStyles(theme),
+    ...innerDrawerStyles(theme),
     innerDrawerToolbar: {
-        ...commonStyles(theme).innerDrawerToolbar,
+        ...innerDrawerStyles(theme).innerDrawerToolbar,
         '& section': {
             width: '100%',
         },
@@ -214,6 +216,7 @@ class OrgunitsMap extends Component {
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
+                    defaultActiveOption="comments"
                     withTopBorder
                     settingsOptionComponent={
                         <>

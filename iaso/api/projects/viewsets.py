@@ -1,8 +1,8 @@
-from rest_framework import permissions
+from rest_framework import filters, permissions
 
-from ..common import ModelViewSet, HasPermission
-from .serializers import ProjectSerializer
 from iaso.models import Project
+from .serializers import ProjectSerializer
+from ..common import ModelViewSet, HasPermission
 
 
 class ProjectsViewSet(ModelViewSet):
@@ -15,6 +15,8 @@ class ProjectsViewSet(ModelViewSet):
     """
 
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["app_id", "name"]
     serializer_class = ProjectSerializer
     results_key = "projects"
     http_method_names = ["get", "head", "options", "trace"]

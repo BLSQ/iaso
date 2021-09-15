@@ -9,6 +9,7 @@ import Grid from '@material-ui/core/Grid';
 
 import Search from '@material-ui/icons/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import FiltersComponent from '../../../components/filters/FiltersComponent';
 
 import {
     search,
@@ -20,7 +21,6 @@ import {
     instanceStatus,
     instanceDeleted,
 } from '../../../constants/filters';
-import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
 
 import { INSTANCE_STATUSES } from '../constants';

@@ -25,6 +25,17 @@ const styles = theme => ({
     },
 });
 
+const normalizedMessage = CompOrMessage => {
+    if (!CompOrMessage) {
+        return '';
+    }
+    if (CompOrMessage.id) {
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        return <FormattedMessage {...CompOrMessage} />;
+    }
+    return CompOrMessage;
+};
+
 function DialogComponent({
     classes,
     children,
@@ -72,9 +83,11 @@ function DialogComponent({
                     }}
                     scroll="body"
                 >
-                    <DialogTitle className={classes.title}>
-                        <FormattedMessage {...titleMessage} />
-                    </DialogTitle>
+                    {titleMessage && (
+                        <DialogTitle className={classes.title}>
+                            {normalizedMessage(titleMessage)}
+                        </DialogTitle>
+                    )}
                     <DialogContent className={classes.content}>
                         {children}
                     </DialogContent>
@@ -88,11 +101,20 @@ DialogComponent.defaultProps = {
     maxWidth: 'sm',
     onClosed: () => {},
     onOpen: () => {},
+    titleMessage: null,
 };
 DialogComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     children: PropTypes.node.isRequired,
-    titleMessage: PropTypes.object.isRequired, // TODO: make a message prop type
+    titleMessage: PropTypes.oneOfType([
+        PropTypes.shape({
+            id: PropTypes.string.isRequired,
+            defaultMessage: PropTypes.string,
+            values: PropTypes.object,
+        }),
+        PropTypes.node,
+        PropTypes.string, // untranslated not recommended
+    ]),
     maxWidth: PropTypes.string,
     renderActions: PropTypes.func.isRequired,
     renderTrigger: PropTypes.func.isRequired,

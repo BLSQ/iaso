@@ -138,6 +138,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.version',
         defaultMessage: 'Versions',
     },
+    exportDataSource: {
+        id: 'iaso.datasources.exportDataSource',
+        defaultMessage: 'Export data source: {dataSourceName}',
+    },
 });
 
 export default MESSAGES;

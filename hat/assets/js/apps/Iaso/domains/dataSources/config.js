@@ -4,10 +4,13 @@ import { Tooltip } from '@material-ui/core';
 
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 // eslint-disable-next-line import/no-named-as-default-member,import/no-named-as-default
+import PublishIcon from '@material-ui/icons/Publish';
+import FormatListNumberedIcon from '@material-ui/icons/FormatListNumbered';
 import DataSourceDialogComponent from './components/DataSourceDialogComponent';
 import MESSAGES from './messages';
 import { VersionsDialog } from './components/VersionsDialog';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
+import { ExportToDHIS2Dialog } from './components/ExportToDHIS2Dialog';
 
 const dataSourcesTableColumns = (
     formatMessage,
@@ -49,6 +52,7 @@ const dataSourcesTableColumns = (
         resizable: false,
         sortable: false,
         Cell: settings => {
+            console.log('row', settings.row.original);
             return (
                 <section>
                     <DataSourceDialogComponent
@@ -77,12 +81,25 @@ const dataSourcesTableColumns = (
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
                                 onClick={openDialog}
-                                icon="history" // FIXME replace by formatListNumberedIcon when merged in bluesquare
+                                overrideIcon={FormatListNumberedIcon}
                                 tooltipMessage={MESSAGES.versions}
                             />
                         )}
                         defaultSourceVersion={defaultSourceVersion}
                         source={settings.row.original}
+                    />
+                    <ExportToDHIS2Dialog
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                overrideIcon={PublishIcon}
+                                tooltipMessage={MESSAGES.versions}
+                            />
+                        )}
+                        dataSourceName={settings.row.original.name}
+                        dataSourceId={settings.row.original.id}
+                        versions={settings.row.original.versions}
+                        credentials={settings.row.original.credentials}
                     />
                 </section>
             );

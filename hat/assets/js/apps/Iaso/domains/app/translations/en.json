@@ -28,6 +28,7 @@
     "iaso.dataSources.dhisPassword": "DHIS2 password",
     "iaso.dataSources.dhisUrl": "DHIS2 url",
     "iaso.datasources.emptyProjectsError": "Please choose at least one project",
+    "iaso.datasources.exportDataSource": "Export data source: {dataSourceName}",
     "iaso.datasources.geoPkg": "Import GeoPackage",
     "iaso.dataSources.goToCurrentTask": "Launch and show task",
     "iaso.datasources.gpkg.chooseFile": "Choose file",

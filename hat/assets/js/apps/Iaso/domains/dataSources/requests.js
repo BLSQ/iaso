@@ -1,4 +1,5 @@
-import { iasoPostRequest } from '../../utils/requests';
+import { useQuery } from 'react-query';
+import { iasoGetRequest, iasoPostRequest } from '../../utils/requests';
 
 /**
  *
@@ -32,5 +33,22 @@ export const postGeoPkg = async request => {
             body,
             fileData: file,
         },
+    });
+};
+
+const getOrgUnitTypes = async () => {
+    return iasoGetRequest({
+        requestParams: { url: '/api/orgunittypes/' },
+        disableSuccessSnackBar: true,
+    });
+};
+
+export const useOrgUnitTypes = () => {
+    return useQuery(['orgUnitTypes'], getOrgUnitTypes, {
+        select: data =>
+            data.orgUnitTypes.map(orgUnitType => ({
+                value: orgUnitType.id,
+                label: orgUnitType.name,
+            })),
     });
 };

@@ -28,6 +28,7 @@
     "iaso.dataSources.dhisPassword": "Mot de passe DHIS2",
     "iaso.dataSources.dhisUrl": "Url DHIS2",
     "iaso.datasources.emptyProjectsError": "Veuillez choisir au moins un projet",
+    "iaso.datasources.exportDataSource": "Exporter la source: {dataSourceName}",
     "iaso.dataSources.goToCurrentTask": "Lancer et montrer la tâche",
     "iaso.datasources.gpkg.chooseFile": "Choissez un fichier",
     "iaso.datasources.gpkg.explication": "Importer des OrgUnits depuis un fichier GeoPackage. Toutes les OrgUnits présentes dans le fichier seront mises à jour.{breakingLine}Le fichier doit être correctement formatté.{breakingLine}",

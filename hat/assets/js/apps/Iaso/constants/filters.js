@@ -13,28 +13,30 @@ export const search = (urlKey = 'search') => ({
     type: 'search',
 });
 
+export const orgUnitStatusAsOptions = formatMessage => [
+    {
+        label: formatMessage(MESSAGES.all),
+        value: 'all',
+    },
+    {
+        label: formatMessage(MESSAGES.new),
+        value: 'NEW',
+    },
+    {
+        label: formatMessage(MESSAGES.validated),
+        value: 'VALID',
+    },
+    {
+        label: formatMessage(MESSAGES.rejected),
+        value: 'REJECTED',
+    },
+];
+
 export const status = (formatMessage, urlKey = 'validation_status') => ({
     urlKey,
     isMultiSelect: false,
     isClearable: false,
-    options: [
-        {
-            label: formatMessage(MESSAGES.all),
-            value: 'all',
-        },
-        {
-            label: formatMessage(MESSAGES.new),
-            value: 'NEW',
-        },
-        {
-            label: formatMessage(MESSAGES.validated),
-            value: 'VALID',
-        },
-        {
-            label: formatMessage(MESSAGES.rejected),
-            value: 'REJECTED',
-        },
-    ],
+    options: orgUnitStatusAsOptions(formatMessage),
     label: MESSAGES.status,
     type: 'select',
 });

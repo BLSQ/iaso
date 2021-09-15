@@ -10,13 +10,13 @@ const routes = [
     {
         baseUrl: 'polio/list',
         component: () => <Dashboard />,
-        permission: 'iaso_forms',
+        permission: 'iaso_polio',
         params: [],
     },
     {
         baseUrl: 'polio/config',
         component: () => <CountryNotificationsConfig />,
-        permission: 'iaso_forms',
+        permission: 'iaso_polio',
         params: [
             {
                 isRequired: false,
@@ -43,13 +43,13 @@ const menu = [
             {
                 label: MESSAGES.dashboard,
                 key: 'list',
-                permission: 'iaso_forms',
+                permission: 'iaso_polio',
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
                 label: MESSAGES.configuration,
                 key: 'config',
-                permission: 'iaso_forms',
+                permission: 'iaso_polio',
                 icon: props => <SettingsIcon {...props} />,
             },
         ],

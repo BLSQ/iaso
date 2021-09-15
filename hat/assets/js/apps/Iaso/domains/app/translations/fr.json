@@ -416,6 +416,7 @@
     "iaso.permissions.mappings": "Correspondances avec DHIS2",
     "iaso.permissions.orgUnits": "Unités d'organisation",
     "iaso.permissions.pages": "Pages",
+    "iaso.permissions.polio": "Gestion campagnes vaccination Polio",
     "iaso.permissions.projects": "Projets",
     "iaso.permissions.sources": "Sources",
     "iaso.permissions.users": "Utilisateurs",

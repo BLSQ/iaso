@@ -15,6 +15,7 @@ PAGES = _("Pages")
 PROJECTS = _("Projets")
 SOURCES = _("Sources")
 TASKS = _("Tâches")
+POLIO = _("Polio")
 
 
 class CustomPermissionSupport(models.Model):
@@ -50,4 +51,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_projects", PROJECTS),
             ("iaso_sources", SOURCES),
             ("iaso_data_tasks", TASKS),
+            ("iaso_polio", POLIO),
         )

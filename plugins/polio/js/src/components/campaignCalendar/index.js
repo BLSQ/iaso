@@ -1,8 +1,9 @@
-import React from 'react';
-import red from '@material-ui/core/colors/red';
+import React, { useMemo } from 'react';
+import moment from 'moment';
 
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 
 import {
     Table,
@@ -11,114 +12,111 @@ import {
     TableRow,
     TableCell,
     Box,
-    makeStyles,
     TableBody,
+    Typography,
+    IconButton,
 } from '@material-ui/core';
+import ChevronLeft from '@material-ui/icons/ChevronLeft';
+import ChevronRight from '@material-ui/icons/ChevronRight';
 
-const getMonth = columns => {
-    let cols = [];
-    columns.forEach(c => {
-        if (c.columns) {
-            cols = cols.concat(c.columns);
-        }
-    });
-    return cols;
-};
-const getWeeks = columns => {
-    let cols = [];
-    columns.forEach(c => {
-        if (c.columns) {
-            c.columns.forEach(subC => {
-                if (subC.columns) {
-                    cols = cols.concat(subC.columns);
-                }
-            });
-        }
-    });
-    return cols;
-};
-const useStyles = makeStyles(theme => ({
-    tableContainer: {
-        overflow: 'hidden',
-        width: 800,
-        borderTop: `1px solid ${theme.palette.ligthGray.border}`,
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
-    },
-    tableRow: {
-        height: 50,
-        borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
-    },
-    tableCell: {
-        height: 50,
-        padding: 0,
-        margin: 0,
-        border: 'none',
-    },
-    tableCellBordered: {
-        border: `1px solid ${theme.palette.ligthGray.border}`,
-    },
-    tableCellFixed: {
-        width: 50,
-    },
-    round: {
-        backgroundColor: theme.palette.secondary.main,
-        color: theme.palette.common.white,
-    },
-    campaign: {
-        backgroundColor: theme.palette.grey[200],
-        border: 'none',
-    },
-    currentWeek: {
-        backgroundColor: red['100'],
-    },
-}));
+import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 
-const CampaignsCalendar = ({
-    campaigns,
-    columns,
-    currentWeekIndex,
-    colsCount,
-}) => {
+import { useStyles } from './Styles';
+
+import { getCalendarData } from './utils';
+
+const colsCount = 16;
+const baseUrl = 'polio/calendar';
+
+const CampaignsCalendar = ({ campaigns, params }) => {
     const classes = useStyles();
+    const dispatch = useDispatch();
     const defaultCellStyles = [
         classes.tableCell,
         classes.tableCellBordered,
         classes.tableCellFixed,
     ];
+    const currentDate = params.currentDate
+        ? moment(params.currentDate, 'YYYY-MM-DD')
+        : moment();
+
+    const currentMonday = currentDate.clone().startOf('isoWeek');
+    const { headers, currentWeekIndex } = useMemo(
+        () => getCalendarData(colsCount, currentDate),
+        [currentDate],
+    );
+
+    const handleGoNext = () => {
+        const newDate = currentMonday.clone().add(4, 'week');
+        dispatch(
+            redirectToReplace(baseUrl, {
+                currentDate: newDate.format('YYYY-MM-DD'),
+            }),
+        );
+    };
+    const handleGoPrev = () => {
+        const newDate = currentMonday.clone().subtract(4, 'week');
+        dispatch(
+            redirectToReplace(baseUrl, {
+                currentDate: newDate.format('YYYY-MM-DD'),
+            }),
+        );
+    };
+
     return (
-        <Box mb={2} mt={2}>
+        <Box mb={2} mt={2} display="flex" alignItems="center">
+            <IconButton onClick={handleGoPrev}>
+                <ChevronLeft color="primary" />
+            </IconButton>
             <TableContainer className={classes.tableContainer}>
                 <Table>
                     <TableHead>
                         <TableRow className={classes.tableRow}>
-                            <TableCell
-                                className={classes.tableCell}
-                                align="center"
-                                colSpan={colsCount}
-                            >
-                                {columns[0].value}
-                            </TableCell>
-                        </TableRow>
-                        <TableRow className={classes.tableRow}>
-                            {getMonth(columns).map(month => (
+                            {headers.years.map(year => (
                                 <TableCell
                                     className={classes.tableCell}
-                                    key={month.value}
+                                    key={`year-${year}`}
                                     align="center"
-                                    colSpan="4"
+                                    colSpan={colsCount / headers.years.length}
+                                >
+                                    <Typography variant="h5">{year}</Typography>
+                                </TableCell>
+                            ))}
+                        </TableRow>
+                        <TableRow
+                            className={classnames(
+                                classes.tableRow,
+                                classes.tableRowSmall,
+                            )}
+                        >
+                            {headers.months.map(month => (
+                                <TableCell
+                                    className={classnames(
+                                        classes.tableCell,
+                                        classes.tableCellSmall,
+                                    )}
+                                    key={`month-${month.year}-${month.value}`}
+                                    align="center"
+                                    colSpan={colsCount / headers.months.length}
                                 >
                                     {month.value}
                                 </TableCell>
                             ))}
                         </TableRow>
-                        <TableRow className={classes.tableRow}>
-                            {getWeeks(columns).map(week => (
+                        <TableRow
+                            className={classnames(
+                                classes.tableRow,
+                                classes.tableRowSmall,
+                            )}
+                        >
+                            {headers.weeks.map(week => (
                                 <TableCell
                                     className={classnames([
                                         classes.tableCell,
+                                        classes.tableCellSmall,
                                         classes.tableCellFixed,
                                     ])}
-                                    key={week.value}
+                                    key={`month-${week.year}-${week.month}-${week.value}`}
                                     align="center"
                                 >
                                     {week.value}
@@ -239,22 +237,21 @@ const CampaignsCalendar = ({
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <IconButton onClick={handleGoNext}>
+                <ChevronRight color="primary" />
+            </IconButton>
         </Box>
     );
 };
 
 CampaignsCalendar.defaultProps = {
-    columns: [],
     campaigns: [],
-    currentWeekIndex: 0,
-    colsCount: 16,
 };
 
 CampaignsCalendar.propTypes = {
     campaigns: PropTypes.array,
-    columns: PropTypes.array,
-    currentWeekIndex: PropTypes.number,
-    colsCount: PropTypes.number,
+    params: PropTypes.object.isRequired,
 };
 
 export { CampaignsCalendar };

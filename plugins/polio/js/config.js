@@ -36,9 +36,14 @@ const routes = [
     },
     {
         baseUrl: 'polio/calendar',
-        component: () => <Calendar />,
+        component: props => <Calendar {...props} />,
         permission: 'iaso_forms',
-        params: [],
+        params: [
+            {
+                isRequired: false,
+                key: 'currentDate',
+            },
+        ],
     },
 ];
 

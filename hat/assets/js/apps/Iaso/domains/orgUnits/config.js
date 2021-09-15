@@ -157,7 +157,10 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => [
     {
         Header: formatMessage(MESSAGES.user),
         accessor: 'user__username',
-        Cell: settings => getDisplayName(settings.row.original.user),
+        Cell: settings =>
+            settings.row.original.user
+                ? getDisplayName(settings.row.original.user)
+                : null,
     },
     {
         expander: true,

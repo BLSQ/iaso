@@ -10,7 +10,10 @@ import OrgUnitTooltip from './components/OrgUnitTooltip';
 import getDisplayName from '../../utils/usersUtils';
 import MESSAGES from './messages';
 import { getStatusMessage, getOrgUnitGroups } from './utils';
-import { DateTimeCell } from '../../components/Cells/DateTimeCell';
+import {
+    DateTimeCell,
+    DateTimeCellRfc,
+} from '../../components/Cells/DateTimeCell';
 
 export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
     const getStatusColor = status => {
@@ -143,7 +146,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
     return columns;
 };
 
-export const orgUnitsLogsColumns = (formatMessage, classes) => [
+export const orgUnitsLogsColumns = formatMessage => [
     {
         Header: 'ID',
         accessor: 'id',
@@ -152,7 +155,7 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => [
     {
         Header: formatMessage(MESSAGES.date),
         accessor: 'created_at',
-        Cell: DateTimeCell,
+        Cell: DateTimeCellRfc,
     },
     {
         Header: formatMessage(MESSAGES.user),

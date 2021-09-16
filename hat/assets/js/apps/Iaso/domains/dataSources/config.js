@@ -52,7 +52,7 @@ const dataSourcesTableColumns = (
         resizable: false,
         sortable: false,
         Cell: settings => {
-            console.log('row', settings.row.original);
+            // console.log('row', settings.row.original);
             return (
                 <section>
                     <DataSourceDialogComponent
@@ -97,9 +97,12 @@ const dataSourcesTableColumns = (
                             />
                         )}
                         dataSourceName={settings.row.original.name}
-                        dataSourceId={settings.row.original.id}
+                        // dataSourceId={settings.row.original.id}
                         versions={settings.row.original.versions}
                         credentials={settings.row.original.credentials}
+                        defaultVersionId={
+                            settings.row.original?.default_version?.id
+                        }
                     />
                 </section>
             );

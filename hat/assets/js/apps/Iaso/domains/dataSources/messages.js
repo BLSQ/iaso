@@ -142,6 +142,34 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.exportDataSource',
         defaultMessage: 'Export data source: {dataSourceName}',
     },
+    name: {
+        id: 'iaso.datasources.options.label.name',
+        defaultMessage: 'Name',
+    },
+    parent: {
+        id: 'iaso.datasources.options.label.parent',
+        defaultMessage: 'Parent',
+    },
+    shape: {
+        id: 'iaso.datasources.options.label.shape',
+        defaultMessage: 'Shape',
+    },
+    groups: {
+        id: 'iaso.datasources.options.label.groups',
+        defaultMessage: 'Groups',
+    },
+    location: {
+        id: 'iaso.datasources.options.label.location',
+        defaultMessage: 'Location',
+    },
+    version: {
+        id: 'iaso.datasources.options.label.version',
+        defaultMessage: 'Version',
+    },
+    default: {
+        id: 'iaso.datasources.options.label.default',
+        defaultMessage: 'default',
+    },
 });
 
 export default MESSAGES;

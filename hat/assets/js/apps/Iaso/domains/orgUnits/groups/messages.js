@@ -54,7 +54,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Are you sure you want to delete this group?',
     },
     deleteWarning: {
-        id: 'iaso.users.dialog.deleteUserTitle',
+        id: 'iaso.group.dialog.deleteText',
         defaultMessage: 'This operation cannot be undone.',
     },
     edit: {

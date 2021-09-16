@@ -1,13 +1,21 @@
-import React, { useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Grid } from '@material-ui/core';
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFormState } from '../../../hooks/form';
 import MESSAGES from '../messages';
-import { useDataSourceVersions, useOrgUnitTypes } from '../requests';
+import {
+    useDataSourceVersions,
+    useOrgUnitTypes,
+    useDataSourceVersionsMap,
+} from '../requests';
 import { orgUnitStatusAsOptions } from '../../../constants/filters';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import {
+    commaSeparatedIdsToArray,
+    commaSeparatedIdsToStringArray,
+} from '../../../utils/forms';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
 const useFieldsToExport = () => {
     const { formatMessage } = useSafeIntl();
@@ -65,7 +73,7 @@ const dataSourceVersionsAsOptions = (
 
 export const ExportToDHIS2Dialog = ({
     renderTrigger,
-    // dataSourceId,
+    dataSourceId,
     dataSourceName,
     versions,
     credentials,
@@ -73,17 +81,37 @@ export const ExportToDHIS2Dialog = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const fieldsToExport = useFieldsToExport();
+
     const { data: orgUnitTypes, isLoading: areOrgUnitTypesLoading } =
         useOrgUnitTypes();
+
     const { data: sourceVersions, isLoading: areSourceVersionsLoading } =
         useDataSourceVersions(defaultVersionId);
+
+    const { data: dataSourceMap, isLoading: isDataSourceMapLoading } =
+        useDataSourceVersionsMap(defaultVersionId);
+
     const [exportData, setExportDataField] = useFormState(initialExportData);
-    const handleMultiSelect = useCallback(
-        (keyValue, newValue) => {
-            setExportDataField(keyValue, commaSeparatedIdsToArray(newValue));
+
+    const [destinationDataSourceId, setDestinationDataSourceId] =
+        useState(null);
+
+    // this ref to enable resetting the treeview whebn datasource changes
+    const treeviewResetControl = useRef(destinationDataSourceId);
+
+    const onTargetSourceVersionChange = useCallback(
+        (keyValue, value) => {
+            setDestinationDataSourceId(dataSourceMap.get(value));
+            setExportDataField(keyValue, value?.toString());
         },
-        [setExportDataField],
+        [setExportDataField, dataSourceMap],
     );
+
+    useEffect(() => {
+        if (treeviewResetControl.current !== destinationDataSourceId) {
+            treeviewResetControl.current = destinationDataSourceId;
+        }
+    }, [destinationDataSourceId]);
 
     return (
         <ConfirmCancelDialogComponent
@@ -111,25 +139,26 @@ export const ExportToDHIS2Dialog = ({
                         />
                     </Grid>
                     <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            labelString="Treeview"
-                            value={null}
-                            options={[
-                                { label: 'test', value: 'test' },
-                                { label: 'teste2', value: 'test2' },
-                            ]}
+                        <OrgUnitTreeviewModal
+                            onConfirm={() => null}
+                            source={dataSourceId}
+                            titleMessage={MESSAGES.selectTopOrgUnit}
                         />
                     </Grid>
                     <Grid xs={6} item>
-                        {areSourceVersionsLoading && <LoadingSpinner />}
                         <InputComponent
                             type="select"
                             keyValue="source_org_unit_types_ids"
                             labelString="OU Types"
                             value={exportData.source_org_unit_types_ids.value}
                             errors={exportData.source_org_unit_types_ids.errors} // TODO actually manage errors
-                            onChange={handleMultiSelect}
+                            onChange={(keyValue, newValue) => {
+                                setExportDataField(
+                                    keyValue,
+                                    commaSeparatedIdsToArray(newValue),
+                                );
+                            }}
+                            loading={areSourceVersionsLoading}
                             options={orgUnitTypes ?? []}
                             multi
                         />
@@ -154,7 +183,12 @@ export const ExportToDHIS2Dialog = ({
                             labelString="Fields to export"
                             value={exportData.fields_to_export.value}
                             errors={exportData.fields_to_export.errors}
-                            onChange={setExportDataField}
+                            onChange={(keyValue, newValue) => {
+                                setExportDataField(
+                                    keyValue,
+                                    commaSeparatedIdsToStringArray(newValue),
+                                );
+                            }}
                             options={fieldsToExport}
                             multi
                         />
@@ -162,26 +196,29 @@ export const ExportToDHIS2Dialog = ({
                 </Grid>
                 <Grid container spacing={4}>
                     <Grid xs={6} item>
-                        {areOrgUnitTypesLoading && <LoadingSpinner />}
                         <InputComponent
                             type="select"
                             keyValue="ref_version_id"
                             labelString="Data source ref"
                             value={exportData.ref_version_id.value}
                             errors={exportData.ref_version_id.errors}
-                            onChange={setExportDataField}
+                            onChange={onTargetSourceVersionChange}
                             options={sourceVersions}
+                            loading={
+                                areOrgUnitTypesLoading || isDataSourceMapLoading
+                            }
                         />
                     </Grid>
                     <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            labelString="Treeview"
-                            value={null}
-                            options={[
-                                { label: 'test', value: 'test' },
-                                { label: 'teste2', value: 'test2' },
-                            ]}
+                        <OrgUnitTreeviewModal
+                            onConfirm={value => console.log(value)}
+                            source={destinationDataSourceId}
+                            titleMessage={MESSAGES.selectTopOrgUnit}
+                            resetTrigger={
+                                treeviewResetControl.current !==
+                                destinationDataSourceId
+                            }
+                            disabled={!destinationDataSourceId}
                         />
                     </Grid>
                 </Grid>

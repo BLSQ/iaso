@@ -41,6 +41,7 @@
     "iaso.datasources.label.geoPkgTitle": "Import from GeoPackage",
     "iaso.datasources.label.gpkgFormFile": "Choose file",
     "iaso.datasources.label.project": "Project",
+    "iaso.datasources.label.selectTopOrgUnit": "Please select top OrgUnit",
     "iaso.datasources.label.versionNumber": "Version",
     "iaso.dataSources.name": "Data Source name",
     "iaso.datasources.options.label.default": "default",

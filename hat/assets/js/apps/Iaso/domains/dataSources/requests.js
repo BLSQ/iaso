@@ -79,7 +79,7 @@ export const useDataSourceVersions = defaultVersionId => {
     const { formatMessage } = useSafeIntl();
     const makeLabel = formatSourceVersionLabel(formatMessage);
     return useQuery(
-        ['dataSourceVersions', formatMessage],
+        ['dataSourceVersions', defaultVersionId],
         getDataSourceVersions,
         {
             select: data => {
@@ -87,6 +87,22 @@ export const useDataSourceVersions = defaultVersionId => {
                     value: version.id,
                     label: makeLabel(defaultVersionId, version),
                 }));
+            },
+        },
+    );
+};
+export const useDataSourceVersionsMap = defaultVersionId => {
+    return useQuery(
+        ['dataSourceVersions', defaultVersionId],
+        getDataSourceVersions,
+        {
+            select: data => {
+                return new Map(
+                    data.versions.map(version => [
+                        version.id,
+                        version.data_source,
+                    ]),
+                );
             },
         },
     );

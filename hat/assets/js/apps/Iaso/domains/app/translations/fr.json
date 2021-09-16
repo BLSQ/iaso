@@ -38,6 +38,7 @@
     "iaso.datasources.gpkg.tooltip": "Importer depuis un fichier GeoPackage",
     "iaso.dataSources.importFromDhis2": "Importer une nouvelle version depuis DHIS2",
     "iaso.datasources.label.project": "Project",
+    "iaso.datasources.label.selectTopOrgUnit": "Choisir une OrgUnit comme limite supérieure",
     "iaso.datasources.label.versionNumber": "Version",
     "iaso.dataSources.name": "Nom de la source",
     "iaso.datasources.options.label.default": "défaut",

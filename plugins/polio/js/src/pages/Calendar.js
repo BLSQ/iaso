@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, makeStyles } from '@material-ui/core';
-import { commonStyles } from 'bluesquare-components';
+import { commonStyles, LoadingSpinner } from 'bluesquare-components';
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 
 import { CampaignsCalendar } from '../components/campaignCalendar';
@@ -18,13 +18,18 @@ const Calendar = ({ params }) => {
         order: '-obr_name',
     });
 
-    const { data: campaigns = [] } = query;
+    const { data: campaigns = [], status } = query;
     return (
         <div>
             <TopBar title="Calendar" displayBackButton={false} />
+            {status === 'loading' && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box width={1}>
-                    <CampaignsCalendar params={params} campaigns={campaigns} />
+                    <CampaignsCalendar
+                        params={params}
+                        campaigns={campaigns}
+                        isLoading={status === 'loading'}
+                    />
                 </Box>
             </Box>
         </div>

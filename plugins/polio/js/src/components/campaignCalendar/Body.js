@@ -7,7 +7,7 @@ import { useSafeIntl } from 'bluesquare-components';
 
 import { useStyles } from './Styles';
 
-import { colsCount } from './constants';
+import { colsCount, colSpanTitle } from './constants';
 
 import MESSAGES from '../../constants/messages';
 // import { filterCampaigns } from './utils';
@@ -33,7 +33,6 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                         className={classnames(defaultCellStyles, {
                             [classes.currentWeek]: isCurrentWeek,
                         })}
-                        align="center"
                         key={`empty-cell-${id}-${uKey}`}
                     />
                 );
@@ -45,7 +44,6 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                             classes.campaign,
                         )}
                         colSpan={colSpan}
-                        align="center"
                     >
                         {colSpan > 5 && (
                             <span className={classes.tableCellSpan}>
@@ -62,7 +60,6 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                         key={`r1-campaign-${uKey}`}
                         className={classnames(defaultCellStyles, classes.round)}
                         colSpan={colSpan}
-                        align="center"
                     >
                         {colSpan > 1 && (
                             <span className={classes.tableCellSpan}>R1</span>
@@ -78,7 +75,6 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                             classes.round2,
                         )}
                         colSpan={colSpan}
-                        align="center"
                     >
                         {colSpan > 1 && (
                             <span className={classes.tableCellSpan}>R2</span>
@@ -295,6 +291,19 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                 }
                 return (
                     <TableRow className={classes.tableRow} key={`row-${id}}`}>
+                        <TableCell
+                            colSpan={colSpanTitle}
+                            className={classnames(defaultCellStyles)}
+                        >
+                            <span
+                                className={classnames(
+                                    classes.tableCellSpan,
+                                    classes.tableCellSpanRow,
+                                )}
+                            >
+                                {campaign.name}
+                            </span>
+                        </TableCell>
                         {cells}
                     </TableRow>
                 );

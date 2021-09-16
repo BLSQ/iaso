@@ -2,16 +2,24 @@ import React from 'react';
 
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
+import { FormattedMessage } from 'react-intl';
 
 import { TableHead, TableRow, TableCell, Typography } from '@material-ui/core';
 
 import { useStyles } from './Styles';
+
+import { colSpanTitle } from './constants';
 
 const Head = ({ headers }) => {
     const classes = useStyles();
     return (
         <TableHead>
             <TableRow className={classes.tableRow}>
+                <TableCell
+                    className={classes.tableCellTitle}
+                    align="left"
+                    colSpan={colSpanTitle}
+                />
                 {headers.years.map(year => (
                     <TableCell
                         className={classes.tableCell}
@@ -31,6 +39,11 @@ const Head = ({ headers }) => {
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
+                <TableCell
+                    className={classes.tableCellTitle}
+                    align="left"
+                    colSpan={colSpanTitle}
+                />
                 {headers.months.map(month => (
                     <TableCell
                         className={classnames(
@@ -50,6 +63,23 @@ const Head = ({ headers }) => {
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
+                <TableCell
+                    className={classes.tableCellTitle}
+                    align="left"
+                    colSpan={colSpanTitle}
+                >
+                    <span
+                        className={classnames(
+                            classes.tableCellSpan,
+                            classes.tableCellSpanTitle,
+                        )}
+                    >
+                        <FormattedMessage
+                            id="iaso.polio.calendar.obrName"
+                            defaultMessage="Name"
+                        />
+                    </span>
+                </TableCell>
                 {headers.weeks.map(week => (
                     <TableCell
                         className={classnames([
@@ -69,6 +99,11 @@ const Head = ({ headers }) => {
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowHidden)}
             >
+                <TableCell
+                    className={classes.tableCellTitle}
+                    align="left"
+                    colSpan={colSpanTitle}
+                />
                 {headers.weeks.map(week => {
                     return Array(7)
                         .fill()

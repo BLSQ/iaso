@@ -16,31 +16,6 @@ import { getCalendarData, mapCampaigns } from './utils';
 import { Head } from './Head';
 import { Body } from './Body';
 
-const testCampaigns = [
-    {
-        id: 1,
-        r1WeekIndex: [1],
-        campaignWeeks: 6,
-        r2WeekIndex: [8],
-    },
-    {
-        id: 2,
-        r1WeekIndex: [5],
-        campaignWeeks: 6,
-        r2WeekIndex: [12],
-    },
-    {
-        id: 3,
-        r1WeekIndex: [11],
-        campaignWeeks: 6,
-    },
-    {
-        id: 4,
-        r1WeekIndex: [1, 2],
-        campaignWeeks: 6,
-    },
-];
-
 const CampaignsCalendar = ({ campaigns, params }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
@@ -81,7 +56,6 @@ const CampaignsCalendar = ({ campaigns, params }) => {
                 <Table>
                     <Head headers={headers} />
                     <Body
-                        // campaigns={testCampaigns}
                         campaigns={mapeedCampaigns}
                         currentWeekIndex={currentWeekIndex}
                         firstMonday={firstMonday}

@@ -23,6 +23,14 @@ export const useStyles = makeStyles(theme => ({
         position: 'relative',
         border: `1px solid ${theme.palette.ligthGray.border}`,
     },
+    tableCellTitle: {
+        width: '20px',
+        padding: 0,
+        margin: 0,
+        position: 'relative',
+        height: cellHeight,
+        border: `1px solid ${theme.palette.ligthGray.border}`,
+    },
     tableCellBordered: {
         border: `1px solid ${theme.palette.ligthGray.border}`,
     },
@@ -66,5 +74,16 @@ export const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         overflow: 'hidden',
         textTransform: 'uppercase',
+    },
+    tableCellSpanTitle: {
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingLeft: theme.spacing(2),
+        fontWeight: 'bold',
+    },
+    tableCellSpanRow: {
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingLeft: theme.spacing(2),
     },
 }));

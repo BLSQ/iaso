@@ -1,15 +1,11 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { Grid } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFormState } from '../../../hooks/form';
 import MESSAGES from '../messages';
-import {
-    useDataSourceVersions,
-    useOrgUnitTypes,
-    useDataSourceVersionsMap,
-} from '../requests';
+import { useDataSourceVersions, useOrgUnitTypes } from '../requests';
 import { orgUnitStatusAsOptions } from '../../../constants/filters';
 import {
     commaSeparatedIdsToArray,
@@ -88,30 +84,25 @@ export const ExportToDHIS2Dialog = ({
     const { data: sourceVersions, isLoading: areSourceVersionsLoading } =
         useDataSourceVersions(defaultVersionId);
 
-    const { data: dataSourceMap, isLoading: isDataSourceMapLoading } =
-        useDataSourceVersionsMap(defaultVersionId);
-
     const [exportData, setExportDataField] = useFormState(initialExportData);
 
-    const [destinationDataSourceId, setDestinationDataSourceId] =
-        useState(null);
+    const destinationDataVersionId = exportData.ref_version_id.value;
 
     // this ref to enable resetting the treeview whebn datasource changes
-    const treeviewResetControl = useRef(destinationDataSourceId);
+    const treeviewResetControl = useRef(destinationDataVersionId);
 
     const onTargetSourceVersionChange = useCallback(
         (keyValue, value) => {
-            setDestinationDataSourceId(dataSourceMap.get(value));
             setExportDataField(keyValue, value?.toString());
         },
-        [setExportDataField, dataSourceMap],
+        [setExportDataField],
     );
 
     useEffect(() => {
-        if (treeviewResetControl.current !== destinationDataSourceId) {
-            treeviewResetControl.current = destinationDataSourceId;
+        if (treeviewResetControl.current !== destinationDataVersionId) {
+            treeviewResetControl.current = destinationDataVersionId;
         }
-    }, [destinationDataSourceId]);
+    }, [destinationDataVersionId]);
 
     return (
         <ConfirmCancelDialogComponent
@@ -127,7 +118,7 @@ export const ExportToDHIS2Dialog = ({
                         <InputComponent
                             type="select"
                             keyValue="source_version_id"
-                            labelString="Version"
+                            labelString="Version" // TODO add translation
                             value={exportData.source_version_id.value}
                             errors={exportData.source_version_id.errors}
                             onChange={setExportDataField}
@@ -149,7 +140,7 @@ export const ExportToDHIS2Dialog = ({
                         <InputComponent
                             type="select"
                             keyValue="source_org_unit_types_ids"
-                            labelString="OU Types"
+                            labelString="OU Types" // TODO add translation
                             value={exportData.source_org_unit_types_ids.value}
                             errors={exportData.source_org_unit_types_ids.errors} // TODO actually manage errors
                             onChange={(keyValue, newValue) => {
@@ -166,7 +157,7 @@ export const ExportToDHIS2Dialog = ({
                     <Grid xs={6} item>
                         <InputComponent
                             type="select"
-                            labelString="Status"
+                            labelString="Status" // TODO add translation
                             keyValue="source_status"
                             value={exportData.source_status.value}
                             errors={exportData.source_status.errors}
@@ -180,7 +171,7 @@ export const ExportToDHIS2Dialog = ({
                         <InputComponent
                             type="select"
                             keyValue="fields_to_export"
-                            labelString="Fields to export"
+                            labelString="Fields to export" // TODO add translation
                             value={exportData.fields_to_export.value}
                             errors={exportData.fields_to_export.errors}
                             onChange={(keyValue, newValue) => {
@@ -199,26 +190,24 @@ export const ExportToDHIS2Dialog = ({
                         <InputComponent
                             type="select"
                             keyValue="ref_version_id"
-                            labelString="Data source ref"
+                            labelString="Data source ref" // TODO add translation
                             value={exportData.ref_version_id.value}
                             errors={exportData.ref_version_id.errors}
                             onChange={onTargetSourceVersionChange}
                             options={sourceVersions}
-                            loading={
-                                areOrgUnitTypesLoading || isDataSourceMapLoading
-                            }
+                            loading={areOrgUnitTypesLoading}
                         />
                     </Grid>
                     <Grid xs={6} item>
                         <OrgUnitTreeviewModal
                             onConfirm={value => console.log(value)}
-                            source={destinationDataSourceId}
+                            version={destinationDataVersionId}
                             titleMessage={MESSAGES.selectTopOrgUnit}
                             resetTrigger={
                                 treeviewResetControl.current !==
-                                destinationDataSourceId
+                                destinationDataVersionId
                             }
-                            disabled={!destinationDataSourceId}
+                            disabled={!destinationDataVersionId}
                         />
                     </Grid>
                 </Grid>
@@ -227,7 +216,7 @@ export const ExportToDHIS2Dialog = ({
                         <InputComponent
                             type="select"
                             keyValue="credentials"
-                            labelString="Credentials"
+                            labelString="Credentials" // TODO add translation
                             value={exportData.credentials.value}
                             errors={exportData.credentials.errors}
                             onChange={setExportDataField}

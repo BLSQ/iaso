@@ -18,13 +18,20 @@ const getChildrenData = async id => {
     return usableData;
 };
 
-const getRootData = async source => {
+const makeUrl = (id, type) => {
+    if (id) {
+        if (type === 'version')
+            return `/api/orgunits/?&rootsForUser=true&version=${id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`;
+        if (type === 'source')
+            return `/api/orgunits/?&rootsForUser=true&source=${id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`;
+    }
+    return `/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all&treeSearch=true&ignoreEmptyNames=true`;
+};
+const getRootData = async (id, type = 'source') => {
     const response = await iasoGetRequest({
         disableSuccessSnackBar: true,
         requestParams: {
-            url: source
-                ? `/api/orgunits/?&rootsForUser=true&source=${source}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`
-                : `/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all&treeSearch=true&ignoreEmptyNames=true`,
+            url: makeUrl(id, type),
         },
     });
     const usableData = response.orgunits.map(orgUnit => {

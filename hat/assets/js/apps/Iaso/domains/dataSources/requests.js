@@ -91,19 +91,3 @@ export const useDataSourceVersions = defaultVersionId => {
         },
     );
 };
-export const useDataSourceVersionsMap = defaultVersionId => {
-    return useQuery(
-        ['dataSourceVersions', defaultVersionId],
-        getDataSourceVersions,
-        {
-            select: data => {
-                return new Map(
-                    data.versions.map(version => [
-                        version.id,
-                        version.data_source,
-                    ]),
-                );
-            },
-        },
-    );
-};

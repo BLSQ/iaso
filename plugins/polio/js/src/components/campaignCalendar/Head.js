@@ -19,7 +19,12 @@ const Head = ({ headers }) => {
                         align="center"
                         colSpan={year.daysCount}
                     >
-                        <Typography variant="h5">{year.value}</Typography>
+                        <Typography
+                            className={classes.tableCellSpan}
+                            variant="h5"
+                        >
+                            {year.value}
+                        </Typography>
                     </TableCell>
                 ))}
             </TableRow>
@@ -36,7 +41,9 @@ const Head = ({ headers }) => {
                         align="center"
                         colSpan={month.daysCount}
                     >
-                        {month.value}
+                        <span className={classes.tableCellSpan}>
+                            {month.value}
+                        </span>
                     </TableCell>
                 ))}
             </TableRow>
@@ -48,15 +55,35 @@ const Head = ({ headers }) => {
                         className={classnames([
                             classes.tableCell,
                             classes.tableCellSmall,
-                            classes.tableCellFixed,
                         ])}
-                        key={`month-${week.year}-${week.month}-${week.value}`}
+                        key={`week-${week.year}-${week.month}-${week.value}`}
                         align="center"
                         colSpan={7}
                     >
-                        {week.value}
+                        <span className={classes.tableCellSpan}>
+                            {week.value}
+                        </span>
                     </TableCell>
                 ))}
+            </TableRow>
+            <TableRow
+                className={classnames(classes.tableRow, classes.tableRowHidden)}
+            >
+                {headers.weeks.map(week => {
+                    return Array(7)
+                        .fill()
+                        .map((x, i) => (
+                            <TableCell
+                                className={classnames([
+                                    classes.tableCell,
+                                    classes.tableCellHidden,
+                                ])}
+                                key={`day-${week.year}-${week.month}-${week.value}-${i}`}
+                                align="center"
+                                colSpan={1}
+                            />
+                        ));
+                })}
             </TableRow>
         </TableHead>
     );

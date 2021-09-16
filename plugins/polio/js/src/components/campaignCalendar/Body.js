@@ -3,131 +3,298 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 
 import { TableRow, TableCell, TableBody } from '@material-ui/core';
+import { useSafeIntl } from 'bluesquare-components';
 
 import { useStyles } from './Styles';
 
 import { colsCount } from './constants';
 
-const Body = ({ campaigns, currentWeekIndex }) => {
+import MESSAGES from '../../constants/messages';
+// import { filterCampaigns } from './utils';
+
+const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
     const classes = useStyles();
-    const defaultCellStyles = [
-        classes.tableCell,
-        classes.tableCellBordered,
-        classes.tableCellFixed,
-    ];
-    console.log('campaigns', campaigns);
+    const { formatMessage } = useSafeIntl();
+    const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
+    // const filteredCampaigns = filterCampaigns(
+    //     campaigns,
+    //     firstMonday,
+    //     lastSunday,
+    // );
     return (
         <TableBody>
             {campaigns.map(campaign => {
-                let cells = [];
-                const firstR1WeekIndex = campaign.r1WeekIndex[0];
-                const lastR2WeekIndex =
-                    campaign.r2WeekIndex &&
-                    campaign.r2WeekIndex[campaign.r2WeekIndex.length - 1];
-                let count = 0;
-                if (firstR1WeekIndex && firstR1WeekIndex > 1) {
-                    cells = Array(firstR1WeekIndex - 1)
-                        .fill()
-                        .map((_, i) => (
-                            <TableCell
-                                className={classnames(defaultCellStyles, {
-                                    [classes.currentWeek]:
-                                        i === currentWeekIndex - 1,
-                                })}
-                                align="center"
-                                key={`cell-${campaign.id}-${count + i + 1}`}
-                            />
-                        ));
-                    count = firstR1WeekIndex - 1;
-                }
-                if (firstR1WeekIndex) {
-                    count += campaign.r1WeekIndex.length;
-                    cells.push(
-                        <TableCell
-                            key={`r1-campaign-${campaign.id}`}
-                            className={classnames(
-                                defaultCellStyles,
-                                classes.round,
-                            )}
-                            colSpan={campaign.r1WeekIndex.length}
-                            align="center"
-                        >
-                            R1
-                        </TableCell>,
-                    );
-                }
-                if (
-                    campaign.r2WeekIndex.length > 0 ||
-                    campaign.r1WeekIndex.length > 0
-                ) {
-                    let campaignLength = 6;
+                const cells = [];
+                const { R1Start, R1End, R2Start, R2End, campaignDays, id } =
+                    campaign;
+                const emptyCell = (uKey, colSpan, isCurrentWeek = false) => (
+                    <TableCell
+                        colSpan={colSpan}
+                        className={classnames(defaultCellStyles, {
+                            [classes.currentWeek]: isCurrentWeek,
+                        })}
+                        align="center"
+                        key={`empty-cell-${id}-${uKey}`}
+                    />
+                );
+                const campaingDurationCell = (uKey, colSpan) => (
+                    <TableCell
+                        key={`campaign-duration-${uKey}`}
+                        className={classnames(
+                            defaultCellStyles,
+                            classes.campaign,
+                        )}
+                        colSpan={colSpan}
+                        align="center"
+                    >
+                        {colSpan > 5 && (
+                            <span className={classes.tableCellSpan}>
+                                {`${campaign.campaignWeeks} ${formatMessage(
+                                    MESSAGES.weeks,
+                                )}`}
+                                {/* {campaign.name} */}
+                            </span>
+                        )}
+                    </TableCell>
+                );
+                const r1Cell = (uKey, colSpan) => (
+                    <TableCell
+                        key={`r1-campaign-${uKey}`}
+                        className={classnames(defaultCellStyles, classes.round)}
+                        colSpan={colSpan}
+                        align="center"
+                    >
+                        {colSpan > 1 && (
+                            <span className={classes.tableCellSpan}>R1</span>
+                        )}
+                    </TableCell>
+                );
+                const r2Cell = (uKey, colSpan) => (
+                    <TableCell
+                        key={`r2-campaign-${uKey}`}
+                        className={classnames(
+                            defaultCellStyles,
+                            classes.round,
+                            classes.round2,
+                        )}
+                        colSpan={colSpan}
+                        align="center"
+                    >
+                        {colSpan > 1 && (
+                            <span className={classes.tableCellSpan}>R2</span>
+                        )}
+                    </TableCell>
+                );
+                let colSpan;
+                if (R1Start && R1End) {
                     if (
-                        campaign.r2WeekIndex.length > 0 &&
-                        campaign.r1WeekIndex.length > 0
+                        R1Start.isSameOrAfter(firstMonday, 'day') &&
+                        R1Start.isSameOrBefore(lastSunday, 'day')
                     ) {
-                        const lastR1WeekIndex =
-                            campaign.r1WeekIndex[
-                                campaign.r1WeekIndex.length - 1
-                            ];
-                        const firstR2WeekIndex = campaign.r2WeekIndex[0];
-                        campaignLength = firstR2WeekIndex - lastR1WeekIndex;
-                        // console.log('firstR2WeekIndex', firstR2WeekIndex);
-                        // console.log('lastR1WeekIndex', lastR1WeekIndex);
+                        if (!R1Start.isSame(firstMonday, 'day')) {
+                            let monday;
+                            if (R1Start.weekday() !== 1) {
+                                monday = R1Start.clone().startOf('isoWeek');
+                            } else {
+                                monday = R1Start.clone().subtract(1, 'day');
+                            }
+                            const extraDays = R1Start.clone().diff(
+                                monday,
+                                'days',
+                            );
+                            const fullWeeks = monday.diff(firstMonday, 'weeks');
+
+                            Array(fullWeeks)
+                                .fill()
+                                .forEach((_, i) => {
+                                    cells.push(
+                                        emptyCell(
+                                            `${id}-start-${i}`,
+                                            7,
+                                            cells.length + 1 ===
+                                                currentWeekIndex,
+                                        ),
+                                    );
+                                });
+                            if (extraDays) {
+                                cells.push(
+                                    emptyCell(
+                                        `${id}-${R1Start}`,
+                                        extraDays,
+                                        cells.length + 1 === currentWeekIndex,
+                                    ),
+                                );
+                            }
+                        }
+
+                        colSpan = R1End.clone()
+                            .add(1, 'day')
+                            .diff(R1Start, 'days');
+                        cells.push(r1Cell(id, colSpan));
+                        if (!R1End.isAfter(lastSunday)) {
+                            const availableDays = lastSunday.diff(
+                                R1End,
+                                'days',
+                            );
+                            cells.push(
+                                campaingDurationCell(
+                                    id,
+                                    campaignDays - 1 > availableDays
+                                        ? availableDays
+                                        : campaignDays - 1,
+                                ),
+                            );
+                        }
+                    } else if (
+                        R1End.isSameOrAfter(firstMonday, 'day') &&
+                        R1End.isSameOrBefore(lastSunday, 'day')
+                    ) {
+                        colSpan = R1End.clone()
+                            .add(1, 'day')
+                            .diff(firstMonday, 'days');
+                        cells.push(r1Cell(id, colSpan));
+                        const availableDays = lastSunday.diff(R1End, 'days');
+                        cells.push(
+                            campaingDurationCell(
+                                id,
+                                campaignDays - 1 > availableDays
+                                    ? availableDays
+                                    : campaignDays - 1,
+                            ),
+                        );
+                    } else if (
+                        R1End.isBefore(firstMonday, 'day') &&
+                        firstMonday.diff(R1End, 'days') < campaignDays
+                    ) {
+                        colSpan =
+                            campaignDays - firstMonday.diff(R1End, 'days');
+                        cells.push(campaingDurationCell(id, colSpan));
                     }
-                    console.log('', campaign.campaignWeeks);
-                    count += campaignLength;
-                    cells.push(
-                        <TableCell
-                            key={`campaign-duration-${campaign.id}`}
-                            className={classnames(
-                                defaultCellStyles,
-                                classes.campaign,
-                            )}
-                            colSpan={campaignLength}
-                            align="center"
-                        >
-                            {/* {`${campaign.campaignWeeks} WEEK(S)`} */}
-                            {campaign.name}
-                        </TableCell>,
-                    );
+
+                    if (R2Start && R2End) {
+                        if (
+                            R2Start.isSameOrAfter(firstMonday, 'day') &&
+                            R2Start.isSameOrBefore(lastSunday, 'day')
+                        ) {
+                            colSpan = R2End.clone()
+                                .add(1, 'day')
+                                .diff(R2Start, 'days');
+                            cells.push(r2Cell(id, colSpan));
+                        } else if (
+                            R2End.isSameOrAfter(firstMonday, 'day') &&
+                            R2End.isSameOrBefore(lastSunday, 'day')
+                        ) {
+                            colSpan = R2End.clone()
+                                .add(1, 'day')
+                                .diff(firstMonday, 'days');
+                            cells.push(r2Cell(id, colSpan));
+                        }
+
+                        if (
+                            R2End.isSameOrAfter(firstMonday, 'day') &&
+                            R2End.isSameOrBefore(lastSunday, 'day')
+                        ) {
+                            let sunday;
+                            if (R2End.weekday() !== 7) {
+                                sunday = R2End.clone().endOf('isoWeek');
+                            } else {
+                                sunday = R2End.clone();
+                            }
+                            const extraDays = sunday.diff(R2End, 'days');
+                            const fullWeeks = lastSunday.diff(sunday, 'weeks');
+
+                            let spans = 0;
+                            cells.forEach(c => {
+                                spans += c.props.colSpan;
+                            });
+                            spans = parseInt(spans / 7, 10);
+                            if (extraDays) {
+                                spans += 1;
+                                cells.push(
+                                    emptyCell(
+                                        `${id}-${R2End}`,
+                                        extraDays,
+                                        spans === currentWeekIndex,
+                                    ),
+                                );
+                            }
+                            Array(fullWeeks)
+                                .fill()
+                                .forEach((_, i) => {
+                                    spans += 1;
+                                    cells.push(
+                                        emptyCell(
+                                            `${id}-end-${i}`,
+                                            7,
+                                            spans === currentWeekIndex,
+                                        ),
+                                    );
+                                });
+                        }
+                    }
+                    if (!R2Start && cells.length > 0) {
+                        let sunday;
+                        const fakeR2End = R1End.clone().add(
+                            campaignDays,
+                            'days',
+                        );
+                        if (!fakeR2End.isAfter(lastSunday)) {
+                            if (fakeR2End.weekday() !== 7) {
+                                sunday = fakeR2End.clone().endOf('isoWeek');
+                            } else {
+                                sunday = fakeR2End.clone();
+                            }
+                            const extraDays = sunday
+                                .clone()
+                                .add(1, 'day')
+                                .diff(fakeR2End, 'days');
+                            const fullWeeks = lastSunday.diff(sunday, 'weeks');
+
+                            let spans = 0;
+                            cells.forEach(c => {
+                                spans += c.props.colSpan;
+                            });
+                            spans = parseInt(spans / 7, 10);
+                            if (extraDays) {
+                                spans += 1;
+                                cells.push(
+                                    emptyCell(
+                                        `${id}-${R2End}`,
+                                        extraDays,
+                                        spans === currentWeekIndex,
+                                    ),
+                                );
+                            }
+                            Array(fullWeeks)
+                                .fill()
+                                .forEach((_, i) => {
+                                    spans += 1;
+                                    cells.push(
+                                        emptyCell(
+                                            `${id}-end-${i}`,
+                                            7,
+                                            spans === currentWeekIndex,
+                                        ),
+                                    );
+                                });
+                        }
+                    }
                 }
-                if (lastR2WeekIndex) {
-                    count += campaign.r2WeekIndex.length;
-                    cells.push(
-                        <TableCell
-                            key={`r2-campaign-${campaign.id}`}
-                            className={classnames(
-                                defaultCellStyles,
-                                classes.round,
-                            )}
-                            colSpan={campaign.r2WeekIndex.length}
-                            align="center"
-                        >
-                            R2
-                        </TableCell>,
-                    );
-                }
-                if (colsCount - count > 0) {
-                    cells = cells.concat(
-                        Array(colsCount - count)
-                            .fill()
-                            .map((_, i) => (
-                                <TableCell
-                                    className={classnames(defaultCellStyles, {
-                                        [classes.currentWeek]:
-                                            currentWeekIndex === count + i + 1,
-                                    })}
-                                    align="center"
-                                    key={`cell-${campaign.id}-${count + i + 1}`}
-                                />
-                            )),
-                    );
+                if (cells.length === 0) {
+                    Array(colsCount)
+                        .fill()
+                        .forEach((_, i) => {
+                            cells.push(
+                                emptyCell(
+                                    `${id}-${i}`,
+                                    7,
+                                    i + 1 === currentWeekIndex,
+                                ),
+                            );
+                        });
                 }
                 return (
-                    <TableRow
-                        className={classes.tableRow}
-                        key={`row-${campaign.id}}`}
-                    >
+                    <TableRow className={classes.tableRow} key={`row-${id}}`}>
                         {cells}
                     </TableRow>
                 );
@@ -139,6 +306,8 @@ const Body = ({ campaigns, currentWeekIndex }) => {
 Body.propTypes = {
     campaigns: PropTypes.array.isRequired,
     currentWeekIndex: PropTypes.number.isRequired,
+    firstMonday: PropTypes.object.isRequired,
+    lastSunday: PropTypes.object.isRequired,
 };
 
 export { Body };

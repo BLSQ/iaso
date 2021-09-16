@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
 const Calendar = ({ params }) => {
     const classes = useStyles();
     const { query } = useGetCampaigns({
-        // searchQuery: 'MLI-8DS-09-2020',
+        // searchQuery: 'NIG-xxDS-03-2021',
         order: '-obr_name',
     });
 
@@ -23,7 +23,9 @@ const Calendar = ({ params }) => {
         <div>
             <TopBar title="Calendar" displayBackButton={false} />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <CampaignsCalendar params={params} campaigns={campaigns} />
+                <Box width={1}>
+                    <CampaignsCalendar params={params} campaigns={campaigns} />
+                </Box>
             </Box>
         </div>
     );

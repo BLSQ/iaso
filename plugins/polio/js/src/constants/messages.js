@@ -137,6 +137,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.calendar',
         defaultMessage: 'Calendar',
     },
+    weeks: {
+        id: 'iaso.polio.calendar.weeks',
+        defaultMessage: 'week(s) were',
+    },
 });
 
 export default MESSAGES;

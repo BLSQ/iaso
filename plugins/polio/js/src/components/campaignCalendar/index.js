@@ -11,7 +11,7 @@ import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/rou
 
 import { useStyles } from './Styles';
 import { baseUrl, dateFormat } from './constants';
-import { getCalendarData, filterCampaigns } from './utils';
+import { getCalendarData, mapCampaigns } from './utils';
 
 import { Head } from './Head';
 import { Body } from './Body';
@@ -49,15 +49,12 @@ const CampaignsCalendar = ({ campaigns, params }) => {
         : moment();
 
     const currentMonday = currentDate.clone().startOf('isoWeek');
-    const { headers, currentWeekIndex } = useMemo(
+    const { headers, currentWeekIndex, firstMonday, lastSunday } = useMemo(
         () => getCalendarData(currentMonday),
         [currentMonday],
     );
 
-    const filteredCampaigns = useMemo(
-        () => filterCampaigns(campaigns, currentMonday, headers.weeks),
-        [campaigns, currentMonday, headers.weeks],
-    );
+    const mapeedCampaigns = useMemo(() => mapCampaigns(campaigns), [campaigns]);
     const handleGoNext = () => {
         const newDate = currentMonday.clone().add(4, 'week');
         dispatch(
@@ -85,8 +82,10 @@ const CampaignsCalendar = ({ campaigns, params }) => {
                     <Head headers={headers} />
                     <Body
                         // campaigns={testCampaigns}
-                        campaigns={filteredCampaigns}
+                        campaigns={mapeedCampaigns}
                         currentWeekIndex={currentWeekIndex}
+                        firstMonday={firstMonday}
+                        lastSunday={lastSunday}
                     />
                 </Table>
             </TableContainer>

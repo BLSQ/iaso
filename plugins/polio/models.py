@@ -99,6 +99,9 @@ class Campaign(models.Model):
     initial_org_unit = models.ForeignKey(
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
     )
+    creation_email_send_at = models.DateTimeField(
+        null=True, blank=True, help_text="When and if we sent an email for creation"
+    )
 
     group = models.ForeignKey(
         Group,

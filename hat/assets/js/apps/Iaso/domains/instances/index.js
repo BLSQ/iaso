@@ -10,10 +10,10 @@ import {
     getTableUrl,
     commonStyles,
     injectIntl,
-    ColumnsSelectDrawer,
     LoadingSpinner,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
+import { ColumnsSelectDrawer } from '../../components/tables/ColumnSelectDrawer';
 import {
     resetInstances,
     setInstances,
@@ -90,9 +90,9 @@ class Instances extends Component {
             forceRefresh: false,
             labelKeys: [],
             formName: '',
-            period: { periodType: null },
             formId: '',
             possibleFields: null,
+            periodType: null,
         };
     }
 
@@ -185,6 +185,7 @@ class Instances extends Component {
                     order: enrichedParams.order,
                     defaultOrder,
                     possibleFields,
+                    locale: this.props.currentUser.language,
                 }),
             );
         }
@@ -440,29 +441,26 @@ class Instances extends Component {
                                 className={classes.textAlignRight}
                             >
                                 <div className={classes.paddingBottomBig}>
-                                    {this.state.periodType && (
-                                        <CreateReAssignDialogComponent
-                                            titleMessage={
-                                                MESSAGES.instanceCreationDialogTitle
-                                            }
-                                            confirmMessage={
-                                                MESSAGES.instanceCreateAction
-                                            }
-                                            formType={{
-                                                periodType:
-                                                    this.state.periodType,
-                                                id: this.state.formId,
-                                            }}
-                                            onCreateOrReAssign={
-                                                this.props.createInstance
-                                            }
-                                            renderTrigger={({ openDialog }) => (
-                                                <AddButtonComponent
-                                                    onClick={openDialog}
-                                                />
-                                            )}
-                                        />
-                                    )}
+                                    <CreateReAssignDialogComponent
+                                        titleMessage={
+                                            MESSAGES.instanceCreationDialogTitle
+                                        }
+                                        confirmMessage={
+                                            MESSAGES.instanceCreateAction
+                                        }
+                                        formType={{
+                                            periodType: this.state.periodType,
+                                            id: this.state.formId,
+                                        }}
+                                        onCreateOrReAssign={
+                                            this.props.createInstance
+                                        }
+                                        renderTrigger={({ openDialog }) => (
+                                            <AddButtonComponent
+                                                onClick={openDialog}
+                                            />
+                                        )}
+                                    />
                                     <DownloadButtonsComponent
                                         csvUrl={this.getEndpointUrl(
                                             true,
@@ -549,6 +547,7 @@ Instances.propTypes = {
     redirectToReplace: PropTypes.func.isRequired,
     prevPathname: PropTypes.any,
     createInstance: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -556,6 +555,7 @@ const MapStateToProps = state => ({
     instancesSmall: state.instances.instancesSmall,
     fetching: state.instances.fetching,
     prevPathname: state.routerCustom.prevPathname,
+    currentUser: state.users.current,
 });
 
 const MapDispatchToProps = dispatch => ({

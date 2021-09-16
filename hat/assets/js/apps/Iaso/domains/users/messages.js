@@ -109,6 +109,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.mappings',
         defaultMessage: 'Correspondances avec DHIS2',
     },
+    iaso_polio: {
+        id: 'iaso.permissions.polio',
+        defaultMessage: 'Polio campaign management',
+    },
     iaso_links: {
         id: 'iaso.permissions.links',
         defaultMessage: 'Correspondances sources',

@@ -1,10 +1,9 @@
 from uuid import uuid4
 
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
 from django.db import models
 from django.utils.translation import gettext as _
-from django.contrib.auth.models import User
+
 from iaso.models import Group, OrgUnit
 
 VIRUSES = [
@@ -291,20 +290,6 @@ class Campaign(models.Model):
 
     def last_surge(self):
         return self.surge_set.filter(spreadsheet_url=self.surge_spreadsheet_url).order_by("-created_at").first()
-
-    def save(self, *args, **kwargs):
-        if not self.created_at and self.gpei_email:
-            from django.conf import settings
-
-            domain = settings.DNS_DOMAIN
-            send_mail(
-                "New Campaign",
-                "A new campaign %s has been added to %s, and your email is registered as contact. Please connect to view the information. "
-                % (self.obr_name, domain),
-                "no-reply@%s" % domain,
-                [self.gpei_email],
-            )
-        super(Campaign, self).save(*args, **kwargs)
 
 
 class Preparedness(models.Model):

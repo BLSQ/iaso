@@ -30,6 +30,7 @@ const OrgUnitTreeviewModal = ({
     source,
     resetTrigger,
     disabled,
+    version,
 }) => {
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
 
@@ -91,8 +92,9 @@ const OrgUnitTreeviewModal = ({
     );
 
     const getRootDataWithSource = useCallback(async () => {
+        if (version) return getRootData(version, 'version');
         return getRootData(source);
-    }, [source]);
+    }, [source, version]);
 
     const searchOrgUnitsWithSource = async (value, count) => {
         return searchOrgUnits(value, count, source);
@@ -178,6 +180,7 @@ OrgUnitTreeviewModal.propTypes = {
     multiselect: bool,
     initialSelection: oneOfType([arrayOf(object), object]),
     source: any,
+    version: any,
     resetTrigger: bool,
     disabled: bool,
 };
@@ -188,6 +191,7 @@ OrgUnitTreeviewModal.defaultProps = {
     multiselect: false,
     initialSelection: null,
     source: null,
+    version: null,
     resetTrigger: false,
     disabled: false,
 };

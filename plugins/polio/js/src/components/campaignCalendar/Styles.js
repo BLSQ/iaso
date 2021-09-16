@@ -5,10 +5,13 @@ const cellHeight = 50;
 const smallCellHeight = 20;
 export const useStyles = makeStyles(theme => ({
     tableContainer: {
-        overflow: 'hidden',
+        overflow: 'auto',
         width: '100%',
+        maxHeight: '82vh',
         marginLeft: theme.spacing(2),
         marginRight: theme.spacing(2),
+        borderTop: `1px solid ${theme.palette.ligthGray.border}`,
+        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
     },
     tableRow: {
         height: cellHeight,
@@ -21,18 +24,25 @@ export const useStyles = makeStyles(theme => ({
         padding: 0,
         margin: 0,
         position: 'relative',
-        border: `1px solid ${theme.palette.ligthGray.border}`,
+        borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
     },
-    tableCellTitle: {
-        width: '20px',
+    tableCellHead: {
+        height: cellHeight,
         padding: 0,
         margin: 0,
-        position: 'relative',
+        position: 'sticky',
+        borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
+    },
+    tableCellTitle: {
+        width: '30px',
+        padding: 0,
+        margin: 0,
+        position: 'sticky',
         height: cellHeight,
-        border: `1px solid ${theme.palette.ligthGray.border}`,
+        borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
     },
     tableCellBordered: {
-        border: `1px solid ${theme.palette.ligthGray.border}`,
+        borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
     },
     tableCellSmall: {
         height: smallCellHeight,
@@ -79,11 +89,14 @@ export const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         justifyContent: 'flex-start',
         paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
         fontWeight: 'bold',
     },
     tableCellSpanRow: {
         alignItems: 'center',
         justifyContent: 'flex-start',
         paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+        fontSize: 12,
     },
 }));

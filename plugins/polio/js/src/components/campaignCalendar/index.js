@@ -53,7 +53,7 @@ const CampaignsCalendar = ({ campaigns, params }) => {
                 <ChevronLeft color="primary" />
             </IconButton>
             <TableContainer className={classes.tableContainer}>
-                <Table>
+                <Table stickyHeader>
                     <Head headers={headers} />
                     <Body
                         campaigns={mapeedCampaigns}

@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
 const Calendar = ({ params }) => {
     const classes = useStyles();
     const { query } = useGetCampaigns({
-        // searchQuery: 'NIG-xxDS-03-2021',
+        // searchQuery: 'SLE-16DS-01-2021',
         order: '-obr_name',
     });
 

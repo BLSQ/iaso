@@ -50,7 +50,6 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                                 {`${campaign.campaignWeeks} ${formatMessage(
                                     MESSAGES.weeks,
                                 )}`}
-                                {/* {campaign.name} */}
                             </span>
                         )}
                     </TableCell>
@@ -92,7 +91,7 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                             if (R1Start.weekday() !== 1) {
                                 monday = R1Start.clone().startOf('isoWeek');
                             } else {
-                                monday = R1Start.clone().subtract(1, 'day');
+                                monday = R1Start.clone();
                             }
                             const extraDays = R1Start.clone().diff(
                                 monday,

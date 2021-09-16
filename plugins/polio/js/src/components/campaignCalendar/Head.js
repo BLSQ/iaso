@@ -22,7 +22,7 @@ const Head = ({ headers }) => {
                 />
                 {headers.years.map(year => (
                     <TableCell
-                        className={classes.tableCell}
+                        className={classes.tableCellHead}
                         key={`year-${year.value}`}
                         align="center"
                         colSpan={year.daysCount}
@@ -47,7 +47,7 @@ const Head = ({ headers }) => {
                 {headers.months.map(month => (
                     <TableCell
                         className={classnames(
-                            classes.tableCell,
+                            classes.tableCellHead,
                             classes.tableCellSmall,
                         )}
                         key={`month-${month.year}-${month.value}`}
@@ -83,7 +83,7 @@ const Head = ({ headers }) => {
                 {headers.weeks.map(week => (
                     <TableCell
                         className={classnames([
-                            classes.tableCell,
+                            classes.tableCellHead,
                             classes.tableCellSmall,
                         ])}
                         key={`week-${week.year}-${week.month}-${week.value}`}
@@ -110,7 +110,7 @@ const Head = ({ headers }) => {
                         .map((x, i) => (
                             <TableCell
                                 className={classnames([
-                                    classes.tableCell,
+                                    classes.tableCellHead,
                                     classes.tableCellHidden,
                                 ])}
                                 key={`day-${week.year}-${week.month}-${week.value}-${i}`}

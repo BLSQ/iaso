@@ -1,5 +1,7 @@
 import { useQuery } from 'react-query';
+import { useSafeIntl } from 'bluesquare-components';
 import { iasoGetRequest, iasoPostRequest } from '../../utils/requests';
+import MESSAGES from './messages';
 
 /**
  *
@@ -51,4 +53,41 @@ export const useOrgUnitTypes = () => {
                 label: orgUnitType.name,
             })),
     });
+};
+
+const getDataSourceVersions = async () => {
+    return iasoGetRequest({
+        requestParams: { url: '/api/sourceversions/' },
+        disableSuccessSnackBar: true,
+    });
+};
+
+const formatSourceVersionLabel =
+    formatMessage => (defaultVersionId, sourceVersion) => {
+        const name = sourceVersion.name ?? 'Unnamed source';
+        const version = formatMessage(MESSAGES.version);
+        const number = sourceVersion.number.toString();
+        const label = `${name} - ${version}: ${number}`;
+
+        if (sourceVersion.id === defaultVersionId)
+            return `${label} (${formatMessage(MESSAGES.default)})`;
+
+        return label;
+    };
+
+export const useDataSourceVersions = defaultVersionId => {
+    const { formatMessage } = useSafeIntl();
+    const makeLabel = formatSourceVersionLabel(formatMessage);
+    return useQuery(
+        ['dataSourceVersions', formatMessage],
+        getDataSourceVersions,
+        {
+            select: data => {
+                return data.versions.map(version => ({
+                    value: version.id,
+                    label: makeLabel(defaultVersionId, version),
+                }));
+            },
+        },
+    );
 };

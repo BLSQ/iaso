@@ -170,6 +170,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.options.label.default',
         defaultMessage: 'default',
     },
+    selectTopOrgUnit: {
+        id: 'iaso.datasources.label.selectTopOrgUnit',
+        defaultMessage: 'Please select top Orgunit',
+    },
 });
 
 export default MESSAGES;

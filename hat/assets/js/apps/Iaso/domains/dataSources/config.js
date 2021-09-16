@@ -97,7 +97,7 @@ const dataSourcesTableColumns = (
                             />
                         )}
                         dataSourceName={settings.row.original.name}
-                        // dataSourceId={settings.row.original.id}
+                        dataSourceId={settings.row.original.id}
                         versions={settings.row.original.versions}
                         credentials={settings.row.original.credentials}
                         defaultVersionId={

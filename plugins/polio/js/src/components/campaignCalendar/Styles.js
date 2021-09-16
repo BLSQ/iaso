@@ -1,12 +1,13 @@
 import { makeStyles } from '@material-ui/core';
 import red from '@material-ui/core/colors/red';
+import { colsCount } from './constants';
 
 const cellHeight = 50;
 const smallCellHeight = 20;
 export const useStyles = makeStyles(theme => ({
     tableContainer: {
         overflow: 'hidden',
-        width: 800,
+        width: cellHeight * colsCount,
         borderTop: `1px solid ${theme.palette.ligthGray.border}`,
         borderRight: `1px solid ${theme.palette.ligthGray.border}`,
         marginLeft: theme.spacing(2),
@@ -41,8 +42,12 @@ export const useStyles = makeStyles(theme => ({
     campaign: {
         backgroundColor: theme.palette.grey[200],
         border: 'none',
+        fontSize: 10,
     },
     currentWeek: {
         backgroundColor: red['100'],
+    },
+    navButton: {
+        marginTop: theme.spacing(1),
     },
 }));

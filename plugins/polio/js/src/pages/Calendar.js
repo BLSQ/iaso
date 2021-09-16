@@ -5,26 +5,7 @@ import { commonStyles } from 'bluesquare-components';
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 
 import { CampaignsCalendar } from '../components/campaignCalendar';
-
-const campaigns = [
-    {
-        id: 1,
-        r1WeekIndex: [1],
-        campaignWeeks: 6,
-        r2WeekIndex: [8],
-    },
-    {
-        id: 2,
-        r1WeekIndex: [5],
-        campaignWeeks: 6,
-        r2WeekIndex: [12],
-    },
-    {
-        id: 3,
-        r1WeekIndex: [11],
-        campaignWeeks: 6,
-    },
-];
+import { useGetCampaigns } from '../hooks/useGetCampaigns';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -32,7 +13,12 @@ const useStyles = makeStyles(theme => ({
 
 const Calendar = ({ params }) => {
     const classes = useStyles();
+    const { query } = useGetCampaigns({
+        // searchQuery: 'MLI-8DS-09-2020',
+        order: '-obr_name',
+    });
 
+    const { data: campaigns = [] } = query;
     return (
         <div>
             <TopBar title="Calendar" displayBackButton={false} />

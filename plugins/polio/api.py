@@ -109,7 +109,7 @@ Timeline tracker Automated message
 
         domain = settings.DNS_DOMAIN
         if campaign.creation_email_send_at:
-            raise serializers.ValidationError("Email already sent")
+            raise serializers.ValidationError("Notification Email already sent")
         if not (campaign.obr_name and campaign.virus and country and campaign.onset_at):
             raise serializers.ValidationError("Missing information on the campaign")
 
@@ -132,7 +132,7 @@ Timeline tracker Automated message
         users = cug.users.all()
         emails = [user.email for user in users if user.email]
         if not emails:
-            raise serializers.ValidationError(f"No one to send an e-mail to")
+            raise serializers.ValidationError(f"No recipients have been configured on the country")
 
         send_mail(
             "New Campaign {}".format(campaign.obr_name),

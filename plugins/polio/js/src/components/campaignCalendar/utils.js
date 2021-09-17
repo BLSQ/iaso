@@ -113,7 +113,7 @@ const mapCampaigns = allCampaigns => {
             R2End,
             campaignWeeks,
             campaignDays,
-            orginal: c,
+            original: c,
         };
     });
 };

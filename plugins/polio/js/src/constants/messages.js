@@ -141,6 +141,38 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.calendar.weeks',
         defaultMessage: 'week(s) were',
     },
+    startDate: {
+        id: 'iaso.label.dateFrom',
+        defaultMessage: 'Start date',
+    },
+    endDate: {
+        id: 'iaso.label.endDate',
+        defaultMessage: 'End date',
+    },
+    name: {
+        id: 'iaso.polio.calendar.obrName',
+        defaultMessage: 'Name',
+    },
+    r1StartDate: {
+        id: 'iaso.polio.calendar.r1StartDate',
+        defaultMessage: 'R1 date',
+    },
+    raStatus: {
+        id: 'iaso.polio.raStatus',
+        defaultMessage: 'R1 date',
+    },
+    budgetStatus: {
+        id: 'iaso.polio.budgetStatus',
+        defaultMessage: 'Budget status',
+    },
+    vacine: {
+        id: 'iaso.polio.vacine',
+        defaultMessage: 'Vacine',
+    },
+    displayAllCampaigns: {
+        id: 'iaso.polio.calendar.displayAllCampaigns',
+        defaultMessage: 'Display all campaigns',
+    },
 });
 
 export default MESSAGES;

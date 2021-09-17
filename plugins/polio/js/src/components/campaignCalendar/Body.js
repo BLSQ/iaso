@@ -12,7 +12,15 @@ import { colsCount, colSpanTitle } from './constants';
 import MESSAGES from '../../constants/messages';
 import { filterCampaigns } from './utils';
 
-const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
+import { R1Cell } from './cells/R1';
+
+const Body = ({
+    campaigns,
+    currentWeekIndex,
+    firstMonday,
+    lastSunday,
+    allCampaigns,
+}) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
@@ -21,9 +29,10 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
         firstMonday,
         lastSunday,
     );
+    const displayedCampaigns = allCampaigns ? campaigns : filteredCampaigns;
     return (
         <TableBody>
-            {campaigns.map(campaign => {
+            {displayedCampaigns.map(campaign => {
                 const cells = [];
                 const { R1Start, R1End, R2Start, R2End, campaignDays, id } =
                     campaign;
@@ -54,17 +63,6 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                                     MESSAGES.weeks,
                                 )}`}
                             </span>
-                        )}
-                    </TableCell>
-                );
-                const r1Cell = (uKey, colSpan) => (
-                    <TableCell
-                        key={`r1-campaign-${uKey}`}
-                        className={classnames(defaultCellStyles, classes.round)}
-                        colSpan={colSpan}
-                    >
-                        {colSpan > 1 && (
-                            <span className={classes.tableCellSpan}>R1</span>
                         )}
                     </TableCell>
                 );
@@ -128,7 +126,13 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                         colSpan = R1End.clone()
                             .add(1, 'day')
                             .diff(R1Start, 'days');
-                        cells.push(r1Cell(id, colSpan));
+                        cells.push(
+                            <R1Cell
+                                key={`r1-campaign-${id}`}
+                                colSpan={colSpan}
+                                campaign={campaign}
+                            />,
+                        );
                         if (!R1End.isAfter(lastSunday)) {
                             const availableDays = lastSunday.diff(
                                 R1End,
@@ -151,7 +155,13 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                         colSpan = R1End.clone()
                             .add(1, 'day')
                             .diff(firstMonday, 'days');
-                        cells.push(r1Cell(id, colSpan));
+                        cells.push(
+                            <R1Cell
+                                key={`r1-campaign-${id}`}
+                                colSpan={colSpan}
+                                campaign={campaign}
+                            />,
+                        );
                         const availableDays = lastSunday.diff(R1End, 'days');
                         cells.push(
                             campaingDurationCell(
@@ -331,6 +341,7 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                                 className={classnames(
                                     classes.tableCellSpan,
                                     classes.tableCellSpanRow,
+                                    classes.tableCellSpanRowCenter,
                                 )}
                             >
                                 {campaign.R1Start
@@ -351,6 +362,7 @@ Body.propTypes = {
     currentWeekIndex: PropTypes.number.isRequired,
     firstMonday: PropTypes.object.isRequired,
     lastSunday: PropTypes.object.isRequired,
+    allCampaigns: PropTypes.bool.isRequired,
 };
 
 export { Body };

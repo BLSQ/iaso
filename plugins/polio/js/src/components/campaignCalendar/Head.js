@@ -9,6 +9,7 @@ import { TableHead, TableRow, TableCell, Typography } from '@material-ui/core';
 import { useStyles } from './Styles';
 
 import { colSpanTitle } from './constants';
+import MESSAGES from '../../constants/messages';
 
 const Head = ({ headers }) => {
     const classes = useStyles();
@@ -103,7 +104,10 @@ const Head = ({ headers }) => {
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
                 <TableCell
-                    className={classes.tableCellTitle}
+                    className={classnames(
+                        classes.tableCellTitle,
+                        classes.tableCellTitleLarge,
+                    )}
                     colSpan={colSpanTitle}
                     style={{ top: 100 }}
                 >
@@ -113,10 +117,7 @@ const Head = ({ headers }) => {
                             classes.tableCellSpanTitle,
                         )}
                     >
-                        <FormattedMessage
-                            id="iaso.polio.calendar.country"
-                            defaultMessage="Country"
-                        />
+                        <FormattedMessage {...MESSAGES.country} />
                     </span>
                 </TableCell>
                 <TableCell
@@ -130,14 +131,14 @@ const Head = ({ headers }) => {
                             classes.tableCellSpanTitle,
                         )}
                     >
-                        <FormattedMessage
-                            id="iaso.polio.calendar.obrName"
-                            defaultMessage="Name"
-                        />
+                        <FormattedMessage {...MESSAGES.name} />
                     </span>
                 </TableCell>
                 <TableCell
-                    className={classes.tableCellTitle}
+                    className={classnames(
+                        classes.tableCellTitle,
+                        classes.tableCellTitleSmall,
+                    )}
                     colSpan={colSpanTitle}
                     style={{ top: 100 }}
                 >
@@ -145,12 +146,10 @@ const Head = ({ headers }) => {
                         className={classnames(
                             classes.tableCellSpan,
                             classes.tableCellSpanTitle,
+                            classes.tableCellSpanTitleCenter,
                         )}
                     >
-                        <FormattedMessage
-                            id="iaso.polio.calendar.r1StartDate"
-                            defaultMessage="R1 date"
-                        />
+                        <FormattedMessage {...MESSAGES.r1StartDate} />
                     </span>
                 </TableCell>
                 {headers.weeks.map(week => (

@@ -7,13 +7,15 @@ export const useStyles = makeStyles(theme => ({
     tableContainer: {
         overflow: 'auto',
         width: '100%',
-        maxHeight: '82vh',
+        height: '79vh',
         marginLeft: theme.spacing(2),
         marginRight: theme.spacing(2),
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
     },
     tableRow: {
         height: cellHeight,
+        '& th:last-child, & td:last-child': {
+            borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+        },
     },
     tableRowSmall: {
         height: smallCellHeight,
@@ -40,13 +42,19 @@ export const useStyles = makeStyles(theme => ({
         borderTop: `1px solid ${theme.palette.ligthGray.border}`,
     },
     tableCellTitle: {
-        width: '30px',
+        width: '35px',
         padding: 0,
         margin: 0,
         position: 'sticky',
         height: cellHeight,
         borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
         borderTop: `1px solid ${theme.palette.ligthGray.border}`,
+    },
+    tableCellTitleLarge: {
+        width: '45px',
+    },
+    tableCellTitleSmall: {
+        width: '30px',
     },
     tableCellTitleEmpty: {
         border: 'none',
@@ -95,7 +103,7 @@ export const useStyles = makeStyles(theme => ({
         top: 0,
         zIndex: 3,
         position: 'absolute',
-        width: '26vw',
+        width: '31vw',
         display: 'flex',
         justifyContent: 'center',
     },
@@ -121,11 +129,40 @@ export const useStyles = makeStyles(theme => ({
         paddingRight: theme.spacing(2),
         fontWeight: 'bold',
     },
+    tableCellSpanTitleCenter: {
+        justifyContent: 'center',
+    },
+    tableCellSpanWithPopOver: {
+        cursor: 'pointer',
+    },
     tableCellSpanRow: {
         alignItems: 'center',
         justifyContent: 'flex-start',
         paddingLeft: theme.spacing(2),
         paddingRight: theme.spacing(2),
+        fontSize: 13,
+    },
+    tableCellSpanRowCenter: {
+        justifyContent: 'center',
+    },
+    popover: {
+        position: 'absolute',
+        top: 0,
+        right: '100%',
+        padding: theme.spacing(2),
+        width: 200,
+        zIndex: 1,
+    },
+    popoverClose: {
+        position: 'relative',
+        marginLeft: '85%',
+        marginTop: theme.spacing(-1),
+        marginBottom: theme.spacing(1),
+    },
+    helpIcon: {
+        position: 'absolute',
+        top: 4,
+        right: 4,
         fontSize: 12,
     },
 }));

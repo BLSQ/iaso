@@ -15,7 +15,7 @@ const Calendar = ({ params }) => {
     const classes = useStyles();
     const { query } = useGetCampaigns({
         // searchQuery: 'SLE-16DS-01-2021',
-        order: '-obr_name',
+        order: 'top_level_org_unit_name',
     });
 
     const { data: campaigns = [], status } = query;

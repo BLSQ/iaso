@@ -59,7 +59,6 @@ const TableColumns = (formatMessage, component) => [
                     params={component.props.params}
                 />
                 <DeleteDialog
-                    disabled={settings.row.original.instances_count > 0}
                     titleMessage={MESSAGES.delete}
                     message={MESSAGES.deleteWarning}
                     onConfirm={closeDialog =>

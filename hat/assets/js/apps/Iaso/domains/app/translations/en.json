@@ -16,6 +16,8 @@
     "iaso.completeness.generateDerivedInstances": "Generate derived instances",
     "iaso.completeness.title": "Completeness",
     "iaso.datasources.addAskTitle": "{title} - Source: {source} - Version: {version}",
+    "iaso.datasources.button.label.export": "Export",
+    "iaso.datasources.button.label.xlsPreview": "Preview",
     "iaso.dataSources.continueOnError": "Continue on error",
     "iaso.dataSources.create": "Create data sources",
     "iaso.dataSources.dataSourceReadOnly": "Read Only",

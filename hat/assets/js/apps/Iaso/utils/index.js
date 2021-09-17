@@ -92,3 +92,9 @@ export const getPlugins = pluginsKeys => {
 };
 
 export const PluginsContext = createContext({ plugins: [] });
+
+// create timeout to simulate async call
+// credit https://stackoverflow.com/questions/51200626/using-a-settimeout-in-a-async-function
+// Added it here because using the one from test/utils would cause compilation errors
+export const waitFor = delay =>
+    new Promise(resolve => setTimeout(resolve, delay));

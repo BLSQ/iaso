@@ -174,6 +174,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.selectTopOrgUnit',
         defaultMessage: 'Please select top Orgunit',
     },
+    export: {
+        id: 'iaso.datasources.button.label.export',
+        defaultMessage: 'Export',
+    },
+    xlsPreview: {
+        id: 'iaso.datasources.button.label.xlsPreview',
+        defaultMessage: 'Preview',
+    },
 });
 
 export default MESSAGES;

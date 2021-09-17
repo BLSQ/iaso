@@ -75,6 +75,7 @@ const formatSourceVersionLabel =
         return label;
     };
 
+// TODO don't pass defaultVersionId and format Labels elsewhere to avoid duplicate call
 export const useDataSourceVersions = defaultVersionId => {
     const { formatMessage } = useSafeIntl();
     const makeLabel = formatSourceVersionLabel(formatMessage);
@@ -90,4 +91,55 @@ export const useDataSourceVersions = defaultVersionId => {
             },
         },
     );
+};
+
+// TODO figure out why stuff crashes when importing those 2 functions
+export const waitFor = delay =>
+    new Promise(resolve => setTimeout(resolve, delay));
+export const fakeResponse =
+    response =>
+    async (isError = false) => {
+        if (isError) throw new Error('mock request failed');
+        await waitFor(200);
+        return response;
+    };
+export const postToDHIS2 = async data => {
+    // return iasoPostRequest({
+    //     requestParams: {
+    //         url: '/api/exportdatasource/',
+    //         body: data,
+    //     },
+    //     errorKeyMessage: 'Could not export to DHIS2',
+    //     consoleError: 'exportdatasource',
+    // });
+    console.log('posted to DHSI2', data);
+    return fakeResponse(data)();
+};
+export const xlsPreview = async data => {
+    // return iasoPostRequest({
+    //     requestParams: {
+    //         url: '/api/exportpreview/',
+    //         body: data,
+    //     },
+    //     errorKeyMessage: 'Could not generate XLS preview',
+    //     consoleError: 'exportpreview',
+    // });
+    console.log('generated XLS preview with data:', data);
+    return fakeResponse(data)();
+};
+
+const getCredentials = async datasourceId => {
+    // return iasoGetRequest({
+    //     requestParams: { url: `/api/credentials/${datasourceId}` },
+    //     disableSuccessSnackBar: true,
+    // });
+    const fakeCredentials = [
+        { name: 'stu', id: 1 },
+        { name: 'pete', id: 2 },
+    ];
+    return fakeResponse(fakeCredentials)();
+};
+
+export const useCredentials = (datasourceId = null) => {
+    return useQuery(['credentials', datasourceId], getCredentials);
 };

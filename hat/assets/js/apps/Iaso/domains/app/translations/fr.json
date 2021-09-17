@@ -423,6 +423,7 @@
     "iaso.orgUnits.type": "Type",
     "iaso.orgUnitsTypes.create": "Créer un type d'unité d'organisation",
     "iaso.orgUnitsTypes.dialog.delete": "Etes-vous certain de vouloir effacer ce type d'unité d'organisation ?",
+    "iaso.orgUnitsTypes.dialog.deleteText": "Cette opération est définitive.",
     "iaso.orgUnitsTypes.projects": "Projets",
     "iaso.orgUnitsTypes.update": "Mettre à jour le type d'unité d'organisation",
     "iaso.page.viewpages": "Voir la page",

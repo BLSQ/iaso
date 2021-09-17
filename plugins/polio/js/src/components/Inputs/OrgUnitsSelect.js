@@ -15,8 +15,7 @@ export const OrgUnitsLevels = ({ field, form, label }) => {
         <>
             {isLoading && <CircularProgress />}
             <OrgUnitTreeviewModal
-                // FIXME: OrgUnitTreeviewModal expect a translatable
-                titleMessage={{ id: 'fake', defaultMessage: label }}
+                titleMessage={label}
                 toggleOnLabelClick={false}
                 onConfirm={orgUnit => {
                     setFieldValue(name, orgUnit.id);

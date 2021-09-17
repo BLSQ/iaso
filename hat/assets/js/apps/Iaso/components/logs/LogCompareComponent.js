@@ -99,7 +99,7 @@ const renderValue = (fieldKey, value, fields, classes) => {
         }
     } catch (e) {
         // eslint-disable-next-line no-console
-        console.exception('Could not parse', e);
+        console.error('Could not parse', e);
         return value.toString();
     }
 };

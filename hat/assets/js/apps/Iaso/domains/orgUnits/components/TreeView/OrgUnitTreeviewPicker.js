@@ -1,4 +1,4 @@
-import { func, any, bool, object } from 'prop-types';
+import { func, any, bool, object, oneOfType, string } from 'prop-types';
 import React from 'react';
 import { Paper } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
@@ -33,6 +33,12 @@ const styles = theme => ({
         },
     },
 });
+const formatPlaceholder = (placeholder, formatMessage) => {
+    if (!placeholder) return null;
+    if (typeof placeholder === 'string') return placeholder;
+    return formatMessage(placeholder);
+};
+
 const useStyles = makeStyles(styles);
 const OrgUnitTreeviewPicker = ({
     onClick,
@@ -43,11 +49,15 @@ const OrgUnitTreeviewPicker = ({
 }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
+    const formattedPlaceholder = formatPlaceholder(
+        placeholder,
+        intl.formatMessage,
+    );
     const makeTruncatedTrees = treesData => {
         if (treesData.size === 0)
             return (
                 <p onClick={onClick} className={classes.placeholder}>
-                    {intl.formatMessage(placeholder) ||
+                    {formattedPlaceholder ||
                         (multiselect
                             ? intl.formatMessage(MESSAGES.selectMultiple)
                             : intl.formatMessage(MESSAGES.selectSingle))}
@@ -88,7 +98,7 @@ OrgUnitTreeviewPicker.propTypes = {
     selectedItems: any,
     resetSelection: func,
     multiselect: bool,
-    placeholder: object,
+    placeholder: oneOfType([object, string]),
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: [],

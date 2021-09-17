@@ -212,6 +212,7 @@ const BaseInfoForm = () => {
                     <Field
                         className={classes.input}
                         name="initial_org_unit"
+                        label="Select initial region"
                         component={OrgUnitsLevels}
                     />
                 </Grid>

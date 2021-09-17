@@ -16,13 +16,32 @@ const Head = ({ headers }) => {
         <TableHead>
             <TableRow className={classes.tableRow}>
                 <TableCell
-                    className={classes.tableCellTitle}
-                    align="left"
+                    className={classnames(
+                        classes.tableCellTitle,
+                        classes.tableCellTitleEmpty,
+                    )}
+                    colSpan={colSpanTitle}
+                />
+                <TableCell
+                    className={classnames(
+                        classes.tableCellTitle,
+                        classes.tableCellTitleEmpty,
+                    )}
+                    colSpan={colSpanTitle}
+                />
+                <TableCell
+                    className={classnames(
+                        classes.tableCellTitle,
+                        classes.tableCellTitleEmpty,
+                    )}
                     colSpan={colSpanTitle}
                 />
                 {headers.years.map(year => (
                     <TableCell
-                        className={classes.tableCellHead}
+                        className={classnames(
+                            classes.tableCellHead,
+                            classes.tableCellTopBordered,
+                        )}
                         key={`year-${year.value}`}
                         align="center"
                         colSpan={year.daysCount}
@@ -40,8 +59,27 @@ const Head = ({ headers }) => {
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
                 <TableCell
-                    className={classes.tableCellTitle}
-                    align="left"
+                    className={classnames(
+                        classes.tableCellTitle,
+                        classes.tableCellTitleEmpty,
+                    )}
+                    style={{ top: 50 }}
+                    colSpan={colSpanTitle}
+                />
+                <TableCell
+                    className={classnames(
+                        classes.tableCellTitle,
+                        classes.tableCellTitleEmpty,
+                    )}
+                    style={{ top: 50 }}
+                    colSpan={colSpanTitle}
+                />
+                <TableCell
+                    className={classnames(
+                        classes.tableCellTitle,
+                        classes.tableCellTitleEmpty,
+                    )}
+                    style={{ top: 50 }}
                     colSpan={colSpanTitle}
                 />
                 {headers.months.map(month => (
@@ -50,6 +88,7 @@ const Head = ({ headers }) => {
                             classes.tableCellHead,
                             classes.tableCellSmall,
                         )}
+                        style={{ top: 50 }}
                         key={`month-${month.year}-${month.value}`}
                         align="center"
                         colSpan={month.daysCount}
@@ -65,8 +104,25 @@ const Head = ({ headers }) => {
             >
                 <TableCell
                     className={classes.tableCellTitle}
-                    align="left"
                     colSpan={colSpanTitle}
+                    style={{ top: 100 }}
+                >
+                    <span
+                        className={classnames(
+                            classes.tableCellSpan,
+                            classes.tableCellSpanTitle,
+                        )}
+                    >
+                        <FormattedMessage
+                            id="iaso.polio.calendar.country"
+                            defaultMessage="Country"
+                        />
+                    </span>
+                </TableCell>
+                <TableCell
+                    className={classes.tableCellTitle}
+                    colSpan={colSpanTitle}
+                    style={{ top: 100 }}
                 >
                     <span
                         className={classnames(
@@ -80,12 +136,30 @@ const Head = ({ headers }) => {
                         />
                     </span>
                 </TableCell>
+                <TableCell
+                    className={classes.tableCellTitle}
+                    colSpan={colSpanTitle}
+                    style={{ top: 100 }}
+                >
+                    <span
+                        className={classnames(
+                            classes.tableCellSpan,
+                            classes.tableCellSpanTitle,
+                        )}
+                    >
+                        <FormattedMessage
+                            id="iaso.polio.calendar.r1StartDate"
+                            defaultMessage="R1 date"
+                        />
+                    </span>
+                </TableCell>
                 {headers.weeks.map(week => (
                     <TableCell
                         className={classnames([
                             classes.tableCellHead,
                             classes.tableCellSmall,
                         ])}
+                        style={{ top: 100 }}
                         key={`week-${week.year}-${week.month}-${week.value}`}
                         align="center"
                         colSpan={7}
@@ -101,7 +175,14 @@ const Head = ({ headers }) => {
             >
                 <TableCell
                     className={classes.tableCellTitle}
-                    align="left"
+                    colSpan={colSpanTitle}
+                />
+                <TableCell
+                    className={classes.tableCellTitle}
+                    colSpan={colSpanTitle}
+                />
+                <TableCell
+                    className={classes.tableCellTitle}
                     colSpan={colSpanTitle}
                 />
                 {headers.weeks.map(week => {

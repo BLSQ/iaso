@@ -10,7 +10,6 @@ export const useStyles = makeStyles(theme => ({
         maxHeight: '82vh',
         marginLeft: theme.spacing(2),
         marginRight: theme.spacing(2),
-        borderTop: `1px solid ${theme.palette.ligthGray.border}`,
         borderRight: `1px solid ${theme.palette.ligthGray.border}`,
     },
     tableRow: {
@@ -33,6 +32,13 @@ export const useStyles = makeStyles(theme => ({
         position: 'sticky',
         borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
     },
+    tableCellTopBordered: {
+        height: cellHeight,
+        padding: 0,
+        margin: 0,
+        position: 'sticky',
+        borderTop: `1px solid ${theme.palette.ligthGray.border}`,
+    },
     tableCellTitle: {
         width: '30px',
         padding: 0,
@@ -40,9 +46,17 @@ export const useStyles = makeStyles(theme => ({
         position: 'sticky',
         height: cellHeight,
         borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
+        borderTop: `1px solid ${theme.palette.ligthGray.border}`,
+    },
+    tableCellTitleEmpty: {
+        border: 'none',
+        backgroundColor: theme.palette.common.white,
     },
     tableCellBordered: {
         borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
+    },
+    tableCellDashed: {
+        border: `1px dashed ${theme.palette.secondary.main} !important`,
     },
     tableCellSmall: {
         height: smallCellHeight,
@@ -71,7 +85,22 @@ export const useStyles = makeStyles(theme => ({
         backgroundColor: red['100'],
     },
     navButton: {
-        marginTop: theme.spacing(1),
+        marginTop: theme.spacing(3),
+        borderRadius: 100,
+        padding: theme.spacing(1),
+        minWidth: 0,
+    },
+    nav: {
+        left: theme.spacing(2),
+        top: 0,
+        zIndex: 3,
+        position: 'absolute',
+        width: '26vw',
+        display: 'flex',
+        justifyContent: 'center',
+    },
+    navButtonPrev: {
+        marginRight: '5vw',
     },
     tableCellSpan: {
         position: 'absolute',

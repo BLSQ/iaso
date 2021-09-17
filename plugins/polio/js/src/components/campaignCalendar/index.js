@@ -2,8 +2,9 @@ import React, { useMemo } from 'react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
+import classnames from 'classnames';
 
-import { Table, TableContainer, Box, IconButton } from '@material-ui/core';
+import { Table, TableContainer, Box, Button } from '@material-ui/core';
 import ChevronLeft from '@material-ui/icons/ChevronLeft';
 import ChevronRight from '@material-ui/icons/ChevronRight';
 
@@ -48,10 +49,36 @@ const CampaignsCalendar = ({ campaigns, params }) => {
     };
 
     return (
-        <Box mb={2} mt={2} display="flex" alignItems="flex-start">
-            <IconButton onClick={handleGoPrev} className={classes.navButton}>
-                <ChevronLeft color="primary" />
-            </IconButton>
+        <Box
+            mb={2}
+            mt={2}
+            display="flex"
+            alignItems="flex-start"
+            position="relative"
+        >
+            <Box className={classes.nav}>
+                <Button
+                    onClick={handleGoPrev}
+                    className={classnames(
+                        classes.navButton,
+                        classes.navButtonPrev,
+                    )}
+                    size="large"
+                    variant="outlined"
+                    color="primary"
+                >
+                    <ChevronLeft />
+                </Button>
+                <Button
+                    onClick={handleGoNext}
+                    className={classes.navButton}
+                    size="large"
+                    variant="outlined"
+                    color="primary"
+                >
+                    <ChevronRight color="primary" />
+                </Button>
+            </Box>
             <TableContainer className={classes.tableContainer}>
                 <Table stickyHeader>
                     <Head headers={headers} />
@@ -63,10 +90,6 @@ const CampaignsCalendar = ({ campaigns, params }) => {
                     />
                 </Table>
             </TableContainer>
-
-            <IconButton onClick={handleGoNext} className={classes.navButton}>
-                <ChevronRight color="primary" />
-            </IconButton>
         </Box>
     );
 };

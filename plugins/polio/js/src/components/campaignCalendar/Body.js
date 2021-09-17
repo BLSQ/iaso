@@ -10,17 +10,17 @@ import { useStyles } from './Styles';
 import { colsCount, colSpanTitle } from './constants';
 
 import MESSAGES from '../../constants/messages';
-// import { filterCampaigns } from './utils';
+import { filterCampaigns } from './utils';
 
 const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
-    // const filteredCampaigns = filterCampaigns(
-    //     campaigns,
-    //     firstMonday,
-    //     lastSunday,
-    // );
+    const filteredCampaigns = filterCampaigns(
+        campaigns,
+        firstMonday,
+        lastSunday,
+    );
     return (
         <TableBody>
             {campaigns.map(campaign => {
@@ -36,12 +36,15 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                         key={`empty-cell-${id}-${uKey}`}
                     />
                 );
-                const campaingDurationCell = (uKey, colSpan) => (
+                const campaingDurationCell = (uKey, colSpan, hasR2) => (
                     <TableCell
                         key={`campaign-duration-${uKey}`}
                         className={classnames(
                             defaultCellStyles,
                             classes.campaign,
+                            {
+                                [classes.tableCellDashed]: !hasR2,
+                            },
                         )}
                         colSpan={colSpan}
                     >
@@ -137,6 +140,7 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                                     campaignDays - 1 > availableDays
                                         ? availableDays
                                         : campaignDays - 1,
+                                    Boolean(R2Start),
                                 ),
                             );
                         }
@@ -155,6 +159,7 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                                 campaignDays - 1 > availableDays
                                     ? availableDays
                                     : campaignDays - 1,
+                                Boolean(R2Start),
                             ),
                         );
                     } else if (
@@ -163,7 +168,9 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                     ) {
                         colSpan =
                             campaignDays - firstMonday.diff(R1End, 'days');
-                        cells.push(campaingDurationCell(id, colSpan));
+                        cells.push(
+                            campaingDurationCell(id, colSpan, Boolean(R2Start)),
+                        );
                     }
 
                     if (R2Start && R2End) {
@@ -300,7 +307,35 @@ const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
                                     classes.tableCellSpanRow,
                                 )}
                             >
+                                {campaign.country}
+                            </span>
+                        </TableCell>
+                        <TableCell
+                            colSpan={colSpanTitle}
+                            className={classnames(defaultCellStyles)}
+                        >
+                            <span
+                                className={classnames(
+                                    classes.tableCellSpan,
+                                    classes.tableCellSpanRow,
+                                )}
+                            >
                                 {campaign.name}
+                            </span>
+                        </TableCell>
+                        <TableCell
+                            colSpan={colSpanTitle}
+                            className={classnames(defaultCellStyles)}
+                        >
+                            <span
+                                className={classnames(
+                                    classes.tableCellSpan,
+                                    classes.tableCellSpanRow,
+                                )}
+                            >
+                                {campaign.R1Start
+                                    ? campaign.R1Start.format('L')
+                                    : ''}
                             </span>
                         </TableCell>
                         {cells}

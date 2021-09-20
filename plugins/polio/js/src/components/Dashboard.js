@@ -943,12 +943,6 @@ const BudgetForm = () => {
 
                 <Grid item md={6}>
                     <Field
-                        label="1st Draft Submission"
-                        name="budget_first_draft_submitted_at"
-                        component={DateInput}
-                        fullWidth
-                    />
-                    <Field
                         label="RRT/OPRTT Approval"
                         name="budget_rrt_oprtt_approval_at"
                         component={DateInput}

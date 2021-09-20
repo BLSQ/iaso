@@ -248,11 +248,6 @@ class Campaign(models.Model):
 
     # Additional fields
     district_count = models.IntegerField(null=True, blank=True)
-    budget_first_draft_submitted_at = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("Budget 1st Draft Submission"),
-    )
     budget_rrt_oprtt_approval_at = models.DateField(
         null=True,
         blank=True,

@@ -62,35 +62,16 @@ const getDataSourceVersions = async () => {
     });
 };
 
-const formatSourceVersionLabel =
-    formatMessage => (defaultVersionId, sourceVersion) => {
-        const name = sourceVersion.name ?? 'Unnamed source';
-        const version = formatMessage(MESSAGES.version);
-        const number = sourceVersion.number.toString();
-        const label = `${name} - ${version}: ${number}`;
-
-        if (sourceVersion.id === defaultVersionId)
-            return `${label} (${formatMessage(MESSAGES.default)})`;
-
-        return label;
-    };
-
-// TODO don't pass defaultVersionId and format Labels elsewhere to avoid duplicate call
-export const useDataSourceVersions = defaultVersionId => {
-    const { formatMessage } = useSafeIntl();
-    const makeLabel = formatSourceVersionLabel(formatMessage);
-    return useQuery(
-        ['dataSourceVersions', defaultVersionId],
-        getDataSourceVersions,
-        {
-            select: data => {
-                return data.versions.map(version => ({
-                    value: version.id,
-                    label: makeLabel(defaultVersionId, version),
-                }));
-            },
+export const useDataSourceVersions = () => {
+    return useQuery(['dataSourceVersions'], getDataSourceVersions, {
+        select: data => {
+            return data.versions.map(version => ({
+                id: version.id,
+                name: version.name,
+                number: version.number,
+            }));
         },
-    );
+    });
 };
 
 // TODO figure out why stuff crashes when importing those 2 functions

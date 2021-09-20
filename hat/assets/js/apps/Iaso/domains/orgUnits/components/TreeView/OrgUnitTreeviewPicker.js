@@ -1,19 +1,24 @@
 import { func, any, bool, object, oneOfType, string } from 'prop-types';
 import React from 'react';
-import { Paper } from '@material-ui/core';
+import { Paper, InputLabel } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { IconButton, useSafeIntl } from 'bluesquare-components';
+import {
+    FormControl,
+    IconButton,
+    // InputLabel,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { MESSAGES } from './messages';
 import { TruncatedTreeview } from './TruncatedTreeview';
 
-const styles = theme => ({
+const styles = {
     placeholder: {
         alignItems: 'center',
         fontSize: '16px',
         flex: '1',
         marginLeft: '14px',
         cursor: 'pointer',
-        color: theme.palette.gray.main,
+        color: 'transparent',
     },
     treeviews: {
         alignItems: 'center',
@@ -32,7 +37,7 @@ const styles = theme => ({
             border: '1px solid rgba(0,0,0,0.87)', // aligning with AutoSelect
         },
     },
-});
+};
 const formatPlaceholder = (placeholder, formatMessage) => {
     if (!placeholder) return null;
     if (typeof placeholder === 'string') return placeholder;
@@ -46,21 +51,20 @@ const OrgUnitTreeviewPicker = ({
     resetSelection,
     multiselect,
     placeholder,
+    required,
 }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
-    const formattedPlaceholder = formatPlaceholder(
-        placeholder,
-        intl.formatMessage,
-    );
+    const formattedPlaceholder =
+        formatPlaceholder(placeholder, intl.formatMessage) ?? multiselect
+            ? intl.formatMessage(MESSAGES.selectMultiple)
+            : intl.formatMessage(MESSAGES.selectSingle);
+
     const makeTruncatedTrees = treesData => {
         if (treesData.size === 0)
             return (
                 <p onClick={onClick} className={classes.placeholder}>
-                    {formattedPlaceholder ||
-                        (multiselect
-                            ? intl.formatMessage(MESSAGES.selectMultiple)
-                            : intl.formatMessage(MESSAGES.selectSingle))}
+                    {formattedPlaceholder}
                 </p>
             );
         const treeviews = [];
@@ -76,27 +80,28 @@ const OrgUnitTreeviewPicker = ({
         });
         return <div className={classes.treeviews}>{treeviews}</div>;
     };
-
+    console.log('selectedItems', selectedItems);
     return (
-        <Paper variant="outlined" elevation={0} className={classes.paper}>
-            {makeTruncatedTrees(selectedItems)}
-            {resetSelection && selectedItems.size > 0 && (
-                <IconButton
-                    icon="clear"
-                    tooltipMessage={MESSAGES.clear}
-                    onClick={resetSelection}
-                />
-            )}
-            <IconButton
-                tooltipMessage={
-                    multiselect
-                        ? MESSAGES.selectMultiple
-                        : MESSAGES.selectSingle
-                }
-                icon="orgUnit"
-                onClick={onClick}
-            />
-        </Paper>
+        <FormControl withMarginTop={false}>
+            <InputLabel
+                shrink={selectedItems.size > 0}
+                required={required}
+                style={{ backgroundColor: 'white' }}
+            >
+                {formattedPlaceholder}
+            </InputLabel>
+            <Paper variant="outlined" elevation={0} className={classes.paper}>
+                {makeTruncatedTrees(selectedItems)}
+                {resetSelection && (
+                    <IconButton
+                        icon="clear"
+                        tooltipMessage={MESSAGES.clear}
+                        onClick={resetSelection}
+                        style={{ marginRight: '16px' }}
+                    />
+                )}
+            </Paper>
+        </FormControl>
     );
 };
 
@@ -107,12 +112,14 @@ OrgUnitTreeviewPicker.propTypes = {
     resetSelection: func,
     multiselect: bool,
     placeholder: oneOfType([object, string]),
+    required: bool,
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: [],
     resetSelection: null,
     multiselect: false,
     placeholder: null,
+    required: false,
 };
 
 export { OrgUnitTreeviewPicker };

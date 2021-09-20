@@ -55,7 +55,6 @@ const convertFormStateToDict = formState => {
     fields.forEach(field => {
         result[field] = formState[field].value;
     });
-    console.log('converted formState', formState, result);
     return result;
 };
 
@@ -213,7 +212,7 @@ export const ExportToDHIS2Dialog = ({
                         />
                     </Grid>
                     <Grid xs={6} item>
-                        <Box mt={1} mb={2}>
+                        <Box>
                             <OrgUnitTreeviewModal
                                 onConfirm={value => {
                                     setExportDataField(
@@ -225,6 +224,7 @@ export const ExportToDHIS2Dialog = ({
                                 titleMessage={formatMessage(
                                     MESSAGES.selectTopOrgUnit,
                                 )}
+                                required
                             />
                         </Box>
                     </Grid>
@@ -315,6 +315,7 @@ export const ExportToDHIS2Dialog = ({
                                     destinationDataVersionId
                                 }
                                 disabled={!destinationDataVersionId}
+                                required={false}
                             />
                         </Box>
                     </Grid>

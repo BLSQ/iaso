@@ -31,6 +31,7 @@ const OrgUnitTreeviewModal = ({
     resetTrigger,
     disabled,
     version,
+    required,
 }) => {
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
 
@@ -140,6 +141,7 @@ const OrgUnitTreeviewModal = ({
                     resetSelection={resetSelection}
                     multiselect={multiselect}
                     placeholder={titleMessage}
+                    required={required}
                 />
             )}
             titleMessage={titleMessage}
@@ -183,6 +185,7 @@ OrgUnitTreeviewModal.propTypes = {
     version: any,
     resetTrigger: bool,
     disabled: bool,
+    required: bool,
 };
 
 OrgUnitTreeviewModal.defaultProps = {
@@ -194,6 +197,7 @@ OrgUnitTreeviewModal.defaultProps = {
     version: null,
     resetTrigger: false,
     disabled: false,
+    required: false,
 };
 
 export { OrgUnitTreeviewModal };

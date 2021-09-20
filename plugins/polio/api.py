@@ -1,29 +1,28 @@
 import csv
 
 import requests
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import routers, filters, viewsets
+from rest_framework import routers, filters, viewsets, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
-
-from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer
+from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer, LineListImportSerializer
 from plugins.polio.serializers import (
-    SurgePreviewSerializer,
-    CampaignPreparednessSpreadsheetSerializer,
     CountryUsersGroupSerializer,
 )
-from .models import Campaign, Config, CountryUsersGroup
-from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer, LineListImportSerializer
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
 from .models import Campaign, Config, LineListImport
+from .models import CountryUsersGroup
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -87,6 +86,64 @@ class CampaignViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
+    NEW_CAMPAIGN_MESSAGE = """Dear GPEI coordinator – {country_name}
+
+This is an automated email.
+
+Following the newly confirmed virus {virus_type} reported from {initial_orgunit_name} with date of onset/sample collection {onset_date}. \
+A new outbreak {obr_name} has been created on the timeline tracker, to visualize the campaign visit: {url}
+
+Some campaign details are missing at this stage. It is important to update the outbreak response information on this link {url}, \
+to ensure optimal coordination of activities. The information should be updated at least weekly. Details for log in will be provided.
+
+For more follow up: contact RRT team.
+
+Timeline tracker Automated message
+    """
+
+    @action(methods=["POST"], detail=True, serializer_class=serializers.Serializer)
+    def send_notification_email(self, request, pk, **kwargs):
+        campaign = get_object_or_404(Campaign, pk=pk)
+        country = campaign.country()
+
+        domain = settings.DNS_DOMAIN
+        if campaign.creation_email_send_at:
+            raise serializers.ValidationError("Notification Email already sent")
+        if not (campaign.obr_name and campaign.virus and country and campaign.onset_at):
+            raise serializers.ValidationError("Missing information on the campaign")
+
+        email_text = self.NEW_CAMPAIGN_MESSAGE.format(
+            country_name=country.name,
+            obr_name=campaign.obr_name,
+            virus_type=campaign.virus,
+            onset_date=campaign.onset_at,
+            initial_orgunit_name=campaign.initial_org_unit.name
+            + (", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
+            url=f"https://{domain}/dashboard/polio/list",
+        )
+
+        try:
+            cug = CountryUsersGroup.objects.get(country=country)
+        except CountryUsersGroup.DoesNotExist:
+            raise serializers.ValidationError(
+                f"Country {country.name} is not configured, please go to Configuration page"
+            )
+        users = cug.users.all()
+        emails = [user.email for user in users if user.email]
+        if not emails:
+            raise serializers.ValidationError(f"No recipients have been configured on the country")
+
+        send_mail(
+            "New Campaign {}".format(campaign.obr_name),
+            email_text,
+            "no-reply@%s" % domain,
+            emails,
+        )
+        campaign.creation_email_send_at = now()
+        campaign.save()
+
+        return Response({"message": "email sent"})
 
 
 class CountryUsersGroupViewSet(ModelViewSet):

@@ -90,8 +90,9 @@ class OrgunitsMap extends Component {
     }
 
     componentDidMount() {
-        const { orgUnitTypes } = this.props;
+        const { orgUnitTypes, orgUnits } = this.props;
         this.makePanes(orgUnitTypes);
+        this.checkFitToBounds(orgUnits);
         this.props.setCurrentSubOrgUnit(null);
     }
 
@@ -103,22 +104,14 @@ class OrgunitsMap extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { orgUnits } = this.props;
-        const { orgUnitTypes } = this.props;
+        const { orgUnits, orgUnitTypes } = this.props;
         const oldOrgUnitTypes = prevProps.orgUnitTypes;
         // creating panes if navigating using deep linking or reloading, as orgUnitTypes
         // are not available to componentDidMount in those cases
         if (!isEqual(oldOrgUnitTypes, orgUnitTypes)) {
             this.makePanes(orgUnitTypes);
         }
-        const { fittedToBounds } = this.state;
-        if (
-            !fittedToBounds &&
-            (orgUnits.locations.length > 0 || orgUnits.shapes.length > 0)
-        ) {
-            this.setFittedToBound();
-            this.fitToBounds();
-        }
+        this.checkFitToBounds(orgUnits);
     }
 
     componentWillUnmount() {
@@ -145,6 +138,17 @@ class OrgunitsMap extends Component {
             currentColor = `#${currentColor}`;
         }
         return currentColor;
+    }
+
+    checkFitToBounds(orgUnits) {
+        const { fittedToBounds } = this.state;
+        if (
+            !fittedToBounds &&
+            (orgUnits.locations.length > 0 || orgUnits.shapes.length > 0)
+        ) {
+            this.setFittedToBound();
+            this.fitToBounds();
+        }
     }
 
     makePanes(orgUnitTypes) {

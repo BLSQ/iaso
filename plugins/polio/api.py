@@ -13,17 +13,17 @@ from rest_framework.response import Response
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
+from django.utils.timezone import now
+from datetime import timedelta
+import json
 
-from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer
 from plugins.polio.serializers import (
-    SurgePreviewSerializer,
-    CampaignPreparednessSpreadsheetSerializer,
     CountryUsersGroupSerializer,
 )
-from .models import Campaign, Config, CountryUsersGroup
+from .models import CountryUsersGroup
 from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer, LineListImportSerializer
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
-from .models import Campaign, Config, LineListImport
+from .models import Campaign, Config, LineListImport, URLCache
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -157,10 +157,20 @@ class IMViewSet(viewsets.ViewSet):
             keys = config["keys"]
             all_keys = all_keys.union(keys.keys())
             prefix = config["prefix"]
-            response = requests.get(config["url"], auth=(config["login"], config["password"]))
-            forms = response.json()
+            cached_response, created = URLCache.objects.get_or_create(url=config["url"])
+            delta = now() - cached_response.updated_at
+            if created or delta > timedelta(minutes=60):
+                response = requests.get(config["url"], auth=(config["login"], config["password"]))
+                cached_response.content = response.text
+                cached_response.save()
+                forms = response.json()
+            else:
+                forms = json.loads(cached_response.content)
+
             form_count = 0
             for form in forms:
+                print(json.dumps(form))
+                break
                 try:
                     copy_form = form.copy()
                     del copy_form[prefix]
@@ -185,7 +195,110 @@ class IMViewSet(viewsets.ViewSet):
                 form_count += 1
 
         print("parsed:", len(res), "failed:", failure_count)
-        print("all_keys", all_keys)
+        # print("all_keys", all_keys)
+
+        all_keys = sorted(list(all_keys))
+        all_keys.insert(0, "type")
+        if not as_csv:
+            for item in res:
+                for k in all_keys:
+                    if k not in item:
+                        item[k] = None
+            return JsonResponse(res, safe=False)
+        else:
+            response = HttpResponse(content_type="text/csv")
+
+            writer = csv.writer(response)
+            writer.writerow(all_keys)
+            i = 1
+            for item in res:
+                ar = [item.get(key, None) for key in all_keys]
+                writer.writerow(ar)
+                i += 1
+                if i % 100 == 0:
+                    print(i)
+            return response
+
+
+class IMViewSet2(viewsets.ViewSet):
+    """
+           Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA. Very custom to the polio project.
+
+    sample Config:
+
+    configs = [
+           {
+               "keys": {"roundNumber": "roundNumber",
+                       "Response": "Response",
+                },
+               "prefix": "OHH",
+               "url": 'https://brol.com/api/v1/data/5888',
+               "login": "qmsdkljf",
+               "password": "qmsdlfj"
+           },
+           {
+               "keys": {'roundNumber': "roundNumber",
+                       "Response": "Response",
+                },
+               "prefix": "HH",
+               "url":  'https://brol.com/api/v1/data/5887',
+               "login": "qmsldkjf",
+               "password": "qsdfmlkj"
+           }
+       ]
+    """
+
+    def list(self, request):
+
+        slug = request.GET.get("country", None)
+        as_csv = request.GET.get("format", None) == "csv"
+        config = get_object_or_404(Config, slug=slug)
+        res = []
+        failure_count = 0
+        all_keys = set()
+        for config in config.content:
+            keys = config["keys"]
+            all_keys = all_keys.union(keys.keys())
+            prefix = config["prefix"]
+            cached_response, created = URLCache.objects.get_or_create(url=config["url"])
+            delta = now() - cached_response.updated_at
+            if created or delta > timedelta(minutes=60):
+                response = requests.get(config["url"], auth=(config["login"], config["password"]))
+                cached_response.content = response.text
+                cached_response.save()
+                forms = response.json()
+            else:
+                forms = json.loads(cached_response.content)
+
+            form_count = 0
+            for form in forms:
+                OHH_COUNT = form.get("OHH_count", None)
+                if OHH_COUNT is None:
+                    print("missing OHH_COUNT", form)
+                else:
+                    print(OHH_COUNT)
+                total_Child_FMD = 0
+                total_Child_Checked = 0
+                for OHH in form.get("OHH", []):
+                    Child_FMD = OHH.get("OHH/Child_FMD", 0)
+                    Child_Checked = OHH.get("OHH/Child_Checked", 0)
+                    total_Child_FMD += int(Child_FMD)
+                    total_Child_Checked += int(Child_Checked)
+                row = [
+                    form.get("Country"),
+                    form.get("Region"),
+                    form.get("District"),
+                    form.get("Response"),
+                    form.get("roundNumber"),
+                    form.get("today"),
+                    total_Child_FMD,
+                    total_Child_Checked,
+                ]
+                print(row)
+                form_count += 1
+
+        print("parsed:", len(res), "failed:", failure_count)
+        # print("all_keys", all_keys)
 
         all_keys = sorted(list(all_keys))
         all_keys.insert(0, "type")
@@ -213,5 +326,6 @@ class IMViewSet(viewsets.ViewSet):
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/im", IMViewSet, basename="IM")
+router.register(r"polio/imstats", IMViewSet2, basename="imstats")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")

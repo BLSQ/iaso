@@ -11,13 +11,13 @@ import {
 import { MESSAGES } from './messages';
 import { TruncatedTreeview } from './TruncatedTreeview';
 
-const styles = {
+const styles = theme => ({
     placeholder: {
         alignItems: 'center',
         fontSize: '16px',
         flex: '1',
         marginLeft: '14px',
-        cursor: 'pointer',
+        cursor: 'default',
         color: 'transparent',
     },
     treeviews: {
@@ -25,7 +25,7 @@ const styles = {
         fontSize: '16px',
         flex: '1',
         marginLeft: '10px',
-        cursor: 'pointer',
+        // cursor: 'pointer',
     },
     paper: {
         display: 'flex',
@@ -33,11 +33,21 @@ const styles = {
         border: '1px solid rgba(0,0,0,0.23)', // aligning with AutoSelect
         paddingTop: '3px',
         paddingBottom: '3px',
+        // '&:hover': {
+        //     border: '1px solid rgba(0,0,0,0.87)', // aligning with AutoSelect
+        // },
+    },
+    inputLabel: {
+        backgroundColor: 'white',
+        color: theme.palette.mediumGray.main,
+    },
+    enabled: {
         '&:hover': {
             border: '1px solid rgba(0,0,0,0.87)', // aligning with AutoSelect
         },
     },
-};
+    pointer: { cursor: 'pointer' },
+});
 const formatPlaceholder = (placeholder, formatMessage) => {
     if (!placeholder) return null;
     if (typeof placeholder === 'string') return placeholder;
@@ -52,18 +62,30 @@ const OrgUnitTreeviewPicker = ({
     multiselect,
     placeholder,
     required,
+    disabled,
 }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
+    const className = disabled
+        ? classes.paper
+        : `${classes.paper} ${classes.enabled}`;
+
+    const placeholderStyle = disabled
+        ? classes.placeholder
+        : `${classes.placeholder} ${classes.pointer}`;
     const formattedPlaceholder =
         formatPlaceholder(placeholder, intl.formatMessage) ?? multiselect
             ? intl.formatMessage(MESSAGES.selectMultiple)
             : intl.formatMessage(MESSAGES.selectSingle);
+    const noOp = () => null;
 
     const makeTruncatedTrees = treesData => {
         if (treesData.size === 0)
             return (
-                <p onClick={onClick} className={classes.placeholder}>
+                <p
+                    onClick={disabled ? noOp : onClick}
+                    className={placeholderStyle}
+                >
                     {formattedPlaceholder}
                 </p>
             );
@@ -71,7 +93,7 @@ const OrgUnitTreeviewPicker = ({
         treesData.forEach((value, key) => {
             const treeview = (
                 <TruncatedTreeview
-                    onClick={onClick}
+                    onClick={disabled ? noOp : onClick}
                     selectedItems={value}
                     key={`TruncatedTree${key.toString()}`}
                 />
@@ -80,17 +102,16 @@ const OrgUnitTreeviewPicker = ({
         });
         return <div className={classes.treeviews}>{treeviews}</div>;
     };
-    console.log('selectedItems', selectedItems);
     return (
         <FormControl withMarginTop={false}>
             <InputLabel
                 shrink={selectedItems.size > 0}
                 required={required}
-                style={{ backgroundColor: 'white' }}
+                className={classes.inputLabel}
             >
                 {formattedPlaceholder}
             </InputLabel>
-            <Paper variant="outlined" elevation={0} className={classes.paper}>
+            <Paper variant="outlined" elevation={0} className={className}>
                 {makeTruncatedTrees(selectedItems)}
                 {resetSelection && (
                     <IconButton
@@ -113,6 +134,7 @@ OrgUnitTreeviewPicker.propTypes = {
     multiselect: bool,
     placeholder: oneOfType([object, string]),
     required: bool,
+    disabled: bool,
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: [],
@@ -120,6 +142,7 @@ OrgUnitTreeviewPicker.defaultProps = {
     multiselect: false,
     placeholder: null,
     required: false,
+    disabled: false,
 };
 
 export { OrgUnitTreeviewPicker };

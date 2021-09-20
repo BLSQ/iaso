@@ -136,12 +136,13 @@ const OrgUnitTreeviewModal = ({
         <ConfirmCancelDialogComponent
             renderTrigger={({ openDialog }) => (
                 <OrgUnitTreeviewPicker
-                    onClick={disabled ? () => null : openDialog}
+                    onClick={openDialog}
                     selectedItems={selectedOrgUnitParents}
                     resetSelection={resetSelection}
                     multiselect={multiselect}
                     placeholder={titleMessage}
                     required={required}
+                    disabled={disabled}
                 />
             )}
             titleMessage={titleMessage}

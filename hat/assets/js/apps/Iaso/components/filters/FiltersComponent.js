@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { replace } from 'react-router-redux';
 import PropTypes from 'prop-types';
+import { Box } from '@material-ui/core';
 
 import { createUrl } from 'bluesquare-components';
 
@@ -131,23 +132,28 @@ class FiltersComponent extends React.Component {
                                 )}
 
                                 {filter.type === 'search' && (
-                                    <InputComponent
-                                        disabled={filter.isDisabled || false}
-                                        keyValue={filter.urlKey}
-                                        uid={filter.uid}
-                                        onChange={(key, value) =>
-                                            this.onSearchChange(
-                                                key,
-                                                value,
-                                                true,
-                                                filter.callback,
-                                            )
-                                        }
-                                        value={filterValue}
-                                        type="search"
-                                        label={filter.label}
-                                        onEnterPressed={onEnterPressed}
-                                    />
+                                    <Box mt={1} mb={2}>
+                                        <InputComponent
+                                            disabled={
+                                                filter.isDisabled || false
+                                            }
+                                            keyValue={filter.urlKey}
+                                            uid={filter.uid}
+                                            onChange={(key, value) =>
+                                                this.onSearchChange(
+                                                    key,
+                                                    value,
+                                                    true,
+                                                    filter.callback,
+                                                )
+                                            }
+                                            value={filterValue}
+                                            type="search"
+                                            label={filter.label}
+                                            onEnterPressed={onEnterPressed}
+                                            withMarginTop={false}
+                                        />
+                                    </Box>
                                 )}
 
                                 {filter.type === 'checkbox' && ( // TODO: check with team

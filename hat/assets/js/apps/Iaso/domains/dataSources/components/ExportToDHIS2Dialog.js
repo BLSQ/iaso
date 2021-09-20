@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useEffect } from 'react';
-import { Grid, Box } from '@material-ui/core';
+import { Grid, Box, Divider, Typography, makeStyles } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { useMutation } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -19,6 +19,14 @@ import {
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+
+const style = theme => ({
+    subTitle: {
+        color: theme.palette.primary.main,
+        fontWeight: 'bold',
+    },
+});
+const useStyles = makeStyles(style);
 
 const useFieldsToExport = () => {
     const { formatMessage } = useSafeIntl();
@@ -118,6 +126,7 @@ export const ExportToDHIS2Dialog = ({
     defaultVersionId,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
     const fieldsToExport = useFieldsToExport();
 
     const { data: orgUnitTypes, isLoading: areOrgUnitTypesLoading } =
@@ -193,40 +202,52 @@ export const ExportToDHIS2Dialog = ({
             additionalMessage={MESSAGES.export}
             onAdditionalButtonClick={onConfirm}
         >
-            <Grid container>
-                <Grid container item spacing={4}>
-                    <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            keyValue="source_version_id"
-                            labelString={formatMessage(MESSAGES.version)}
-                            value={exportData.source_version_id.value}
-                            errors={exportData.source_version_id.errors}
-                            onChange={setExportDataField}
-                            options={dataSourceVersionsAsOptions(
-                                versions,
-                                defaultVersionId,
-                                formatMessage,
-                            )}
-                            required
-                        />
+            <Grid container spacing={2}>
+                {/* Choose datasource */}
+                <Grid container item spacing={2}>
+                    {/* Data to export  */}
+                    <Grid item xs={12}>
+                        <Typography
+                            className={classes.subTitle}
+                            variant="subtitle1"
+                        >
+                            {formatMessage(MESSAGES.exportTitle)}
+                        </Typography>
                     </Grid>
-                    <Grid xs={6} item>
-                        <Box mt={1} mb={2}>
-                            <OrgUnitTreeviewModal
-                                onConfirm={value => {
-                                    setExportDataField(
-                                        'source_org_unit_id',
-                                        value?.id,
-                                    );
-                                }}
-                                source={dataSourceId}
-                                titleMessage={formatMessage(
-                                    MESSAGES.selectTopOrgUnit,
+                    <Grid container item spacing={2}>
+                        <Grid xs={6} item>
+                            <InputComponent
+                                type="select"
+                                keyValue="source_version_id"
+                                labelString={formatMessage(MESSAGES.version)}
+                                value={exportData.source_version_id.value}
+                                errors={exportData.source_version_id.errors}
+                                onChange={setExportDataField}
+                                options={dataSourceVersionsAsOptions(
+                                    versions,
+                                    defaultVersionId,
+                                    formatMessage,
                                 )}
                                 required
                             />
-                        </Box>
+                        </Grid>
+                        <Grid xs={6} item>
+                            <Box mt={1} mb={2}>
+                                <OrgUnitTreeviewModal
+                                    onConfirm={value => {
+                                        setExportDataField(
+                                            'source_org_unit_id',
+                                            value?.id,
+                                        );
+                                    }}
+                                    source={dataSourceId}
+                                    titleMessage={formatMessage(
+                                        MESSAGES.selectTopOrgUnit,
+                                    )}
+                                    required
+                                />
+                            </Box>
+                        </Grid>
                     </Grid>
                     <Grid xs={6} item>
                         <InputComponent
@@ -258,8 +279,6 @@ export const ExportToDHIS2Dialog = ({
                             required
                         />
                     </Grid>
-                </Grid>
-                <Grid container item spacing={4}>
                     <Grid xs={12} item>
                         <InputComponent
                             type="select"
@@ -278,8 +297,20 @@ export const ExportToDHIS2Dialog = ({
                             required
                         />
                     </Grid>
+                    <Grid xs={12} item>
+                        <Divider />
+                    </Grid>
                 </Grid>
-                <Grid container item spacing={4}>
+                {/* End data to export */}
+                <Grid container item spacing={2}>
+                    <Grid item xs={12}>
+                        <Typography
+                            className={classes.subTitle}
+                            variant="subtitle1"
+                        >
+                            {formatMessage(MESSAGES.targetDataSource)}
+                        </Typography>
+                    </Grid>
                     <Grid xs={6} item>
                         <InputComponent
                             type="select"
@@ -319,8 +350,6 @@ export const ExportToDHIS2Dialog = ({
                             />
                         </Box>
                     </Grid>
-                </Grid>
-                <Grid container item spacing={4}>
                     <Grid xs={12} item>
                         <InputComponent
                             type="select"

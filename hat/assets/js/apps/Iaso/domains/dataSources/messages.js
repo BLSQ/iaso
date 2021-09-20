@@ -202,6 +202,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.credentials',
         defaultMessage: 'Credentials',
     },
+    exportTitle: {
+        id: 'iaso.datasources.title.export',
+        defaultMessage: 'Export',
+    },
+    targetDataSource: {
+        id: 'iaso.datasources.title.targetDataSource',
+        defaultMessage: 'Target data source',
+    },
 });
 
 export default MESSAGES;

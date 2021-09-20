@@ -28,6 +28,8 @@
     "iaso.dataSources.dhisLogin": "Login DHIS2",
     "iaso.dataSources.dhisName": "Nom de la source DHIS2",
     "iaso.dataSources.dhisPassword": "Mot de passe DHIS2",
+    "iaso.datasources.title.export": "Export",
+    "iaso.datasources.title.targetDataSource": "Source de destination",
     "iaso.dataSources.dhisUrl": "Url DHIS2",
     "iaso.datasources.emptyProjectsError": "Veuillez choisir au moins un projet",
     "iaso.datasources.exportDataSource": "Exporter la source: {dataSourceName}",

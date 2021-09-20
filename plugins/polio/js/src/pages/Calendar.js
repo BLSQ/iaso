@@ -25,11 +25,7 @@ const Calendar = ({ params }) => {
             {status === 'loading' && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box width={1}>
-                    <CampaignsCalendar
-                        params={params}
-                        campaigns={campaigns}
-                        isLoading={status === 'loading'}
-                    />
+                    <CampaignsCalendar params={params} campaigns={campaigns} />
                 </Box>
             </Box>
         </div>

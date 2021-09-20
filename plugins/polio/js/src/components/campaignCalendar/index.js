@@ -42,7 +42,7 @@ const CampaignsCalendar = ({ campaigns, params }) => {
         [currentMonday],
     );
 
-    const mapeedCampaigns = useMemo(() => mapCampaigns(campaigns), [campaigns]);
+    const mappedCampaigns = useMemo(() => mapCampaigns(campaigns), [campaigns]);
     const handleGoNext = () => {
         const newDate = currentMonday.clone().add(4, 'week');
         dispatch(
@@ -109,7 +109,7 @@ const CampaignsCalendar = ({ campaigns, params }) => {
                     <Table stickyHeader>
                         <Head headers={headers} />
                         <Body
-                            campaigns={mapeedCampaigns}
+                            campaigns={mappedCampaigns}
                             currentWeekIndex={currentWeekIndex}
                             firstMonday={firstMonday}
                             lastSunday={lastSunday}

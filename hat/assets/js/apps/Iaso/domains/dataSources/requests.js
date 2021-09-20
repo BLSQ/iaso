@@ -77,6 +77,7 @@ export const useDataSourceVersions = () => {
 // TODO figure out why stuff crashes when importing those 2 functions
 export const waitFor = delay =>
     new Promise(resolve => setTimeout(resolve, delay));
+
 export const fakeResponse =
     response =>
     async (isError = false) => {

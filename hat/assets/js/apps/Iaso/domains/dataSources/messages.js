@@ -182,6 +182,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.button.label.xlsPreview',
         defaultMessage: 'Preview',
     },
+    orgUnitTypes: {
+        id: 'iaso.datasources.label.orgUnitTypes',
+        defaultMessage: 'OrgUnit types',
+    },
+    status: {
+        id: 'iaso.datasources.label.status',
+        defaultMessage: 'Status',
+    },
+    fieldsToExport: {
+        id: 'iaso.datasources.label.fieldsToExport',
+        defaultMessage: 'Fields to export',
+    },
+    datasourceRef: {
+        id: 'iaso.datasources.label.datasourceRef',
+        defaultMessage: 'Reference data source',
+    },
+    credentials: {
+        id: 'iaso.datasources.label.credentials',
+        defaultMessage: 'Credentials',
+    },
 });
 
 export default MESSAGES;

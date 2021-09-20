@@ -138,7 +138,7 @@ export const ExportToDHIS2Dialog = ({
 
     const destinationDataVersionId = exportData.ref_version_id.value;
 
-    // this ref to enable resetting the treeview whebn datasource changes
+    // this ref to enable resetting the treeview when datasource changes
     const treeviewResetControl = useRef(destinationDataVersionId);
 
     const onTargetSourceVersionChange = useCallback(
@@ -212,7 +212,7 @@ export const ExportToDHIS2Dialog = ({
                         />
                     </Grid>
                     <Grid xs={6} item>
-                        <Box>
+                        <Box mt={1} mb={2}>
                             <OrgUnitTreeviewModal
                                 onConfirm={value => {
                                     setExportDataField(

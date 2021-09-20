@@ -1,7 +1,5 @@
 import { useQuery } from 'react-query';
-import { useSafeIntl } from 'bluesquare-components';
 import { iasoGetRequest, iasoPostRequest } from '../../utils/requests';
-import MESSAGES from './messages';
 
 /**
  *

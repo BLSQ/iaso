@@ -2,7 +2,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Table,
-    textPlaceholder,
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
@@ -1188,13 +1187,17 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
 
     const classes = useStyles();
 
-    const handleSubmit = (values, helpers) =>
+    const handleSubmit = async (values, helpers) => {
         saveCampaign(convertEmptyStringToNull(values), {
             onSuccess: () => {
                 helpers.resetForm();
                 onClose();
             },
+            onError: error => {
+                helpers.setErrors(error);
+            },
         });
+    };
 
     const defaultValues = {
         round_one: {},
@@ -1294,6 +1297,17 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
                     <Form>
                         <CurrentForm />
                     </Form>
+                    <Grid container justifyContent="flex-end">
+                        <Grid item md={6}>
+                            {formik.errors.non_field_errors?.map(
+                                (error_msg, i) => (
+                                    <Typography key={i} color="error">
+                                        {error_msg}
+                                    </Typography>
+                                ),
+                            )}
+                        </Grid>
+                    </Grid>
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>

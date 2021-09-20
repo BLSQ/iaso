@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useEffect } from 'react';
-import { Grid, Box, Divider, Typography, makeStyles } from '@material-ui/core';
+import { Grid, Box, Divider } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { useMutation } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -17,27 +17,16 @@ import { orgUnitStatusAsOptions } from '../../../constants/filters';
 import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
+    convertFormStateToDict,
 } from '../../../utils/forms';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-
-const style = theme => ({
-    subTitle: {
-        color: theme.palette.primary.main,
-        fontWeight: 'bold',
-    },
-});
-const useStyles = makeStyles(style);
-
-const useFieldsToExport = () => {
-    const { formatMessage } = useSafeIntl();
-    return [
-        { label: formatMessage(MESSAGES.name), value: 'name' },
-        { label: formatMessage(MESSAGES.parent), value: 'parent' },
-        { label: formatMessage(MESSAGES.shape), value: 'shape' },
-        { label: formatMessage(MESSAGES.groups), value: 'groups' },
-        { label: formatMessage(MESSAGES.location), value: 'location' },
-    ];
-};
+import { ModalSubTitle } from '../../../components/forms/ModalSubTitle';
+import {
+    useFieldsToExport,
+    credentialsAsOptions,
+    dataSourceVersionsAsOptions,
+    refDataSourceVersionsAsOptions,
+} from '../utils';
 
 const initialExportData = {
     source_version_id: null, // version id of the origin data source
@@ -50,74 +39,6 @@ const initialExportData = {
     credentials: null, // TODO ask if credentials should be prefilled
 };
 
-const credentialsAsOptions = credentials => {
-    if (!credentials) return [];
-    return credentials.map(credential => ({
-        label: credential.name,
-        value: credential.id,
-    }));
-};
-const convertFormStateToDict = formState => {
-    const result = {};
-    const fields = Object.keys(formState);
-    fields.forEach(field => {
-        result[field] = formState[field].value;
-    });
-    return result;
-};
-
-const formatSourceVersionLabel = (
-    formatMessage,
-    defaultVersionId,
-    sourceVersion,
-) => {
-    const name = sourceVersion.name ?? 'Unnamed source';
-    const version = formatMessage(MESSAGES.version);
-    const number = sourceVersion.number.toString();
-    const label = `${name} - ${version}: ${number}`;
-
-    if (sourceVersion.id === defaultVersionId)
-        return `${label} (${formatMessage(MESSAGES.default)})`;
-
-    return label;
-};
-
-const refDataSourceVersionsAsOptions = ({
-    versions,
-    defaultVersionId,
-    formatMessage,
-}) => {
-    if (!versions) return [];
-    return versions.map(version => {
-        return {
-            label: formatSourceVersionLabel(
-                formatMessage,
-                defaultVersionId,
-                version,
-            ),
-            value: version.id,
-        };
-    });
-};
-
-const dataSourceVersionsAsOptions = (
-    versions,
-    defaultVersionId,
-    formatMessage,
-) => {
-    const asDefault = `(${formatMessage(MESSAGES.default)})`;
-    return versions.map(version => {
-        const versionNumber = version.number.toString();
-        return {
-            value: version.id,
-            label:
-                version.id === defaultVersionId
-                    ? `${versionNumber} ${asDefault}`
-                    : versionNumber,
-        };
-    });
-};
-
 export const ExportToDHIS2Dialog = ({
     renderTrigger,
     dataSourceId,
@@ -126,7 +47,6 @@ export const ExportToDHIS2Dialog = ({
     defaultVersionId,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
     const fieldsToExport = useFieldsToExport();
 
     const { data: orgUnitTypes, isLoading: areOrgUnitTypesLoading } =
@@ -203,17 +123,11 @@ export const ExportToDHIS2Dialog = ({
             onAdditionalButtonClick={onConfirm}
         >
             <Grid container spacing={2}>
-                {/* Choose datasource */}
+                {/* Data to export  */}
                 <Grid container item spacing={2}>
-                    {/* Data to export  */}
-                    <Grid item xs={12}>
-                        <Typography
-                            className={classes.subTitle}
-                            variant="subtitle1"
-                        >
-                            {formatMessage(MESSAGES.exportTitle)}
-                        </Typography>
-                    </Grid>
+                    <ModalSubTitle
+                        message={formatMessage(MESSAGES.exportTitle)}
+                    />
                     <Grid container item spacing={2}>
                         <Grid xs={6} item>
                             <InputComponent
@@ -303,14 +217,10 @@ export const ExportToDHIS2Dialog = ({
                 </Grid>
                 {/* End data to export */}
                 <Grid container item spacing={2}>
-                    <Grid item xs={12}>
-                        <Typography
-                            className={classes.subTitle}
-                            variant="subtitle1"
-                        >
-                            {formatMessage(MESSAGES.targetDataSource)}
-                        </Typography>
-                    </Grid>
+                    <ModalSubTitle
+                        message={formatMessage(MESSAGES.targetDataSource)}
+                    />
+
                     <Grid xs={6} item>
                         <InputComponent
                             type="select"

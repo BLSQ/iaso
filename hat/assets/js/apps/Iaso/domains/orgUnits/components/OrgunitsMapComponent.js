@@ -95,16 +95,9 @@ class OrgunitsMap extends Component {
         const { orgUnitTypes, orgUnits } = this.props;
         this.makePanes(orgUnitTypes);
         // Added this code here, because otherwise the map wouldn't redraw when going back and forth between list and map tabs
-        // FIXME : Had to add this timer because otherwise the addition below would cause a crash (some values would be undefined).
+        // FIXME: some values in the orgUnits prop seem to be null without adding a delay.
         await waitFor(200);
-        const { fittedToBounds } = this.state;
-        if (
-            !fittedToBounds &&
-            (orgUnits.locations.length > 0 || orgUnits.shapes.length > 0)
-        ) {
-            this.setFittedToBound();
-            this.fitToBounds();
-        }
+        this.checkFitToBounds(orgUnits);
         // End addition
         this.props.setCurrentSubOrgUnit(null);
     }
@@ -117,22 +110,14 @@ class OrgunitsMap extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { orgUnits } = this.props;
-        const { orgUnitTypes } = this.props;
+        const { orgUnits, orgUnitTypes } = this.props;
         const oldOrgUnitTypes = prevProps.orgUnitTypes;
         // creating panes if navigating using deep linking or reloading, as orgUnitTypes
         // are not available to componentDidMount in those cases
         if (!isEqual(oldOrgUnitTypes, orgUnitTypes)) {
             this.makePanes(orgUnitTypes);
         }
-        const { fittedToBounds } = this.state;
-        if (
-            !fittedToBounds &&
-            (orgUnits.locations.length > 0 || orgUnits.shapes.length > 0)
-        ) {
-            this.setFittedToBound();
-            this.fitToBounds();
-        }
+        this.checkFitToBounds(orgUnits);
     }
 
     componentWillUnmount() {
@@ -159,6 +144,17 @@ class OrgunitsMap extends Component {
             currentColor = `#${currentColor}`;
         }
         return currentColor;
+    }
+
+    checkFitToBounds(orgUnits) {
+        const { fittedToBounds } = this.state;
+        if (
+            !fittedToBounds &&
+            (orgUnits.locations.length > 0 || orgUnits.shapes.length > 0)
+        ) {
+            this.setFittedToBound();
+            this.fitToBounds();
+        }
     }
 
     makePanes(orgUnitTypes) {

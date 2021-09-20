@@ -125,7 +125,15 @@ const OrgUnitsMultiActionsDialog = ({
         } else {
             data.select_all = true;
             data.unselected_ids = unSelectedItems.map(i => i.id);
-            data.searches = decodeSearch(params.searches);
+            // TODO : taken from OrgUnitsFiltersComponent to match
+            // their fix but not a fan we should change it
+            // when we refactor the search, probably set orgUnitParentId
+            // directly in the onchange of OrgUnitTreeviewModal.
+            const searches = decodeSearch(params.searches);
+            searches.forEach((s, i) => {
+                searches[i].orgUnitParentId = searches[i].levels;
+            });
+            data.searches = searches;
         }
         saveMultiEdit(data).then(() => {
             closeAndReset();

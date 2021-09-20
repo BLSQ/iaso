@@ -77,6 +77,8 @@ const styles = theme => ({
     },
 });
 
+const orgunitsPane = 'org-units';
+
 const initialState = currentUser => {
     return {
         locationGroup: new EditableGroup(),
@@ -421,38 +423,17 @@ class OrgUnitMapComponent extends Component {
                             }
                             url={currentTile.url}
                         />
-                        <Pane name="org-units">
-                            {!location.edit &&
-                                mappedOrgUnitTypesSelected.map(ot =>
-                                    ot.orgUnits.shapes.map(o => (
-                                        <GeoJSON
-                                            key={o.id}
-                                            data={o.geo_json}
-                                            onClick={() =>
-                                                this.fetchSubOrgUnitDetail(o)
-                                            }
-                                            style={() => ({ color: ot.color })}
-                                        >
-                                            <OrgUnitPopupComponent
-                                                displayUseLocation
-                                                useLocation={selectedOrgUnit =>
-                                                    this.useOrgUnitLocation(
-                                                        selectedOrgUnit,
-                                                    )
-                                                }
-                                            />
-                                        </GeoJSON>
-                                    )),
-                                )}
-                            {mappedSourcesSelected.map(s =>
-                                s.orgUnits.shapes.map(o => (
+                        {!location.edit &&
+                            mappedOrgUnitTypesSelected.map(ot =>
+                                ot.orgUnits.shapes.map(o => (
                                     <GeoJSON
+                                        pane={orgunitsPane}
                                         key={o.id}
                                         data={o.geo_json}
                                         onClick={() =>
                                             this.fetchSubOrgUnitDetail(o)
                                         }
-                                        style={() => ({ color: s.color })}
+                                        style={() => ({ color: ot.color })}
                                     >
                                         <OrgUnitPopupComponent
                                             displayUseLocation
@@ -465,16 +446,38 @@ class OrgUnitMapComponent extends Component {
                                     </GeoJSON>
                                 )),
                             )}
-                            <MarkerClusterGroup
-                                pane="BROL"
-                                maxClusterRadius={0} // only apply cluster on markers with same coordinates
-                                iconCreateFunction={cluster =>
-                                    colorClusterCustomMarker(
-                                        cluster,
-                                        theme.palette.secondary.main,
-                                    )
-                                }
-                            >
+                        {mappedSourcesSelected.map(s =>
+                            s.orgUnits.shapes.map(o => (
+                                <GeoJSON
+                                    pane={orgunitsPane}
+                                    key={o.id}
+                                    data={o.geo_json}
+                                    onClick={() =>
+                                        this.fetchSubOrgUnitDetail(o)
+                                    }
+                                    style={() => ({ color: s.color })}
+                                >
+                                    <OrgUnitPopupComponent
+                                        displayUseLocation
+                                        useLocation={selectedOrgUnit =>
+                                            this.useOrgUnitLocation(
+                                                selectedOrgUnit,
+                                            )
+                                        }
+                                    />
+                                </GeoJSON>
+                            )),
+                        )}
+                        <MarkerClusterGroup
+                            maxClusterRadius={0} // only apply cluster on markers with same coordinates
+                            iconCreateFunction={cluster =>
+                                colorClusterCustomMarker(
+                                    cluster,
+                                    theme.palette.secondary.main,
+                                )
+                            }
+                        >
+                            <Pane name={orgunitsPane}>
                                 {mappedOrgUnitTypesSelected.map(ot =>
                                     getMarkerList(
                                         ot.orgUnits.locations,
@@ -511,8 +514,8 @@ class OrgUnitMapComponent extends Component {
                                         }
                                     />
                                 )}
-                            </MarkerClusterGroup>
-                        </Pane>
+                            </Pane>
+                        </MarkerClusterGroup>
 
                         {hasMarker && currentOption === 'edit' && (
                             <MarkerComponent

@@ -74,6 +74,40 @@ const convertFormStateToDict = formState => {
     return result;
 };
 
+const formatSourceVersionLabel = (
+    formatMessage,
+    defaultVersionId,
+    sourceVersion,
+) => {
+    const name = sourceVersion.name ?? 'Unnamed source';
+    const version = formatMessage(MESSAGES.version);
+    const number = sourceVersion.number.toString();
+    const label = `${name} - ${version}: ${number}`;
+
+    if (sourceVersion.id === defaultVersionId)
+        return `${label} (${formatMessage(MESSAGES.default)})`;
+
+    return label;
+};
+
+const refDataSourceVersionsAsOptions = ({
+    versions,
+    defaultVersionId,
+    formatMessage,
+}) => {
+    if (!versions) return [];
+    return versions.map(version => {
+        return {
+            label: formatSourceVersionLabel(
+                formatMessage,
+                defaultVersionId,
+                version,
+            ),
+            id: version.id,
+        };
+    });
+};
+
 const dataSourceVersionsAsOptions = (
     versions,
     defaultVersionId,
@@ -262,7 +296,11 @@ export const ExportToDHIS2Dialog = ({
                             value={exportData.ref_version_id.value}
                             errors={exportData.ref_version_id.errors}
                             onChange={onTargetSourceVersionChange}
-                            options={sourceVersions}
+                            options={refDataSourceVersionsAsOptions({
+                                formatMessage,
+                                defaultVersionId,
+                                versions: sourceVersions,
+                            })}
                             loading={areOrgUnitTypesLoading}
                             required
                         />

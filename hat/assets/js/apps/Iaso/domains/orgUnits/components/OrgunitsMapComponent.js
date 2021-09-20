@@ -36,7 +36,6 @@ import { getColorsFromParams, decodeSearch } from '../utils';
 import MESSAGES from '../messages';
 import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
 import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
-import { waitFor } from '../../../utils';
 
 const boundsOptions = {
     padding: [50, 50],
@@ -88,17 +87,12 @@ class OrgunitsMap extends Component {
         this.state = {
             fittedToBounds: false,
         };
-        this.map = React.createRef();
     }
 
-    async componentDidMount() {
+    componentDidMount() {
         const { orgUnitTypes, orgUnits } = this.props;
         this.makePanes(orgUnitTypes);
-        // Added this code here, because otherwise the map wouldn't redraw when going back and forth between list and map tabs
-        // FIXME: some values in the orgUnits prop seem to be null without adding a delay.
-        await waitFor(200);
         this.checkFitToBounds(orgUnits);
-        // End addition
         this.props.setCurrentSubOrgUnit(null);
     }
 
@@ -159,11 +153,11 @@ class OrgunitsMap extends Component {
 
     makePanes(orgUnitTypes) {
         if (orgUnitTypes.length === 0) {
-            this.map.current.leafletElement.createPane('custom-shape-pane');
+            this.map.leafletElement.createPane('custom-shape-pane');
         } else {
             orgUnitTypes.forEach(ot => {
                 const otName = camelCase(ot.name);
-                this.map.current.leafletElement.createPane(
+                this.map.leafletElement.createPane(
                     `custom-shape-pane-${otName}`,
                 );
             });
@@ -187,10 +181,7 @@ class OrgunitsMap extends Component {
         const bounds = getOrgUnitsBounds(orgUnits);
         if (bounds) {
             try {
-                this.map.current.leafletElement.fitBounds(
-                    bounds,
-                    boundsOptions,
-                );
+                this.map.leafletElement.fitBounds(bounds, boundsOptions);
             } catch (e) {
                 console.warn(e);
             }
@@ -223,11 +214,9 @@ class OrgunitsMap extends Component {
                 </Grid>
             );
         }
-        if (this.map.current) {
-            this.map.current.leafletElement.options.maxZoom =
-                currentTile.maxZoom;
+        if (this.map) {
+            this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }
-        // console.log('this.map', this.map.current);
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
@@ -264,8 +253,7 @@ class OrgunitsMap extends Component {
                 >
                     <Map
                         ref={ref => {
-                            // console.log('ref', ref);
-                            this.map.current = ref;
+                            this.map = ref;
                         }}
                         scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}

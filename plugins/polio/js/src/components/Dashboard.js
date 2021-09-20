@@ -181,7 +181,7 @@ const SendEmailButton = () => {
     } else if (!values.initial_org_unit) {
         validation_error = 'Enter Initial district';
     } else if (!values.onset_at) {
-        validation_error = 'Enter Initial district';
+        validation_error = 'Enter Onset Date';
     } else if (form.dirty || !values.id) {
         validation_error = 'Please save the modifications on the campaign';
     }

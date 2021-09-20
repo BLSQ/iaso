@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useEffect } from 'react';
-import { Grid } from '@material-ui/core';
+import { Grid, Box } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { useMutation } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -41,21 +41,6 @@ const initialExportData = {
     ref_top_org_unit_id: null,
     credentials: null, // TODO ask if credentials should be prefilled
 };
-
-// const credentialsAsOptions = credentials => {
-//     const options = [];
-//     if (credentials?.is_valid) {
-//         const { name, url, id } = credentials;
-//         let label = id;
-//         if (name) {
-//             label = name;
-//         } else if (url) {
-//             label = url;
-//         }
-//         options.push({ label, id });
-//     }
-//     return options;
-// };
 
 const credentialsAsOptions = credentials => {
     if (!credentials) return [];
@@ -103,7 +88,7 @@ const refDataSourceVersionsAsOptions = ({
                 defaultVersionId,
                 version,
             ),
-            id: version.id,
+            value: version.id,
         };
     });
 };
@@ -182,8 +167,8 @@ export const ExportToDHIS2Dialog = ({
         Boolean(exportData.source_version_id.value) &&
         Boolean(exportData.source_status.value) &&
         exportData.fields_to_export.value.length > 0 &&
-        Boolean(exportData.ref_version_id.value);
-    // Boolean(exportData.credentials.value);
+        Boolean(exportData.ref_version_id.value) &&
+        Boolean(exportData.credentials.value);
 
     // Reset Treeview when changing ref datasource
     useEffect(() => {
@@ -215,7 +200,7 @@ export const ExportToDHIS2Dialog = ({
                         <InputComponent
                             type="select"
                             keyValue="source_version_id"
-                            labelString="Version" // TODO add translation
+                            labelString={formatMessage(MESSAGES.version)}
                             value={exportData.source_version_id.value}
                             errors={exportData.source_version_id.errors}
                             onChange={setExportDataField}
@@ -228,19 +213,26 @@ export const ExportToDHIS2Dialog = ({
                         />
                     </Grid>
                     <Grid xs={6} item>
-                        <OrgUnitTreeviewModal
-                            onConfirm={value =>
-                                setExportDataField('source_org_unit_id', value)
-                            }
-                            source={dataSourceId}
-                            titleMessage={MESSAGES.selectTopOrgUnit}
-                        />
+                        <Box mt={1} mb={2}>
+                            <OrgUnitTreeviewModal
+                                onConfirm={value => {
+                                    setExportDataField(
+                                        'source_org_unit_id',
+                                        value?.id,
+                                    );
+                                }}
+                                source={dataSourceId}
+                                titleMessage={formatMessage(
+                                    MESSAGES.selectTopOrgUnit,
+                                )}
+                            />
+                        </Box>
                     </Grid>
                     <Grid xs={6} item>
                         <InputComponent
                             type="select"
                             keyValue="source_org_unit_types_ids"
-                            labelString="OU Types" // TODO add translation
+                            labelString={formatMessage(MESSAGES.orgUnitTypes)}
                             value={exportData.source_org_unit_types_ids.value}
                             errors={exportData.source_org_unit_types_ids.errors} // TODO actually manage errors
                             onChange={(keyValue, newValue) => {
@@ -257,7 +249,7 @@ export const ExportToDHIS2Dialog = ({
                     <Grid xs={6} item>
                         <InputComponent
                             type="select"
-                            labelString="Status" // TODO add translation
+                            labelString={formatMessage(MESSAGES.status)}
                             keyValue="source_status"
                             value={exportData.source_status.value}
                             errors={exportData.source_status.errors}
@@ -272,7 +264,7 @@ export const ExportToDHIS2Dialog = ({
                         <InputComponent
                             type="select"
                             keyValue="fields_to_export"
-                            labelString="Fields to export" // TODO add translation
+                            labelString={formatMessage(MESSAGES.fieldsToExport)}
                             value={exportData.fields_to_export.value}
                             errors={exportData.fields_to_export.errors}
                             onChange={(keyValue, newValue) => {
@@ -292,7 +284,7 @@ export const ExportToDHIS2Dialog = ({
                         <InputComponent
                             type="select"
                             keyValue="ref_version_id"
-                            labelString="Data source ref" // TODO add translation
+                            labelString={formatMessage(MESSAGES.datasourceRef)}
                             value={exportData.ref_version_id.value}
                             errors={exportData.ref_version_id.errors}
                             onChange={onTargetSourceVersionChange}
@@ -306,18 +298,25 @@ export const ExportToDHIS2Dialog = ({
                         />
                     </Grid>
                     <Grid xs={6} item>
-                        <OrgUnitTreeviewModal
-                            onConfirm={value =>
-                                setExportDataField('ref_top_org_unit_id', value)
-                            }
-                            version={destinationDataVersionId}
-                            titleMessage={MESSAGES.selectTopOrgUnit}
-                            resetTrigger={
-                                treeviewResetControl.current !==
-                                destinationDataVersionId
-                            }
-                            disabled={!destinationDataVersionId}
-                        />
+                        <Box mt={1} mb={2}>
+                            <OrgUnitTreeviewModal
+                                onConfirm={value => {
+                                    setExportDataField(
+                                        'ref_top_org_unit_id',
+                                        value?.id,
+                                    );
+                                }}
+                                version={destinationDataVersionId}
+                                titleMessage={formatMessage(
+                                    MESSAGES.selectTopOrgUnit,
+                                )}
+                                resetTrigger={
+                                    treeviewResetControl.current !==
+                                    destinationDataVersionId
+                                }
+                                disabled={!destinationDataVersionId}
+                            />
+                        </Box>
                     </Grid>
                 </Grid>
                 <Grid container item spacing={4}>
@@ -325,7 +324,7 @@ export const ExportToDHIS2Dialog = ({
                         <InputComponent
                             type="select"
                             keyValue="credentials"
-                            labelString="Credentials" // TODO add translation
+                            labelString={formatMessage(MESSAGES.credentials)}
                             value={exportData.credentials.value}
                             errors={exportData.credentials.errors}
                             loading={areCredentialsLoading}

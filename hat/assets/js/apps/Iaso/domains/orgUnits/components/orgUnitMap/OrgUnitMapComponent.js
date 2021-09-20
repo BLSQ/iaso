@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Map, TileLayer, GeoJSON, ScaleControl } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
 import isEqual from 'lodash/isEqual';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'leaflet-draw';
@@ -421,16 +421,38 @@ class OrgUnitMapComponent extends Component {
                             }
                             url={currentTile.url}
                         />
-                        {!location.edit &&
-                            mappedOrgUnitTypesSelected.map(ot =>
-                                ot.orgUnits.shapes.map(o => (
+                        <Pane name="org-units">
+                            {!location.edit &&
+                                mappedOrgUnitTypesSelected.map(ot =>
+                                    ot.orgUnits.shapes.map(o => (
+                                        <GeoJSON
+                                            key={o.id}
+                                            data={o.geo_json}
+                                            onClick={() =>
+                                                this.fetchSubOrgUnitDetail(o)
+                                            }
+                                            style={() => ({ color: ot.color })}
+                                        >
+                                            <OrgUnitPopupComponent
+                                                displayUseLocation
+                                                useLocation={selectedOrgUnit =>
+                                                    this.useOrgUnitLocation(
+                                                        selectedOrgUnit,
+                                                    )
+                                                }
+                                            />
+                                        </GeoJSON>
+                                    )),
+                                )}
+                            {mappedSourcesSelected.map(s =>
+                                s.orgUnits.shapes.map(o => (
                                     <GeoJSON
                                         key={o.id}
                                         data={o.geo_json}
                                         onClick={() =>
                                             this.fetchSubOrgUnitDetail(o)
                                         }
-                                        style={() => ({ color: ot.color })}
+                                        style={() => ({ color: s.color })}
                                     >
                                         <OrgUnitPopupComponent
                                             displayUseLocation
@@ -443,73 +465,54 @@ class OrgUnitMapComponent extends Component {
                                     </GeoJSON>
                                 )),
                             )}
-                        {mappedSourcesSelected.map(s =>
-                            s.orgUnits.shapes.map(o => (
-                                <GeoJSON
-                                    key={o.id}
-                                    data={o.geo_json}
-                                    onClick={() =>
-                                        this.fetchSubOrgUnitDetail(o)
-                                    }
-                                    style={() => ({ color: s.color })}
-                                >
-                                    <OrgUnitPopupComponent
-                                        displayUseLocation
-                                        useLocation={selectedOrgUnit =>
-                                            this.useOrgUnitLocation(
-                                                selectedOrgUnit,
+                            <MarkerClusterGroup
+                                pane="BROL"
+                                maxClusterRadius={0} // only apply cluster on markers with same coordinates
+                                iconCreateFunction={cluster =>
+                                    colorClusterCustomMarker(
+                                        cluster,
+                                        theme.palette.secondary.main,
+                                    )
+                                }
+                            >
+                                {mappedOrgUnitTypesSelected.map(ot =>
+                                    getMarkerList(
+                                        ot.orgUnits.locations,
+                                        a => this.fetchSubOrgUnitDetail(a),
+                                        ot.color,
+                                        ot.id,
+                                    ),
+                                )}
+                                {mappedSourcesSelected.map(s =>
+                                    getMarkerList(
+                                        s.orgUnits.locations,
+                                        a => this.fetchSubOrgUnitDetail(a),
+                                        s.color,
+                                        s.id,
+                                    ),
+                                )}
+                                {formsSelected.map(f =>
+                                    getMarkerList(
+                                        f.instances,
+                                        a => this.fetchInstanceDetail(a),
+                                        f.color,
+                                        f.id,
+                                        InstancePopupComponent,
+                                    ),
+                                )}
+                                {hasMarker && currentOption !== 'edit' && (
+                                    <MarkerComponent
+                                        item={orgUnit}
+                                        draggable={currentOption === 'edit'}
+                                        onDragend={newMarker =>
+                                            this.props.onChangeLocation(
+                                                newMarker.getLatLng(),
                                             )
                                         }
                                     />
-                                </GeoJSON>
-                            )),
-                        )}
-                        <MarkerClusterGroup
-                            maxClusterRadius={0} // only apply cluster on markers with same coordinates
-                            iconCreateFunction={cluster =>
-                                colorClusterCustomMarker(
-                                    cluster,
-                                    theme.palette.secondary.main,
-                                )
-                            }
-                        >
-                            {mappedOrgUnitTypesSelected.map(ot =>
-                                getMarkerList(
-                                    ot.orgUnits.locations,
-                                    a => this.fetchSubOrgUnitDetail(a),
-                                    ot.color,
-                                    ot.id,
-                                ),
-                            )}
-                            {mappedSourcesSelected.map(s =>
-                                getMarkerList(
-                                    s.orgUnits.locations,
-                                    a => this.fetchSubOrgUnitDetail(a),
-                                    s.color,
-                                    s.id,
-                                ),
-                            )}
-                            {formsSelected.map(f =>
-                                getMarkerList(
-                                    f.instances,
-                                    a => this.fetchInstanceDetail(a),
-                                    f.color,
-                                    f.id,
-                                    InstancePopupComponent,
-                                ),
-                            )}
-                            {hasMarker && currentOption !== 'edit' && (
-                                <MarkerComponent
-                                    item={orgUnit}
-                                    draggable={currentOption === 'edit'}
-                                    onDragend={newMarker =>
-                                        this.props.onChangeLocation(
-                                            newMarker.getLatLng(),
-                                        )
-                                    }
-                                />
-                            )}
-                        </MarkerClusterGroup>
+                                )}
+                            </MarkerClusterGroup>
+                        </Pane>
 
                         {hasMarker && currentOption === 'edit' && (
                             <MarkerComponent

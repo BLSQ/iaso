@@ -120,10 +120,7 @@ const OrgUnitInfosComponent = ({
             />
         </Grid>
         <Grid item xs={4} container>
-            <FormControlComponent
-                errors={orgUnit.parent_id.errors}
-                withMarginTop={false}
-            >
+            <FormControlComponent errors={orgUnit.parent_id.errors}>
                 <OrgUnitTreeviewModal
                     toggleOnLabelClick={false}
                     titleMessage={MESSAGES.selectParentOrgUnit}

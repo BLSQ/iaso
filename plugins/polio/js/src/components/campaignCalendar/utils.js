@@ -1,5 +1,11 @@
 import moment from 'moment';
+import React from 'react';
 import { colsCount, dateFormat } from './constants';
+
+import { R1Cell } from './cells/R1';
+import { R2Cell } from './cells/R2';
+import { CampaignDurationCell } from './cells/CampaignDuration';
+import { EmptyCell } from './cells/Empty';
 
 const getCalendarData = currentMonday => {
     const todayMonday = moment().startOf('isoWeek');
@@ -117,4 +123,234 @@ const mapCampaigns = allCampaigns => {
         };
     });
 };
-export { getCalendarData, filterCampaigns, mapCampaigns };
+
+const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
+    const cells = [];
+    const { R1Start, R1End, R2Start, R2End, campaignDays, id } = campaign;
+    let colSpan;
+    if (R1Start && R1End) {
+        const availableDays = lastSunday.diff(R1End, 'days');
+        const availableCampaignDays =
+            campaignDays - 1 > availableDays ? availableDays : campaignDays - 1;
+        if (
+            R1Start.isSameOrAfter(firstMonday, 'day') &&
+            R1Start.isSameOrBefore(lastSunday, 'day')
+        ) {
+            if (!R1Start.isSame(firstMonday, 'day')) {
+                let monday;
+                if (R1Start.weekday() !== 1) {
+                    monday = R1Start.clone().startOf('isoWeek');
+                } else {
+                    monday = R1Start.clone();
+                }
+                const extraDays = R1Start.clone().diff(monday, 'days');
+                const fullWeeks = monday.diff(firstMonday, 'weeks');
+
+                Array(fullWeeks)
+                    .fill()
+                    .forEach((_, i) => {
+                        cells.push(
+                            <EmptyCell
+                                key={`empty-cell-${id}-start-${i}`}
+                                colSpan={7}
+                                isCurrentWeek={
+                                    cells.length + 1 === currentWeekIndex
+                                }
+                            />,
+                        );
+                    });
+                if (extraDays) {
+                    cells.push(
+                        <EmptyCell
+                            key={`empty-cell-${id}-start-${R1Start}`}
+                            colSpan={extraDays}
+                            isCurrentWeek={
+                                cells.length + 1 === currentWeekIndex
+                            }
+                        />,
+                    );
+                }
+            }
+
+            colSpan = R1End.clone().add(1, 'day').diff(R1Start, 'days');
+            cells.push(
+                <R1Cell
+                    key={`r1-campaign-${id}`}
+                    colSpan={colSpan}
+                    campaign={campaign}
+                />,
+            );
+            if (!R1End.isAfter(lastSunday)) {
+                cells.push(
+                    <CampaignDurationCell
+                        key={`campaign-duration-${id}`}
+                        colSpan={availableCampaignDays}
+                        hasR2={Boolean(R2Start)}
+                        campaign={campaign}
+                    />,
+                );
+            }
+        } else if (
+            R1End.isSameOrAfter(firstMonday, 'day') &&
+            R1End.isSameOrBefore(lastSunday, 'day')
+        ) {
+            colSpan = R1End.clone().add(1, 'day').diff(firstMonday, 'days');
+            cells.push(
+                <R1Cell
+                    key={`r1-campaign-${id}`}
+                    colSpan={colSpan}
+                    campaign={campaign}
+                />,
+            );
+            cells.push(
+                <CampaignDurationCell
+                    key={`campaign-duration-${id}`}
+                    colSpan={availableCampaignDays}
+                    hasR2={Boolean(R2Start)}
+                    campaign={campaign}
+                />,
+            );
+        } else if (
+            R1End.isBefore(firstMonday, 'day') &&
+            firstMonday.diff(R1End, 'days') < campaignDays
+        ) {
+            colSpan = campaignDays - firstMonday.diff(R1End, 'days');
+            cells.push(
+                <CampaignDurationCell
+                    key={`campaign-duration-${id}`}
+                    colSpan={colSpan}
+                    hasR2={Boolean(R2Start)}
+                    campaign={campaign}
+                />,
+            );
+        }
+
+        if (R2Start && R2End) {
+            if (
+                R2Start.isSameOrAfter(firstMonday, 'day') &&
+                R2Start.isSameOrBefore(lastSunday, 'day')
+            ) {
+                colSpan = R2End.clone().add(1, 'day').diff(R2Start, 'days');
+                cells.push(
+                    <R2Cell
+                        key={`round2Cost-campaign-${id}`}
+                        colSpan={colSpan}
+                    />,
+                );
+            } else if (
+                R2End.isSameOrAfter(firstMonday, 'day') &&
+                R2End.isSameOrBefore(lastSunday, 'day')
+            ) {
+                colSpan = R2End.clone().add(1, 'day').diff(firstMonday, 'days');
+                cells.push(
+                    <R2Cell
+                        key={`round2Cost-campaign-${id}`}
+                        colSpan={colSpan}
+                    />,
+                );
+            }
+
+            if (
+                R2End.isSameOrAfter(firstMonday, 'day') &&
+                R2End.isSameOrBefore(lastSunday, 'day')
+            ) {
+                let sunday;
+                if (R2End.weekday() !== 7) {
+                    sunday = R2End.clone().endOf('isoWeek');
+                } else {
+                    sunday = R2End.clone();
+                }
+                const extraDays = sunday.diff(R2End, 'days');
+                const fullWeeks = lastSunday.diff(sunday, 'weeks');
+
+                let spans = 0;
+                cells.forEach(c => {
+                    spans += c.props.colSpan;
+                });
+                spans = parseInt(spans / 7, 10);
+                if (extraDays) {
+                    spans += 1;
+                    cells.push(
+                        <EmptyCell
+                            key={`empty-cell-${id}-start-${R2End}`}
+                            colSpan={extraDays}
+                            isCurrentWeek={spans === currentWeekIndex}
+                        />,
+                    );
+                }
+                Array(fullWeeks)
+                    .fill()
+                    .forEach((_, i) => {
+                        spans += 1;
+                        cells.push(
+                            <EmptyCell
+                                key={`empty-cell-${id}-end-${i}`}
+                                colSpan={7}
+                                isCurrentWeek={spans === currentWeekIndex}
+                            />,
+                        );
+                    });
+            }
+        }
+        if (!R2Start && cells.length > 0) {
+            let sunday;
+            const fakeR2End = R1End.clone().add(campaignDays, 'days');
+            if (!fakeR2End.isAfter(lastSunday)) {
+                if (fakeR2End.weekday() !== 7) {
+                    sunday = fakeR2End.clone().endOf('isoWeek');
+                } else {
+                    sunday = fakeR2End.clone();
+                }
+                const extraDays = sunday
+                    .clone()
+                    .add(1, 'day')
+                    .diff(fakeR2End, 'days');
+                const fullWeeks = lastSunday.diff(sunday, 'weeks');
+
+                let spans = 0;
+                cells.forEach(c => {
+                    spans += c.props.colSpan;
+                });
+                spans = parseInt(spans / 7, 10);
+                if (extraDays) {
+                    spans += 1;
+                    cells.push(
+                        <EmptyCell
+                            key={`empty-cell-${id}-end-${R2End}`}
+                            colSpan={extraDays}
+                            isCurrentWeek={spans === currentWeekIndex}
+                        />,
+                    );
+                }
+                Array(fullWeeks)
+                    .fill()
+                    .forEach((_, i) => {
+                        spans += 1;
+                        cells.push(
+                            <EmptyCell
+                                key={`empty-cell-${id}-end-${i}`}
+                                colSpan={7}
+                                isCurrentWeek={spans === currentWeekIndex}
+                            />,
+                        );
+                    });
+            }
+        }
+    }
+    if (cells.length === 0) {
+        Array(colsCount)
+            .fill()
+            .forEach((_, i) => {
+                cells.push(
+                    <EmptyCell
+                        key={`empty-cell-${id}-${i}`}
+                        colSpan={7}
+                        isCurrentWeek={i + 1 === currentWeekIndex}
+                    />,
+                );
+            });
+    }
+    return cells;
+};
+
+export { getCalendarData, filterCampaigns, mapCampaigns, getCells };

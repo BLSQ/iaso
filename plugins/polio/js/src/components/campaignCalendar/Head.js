@@ -8,7 +8,7 @@ import { TableHead, TableRow, TableCell, Typography } from '@material-ui/core';
 
 import { useStyles } from './Styles';
 
-import { colSpanTitle } from './constants';
+import { colSpanTitle, staticFields } from './constants';
 import MESSAGES from '../../constants/messages';
 
 const Head = ({ headers }) => {
@@ -16,27 +16,16 @@ const Head = ({ headers }) => {
     return (
         <TableHead>
             <TableRow className={classes.tableRow}>
-                <TableCell
-                    className={classnames(
-                        classes.tableCellTitle,
-                        classes.tableCellTitleEmpty,
-                    )}
-                    colSpan={colSpanTitle}
-                />
-                <TableCell
-                    className={classnames(
-                        classes.tableCellTitle,
-                        classes.tableCellTitleEmpty,
-                    )}
-                    colSpan={colSpanTitle}
-                />
-                <TableCell
-                    className={classnames(
-                        classes.tableCellTitle,
-                        classes.tableCellTitleEmpty,
-                    )}
-                    colSpan={colSpanTitle}
-                />
+                {staticFields.map(f => (
+                    <TableCell
+                        key={f.key}
+                        className={classnames(
+                            classes.tableCellTitle,
+                            classes.tableCellTitleEmpty,
+                        )}
+                        colSpan={colSpanTitle}
+                    />
+                ))}
                 {headers.years.map(year => (
                     <TableCell
                         className={classnames(
@@ -59,30 +48,17 @@ const Head = ({ headers }) => {
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
-                <TableCell
-                    className={classnames(
-                        classes.tableCellTitle,
-                        classes.tableCellTitleEmpty,
-                    )}
-                    style={{ top: 50 }}
-                    colSpan={colSpanTitle}
-                />
-                <TableCell
-                    className={classnames(
-                        classes.tableCellTitle,
-                        classes.tableCellTitleEmpty,
-                    )}
-                    style={{ top: 50 }}
-                    colSpan={colSpanTitle}
-                />
-                <TableCell
-                    className={classnames(
-                        classes.tableCellTitle,
-                        classes.tableCellTitleEmpty,
-                    )}
-                    style={{ top: 50 }}
-                    colSpan={colSpanTitle}
-                />
+                {staticFields.map(f => (
+                    <TableCell
+                        key={f.key}
+                        className={classnames(
+                            classes.tableCellTitle,
+                            classes.tableCellTitleEmpty,
+                        )}
+                        style={{ top: 50 }}
+                        colSpan={colSpanTitle}
+                    />
+                ))}
                 {headers.months.map(month => (
                     <TableCell
                         className={classnames(
@@ -103,55 +79,29 @@ const Head = ({ headers }) => {
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
-                <TableCell
-                    className={classnames(
-                        classes.tableCellTitle,
-                        classes.tableCellTitleLarge,
-                    )}
-                    colSpan={colSpanTitle}
-                    style={{ top: 100 }}
-                >
-                    <span
+                {staticFields.map(f => (
+                    <TableCell
+                        key={f.key}
                         className={classnames(
-                            classes.tableCellSpan,
-                            classes.tableCellSpanTitle,
+                            classes.tableCellTitle,
+                            classes.tableCellTitleLarge,
+                            {
+                                [classes.tableCellSpanTitleCenter]: f.center,
+                            },
                         )}
+                        colSpan={colSpanTitle}
+                        style={{ top: 100 }}
                     >
-                        <FormattedMessage {...MESSAGES.country} />
-                    </span>
-                </TableCell>
-                <TableCell
-                    className={classes.tableCellTitle}
-                    colSpan={colSpanTitle}
-                    style={{ top: 100 }}
-                >
-                    <span
-                        className={classnames(
-                            classes.tableCellSpan,
-                            classes.tableCellSpanTitle,
-                        )}
-                    >
-                        <FormattedMessage {...MESSAGES.name} />
-                    </span>
-                </TableCell>
-                <TableCell
-                    className={classnames(
-                        classes.tableCellTitle,
-                        classes.tableCellTitleSmall,
-                    )}
-                    colSpan={colSpanTitle}
-                    style={{ top: 100 }}
-                >
-                    <span
-                        className={classnames(
-                            classes.tableCellSpan,
-                            classes.tableCellSpanTitle,
-                            classes.tableCellSpanTitleCenter,
-                        )}
-                    >
-                        <FormattedMessage {...MESSAGES.r1StartDate} />
-                    </span>
-                </TableCell>
+                        <span
+                            className={classnames(
+                                classes.tableCellSpan,
+                                classes.tableCellSpanTitle,
+                            )}
+                        >
+                            <FormattedMessage {...MESSAGES[f.key]} />
+                        </span>
+                    </TableCell>
+                ))}
                 {headers.weeks.map(week => (
                     <TableCell
                         className={classnames([
@@ -172,18 +122,13 @@ const Head = ({ headers }) => {
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowHidden)}
             >
-                <TableCell
-                    className={classes.tableCellTitle}
-                    colSpan={colSpanTitle}
-                />
-                <TableCell
-                    className={classes.tableCellTitle}
-                    colSpan={colSpanTitle}
-                />
-                <TableCell
-                    className={classes.tableCellTitle}
-                    colSpan={colSpanTitle}
-                />
+                {staticFields.map(f => (
+                    <TableCell
+                        key={f.key}
+                        className={classes.tableCellTitle}
+                        colSpan={colSpanTitle}
+                    />
+                ))}
                 {headers.weeks.map(week => {
                     return Array(7)
                         .fill()

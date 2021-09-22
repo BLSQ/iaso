@@ -45,6 +45,7 @@ services:
       ENKETO_DEV: "true"
       ENKETO_API_TOKEN: AZE78974654azeAZE
       ENKETO_URL:
+      EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
     # Limit logging in dev to not overflow terminal
     logging: &iaso_logging
       driver: "json-file"

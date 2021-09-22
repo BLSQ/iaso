@@ -405,5 +405,5 @@ class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campaign
         fields = "__all__"
-        read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status"]
+        read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status", "creation_email_send_at"]
         extra_kwargs = {"preparedness_data": {"write_only": True}}

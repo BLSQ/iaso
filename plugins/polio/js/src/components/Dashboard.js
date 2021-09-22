@@ -2,7 +2,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Table,
-    textPlaceholder,
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
@@ -42,6 +41,8 @@ import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import SearchIcon from '@material-ui/icons/Search';
 import { useDebounce } from 'use-debounce';
+import moment from 'moment';
+import { defineMessage } from 'react-intl';
 import {
     DateInput,
     ResponsibleField,
@@ -66,6 +67,8 @@ import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import ImportLineListDialog from './ImportLineListDialog';
+import { postRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackMutation } from '../utils/networking';
 
 // eslint-disable-next-line camelcase
 const round_shape = yup.object().shape({
@@ -147,6 +150,67 @@ const PageAction = ({ icon: Icon, onClick, children }) => {
 
 const defaultToZero = value => (value === '' ? 0 : value);
 
+const SendEmailButton = () => {
+    const mutation = useSnackMutation(
+        campaignId =>
+            postRequest(
+                `/api/polio/campaigns/${campaignId}/send_notification_email/`,
+            ),
+        defineMessage({
+            id: 'polio.sendEmail.success',
+            defaultMessage: 'Notification Email sent',
+        }),
+        defineMessage({
+            id: 'polio.sendEmail.error',
+            defaultMessage: 'Error sending Notification email',
+        }),
+    );
+    const form = useFormikContext();
+    const { values } = form;
+    const msg = 'Send an e-mail to notify people of the campaign';
+
+    let validation_error = null;
+    if (values.creation_email_send_at) {
+        validation_error = `Email already sent on ${moment(
+            values.creation_email_send_at,
+        ).format('LTS')}`;
+    } else if (!values.obr_name) {
+        validation_error = 'Enter a name';
+    } else if (!values.virus) {
+        validation_error = 'Enter Virus information';
+    } else if (!values.initial_org_unit) {
+        validation_error = 'Enter Initial district';
+    } else if (!values.onset_at) {
+        validation_error = 'Enter Onset Date';
+    } else if (form.dirty || !values.id) {
+        validation_error = 'Please save the modifications on the campaign';
+    }
+
+    return (
+        <Grid container item>
+            <Tooltip title={validation_error ?? msg}>
+                {/* Span is necessary because otherwise tooltip won't show
+                 when button is disabled */}
+                <span>
+                    <Button
+                        color="primary"
+                        disabled={Boolean(validation_error)}
+                        onClick={async () => mutation.mutate(values.id)}
+                    >
+                        {mutation.isLoading && <LoadingSpinner absolute />}
+                        Notify coordinators by e-mail
+                    </Button>
+                    {mutation?.error?.details?.map((error_msg, i) => (
+                        <Typography key={i} color="error">
+                            {error_msg}
+                        </Typography>
+                    ))}
+                </span>
+            </Tooltip>
+        </Grid>
+    );
+};
+
 const BaseInfoForm = () => {
     const classes = useStyles();
 
@@ -205,16 +269,13 @@ const BaseInfoForm = () => {
                     />
                     <Field
                         className={classes.input}
-                        label="GPEI Email"
-                        name="gpei_email"
-                        component={TextInput}
-                    />
-                    <Field
-                        className={classes.input}
                         name="initial_org_unit"
                         label="Select initial region"
                         component={OrgUnitsLevels}
                     />
+                </Grid>
+                <Grid item xs={6} md={6}>
+                    <SendEmailButton />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>
@@ -882,12 +943,6 @@ const BudgetForm = () => {
 
                 <Grid item md={6}>
                     <Field
-                        label="1st Draft Submission"
-                        name="budget_first_draft_submitted_at"
-                        component={DateInput}
-                        fullWidth
-                    />
-                    <Field
                         label="RRT/OPRTT Approval"
                         name="budget_rrt_oprtt_approval_at"
                         component={DateInput}
@@ -1188,13 +1243,17 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
 
     const classes = useStyles();
 
-    const handleSubmit = (values, helpers) =>
+    const handleSubmit = async (values, helpers) => {
         saveCampaign(convertEmptyStringToNull(values), {
             onSuccess: () => {
                 helpers.resetForm();
                 onClose();
             },
+            onError: error => {
+                helpers.setErrors(error);
+            },
         });
+    };
 
     const defaultValues = {
         round_one: {},
@@ -1294,6 +1353,17 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
                     <Form>
                         <CurrentForm />
                     </Form>
+                    <Grid container justifyContent="flex-end">
+                        <Grid item md={6}>
+                            {formik.errors.non_field_errors?.map(
+                                (error_msg, i) => (
+                                    <Typography key={i} color="error">
+                                        {error_msg}
+                                    </Typography>
+                                ),
+                            )}
+                        </Grid>
+                    </Grid>
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>

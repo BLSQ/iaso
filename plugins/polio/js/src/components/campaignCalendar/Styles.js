@@ -7,9 +7,6 @@ export const useStyles = makeStyles(theme => ({
     tableContainer: {
         overflow: 'auto',
         width: '100%',
-        height: '79vh',
-        marginLeft: theme.spacing(2),
-        marginRight: theme.spacing(2),
     },
     tableRow: {
         height: cellHeight,

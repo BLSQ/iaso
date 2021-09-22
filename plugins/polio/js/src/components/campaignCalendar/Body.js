@@ -5,26 +5,14 @@ import { TableRow, TableBody } from '@material-ui/core';
 
 import { useStyles } from './Styles';
 
-import { filterCampaigns, getCells } from './utils';
+import { getCells } from './utils';
 import { StaticFieldsCells } from './cells/StaticFields';
 
-const Body = ({
-    campaigns,
-    currentWeekIndex,
-    firstMonday,
-    lastSunday,
-    allCampaigns,
-}) => {
+const Body = ({ campaigns, currentWeekIndex, firstMonday, lastSunday }) => {
     const classes = useStyles();
-    const filteredCampaigns = filterCampaigns(
-        campaigns,
-        firstMonday,
-        lastSunday,
-    );
-    const displayedCampaigns = allCampaigns ? campaigns : filteredCampaigns;
     return (
         <TableBody>
-            {displayedCampaigns.map(campaign => {
+            {campaigns.map(campaign => {
                 return (
                     <TableRow
                         className={classes.tableRow}
@@ -49,7 +37,6 @@ Body.propTypes = {
     currentWeekIndex: PropTypes.number.isRequired,
     firstMonday: PropTypes.object.isRequired,
     lastSunday: PropTypes.object.isRequired,
-    allCampaigns: PropTypes.bool.isRequired,
 };
 
 export { Body };

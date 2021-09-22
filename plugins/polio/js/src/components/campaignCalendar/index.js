@@ -1,18 +1,10 @@
-import React, { useMemo, useState } from 'react';
-import moment from 'moment';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import classnames from 'classnames';
+import { LoadingSpinner } from 'bluesquare-components';
 
-import {
-    Table,
-    TableContainer,
-    Box,
-    Button,
-    FormControlLabel,
-    Switch,
-} from '@material-ui/core';
-import { useSafeIntl } from 'bluesquare-components';
+import { Table, TableContainer, Box, Button } from '@material-ui/core';
 import ChevronLeft from '@material-ui/icons/ChevronLeft';
 import ChevronRight from '@material-ui/icons/ChevronRight';
 
@@ -20,29 +12,20 @@ import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/rou
 
 import { useStyles } from './Styles';
 import { baseUrl, dateFormat } from './constants';
-import { getCalendarData, mapCampaigns } from './utils';
 
 import { Head } from './Head';
 import { Body } from './Body';
 
-import MESSAGES from '../../constants/messages';
-
-const CampaignsCalendar = ({ campaigns, params }) => {
-    const { formatMessage } = useSafeIntl();
-    const [allCampaigns, setAllcampaigns] = useState(false);
+const CampaignsCalendar = ({
+    campaigns,
+    calendarData,
+    currentMonday,
+    loadingCampaigns,
+}) => {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const currentDate = params.currentDate
-        ? moment(params.currentDate, dateFormat)
-        : moment();
 
-    const currentMonday = currentDate.clone().startOf('isoWeek');
-    const { headers, currentWeekIndex, firstMonday, lastSunday } = useMemo(
-        () => getCalendarData(currentMonday),
-        [currentMonday],
-    );
-
-    const mappedCampaigns = useMemo(() => mapCampaigns(campaigns), [campaigns]);
+    const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
     const handleGoNext = () => {
         const newDate = currentMonday.clone().add(4, 'week');
         dispatch(
@@ -62,19 +45,6 @@ const CampaignsCalendar = ({ campaigns, params }) => {
 
     return (
         <>
-            <Box display="flex" justifyContent="flex-end">
-                <FormControlLabel
-                    control={
-                        <Switch
-                            checked={allCampaigns}
-                            onChange={event =>
-                                setAllcampaigns(event.target.checked)
-                            }
-                        />
-                    }
-                    label={formatMessage(MESSAGES.displayAllCampaigns)}
-                />
-            </Box>
             <Box
                 mb={2}
                 mt={2}
@@ -106,14 +76,14 @@ const CampaignsCalendar = ({ campaigns, params }) => {
                     </Button>
                 </Box>
                 <TableContainer className={classes.tableContainer}>
+                    {loadingCampaigns && <LoadingSpinner absolute />}
                     <Table stickyHeader>
                         <Head headers={headers} />
                         <Body
-                            campaigns={mappedCampaigns}
+                            campaigns={campaigns}
                             currentWeekIndex={currentWeekIndex}
                             firstMonday={firstMonday}
                             lastSunday={lastSunday}
-                            allCampaigns={allCampaigns}
                         />
                     </Table>
                 </TableContainer>
@@ -128,7 +98,9 @@ CampaignsCalendar.defaultProps = {
 
 CampaignsCalendar.propTypes = {
     campaigns: PropTypes.array,
-    params: PropTypes.object.isRequired,
+    calendarData: PropTypes.object.isRequired,
+    currentMonday: PropTypes.object.isRequired,
+    loadingCampaigns: PropTypes.bool.isRequired,
 };
 
 export { CampaignsCalendar };

@@ -78,14 +78,17 @@ export const MapComponent = ({
                             onClick={() => onSelectShape(shape)}
                         >
                             <Tooltip>
-                                <span>
-                                    {`${
-                                        tooltipLabels.background
-                                    }: ${findBackgroundShape(
-                                        shape,
-                                        backgroundLayer,
-                                    )} > `}
-                                </span>
+                                {backgroundLayer &&
+                                    backgroundLayer.length > 0 && (
+                                        <span>
+                                            {`${
+                                                tooltipLabels.background
+                                            }: ${findBackgroundShape(
+                                                shape,
+                                                backgroundLayer,
+                                            )} > `}
+                                        </span>
+                                    )}
                                 <span>
                                     {`${tooltipLabels.main}: ${shape.name}`}
                                 </span>

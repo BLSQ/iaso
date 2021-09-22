@@ -113,6 +113,7 @@ const mapCampaigns = allCampaigns => {
             id: c.id,
             name: c.obr_name,
             country: c.top_level_org_unit_name,
+            country_id: c.top_level_org_unit_id,
             R1Start,
             R1End,
             R2Start,

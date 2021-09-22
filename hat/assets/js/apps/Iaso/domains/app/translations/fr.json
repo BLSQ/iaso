@@ -451,7 +451,6 @@
     "iaso.permissions.users": "Utilisateurs",
     "iaso.polio.budgetStatus": "Statut budget",
     "iaso.polio.calendar": "Calendrier",
-    "iaso.polio.calendar.displayAllCampaigns": "Afficher toutes les campagnes",
     "iaso.polio.calendar.obrName": "Nom",
     "iaso.polio.calendar.weeks": "semaine(s)",
     "iaso.polio.label.configEmailNotif": "Configurer le pays: {country}",

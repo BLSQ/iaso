@@ -169,10 +169,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.vacine',
         defaultMessage: 'Vacine',
     },
-    displayAllCampaigns: {
-        id: 'iaso.polio.calendar.displayAllCampaigns',
-        defaultMessage: 'Display all campaigns',
-    },
 });
 
 export default MESSAGES;

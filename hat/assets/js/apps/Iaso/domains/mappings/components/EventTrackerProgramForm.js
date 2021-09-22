@@ -1,6 +1,8 @@
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
+import { useSafeIntl } from 'bluesquare-components';
+import { Button } from '@material-ui/core';
 import Dhis2Search from './Dhis2SearchComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
@@ -11,6 +13,7 @@ const EventTrackerProgramForm = ({
     repeatGroupMapping,
     onConfirmedQuestionMapping,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const [program, setProgram] = React.useState('');
     const [trackedEntityAttributes, setTrackedEntityAttributes] =
         React.useState([]);
@@ -26,7 +29,7 @@ const EventTrackerProgramForm = ({
         <Grid container spacing={1} direction="column">
             <Grid>
                 <>
-                    <h3>Current Mapping</h3>
+                    <h3>{formatMessage(MESSAGES.currentMapping)}</h3>
                     <ObjectDumper object={repeatGroupMapping[0]} />
                 </>
             </Grid>
@@ -34,7 +37,7 @@ const EventTrackerProgramForm = ({
                 <Dhis2Search
                     resourceName="programs"
                     fields="id,name,trackedEntityType[id,name,trackedEntityTypeAttributes[trackedEntityAttribute[id,name]],"
-                    label="program"
+                    label={formatMessage(MESSAGES.program)}
                     dataSourceId={dataSourceId}
                     onChange={(name, val) => {
                         setProgram(val);
@@ -65,7 +68,7 @@ const EventTrackerProgramForm = ({
                 <Dhis2Search
                     resourceName="relationshipTypes"
                     fields=":all"
-                    label="Relationship type"
+                    label={formatMessage(MESSAGES.relationshipType)}
                     dataSourceId={dataSourceId}
                     value={relationshipType}
                     onChange={(name, val) => {
@@ -84,14 +87,16 @@ const EventTrackerProgramForm = ({
             </Grid>
             <Grid>
                 <>
-                    <h3>Proposed new mapping</h3>
+                    <h3>{formatMessage(MESSAGES.proposedNewMapping)}</h3>
                     <ObjectDumper object={proposedNewMapping} />
                 </>
             </Grid>
             <Grid>
                 <br />
-                <button
-                    className="button"
+                <Button
+                    // className="button"
+                    color="primary"
+                    variant="contained"
                     disabled={
                         !(
                             trackedEntityIdentifier &&
@@ -103,8 +108,8 @@ const EventTrackerProgramForm = ({
                         onConfirmedQuestionMapping([proposedNewMapping]);
                     }}
                 >
-                    Confirm
-                </button>
+                    {formatMessage(MESSAGES.confirm)}
+                </Button>
             </Grid>
         </Grid>
     );

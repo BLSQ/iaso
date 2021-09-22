@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useSafeIntl } from 'bluesquare-components';
 import ObjectDumper from './ObjectDumper';
 // https://dhis2.fbrcameroun.org/api/indicators.json?fields=id%2Ccode%2Cnumerator%2Cdenominator&paging=false&filter=id:in:[fFd5hGDroLk,d5Ngfxa7lQ2,tMLFyuggLmB,mJubyzLqUjO]
 import indicators from './cmr_indicators.json';
+import MESSAGES from '../messages';
 
 function fetcthDataElementUsedBy(projectDescriptor) {
     const dataElementsUsedByHesabu = [];
@@ -102,6 +104,7 @@ function fetcthDataElementUsedBy(projectDescriptor) {
 }
 
 const HesabuHint = ({ mapping, hesabuDescriptor }) => {
+    const { formatMessage } = useSafeIntl();
     if (
         mapping === undefined ||
         hesabuDescriptor === null ||
@@ -118,7 +121,7 @@ const HesabuHint = ({ mapping, hesabuDescriptor }) => {
 
     return (
         <>
-            <h3>Hesabu hint, this element is used by </h3>
+            <h3>{formatMessage(MESSAGES.hesabuHint)} </h3>
             <br />
             {usedBy.map((obj, index) => (
                 <>

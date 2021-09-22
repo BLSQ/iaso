@@ -58,7 +58,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Are you sure you want to delete this org unit type?',
     },
     deleteWarning: {
-        id: 'iaso.users.dialog.deleteUserTitle',
+        id: 'iaso.orgUnitsTypes.dialog.deleteText',
         defaultMessage: 'This operation cannot be undone.',
     },
     edit: {

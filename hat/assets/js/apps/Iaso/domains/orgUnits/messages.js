@@ -202,7 +202,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.subOrgUnitsType',
     },
     subOrgUnitsTypeNoData: {
-        defaultMessage: '"No sub org unit types',
+        defaultMessage: 'No sub org unit types',
         id: 'iaso.orgUnits.subOrgUnitsType.noData',
     },
     addOrgUnitType: {

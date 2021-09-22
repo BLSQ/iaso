@@ -262,11 +262,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.instanceRestoreAction',
     },
     instanceEditAction: {
-        defaultMessage: 'Edit any answer in Enketo',
+        defaultMessage: 'Edit the answers in Enketo',
         id: 'iaso.instance.instanceEditAction',
     },
     instanceReAssignAction: {
-        defaultMessage: 'Edit orgUnit or period',
+        defaultMessage: 'Edit attached OrgUnit or period',
         id: 'iaso.instance.instanceReAssignAction',
     },
     instanceExportAction: {

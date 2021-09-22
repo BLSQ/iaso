@@ -315,7 +315,7 @@ export const group = (groupList, urlKey = 'group') => ({
     isClearable: true,
     options: groupList.map(a => ({
         label: a.source_version
-            ? `${a.name} - ${a.source_version.data_source.name}`
+            ? `${a.name} - ${a.source_version.data_source.name} ${a.source_version.number}`
             : a.name,
         value: a.id,
     })),

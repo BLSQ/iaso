@@ -1,5 +1,13 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { bool, func, object, arrayOf, oneOfType, any } from 'prop-types';
+import {
+    bool,
+    func,
+    object,
+    arrayOf,
+    oneOfType,
+    any,
+    string,
+} from 'prop-types';
 import { isEqual } from 'lodash';
 import { TreeViewWithSearch } from './TreeViewWithSearch';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -159,7 +167,7 @@ const OrgUnitTreeviewModal = ({
 };
 
 OrgUnitTreeviewModal.propTypes = {
-    titleMessage: object.isRequired,
+    titleMessage: oneOfType([object, string]).isRequired,
     toggleOnLabelClick: bool,
     onConfirm: func,
     multiselect: bool,

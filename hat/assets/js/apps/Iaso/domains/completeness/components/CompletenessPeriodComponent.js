@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Paper, Typography, Grid, makeStyles } from '@material-ui/core';
 
@@ -52,10 +52,10 @@ const CompletenessPeriodComponent = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const onSelectCell = (form, status, period) => {
+    const onSelectCell = (form, status, selectedPeriod) => {
         redirectTo(baseUrls.instances, {
             formId: form.id,
-            periods: period.asPeriodType(form.period_type).periodString,
+            periods: selectedPeriod.asPeriodType(form.period_type).periodString,
             status: status.toUpperCase(),
         });
     };

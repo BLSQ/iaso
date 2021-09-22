@@ -125,6 +125,7 @@ class OrgUnitMapComponent extends Component {
             tooltipMessage: formatMessage(MESSAGES.catchment),
             onAdd: () => this.toggleAddShape('catchment'),
         });
+        this.fitToBounds();
     }
 
     componentDidUpdate(prevProps) {

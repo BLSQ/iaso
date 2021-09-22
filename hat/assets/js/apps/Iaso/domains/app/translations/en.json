@@ -270,7 +270,7 @@
     "iaso.label.periodsBeforeAllowed": "Periods before",
     "iaso.label.periodType": "Period type",
     "iaso.label.periodType.month": "Month",
-    "iaso.label.periodType.quarter": "Generate derived instances",
+    "iaso.label.periodType.quarter": "Quarter",
     "iaso.label.periodType.six_month": "Semester",
     "iaso.label.periodType.year": "Year",
     "iaso.label.polio": "Polio",

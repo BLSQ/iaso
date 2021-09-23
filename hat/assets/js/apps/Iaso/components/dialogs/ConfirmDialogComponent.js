@@ -20,6 +20,7 @@ const ConfirmDialog = ({
     reject,
     btnVariant,
     btnDisabled,
+    btnSize,
 }) => {
     const [open, setOpen] = React.useState(false);
 
@@ -40,6 +41,7 @@ const ConfirmDialog = ({
         <>
             <Button
                 variant={btnVariant}
+                size={btnSize}
                 color="primary"
                 disabled={btnDisabled}
                 onClick={() => handleClickOpen()}
@@ -84,6 +86,7 @@ ConfirmDialog.defaultProps = {
     btnDisabled: false,
     btnVariant: 'outlined',
     message: '',
+    btnSize: 'medium',
 };
 
 ConfirmDialog.propTypes = {
@@ -94,6 +97,7 @@ ConfirmDialog.propTypes = {
     reject: PropTypes.func,
     btnDisabled: PropTypes.bool,
     btnVariant: PropTypes.string,
+    btnSize: PropTypes.string,
 };
 
 export default ConfirmDialog;

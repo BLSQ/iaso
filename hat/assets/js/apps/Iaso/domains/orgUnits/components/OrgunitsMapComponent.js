@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import camelCase from 'lodash/camelCase';
 import isEqual from 'lodash/isEqual';
+import orderBy from 'lodash/orderBy';
 
 import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
@@ -155,7 +156,12 @@ class OrgunitsMap extends Component {
         if (orgUnitTypes.length === 0) {
             this.map.leafletElement.createPane('custom-shape-pane');
         } else {
-            orgUnitTypes.forEach(ot => {
+            const orderedOrgunitTypes = orderBy(
+                orgUnitTypes,
+                [o => o.depth],
+                ['desc'],
+            );
+            orderedOrgunitTypes.forEach(ot => {
                 const otName = camelCase(ot.name);
                 this.map.leafletElement.createPane(
                     `custom-shape-pane-${otName}`,

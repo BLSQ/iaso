@@ -117,6 +117,7 @@ class InstancePopupComponent extends Component {
                                 >
                                     {displayUseLocation && (
                                         <ConfirmDialog
+                                            btnSize="small"
                                             btnMessage={formatMessage(
                                                 MESSAGES.associate,
                                             )}
@@ -133,6 +134,7 @@ class InstancePopupComponent extends Component {
                                         className={classes.marginLeft}
                                         variant="outlined"
                                         color="primary"
+                                        size="small"
                                     >
                                         <Link
                                             to={`${baseUrls.instanceDetail}/instanceId/${currentInstance.id}`}

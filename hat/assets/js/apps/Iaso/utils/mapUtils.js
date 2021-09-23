@@ -6,6 +6,9 @@ import { defineMessages } from 'react-intl';
 import { MapControl, withLeaflet } from 'react-leaflet';
 import { ZoomBar } from '../components/leaflet/zoom-bar';
 
+export const orderOrgUnitsByDepth = orgUnits =>
+    orderBy(orgUnits, [o => o.org_unit_type_depth], ['desc']);
+
 export const MESSAGES = defineMessages({
     'fit-to-bounds': {
         defaultMessage: 'Center the map',
@@ -129,7 +132,7 @@ export const ZoomControl = injectIntl(withLeaflet(ZoomControl_));
 
 export const mapOrgUnitByLocation = orgUnits => {
     const mappedOrgunits = [];
-    const orderedOrgunits = orderBy(orgUnits, [o => o.depth], ['asc']);
+    const orderedOrgunits = orderOrgUnitsByDepth(orgUnits);
     orderedOrgunits.forEach(ot => {
         const otCopy = {
             ...ot,

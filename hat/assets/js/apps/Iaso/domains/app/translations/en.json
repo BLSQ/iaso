@@ -393,7 +393,7 @@
     "iaso.orgUnits.confirmMultiChange": "Confirm bulk changes ?",
     "iaso.orgUnits.dataSources": "Data Sources",
     "iaso.orgUnits.depth": "Depth",
-    "iaso.orgUnits.depthInfos": "Depth of the type in the hierarchy",
+    "iaso.orgUnits.depthInfos": "Depth of the type in the hierarchy: province (4)> zone (3)> aire (2)> village (1)",
     "iaso.orgUnits.editGroups": "Edit groups",
     "iaso.orgUnits.editOrgUnitType": "Edit org unit type",
     "iaso.orgUnits.editValidation": "Edit validation",

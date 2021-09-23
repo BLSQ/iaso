@@ -135,6 +135,7 @@ class OrgUnitPopupComponent extends Component {
                                 >
                                     {displayUseLocation && (
                                         <ConfirmDialog
+                                            btnSize="small"
                                             btnMessage={formatMessage(
                                                 MESSAGES.associate,
                                             )}
@@ -151,6 +152,7 @@ class OrgUnitPopupComponent extends Component {
                                         className={classes.marginLeft}
                                         variant="outlined"
                                         color="primary"
+                                        size="small"
                                     >
                                         <Link
                                             to={`${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}`}

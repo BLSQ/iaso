@@ -389,7 +389,7 @@
     "iaso.orgUnits.confirmMultiChange": "Confirmer les modifications multiples ?",
     "iaso.orgUnits.dataSources": "Sources de données",
     "iaso.orgUnits.depth": "Profondeur",
-    "iaso.orgUnits.depthInfos": "Profondeur du type dans la hiérarchie",
+    "iaso.orgUnits.depthInfos": "Profondeur du type dans la hiérarchie: province (4)> zone (3)> aire (2)> village (1)",
     "iaso.orgUnits.editGroups": "Modifier les groupes",
     "iaso.orgUnits.editOrgUnitType": "Modifier le type d'unité d'organisation",
     "iaso.orgUnits.editValidation": "Modifier la validation",

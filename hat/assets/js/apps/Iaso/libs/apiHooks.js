@@ -27,10 +27,12 @@ const MESSAGES = defineMessages({
  * Success message can be disabled
  *
  * @param {function(*): Promise<*>} mutationFn
- * @param snackSuccessMessage
+ * @param {*}  snackSuccessMessage
+ * @param {string} snackSuccessMessage.id
  *   Translatable Formatjs Message object.
  *   pass null to suppress, undefined for default.
  * @param {*} snackErrorMsg
+ * @param {string} snackErrorMsg.id
  *   idem
  * @param {InvalidateQueryFilters<*>|string|*[]} invalidateQueryKey
  *   optional query key to invalidate

@@ -9,17 +9,12 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
-import { useMutation, useQueryClient } from 'react-query';
 import { getColumns } from '../config';
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
 import { postRequest } from '../../../libs/Api';
-import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
-import {
-    errorSnackBar,
-    succesfullSnackBar,
-} from '../../../constants/snackBars';
 import MESSAGES from '../../../components/snackBars/messages';
+import { useSnackMutation } from '../../../libs/apiHooks';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -64,32 +59,14 @@ const CompletenessPeriodComponent = ({
     activePeriodType,
 }) => {
     const dispatch = useDispatch();
-    const queryClient = useQueryClient();
 
-    const mutation = useMutation(async derivedrequest => {
-        try {
-            await postRequest('/api/derivedinstances/', derivedrequest);
-            await queryClient.invalidateQueries(['completeness']);
-            dispatch(
-                enqueueSnackbar(
-                    succesfullSnackBar(
-                        null,
-                        MESSAGES.generateDerivedRequestSuccess,
-                    ),
-                ),
-            );
-        } catch (err) {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar(
-                        null,
-                        MESSAGES.generateDerivedRequestError,
-                        err,
-                    ),
-                ),
-            );
-        }
-    });
+    const mutation = useSnackMutation(
+        derivedrequest => postRequest('/api/derivedinstances/', derivedrequest),
+        MESSAGES.generateDerivedRequestSuccess,
+        MESSAGES.generateDerivedRequestError,
+        ['completeness'],
+    );
+
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const onSelectCell = (form, status, selectedPeriod) => {

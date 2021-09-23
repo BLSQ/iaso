@@ -58,7 +58,7 @@ export const MapComponent = ({
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             <Pane name={`BackgroundLayer-${name}`}>
-                {backgroundLayer &&
+                {backgroundLayer?.length > 0 &&
                     backgroundLayer.map(shape => (
                         <GeoJSON
                             key={shape.id}
@@ -69,7 +69,7 @@ export const MapComponent = ({
                     ))}
             </Pane>
             <Pane name={`MainLayer-${name}`}>
-                {mainLayer &&
+                {mainLayer?.length > 0 &&
                     mainLayer.map(shape => (
                         <GeoJSON
                             key={shape.id}
@@ -78,17 +78,16 @@ export const MapComponent = ({
                             onClick={() => onSelectShape(shape)}
                         >
                             <Tooltip>
-                                {backgroundLayer &&
-                                    backgroundLayer.length > 0 && (
-                                        <span>
-                                            {`${
-                                                tooltipLabels.background
-                                            }: ${findBackgroundShape(
-                                                shape,
-                                                backgroundLayer,
-                                            )} > `}
-                                        </span>
-                                    )}
+                                {backgroundLayer?.length > 0 && (
+                                    <span>
+                                        {`${
+                                            tooltipLabels.background
+                                        }: ${findBackgroundShape(
+                                            shape,
+                                            backgroundLayer,
+                                        )} > `}
+                                    </span>
+                                )}
                                 <span>
                                     {`${tooltipLabels.main}: ${shape.name}`}
                                 </span>

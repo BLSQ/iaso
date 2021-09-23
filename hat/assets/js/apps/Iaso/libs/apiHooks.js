@@ -18,6 +18,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetch.error',
     },
 });
+
 /**
  * Mix a useMutation from react-query and snackbar message as well as
  * cache invalidation.
@@ -25,13 +26,13 @@ const MESSAGES = defineMessages({
  * Per default will display a message on success and on error.
  * Success message can be disabled
  *
- * @param mutationFn
+ * @param {function(*): Promise<*>} mutationFn
  * @param snackSuccessMessage
  *   Translatable Formatjs Message object.
  *   pass null to suppress, undefined for default.
- * @param snackErrorMsg
+ * @param {*} snackErrorMsg
  *   idem
- * @param invalidateQueryKey
+ * @param {InvalidateQueryFilters<*>|string|*[]} invalidateQueryKey
  *   optional query key to invalidate
  * @param options
  *   standard useMutation Options
@@ -78,16 +79,17 @@ export const useSnackMutation = (
     };
     return useMutation(mutationFn, newOptions);
 };
-
 /**
  * Mix a useQuery from react-query and snackbar message in case of error
  * @param {string[]} queryKey
  * @param {((context: QueryFunctionContext<*>) => (Promise<TQueryFnData> | TQueryFnData))|UseQueryOptions<TQueryFnData, TError, TData, *>} queryFn
  * @param {Object|null} snackErrorMsg
+ * @param {string} snackErrorMsg.id
  *  Translatable Formatjs Message object. null to suppress, undefined for default.
- * @param UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>) options
+ * @param {UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>)} options
  * @returns UseQueryResult<TData, TError>;
  */
+
 export const useSnackQuery = (
     queryKey,
     queryFn,

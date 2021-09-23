@@ -129,11 +129,7 @@ export const ZoomControl = injectIntl(withLeaflet(ZoomControl_));
 
 export const mapOrgUnitByLocation = orgUnits => {
     const mappedOrgunits = [];
-    const orderedOrgunits = orderBy(
-        orgUnits,
-        [o => o.org_unit_type_depth],
-        ['asc'],
-    );
+    const orderedOrgunits = orderBy(orgUnits, [o => o.depth], ['asc']);
     orderedOrgunits.forEach(ot => {
         const otCopy = {
             ...ot,

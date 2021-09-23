@@ -20,9 +20,6 @@ const StaticFieldsCells = ({ campaign }) => {
                 className={classnames(
                     classes.tableCellSpan,
                     classes.tableCellSpanRow,
-                    {
-                        [classes.tableCellSpanRowCenter]: field.center,
-                    },
                 )}
             >
                 {!field.render && campaign[field.key]}

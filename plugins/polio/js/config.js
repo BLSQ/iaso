@@ -16,6 +16,17 @@ const routes = [
         params: [],
     },
     {
+        baseUrl: 'polio/calendar',
+        component: props => <Calendar {...props} />,
+        permission: 'iaso_forms',
+        params: [
+            {
+                isRequired: false,
+                key: 'currentDate',
+            },
+        ],
+    },
+    {
         baseUrl: 'polio/config',
         component: () => <CountryNotificationsConfig />,
         permission: 'iaso_polio',
@@ -34,17 +45,6 @@ const routes = [
             },
         ],
     },
-    {
-        baseUrl: 'polio/calendar',
-        component: props => <Calendar {...props} />,
-        permission: 'iaso_forms',
-        params: [
-            {
-                isRequired: false,
-                key: 'currentDate',
-            },
-        ],
-    },
 ];
 
 const menu = [
@@ -60,16 +60,16 @@ const menu = [
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
-                label: MESSAGES.configuration,
-                key: 'config',
-                permission: 'iaso_polio',
-                icon: props => <SettingsIcon {...props} />,
-            },
-            {
                 label: MESSAGES.calendar,
                 key: 'calendar',
                 permission: 'iaso_forms',
                 icon: props => <CalendarToday {...props} />,
+            },
+            {
+                label: MESSAGES.configuration,
+                key: 'config',
+                permission: 'iaso_polio',
+                icon: props => <SettingsIcon {...props} />,
             },
         ],
     },

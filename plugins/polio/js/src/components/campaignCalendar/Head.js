@@ -85,9 +85,6 @@ const Head = ({ headers }) => {
                         className={classnames(
                             classes.tableCellTitle,
                             classes.tableCellTitleLarge,
-                            {
-                                [classes.tableCellSpanTitleCenter]: f.center,
-                            },
                         )}
                         colSpan={colSpanTitle}
                         style={{ top: 100 }}

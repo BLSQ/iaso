@@ -126,9 +126,6 @@ export const useStyles = makeStyles(theme => ({
         paddingRight: theme.spacing(2),
         fontWeight: 'bold',
     },
-    tableCellSpanTitleCenter: {
-        justifyContent: 'center',
-    },
     tableCellSpanWithPopOver: {
         cursor: 'pointer',
     },
@@ -139,18 +136,11 @@ export const useStyles = makeStyles(theme => ({
         paddingRight: theme.spacing(2),
         fontSize: 13,
     },
-    tableCellSpanRowCenter: {
-        justifyContent: 'center',
+    popper: {
+        zIndex: 500,
+        width: 250,
     },
-    popover: {
-        position: 'absolute',
-        top: 0,
-        right: '100%',
-        padding: theme.spacing(2),
-        width: 200,
-        zIndex: 1,
-    },
-    popoverClose: {
+    popperClose: {
         position: 'relative',
         marginLeft: '85%',
         marginTop: theme.spacing(-1),

@@ -146,7 +146,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Start date',
     },
     endDate: {
-        id: 'iaso.label.endDate',
+        id: 'iaso.label.dateTo',
         defaultMessage: 'End date',
     },
     name: {

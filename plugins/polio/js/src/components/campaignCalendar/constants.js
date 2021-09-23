@@ -11,7 +11,6 @@ const staticFields = [
     },
     {
         key: 'r1StartDate',
-        center: true,
         render: campaign =>
             campaign.R1Start ? campaign.R1Start.format('L') : '',
     },

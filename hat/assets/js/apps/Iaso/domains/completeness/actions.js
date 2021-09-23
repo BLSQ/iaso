@@ -14,6 +14,7 @@ const stopFetchingCompleteness = () => ({
     type: STOP_FETCHING_COMPLETENESS,
 });
 
+// use a closure to pass the dispatch
 export const fetchCompleteness = dispatch => () => {
     return getRequest('/api/completeness/')
         .then(res => res.completeness)
@@ -26,9 +27,8 @@ export const fetchCompleteness = dispatch => () => {
         );
 };
 
-export const generateDerivedInstances = derivedrequest => dispatch => {
-    dispatch(startFetchingCompleteness());
-    postRequest('/api/derivedinstances/', derivedrequest)
+export const generateDerivedInstances = dispatch => derivedrequest => {
+    return postRequest('/api/derivedinstances/', derivedrequest)
         .then(() =>
             dispatch(
                 enqueueSnackbar(
@@ -36,15 +36,11 @@ export const generateDerivedInstances = derivedrequest => dispatch => {
                 ),
             ),
         )
-        .then(() => dispatch(fetchCompleteness()))
         .catch(err =>
             dispatch(
                 enqueueSnackbar(
                     errorSnackBar('generateDerivedRequestError', null, err),
                 ),
             ),
-        )
-        .then(() => {
-            dispatch(stopFetchingCompleteness());
-        });
+        );
 };

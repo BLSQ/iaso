@@ -1,5 +1,5 @@
 import { useDispatch } from 'react-redux';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { defineMessages } from 'react-intl';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.successful',
         defaultMessage: 'Saved successfully',
     },
+    defaultQueryApiSuccess: {
+        defaultMessage: 'An error occurred while fetching data',
+        id: 'iaso.snackBar.fetch.error',
+    },
 });
 /**
  * Mix a useMutation from react-query and snackbar message as well as
@@ -24,7 +28,7 @@ const MESSAGES = defineMessages({
  * @param mutationFn
  * @param snackSuccessMessage
  *   Translatable Formatjs Message object.
- *   pass null to supress, undefined for default.
+ *   pass null to suppress, undefined for default.
  * @param snackErrorMsg
  *   idem
  * @param invalidateQueryKey
@@ -33,7 +37,6 @@ const MESSAGES = defineMessages({
  *   standard useMutation Options
  * @returns {UseMutationResult<mutationFn, options, void, unknown>}
  */
-
 export const useSnackMutation = (
     mutationFn,
     snackSuccessMessage = MESSAGES.defaultMutationApiSuccess,
@@ -74,4 +77,38 @@ export const useSnackMutation = (
         },
     };
     return useMutation(mutationFn, newOptions);
+};
+
+/**
+ * Mix a useQuery from react-query and snackbar message in case of error
+ * @param {string[]} queryKey
+ * @param {((context: QueryFunctionContext<*>) => (Promise<TQueryFnData> | TQueryFnData))|UseQueryOptions<TQueryFnData, TError, TData, *>} queryFn
+ * @param {Object|null} snackErrorMsg
+ *  Translatable Formatjs Message object. null to suppress, undefined for default.
+ * @param UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>) options
+ * @returns UseQueryResult<TData, TError>;
+ */
+export const useSnackQuery = (
+    queryKey,
+    queryFn,
+    snackErrorMsg = MESSAGES.defaultQueryApiSuccess,
+    options = {},
+) => {
+    const dispatch = useDispatch();
+    const newOptions = {
+        ...options,
+        onError: (error, variables, context) => {
+            if (snackErrorMsg) {
+                dispatch(
+                    enqueueSnackbar(null, errorSnackBar(snackErrorMsg, error)),
+                );
+            }
+            if (options.onError) {
+                return options.onError(error, variables, context);
+            }
+            return null;
+        },
+    };
+    const query = useQuery(queryKey, queryFn, newOptions);
+    return query;
 };

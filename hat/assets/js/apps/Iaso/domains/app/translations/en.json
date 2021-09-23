@@ -493,6 +493,7 @@
     "iaso.snackBar.deleteUserError": "An error occurred while deleting user profile",
     "iaso.snackBar.deleteUserSuccessful": "User deleted",
     "iaso.snackBar.error": "An error occurred while saving",
+    "iaso.snackBar.fetch.error": "An error occurred while fetching data",
     "iaso.snackBar.fetchAlgorithmsError": "An error occurred while fetching algorithms list",
     "iaso.snackBar.fetchCompletenessError": "An error occured while fetching completness",
     "iaso.snackBar.fetchCurrentUser": "An error occurred while fetching current user",

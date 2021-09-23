@@ -19,6 +19,7 @@ import {
     errorSnackBar,
     succesfullSnackBar,
 } from '../../../constants/snackBars';
+import MESSAGES from '../../../components/snackBars/messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -71,13 +72,20 @@ const CompletenessPeriodComponent = ({
             await queryClient.invalidateQueries(['completeness']);
             dispatch(
                 enqueueSnackbar(
-                    succesfullSnackBar('generateDerivedRequestSuccess'),
+                    succesfullSnackBar(
+                        null,
+                        MESSAGES.generateDerivedRequestSuccess,
+                    ),
                 ),
             );
         } catch (err) {
             dispatch(
                 enqueueSnackbar(
-                    errorSnackBar('generateDerivedRequestError', null, err),
+                    errorSnackBar(
+                        null,
+                        MESSAGES.generateDerivedRequestError,
+                        err,
+                    ),
                 ),
             );
         }
@@ -88,7 +96,8 @@ const CompletenessPeriodComponent = ({
         dispatch(
             redirectTo(baseUrls.instances, {
                 formId: form.id,
-                periods: selectedPeriod.asPeriodType(form.period_type).periodString,
+                periods: selectedPeriod.asPeriodType(form.period_type)
+                    .periodString,
                 status: status.toUpperCase(),
             }),
         );

@@ -133,6 +133,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.table.label.actions',
         defaultMessage: 'Actions',
     },
+    endDateBeforeStartDate: {
+        id: 'iaso.polio.form.validator.error.endDateBeforeStartDate',
+        defaultMessage: "End date can't be before start date",
+    },
+    positiveInteger: {
+        id: 'iaso.polio.form.validator.error.endDateBeforeStartDate',
+        defaultMessage: 'Please use a positive integer',
+    },
 });
 
 export default MESSAGES;

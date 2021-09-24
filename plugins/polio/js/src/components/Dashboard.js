@@ -38,7 +38,6 @@ import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
-import * as yup from 'yup';
 import SearchIcon from '@material-ui/icons/Search';
 import { useDebounce } from 'use-debounce';
 import moment from 'moment';
@@ -69,68 +68,7 @@ import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBar
 import ImportLineListDialog from './ImportLineListDialog';
 import { postRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackMutation } from '../utils/networking';
-
-// eslint-disable-next-line camelcase
-const round_shape = yup.object().shape({
-    started_at: yup.date().nullable(),
-    ended_at: yup
-        .date()
-        .nullable()
-        .min(yup.ref('started_at'), "end date can't be before start date"),
-    mop_up_started_at: yup.date().nullable(),
-    mop_up_ended_at: yup
-        .date()
-        .nullable()
-        .min(
-            yup.ref('mop_up_started_at'),
-            "end date can't be before start date",
-        ),
-    im_started_at: yup.date().nullable(),
-    im_ended_at: yup
-        .date()
-        .nullable()
-        .min(yup.ref('im_started_at'), "end date can't be before start date"),
-    lqas_started_at: yup.date().nullable(),
-    lqas_ended_at: yup
-        .date()
-        .nullable()
-        .min(yup.ref('lqas_started_at'), "end date can't be before start date"),
-    target_population: yup.number().nullable().min(0).integer(),
-    cost: yup.number().nullable().min(0).integer(),
-});
-
-const schema = yup.object().shape({
-    epid: yup.string().nullable(),
-    obr_name: yup.string().trim().required(),
-    description: yup.string().nullable(),
-    onset_at: yup.date().nullable(),
-    three_level_call_at: yup.date().nullable(),
-
-    cvdpv_notified_at: yup.date().nullable(),
-    cvdpv2_notified_at: yup.date().nullable(),
-
-    pv_notified_at: yup.date().nullable(),
-    pv2_notified_at: yup.date().nullable(),
-
-    detection_first_draft_submitted_at: yup.date().nullable(),
-    detection_rrt_oprtt_approval_at: yup.date().nullable(),
-
-    investigation_at: yup.date().nullable(),
-    risk_assessment_first_draft_submitted_at: yup.date().nullable(),
-    risk_assessment_rrt_oprtt_approval_at: yup.date().nullable(),
-    ag_nopv_group_met_at: yup.date().nullable(),
-    dg_authorized_at: yup.date().nullable(),
-
-    spreadsheet_url: yup.string().url().nullable(),
-
-    eomg: yup.date().nullable(),
-    budget_submitted_at: yup.date().nullable(),
-    district_count: yup.number().nullable().positive().integer(),
-    no_regret_fund_amount: yup.number().nullable().positive().integer(),
-
-    round_one: round_shape,
-    round_two: round_shape,
-});
+import { useFormValidator } from '../hooks/useFormValidator';
 
 const PageAction = ({ icon: Icon, onClick, children }) => {
     const classes = useStyles();
@@ -1074,12 +1012,16 @@ const Round1Form = () => {
                 <Field
                     label="Districts passing LQAS"
                     name="round_one.lqas_district_passing"
+                    // as={NumberInput}
+                    // keyValue="round_one.lqas_district_passing"
                     component={TextInput}
                     className={classes.input}
                 />
                 <Field
                     label="Districts failing LQAS"
                     name="round_one.lqas_district_failing"
+                    // as={NumberInput}
+                    // keyValue="round_one.lqas_district_failing"
                     component={TextInput}
                     className={classes.input}
                 />
@@ -1240,6 +1182,7 @@ const Form = ({ children }) => {
 
 const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
+    const schema = useFormValidator();
 
     const classes = useStyles();
 

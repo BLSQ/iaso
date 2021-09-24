@@ -69,6 +69,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Dashboard',
         id: 'iaso.label.dashboard',
     },
+    campaigns: {
+        defaultMessage: 'Campaigns',
+        id: 'iaso.label.campaigns',
+    },
     polio: {
         defaultMessage: 'Polio',
         id: 'iaso.label.polio',
@@ -168,6 +172,14 @@ const MESSAGES = defineMessages({
     vaccine: {
         id: 'iaso.polio.vaccine',
         defaultMessage: 'Vacine',
+    },
+    endDateBeforeStartDate: {
+        id: 'iaso.polio.form.validator.error.endDateBeforeStartDate',
+        defaultMessage: "End date can't be before start date",
+    },
+    positiveInteger: {
+        id: 'iaso.polio.form.validator.error.positiveInteger',
+        defaultMessage: 'Please use a positive integer',
     },
 });
 

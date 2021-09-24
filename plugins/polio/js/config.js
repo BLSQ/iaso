@@ -54,7 +54,7 @@ const menu = [
         icon: props => <DataSourceIcon {...props} />,
         subMenu: [
             {
-                label: MESSAGES.dashboard,
+                label: MESSAGES.campaigns,
                 key: 'list',
                 permission: 'iaso_polio',
                 icon: props => <FormatListBulleted {...props} />,

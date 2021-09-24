@@ -8,7 +8,6 @@ import {
 } from 'bluesquare-components';
 import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
-import moment from 'moment';
 import AddIcon from '@material-ui/icons/Add';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -20,10 +19,7 @@ import CreateEditDialog from './components/CreateEditDialog';
 import PageActions from './components/PageActions';
 import PageAction from './components/PageAction';
 import { PAGES_TYPES } from './constants';
-import {
-    DateTimeCell,
-    DateTimeCellRfc,
-} from '../../components/Cells/DateTimeCell';
+import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -139,7 +135,10 @@ const Pages = () => {
                             <a href={`/pages/${settings.row.original.slug}`}>
                                 <IconButtonComponent
                                     icon="remove-red-eye"
-                                    tooltipMessage={MESSAGES.viewPage}
+                                    tooltipMessage={{
+                                        ...MESSAGES.viewPage,
+                                        values: { linebreak: <br /> },
+                                    }}
                                     onClick={() => {}}
                                 />
                             </a>

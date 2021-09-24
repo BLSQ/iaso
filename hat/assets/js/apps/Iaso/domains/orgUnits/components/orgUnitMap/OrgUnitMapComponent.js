@@ -10,10 +10,12 @@ import { Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import { injectIntl } from 'bluesquare-components';
+
 import {
     mapOrgUnitByLocation,
     colorClusterCustomMarker,
     getleafletGeoJson,
+    orderOrgUnitTypeByDepth,
     ZoomControl,
 } from '../../../../utils/mapUtils';
 import { getMarkerList } from '../../utils';
@@ -307,6 +309,7 @@ class OrgUnitMapComponent extends Component {
             orgUnitLocationModified,
             theme,
             classes,
+            orgUnitTypes,
         } = this.props;
         const {
             location,
@@ -322,7 +325,7 @@ class OrgUnitMapComponent extends Component {
             this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }
         const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(
-            orgUnitTypesSelected || [],
+            orderOrgUnitTypeByDepth(orgUnitTypesSelected) || [],
         );
         const mappedSourcesSelected = mapOrgUnitByLocation(
             sourcesSelected || [],
@@ -334,6 +337,23 @@ class OrgUnitMapComponent extends Component {
             catchment.edit ||
             catchment.delete ||
             catchment.add;
+        const getSourceShape = (s, o) => (
+            <GeoJSON
+                style={{
+                    color: s.color,
+                }}
+                key={o.id}
+                data={o.geo_json}
+                onClick={() => this.fetchSubOrgUnitDetail(o)}
+            >
+                <OrgUnitPopupComponent
+                    displayUseLocation
+                    useLocation={selectedOrgUnit =>
+                        this.useOrgUnitLocation(selectedOrgUnit)
+                    }
+                />
+            </GeoJSON>
+        );
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
@@ -415,6 +435,7 @@ class OrgUnitMapComponent extends Component {
                         keyboard={false}
                     >
                         <ZoomControl fitToBounds={() => this.fitToBounds()} />
+
                         <ScaleControl imperial={false} />
                         <TileLayer
                             attribution={
@@ -424,51 +445,95 @@ class OrgUnitMapComponent extends Component {
                             }
                             url={currentTile.url}
                         />
-                        {!location.edit &&
-                            mappedOrgUnitTypesSelected.map(ot =>
-                                ot.orgUnits.shapes.map(o => (
-                                    <GeoJSON
-                                        pane={orgunitsPane}
-                                        key={o.id}
-                                        data={o.geo_json}
-                                        onClick={() =>
-                                            this.fetchSubOrgUnitDetail(o)
-                                        }
-                                        style={() => ({ color: ot.color })}
-                                    >
-                                        <OrgUnitPopupComponent
-                                            displayUseLocation
-                                            useLocation={selectedOrgUnit =>
-                                                this.useOrgUnitLocation(
-                                                    selectedOrgUnit,
-                                                )
-                                            }
-                                        />
-                                    </GeoJSON>
-                                )),
-                            )}
-                        {mappedSourcesSelected.map(s =>
-                            s.orgUnits.shapes.map(o => (
-                                <GeoJSON
-                                    pane={orgunitsPane}
-                                    key={o.id}
-                                    data={o.geo_json}
-                                    onClick={() =>
-                                        this.fetchSubOrgUnitDetail(o)
+                        {!location.edit && (
+                            <>
+                                {mappedSourcesSelected.map(ms => {
+                                    const shapes = ms.orgUnits.shapes.filter(
+                                        o => !o.org_unit_type_id,
+                                    );
+                                    if (shapes.length > 0) {
+                                        return (
+                                            <Pane
+                                                name={`no-org-unit-type-${ms.id}`}
+                                                key={ms.id}
+                                            >
+                                                {shapes.map(o =>
+                                                    getSourceShape(ms, o),
+                                                )}
+                                            </Pane>
+                                        );
                                     }
-                                    style={() => ({ color: s.color })}
-                                >
-                                    <OrgUnitPopupComponent
-                                        displayUseLocation
-                                        useLocation={selectedOrgUnit =>
-                                            this.useOrgUnitLocation(
-                                                selectedOrgUnit,
-                                            )
-                                        }
-                                    />
-                                </GeoJSON>
-                            )),
+                                    return null;
+                                })}
+                                {orgUnitTypes.map(ot => {
+                                    const selectedOut =
+                                        mappedOrgUnitTypesSelected.find(
+                                            mot => mot.id === ot.id,
+                                        );
+
+                                    const sourcesOrgUnits =
+                                        mappedSourcesSelected.filter(ms =>
+                                            ms.orgUnits.shapes.some(
+                                                o =>
+                                                    o.org_unit_type_id ===
+                                                    ot.id,
+                                            ),
+                                        );
+                                    if (
+                                        selectedOut ||
+                                        sourcesOrgUnits.length > 0
+                                    ) {
+                                        return (
+                                            <Pane
+                                                style={{
+                                                    zIndex:
+                                                        400 + (ot.depth || 1),
+                                                }}
+                                                name={`${orgunitsPane}-type-${ot.id}-${ot.name}`}
+                                                key={ot.id}
+                                            >
+                                                {selectedOut &&
+                                                    selectedOut.orgUnits.shapes.map(
+                                                        o => (
+                                                            <GeoJSON
+                                                                key={o.id}
+                                                                data={
+                                                                    o.geo_json
+                                                                }
+                                                                onClick={() =>
+                                                                    this.fetchSubOrgUnitDetail(
+                                                                        o,
+                                                                    )
+                                                                }
+                                                                style={() => ({
+                                                                    color: ot.color,
+                                                                })}
+                                                            >
+                                                                <OrgUnitPopupComponent
+                                                                    displayUseLocation
+                                                                    useLocation={selectedOrgUnit =>
+                                                                        this.useOrgUnitLocation(
+                                                                            selectedOrgUnit,
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </GeoJSON>
+                                                        ),
+                                                    )}
+
+                                                {sourcesOrgUnits.map(s =>
+                                                    s.orgUnits.shapes.map(o =>
+                                                        getSourceShape(s, o),
+                                                    ),
+                                                )}
+                                            </Pane>
+                                        );
+                                    }
+                                    return null;
+                                })}
+                            </>
                         )}
+
                         <MarkerClusterGroup
                             maxClusterRadius={0} // only apply cluster on markers with same coordinates
                             iconCreateFunction={cluster =>
@@ -478,7 +543,10 @@ class OrgUnitMapComponent extends Component {
                                 )
                             }
                         >
-                            <Pane name={orgunitsPane}>
+                            <Pane
+                                name={`${orgunitsPane}-markers`}
+                                style={{ zIndex: 699 }}
+                            >
                                 {mappedOrgUnitTypesSelected.map(ot =>
                                     getMarkerList(
                                         ot.orgUnits.locations,
@@ -519,15 +587,20 @@ class OrgUnitMapComponent extends Component {
                         </MarkerClusterGroup>
 
                         {hasMarker && currentOption === 'edit' && (
-                            <MarkerComponent
-                                item={orgUnit}
-                                draggable={currentOption === 'edit'}
-                                onDragend={newMarker =>
-                                    this.props.onChangeLocation(
-                                        newMarker.getLatLng(),
-                                    )
-                                }
-                            />
+                            <Pane
+                                name={`${orgunitsPane}-edit-markers`}
+                                style={{ zIndex: 699 }}
+                            >
+                                <MarkerComponent
+                                    item={orgUnit}
+                                    draggable={currentOption === 'edit'}
+                                    onDragend={newMarker =>
+                                        this.props.onChangeLocation(
+                                            newMarker.getLatLng(),
+                                        )
+                                    }
+                                />
+                            </Pane>
                         )}
                     </Map>
                 </InnerDrawer>
@@ -564,6 +637,7 @@ OrgUnitMapComponent.propTypes = {
     theme: PropTypes.object.isRequired,
     currentUser: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
+    orgUnitTypes: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -571,6 +645,7 @@ const MapStateToProps = state => ({
     formsSelected: state.orgUnits.currentFormsSelected,
     currentTile: state.map.currentTile,
     orgUnitTypesSelected: state.orgUnits.currentSubOrgUnitsTypesSelected,
+    orgUnitTypes: state.orgUnits.orgUnitTypes,
     sourcesSelected: state.orgUnits.currentSourcesSelected,
 });
 

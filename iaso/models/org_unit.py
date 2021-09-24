@@ -394,6 +394,7 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "org_unit_type": self.org_unit_type.name if self.org_unit_type else None,
+            "org_unit_type_id": self.org_unit_type.id if self.org_unit_type else None,
             "org_unit_type_depth": self.org_unit_type.depth if self.org_unit_type else None,
             "source_id": self.version.data_source.id if self.version else None,
             "source_name": self.version.data_source.name if self.version else None,

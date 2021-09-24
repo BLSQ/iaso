@@ -1418,7 +1418,7 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
-const DEFAULT_ORDER = '-cvdpv2_notified_at';
+const DEFAULT_ORDER = '-cvdpv_notified_at';
 
 export const Dashboard = () => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
@@ -1510,7 +1510,7 @@ export const Dashboard = () => {
             },
             {
                 Header: 'cVDPV2 notification date',
-                accessor: 'cvdpv2_notified_at',
+                accessor: 'cvdpv_notified_at',
             },
             {
                 Header: 'Round 1',

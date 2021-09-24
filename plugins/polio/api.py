@@ -338,8 +338,7 @@ class IMViewSet2(viewsets.ViewSet):
                 OHH_COUNT = form.get("OHH_count", None)
                 if OHH_COUNT is None:
                     print("missing OHH_COUNT", form)
-                else:
-                    print(OHH_COUNT)
+
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 for OHH in form.get("OHH", []):
@@ -348,6 +347,7 @@ class IMViewSet2(viewsets.ViewSet):
                     total_Child_FMD += int(Child_FMD)
                     total_Child_Checked += int(Child_Checked)
                 row = [
+                    form.get("Type"),
                     form.get("Country"),
                     form.get("Region"),
                     form.get("District"),
@@ -357,33 +357,13 @@ class IMViewSet2(viewsets.ViewSet):
                     total_Child_FMD,
                     total_Child_Checked,
                 ]
-                print(row)
+                res.append(row)
                 form_count += 1
 
         print("parsed:", len(res), "failed:", failure_count)
         # print("all_keys", all_keys)
 
-        all_keys = sorted(list(all_keys))
-        all_keys.insert(0, "type")
-        if not as_csv:
-            for item in res:
-                for k in all_keys:
-                    if k not in item:
-                        item[k] = None
-            return JsonResponse(res, safe=False)
-        else:
-            response = HttpResponse(content_type="text/csv")
-
-            writer = csv.writer(response)
-            writer.writerow(all_keys)
-            i = 1
-            for item in res:
-                ar = [item.get(key, None) for key in all_keys]
-                writer.writerow(ar)
-                i += 1
-                if i % 100 == 0:
-                    print(i)
-            return response
+        return JsonResponse(res, safe=False)
 
 
 router = routers.SimpleRouter()

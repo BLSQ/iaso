@@ -1238,7 +1238,7 @@ const Form = ({ children }) => {
     );
 };
 
-const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
+export const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
 
     const classes = useStyles();

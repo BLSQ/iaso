@@ -5,8 +5,10 @@ import { connect } from 'react-redux';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import Grid from '@material-ui/core/Grid';
-import { AddButton as AddButtonComponent } from 'bluesquare-components';
-import { useSafeIntl } from 'bluesquare-components/dist/utils/useSafeIntl';
+import {
+    AddButton as AddButtonComponent,
+    useSafeIntl,
+} from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import IasoSearchComponent from './IasoSearchComponent';

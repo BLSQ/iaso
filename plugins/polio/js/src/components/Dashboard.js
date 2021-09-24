@@ -1571,6 +1571,7 @@ export const Dashboard = () => {
             },
             {
                 Header: 'Round 2',
+                id: 'round_two__started_at',
                 accessor: row => row.round_two?.started_at,
             },
             {

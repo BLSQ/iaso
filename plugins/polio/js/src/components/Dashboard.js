@@ -228,7 +228,7 @@ const BaseInfoForm = () => {
                             className={classes.input}
                             label="cVDPV2 notification date"
                             fullWidth
-                            name="cvdpv_notified_at"
+                            name="cvdpv2_notified_at"
                             component={DateInput}
                         />
                     </Grid>
@@ -288,7 +288,7 @@ const DetectionForm = () => {
                     <Field
                         label="cVDPV2 notification date"
                         fullWidth
-                        name="cvdpv_notified_at"
+                        name="cvdpv2_notified_at"
                         component={DateInput}
                     />
                 </Grid>
@@ -1418,7 +1418,7 @@ const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
-const DEFAULT_ORDER = '-cvdpv_notified_at';
+const DEFAULT_ORDER = '-cvdpv2_notified_at';
 
 export const Dashboard = () => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
@@ -1510,7 +1510,7 @@ export const Dashboard = () => {
             },
             {
                 Header: 'cVDPV2 notification date',
-                accessor: 'cvdpv_notified_at',
+                accessor: 'cvdpv2_notified_at',
             },
             {
                 Header: 'Round 1',

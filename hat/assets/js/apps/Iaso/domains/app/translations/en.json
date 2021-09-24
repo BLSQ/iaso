@@ -430,7 +430,7 @@
     "iaso.orgUnitsTypes.dialog.deleteText": "This operation cannot be undone.",
     "iaso.orgUnitsTypes.projects": "Projects",
     "iaso.orgUnitsTypes.update": "Update org unit type",
-    "iaso.page.viewpages": "View page",
+    "iaso.page.viewpages": "View page.{linebreak} New tab: ctrl + click",
     "iaso.pages.create": "Create page",
     "iaso.pages.dialog.delete.content": "This operation cannot be undone",
     "iaso.pages.dialog.delete.title": "Are you sure you want to delete this page?",

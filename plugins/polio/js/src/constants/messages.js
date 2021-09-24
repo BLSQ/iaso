@@ -138,7 +138,7 @@ const MESSAGES = defineMessages({
         defaultMessage: "End date can't be before start date",
     },
     positiveInteger: {
-        id: 'iaso.polio.form.validator.error.endDateBeforeStartDate',
+        id: 'iaso.polio.form.validator.error.positiveInteger',
         defaultMessage: 'Please use a positive integer',
     },
 });

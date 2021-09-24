@@ -95,12 +95,12 @@ const SendEmailButton = () => {
                 `/api/polio/campaigns/${campaignId}/send_notification_email/`,
             ),
         defineMessage({
-            id: 'polio.sendEmail.success',
+            id: 'iaso.polio.sendEmail.success',
             defaultMessage: 'Notification Email sent',
         }),
         defineMessage({
-            id: 'polio.sendEmail.error',
-            defaultMessage: 'Error sending Notification email',
+            id: 'iaso.polio.sendEmail.error',
+            defaultMessage: 'Error sending notification email',
         }),
     );
     const form = useFormikContext();
@@ -226,7 +226,7 @@ const BaseInfoForm = () => {
                         />
                         <Field
                             className={classes.input}
-                            label="cVDPV Notifiation"
+                            label="cVDPV2 notification date"
                             fullWidth
                             name="cvdpv_notified_at"
                             component={DateInput}
@@ -235,7 +235,7 @@ const BaseInfoForm = () => {
                     <Grid item xs={12} md={6}>
                         <Field
                             className={classes.input}
-                            label="PV Notification"
+                            label="PV2 notification date"
                             fullWidth
                             name="pv_notified_at"
                             component={DateInput}
@@ -280,13 +280,13 @@ const DetectionForm = () => {
                     />
 
                     <Field
-                        label="PV2 Notification"
+                        label="PV2 notification date"
                         fullWidth
                         name="pv_notified_at"
                         component={DateInput}
                     />
                     <Field
-                        label="cVDPV2 Notification"
+                        label="cVDPV2 notification date"
                         fullWidth
                         name="cvdpv_notified_at"
                         component={DateInput}
@@ -1504,7 +1504,7 @@ export const Dashboard = () => {
                 accessor: 'obr_name',
             },
             {
-                Header: 'cVDPV2 Notification Date',
+                Header: 'cVDPV2 notification date',
                 accessor: 'cvdpv2_notified_at',
             },
             {

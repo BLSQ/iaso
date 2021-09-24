@@ -1336,7 +1336,12 @@ const SearchInput = ({ onChange }) => {
 
     return (
         <FormControl fullWidth className={classes.margin} variant="outlined">
-            <InputLabel htmlFor="search-campaigns">Search</InputLabel>
+            <InputLabel
+                htmlFor="search-campaigns"
+                style={{ backgroundColor: 'white' }}
+            >
+                Search
+            </InputLabel>
             <OutlinedInput
                 id="search-campaigns"
                 key="search-campaigns-key"

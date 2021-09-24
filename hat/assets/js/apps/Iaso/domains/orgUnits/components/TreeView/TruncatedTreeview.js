@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { func, any } from 'prop-types';
 import { TreeView, TreeItem } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/core/styles';
@@ -49,6 +49,7 @@ const useStyles = makeStyles(styles);
 
 const TruncatedTreeview = ({ onClick, selectedItems }) => {
     const style = useStyles();
+    const mouseDownTime = useRef();
     const makeTreeItems = (items, initialItems) => {
         if (items.size === 0) return null;
         const nextItems = new Map(items);
@@ -79,7 +80,14 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
         Array.from(selectedItems.keys()).map(item => item.toString()) ?? [];
     return (
         <TreeView
-            onClick={onClick}
+            onMouseDown={() => {
+                mouseDownTime.current = new Date();
+            }}
+            onClick={() => {
+                if (new Date() - mouseDownTime.current < 150) {
+                    onClick();
+                }
+            }}
             disableSelection
             expanded={expanded}
             className={style.truncatedTreeview}

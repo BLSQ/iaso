@@ -15,7 +15,6 @@ import {
 
 import { dateFormat } from '../components/campaignCalendar/constants';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
-import { useGetAuthenticatedUser } from '../hooks/useGetAuthenticatedUser';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -49,9 +48,6 @@ const Calendar = ({ params }) => {
             ),
         [mappedCampaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
-    const { data: user = {} } = useGetAuthenticatedUser();
-    const source =
-        user?.account?.default_version?.data_source?.id.toString() || '';
     return (
         <div>
             <TopBar title="Calendar" displayBackButton={false} />
@@ -67,7 +63,6 @@ const Calendar = ({ params }) => {
                 <Box width={1}>
                     <CalendarMap
                         campaigns={filteredCampaigns}
-                        source={source}
                         loadingCampaigns={status === 'loading'}
                     />
                 </Box>

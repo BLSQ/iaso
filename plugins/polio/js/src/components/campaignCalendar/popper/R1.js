@@ -60,7 +60,7 @@ const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
                             {campaign.original.budget_status}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
-                            <FormattedMessage {...MESSAGES.vacine} />:
+                            <FormattedMessage {...MESSAGES.vaccine} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
                             {campaign.original.vacine}

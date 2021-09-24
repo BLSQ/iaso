@@ -7,7 +7,7 @@ import { Box } from '@material-ui/core';
 import { sendRequest } from '../../utils/networking';
 import { MapComponent } from './MapComponent';
 
-const CalendarMap = ({ campaigns, source, loadingCampaigns }) => {
+const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const [loadingShapes, setLoadingShapes] = useState(true);
     const theme = useTheme();
     const [shapes, setShapes] = useState([]);
@@ -20,7 +20,7 @@ const CalendarMap = ({ campaigns, source, loadingCampaigns }) => {
                 const groupId = campaign.original.group?.id;
                 if (groupId) {
                     const baseParams = {
-                        source,
+                        defaultVersion: true,
                         validation_status: 'all',
                         asLocation: true,
                         limit: 3000,
@@ -48,7 +48,7 @@ const CalendarMap = ({ campaigns, source, loadingCampaigns }) => {
                 setShapes(allShapes);
             });
         }
-    }, [campaigns, source, loadingCampaigns]);
+    }, [campaigns, loadingCampaigns]);
     return (
         <Box position="relative">
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
@@ -67,7 +67,6 @@ const CalendarMap = ({ campaigns, source, loadingCampaigns }) => {
 
 CalendarMap.propTypes = {
     campaigns: PropTypes.array.isRequired,
-    source: PropTypes.string.isRequired,
     loadingCampaigns: PropTypes.bool.isRequired,
 };
 

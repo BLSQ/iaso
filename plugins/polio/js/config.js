@@ -62,7 +62,7 @@ const menu = [
             {
                 label: MESSAGES.calendar,
                 key: 'calendar',
-                permission: 'iaso_forms',
+                permission: 'iaso_polio',
                 icon: props => <CalendarToday {...props} />,
             },
             {

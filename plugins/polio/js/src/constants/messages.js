@@ -165,8 +165,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.budgetStatus',
         defaultMessage: 'Budget status',
     },
-    vacine: {
-        id: 'iaso.polio.vacine',
+    vaccine: {
+        id: 'iaso.polio.vaccine',
         defaultMessage: 'Vacine',
     },
 });

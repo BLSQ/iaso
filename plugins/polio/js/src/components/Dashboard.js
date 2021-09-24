@@ -1566,11 +1566,12 @@ export const Dashboard = () => {
             },
             {
                 Header: 'Round 1',
-                accessor: 'round_one__started_at',
+                id: 'round_one__started_at',
+                accessor: row => row.round_one.started_at,
             },
             {
                 Header: 'Round 2',
-                accessor: 'round_two__started_at',
+                accessor: row => row.round_two.started_at,
             },
             {
                 Header: 'Status',

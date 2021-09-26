@@ -146,7 +146,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
-        fields = ["name", "org_units"]
+        fields = ["name", "org_units", "id"]
 
 
 class RoundSerializer(serializers.ModelSerializer):
@@ -309,6 +309,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     round_two = RoundSerializer()
     org_unit = OrgUnitSerializer(source="initial_org_unit", read_only=True)
     top_level_org_unit_name = serializers.SerializerMethodField()
+    top_level_org_unit_id = serializers.SerializerMethodField()
     general_status = serializers.SerializerMethodField()
 
     def get_top_level_org_unit_name(self, campaign):
@@ -317,6 +318,14 @@ class CampaignSerializer(serializers.ModelSerializer):
             while parent.parent:
                 parent = parent.parent
             return parent.name
+        return ""
+
+    def get_top_level_org_unit_id(self, campaign):
+        if campaign.initial_org_unit:
+            parent = campaign.initial_org_unit
+            while parent.parent:
+                parent = parent.parent
+            return parent.id
         return ""
 
     def get_general_status(self, campaign):

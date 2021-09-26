@@ -1,7 +1,7 @@
 import React from 'react';
 import { Switch, ListItemText, Tooltip } from '@material-ui/core';
 import { string, bool, func } from 'prop-types';
-import { truncateText } from 'bluesquare-components/dist/utils';
+import { truncateText } from 'bluesquare-components';
 
 export const ColumnDrawerSwitch = ({
     disabled,

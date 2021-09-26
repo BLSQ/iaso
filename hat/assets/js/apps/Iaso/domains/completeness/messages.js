@@ -115,7 +115,7 @@ const MESSAGES = defineMessages({
     },
     quarter: {
         id: 'iaso.label.periodType.quarter',
-        defaultMessage: 'Generate derived instances',
+        defaultMessage: 'Quarter',
     },
     month: {
         id: 'iaso.label.periodType.month',

@@ -2,7 +2,9 @@ import React from 'react';
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import SettingsIcon from '@material-ui/icons/Settings';
+import CalendarToday from '@material-ui/icons/CalendarToday';
 import { Dashboard } from './src/components/Dashboard';
+import { Calendar } from './src/pages/Calendar';
 import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
 import MESSAGES from './src/constants/messages';
 
@@ -12,6 +14,17 @@ const routes = [
         component: () => <Dashboard />,
         permission: 'iaso_polio',
         params: [],
+    },
+    {
+        baseUrl: 'polio/calendar',
+        component: props => <Calendar {...props} />,
+        permission: 'iaso_forms',
+        params: [
+            {
+                isRequired: false,
+                key: 'currentDate',
+            },
+        ],
     },
     {
         baseUrl: 'polio/config',
@@ -41,10 +54,16 @@ const menu = [
         icon: props => <DataSourceIcon {...props} />,
         subMenu: [
             {
-                label: MESSAGES.dashboard,
+                label: MESSAGES.campaigns,
                 key: 'list',
                 permission: 'iaso_polio',
                 icon: props => <FormatListBulleted {...props} />,
+            },
+            {
+                label: MESSAGES.calendar,
+                key: 'calendar',
+                permission: 'iaso_polio',
+                icon: props => <CalendarToday {...props} />,
             },
             {
                 label: MESSAGES.configuration,

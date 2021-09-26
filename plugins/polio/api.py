@@ -62,7 +62,15 @@ class CampaignViewSet(ModelViewSet):
         "detection_status",
         "round_one__started_at",
         "round_two__started_at",
+        "vacine",
     ]
+    filterset_fields = {
+        "obr_name": ["exact"],
+        "vacine": ["exact"],
+        "cvdpv2_notified_at": ["gte", "lte", "range"],
+        "created_at": ["gte", "lte", "range"],
+        "round_one__started_at": ["gte", "lte", "range"],
+    }
 
     def get_queryset(self):
         user = self.request.user

@@ -85,7 +85,10 @@ export const getPlugins = pluginsKeys => {
     pluginsKeys.forEach(plugin => {
         const pluginConfig = pluginsConfigs[plugin];
         if (pluginConfig) {
-            plugins.push(pluginConfig);
+            plugins.push({
+                ...pluginConfig,
+                key: plugin,
+            });
         }
     });
     return plugins;

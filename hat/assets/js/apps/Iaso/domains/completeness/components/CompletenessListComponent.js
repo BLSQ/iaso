@@ -11,12 +11,7 @@ import { groupCompletenessData } from '../utils';
 
 const styles = theme => commonStyles(theme);
 
-function CompletenessListComponent({
-    classes,
-    completenessList,
-    redirectTo,
-    onGenerateDerivedInstances,
-}) {
+const CompletenessListComponent = ({ classes, completenessList }) => {
     const [activePeriodType, setActivePeriodType] =
         useState(PERIOD_TYPE_QUARTER);
     const [activeInstanceStatuses, setActiveInstanceStatuses] =
@@ -43,18 +38,14 @@ function CompletenessListComponent({
                         forms={forms}
                         activeInstanceStatuses={activeInstanceStatuses}
                         activePeriodType={activePeriodType}
-                        redirectTo={redirectTo}
-                        onGenerateDerivedInstances={onGenerateDerivedInstances}
                     />
                 ))}
             </div>
         </Box>
     );
-}
+};
 CompletenessListComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     completenessList: PropTypes.arrayOf(PropTypes.object).isRequired,
-    redirectTo: PropTypes.func.isRequired,
-    onGenerateDerivedInstances: PropTypes.func.isRequired,
 };
 export default withStyles(styles)(CompletenessListComponent);

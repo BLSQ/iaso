@@ -67,7 +67,7 @@ import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import ImportLineListDialog from './ImportLineListDialog';
 import { postRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useSnackMutation } from '../utils/networking';
+import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { useFormValidator } from '../hooks/useFormValidator';
 
 const PageAction = ({ icon: Icon, onClick, children }) => {

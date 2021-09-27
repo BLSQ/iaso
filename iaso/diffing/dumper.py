@@ -86,7 +86,11 @@ class Dumper:
         res.append(header)
 
         for diff in diffs:
-            results = [diff.org_unit.source_ref, diff.status, diff.org_unit.org_unit_type.name if diff.org_unit else ""]
+            results = [
+                diff.org_unit.source_ref,
+                diff.status,
+                diff.org_unit.org_unit_type.name if diff.org_unit and diff.org_unit.org_unit_type else "",
+            ]
 
             for field in fields:
                 comparison = list(filter(lambda x: x.field == field, diff.comparisons))[0]

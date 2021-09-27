@@ -146,7 +146,7 @@ export const ExportToDHIS2Dialog = ({
                             />
                         </Grid>
                         <Grid xs={6} item>
-                            <Box mt={1} mb={2}>
+                            <Box mb={2}>
                                 <OrgUnitTreeviewModal
                                     onConfirm={value => {
                                         setExportDataField(
@@ -159,9 +159,26 @@ export const ExportToDHIS2Dialog = ({
                                         MESSAGES.selectTopOrgUnit,
                                     )}
                                     required
+                                    // multiselect
+                                    // initialSelection={
+                                    //     exportData.source_org_unit_id.value
+                                    // }
+                                    // withMarginTop
                                 />
                             </Box>
                         </Grid>
+                    </Grid>
+                    <Grid xs={6} item>
+                        <InputComponent
+                            type="select"
+                            labelString={formatMessage(MESSAGES.status)}
+                            keyValue="source_status"
+                            value={exportData.source_status.value}
+                            errors={exportData.source_status.errors}
+                            onChange={setExportDataField}
+                            options={orgUnitStatusAsOptions(formatMessage)}
+                            required
+                        />
                     </Grid>
                     <Grid xs={6} item>
                         <InputComponent
@@ -182,18 +199,6 @@ export const ExportToDHIS2Dialog = ({
                         />
                     </Grid>
                     <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            labelString={formatMessage(MESSAGES.status)}
-                            keyValue="source_status"
-                            value={exportData.source_status.value}
-                            errors={exportData.source_status.errors}
-                            onChange={setExportDataField}
-                            options={orgUnitStatusAsOptions(formatMessage)}
-                            required
-                        />
-                    </Grid>
-                    <Grid xs={12} item>
                         <InputComponent
                             type="select"
                             keyValue="fields_to_export"
@@ -239,7 +244,7 @@ export const ExportToDHIS2Dialog = ({
                         />
                     </Grid>
                     <Grid xs={6} item>
-                        <Box mt={1} mb={2}>
+                        <Box mb={2}>
                             <OrgUnitTreeviewModal
                                 onConfirm={value => {
                                     setExportDataField(
@@ -260,7 +265,7 @@ export const ExportToDHIS2Dialog = ({
                             />
                         </Box>
                     </Grid>
-                    <Grid xs={12} item>
+                    <Grid xs={6} item>
                         <InputComponent
                             type="select"
                             keyValue="credentials"

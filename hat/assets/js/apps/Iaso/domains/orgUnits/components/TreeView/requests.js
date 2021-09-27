@@ -1,3 +1,4 @@
+import { useQuery } from 'react-query';
 import { iasoGetRequest } from '../../../../utils/requests';
 
 const getChildrenData = async id => {
@@ -65,6 +66,20 @@ const getOrgUnit = orgUnitId =>
     iasoGetRequest({
         requestParams: { url: `/api/orgunits/${orgUnitId}` },
         disableSuccessSnackBar: true,
+    });
+
+export const useChildrenData = (request, id, enabled) =>
+    useQuery(
+        ['getChildrenData', request, id],
+        async () => {
+            return request(id);
+        },
+        { enabled },
+    );
+
+export const useRootData = request =>
+    useQuery(['getRootData', request], async () => request(), {
+        keepPreviousData: false,
     });
 
 export { getRootData, getChildrenData, searchOrgUnits, getOrgUnit };

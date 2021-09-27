@@ -93,7 +93,14 @@ class Command(BaseCommand):
             org_unit_types=org_unit_types,
             org_unit_types_ref=org_unit_types_ref,
         )
-        Dumper(iaso_logger, csv_file_name=file_name).dump(diffs, fields)
+        dumper = Dumper(iaso_logger)
+        stats = dumper.dump_stats(diffs, fields)
+        if file_name:
+            with open(file_name, "w") as csv_file:
+                dumper.dump_as_csv(diffs, fields, csv_file)
+        else:
+            dumper.dump_as_table(diffs, fields, stats)
+
         export = options.get("export")
 
         if export:

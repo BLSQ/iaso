@@ -1,7 +1,12 @@
+from django.http import HttpResponse
+from rest_framework.decorators import action
+
 from iaso.models import SourceVersion
 from .common import ModelViewSet
 from iaso.models import DataSource
 from rest_framework import serializers, permissions
+
+from .source_versions_serializers import DiffSerializer
 
 
 class SourceVersionSerializer(serializers.ModelSerializer):
@@ -54,3 +59,15 @@ class SourceVersionViewSet(ModelViewSet):
             versions = versions.filter(data_source_id=source_id)
 
         return versions.order_by("id")
+
+    @action(methods=["GET", "POST"], detail=False, serializer_class=DiffSerializer, url_path="diff.csv")
+    def diff_csv(self, request):
+        serializer: DiffSerializer = self.get_serializer(
+            data=request.data if request.method == "POST" else request.query_params
+        )
+        serializer.is_valid(raise_exception=True)
+        # FIXME: FileResponse don't work, no idea why, not a priority
+        filename = "comparison.csv"
+        response = HttpResponse(serializer.generate_csv())
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response

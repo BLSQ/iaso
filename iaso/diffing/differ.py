@@ -1,4 +1,3 @@
-from django.db.models.query import prefetch_related_objects
 from iaso.models import OrgUnit, GroupSet
 from .comparisons import as_field_types, Diff, Comparison
 

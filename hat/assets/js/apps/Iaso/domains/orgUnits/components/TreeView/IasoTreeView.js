@@ -2,11 +2,20 @@ import { string, bool, arrayOf, func, array, oneOfType } from 'prop-types';
 import React, { useCallback } from 'react';
 import { TreeView } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/core/styles';
+import { CircularProgress, Box } from '@material-ui/core';
+import { InView } from 'react-intersection-observer';
 import { EnrichedTreeItem } from './EnrichedTreeItem';
-import { useAPI } from '../../../../utils/requests';
+import { useRootData } from './requests';
 
 const styles = theme => ({
     root: {
+        color: theme.palette.gray.main,
+        backgroundColor: theme.palette.ligthGray.main,
+        borderRadius: '7px',
+        maxHeight: '60vh',
+        overflowY: 'scroll',
+    },
+    isFetching: {
         color: theme.palette.gray.main,
         backgroundColor: theme.palette.ligthGray.main,
         borderRadius: '7px',
@@ -35,8 +44,8 @@ const IasoTreeView = ({
     scrollIntoView,
 }) => {
     const classes = useStyles();
-    const fetchChildrenData = useCallback(getChildrenData, []);
-    const { data: rootData } = useAPI(getRootData);
+    const fetchChildrenData = useCallback(getChildrenData, [getChildrenData]);
+    const { data: rootData, isFetching } = useRootData(getRootData);
     const onNodeToggle = (_event, nodeIds) => {
         onToggle(nodeIds);
     };
@@ -66,18 +75,45 @@ const IasoTreeView = ({
                 />
             ));
         },
-        [expanded, ticked],
+        [
+            labelField,
+            nodeField,
+            fetchChildrenData,
+            expanded,
+            selected,
+            toggleOnLabelClick,
+            onCheckBoxClick,
+            onLabelClick,
+            multiselect,
+            ticked,
+            parentsTicked,
+            scrollIntoView,
+        ],
     );
     return (
         <TreeView
-            classes={{ root: classes.root }}
+            classes={
+                isFetching
+                    ? { root: classes.isFetching }
+                    : { root: classes.root }
+            }
             expanded={expanded}
             selected={selected}
             multiSelect={multiselect}
             onNodeSelect={onNodeSelect}
             onNodeToggle={onNodeToggle}
         >
-            {rootData && makeChildren(rootData)}
+            {!isFetching && rootData && makeChildren(rootData)}
+            {isFetching && (
+                <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    height={100}
+                >
+                    <CircularProgress />
+                </Box>
+            )}
         </TreeView>
     );
 };

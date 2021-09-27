@@ -23,7 +23,7 @@ const MESSAGES = defineMessages({
     },
     viewPage: {
         id: 'iaso.page.viewpages',
-        defaultMessage: 'View page',
+        defaultMessage: 'View page. {linebreak} New tab: ctrl/command + click',
     },
     edit: {
         id: 'iaso.label.edit',

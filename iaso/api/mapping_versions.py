@@ -87,8 +87,10 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 
         form_version = None
         try:
-            form_version = m.FormVersion.objects.filter(form__projects__account=profile.account).get(
-                pk=data["form_version"]["id"]
+            form_version = (
+                m.FormVersion.objects.filter(form__projects__account=profile.account)
+                .distinct()
+                .get(pk=data["form_version"]["id"])
             )
         except ObjectDoesNotExist:
             raise serializers.ValidationError({"form_version": "object doesn't exist"})

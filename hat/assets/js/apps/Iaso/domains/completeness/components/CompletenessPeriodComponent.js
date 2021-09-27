@@ -60,7 +60,7 @@ const CompletenessPeriodComponent = ({
 }) => {
     const dispatch = useDispatch();
 
-    const mutation = useSnackMutation(
+    const derivedInstanceMutation = useSnackMutation(
         derivedrequest => postRequest('/api/derivedinstances/', derivedrequest),
         MESSAGES.generateDerivedRequestSuccess,
         MESSAGES.generateDerivedRequestError,
@@ -85,7 +85,7 @@ const CompletenessPeriodComponent = ({
             new Set(Object.values(form.months).map(m => m.period.periodString)),
         );
         const derived = form.generate_derived;
-        mutation.mutate({ periods, derived });
+        derivedInstanceMutation.mutate({ periods, derived });
     };
     const columns = getColumns(
         formatMessage,
@@ -99,7 +99,7 @@ const CompletenessPeriodComponent = ({
 
     return (
         <Paper className={classes.root}>
-            {mutation.isLoading && <LoadingSpinner />}
+            {derivedInstanceMutation.isLoading && <LoadingSpinner />}
             <Grid container spacing={0}>
                 <Grid
                     xs={6}

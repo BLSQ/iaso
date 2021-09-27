@@ -11,7 +11,7 @@ import { groupCompletenessData } from '../utils';
 
 const styles = theme => commonStyles(theme);
 
-function CompletenessListComponent({ classes, completenessList }) {
+const CompletenessListComponent = ({ classes, completenessList }) => {
     const [activePeriodType, setActivePeriodType] =
         useState(PERIOD_TYPE_QUARTER);
     const [activeInstanceStatuses, setActiveInstanceStatuses] =
@@ -43,7 +43,7 @@ function CompletenessListComponent({ classes, completenessList }) {
             </div>
         </Box>
     );
-}
+};
 CompletenessListComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     completenessList: PropTypes.arrayOf(PropTypes.object).isRequired,

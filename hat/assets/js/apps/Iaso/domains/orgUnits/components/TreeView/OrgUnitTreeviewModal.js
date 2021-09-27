@@ -104,8 +104,12 @@ const OrgUnitTreeviewModal = ({
     const resetSelection = useCallback(() => {
         setSelectedOrgUnitsIds([]);
         setSelectedOrgUnitParents(new Map());
-        onConfirm(null);
-    }, [onConfirm]);
+        if (multiselect) {
+            onConfirm([]);
+        } else {
+            onConfirm(null);
+        }
+    }, [onConfirm, multiselect]);
 
     const setToInitialValues = initialValues => {
         setSelectedOrgUnits(initialValues);

@@ -103,7 +103,7 @@ const OrgUnitTreeviewPicker = ({
         return <div className={classes.treeviews}>{treeviews}</div>;
     };
     return (
-        <FormControl withMarginTop={false}>
+        <FormControl withMarginTop>
             <InputLabel
                 shrink={selectedItems.size > 0}
                 required={required}

@@ -1,92 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { CircularProgress } from '@material-ui/core';
-import { Select } from './Select';
-import {
-    useGetAllParentsOrgUnits,
-    useGetOrgUnits,
-} from '../../hooks/useGetOrgUnits';
-import { useGetAuthenticatedUser } from '../../hooks/useGetAuthenticatedUser';
+import PropTypes from 'prop-types';
+import { useGetOrgUnit } from '../../hooks/useGetOrgUnits';
+import { OrgUnitTreeviewModal } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
-export const OrgUnitsSelect = props => {
-    const { level, source, onChange, value } = props;
-    const { data = {}, isLoading } = useGetOrgUnits(level, source);
-    const { orgUnits = [] } = data;
+export const OrgUnitsLevels = ({ field, form, label }) => {
+    const { name } = field;
+    const initialOrgUnitId = form.initialValues[name];
 
-    if (isLoading) {
-        return (
-            <div>
-                <CircularProgress />
-            </div>
-        );
-    }
-
-    if (orgUnits.length === 0) {
-        return null;
-    }
+    const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
+    const { setFieldValue } = form;
 
     return (
-        <Select
-            {...props}
-            options={orgUnits.map(orgUnit => ({
-                value: orgUnit.id,
-                label: orgUnit.name,
-            }))}
-            onChange={event => {
-                onChange({
-                    parent_id: level,
-                    org_unit_id: event.target.value,
-                });
-            }}
-            value={value ?? ''}
-        />
+        <>
+            {isLoading && <CircularProgress />}
+            <OrgUnitTreeviewModal
+                titleMessage={label}
+                toggleOnLabelClick={false}
+                onConfirm={orgUnit => {
+                    setFieldValue(name, orgUnit.id);
+                }}
+                initialSelection={initialOrgUnit}
+            />
+        </>
     );
 };
 
-export const OrgUnitsLevels = ({ field = {}, form, ...props }) => {
-    const { data = {} } = useGetAuthenticatedUser();
-    const source = data?.account?.default_version?.data_source?.id;
-    const startOrgUnit = data?.org_units?.[0]?.id ?? null;
-    const initialOrgUnit =
-        form?.initialValues?.initial_org_unit ?? startOrgUnit;
-
-    const { data: initialState } = useGetAllParentsOrgUnits(initialOrgUnit);
-    const [levels, setLevel] = useState([null]);
-
-    useEffect(() => {
-        setLevel(initialState ?? [null]);
-    }, [initialState]);
-
-    const { name } = field;
-    const { setFieldValue } = form;
-
-    useEffect(() => {
-        if (!levels[levels.length - 1]) {
-            return;
-        }
-
-        setFieldValue(name, levels[levels.length - 1]);
-    }, [levels, name, setFieldValue]);
-
-    const addLevel = ({ parent_id = 0, org_unit_id }) => {
-        setLevel(oldLevels => {
-            const index = oldLevels.indexOf(parent_id);
-            return [...oldLevels.slice(0, index + 1), org_unit_id];
-        });
-    };
-
-    return levels.map((level, index) => {
-        return (
-            <OrgUnitsSelect
-                {...props}
-                key={level}
-                source={source}
-                label={`Level ${index + 1}`}
-                level={level}
-                onChange={addLevel}
-                value={levels[index + 1]}
-            />
-        );
-    });
+OrgUnitsLevels.propTypes = {
+    field: PropTypes.shape({
+        name: PropTypes.string,
+    }).isRequired,
+    form: PropTypes.shape({
+        setFieldValue: PropTypes.func.isRequired,
+        initialValues: PropTypes.object.isRequired,
+    }).isRequired,
+    label: PropTypes.string.isRequired,
 };
-
-export default OrgUnitsSelect;

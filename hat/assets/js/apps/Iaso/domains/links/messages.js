@@ -38,7 +38,7 @@ export const MESSAGES = defineMessages({
         id: 'iaso.label.destination',
     },
     updatedAt: {
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
         id: 'iaso.label.updated_at',
     },
     algorithm: {

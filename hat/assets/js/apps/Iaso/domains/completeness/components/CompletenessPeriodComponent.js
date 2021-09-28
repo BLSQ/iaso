@@ -1,10 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { Paper, Typography, Grid, makeStyles } from '@material-ui/core';
+import { Grid, makeStyles, Paper, Typography } from '@material-ui/core';
 
-import { useSafeIntl, commonStyles, Table } from 'bluesquare-components';
+import {
+    commonStyles,
+    LoadingSpinner,
+    Table,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { useDispatch } from 'react-redux';
 import { getColumns } from '../config';
 import { baseUrls } from '../../../constants/urls';
+import { redirectTo } from '../../../routing/actions';
+import { postRequest } from '../../../libs/Api';
+import MESSAGES from '../../../components/snackBars/messages';
+import { useSnackMutation } from '../../../libs/apiHooks';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -47,17 +57,27 @@ const CompletenessPeriodComponent = ({
     period,
     forms,
     activePeriodType,
-    onGenerateDerivedInstances,
-    redirectTo,
 }) => {
+    const dispatch = useDispatch();
+
+    const derivedInstanceMutation = useSnackMutation(
+        derivedrequest => postRequest('/api/derivedinstances/', derivedrequest),
+        MESSAGES.generateDerivedRequestSuccess,
+        MESSAGES.generateDerivedRequestError,
+        ['completeness'],
+    );
+
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const onSelectCell = (form, status, period) => {
-        redirectTo(baseUrls.instances, {
-            formId: form.id,
-            periods: period.asPeriodType(form.period_type).periodString,
-            status: status.toUpperCase(),
-        });
+    const onSelectCell = (form, status, selectedPeriod) => {
+        dispatch(
+            redirectTo(baseUrls.instances, {
+                formId: form.id,
+                periods: selectedPeriod.asPeriodType(form.period_type)
+                    .periodString,
+                status: status.toUpperCase(),
+            }),
+        );
     };
 
     const onClick = form => {
@@ -65,7 +85,7 @@ const CompletenessPeriodComponent = ({
             new Set(Object.values(form.months).map(m => m.period.periodString)),
         );
         const derived = form.generate_derived;
-        onGenerateDerivedInstances({ periods, derived });
+        derivedInstanceMutation.mutate({ periods, derived });
     };
     const columns = getColumns(
         formatMessage,
@@ -73,12 +93,13 @@ const CompletenessPeriodComponent = ({
         classes,
         activeInstanceStatuses,
         (form, status, p) => onSelectCell(form, status, p),
-        arg => onClick(arg, onGenerateDerivedInstances),
+        arg => onClick(arg),
         activePeriodType,
     );
 
     return (
         <Paper className={classes.root}>
+            {derivedInstanceMutation.isLoading && <LoadingSpinner />}
             <Grid container spacing={0}>
                 <Grid
                     xs={6}
@@ -114,7 +135,6 @@ CompletenessPeriodComponent.propTypes = {
     forms: PropTypes.arrayOf(PropTypes.object).isRequired,
     activeInstanceStatuses: PropTypes.arrayOf(PropTypes.string).isRequired,
     activePeriodType: PropTypes.string.isRequired,
-    redirectTo: PropTypes.func.isRequired,
-    onGenerateDerivedInstances: PropTypes.func.isRequired,
 };
+
 export default CompletenessPeriodComponent;

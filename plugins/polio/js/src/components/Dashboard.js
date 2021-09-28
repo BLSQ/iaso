@@ -2,7 +2,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Table,
-    textPlaceholder,
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
@@ -39,9 +38,10 @@ import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
-import * as yup from 'yup';
 import SearchIcon from '@material-ui/icons/Search';
 import { useDebounce } from 'use-debounce';
+import moment from 'moment';
+import { defineMessage } from 'react-intl';
 import {
     DateInput,
     ResponsibleField,
@@ -66,68 +66,9 @@ import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import ImportLineListDialog from './ImportLineListDialog';
-
-// eslint-disable-next-line camelcase
-const round_shape = yup.object().shape({
-    started_at: yup.date().nullable(),
-    ended_at: yup
-        .date()
-        .nullable()
-        .min(yup.ref('started_at'), "end date can't be before start date"),
-    mop_up_started_at: yup.date().nullable(),
-    mop_up_ended_at: yup
-        .date()
-        .nullable()
-        .min(
-            yup.ref('mop_up_started_at'),
-            "end date can't be before start date",
-        ),
-    im_started_at: yup.date().nullable(),
-    im_ended_at: yup
-        .date()
-        .nullable()
-        .min(yup.ref('im_started_at'), "end date can't be before start date"),
-    lqas_started_at: yup.date().nullable(),
-    lqas_ended_at: yup
-        .date()
-        .nullable()
-        .min(yup.ref('lqas_started_at'), "end date can't be before start date"),
-    target_population: yup.number().nullable().min(0).integer(),
-    cost: yup.number().nullable().min(0).integer(),
-});
-
-const schema = yup.object().shape({
-    epid: yup.string().nullable(),
-    obr_name: yup.string().trim().required(),
-    description: yup.string().nullable(),
-    onset_at: yup.date().nullable(),
-    three_level_call_at: yup.date().nullable(),
-
-    cvdpv_notified_at: yup.date().nullable(),
-    cvdpv2_notified_at: yup.date().nullable(),
-
-    pv_notified_at: yup.date().nullable(),
-    pv2_notified_at: yup.date().nullable(),
-
-    detection_first_draft_submitted_at: yup.date().nullable(),
-    detection_rrt_oprtt_approval_at: yup.date().nullable(),
-
-    investigation_at: yup.date().nullable(),
-    risk_assessment_first_draft_submitted_at: yup.date().nullable(),
-    risk_assessment_rrt_oprtt_approval_at: yup.date().nullable(),
-    ag_nopv_group_met_at: yup.date().nullable(),
-    dg_authorized_at: yup.date().nullable(),
-
-    spreadsheet_url: yup.string().url().nullable(),
-
-    eomg: yup.date().nullable(),
-    budget_submitted_at: yup.date().nullable(),
-    district_count: yup.number().nullable().positive().integer(),
-    no_regret_fund_amount: yup.number().nullable().positive().integer(),
-
-    round_one: round_shape,
-    round_two: round_shape,
-});
+import { postRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { useFormValidator } from '../hooks/useFormValidator';
 
 const PageAction = ({ icon: Icon, onClick, children }) => {
     const classes = useStyles();
@@ -146,6 +87,67 @@ const PageAction = ({ icon: Icon, onClick, children }) => {
 };
 
 const defaultToZero = value => (value === '' ? 0 : value);
+
+const SendEmailButton = () => {
+    const mutation = useSnackMutation(
+        campaignId =>
+            postRequest(
+                `/api/polio/campaigns/${campaignId}/send_notification_email/`,
+            ),
+        defineMessage({
+            id: 'iaso.polio.sendEmail.success',
+            defaultMessage: 'Notification Email sent',
+        }),
+        defineMessage({
+            id: 'iaso.polio.sendEmail.error',
+            defaultMessage: 'Error sending notification email',
+        }),
+    );
+    const form = useFormikContext();
+    const { values } = form;
+    const msg = 'Send an e-mail to notify people of the campaign';
+
+    let validation_error = null;
+    if (values.creation_email_send_at) {
+        validation_error = `Email already sent on ${moment(
+            values.creation_email_send_at,
+        ).format('LTS')}`;
+    } else if (!values.obr_name) {
+        validation_error = 'Enter a name';
+    } else if (!values.virus) {
+        validation_error = 'Enter Virus information';
+    } else if (!values.initial_org_unit) {
+        validation_error = 'Enter Initial district';
+    } else if (!values.onset_at) {
+        validation_error = 'Enter Onset Date';
+    } else if (form.dirty || !values.id) {
+        validation_error = 'Please save the modifications on the campaign';
+    }
+
+    return (
+        <Grid container item>
+            <Tooltip title={validation_error ?? msg}>
+                {/* Span is necessary because otherwise tooltip won't show
+                 when button is disabled */}
+                <span>
+                    <Button
+                        color="primary"
+                        disabled={Boolean(validation_error)}
+                        onClick={async () => mutation.mutate(values.id)}
+                    >
+                        {mutation.isLoading && <LoadingSpinner absolute />}
+                        Notify coordinators by e-mail
+                    </Button>
+                    {mutation?.error?.details?.map((error_msg, i) => (
+                        <Typography key={i} color="error">
+                            {error_msg}
+                        </Typography>
+                    ))}
+                </span>
+            </Tooltip>
+        </Grid>
+    );
+};
 
 const BaseInfoForm = () => {
     const classes = useStyles();
@@ -205,15 +207,13 @@ const BaseInfoForm = () => {
                     />
                     <Field
                         className={classes.input}
-                        label="GPEI Email"
-                        name="gpei_email"
-                        component={TextInput}
-                    />
-                    <Field
-                        className={classes.input}
                         name="initial_org_unit"
+                        label="Select initial region"
                         component={OrgUnitsLevels}
                     />
+                </Grid>
+                <Grid item xs={6} md={6}>
+                    <SendEmailButton />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>
@@ -226,16 +226,16 @@ const BaseInfoForm = () => {
                         />
                         <Field
                             className={classes.input}
-                            label="cVDPV Notifiation"
+                            label="cVDPV2 notification date"
                             fullWidth
-                            name="cvdpv_notified_at"
+                            name="cvdpv2_notified_at"
                             component={DateInput}
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Field
                             className={classes.input}
-                            label="PV Notification"
+                            label="PV2 notification date"
                             fullWidth
                             name="pv_notified_at"
                             component={DateInput}
@@ -280,15 +280,15 @@ const DetectionForm = () => {
                     />
 
                     <Field
-                        label="PV2 Notification"
+                        label="PV2 notification date"
                         fullWidth
                         name="pv_notified_at"
                         component={DateInput}
                     />
                     <Field
-                        label="cVDPV2 Notification"
+                        label="cVDPV2 notification date"
                         fullWidth
-                        name="cvdpv_notified_at"
+                        name="cvdpv2_notified_at"
                         component={DateInput}
                     />
                 </Grid>
@@ -881,12 +881,6 @@ const BudgetForm = () => {
 
                 <Grid item md={6}>
                     <Field
-                        label="1st Draft Submission"
-                        name="budget_first_draft_submitted_at"
-                        component={DateInput}
-                        fullWidth
-                    />
-                    <Field
                         label="RRT/OPRTT Approval"
                         name="budget_rrt_oprtt_approval_at"
                         component={DateInput}
@@ -1018,12 +1012,16 @@ const Round1Form = () => {
                 <Field
                     label="Districts passing LQAS"
                     name="round_one.lqas_district_passing"
+                    // as={NumberInput}
+                    // keyValue="round_one.lqas_district_passing"
                     component={TextInput}
                     className={classes.input}
                 />
                 <Field
                     label="Districts failing LQAS"
                     name="round_one.lqas_district_failing"
+                    // as={NumberInput}
+                    // keyValue="round_one.lqas_district_failing"
                     component={TextInput}
                     className={classes.input}
                 />
@@ -1182,18 +1180,23 @@ const Form = ({ children }) => {
     );
 };
 
-const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
+export const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
+    const schema = useFormValidator();
 
     const classes = useStyles();
 
-    const handleSubmit = (values, helpers) =>
+    const handleSubmit = async (values, helpers) => {
         saveCampaign(convertEmptyStringToNull(values), {
             onSuccess: () => {
                 helpers.resetForm();
                 onClose();
             },
+            onError: error => {
+                helpers.setErrors(error);
+            },
         });
+    };
 
     const defaultValues = {
         round_one: {},
@@ -1293,6 +1296,17 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
                     <Form>
                         <CurrentForm />
                     </Form>
+                    <Grid container justifyContent="flex-end">
+                        <Grid item md={6}>
+                            {formik.errors.non_field_errors?.map(
+                                (error_msg, i) => (
+                                    <Typography key={i} color="error">
+                                        {error_msg}
+                                    </Typography>
+                                ),
+                            )}
+                        </Grid>
+                    </Grid>
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
@@ -1322,7 +1336,12 @@ const SearchInput = ({ onChange }) => {
 
     return (
         <FormControl fullWidth className={classes.margin} variant="outlined">
-            <InputLabel htmlFor="search-campaigns">Search</InputLabel>
+            <InputLabel
+                htmlFor="search-campaigns"
+                style={{ backgroundColor: 'white' }}
+            >
+                Search
+            </InputLabel>
             <OutlinedInput
                 id="search-campaigns"
                 key="search-campaigns-key"
@@ -1490,16 +1509,18 @@ export const Dashboard = () => {
                 accessor: 'obr_name',
             },
             {
-                Header: 'cVDPV2 Notification Date',
+                Header: 'cVDPV2 notification date',
                 accessor: 'cvdpv2_notified_at',
             },
             {
                 Header: 'Round 1',
-                accessor: 'round_one__started_at',
+                id: 'round_one__started_at',
+                accessor: row => row.round_one?.started_at,
             },
             {
                 Header: 'Round 2',
-                accessor: 'round_two__started_at',
+                id: 'round_two__started_at',
+                accessor: row => row.round_two?.started_at,
             },
             {
                 Header: 'Status',
@@ -1554,7 +1575,7 @@ export const Dashboard = () => {
     }, [pageSize, page, order]);
     return (
         <>
-            <TopBar title="Dashboard" displayBackButton={false} />
+            <TopBar title="Campaigns" displayBackButton={false} />
             <CreateEditDialog
                 selectedCampaign={selectedCampaign}
                 isOpen={isCreateEditDialogOpen}

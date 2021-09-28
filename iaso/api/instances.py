@@ -97,12 +97,13 @@ class InstancesViewSet(viewsets.ViewSet):
         profile = request.user.iaso_profile
         queryset = queryset.filter(project__account=profile.account)
 
-        queryset = queryset.exclude(file="").exclude(device__test_device=True).order_by(*orders)
+        queryset = queryset.exclude(file="").exclude(device__test_device=True)
 
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
         queryset = queryset.for_filters(**filters)
+        queryset = queryset.order_by(*orders)
 
         if csv_format is None and xlsx_format is None:
             if limit:

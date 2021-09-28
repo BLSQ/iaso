@@ -35,7 +35,7 @@ const MESSAGES = defineMessages({
     },
     updatedAt: {
         id: 'iaso.forms.updated_at',
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
     },
     orgUnit: {
         id: 'iaso.label.orgUnit',
@@ -54,7 +54,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Are you sure you want to delete this group?',
     },
     deleteWarning: {
-        id: 'iaso.users.dialog.deleteUserTitle',
+        id: 'iaso.group.dialog.deleteText',
         defaultMessage: 'This operation cannot be undone.',
     },
     edit: {

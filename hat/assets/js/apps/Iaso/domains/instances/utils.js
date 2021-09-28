@@ -103,10 +103,30 @@ export const getInstancesColumns = (
 
 export const getMetasColumns = () =>
     [...instancesTableColumns()].map(c => c.accessor);
-const formatLabel = field => {
+
+const labelLocales = { fr: 'French', en: 'English' };
+
+const localizeLabel = (field, locale) => {
+    const formattedlabel = field.label.replaceAll("'", '"');
+    let result;
+    try {
+        const localeOptions = JSON.parse(formattedlabel);
+        const localeKey = labelLocales[locale] ?? labelLocales.en;
+        result = localeOptions[localeKey];
+    } catch (e) {
+        // some fields are using single quotes. Logging just for info, this can be deleted if it clutters the console
+        console.warn('Error parsing JSON', field.label);
+        result = field.key;
+    }
+    return result;
+};
+
+const formatLabel = (field, locale) => {
+    if (field.label.charAt(0) === '{') return localizeLabel(field, locale);
     if (!field.label) return field.key;
     if (!field.label.trim()) return field.key;
     if (field.label.includes(':')) return field.label.split(':')[0];
+    if (field.label.includes('$')) return field.label.split('$')[0];
     return field.label;
 };
 export const getInstancesVisibleColumns = ({
@@ -116,8 +136,10 @@ export const getInstancesVisibleColumns = ({
     order,
     defaultOrder,
     possibleFields,
+    locale,
 }) => {
     const activeOrders = (order || defaultOrder).split(',');
+    const columnsNames = columns ? columns.split(',') : [];
     const metasColumns = [
         ...instancesTableColumns(formatMessage).filter(
             c => c.accessor !== 'actions',
@@ -126,19 +148,20 @@ export const getInstancesVisibleColumns = ({
     const newColumns = metasColumns.map(c => ({
         key: c.accessor,
         label: c.Header,
-        active: columns !== undefined && columns.includes(c.accessor),
+        active: columnsNames.includes(c.accessor),
         meta: true,
         disabled:
             activeOrders.indexOf(c.accessor) !== -1 ||
             activeOrders.indexOf(`-${c.accessor}`) !== -1,
     }));
+
     if (instance) {
         possibleFields.forEach(field => {
-            const label = formatLabel(field);
+            const label = formatLabel(field, locale);
             newColumns.push({
                 key: field.name,
                 label,
-                active: columns !== undefined && columns.includes(field.name),
+                active: columnsNames.includes(field.name),
                 disabled: false,
             });
         });

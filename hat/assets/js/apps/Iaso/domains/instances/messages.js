@@ -95,11 +95,11 @@ const MESSAGES = defineMessages({
     },
     created_at: {
         id: 'iaso.instance.created_at',
-        defaultMessage: 'Created at',
+        defaultMessage: 'Created',
     },
     updated_at: {
         id: 'iaso.instance.updated_at',
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
     },
     files: {
         id: 'iaso.instance.files',
@@ -262,11 +262,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.instanceRestoreAction',
     },
     instanceEditAction: {
-        defaultMessage: 'Edit any answer in Enketo',
+        defaultMessage: 'Edit the answers in Enketo',
         id: 'iaso.instance.instanceEditAction',
     },
     instanceReAssignAction: {
-        defaultMessage: 'Edit orgUnit or period',
+        defaultMessage: 'Edit attached OrgUnit or period',
         id: 'iaso.instance.instanceReAssignAction',
     },
     instanceExportAction: {

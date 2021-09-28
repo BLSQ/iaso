@@ -31,7 +31,7 @@ const CountryNotificationsConfigTable = ({ params }) => {
         () => ({
             order: params.order ?? 'country__name', // Watch out, needs 2 underscores
             page: params.page ?? 1,
-            pageSize: params.pageSize ?? 10,
+            pageSize: params.pageSize ?? 60,
         }),
         [params.order, params.page, params.pageSize],
     );

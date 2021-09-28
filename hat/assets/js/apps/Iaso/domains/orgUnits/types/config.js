@@ -72,7 +72,7 @@ const TableColumns = (formatMessage, component) => [
                     onConfirmed={() => component.fetchOrgUnitTypes()}
                 />
                 <DeleteDialog
-                    disabled={settings.row.original.instances_count > 0}
+                    disabled={settings.row.original.units_count > 0}
                     titleMessage={MESSAGES.delete}
                     message={MESSAGES.deleteWarning}
                     onConfirm={closeDialog =>

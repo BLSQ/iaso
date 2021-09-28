@@ -52,6 +52,7 @@ const SingleTable = ({
     setIsLoading,
     multiSelect,
     selectionActions,
+    propsToWatch,
 }) => {
     const [loading, setLoading] = useState(false);
     const [selection, setSelection] = useState(selectionInitialState);
@@ -129,6 +130,7 @@ const SingleTable = ({
     const extraProps = {
         loading,
         defaultPageSize: defaultPageSize || limit,
+        propsToWatch, // IA-763: pass an extra props that will be watched in table component to force the render
     };
     if (subComponent) {
         extraProps.SubComponent = original =>
@@ -241,6 +243,7 @@ SingleTable.defaultProps = {
     setIsLoading: true,
     multiSelect: false,
     selectionActions: [],
+    propsToWatch: null,
 };
 
 SingleTable.propTypes = {
@@ -270,6 +273,7 @@ SingleTable.propTypes = {
     setIsLoading: PropTypes.bool,
     multiSelect: PropTypes.bool,
     selectionActions: PropTypes.array,
+    propsToWatch: PropTypes.any,
 };
 
 export default withRouter(SingleTable);

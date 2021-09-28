@@ -21,6 +21,9 @@ from .preparedness.parser import (
     parse_value,
 )
 from .preparedness.spreadsheet_manager import *
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -143,7 +146,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
-        fields = ["name", "org_units"]
+        fields = ["name", "org_units", "id"]
 
 
 class RoundSerializer(serializers.ModelSerializer):
@@ -267,7 +270,16 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         campaign = validated_data.get("campaign")
-        spreadsheet = create_spreadsheet(campaign.obr_name)
+
+        lang = "EN"
+        try:
+            country = campaign.country()
+            cug = CountryUsersGroup.objects.get(country=country)
+            lang = cug.language
+        except Exception as e:
+            logger.exception(e)
+            logger.error(f"Could not find template language for {campaign}")
+        spreadsheet = create_spreadsheet(campaign.obr_name, lang)
 
         update_national_worksheet(
             spreadsheet.worksheet("National"),
@@ -297,6 +309,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     round_two = RoundSerializer()
     org_unit = OrgUnitSerializer(source="initial_org_unit", read_only=True)
     top_level_org_unit_name = serializers.SerializerMethodField()
+    top_level_org_unit_id = serializers.SerializerMethodField()
     general_status = serializers.SerializerMethodField()
 
     def get_top_level_org_unit_name(self, campaign):
@@ -305,6 +318,14 @@ class CampaignSerializer(serializers.ModelSerializer):
             while parent.parent:
                 parent = parent.parent
             return parent.name
+        return ""
+
+    def get_top_level_org_unit_id(self, campaign):
+        if campaign.initial_org_unit:
+            parent = campaign.initial_org_unit
+            while parent.parent:
+                parent = parent.parent
+            return parent.id
         return ""
 
     def get_general_status(self, campaign):
@@ -393,5 +414,5 @@ class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campaign
         fields = "__all__"
-        read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status"]
+        read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status", "creation_email_send_at"]
         extra_kwargs = {"preparedness_data": {"write_only": True}}

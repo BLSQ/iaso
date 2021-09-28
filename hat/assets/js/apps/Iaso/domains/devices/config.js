@@ -20,8 +20,8 @@ const devicesTableColumns = formatMessage => [
         sortable: false,
         accessor: 'last_owner',
         Cell: settings =>
-            settings.row.original.last_owner
-                ? `${settings.row.original.last_owner.first_name} ${settings.row.original.last_owner.last_name}`
+            settings.value
+                ? `${settings.value.first_name} ${settings.value.last_name} ${settings.value.user_name}`
                 : null,
     },
     {

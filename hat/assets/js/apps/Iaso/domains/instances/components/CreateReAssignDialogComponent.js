@@ -28,9 +28,9 @@ const CreateReAssignDialogComponent = ({
             toDay.getFullYear() + `0${toDay.getMonth() + 1}`.slice(-2),
         );
         currentFormOrInstance.period =
-            currentFormOrInstance.period_type !== null &&
-            currentFormOrInstance.period_type !== undefined
-                ? period.asPeriodType(currentFormOrInstance.period_type)
+            currentFormOrInstance.periodType !== null &&
+            currentFormOrInstance.periodType !== undefined
+                ? period.asPeriodType(currentFormOrInstance.periodType)
                       .periodString
                 : null;
     }
@@ -105,7 +105,7 @@ const CreateReAssignDialogComponent = ({
                 }
                 clearable={false}
                 keyValue="period"
-                onChange={(key, value) =>
+                onChange={(_key, value) =>
                     setFieldValue({
                         ...fieldValue,
                         period: {

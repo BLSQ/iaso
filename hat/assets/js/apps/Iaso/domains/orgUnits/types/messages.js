@@ -31,11 +31,11 @@ const MESSAGES = defineMessages({
     },
     updatedAt: {
         id: 'iaso.forms.updated_at',
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
     },
     createdAt: {
         id: 'iaso.label.created',
-        defaultMessage: 'Created at',
+        defaultMessage: 'Created',
     },
     orgUnit: {
         id: 'iaso.label.orgUnit',
@@ -58,7 +58,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Are you sure you want to delete this org unit type?',
     },
     deleteWarning: {
-        id: 'iaso.users.dialog.deleteUserTitle',
+        id: 'iaso.orgUnitsTypes.dialog.deleteText',
         defaultMessage: 'This operation cannot be undone.',
     },
     edit: {

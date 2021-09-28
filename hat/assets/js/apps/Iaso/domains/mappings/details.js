@@ -5,7 +5,12 @@ import { bindActionCreators } from 'redux';
 import { Grid, Box, withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
-import { commonStyles, LoadingSpinner } from 'bluesquare-components';
+import {
+    commonStyles,
+    injectIntl,
+    LoadingSpinner,
+} from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import {
     setCurrentMappingVersion as setCurrentMappingVersionAction,
     fetchMappingVersionDetail as fetchMappingVersionDetailAction,
@@ -23,6 +28,7 @@ import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm'
 import { baseUrls } from '../../constants/urls';
 
 import Descriptor from './descriptor';
+import MESSAGES from './messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -33,6 +39,22 @@ const styles = theme => ({
         cursor: 'pointer',
     },
 });
+
+const iasoFieldOptions = formatMessage => [
+    { value: undefined, label: formatMessage(MESSAGES.useValueFromForm) },
+    {
+        value: 'instance.org_unit.source_ref',
+        label: formatMessage(MESSAGES.instanceOrgUnit),
+    },
+];
+
+const fieldTypeOptions = formatMessage => [
+    { value: 'dataElement', label: formatMessage(MESSAGES.programDataElement) },
+    {
+        value: 'trackedEntityAttribute',
+        label: formatMessage(MESSAGES.trackedEntityAttribute),
+    },
+];
 
 class MappingDetails extends Component {
     constructor(props) {
@@ -61,6 +83,7 @@ class MappingDetails extends Component {
             router,
             prevPathname,
             redirectToReplace,
+            intl,
         } = this.props;
 
         const onQuestionSelected = node => {
@@ -101,9 +124,21 @@ class MappingDetails extends Component {
             <section className={classes.relativeContainer}>
                 <TopBar
                     title={
-                        currentMappingVersion
-                            ? `Mapping : ${currentMappingVersion.form_version.form.name},  ${currentMappingVersion.form_version.version_id} - ${currentMappingVersion.mapping.mapping_type}`
-                            : 'loading'
+                        currentMappingVersion ? (
+                            <FormattedMessage
+                                {...MESSAGES.mapping}
+                                values={{
+                                    name: currentMappingVersion.form_version
+                                        .form.name,
+                                    id: currentMappingVersion.form_version
+                                        .version_id,
+                                    type: currentMappingVersion.mapping
+                                        .mapping_type,
+                                }}
+                            />
+                        ) : (
+                            <FormattedMessage {...MESSAGES.loading} />
+                        )
                     }
                     displayBackButton
                     goBack={() => {
@@ -159,6 +194,12 @@ class MappingDetails extends Component {
                                                 hesabuDescriptor={
                                                     hesabuDescriptor
                                                 }
+                                                fieldOptions={iasoFieldOptions(
+                                                    intl.formatMessage,
+                                                )}
+                                                fieldTypeOptions={fieldTypeOptions(
+                                                    intl.formatMessage,
+                                                )}
                                             />
                                         )}
                                         {!isDataElementMappable && (
@@ -205,6 +246,7 @@ MappingDetails.propTypes = {
     setCurrentQuestion: PropTypes.func.isRequired,
     currentQuestion: PropTypes.object,
     hesabuDescriptor: PropTypes.any,
+    intl: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -230,5 +272,5 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(MappingDetails),
+    injectIntl(connect(MapStateToProps, MapDispatchToProps)(MappingDetails)),
 );

@@ -1,8 +1,8 @@
 import React from 'react';
 import { CircularProgress } from '@material-ui/core';
 import PropTypes from 'prop-types';
-import { useGetOrgUnit } from '../../hooks/useGetOrgUnits';
 import { OrgUnitTreeviewModal } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/requests';
 
 export const OrgUnitsLevels = ({ field, form, label }) => {
     const { name } = field;

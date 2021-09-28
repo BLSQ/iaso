@@ -66,7 +66,8 @@ export const useDataSourceVersions = () => {
         select: data => {
             return data.versions.map(version => ({
                 id: version.id,
-                name: version.name,
+                data_source_name: version.data_source_name,
+                is_default: version.is_default,
                 number: version.number,
             }));
         },

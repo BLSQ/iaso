@@ -64,10 +64,13 @@ const formatSourceVersionLabel = (
     defaultVersionId,
     sourceVersion,
 ) => {
-    const name = sourceVersion.name ?? 'Unnamed source';
+    const name = sourceVersion.data_source_name ?? 'Unnamed source';
     const version = formatMessage(MESSAGES.version);
     const number = sourceVersion.number.toString();
-    const label = `${name} - ${version}: ${number}`;
+    let label = `${name} - ${version}: ${number}`;
+    if (sourceVersion.is_default) {
+        label += ' ⋅';
+    }
 
     if (sourceVersion.id === defaultVersionId)
         return `${label} (${formatMessage(MESSAGES.default)})`;

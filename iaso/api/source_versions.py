@@ -17,9 +17,26 @@ class SourceVersionSerializer(serializers.ModelSerializer):
     GET /api/sourceversions/
     """
 
+    data_source_name = serializers.SlugRelatedField(source="data_source", slug_field="name", read_only=True)
+
+    # Default version for source not global
+    is_default = serializers.SerializerMethodField()
+
+    def get_is_default(self, source_version: SourceVersion):
+        return source_version.data_source.default_version == source_version
+
     class Meta:
         model = SourceVersion
-        fields = ["id", "data_source", "number", "description", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "data_source",
+            "number",
+            "description",
+            "created_at",
+            "updated_at",
+            "data_source_name",
+            "is_default",
+        ]
 
     def validate_data_source(self, value):
         """
@@ -52,7 +69,9 @@ class SourceVersionViewSet(ModelViewSet):
     def get_queryset(self):
         profile = self.request.user.iaso_profile
 
-        versions = SourceVersion.objects.filter(data_source__projects__account=profile.account)
+        versions = SourceVersion.objects.filter(data_source__projects__account=profile.account).prefetch_related(
+            "data_source"
+        )
 
         source_id = self.kwargs.get("source", None)
         if source_id:

@@ -79,7 +79,9 @@ Timeline tracker Automated message.
 
 
 class Command(BaseCommand):
-    """Send an e-mail to all GPEI coordinator for the campaign"""
+    """Send an e-mail to all GPEI coordinator for the campaign
+    run weekly email after the refresh so data is up to date
+    """
 
     def handle(self, *args, **options):
         campaigns = Campaign.objects.filter(Q(round_two__ended_at__lt=now()) | Q(round_two__ended_at__isnull=True))

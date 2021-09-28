@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
     textPlaceholder,
     IconButton as IconButtonComponent,
@@ -6,10 +6,9 @@ import {
 } from 'bluesquare-components';
 import { object } from 'prop-types';
 import { withRouter } from 'react-router';
-import { getCountryUsersGroup, getAllUsers } from '../requests';
+import { useGetCountryUsersGroup, useGetProfiles } from '../requests';
 import MESSAGES from '../../../constants/messages';
 import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
-import { useAPI } from '../../../../../../../hat/assets/js/apps/Iaso/utils/requests';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
 const makeUserNameToDisplay = user => {
@@ -26,7 +25,6 @@ const allLanguages = [
 
 const CountryNotificationsConfigTable = ({ params }) => {
     const { formatMessage } = useSafeIntl();
-    const [refresh, setRefresh] = useState(false);
     const tableParams = useMemo(
         () => ({
             order: params.order ?? 'country__name', // Watch out, needs 2 underscores
@@ -35,15 +33,9 @@ const CountryNotificationsConfigTable = ({ params }) => {
         }),
         [params.order, params.page, params.pageSize],
     );
-    const { data: allUsers } = useAPI(getAllUsers);
-    const { data: tableData, isLoading } = useAPI(
-        getCountryUsersGroup,
-        tableParams,
-        {
-            preventTrigger: false,
-            additionalDependencies: [refresh],
-        },
-    );
+
+    const { data: allUsers } = useGetProfiles();
+    const { data: tableData, isLoading } = useGetCountryUsersGroup(tableParams);
 
     const columns = [
         {
@@ -88,7 +80,6 @@ const CountryNotificationsConfigTable = ({ params }) => {
             Cell: settings => {
                 return (
                     <CountryNotificationsConfigModal
-                        notifyParent={() => setRefresh(!refresh)}
                         onConfirm={() => null}
                         countryId={settings.row.original.id}
                         countryName={settings.row.original.country_name}

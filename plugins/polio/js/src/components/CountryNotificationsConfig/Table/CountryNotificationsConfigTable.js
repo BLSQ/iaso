@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import {
-    textPlaceholder,
     IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -44,11 +43,6 @@ const CountryNotificationsConfigTable = ({ params }) => {
             accessor: 'country_name', // Watch out, needs 2 underscores
             sortable: true,
             align: 'left',
-            Cell: settings => {
-                const text =
-                    settings?.row?.original?.country_name ?? textPlaceholder;
-                return text;
-            },
         },
         {
             Header: formatMessage(MESSAGES.usersToNotify),
@@ -56,22 +50,13 @@ const CountryNotificationsConfigTable = ({ params }) => {
             width: 100,
             sortable: false,
             align: 'left',
-            Cell: settings => {
-                const userNames = settings.row.original.read_only_users_field
-                    .map(makeUserNameToDisplay)
-                    .toString()
-                    .trim();
-                return userNames;
-            },
+            Cell: settings =>
+                settings.value.map(makeUserNameToDisplay).toString().trim(),
         },
         {
             Header: formatMessage(MESSAGES.language),
             sortable: true,
             accessor: 'language',
-            Cell: settings => {
-                const text = settings.row.original.language ?? textPlaceholder;
-                return text;
-            },
         },
         {
             Header: formatMessage(MESSAGES.actions),

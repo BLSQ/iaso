@@ -22,14 +22,18 @@ class DiffSerializer(serializers.Serializer):
         queryset=SourceVersion.objects.all(), style={"base_template": "select.html"}
     )
     source_status = serializers.ChoiceField(required=False, choices=STATUSES)
-    source_top_org_unit_id = serializers.PrimaryKeyRelatedField(required=False, queryset=OrgUnit.objects.all())
+    source_top_org_unit_id = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=OrgUnit.objects.all(), allow_null=True
+    )
     source_org_unit_type_ids = serializers.PrimaryKeyRelatedField(
         required=False, queryset=OrgUnitType.objects.all(), many=True, style={"base_template": "select_multiple.html"}
     )
     ref_org_unit_type_ids = serializers.PrimaryKeyRelatedField(
         required=False, queryset=OrgUnitType.objects.all(), many=True, style={"base_template": "select_multiple.html"}
     )
-    ref_top_org_unit_id = serializers.PrimaryKeyRelatedField(required=False, queryset=OrgUnit.objects.all())
+    ref_top_org_unit_id = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=OrgUnit.objects.all(), allow_null=True
+    )
     fields_to_export = serializers.MultipleChoiceField(choices=FIELDS)
 
     def validate(self, attrs):

@@ -68,6 +68,6 @@ class SourceVersionViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         # FIXME: FileResponse don't work, no idea why, not a priority
         filename = "comparison.csv"
-        response = HttpResponse(serializer.generate_csv())
+        response = HttpResponse(serializer.generate_csv(), content_type="text/csv")
         response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response

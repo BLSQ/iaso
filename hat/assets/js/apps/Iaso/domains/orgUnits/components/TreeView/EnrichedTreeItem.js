@@ -7,9 +7,6 @@ import CheckBoxOutlineBlankOutlinedIcon from '@material-ui/icons/CheckBoxOutline
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
 import { makeStyles } from '@material-ui/core/styles';
-// import { useAPI } from '../../../../utils/requests';
-import { useInView } from 'react-intersection-observer';
-import { BlockPlaceholder } from 'bluesquare-components/dist/components/BlockPlaceholder';
 import { useChildrenData } from './requests';
 
 const styles = theme => ({
@@ -52,18 +49,7 @@ const EnrichedTreeItem = ({
         id,
         isExpanded,
     );
-    // const { data: childrenData, isLoading } = useAPI(fetchChildrenData, id, {
-    //     preventTrigger: !isExpanded,
-    // });
     const ref = useRef();
-    const [inViewRef, inView] = useInView();
-    const setRefs = useCallback(
-        node => {
-            ref.current = node;
-            inViewRef(node);
-        },
-        [inViewRef],
-    );
 
     const makeIcon = (hasCheckbox, hasBeenTicked, tickedParent) => {
         if (!hasCheckbox) return null;
@@ -124,12 +110,11 @@ const EnrichedTreeItem = ({
             />
         ));
     };
-    console.log('inView', inView, label);
     if (isExpanded && isLoading) {
         return (
             <TreeItem
                 classes={{ root: classes.treeItem }}
-                ref={setRefs}
+                ref={ref}
                 label={makeLabel(
                     label || `id: ${id.toString()}`,
                     withCheckbox,
@@ -146,7 +131,7 @@ const EnrichedTreeItem = ({
             <div style={{ display: 'flex' }}>
                 <TreeItem
                     classes={{ root: classes.treeItem }}
-                    ref={setRefs}
+                    ref={ref}
                     label={makeLabel(
                         label || `id: ${id.toString()}`,
                         withCheckbox,
@@ -166,12 +151,11 @@ const EnrichedTreeItem = ({
             </div>
         );
     }
-    if (!inView) return <BlockPlaceholder ref={setRefs} width="30px" />;
     return (
         <div style={{ display: 'flex' }}>
             <TreeItem
                 classes={{ root: classes.treeItem }}
-                ref={setRefs}
+                ref={ref}
                 label={makeLabel(
                     label || `id: ${id.toString()}`,
                     withCheckbox,

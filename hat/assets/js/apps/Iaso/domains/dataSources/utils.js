@@ -26,14 +26,29 @@ export const getDefaultSourceVersion = user => {
     }
     return sourceVersion;
 };
+export const FIELDS_TO_EXPORT = {
+    name: 'name',
+    parent: 'parent',
+    geometry: 'geometry',
+    groups: 'groups',
+};
+
 export const useFieldsToExport = () => {
     const { formatMessage } = useSafeIntl();
     return [
-        { label: formatMessage(MESSAGES.name), value: 'name' },
-        { label: formatMessage(MESSAGES.parent), value: 'parent' },
-        { label: formatMessage(MESSAGES.shape), value: 'shape' },
-        { label: formatMessage(MESSAGES.groups), value: 'groups' },
-        { label: formatMessage(MESSAGES.location), value: 'location' },
+        { label: formatMessage(MESSAGES.name), value: FIELDS_TO_EXPORT.name },
+        {
+            label: formatMessage(MESSAGES.parent),
+            value: FIELDS_TO_EXPORT.parent,
+        },
+        {
+            label: formatMessage(MESSAGES.geometry),
+            value: FIELDS_TO_EXPORT.geometry,
+        },
+        {
+            label: formatMessage(MESSAGES.groups),
+            value: FIELDS_TO_EXPORT.groups,
+        },
     ];
 };
 export const credentialsAsOptions = credentials => {

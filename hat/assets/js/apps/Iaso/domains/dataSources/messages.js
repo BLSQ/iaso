@@ -150,17 +150,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.options.label.parent',
         defaultMessage: 'Parent',
     },
-    shape: {
-        id: 'iaso.datasources.options.label.shape',
-        defaultMessage: 'Shape',
-    },
     groups: {
         id: 'iaso.datasources.options.label.groups',
         defaultMessage: 'Groups',
     },
-    location: {
-        id: 'iaso.datasources.options.label.location',
-        defaultMessage: 'Location',
+    geometry: {
+        id: 'iaso.datasources.options.label.geometry',
+        defaultMessage: 'Geometry',
     },
     version: {
         id: 'iaso.datasources.options.label.version',
@@ -178,8 +174,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.button.label.export',
         defaultMessage: 'Export',
     },
-    xlsPreview: {
-        id: 'iaso.datasources.button.label.xlsPreview',
+    csvPreview: {
+        id: 'iaso.datasources.button.label.csvPreview',
         defaultMessage: 'Preview',
     },
     orgUnitTypes: {

@@ -1,6 +1,6 @@
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect, useState } from 'react';
 import { Grid, Box, Divider } from '@material-ui/core';
-import { useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { useMutation } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -10,7 +10,7 @@ import {
     useDataSourceVersions,
     useOrgUnitTypes,
     postToDHIS2,
-    xlsPreview,
+    csvPreview,
     useCredentials,
 } from '../requests';
 import { orgUnitStatusAsOptions } from '../../../constants/filters';
@@ -23,6 +23,7 @@ import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnit
 import { ModalSubTitle } from '../../../components/forms/ModalSubTitle';
 import {
     useFieldsToExport,
+    FIELDS_TO_EXPORT,
     credentialsAsOptions,
     dataSourceVersionsAsOptions,
     refDataSourceVersionsAsOptions,
@@ -30,12 +31,16 @@ import {
 
 const initialExportData = {
     source_version_id: null, // version id of the origin data source
-    source_org_unit_id: null,
+    source_top_org_unit_id: undefined, // TODO should be null
     source_org_unit_types_ids: [],
     source_status: null, // "New", "Validated" etc, cf orgunit search
-    fields_to_export: [],
+    fields_to_export: [
+        FIELDS_TO_EXPORT.name,
+        FIELDS_TO_EXPORT.parent,
+        FIELDS_TO_EXPORT.geometry,
+    ],
     ref_version_id: null, // version id of the target data source
-    ref_top_org_unit_id: null,
+    ref_top_org_unit_id: undefined, // TODO should be null
     credentials: null, // TODO ask if credentials should be prefilled
 };
 
@@ -57,10 +62,11 @@ export const ExportToDHIS2Dialog = ({
     const { data: credentials, isLoading: areCredentialsLoading } =
         useCredentials(dataSourceId);
     const { mutate: exportToDHIS2 } = useMutation(postToDHIS2);
-    const { mutate: preview } = useMutation(xlsPreview);
+    const [isCSVLoading, setIsCsvLoading] = useState(false);
     const [
         exportData,
         setExportDataField,
+        // eslint-disable-next-line no-unused-vars
         _setExportDataErrors,
         setExportData,
     ] = useFormState(initialExportData);
@@ -81,22 +87,32 @@ export const ExportToDHIS2Dialog = ({
         setExportData(initialExportData);
     }, [setExportData]);
 
-    const onXlsPreview = useCallback(() => {
-        console.log("I'm an XLS Preview, I can do sums and graphs and stuff");
-        preview(convertFormStateToDict(exportData));
-    }, [exportData, preview]);
+    const onXlsPreview = useCallback(async () => {
+        setIsCsvLoading(true);
+        const csv = await csvPreview(convertFormStateToDict(exportData));
+        const url = `${window.URL.createObjectURL(
+            new File([csv], 'comparison.csv', { type: 'text/csv' }),
+        )}`;
+        window.location.href = url;
+        setIsCsvLoading(false);
+    }, [exportData]);
 
-    const onConfirm = useCallback(() => {
-        console.log('SENDING TO DHIS2 (coming soon)');
-        exportToDHIS2(convertFormStateToDict(exportData));
-    }, [exportData, exportToDHIS2]);
+    const onConfirm = useCallback(
+        closeDialog => {
+            console.log('SENDING TO DHIS2 (coming soon)');
+            exportToDHIS2(convertFormStateToDict(exportData));
+            closeDialog();
+        },
+        [exportData, exportToDHIS2],
+    );
 
     const allowConfirm =
         Boolean(exportData.source_version_id.value) &&
-        Boolean(exportData.source_status.value) &&
+        (Boolean(exportData.source_status.value) ||
+            exportData.source_status.value === '') &&
         exportData.fields_to_export.value.length > 0 &&
-        Boolean(exportData.ref_version_id.value) &&
-        Boolean(exportData.credentials.value);
+        Boolean(exportData.ref_version_id.value);
+    // && Boolean(exportData.credentials.value);
 
     // Reset Treeview when changing ref datasource
     useEffect(() => {
@@ -110,7 +126,7 @@ export const ExportToDHIS2Dialog = ({
             renderTrigger={renderTrigger}
             onConfirm={onXlsPreview}
             onClosed={reset}
-            confirmMessage={MESSAGES.xlsPreview} // TODO change message
+            confirmMessage={MESSAGES.csvPreview} // TODO change message
             cancelMessage={MESSAGES.cancel}
             maxWidth="md"
             allowConfirm={allowConfirm}
@@ -123,6 +139,7 @@ export const ExportToDHIS2Dialog = ({
             onAdditionalButtonClick={onConfirm}
         >
             <Grid container spacing={2}>
+                {isCSVLoading && <LoadingSpinner />}
                 {/* Data to export  */}
                 <Grid container item spacing={2}>
                     <ModalSubTitle
@@ -150,20 +167,14 @@ export const ExportToDHIS2Dialog = ({
                                 <OrgUnitTreeviewModal
                                     onConfirm={value => {
                                         setExportDataField(
-                                            'source_org_unit_id',
-                                            value?.id,
+                                            'source_top_org_unit_id',
+                                            value?.id, // TODO reset at null when API can handle it
                                         );
                                     }}
                                     source={dataSourceId}
                                     titleMessage={formatMessage(
                                         MESSAGES.selectTopOrgUnit,
                                     )}
-                                    required
-                                    // multiselect
-                                    // initialSelection={
-                                    //     exportData.source_org_unit_id.value
-                                    // }
-                                    // withMarginTop
                                 />
                             </Box>
                         </Grid>
@@ -249,7 +260,7 @@ export const ExportToDHIS2Dialog = ({
                                 onConfirm={value => {
                                     setExportDataField(
                                         'ref_top_org_unit_id',
-                                        value?.id,
+                                        value?.id, // TODO reset at null when api can handle it
                                     );
                                 }}
                                 version={destinationDataVersionId}
@@ -261,7 +272,6 @@ export const ExportToDHIS2Dialog = ({
                                     destinationDataVersionId
                                 }
                                 disabled={!destinationDataVersionId}
-                                required={false}
                             />
                         </Box>
                     </Grid>
@@ -275,7 +285,6 @@ export const ExportToDHIS2Dialog = ({
                             loading={areCredentialsLoading}
                             onChange={setExportDataField}
                             options={credentialsAsOptions(credentials)}
-                            required
                         />
                     </Grid>
                 </Grid>

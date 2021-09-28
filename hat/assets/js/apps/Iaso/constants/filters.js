@@ -16,7 +16,7 @@ export const search = (urlKey = 'search') => ({
 export const orgUnitStatusAsOptions = formatMessage => [
     {
         label: formatMessage(MESSAGES.all),
-        value: 'all',
+        value: '',
     },
     {
         label: formatMessage(MESSAGES.new),

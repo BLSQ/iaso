@@ -1,7 +1,5 @@
-import { useQuery } from 'react-query';
-import { sendRequest } from '../utils/networking';
+import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 export const useGetAuthenticatedUser = () =>
-    useQuery(['profile', 'me'], () => sendRequest('GET', '/api/profiles/me/'), {
-        refetchOnWindowFocus: false,
-    });
+    useSnackQuery(['profile', 'me'], () => getRequest('/api/profiles/me/'));

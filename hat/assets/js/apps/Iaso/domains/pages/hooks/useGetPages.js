@@ -1,18 +1,5 @@
-import { useQuery } from 'react-query';
-import { sendRequest } from './networking';
-
-export const useGetPage = slug => {
-    return {
-        query: useQuery(
-            ['iaso', 'page', slug],
-            async () => {
-                // additional props are WIP
-                return sendRequest('GET', `/api/pages/${slug}`);
-            },
-            { cacheTime: 0, structuralSharing: false },
-        ),
-    };
-};
+import { useSnackQuery } from '../../../libs/apiHooks';
+import { getRequest } from '../../../libs/Api';
 
 export const useGetPages = options => {
     const params = {
@@ -35,14 +22,10 @@ export const useGetPages = options => {
         return `/api/pages/?${queryString.toString()}`;
     };
 
-    return {
-        query: useQuery(
-            ['iaso', 'pages', params],
-            async () => {
-                // additional props are WIP
-                return sendRequest('GET', getURL(params));
-            },
-            { cacheTime: 0, structuralSharing: false },
-        ),
-    };
+    return useSnackQuery(
+        ['iaso', 'pages', params],
+        () => getRequest('GET', getURL(params)),
+        undefined,
+        { cacheTime: 0, structuralSharing: false },
+    );
 };

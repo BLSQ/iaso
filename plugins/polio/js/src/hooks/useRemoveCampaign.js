@@ -2,7 +2,7 @@ import { defineMessage } from 'react-intl';
 import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { deleteRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
-export const useRemoveCampaign = () => {
+export const useRemoveCampaign = () =>
     useSnackMutation(
         id => deleteRequest(`/api/polio/campaigns/${id}`),
         defineMessage({
@@ -15,4 +15,3 @@ export const useRemoveCampaign = () => {
         }),
         ['polio', 'campaigns'],
     );
-};

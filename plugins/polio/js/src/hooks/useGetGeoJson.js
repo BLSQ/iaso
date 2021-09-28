@@ -1,6 +1,6 @@
-import { useQuery } from 'react-query';
-import { sendRequest } from '../utils/networking';
 import { useGetAuthenticatedUser } from './useGetAuthenticatedUser';
+import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
 export const useGetGeoJson = (country, orgUnitCategory) => {
     const { data: user = {}, isFetching } = useGetAuthenticatedUser();
@@ -23,16 +23,12 @@ export const useGetGeoJson = (country, orgUnitCategory) => {
         orgUnitCategory === 'DISTRICT'
             ? { ...baseParams, ...districtParam }
             : { ...baseParams, ...provinceParam };
+    const queryString = new URLSearchParams(params);
 
-    return useQuery(
+    return useSnackQuery(
         ['geo_json', params],
-        () => {
-            const queryString = new URLSearchParams(params);
-            return sendRequest(
-                'GET',
-                `/api/orgunits/?${queryString.toString()}`,
-            );
-        },
+        () => getRequest(`/api/orgunits/?${queryString.toString()}`),
+        undefined,
         {
             enabled: Boolean(country) && isFetching,
             refetchOnWindowFocus: false,

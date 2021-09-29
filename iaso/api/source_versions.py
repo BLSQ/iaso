@@ -1,12 +1,14 @@
 from django.http import HttpResponse
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from iaso.models import SourceVersion
 from .common import ModelViewSet
 from iaso.models import DataSource
 from rest_framework import serializers, permissions
 
-from .source_versions_serializers import DiffSerializer
+from .source_versions_serializers import DiffSerializer, ExportSerializer
+from .tasks import TaskSerializer
 
 
 class SourceVersionSerializer(serializers.ModelSerializer):
@@ -90,3 +92,14 @@ class SourceVersionViewSet(ModelViewSet):
         response = HttpResponse(serializer.generate_csv(), content_type="text/csv")
         response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
+
+    @action(methods=["POST"], detail=False, serializer_class=ExportSerializer)
+    def export_dhis2(self, request):
+        """Export diff between two source to the DHIS2 server"""
+        serializer: ExportSerializer = self.get_serializer(
+            data=request.data if request.method == "POST" else request.query_params
+        )
+
+        serializer.is_valid(raise_exception=True)
+        task = serializer.launch_export(user=request.user)
+        return Response({"task": TaskSerializer(instance=task).data})

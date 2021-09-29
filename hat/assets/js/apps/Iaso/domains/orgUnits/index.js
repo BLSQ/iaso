@@ -401,7 +401,10 @@ class OrgUnits extends Component {
                         params={params}
                         defaultItem={{
                             validation_status: 'all',
-                            color: getChipColors(0).replace('#', ''),
+                            color: getChipColors(searches.length + 1).replace(
+                                '#',
+                                '',
+                            ),
                             source: defaultSource && defaultSource.id,
                         }}
                         paramKey="searches"

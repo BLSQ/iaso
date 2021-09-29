@@ -35,7 +35,7 @@ export const status = (formatMessage, urlKey = 'validation_status') => ({
             value: 'REJECTED',
         },
     ],
-    label: MESSAGES.status,
+    label: MESSAGES.validationStatus,
     type: 'select',
 });
 
@@ -282,6 +282,32 @@ export const shape = (formatMessage, urlKey = 'withShape') => ({
         },
     ],
     label: MESSAGES.shape,
+    type: 'select',
+});
+
+export const geography = (formatMessage, urlKey = 'geography') => ({
+    urlKey,
+    isMultiSelect: false,
+    isClearable: true,
+    options: [
+        {
+            label: formatMessage(MESSAGES.anyGeography),
+            value: 'any',
+        },
+        {
+            label: formatMessage(MESSAGES.withLocation),
+            value: 'location',
+        },
+        {
+            label: formatMessage(MESSAGES.withShape),
+            value: 'shape',
+        },
+        {
+            label: formatMessage(MESSAGES.noGeographicalData),
+            value: 'none',
+        },
+    ],
+    label: MESSAGES.geographicalData,
     type: 'select',
 });
 

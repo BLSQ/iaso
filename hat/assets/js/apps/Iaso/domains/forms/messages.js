@@ -161,13 +161,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.status',
         defaultMessage: 'Status',
     },
+    validationStatus: {
+        id: 'iaso.forms.validationStatus',
+        defaultMessage: 'Validation status',
+    },
     showDeleted: {
         id: 'iaso.forms.showDeleted',
         defaultMessage: 'Show deleted',
     },
     hasInstances: {
         id: 'iaso.forms.hasInstances',
-        defaultMessage: 'Forms',
+        defaultMessage: 'Forms submissions',
     },
     yes: {
         id: 'iaso.forms.yes',
@@ -236,14 +240,6 @@ const MESSAGES = defineMessages({
     duplicates: {
         id: 'iaso.label.duplicates',
         defaultMessage: 'Duplicates',
-    },
-    shape: {
-        id: 'iaso.forms.shape',
-        defaultMessage: 'Shape',
-    },
-    location: {
-        id: 'iaso.forms.location',
-        defaultMessage: 'Location',
     },
     device: {
         id: 'iaso.forms.device',
@@ -377,6 +373,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.projects',
         defaultMessage: 'Projects',
     },
+    shape: {
+        id: 'iaso.forms.shape',
+        defaultMessage: 'Shape',
+    },
+    location: {
+        id: 'iaso.forms.location',
+        defaultMessage: 'Location',
+    },
     orgUnitsTypes: {
         id: 'iaso.label.orgUnitsTypes',
         defaultMessage: 'Organisation unit types',
@@ -464,6 +468,26 @@ const MESSAGES = defineMessages({
     hideAdvancedSettings: {
         id: 'iaso.form.label.hideAdvancedSettings',
         defaultMessage: 'Hide advanced settings',
+    },
+    withShape: {
+        id: 'iaso.label.withShape',
+        defaultMessage: 'With territory only',
+    },
+    withLocation: {
+        id: 'iaso.label.withLocation',
+        defaultMessage: 'With point only',
+    },
+    anyGeography: {
+        id: 'iaso.label.anyGeography',
+        defaultMessage: 'With point or territory',
+    },
+    geographicalData: {
+        id: 'iaso.label.geographicalData',
+        defaultMessage: 'Geographical data',
+    },
+    noGeographicalData: {
+        id: 'iaso.label.noGeographicalData',
+        defaultMessage: 'Without geography',
     },
 });
 

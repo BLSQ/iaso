@@ -1,9 +1,8 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react';
 import { string, number, object, arrayOf, func } from 'prop-types';
-import { Grid, Box, Divider, Typography } from '@material-ui/core';
+import { Grid, Box, Divider, Typography, makeStyles } from '@material-ui/core';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { useMutation } from 'react-query';
-import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFormState } from '../../../hooks/form';
@@ -29,6 +28,18 @@ import {
     refDataSourceVersionsAsOptions,
 } from '../utils';
 
+const style = theme => ({
+    noCreds: {
+        color: theme.palette.error.main,
+    },
+    subtitle: {
+        fontWeight: 'bold',
+        color: theme.palette.primary.main,
+    },
+});
+
+const useStyles = makeStyles(style);
+
 const initialExportData = {
     source_version_id: null, // version id of the origin data source
     source_top_org_unit_id: undefined, // TODO should be null
@@ -45,14 +56,13 @@ const initialExportData = {
 
 export const ExportToDHIS2Dialog = ({
     renderTrigger,
-    dataSourceId,
     dataSourceName,
     versions,
     defaultVersionId,
     credentials,
 }) => {
-    console.log(credentials);
     const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
     const fieldsToExport = useFieldsToExport();
 
     const { data: orgUnitTypes, isLoading: areOrgUnitTypesLoading } =
@@ -284,32 +294,30 @@ export const ExportToDHIS2Dialog = ({
                     </Grid>
                     <Grid xs={12} item>
                         <Box display="flex" alignItems="center">
-                            <Typography variant="subtitle1">
+                            <Typography
+                                variant="subtitle1"
+                                className={classes.subtitle}
+                            >
                                 {formatMessage(MESSAGES.credentialsForExport)}
                             </Typography>
                             {credentials?.is_valid && (
                                 <Typography variant="body1">
                                     {credentials.name
-                                        ? `${credentials.name}(${credentials.url})`
-                                        : credentials.url}
+                                        ? `: ${credentials.name} (${credentials.url})`
+                                        : `: ${credentials.url}`}
                                 </Typography>
                             )}
                             {!credentials?.is_valid && (
-                                <FormattedMessage
-                                    {...MESSAGES.noCredentialsForExport}
-                                />
+                                <Typography
+                                    variant="body1"
+                                    className={classes.noCreds}
+                                >
+                                    {`: ${formatMessage(
+                                        MESSAGES.noCredentialsForExport,
+                                    )}`}
+                                </Typography>
                             )}
                         </Box>
-                        {/* <InputComponent
-                            type="select"
-                            keyValue="credentials"
-                            labelString={formatMessage(MESSAGES.credentials)}
-                            value={exportData.credentials.value}
-                            errors={exportData.credentials.errors}
-                            loading={areCredentialsLoading}
-                            onChange={setExportDataField}
-                            options={credentialsAsOptions(credentials)}
-                        /> */}
                     </Grid>
                 </Grid>
             </Grid>
@@ -319,7 +327,6 @@ export const ExportToDHIS2Dialog = ({
 
 ExportToDHIS2Dialog.propTypes = {
     renderTrigger: func.isRequired,
-    dataSourceId: number.isRequired,
     dataSourceName: string.isRequired,
     versions: arrayOf(object).isRequired,
     defaultVersionId: number,

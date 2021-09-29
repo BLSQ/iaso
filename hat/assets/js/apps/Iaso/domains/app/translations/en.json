@@ -20,7 +20,7 @@
     "iaso.datasources.button.label.export": "Export",
     "iaso.dataSources.continueOnError": "Continue on error",
     "iaso.dataSources.create": "Create data sources",
-    "iaso.datasources.credentialsForExport": "Export to:",
+    "iaso.datasources.credentialsForExport": "Export to",
     "iaso.dataSources.dataSourceReadOnly": "Read Only",
     "iaso.dataSources.dataSourceVersion": "Source version",
     "iaso.dataSources.default": "Default source",

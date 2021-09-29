@@ -13,10 +13,11 @@ export const search = (urlKey = 'search') => ({
     type: 'search',
 });
 
+// CAUTION: value ALL has to be converted to empty string before being sent to API
 export const orgUnitStatusAsOptions = formatMessage => [
     {
         label: formatMessage(MESSAGES.all),
-        value: '',
+        value: 'ALL',
     },
     {
         label: formatMessage(MESSAGES.new),

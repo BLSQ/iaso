@@ -124,7 +124,11 @@ export const convertExportDataToURL = data => {
     return result;
 };
 export const csvPreview = async data => {
-    const url = convertExportDataToURL(data);
+    const adaptedData = { ...data };
+    if (data.source_status === 'ALL') {
+        adaptedData.source_status = '';
+    }
+    const url = convertExportDataToURL(adaptedData);
     const requestSettings = {
         method: 'GET',
         headers: { 'Sec-fetch-Dest': 'document', 'Content-Type': 'text/csv' },
@@ -145,20 +149,4 @@ export const csvPreview = async data => {
             console.error(`Error while fetching CSV:`, error);
             throw error;
         });
-};
-
-const getCredentials = async datasourceId => {
-    // return iasoGetRequest({
-    //     requestParams: { url: `/api/credentials/${datasourceId}` },
-    //     disableSuccessSnackBar: true,
-    // });
-    const fakeCredentials = [
-        { name: 'stu', id: 1 },
-        { name: 'pete', id: 2 },
-    ];
-    return fakeResponse(fakeCredentials)();
-};
-
-export const useCredentials = (datasourceId = null) => {
-    return useQuery(['credentials', datasourceId], getCredentials);
 };

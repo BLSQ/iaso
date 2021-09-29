@@ -27,7 +27,7 @@ function FileInputComponent({
     const hasErrors = errors.length > 0;
 
     return (
-        <FormControlComponent errors={errors} withMarginTop={false}>
+        <FormControlComponent errors={errors} withMarginTop>
             <InputLabelComponent
                 htmlFor={`input-text-${keyValue}`}
                 label={labelText}

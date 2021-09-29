@@ -1,8 +1,9 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react';
 import { string, number, object, arrayOf, func } from 'prop-types';
-import { Grid, Box, Divider } from '@material-ui/core';
+import { Grid, Box, Divider, Typography } from '@material-ui/core';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { useMutation } from 'react-query';
+import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFormState } from '../../../hooks/form';
@@ -50,6 +51,7 @@ export const ExportToDHIS2Dialog = ({
     defaultVersionId,
     credentials,
 }) => {
+    console.log(credentials);
     const { formatMessage } = useSafeIntl();
     const fieldsToExport = useFieldsToExport();
 
@@ -280,9 +282,24 @@ export const ExportToDHIS2Dialog = ({
                             />
                         </Box>
                     </Grid>
-                    <Grid xs={6} item>
-                        {credentials?.is_valid && <p>Valid creds</p>}
-                        {!credentials?.is_valid && <p>Invalid creds</p>}
+                    <Grid xs={12} item>
+                        <Box display="flex" alignItems="center">
+                            <Typography variant="subtitle1">
+                                {formatMessage(MESSAGES.credentialsForExport)}
+                            </Typography>
+                            {credentials?.is_valid && (
+                                <Typography variant="body1">
+                                    {credentials.name
+                                        ? `${credentials.name}(${credentials.url})`
+                                        : credentials.url}
+                                </Typography>
+                            )}
+                            {!credentials?.is_valid && (
+                                <FormattedMessage
+                                    {...MESSAGES.noCredentialsForExport}
+                                />
+                            )}
+                        </Box>
                         {/* <InputComponent
                             type="select"
                             keyValue="credentials"

@@ -179,7 +179,7 @@ export const ExportToDHIS2Dialog = ({
                                             value?.id, // TODO reset at null when API can handle it
                                         );
                                     }}
-                                    source={dataSourceId}
+                                    version={exportData.source_version_id.value}
                                     titleMessage={formatMessage(
                                         MESSAGES.selectTopOrgUnit,
                                     )}

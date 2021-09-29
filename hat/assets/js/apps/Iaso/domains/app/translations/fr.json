@@ -49,7 +49,7 @@
     "iaso.datasources.label.versionNumber": "Version",
     "iaso.dataSources.name": "Nom de la source",
     "iaso.datasources.options.label.default": "défaut",
-    "iaso.datasources.options.label.geometry": "Géometrie",
+    "iaso.datasources.options.label.geometry": "Données géometriques",
     "iaso.datasources.options.label.groups": "Groupes",
     "iaso.datasources.options.label.name": "Nom",
     "iaso.datasources.options.label.parent": "Parent",

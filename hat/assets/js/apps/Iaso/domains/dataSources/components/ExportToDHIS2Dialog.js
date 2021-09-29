@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react';
+import { string, number, object, arrayOf, func } from 'prop-types';
 import { Grid, Box, Divider } from '@material-ui/core';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { useMutation } from 'react-query';
@@ -11,7 +12,6 @@ import {
     useOrgUnitTypes,
     postToDHIS2,
     csvPreview,
-    useCredentials,
 } from '../requests';
 import { orgUnitStatusAsOptions } from '../../../constants/filters';
 import {
@@ -24,7 +24,6 @@ import { ModalSubTitle } from '../../../components/forms/ModalSubTitle';
 import {
     useFieldsToExport,
     FIELDS_TO_EXPORT,
-    credentialsAsOptions,
     dataSourceVersionsAsOptions,
     refDataSourceVersionsAsOptions,
 } from '../utils';
@@ -41,7 +40,6 @@ const initialExportData = {
     ],
     ref_version_id: null, // version id of the target data source
     ref_top_org_unit_id: undefined, // TODO should be null
-    credentials: null, // TODO ask if credentials should be prefilled
 };
 
 export const ExportToDHIS2Dialog = ({
@@ -50,6 +48,7 @@ export const ExportToDHIS2Dialog = ({
     dataSourceName,
     versions,
     defaultVersionId,
+    credentials,
 }) => {
     const { formatMessage } = useSafeIntl();
     const fieldsToExport = useFieldsToExport();
@@ -58,11 +57,12 @@ export const ExportToDHIS2Dialog = ({
         useOrgUnitTypes();
 
     const { data: sourceVersions, isLoading: areSourceVersionsLoading } =
-        useDataSourceVersions(defaultVersionId);
-    const { data: credentials, isLoading: areCredentialsLoading } =
-        useCredentials(dataSourceId);
+        useDataSourceVersions();
+
     const { mutate: exportToDHIS2 } = useMutation(postToDHIS2);
+
     const [isCSVLoading, setIsCsvLoading] = useState(false);
+
     const [
         exportData,
         setExportDataField,
@@ -117,7 +117,8 @@ export const ExportToDHIS2Dialog = ({
             exportData.source_status.value === '') &&
         exportData.fields_to_export.value.length > 0 &&
         Boolean(exportData.ref_version_id.value);
-    // && Boolean(exportData.credentials.value);
+    // TODO uncomment before merging
+    // credentials?.is_valid;
 
     // Reset Treeview when changing ref datasource
     useEffect(() => {
@@ -252,7 +253,6 @@ export const ExportToDHIS2Dialog = ({
                             onChange={onTargetSourceVersionChange}
                             options={refDataSourceVersionsAsOptions({
                                 formatMessage,
-                                defaultVersionId,
                                 versions: sourceVersions,
                             })}
                             loading={areOrgUnitTypesLoading}
@@ -281,7 +281,9 @@ export const ExportToDHIS2Dialog = ({
                         </Box>
                     </Grid>
                     <Grid xs={6} item>
-                        <InputComponent
+                        {credentials?.is_valid && <p>Valid creds</p>}
+                        {!credentials?.is_valid && <p>Invalid creds</p>}
+                        {/* <InputComponent
                             type="select"
                             keyValue="credentials"
                             labelString={formatMessage(MESSAGES.credentials)}
@@ -290,10 +292,24 @@ export const ExportToDHIS2Dialog = ({
                             loading={areCredentialsLoading}
                             onChange={setExportDataField}
                             options={credentialsAsOptions(credentials)}
-                        />
+                        /> */}
                     </Grid>
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>
     );
+};
+
+ExportToDHIS2Dialog.propTypes = {
+    renderTrigger: func.isRequired,
+    dataSourceId: number.isRequired,
+    dataSourceName: string.isRequired,
+    versions: arrayOf(object).isRequired,
+    defaultVersionId: number,
+    credentials: object,
+};
+
+ExportToDHIS2Dialog.defaultProps = {
+    defaultVersionId: null,
+    credentials: null,
 };

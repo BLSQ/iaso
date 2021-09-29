@@ -59,38 +59,23 @@ export const credentialsAsOptions = credentials => {
     }));
 };
 
-const formatSourceVersionLabel = (
-    formatMessage,
-    defaultVersionId,
-    sourceVersion,
-) => {
+const formatSourceVersionLabel = (formatMessage, sourceVersion) => {
     const name = sourceVersion.data_source_name ?? 'Unnamed source';
     const version = formatMessage(MESSAGES.version);
     const number = sourceVersion.number.toString();
-    let label = `${name} - ${version}: ${number}`;
+    const label = `${name} - ${version}: ${number}`;
     if (sourceVersion.is_default) {
-        label += ' ⋅';
+        return `${label} ⋅ (${formatMessage(MESSAGES.default)})`;
     }
-
-    if (sourceVersion.id === defaultVersionId)
-        return `${label} (${formatMessage(MESSAGES.default)})`;
 
     return label;
 };
 
-export const refDataSourceVersionsAsOptions = ({
-    versions,
-    defaultVersionId,
-    formatMessage,
-}) => {
+export const refDataSourceVersionsAsOptions = ({ versions, formatMessage }) => {
     if (!versions) return [];
     return versions.map(version => {
         return {
-            label: formatSourceVersionLabel(
-                formatMessage,
-                defaultVersionId,
-                version,
-            ),
+            label: formatSourceVersionLabel(formatMessage, version),
             value: version.id,
         };
     });

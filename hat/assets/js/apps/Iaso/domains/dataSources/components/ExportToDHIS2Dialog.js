@@ -43,7 +43,7 @@ const useStyles = makeStyles(style);
 const initialExportData = {
     source_version_id: null, // version id of the origin data source
     source_top_org_unit_id: undefined, // TODO should be null
-    source_org_unit_types_ids: [],
+    source_org_unit_type_ids: [],
     source_status: null, // "New", "Validated" etc, cf orgunit search
     fields_to_export: [
         FIELDS_TO_EXPORT.name,
@@ -88,13 +88,6 @@ export const ExportToDHIS2Dialog = ({
     // this ref to enable resetting the treeview when datasource changes
     const treeviewResetControl = useRef(destinationDataVersionId);
 
-    const onTargetSourceVersionChange = useCallback(
-        (keyValue, value) => {
-            setExportDataField(keyValue, value?.toString());
-        },
-        [setExportDataField],
-    );
-
     const reset = useCallback(() => {
         setExportData(initialExportData);
     }, [setExportData]);
@@ -116,7 +109,6 @@ export const ExportToDHIS2Dialog = ({
 
     const onConfirm = useCallback(
         closeDialog => {
-            console.log('SENDING TO DHIS2 (coming soon)');
             exportToDHIS2(convertFormStateToDict(exportData));
             closeDialog();
         },
@@ -212,10 +204,10 @@ export const ExportToDHIS2Dialog = ({
                     <Grid xs={6} item>
                         <InputComponent
                             type="select"
-                            keyValue="source_org_unit_types_ids"
+                            keyValue="source_org_unit_type_ids"
                             labelString={formatMessage(MESSAGES.orgUnitTypes)}
-                            value={exportData.source_org_unit_types_ids.value}
-                            errors={exportData.source_org_unit_types_ids.errors} // TODO actually manage errors
+                            value={exportData.source_org_unit_type_ids.value}
+                            errors={exportData.source_org_unit_type_ids.errors}
                             onChange={(keyValue, newValue) => {
                                 setExportDataField(
                                     keyValue,
@@ -262,7 +254,9 @@ export const ExportToDHIS2Dialog = ({
                             labelString={formatMessage(MESSAGES.datasourceRef)}
                             value={exportData.ref_version_id.value}
                             errors={exportData.ref_version_id.errors}
-                            onChange={onTargetSourceVersionChange}
+                            onChange={(keyValue, value) => {
+                                setExportDataField(keyValue, value?.toString());
+                            }}
                             options={refDataSourceVersionsAsOptions({
                                 formatMessage,
                                 versions: sourceVersions,

@@ -77,31 +77,24 @@ export const useDataSourceVersions = () => {
     });
 };
 
-// TODO figure out why stuff crashes when importing those 2 functions
-export const waitFor = delay =>
-    new Promise(resolve => setTimeout(resolve, delay));
-
-export const fakeResponse =
-    response =>
-    async (isError = false) => {
-        if (isError) throw new Error('mock request failed');
-        await waitFor(200);
-        return response;
-    };
 export const postToDHIS2 = async data => {
-    // return iasoPostRequest({
-    //     requestParams: {
-    //         url: '/api/exportdatasource/',
-    //         body: data,
-    //     },
-    //     errorKeyMessage: 'Could not export to DHIS2',
-    //     consoleError: 'exportdatasource',
-    // });
-    console.log('posted to DHSI2', data);
-    return fakeResponse(data)();
+    const adaptedData = { ...data };
+    if (data.source_status === 'ALL') {
+        adaptedData.source_status = '';
+    }
+    adaptedData.ref_org_unit_type_ids = data.source_org_unit_type_ids;
+    return iasoPostRequest({
+        requestParams: {
+            url: '/api/sourceversions/export_dhis2/',
+            body: adaptedData,
+        },
+        errorKeyMessage: 'iaso.snackBar.exportToDHIS2Error',
+        errorMessageObject: snackBarMessages.exportToDHIS2Error,
+        consoleError: 'exportdatasource',
+    });
 };
 
-// Assumes that the entries are ordered startting with source_version_id
+// Assumes that the entries are ordered starting with source_version_id
 export const convertExportDataToURL = data => {
     const keys = Object.keys(data);
     let result = '/api/sourceversions/diff.csv/?';

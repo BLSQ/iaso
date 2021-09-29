@@ -520,6 +520,7 @@
     "iaso.snackBar.deleteUserError": "Une erreur est survenue en effaçant un groupe",
     "iaso.snackBar.deleteUserSuccessful": "Profil effacé avec succès",
     "iaso.snackBar.error": "Impossible de sauvegarder",
+    "iaso.snackBar.exportToDHIS2Error": "Une erreur s'est produite lors de l'export vers DHIS2",
     "iaso.snackBar.fetch.error": "Un erreur est survenu en téléchargeant la donnée",
     "iaso.snackBar.fetchAlgorithmsError": "Une erreur est survenue en récupérant la liste des algorithmes",
     "iaso.snackBar.fetchCompletenessError": "Une erreur est survenue en récupérant la complétude des données",

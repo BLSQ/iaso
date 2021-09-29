@@ -311,6 +311,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.generateCSVError',
         defaultMessage: 'An error occurred while generating CSV file',
     },
+    exportToDHIS2Error: {
+        id: 'iaso.snackBar.exportToDHIS2Error',
+        defaultMessage: 'An error occurred while exporting to DHIS2',
+    },
 });
 
 export default MESSAGES;

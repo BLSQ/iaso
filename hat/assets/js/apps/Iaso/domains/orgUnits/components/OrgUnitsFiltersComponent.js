@@ -25,6 +25,7 @@ import {
     source,
     group,
     geography,
+    locationsLimit,
 } from '../../../constants/filters';
 import {
     setFiltersUpdated,
@@ -81,6 +82,7 @@ const OrgUnitsFiltersComponent = ({
     baseUrl,
     searchIndex,
     onSearch,
+    currentTab,
 }) => {
     const initalSearches = [...decodeSearch(params.searches)];
     const searchParams = initalSearches[searchIndex];
@@ -215,36 +217,53 @@ const OrgUnitsFiltersComponent = ({
                 </Grid>
 
                 <Grid item xs={4}>
-                    <FiltersComponent
-                        params={params}
-                        baseUrl={baseUrl}
-                        filters={[
-                            extendFilter(
-                                searchParams,
-                                {
-                                    ...orgUnitType(orgUnitTypes),
-                                    loading: fetchingOrgUnitTypes,
-                                },
-                                (value, urlKey) => onChange(value, urlKey),
-                                searchIndex,
-                            ),
-                            extendFilter(
-                                searchParams,
-                                {
-                                    ...group(groups),
-                                    loading: fetchingGroups,
-                                },
-                                (value, urlKey) => onChange(value, urlKey),
-                                searchIndex,
-                            ),
-                            extendFilter(
-                                searchParams,
-                                status(intl.formatMessage),
-                                (value, urlKey) => onChange(value, urlKey),
-                                searchIndex,
-                            ),
-                        ]}
-                    />
+                    <Box mb={3}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            filters={[
+                                extendFilter(
+                                    searchParams,
+                                    {
+                                        ...orgUnitType(orgUnitTypes),
+                                        loading: fetchingOrgUnitTypes,
+                                    },
+                                    (value, urlKey) => onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                                extendFilter(
+                                    searchParams,
+                                    {
+                                        ...group(groups),
+                                        loading: fetchingGroups,
+                                    },
+                                    (value, urlKey) => onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                                extendFilter(
+                                    searchParams,
+                                    status(intl.formatMessage),
+                                    (value, urlKey) => onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                            ]}
+                        />
+                    </Box>
+                    {currentTab === 'map' && (
+                        <>
+                            <Divider />
+                            <Box mt={2}>
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    onFilterChanged={() =>
+                                        dispatch(setFiltersUpdated(true))
+                                    }
+                                    filters={[locationsLimit()]}
+                                />
+                            </Box>
+                        </>
+                    )}
                 </Grid>
                 <Grid item xs={4}>
                     <Box mt={1} mb={2}>
@@ -361,6 +380,7 @@ OrgUnitsFiltersComponent.propTypes = {
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
     searchIndex: PropTypes.number.isRequired,
+    currentTab: PropTypes.string.isRequired,
 };
 
 export default OrgUnitsFiltersComponent;

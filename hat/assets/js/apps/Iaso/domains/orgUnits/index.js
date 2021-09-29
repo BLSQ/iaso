@@ -512,15 +512,7 @@ class OrgUnits extends Component {
                                                 classes.containerMarginNeg
                                             }
                                         >
-                                            <OrgunitsMap
-                                                params={params}
-                                                baseUrl={baseUrl}
-                                                setFiltersUpdated={() =>
-                                                    this.props.setFiltersUpdated(
-                                                        true,
-                                                    )
-                                                }
-                                            />
+                                            <OrgunitsMap params={params} />
                                         </div>
                                     )}
                                     {tab === 'list' && reduxPage.count > 0 && (

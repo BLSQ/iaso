@@ -30,6 +30,7 @@ const useStyles = makeStyles(theme => ({
         position: 'relative',
         top: 10,
         left: theme.spacing(1),
+        outline: 'none !important',
     },
     popper: {
         zIndex: 500,
@@ -47,7 +48,7 @@ const ColorPicker = ({ currentColor, onChangeColor }) => {
     };
     const open = Boolean(anchorEl);
     return (
-        <Box mt={2} mb="21px">
+        <Box mt={1} mb="29px">
             <Box mb={2}>
                 <FormLabel>
                     <FormattedMessage {...MESSAGES.color} />:

@@ -6,7 +6,8 @@ from rest_framework import serializers
 
 from iaso.diffing import Differ, Dumper
 from iaso.management.commands.command_logger import CommandLogger
-from iaso.models import SourceVersion, OrgUnit, OrgUnitType
+from iaso.models import SourceVersion, OrgUnit, OrgUnitType, Task
+from iaso.tasks.dhis2_ou_exporter import dhis2_ou_exporter
 
 logger = logging.getLogger(__name__)
 
@@ -79,3 +80,26 @@ class DiffSerializer(serializers.Serializer):
         Dumper(iaso_logger).dump_as_csv(diffs, fields, buffer)
         buffer.seek(0)
         return buffer
+
+
+class ExportSerializer(DiffSerializer):
+    # use same field as diff serializer
+
+    def launch_export(self, user):
+        # use data and not validated data so we have the id
+        data = self.data
+        task: Task = dhis2_ou_exporter(
+            ref_version_id=data["ref_version_id"],
+            version_id=data["source_version_id"],
+            ignore_groups=False,
+            show_deleted_org_units=True,
+            validation_status=data.get("source_status"),
+            top_org_unit_id=data.get("source_top_org_unit_id"),
+            top_org_unit_ref_id=data.get("ref_top_org_unit_id"),
+            org_unit_types_ids=data.get("source_org_unit_type_ids"),
+            org_unit_types_ref_ids=data.get("ref_org_unit_type_ids"),
+            field_names=list(data["fields_to_export"]),
+            user=user,
+        )
+
+        return task

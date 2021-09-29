@@ -210,6 +210,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.tooltip.compareAndExport',
         defaultMessage: 'Compare data sources and export to DHIS2',
     },
+    credentialsForExport: {
+        id: 'iaso.datasources.credentialsForExport',
+        defaultMessage: 'Export to:',
+    },
+    noCredentialsForExport: {
+        id: 'iaso.datasources.noCredentialsForExport',
+        defaultMessage: 'No DHIS2 server configured for source',
+    },
 });
 
 export default MESSAGES;

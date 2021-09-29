@@ -89,12 +89,17 @@ export const ExportToDHIS2Dialog = ({
 
     const onXlsPreview = useCallback(async () => {
         setIsCsvLoading(true);
-        const csv = await csvPreview(convertFormStateToDict(exportData));
-        const url = `${window.URL.createObjectURL(
-            new File([csv], 'comparison.csv', { type: 'text/csv' }),
-        )}`;
-        window.location.href = url;
-        setIsCsvLoading(false);
+        try {
+            const csv = await csvPreview(convertFormStateToDict(exportData));
+            const url = `${window.URL.createObjectURL(
+                new File([csv], 'comparison.csv', { type: 'text/csv' }),
+            )}`;
+            window.location.href = url;
+            // Not catching the error since it's already managed by snackbar
+            // It still needs to be thrown by request to avoid prompting the download of an empty file
+        } finally {
+            setIsCsvLoading(false);
+        }
     }, [exportData]);
 
     const onConfirm = useCallback(

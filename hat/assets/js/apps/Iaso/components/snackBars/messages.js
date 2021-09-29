@@ -307,6 +307,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchMappingsError',
         defaultMessage: 'An error occurred while fetching task',
     },
+    generateCSVError: {
+        id: 'iaso.snackBar.generateCSVError',
+        defaultMessage: 'An error occurred while generating CSV file',
+    },
 });
 
 export default MESSAGES;

@@ -1,7 +1,10 @@
 import { useQuery } from 'react-query';
 import { iasoGetRequest, iasoPostRequest } from '../../utils/requests';
-
+import { dispatch } from '../../redux/store';
 import { iasoFetch } from '../../libs/Api';
+import { enqueueSnackbar } from '../../redux/snackBarsReducer';
+import { errorSnackBar } from '../../constants/snackBars';
+import snackBarMessages from '../../components/snackBars/messages';
 /**
  *
  * @param {Object} requestBody - request's body
@@ -127,7 +130,21 @@ export const csvPreview = async data => {
         headers: { 'Sec-fetch-Dest': 'document', 'Content-Type': 'text/csv' },
     };
     // using iasoFetch so I can convert response to text i.o. json
-    return iasoFetch(url, requestSettings).then(result => result.text());
+    return iasoFetch(url, requestSettings)
+        .then(result => result.text())
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(
+                        'iaso.snackBar.generateCSVError',
+                        snackBarMessages.generateCSVError,
+                        error,
+                    ),
+                ),
+            );
+            console.error(`Error while fetching CSV:`, error);
+            throw error;
+        });
 };
 
 const getCredentials = async datasourceId => {

@@ -177,6 +177,9 @@ class OrgUnitAPITestCase(APITestCase):
                 "sub_source": None,
                 "updated_at": 1522800000.0,
                 "validation_status": "VALID",
+                "latitude": 50.0,
+                "longitude": 4.0,
+                "altitude": 100.0,
             },
         )
 
@@ -217,6 +220,9 @@ class OrgUnitAPITestCase(APITestCase):
                 "sub_source": None,
                 "updated_at": 1522800000.0,
                 "validation_status": "VALID",
+                "latitude": 50.0,
+                "longitude": 4.0,
+                "altitude": 100.0,
             },
         )
 

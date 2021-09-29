@@ -206,6 +206,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.title.targetDataSource',
         defaultMessage: 'Target data source',
     },
+    compareAndExport: {
+        id: 'iaso.datasources.tooltip.compareAndExport',
+        defaultMessage: 'Compare data sources and export to DHIS2',
+    },
 });
 
 export default MESSAGES;

@@ -93,7 +93,7 @@ const dataSourcesTableColumns = (
                             <IconButtonComponent
                                 onClick={openDialog}
                                 overrideIcon={PublishIcon}
-                                tooltipMessage={MESSAGES.versions}
+                                tooltipMessage={MESSAGES.compareAndExport}
                             />
                         )}
                         dataSourceName={settings.row.original.name}

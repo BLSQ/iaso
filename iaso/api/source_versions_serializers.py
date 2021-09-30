@@ -35,6 +35,7 @@ class DiffSerializer(serializers.Serializer):
     ref_top_org_unit_id = serializers.PrimaryKeyRelatedField(
         required=False, queryset=OrgUnit.objects.all(), allow_null=True
     )
+    ref_status = serializers.ChoiceField(required=False, choices=STATUSES)
     fields_to_export = serializers.MultipleChoiceField(choices=FIELDS)
 
     def validate(self, attrs):
@@ -57,6 +58,9 @@ class DiffSerializer(serializers.Serializer):
             and validated_data["ref_top_org_unit_id"].version != validated_data["ref_version_id"]
         ):
             raise serializers.ValidationError({"ref_top_org_unit_id": ["not in ref_version_id"]})
+
+        if validated_data.get("fields_to_export"):
+            validated_data["fields_to_export"] = list(validated_data["fields_to_export"])
 
         return validated_data
 
@@ -94,6 +98,7 @@ class ExportSerializer(DiffSerializer):
             ignore_groups=False,
             show_deleted_org_units=True,
             validation_status=data.get("source_status"),
+            ref_validation_status=data.get("ref_status"),
             top_org_unit_id=data.get("source_top_org_unit_id"),
             top_org_unit_ref_id=data.get("ref_top_org_unit_id"),
             org_unit_types_ids=data.get("source_org_unit_type_ids"),

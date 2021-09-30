@@ -5,6 +5,7 @@ import { iasoFetch } from '../../libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../constants/snackBars';
 import snackBarMessages from '../../components/snackBars/messages';
+
 /**
  *
  * @param {Object} requestBody - request's body
@@ -77,12 +78,20 @@ export const useDataSourceVersions = () => {
     });
 };
 
-export const postToDHIS2 = async data => {
+const adaptForApi = data => {
     const adaptedData = { ...data };
     if (data.source_status === 'ALL') {
         adaptedData.source_status = '';
     }
+    // For now we decided to not expose theses parameters to the user
+    // and reuse them between the source and the ref
     adaptedData.ref_org_unit_type_ids = data.source_org_unit_type_ids;
+    adaptedData.ref_status = data.source_status;
+    return adaptedData;
+};
+
+export const postToDHIS2 = async data => {
+    const adaptedData = adaptForApi(data);
     return iasoPostRequest({
         requestParams: {
             url: '/api/sourceversions/export_dhis2/',
@@ -94,34 +103,22 @@ export const postToDHIS2 = async data => {
     });
 };
 
-// Assumes that the entries are ordered starting with source_version_id
 export const convertExportDataToURL = data => {
-    const keys = Object.keys(data);
-    let result = '/api/sourceversions/diff.csv/?';
-    keys.forEach((key, index) => {
-        if (data[key]) {
-            if (index === 0) {
-                result = result.concat(`${key}=${data[key]}`);
-            } else if (
-                key === 'source_org_unit_types_ids' ||
-                key === 'fields_to_export'
-            ) {
-                data[key].forEach(entry => {
-                    result = result.concat(`&${key}=${entry}`);
-                });
-            } else {
-                result = result.concat(`&${key}=${data[key]}`);
-            }
+    const up = new URLSearchParams();
+
+    Object.entries(data).forEach(([k, v]) => {
+        if (Array.isArray(v)) {
+            v.forEach(p => up.append(k, p));
+        } else if (v !== undefined) {
+            up.append(k, v);
         }
     });
-    return result;
+
+    return `/api/sourceversions/diff.csv/?${up.toString()}`;
 };
 
 export const csvPreview = async data => {
-    const adaptedData = { ...data };
-    if (data.source_status === 'ALL') {
-        adaptedData.source_status = '';
-    }
+    const adaptedData = adaptForApi(data);
     const url = convertExportDataToURL(adaptedData);
     const requestSettings = {
         method: 'GET',

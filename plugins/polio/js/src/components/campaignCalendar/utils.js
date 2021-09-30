@@ -95,7 +95,7 @@ const filterCampaigns = (allCampaigns, firstMonday, lastSunday) => {
 };
 
 const mapCampaigns = allCampaigns => {
-    return allCampaigns.map(c => {
+    return allCampaigns.map((c, index) => {
         const R1Start =
             c.round_one?.started_at &&
             moment(c.round_one.started_at, dateFormat);
@@ -236,6 +236,7 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
                     <R2Cell
                         key={`round2Cost-campaign-${id}`}
                         colSpan={colSpan}
+                        campaign={campaign}
                     />,
                 );
             } else if (
@@ -247,6 +248,7 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
                     <R2Cell
                         key={`round2Cost-campaign-${id}`}
                         colSpan={colSpan}
+                        campaign={campaign}
                     />,
                 );
             }

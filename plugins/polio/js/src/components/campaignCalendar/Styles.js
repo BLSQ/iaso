@@ -75,12 +75,8 @@ export const useStyles = makeStyles(theme => ({
         borderBottom: `1px solid ${theme.palette.ligthGray.border}`,
     },
     round: {
-        backgroundColor: green['500'],
         color: theme.palette.common.white,
         fontSize: 12,
-    },
-    round2: {
-        backgroundColor: green['300'],
     },
     campaign: {
         backgroundColor: theme.palette.grey[200],

@@ -3,7 +3,15 @@ import { Map, TileLayer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import React, { useEffect, useMemo, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
-import { arrayOf, func, object, objectOf, string, number } from 'prop-types';
+import {
+    arrayOf,
+    func,
+    object,
+    objectOf,
+    string,
+    number,
+    bool,
+} from 'prop-types';
 
 const findBackgroundShape = (shape, backgroundShapes) => {
     return backgroundShapes.filter(
@@ -49,8 +57,8 @@ export const MapComponent = ({
         <Map
             ref={map}
             style={{ height }}
-            center={[1, 10]}
-            zoom={4}
+            center={[0, 0]}
+            zoom={3}
             scrollWheelZoom={false}
             bounds={fitToBounds ? bounds : null}
         >
@@ -109,6 +117,7 @@ MapComponent.propTypes = {
     getBackgroundLayerStyle: func,
     tooltipLabels: objectOf(string),
     height: number,
+    fitToBounds: bool,
 };
 
 MapComponent.defaultProps = {

@@ -1,5 +1,6 @@
 import { makeStyles } from '@material-ui/core';
 import red from '@material-ui/core/colors/red';
+import green from '@material-ui/core/colors/green';
 
 const cellHeight = 50;
 const smallCellHeight = 20;
@@ -74,12 +75,12 @@ export const useStyles = makeStyles(theme => ({
         borderBottom: `1px solid ${theme.palette.ligthGray.border}`,
     },
     round: {
-        backgroundColor: theme.palette.secondary.main,
+        backgroundColor: green['500'],
         color: theme.palette.common.white,
         fontSize: 12,
     },
     round2: {
-        backgroundColor: theme.palette.secondary.light,
+        backgroundColor: green['300'],
     },
     campaign: {
         backgroundColor: theme.palette.grey[200],
@@ -88,12 +89,6 @@ export const useStyles = makeStyles(theme => ({
     },
     currentWeek: {
         backgroundColor: red['100'],
-    },
-    navButton: {
-        marginTop: theme.spacing(3),
-        borderRadius: 100,
-        padding: theme.spacing(1),
-        minWidth: 0,
     },
     nav: {
         left: theme.spacing(2),
@@ -104,8 +99,11 @@ export const useStyles = makeStyles(theme => ({
         display: 'flex',
         justifyContent: 'center',
     },
-    navButtonPrev: {
-        marginRight: '5vw',
+    navButton: {
+        margin: theme.spacing(1.5),
+        borderRadius: 100,
+        padding: theme.spacing(1),
+        minWidth: 0,
     },
     tableCellSpan: {
         position: 'absolute',

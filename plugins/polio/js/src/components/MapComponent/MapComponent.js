@@ -3,7 +3,7 @@ import { Map, TileLayer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import React, { useEffect, useMemo, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
-import { arrayOf, func, object, objectOf, string } from 'prop-types';
+import { arrayOf, func, object, objectOf, string, number } from 'prop-types';
 
 const findBackgroundShape = (shape, backgroundShapes) => {
     return backgroundShapes.filter(
@@ -18,6 +18,8 @@ export const MapComponent = ({
     getMainLayerStyle,
     getBackgroundLayerStyle,
     tooltipLabels,
+    height,
+    fitToBounds,
 }) => {
     const map = useRef();
 
@@ -39,19 +41,18 @@ export const MapComponent = ({
     }, [mainLayer]);
 
     useEffect(() => {
-        if (bounds && bounds.isValid()) {
+        if (bounds && bounds.isValid() && fitToBounds) {
             map.current?.leafletElement.fitBounds(bounds);
         }
-    }, [bounds]);
-
+    }, [bounds, fitToBounds]);
     return (
         <Map
             ref={map}
-            style={{ height: 500 }}
-            center={[0, 0]}
-            zoom={3}
+            style={{ height }}
+            center={[1, 10]}
+            zoom={4}
             scrollWheelZoom={false}
-            bounds={bounds}
+            bounds={fitToBounds ? bounds : null}
         >
             <TileLayer
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -107,12 +108,15 @@ MapComponent.propTypes = {
     getMainLayerStyle: func,
     getBackgroundLayerStyle: func,
     tooltipLabels: objectOf(string),
+    height: number,
 };
 
 MapComponent.defaultProps = {
+    height: 500,
     onSelectShape: () => null,
     mainLayer: [],
     backgroundLayer: [],
+    fitToBounds: true,
     getMainLayerStyle: () => null,
     getBackgroundLayerStyle: () => null,
     tooltipLabels: { main: 'District', background: 'Region' },

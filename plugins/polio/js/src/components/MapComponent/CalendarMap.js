@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { useTheme } from '@material-ui/core/styles';
 import { LoadingSpinner } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
+import green from '@material-ui/core/colors/green';
+import pink from '@material-ui/core/colors/pink';
 
 import { sendRequest } from '../../utils/networking';
 import { MapComponent } from './MapComponent';
@@ -55,9 +57,14 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
             <MapComponent
                 name="calendarMap"
                 mainLayer={shapes}
+                height={900}
+                fitToBounds={false}
                 getMainLayerStyle={() => ({
-                    color: theme.palette.secondary.main,
-                    weight: '1',
+                    color: green['500'],
+                    opacity: 0.8,
+                    fillOpacity: 0.8,
+                    fillColor: green['500'],
+                    weight: '2',
                 })}
                 tooltipLabels={{ main: 'District' }}
             />

@@ -86,7 +86,7 @@ const adaptForApi = data => {
     // For now we decided to not expose theses parameters to the user
     // and reuse them between the source and the ref
     adaptedData.ref_org_unit_type_ids = data.source_org_unit_type_ids;
-    adaptedData.ref_status = data.source_status;
+    adaptedData.ref_status = adaptedData.source_status;
     return adaptedData;
 };
 

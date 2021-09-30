@@ -42,7 +42,7 @@ const useStyles = makeStyles(style);
 
 const initialExportData = {
     source_version_id: null, // version id of the origin data source
-    source_top_org_unit_id: undefined, // TODO should be null
+    source_top_org_unit_id: null, // TODO should be null
     source_org_unit_type_ids: [],
     source_status: null, // "New", "Validated" etc, cf orgunit search
     fields_to_export: [
@@ -51,7 +51,7 @@ const initialExportData = {
         FIELDS_TO_EXPORT.geometry,
     ],
     ref_version_id: null, // version id of the target data source
-    ref_top_org_unit_id: undefined, // TODO should be null
+    ref_top_org_unit_id: null, // TODO should be null
 };
 
 export const ExportToDHIS2Dialog = ({
@@ -120,8 +120,9 @@ export const ExportToDHIS2Dialog = ({
         (Boolean(exportData.source_status.value) ||
             exportData.source_status.value === '') &&
         exportData.fields_to_export.value.length > 0 &&
-        Boolean(exportData.ref_version_id.value) &&
-        credentials?.is_valid;
+        Boolean(exportData.ref_version_id.value);
+
+    const allowConfirmExport = allowConfirm && credentials?.is_valid;
 
     // Reset Treeview when changing ref datasource
     useEffect(() => {
@@ -146,6 +147,7 @@ export const ExportToDHIS2Dialog = ({
             additionalButton
             additionalMessage={MESSAGES.export}
             onAdditionalButtonClick={onConfirm}
+            allowConfimAdditionalButton={allowConfirmExport}
         >
             <Grid container spacing={2}>
                 {isCSVLoading && <LoadingSpinner />}
@@ -177,7 +179,7 @@ export const ExportToDHIS2Dialog = ({
                                     onConfirm={value => {
                                         setExportDataField(
                                             'source_top_org_unit_id',
-                                            value?.id, // TODO reset at null when API can handle it
+                                            value?.id ?? null,
                                         );
                                     }}
                                     version={exportData.source_version_id.value}
@@ -270,7 +272,7 @@ export const ExportToDHIS2Dialog = ({
                                 onConfirm={value => {
                                     setExportDataField(
                                         'ref_top_org_unit_id',
-                                        value?.id, // TODO reset at null when api can handle it
+                                        value?.id ?? null,
                                     );
                                 }}
                                 version={destinationDataVersionId}

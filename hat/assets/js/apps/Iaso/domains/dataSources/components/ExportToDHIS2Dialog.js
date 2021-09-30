@@ -120,9 +120,8 @@ export const ExportToDHIS2Dialog = ({
         (Boolean(exportData.source_status.value) ||
             exportData.source_status.value === '') &&
         exportData.fields_to_export.value.length > 0 &&
-        Boolean(exportData.ref_version_id.value);
-    // TODO uncomment before merging
-    // credentials?.is_valid;
+        Boolean(exportData.ref_version_id.value) &&
+        credentials?.is_valid;
 
     // Reset Treeview when changing ref datasource
     useEffect(() => {
@@ -136,8 +135,8 @@ export const ExportToDHIS2Dialog = ({
             renderTrigger={renderTrigger}
             onConfirm={onXlsPreview}
             onClosed={reset}
-            confirmMessage={MESSAGES.csvPreview} // TODO change message
-            cancelMessage={MESSAGES.cancel}
+            confirmMessage={MESSAGES.csvPreview}
+            cancelMessage={MESSAGES.close}
             maxWidth="md"
             allowConfirm={allowConfirm}
             titleMessage={{

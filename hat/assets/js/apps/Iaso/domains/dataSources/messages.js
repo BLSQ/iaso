@@ -29,6 +29,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.save',
         defaultMessage: 'Save',
     },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
     edit: {
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
@@ -216,7 +220,7 @@ const MESSAGES = defineMessages({
     },
     noCredentialsForExport: {
         id: 'iaso.datasources.noCredentialsForExport',
-        defaultMessage: 'No DHIS2 server configured for source',
+        defaultMessage: 'Please configure DHIS2 on source to enable export',
     },
 });
 

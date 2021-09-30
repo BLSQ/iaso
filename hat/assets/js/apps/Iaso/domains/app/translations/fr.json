@@ -49,7 +49,7 @@
     "iaso.datasources.label.status": "Statut",
     "iaso.datasources.label.versionNumber": "Version",
     "iaso.dataSources.name": "Nom de la source",
-    "iaso.datasources.noCredentialsForExport": "Aucun serveur DHIS2 configuré pour cette source",
+    "iaso.datasources.noCredentialsForExport": "Veuillez configurer un serveur DHIS2 pour cette source pour permettre l'export",
     "iaso.datasources.options.label.default": "défaut",
     "iaso.datasources.options.label.geometry": "Données géometriques",
     "iaso.datasources.options.label.groups": "Groupes",

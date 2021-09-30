@@ -86,7 +86,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit',
     },
     pages: {
-        defaultMessage: 'Pages',
+        defaultMessage: 'Pages', // TODO check that this key still lives in polio
         id: 'iaso.label.pages',
     },
     removeDistrict: {

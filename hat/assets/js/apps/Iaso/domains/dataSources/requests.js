@@ -116,6 +116,7 @@ export const convertExportDataToURL = data => {
     });
     return result;
 };
+
 export const csvPreview = async data => {
     const adaptedData = { ...data };
     if (data.source_status === 'ALL') {

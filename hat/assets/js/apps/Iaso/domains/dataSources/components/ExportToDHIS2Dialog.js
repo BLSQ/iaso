@@ -42,16 +42,16 @@ const useStyles = makeStyles(style);
 
 const initialExportData = {
     source_version_id: null, // version id of the origin data source
-    source_top_org_unit_id: null, // TODO should be null
+    source_top_org_unit_id: null,
     source_org_unit_type_ids: [],
-    source_status: null, // "New", "Validated" etc, cf orgunit search
+    source_status: 'ALL', // "New", "Validated" etc, cf orgunit search
     fields_to_export: [
         FIELDS_TO_EXPORT.name,
         FIELDS_TO_EXPORT.parent,
         FIELDS_TO_EXPORT.geometry,
     ],
     ref_version_id: null, // version id of the target data source
-    ref_top_org_unit_id: null, // TODO should be null
+    ref_top_org_unit_id: null,
 };
 
 export const ExportToDHIS2Dialog = ({

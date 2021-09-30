@@ -97,9 +97,12 @@ const OrgUnitTreeviewModal = ({
         return getRootData(source);
     }, [source, version]);
 
-    const searchOrgUnitsWithSource = async (value, count) => {
-        return searchOrgUnits(value, count, source);
-    };
+    const searchOrgUnitsWithSource = useCallback(
+        async (value, count) => {
+            return searchOrgUnits(value, count, source, version);
+        },
+        [source, version],
+    );
 
     const resetSelection = useCallback(() => {
         setSelectedOrgUnitsIds([]);

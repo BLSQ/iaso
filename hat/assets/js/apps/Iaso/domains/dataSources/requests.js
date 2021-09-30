@@ -109,7 +109,7 @@ export const convertExportDataToURL = data => {
     Object.entries(data).forEach(([k, v]) => {
         if (Array.isArray(v)) {
             v.forEach(p => up.append(k, p));
-        } else if (v !== undefined) {
+        } else if (v !== undefined && v !== null) {
             up.append(k, v);
         }
     });

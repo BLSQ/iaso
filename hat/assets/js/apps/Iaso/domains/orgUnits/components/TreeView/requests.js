@@ -50,10 +50,14 @@ const getRootData = async (id, type = 'source') => {
  * @param {string} searchValue
  * @param {number} resultsCount
  */
-const searchOrgUnits = async (searchValue, resultsCount, source) => {
-    const url = source
-        ? `/api/orgunits/?searches=[{"validation_status":"all","search":"${searchValue}","source":${source}}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`
-        : `/api/orgunits/?searches=[{"validation_status":"all","search":"${searchValue}","defaultVersion":"true"}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
+const searchOrgUnits = async (searchValue, resultsCount, source, version) => {
+    let url = `/api/orgunits/?searches=[{"validation_status":"all","search":"${searchValue}","defaultVersion":"true"}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
+    if (source) {
+        url = `/api/orgunits/?searches=[{"validation_status":"all","search":"${searchValue}","source":${source}}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
+    }
+    if (version) {
+        url = `/api/orgunits/?searches=[{"validation_status":"all","search":"${searchValue}","version":${version}}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
+    }
     return iasoGetRequest({
         requestParams: { url },
         disableSuccessSnackBar: true,

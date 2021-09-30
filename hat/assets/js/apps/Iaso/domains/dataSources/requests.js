@@ -68,12 +68,14 @@ const getDataSourceVersions = async () => {
 export const useDataSourceVersions = () => {
     return useQuery(['dataSourceVersions'], getDataSourceVersions, {
         select: data => {
-            return data.versions.map(version => ({
-                id: version.id,
-                data_source_name: version.data_source_name,
-                is_default: version.is_default,
-                number: version.number,
-            }));
+            return data.versions.map(version => {
+                return {
+                    id: version.id,
+                    data_source_name: version.data_source_name,
+                    is_default: version.is_default,
+                    number: version.number,
+                };
+            });
         },
     });
 };

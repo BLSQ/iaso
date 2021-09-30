@@ -71,7 +71,7 @@ const MESSAGES = defineMessages({
     },
     campaigns: {
         defaultMessage: 'Campaigns',
-        id: 'iaso.label.campaigns',
+        id: 'iaso.polio.label.campaigns',
     },
     polio: {
         defaultMessage: 'Polio',

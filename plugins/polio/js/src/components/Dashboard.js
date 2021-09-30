@@ -4,6 +4,7 @@ import {
     Table,
     LoadingSpinner,
     IconButton as IconButtonComponent,
+    useSafeIntl,
 } from 'bluesquare-components';
 import {
     Box,
@@ -1421,6 +1422,7 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_ORDER = '-cvdpv2_notified_at';
 
 export const Dashboard = () => {
+    const { formatMessage } = useSafeIntl();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
@@ -1575,7 +1577,10 @@ export const Dashboard = () => {
     }, [pageSize, page, order]);
     return (
         <>
-            <TopBar title="Campaigns" displayBackButton={false} />
+            <TopBar
+                title={formatMessage(MESSAGES.campaigns)}
+                displayBackButton={false}
+            />
             <CreateEditDialog
                 selectedCampaign={selectedCampaign}
                 isOpen={isCreateEditDialogOpen}

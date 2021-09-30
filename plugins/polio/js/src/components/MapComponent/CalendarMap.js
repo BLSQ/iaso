@@ -28,6 +28,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                         orgUnitParentId: campaign.country_id,
                         orgUnitTypeCategory: 'DISTRICT',
                         group: groupId,
+                        app_id: 'com.poliooutbreaks.app',
                     };
 
                     const queryString = new URLSearchParams(baseParams);

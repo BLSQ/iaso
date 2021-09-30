@@ -54,7 +54,7 @@ class CountryUsersGroupSerializer(serializers.ModelSerializer):
 def _error(message, exc=None):
     errors = {"file": [message]}
     if exc:
-        errors["debug"]: [str(exc)]
+        errors["debug"] = [str(exc)]
     return errors
 
 

@@ -123,7 +123,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Virus',
     },
     vaccines: {
-        id: 'iaso.polio.form.label.vaccine',
+        id: 'iaso.polio.form.label.vaccines',
         defaultMessage: 'Vaccines',
     },
     description: {
@@ -252,7 +252,7 @@ const MESSAGES = defineMessages({
     },
     costRoundTwo: {
         id: 'iaso.polio.form.label.costRoundTwo',
-        defaultMessage: 'Cost Round 1',
+        defaultMessage: 'Cost Round 2',
     },
     costPerChildRoundOne: {
         id: 'iaso.polio.form.label.costPerChildRoundOne',
@@ -474,6 +474,14 @@ const MESSAGES = defineMessages({
     refreshRecruitmentData: {
         id: 'iaso.polio.label.refreshRecruitmentData',
         defaultMessage: 'Refresh Recruitment Data',
+    },
+    paymentMode: {
+        id: 'iaso.polio.label.paymentMode',
+        defaultMessage: 'Payment Mode',
+    },
+    responsible: {
+        id: 'iaso.polio.label.responsible',
+        defaultMessage: 'Responsible',
     },
 });
 

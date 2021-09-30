@@ -17,15 +17,15 @@ const initialFormState = () => ({
 
 const MESSAGES = defineMessages({
     import_file: {
-        id: 'polio.import_file.label',
+        id: 'iaso.polio.import_file.label',
         defaultMessage: 'Excel Line File',
     },
     title: {
-        id: 'polio.import_line_list',
+        id: 'iaso.polio.import_line_list',
         defaultMessage: 'Import Line List',
     },
     successMessage: {
-        id: 'polio.import_line_list.successMessage',
+        id: 'iaso.polio.import_line_list.successMessage',
     },
 });
 
@@ -60,12 +60,13 @@ const ImportLineListDialog = ({ renderTrigger }) => {
             queryClient.invalidateQueries(['polio', 'campaigns']);
             // FIXME: Snackbar is bugging and want to format itself but don't pass value
             // FIXME persistant success snackbare have no close button
-            const message = `Imported successfully ${res.import_result.created} campaign(s)`;
             dispatch(
                 enqueueSnackbar({
                     messageObject: {
                         id: 'successMessage',
-                        defaultMessage: message,
+                        defaultMessage:
+                            'Imported successfully {amount} campaign(s)',
+                        values: { amount: res.import_result.created },
                     },
                     options: {
                         variant: 'success',

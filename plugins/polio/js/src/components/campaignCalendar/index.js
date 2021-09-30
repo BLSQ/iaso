@@ -1,43 +1,45 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
+
 import classnames from 'classnames';
 import { LoadingSpinner } from 'bluesquare-components';
 
-import { Table, TableContainer, Box, Button } from '@material-ui/core';
+import { Box, Button, Table, TableContainer } from '@material-ui/core';
 import ChevronLeft from '@material-ui/icons/ChevronLeft';
 import ChevronRight from '@material-ui/icons/ChevronRight';
 
-import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-
+import { withRouter, formatPattern } from 'react-router';
 import { useStyles } from './Styles';
-import { baseUrl, dateFormat } from './constants';
+import { dateFormat } from './constants';
 
 import { Head } from './Head';
 import { Body } from './Body';
+import { useReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks';
 
 const CampaignsCalendar = ({
     campaigns,
     calendarData,
     currentMonday,
     loadingCampaigns,
+    router,
 }) => {
     const classes = useStyles();
-    const dispatch = useDispatch();
+    const replaceTo = useReplace();
 
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
+
     const handleGoNext = () => {
         const newDate = currentMonday.clone().add(4, 'week');
-        dispatch(
-            redirectToReplace(baseUrl, {
+        replaceTo(
+            formatPattern(router.routes[0].path, {
                 currentDate: newDate.format(dateFormat),
             }),
         );
     };
     const handleGoPrev = () => {
         const newDate = currentMonday.clone().subtract(4, 'week');
-        dispatch(
-            redirectToReplace(baseUrl, {
+        replaceTo(
+            formatPattern(router.routes[0].path, {
                 currentDate: newDate.format(dateFormat),
             }),
         );
@@ -101,6 +103,8 @@ CampaignsCalendar.propTypes = {
     calendarData: PropTypes.object.isRequired,
     currentMonday: PropTypes.object.isRequired,
     loadingCampaigns: PropTypes.bool.isRequired,
+    router: PropTypes.shape.isRequired,
 };
 
-export { CampaignsCalendar };
+const wrappedCampaignsCalendar = withRouter(CampaignsCalendar);
+export { wrappedCampaignsCalendar as CampaignsCalendar };

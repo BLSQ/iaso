@@ -27,23 +27,17 @@ const CampaignsCalendar = ({
     const replaceTo = useReplace();
 
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
+    const nextMonth = currentMonday.clone().add(4, 'week');
+    const nextMonthLink = formatPattern(router.routes[0].path, {
+        currentDate: nextMonth.format(dateFormat),
+    });
+    const prevMonth = currentMonday.clone().subtract(4, 'week');
+    const prevMonthLink = formatPattern(router.routes[0].path, {
+        currentDate: prevMonth.format(dateFormat),
+    });
 
-    const handleGoNext = () => {
-        const newDate = currentMonday.clone().add(4, 'week');
-        replaceTo(
-            formatPattern(router.routes[0].path, {
-                currentDate: newDate.format(dateFormat),
-            }),
-        );
-    };
-    const handleGoPrev = () => {
-        const newDate = currentMonday.clone().subtract(4, 'week');
-        replaceTo(
-            formatPattern(router.routes[0].path, {
-                currentDate: newDate.format(dateFormat),
-            }),
-        );
-    };
+    const handleGoNext = () => replaceTo(nextMonthLink);
+    const handleGoPrev = () => replaceTo(prevMonthLink);
 
     return (
         <>

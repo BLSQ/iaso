@@ -93,20 +93,20 @@ class CampaignViewSet(ModelViewSet):
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = PreparednessPreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request, pk=None, **kwargs):
-        serializer = self.get_serializer(data={"campaign": pk})
+        serializer = CampaignPreparednessSpreadsheetSerializer(data={"campaign": pk})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
     @action(methods=["POST"], detail=False, serializer_class=SurgePreviewSerializer)
     def preview_surge(self, request, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = SurgePreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 

@@ -406,6 +406,75 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.csv',
         defaultMessage: 'CSV',
     },
+    enterOrCreateGoogleSheet: {
+        id: 'iaso.polio.label.enterOrCreateGoogleSheet',
+        defaultMessage:
+            'Enter Google Sheet url or use the button to generate a new one',
+    },
+    enterGoogleSheet: {
+        id: 'iaso.polio.label.enterGoogleSheet',
+        defaultMessage: 'Enter Google Sheet url',
+    },
+    preparednessGoogleSheetUrl: {
+        id: 'iaso.polio.title.preparednessGoogleSheetUrl',
+        defaultMessage: 'Preparedness Google Sheet URL',
+    },
+    refreshPreparednessData: {
+        id: 'iaso.polio.title.refreshPreparednessData',
+        defaultMessage: 'Refresh Preparedness data',
+    },
+    generateSpreadsheet: {
+        id: 'iaso.polio.title.generateSpreadsheet',
+        defaultMessage: 'Generate a spreadsheet',
+    },
+    preparednessError: {
+        id: 'iaso.polio.label.preparednessError',
+        defaultMessage: 'Error Generating preparedness',
+    },
+    national: {
+        id: 'iaso.polio.label.national',
+        defaultMessage: 'National',
+    },
+    regional: {
+        id: 'iaso.polio.label.regional',
+        defaultMessage: 'Regional',
+    },
+    districtScore: {
+        id: 'iaso.polio.label.districtScore',
+        defaultMessage: 'District',
+    },
+    refreshedAt: {
+        id: 'iaso.polio.label.refreshedAt',
+        defaultMessage: 'Refreshed at',
+    },
+    recruitmentSurgeUrl: {
+        id: 'iaso.polio.label.recruitmentSurgeUrl',
+        defaultMessage: 'Recruitment Surge Google Sheet URL',
+    },
+    countryNameInSheet: {
+        id: 'iaso.polio.label.countryNameInSheet',
+        defaultMessage: 'Country Name in sheet',
+    },
+    whoToRecruit: {
+        id: 'iaso.polio.label.whoToRecruit',
+        defaultMessage: 'WHO To Recruit',
+    },
+    whoCompletedRecruitement: {
+        id: 'iaso.polio.label.whoCompletedRecruitement',
+        defaultMessage: 'WHO Completed Recruitment',
+    },
+    unicefToRecruit: {
+        id: 'iaso.polio.label.unicefToRecruit',
+        defaultMessage: 'UNICEF To Recruit',
+    },
+    unicefCompletedRecruitement: {
+        id: 'iaso.polio.label.unicefCompletedRecruitement',
+        defaultMessage: 'UNICEF Completed Recruitment',
+    },
+    refreshRecruitmentData: {
+        id: 'iaso.polio.label.refreshRecruitmentData',
+        defaultMessage: 'Refresh Recruitment Data',
+    },
 });
 
 export default MESSAGES;

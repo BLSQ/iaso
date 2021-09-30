@@ -8,13 +8,12 @@ import { Box, Button, Table, TableContainer } from '@material-ui/core';
 import ChevronLeft from '@material-ui/icons/ChevronLeft';
 import ChevronRight from '@material-ui/icons/ChevronRight';
 
-import { withRouter, formatPattern } from 'react-router';
+import { withRouter, formatPattern, Link } from 'react-router';
 import { useStyles } from './Styles';
 import { dateFormat } from './constants';
 
 import { Head } from './Head';
 import { Body } from './Body';
-import { useReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks';
 
 const CampaignsCalendar = ({
     campaigns,
@@ -24,7 +23,6 @@ const CampaignsCalendar = ({
     router,
 }) => {
     const classes = useStyles();
-    const replaceTo = useReplace();
 
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
     const nextMonth = currentMonday.clone().add(4, 'week');
@@ -36,9 +34,6 @@ const CampaignsCalendar = ({
         currentDate: prevMonth.format(dateFormat),
     });
 
-    const handleGoNext = () => replaceTo(nextMonthLink);
-    const handleGoPrev = () => replaceTo(prevMonthLink);
-
     return (
         <>
             <Box
@@ -49,27 +44,29 @@ const CampaignsCalendar = ({
                 position="relative"
             >
                 <Box className={classes.nav}>
-                    <Button
-                        onClick={handleGoPrev}
-                        className={classnames(
-                            classes.navButton,
-                            classes.navButtonPrev,
-                        )}
-                        size="large"
-                        variant="outlined"
-                        color="primary"
-                    >
-                        <ChevronLeft />
-                    </Button>
-                    <Button
-                        onClick={handleGoNext}
-                        className={classes.navButton}
-                        size="large"
-                        variant="outlined"
-                        color="primary"
-                    >
-                        <ChevronRight color="primary" />
-                    </Button>
+                    <Link to={prevMonthLink}>
+                        <Button
+                            className={classnames(
+                                classes.navButton,
+                                classes.navButtonPrev,
+                            )}
+                            size="large"
+                            variant="outlined"
+                            color="primary"
+                        >
+                            <ChevronLeft />
+                        </Button>
+                    </Link>
+                    <Link to={nextMonthLink}>
+                        <Button
+                            className={classes.navButton}
+                            size="large"
+                            variant="outlined"
+                            color="primary"
+                        >
+                            <ChevronRight color="primary" />
+                        </Button>
+                    </Link>
                 </Box>
                 <TableContainer className={classes.tableContainer}>
                     {loadingCampaigns && <LoadingSpinner absolute />}

@@ -3,13 +3,13 @@ import { Grid } from '@material-ui/core';
 import { LoadingSpinner } from 'bluesquare-components';
 import { useMutation, useQueryClient } from 'react-query';
 import { defineMessages } from 'react-intl';
+import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 import { useFormState } from '../../../../../hat/assets/js/apps/Iaso/hooks/form';
 import ConfirmCancelDialogComponent from '../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import { iasoPostRequest } from '../../../../../hat/assets/js/apps/Iaso/utils/requests';
 import FileInputComponent from '../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
-import PropTypes from 'prop-types';
 import { enqueueSnackbar } from '../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
-import { useDispatch } from 'react-redux';
 
 const initialFormState = () => ({
     file: null,

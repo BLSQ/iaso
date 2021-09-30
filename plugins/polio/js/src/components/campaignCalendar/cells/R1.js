@@ -5,7 +5,7 @@ import classnames from 'classnames';
 import { TableCell } from '@material-ui/core';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
-import { CreateEditDialog } from '../../Dashboard';
+import { PolioCreateEditDialog as CreateEditDialog } from '../../CreateEditDialog';
 import { R1Popper } from '../popper/R1';
 import { useStyles } from '../Styles';
 

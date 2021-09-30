@@ -94,6 +94,7 @@ class ExportSerializer(DiffSerializer):
         credentials = source_version.data_source.credentials
         if not (credentials and credentials.is_valid):
             raise serializers.ValidationError({"source_version_id": ["No valid DHIS2 configured on source"]})
+        return validated_data
 
     def launch_export(self, user):
         # use data and not validated data so we have the id

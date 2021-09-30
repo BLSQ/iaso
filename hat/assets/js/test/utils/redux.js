@@ -18,7 +18,6 @@ import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
 import { linksInitialState } from '../../apps/Iaso/domains/links/reducer';
 import { usersInitialState } from '../../apps/Iaso/domains/users/reducer';
 import { periodsInitialState } from '../../apps/Iaso/domains/periods/reducer';
-import { completenessInitialState } from '../../apps/Iaso/domains/completeness/reducer';
 import { groupsInitialState } from '../../apps/Iaso/domains/orgUnits/groups/reducer';
 import { orgUnitsTypesInitialState } from '../../apps/Iaso/domains/orgUnits/types/reducer';
 
@@ -43,7 +42,6 @@ const initialState = {
     links: linksInitialState,
     users: usersInitialState,
     periods: periodsInitialState,
-    completeness: completenessInitialState,
     projects: projectsInitialState,
     mappings: mappingsInitialState,
     groups: groupsInitialState,

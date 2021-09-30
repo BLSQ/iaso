@@ -18,7 +18,7 @@ const routes = [
     {
         baseUrl: 'polio/calendar',
         component: props => <Calendar {...props} />,
-        permission: 'iaso_forms',
+        permission: 'iaso_polio',
         params: [
             {
                 isRequired: false,

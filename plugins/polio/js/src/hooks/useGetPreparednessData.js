@@ -1,4 +1,5 @@
-import { sendRequest, useSnackMutation } from '../utils/networking';
+import { sendRequest } from '../utils/networking';
+import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
 // This retrieve data but since it contact data from an external service this is
 // implemented as a post

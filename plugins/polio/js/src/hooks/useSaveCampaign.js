@@ -1,4 +1,5 @@
-import { sendRequest, useSnackMutation } from '../utils/networking';
+import { sendRequest } from '../utils/networking';
+import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
 export const useSaveCampaign = () =>
     useSnackMutation(

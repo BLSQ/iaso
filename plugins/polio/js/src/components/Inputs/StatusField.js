@@ -1,5 +1,7 @@
 import React from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { Select } from './Select';
+import MESSAGES from '../../constants/messages';
 
 const statuses = [
     {
@@ -17,7 +19,15 @@ const statuses = [
 ];
 
 export const StatusField = props => {
-    return <Select label="Status" options={statuses} {...props} />;
+    const { formatMessage } = useSafeIntl();
+
+    return (
+        <Select
+            label={formatMessage(MESSAGES.status)}
+            options={statuses}
+            {...props}
+        />
+    );
 };
 
 const RABudgetstatuses = [

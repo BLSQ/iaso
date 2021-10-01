@@ -12,11 +12,14 @@ import {
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 
+import { useSelector } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../Styles';
 
 const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
     const classes = useStyles();
+    // We don't want to show the edit button if there is no connected user
+    const isLogged = useSelector(state => Boolean(state.users.current));
     const id = open ? `campaign-popover-${campaign.id}` : undefined;
     return (
         <Popper
@@ -66,13 +69,15 @@ const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
                             {campaign.original.vacine}
                         </Grid>
                         <Grid item sm={12} container justifyContent="flex-end">
-                            <Button
-                                onClick={() => setDialogOpen(true)}
-                                size="small"
-                                color="primary"
-                            >
-                                <FormattedMessage {...MESSAGES.edit} />
-                            </Button>
+                            {isLogged && (
+                                <Button
+                                    onClick={() => setDialogOpen(true)}
+                                    size="small"
+                                    color="primary"
+                                >
+                                    <FormattedMessage {...MESSAGES.edit} />
+                                </Button>
+                            )}
                         </Grid>
                     </Grid>
                 </Box>

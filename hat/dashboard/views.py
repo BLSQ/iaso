@@ -6,9 +6,7 @@ from django.http import HttpResponse
 from django.conf import settings
 
 
-@login_required(login_url="/login/")
-@require_http_methods(["GET"])
-def iaso(request: HttpRequest) -> HttpResponse:
+def _base_iaso(request: HttpRequest) -> HttpResponse:
     return render(
         request,
         "iaso/index.html",
@@ -16,3 +14,17 @@ def iaso(request: HttpRequest) -> HttpResponse:
             "PLUGINS_ENABLED": settings.PLUGINS,
         },
     )
+
+
+@login_required(login_url="/login/")
+@require_http_methods(["GET"])
+def iaso(request: HttpRequest) -> HttpResponse:
+    return _base_iaso(request)
+
+
+@require_http_methods(["GET"])
+def embeddable_iaso(request: HttpRequest) -> HttpResponse:
+    """Embeddable iaso page without login requirement and with correct header"""
+    response = _base_iaso(request)
+    response["X-Frame-Options"] = "ALLOW"
+    return response

@@ -7,6 +7,8 @@ import { Dashboard } from './src/components/Dashboard';
 import { Calendar } from './src/pages/Calendar';
 import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
 import MESSAGES from './src/constants/messages';
+import fr from './src/constants/translations/fr.json';
+import en from './src/constants/translations/en.json';
 
 const routes = [
     {
@@ -18,7 +20,7 @@ const routes = [
     {
         baseUrl: 'polio/calendar',
         component: props => <Calendar {...props} />,
-        permission: 'iaso_forms',
+        permission: 'iaso_polio',
         params: [
             {
                 isRequired: false,
@@ -44,6 +46,18 @@ const routes = [
                 key: 'pageSize',
             },
         ],
+    },
+    {
+        allowAnonymous: true,
+        baseUrl: 'polio/embeddedCalendar',
+        component: props => <Calendar {...props} embedded />,
+        params: [
+            {
+                isRequired: false,
+                key: 'currentDate',
+            },
+        ],
+        isRootUrl: false,
     },
 ];
 
@@ -75,7 +89,13 @@ const menu = [
     },
 ];
 
+const translations = {
+    fr,
+    en,
+};
+
 export default {
     routes,
     menu,
+    translations,
 };

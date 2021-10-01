@@ -104,29 +104,6 @@ class InstancePopupComponent extends Component {
                                     value={o ? o.name : null}
                                 />
                             ))}
-                            {displayUseLocation && (
-                                <Box className={classes.actionBox}>
-                                    <Grid
-                                        container
-                                        spacing={0}
-                                        justifyContent="center"
-                                        alignItems="center"
-                                    >
-                                        <ConfirmDialog
-                                            btnMessage={formatMessage(
-                                                MESSAGES.associate,
-                                            )}
-                                            question={formatMessage(
-                                                MESSAGES.question,
-                                            )}
-                                            message={formatMessage(
-                                                MESSAGES.message,
-                                            )}
-                                            confirm={() => this.confirmDialog()}
-                                        />
-                                    </Grid>
-                                </Box>
-                            )}
                             <Box className={classes.actionBox}>
                                 <Grid
                                     container
@@ -138,11 +115,26 @@ class InstancePopupComponent extends Component {
                                     }
                                     alignItems="center"
                                 >
+                                    {displayUseLocation && (
+                                        <ConfirmDialog
+                                            btnSize="small"
+                                            btnMessage={formatMessage(
+                                                MESSAGES.associate,
+                                            )}
+                                            question={formatMessage(
+                                                MESSAGES.question,
+                                            )}
+                                            message={formatMessage(
+                                                MESSAGES.message,
+                                            )}
+                                            confirm={() => this.confirmDialog()}
+                                        />
+                                    )}
                                     <Button
                                         className={classes.marginLeft}
                                         variant="outlined"
-                                        size="small"
                                         color="primary"
+                                        size="small"
                                     >
                                         <Link
                                             to={`${baseUrls.instanceDetail}/instanceId/${currentInstance.id}`}

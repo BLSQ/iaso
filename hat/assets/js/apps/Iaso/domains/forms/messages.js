@@ -171,7 +171,7 @@ const MESSAGES = defineMessages({
     },
     hasInstances: {
         id: 'iaso.forms.hasInstances',
-        defaultMessage: 'Forms submissions',
+        defaultMessage: 'Form submissions',
     },
     yes: {
         id: 'iaso.forms.yes',

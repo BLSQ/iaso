@@ -1,9 +1,11 @@
 import React from 'react';
-import orderBy from 'lodash/orderBy';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
 import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
-import { circleColorMarkerOptions } from '../../utils/mapUtils';
+import {
+    circleColorMarkerOptions,
+    orderOrgUnitsByDepth,
+} from '../../utils/mapUtils';
 
 import MESSAGES from './messages';
 
@@ -93,20 +95,11 @@ const mapOrgUnitBySearch = (orgUnits, searches) => {
     return mappedOrgunits;
 };
 
-const orderOrgUnitsByDepthAndSearch = orgUnits =>
-    orderBy(
-        orgUnits,
-        [o => o.org_unit_type_depth],
-        [o => o.search_index],
-        ['asc', 'asc'],
-    );
-
 export const mapOrgUnitByLocation = (orgUnits, searches) => {
     let shapes = orgUnits.filter(o => Boolean(o.geo_json));
     let locations = orgUnits.filter(o => Boolean(o.latitude && o.longitude));
-
-    shapes = orderOrgUnitsByDepthAndSearch(shapes);
-    locations = orderOrgUnitsByDepthAndSearch(locations);
+    shapes = orderOrgUnitsByDepth(shapes);
+    locations = orderOrgUnitsByDepth(locations);
     const mappedOrgunits = {
         shapes,
         locations,

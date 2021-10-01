@@ -134,28 +134,25 @@ class OrgUnitPopupComponent extends Component {
                                     alignItems="center"
                                 >
                                     {displayUseLocation && (
-                                        <Box mb={1}>
-                                            <ConfirmDialog
-                                                btnMessage={formatMessage(
-                                                    MESSAGES.associate,
-                                                )}
-                                                question={formatMessage(
-                                                    MESSAGES.question,
-                                                )}
-                                                message={formatMessage(
-                                                    MESSAGES.message,
-                                                )}
-                                                confirm={() =>
-                                                    this.confirmDialog()
-                                                }
-                                            />
-                                        </Box>
+                                        <ConfirmDialog
+                                            btnSize="small"
+                                            btnMessage={formatMessage(
+                                                MESSAGES.associate,
+                                            )}
+                                            question={formatMessage(
+                                                MESSAGES.question,
+                                            )}
+                                            message={formatMessage(
+                                                MESSAGES.message,
+                                            )}
+                                            confirm={() => this.confirmDialog()}
+                                        />
                                     )}
                                     <Button
                                         className={classes.marginLeft}
                                         variant="outlined"
-                                        size="small"
                                         color="primary"
+                                        size="small"
                                     >
                                         <Link
                                             to={`${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}`}

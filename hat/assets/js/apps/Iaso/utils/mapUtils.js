@@ -6,6 +6,11 @@ import { defineMessages } from 'react-intl';
 import { MapControl, withLeaflet } from 'react-leaflet';
 import { ZoomBar } from '../components/leaflet/zoom-bar';
 
+export const orderOrgUnitsByDepth = orgUnits =>
+    orderBy(orgUnits, [o => o.org_unit_type_depth], ['asc']);
+export const orderOrgUnitTypeByDepth = orgUnitTypes =>
+    orderBy(orgUnitTypes, [o => o.depth], ['asc']);
+
 export const MESSAGES = defineMessages({
     'fit-to-bounds': {
         defaultMessage: 'Center the map',
@@ -145,16 +150,6 @@ export const mapOrgUnitByLocation = orgUnits => {
                 otCopy.orgUnits.shapes.push(o);
             }
         });
-        otCopy.orgUnits.locations = orderBy(
-            otCopy.orgUnits.locations,
-            [o => o.org_unit_type_depth],
-            ['asc'],
-        );
-        otCopy.orgUnits.shapes = orderBy(
-            otCopy.orgUnits.shapes,
-            [o => o.org_unit_type_depth],
-            ['asc'],
-        );
         mappedOrgunits.push(otCopy);
     });
     return mappedOrgunits;

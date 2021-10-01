@@ -17,7 +17,7 @@ export const useGetGeoJson = (country, orgUnitCategory) => {
         orgUnitTypeCategory: 'DISTRICT',
     };
     const provinceParam = {
-        orgUnitTypeId: 6,
+        orgUnitTypeCategory: "REGION",
     };
     const params =
         orgUnitCategory === 'DISTRICT'
@@ -34,7 +34,7 @@ export const useGetGeoJson = (country, orgUnitCategory) => {
             );
         },
         {
-            enabled: Boolean(country) && isFetching,
+            enabled: Boolean(country),
             refetchOnWindowFocus: false,
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,

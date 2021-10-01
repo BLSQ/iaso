@@ -44,6 +44,7 @@ class OrgUnitTypeQuerySet(models.QuerySet):
 class OrgUnitType(models.Model):
     CATEGORIES = [
         ("COUNTRY", _("Country")),
+        ("REGION", _("Region")),
         ("DISTRICT", _("District")),
     ]
     name = models.CharField(max_length=255)

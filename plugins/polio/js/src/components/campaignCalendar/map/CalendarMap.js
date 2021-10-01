@@ -125,7 +125,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                                             <FormattedMessage
                                                 {...MESSAGES.vaccine}
                                             />
-                                            {`: ${vacine.label}`}
+                                            {`: ${vacine?.label}`}
                                         </div>
                                     </Tooltip>
                                 </GeoJSON>

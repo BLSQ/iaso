@@ -113,14 +113,22 @@ const OrgUnitTreeviewPicker = ({
             </InputLabel>
             <Paper variant="outlined" elevation={0} className={className}>
                 {makeTruncatedTrees(selectedItems)}
-                {resetSelection && (
+                {resetSelection && selectedItems.size > 0 && (
                     <IconButton
                         icon="clear"
                         tooltipMessage={MESSAGES.clear}
                         onClick={resetSelection}
-                        style={{ marginRight: '16px' }}
                     />
                 )}
+                <IconButton
+                    tooltipMessage={
+                        multiselect
+                            ? MESSAGES.selectMultiple
+                            : MESSAGES.selectSingle
+                    }
+                    icon="orgUnit"
+                    onClick={onClick}
+                />
             </Paper>
         </FormControl>
     );

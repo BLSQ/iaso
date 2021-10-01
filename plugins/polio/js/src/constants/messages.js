@@ -133,10 +133,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.virus',
         defaultMessage: 'Virus',
     },
-    vaccines: {
-        id: 'iaso.polio.form.label.vaccines',
-        defaultMessage: 'Vaccines',
-    },
     description: {
         id: 'iaso.polio.form.label.description',
         defaultMessage: 'Description',

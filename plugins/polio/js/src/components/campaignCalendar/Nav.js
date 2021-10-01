@@ -7,93 +7,84 @@ import ArrowForward from '@material-ui/icons/ArrowForward';
 import ChevronRight from '@material-ui/icons/ChevronRight';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 import Today from '@material-ui/icons/Today';
-import { useDispatch } from 'react-redux';
 
 import moment from 'moment';
-import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 
+import { formatPattern, Link, withRouter } from 'react-router';
 import { useStyles } from './Styles';
-import { baseUrl, dateFormat } from './constants';
+import { dateFormat } from './constants';
 
-const Nav = ({ currentMonday }) => {
+const genUrl = (router, params) => formatPattern(router.routes[0].path, params);
+
+const Nav = ({ currentMonday, router }) => {
     const classes = useStyles();
-    const dispatch = useDispatch();
-    const handleGoToday = () => {
-        dispatch(
-            redirectToReplace(baseUrl, {
-                currentDate: moment().startOf('isoWeek').format(dateFormat),
-            }),
-        );
-    };
-    const handleGoNext = range => {
-        const newDate = currentMonday.clone().add(range, 'week');
-        dispatch(
-            redirectToReplace(baseUrl, {
-                currentDate: newDate.format(dateFormat),
-            }),
-        );
-    };
-    const handleGoPrev = range => {
-        const newDate = currentMonday.clone().subtract(range, 'week');
-        dispatch(
-            redirectToReplace(baseUrl, {
-                currentDate: newDate.format(dateFormat),
-            }),
-        );
-    };
+    const urlForDate = date =>
+        genUrl(router, {
+            currentDate: date.format(dateFormat),
+        });
+    const urlToday = urlForDate(moment().startOf('isoWeek'));
+
+    const prev = range => currentMonday.clone().subtract(range, 'week');
+    const next = range => currentMonday.clone().subtract(range, 'week');
     return (
         <Box className={classes.nav}>
-            <Button
-                onClick={() => handleGoPrev(4)}
-                className={classes.navButton}
-                size="small"
-                variant="outlined"
-                color="primary"
-            >
-                <ArrowBack />
-            </Button>
-            <Button
-                onClick={() => handleGoPrev(1)}
-                className={classes.navButton}
-                size="small"
-                variant="outlined"
-                color="primary"
-            >
-                <ChevronLeft />
-            </Button>
-            <Button
-                onClick={() => handleGoToday()}
-                className={classes.navButton}
-                size="small"
-                variant="outlined"
-                color="primary"
-            >
-                <Today />
-            </Button>
-            <Button
-                onClick={() => handleGoNext(1)}
-                className={classes.navButton}
-                size="small"
-                variant="outlined"
-                color="primary"
-            >
-                <ChevronRight color="primary" />
-            </Button>
-            <Button
-                onClick={() => handleGoNext(4)}
-                className={classes.navButton}
-                size="small"
-                variant="outlined"
-                color="primary"
-            >
-                <ArrowForward color="primary" />
-            </Button>
+            <Link to={urlForDate(prev(4))}>
+                <Button
+                    className={classes.navButton}
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                >
+                    <ArrowBack />
+                </Button>
+            </Link>
+            <Link to={urlForDate(prev(1))}>
+                <Button
+                    className={classes.navButton}
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                >
+                    <ChevronLeft />
+                </Button>
+            </Link>
+            <Link to={urlToday}>
+                <Button
+                    className={classes.navButton}
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                >
+                    <Today />
+                </Button>
+            </Link>
+            <Link to={urlForDate(next(1))}>
+                <Button
+                    className={classes.navButton}
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                >
+                    <ChevronRight color="primary" />
+                </Button>
+            </Link>
+            <Link to={urlForDate(next(4))}>
+                <Button
+                    className={classes.navButton}
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                >
+                    <ArrowForward color="primary" />
+                </Button>
+            </Link>
         </Box>
     );
 };
 
 Nav.propTypes = {
     currentMonday: PropTypes.object.isRequired,
+    router: PropTypes.shape.isRequired,
 };
-
-export { Nav };
+const wrappedNav = withRouter(Nav);
+export { wrappedNav as Nav };

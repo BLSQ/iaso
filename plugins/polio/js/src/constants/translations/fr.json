@@ -23,7 +23,7 @@
     "iaso.polio.vaccines": "Vaccins",
     "iaso.polio.district": "District",
     "iaso.polio.noCampaign": "Aucune campagne",
-
+    "iaso.polio.label.obrName": "Nom OBR",
     "iaso.polio.import_line_list.successMessage": "Imported successfully {amount} campaign(s)",
     "iaso.polio.import_line_list": "Import Line List",
     "iaso.polio.import_file.label": "Excel Line File",
@@ -64,6 +64,7 @@
     "iaso.polio.form.label.costPerChildRoundOne": "Cost/Child Round 1: $",
     "iaso.polio.form.label.costPerChildRoundTwo": "Cost/Child Round 2: $",
     "iaso.polio.form.label.costPerChildTotal": "Cost/Child Total: $",
+    "iaso.polio.calendar.r1StartDate": "Date de début R1",
     "iaso.polio.form.label.roundOneStart": "Round 1 Start",
     "iaso.polio.form.label.roundOneEnd": "Round 1 End",
     "iaso.polio.form.label.roundtwoStart": "Round 2 Start",

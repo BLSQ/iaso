@@ -184,6 +184,7 @@ class OrgunitsMap extends Component {
             isClusterActive,
             intl: { formatMessage },
             classes,
+            orgUnitTypes,
         } = this.props;
         const bounds = getOrgUnitsBounds(orgUnits);
         const orgUnitsTotal = getFullOrgUnits(orgUnits.locations);

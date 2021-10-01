@@ -342,7 +342,12 @@ class IMViewSet2(viewsets.ViewSet):
                 forms = json.loads(cached_response.content)
 
             form_count = 0
+            country = None
             for form in forms:
+                c = form.get("Country", None)
+                if country is None and c is not None:
+                    print("form", form)
+                    country = c
                 OHH_COUNT = form.get("OHH_count", None)
                 if OHH_COUNT is None:
                     print("missing OHH_COUNT", form)
@@ -350,13 +355,14 @@ class IMViewSet2(viewsets.ViewSet):
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 for OHH in form.get("OHH", []):
+                    type = "OHH"
                     Child_FMD = OHH.get("OHH/Child_FMD", 0)
                     Child_Checked = OHH.get("OHH/Child_Checked", 0)
                     total_Child_FMD += int(Child_FMD)
                     total_Child_Checked += int(Child_Checked)
                 row = [
-                    form.get("Type"),
-                    form.get("Country"),
+                    "OHH",
+                    country,
                     form.get("Region"),
                     form.get("District"),
                     form.get("Response"),

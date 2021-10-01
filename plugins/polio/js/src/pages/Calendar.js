@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { Box, makeStyles } from '@material-ui/core';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { useSelector } from 'react-redux';
+
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 
 import { CampaignsCalendar } from '../components/campaignCalendar';
@@ -24,6 +26,7 @@ const useStyles = makeStyles(theme => ({
 const Calendar = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+    const isLogged = useSelector(state => Boolean(state.users.current));
     const { query } = useGetCampaigns({
         order: 'top_level_org_unit_name',
     });
@@ -52,10 +55,12 @@ const Calendar = ({ params }) => {
     );
     return (
         <div>
-            <TopBar
-                title={formatMessage(MESSAGES.calendar)}
-                displayBackButton={false}
-            />
+            {isLogged && (
+                <TopBar
+                    title={formatMessage(MESSAGES.calendar)}
+                    displayBackButton={false}
+                />
+            )}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box width={1} position="relative">
                     <CampaignsCalendar

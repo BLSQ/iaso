@@ -47,6 +47,18 @@ const routes = [
             },
         ],
     },
+    {
+        allowAnonymous: true,
+        baseUrl: 'polio/embeddedCalendar',
+        component: props => <Calendar {...props} embedded />,
+        params: [
+            {
+                isRequired: false,
+                key: 'currentDate',
+            },
+        ],
+        isRootUrl: false,
+    },
 ];
 
 const menu = [

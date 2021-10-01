@@ -54,7 +54,7 @@ class CountryUsersGroupSerializer(serializers.ModelSerializer):
 def _error(message, exc=None):
     errors = {"file": [message]}
     if exc:
-        errors["debug"]: [str(exc)]
+        errors["debug"] = [str(exc)]
     return errors
 
 
@@ -416,3 +416,58 @@ class CampaignSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status", "creation_email_send_at"]
         extra_kwargs = {"preparedness_data": {"write_only": True}}
+
+
+class AnonymousCampaignSerializer(CampaignSerializer):
+    class Meta:
+        model = Campaign
+        fields = [
+            "id",
+            "epid",
+            "obr_name",
+            "gpei_coordinator",
+            "gpei_email",
+            "description",
+            "initial_org_unit",
+            "creation_email_send_at",
+            "group",
+            "onset_at",
+            "three_level_call_at",
+            "cvdpv_notified_at",
+            "cvdpv2_notified_at",
+            "pv_notified_at",
+            "pv2_notified_at",
+            "virus",
+            "vacine",
+            "detection_status",
+            "detection_responsible",
+            "detection_first_draft_submitted_at",
+            "detection_rrt_oprtt_approval_at",
+            "risk_assessment_status",
+            "risk_assessment_responsible",
+            "investigation_at",
+            "risk_assessment_first_draft_submitted_at",
+            "risk_assessment_rrt_oprtt_approval_at",
+            "ag_nopv_group_met_at",
+            "dg_authorized_at",
+            "verification_score",
+            "doses_requested",
+            "country_name_in_surge_spreadsheet",
+            "budget_status",
+            "budget_responsible",
+            "who_disbursed_to_co_at",
+            "who_disbursed_to_moh_at",
+            "unicef_disbursed_to_co_at",
+            "unicef_disbursed_to_moh_at",
+            "eomg",
+            "no_regret_fund_amount",
+            "payment_mode",
+            "round_one",
+            "round_two",
+            "created_at",
+            "updated_at",
+            "district_count",
+            "budget_rrt_oprtt_approval_at",
+            "budget_submitted_at",
+        ]
+        read_only_fields = fields

@@ -1,17 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
+
 import classnames from 'classnames';
 import { LoadingSpinner } from 'bluesquare-components';
 
-import { Table, TableContainer, Box, Button } from '@material-ui/core';
+import { Box, Button, Table, TableContainer } from '@material-ui/core';
 import ChevronLeft from '@material-ui/icons/ChevronLeft';
 import ChevronRight from '@material-ui/icons/ChevronRight';
 
-import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-
+import { withRouter, formatPattern, Link } from 'react-router';
 import { useStyles } from './Styles';
-import { baseUrl, dateFormat } from './constants';
+import { dateFormat } from './constants';
 
 import { Head } from './Head';
 import { Body } from './Body';
@@ -21,27 +20,19 @@ const CampaignsCalendar = ({
     calendarData,
     currentMonday,
     loadingCampaigns,
+    router,
 }) => {
     const classes = useStyles();
-    const dispatch = useDispatch();
 
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
-    const handleGoNext = () => {
-        const newDate = currentMonday.clone().add(4, 'week');
-        dispatch(
-            redirectToReplace(baseUrl, {
-                currentDate: newDate.format(dateFormat),
-            }),
-        );
-    };
-    const handleGoPrev = () => {
-        const newDate = currentMonday.clone().subtract(4, 'week');
-        dispatch(
-            redirectToReplace(baseUrl, {
-                currentDate: newDate.format(dateFormat),
-            }),
-        );
-    };
+    const nextMonth = currentMonday.clone().add(4, 'week');
+    const nextMonthLink = formatPattern(router.routes[0].path, {
+        currentDate: nextMonth.format(dateFormat),
+    });
+    const prevMonth = currentMonday.clone().subtract(4, 'week');
+    const prevMonthLink = formatPattern(router.routes[0].path, {
+        currentDate: prevMonth.format(dateFormat),
+    });
 
     return (
         <>
@@ -53,27 +44,29 @@ const CampaignsCalendar = ({
                 position="relative"
             >
                 <Box className={classes.nav}>
-                    <Button
-                        onClick={handleGoPrev}
-                        className={classnames(
-                            classes.navButton,
-                            classes.navButtonPrev,
-                        )}
-                        size="large"
-                        variant="outlined"
-                        color="primary"
-                    >
-                        <ChevronLeft />
-                    </Button>
-                    <Button
-                        onClick={handleGoNext}
-                        className={classes.navButton}
-                        size="large"
-                        variant="outlined"
-                        color="primary"
-                    >
-                        <ChevronRight color="primary" />
-                    </Button>
+                    <Link to={prevMonthLink}>
+                        <Button
+                            className={classnames(
+                                classes.navButton,
+                                classes.navButtonPrev,
+                            )}
+                            size="large"
+                            variant="outlined"
+                            color="primary"
+                        >
+                            <ChevronLeft />
+                        </Button>
+                    </Link>
+                    <Link to={nextMonthLink}>
+                        <Button
+                            className={classes.navButton}
+                            size="large"
+                            variant="outlined"
+                            color="primary"
+                        >
+                            <ChevronRight color="primary" />
+                        </Button>
+                    </Link>
                 </Box>
                 <TableContainer className={classes.tableContainer}>
                     {loadingCampaigns && <LoadingSpinner absolute />}
@@ -101,6 +94,8 @@ CampaignsCalendar.propTypes = {
     calendarData: PropTypes.object.isRequired,
     currentMonday: PropTypes.object.isRequired,
     loadingCampaigns: PropTypes.bool.isRequired,
+    router: PropTypes.shape.isRequired,
 };
 
-export { CampaignsCalendar };
+const wrappedCampaignsCalendar = withRouter(CampaignsCalendar);
+export { wrappedCampaignsCalendar as CampaignsCalendar };

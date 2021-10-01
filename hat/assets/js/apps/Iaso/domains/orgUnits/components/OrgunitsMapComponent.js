@@ -1,8 +1,14 @@
 import React, { Component } from 'react';
-import { Map, TileLayer, GeoJSON, ScaleControl, Tooltip } from 'react-leaflet';
+import {
+    Map,
+    TileLayer,
+    GeoJSON,
+    ScaleControl,
+    Tooltip,
+    Pane,
+} from 'react-leaflet';
 import { connect } from 'react-redux';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import camelCase from 'lodash/camelCase';
 import isEqual from 'lodash/isEqual';
 
 import { Grid, Divider, withStyles } from '@material-ui/core';
@@ -89,8 +95,7 @@ class OrgunitsMap extends Component {
     }
 
     componentDidMount() {
-        const { orgUnitTypes, orgUnits } = this.props;
-        this.makePanes(orgUnitTypes);
+        const { orgUnits } = this.props;
         this.checkFitToBounds(orgUnits);
         this.props.setCurrentSubOrgUnit(null);
     }
@@ -107,13 +112,7 @@ class OrgunitsMap extends Component {
 
     async componentDidUpdate(prevProps) {
         await waitFor(500);
-        const { orgUnits, orgUnitTypes } = this.props;
-        const oldOrgUnitTypes = prevProps.orgUnitTypes;
-        // creating panes if navigating using deep linking or reloading, as orgUnitTypes
-        // are not available to componentDidMount in those cases
-        if (!isEqual(oldOrgUnitTypes, orgUnitTypes)) {
-            this.makePanes(orgUnitTypes);
-        }
+        const { orgUnits } = this.props;
         this.checkFitToBounds(orgUnits);
     }
 
@@ -151,19 +150,6 @@ class OrgunitsMap extends Component {
         ) {
             this.setFittedToBound();
             this.fitToBounds();
-        }
-    }
-
-    makePanes(orgUnitTypes) {
-        if (orgUnitTypes.length === 0) {
-            this.map.leafletElement.createPane('custom-shape-pane');
-        } else {
-            orgUnitTypes.forEach(ot => {
-                const otName = camelCase(ot.name);
-                this.map.leafletElement.createPane(
-                    `custom-shape-pane-${otName}`,
-                );
-            });
         }
     }
 
@@ -217,6 +203,19 @@ class OrgunitsMap extends Component {
         if (this.map) {
             this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }
+        const getShape = ou => (
+            <GeoJSON
+                key={ou.id}
+                style={() => ({
+                    color: this.getSearchColor(ou.search_index),
+                })}
+                data={ou.geo_json}
+                onClick={() => this.fetchDetail(ou)}
+            >
+                <OrgUnitPopupComponent />
+                <Tooltip>{ou.name}</Tooltip>
+            </GeoJSON>
+        );
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
@@ -264,25 +263,23 @@ class OrgunitsMap extends Component {
                             }
                             url={currentTile.url}
                         />
-                        {orgUnits.shapes.map(o => (
-                            <GeoJSON
-                                pane={
-                                    o.org_unit_type
-                                        ? `custom-shape-pane-${camelCase(
-                                              o.org_unit_type,
-                                          )}`
-                                        : 'custom-shape-pane'
-                                }
-                                key={o.id}
-                                style={() => ({
-                                    color: this.getSearchColor(o.search_index),
-                                })}
-                                data={o.geo_json}
-                                onClick={() => this.fetchDetail(o)}
+                        {orgUnits.shapes
+                            .filter(o => !o.org_unit_type_id)
+                            .map(o => (
+                                <Pane name="no-org-unit-type">
+                                    {getShape(o)}
+                                </Pane>
+                            ))}
+                        {orgUnitTypes.map(ot => (
+                            <Pane
+                                style={{ zIndex: 400 + (ot.depth || 1) }}
+                                name={`org-type-${ot.id}}`}
+                                key={ot.id}
                             >
-                                <OrgUnitPopupComponent />
-                                <Tooltip>{o.name}</Tooltip>
-                            </GeoJSON>
+                                {orgUnits.shapes
+                                    .filter(o => o.org_unit_type_id === ot.id)
+                                    .map(o => getShape(o))}
+                            </Pane>
                         ))}
                         {isClusterActive &&
                             orgUnits.locations.map(
@@ -305,25 +302,30 @@ class OrgunitsMap extends Component {
                                                 color,
                                             }}
                                         >
-                                            <MarkersListComponent
-                                                markerProps={() => ({
-                                                    ...circleColorMarkerOptions(
-                                                        color,
-                                                    ),
-                                                })}
-                                                items={orgUnitsBySearch}
-                                                onMarkerClick={o =>
-                                                    this.fetchDetail(o)
-                                                }
-                                                PopupComponent={
-                                                    OrgUnitPopupComponent
-                                                }
-                                                tooltipProps={e => ({
-                                                    children: [e.name],
-                                                })}
-                                                TooltipComponent={Tooltip}
-                                                isCircle
-                                            />
+                                            <Pane
+                                                name="markers"
+                                                style={{ zIndex: 699 }}
+                                            >
+                                                <MarkersListComponent
+                                                    markerProps={() => ({
+                                                        ...circleColorMarkerOptions(
+                                                            color,
+                                                        ),
+                                                    })}
+                                                    items={orgUnitsBySearch}
+                                                    onMarkerClick={o =>
+                                                        this.fetchDetail(o)
+                                                    }
+                                                    PopupComponent={
+                                                        OrgUnitPopupComponent
+                                                    }
+                                                    tooltipProps={e => ({
+                                                        children: [e.name],
+                                                    })}
+                                                    TooltipComponent={Tooltip}
+                                                    isCircle
+                                                />
+                                            </Pane>
                                         </MarkerClusterGroup>
                                     );
                                 },
@@ -331,24 +333,33 @@ class OrgunitsMap extends Component {
                         {!isClusterActive &&
                             orgUnits.locations.map(
                                 (orgUnitsBySearch, searchIndex) => (
-                                    <MarkersListComponent
-                                        key={searchIndex}
-                                        markerProps={() => ({
-                                            ...circleColorMarkerOptions(
-                                                this.getSearchColor(
-                                                    searchIndex,
+                                    <Pane
+                                        name="markers"
+                                        style={{ zIndex: 699 }}
+                                    >
+                                        <MarkersListComponent
+                                            key={searchIndex}
+                                            markerProps={() => ({
+                                                ...circleColorMarkerOptions(
+                                                    this.getSearchColor(
+                                                        searchIndex,
+                                                    ),
                                                 ),
-                                            ),
-                                        })}
-                                        items={orgUnitsBySearch}
-                                        onMarkerClick={o => this.fetchDetail(o)}
-                                        PopupComponent={OrgUnitPopupComponent}
-                                        tooltipProps={e => ({
-                                            children: [e.name],
-                                        })}
-                                        TooltipComponent={Tooltip}
-                                        isCircle
-                                    />
+                                            })}
+                                            items={orgUnitsBySearch}
+                                            onMarkerClick={o =>
+                                                this.fetchDetail(o)
+                                            }
+                                            PopupComponent={
+                                                OrgUnitPopupComponent
+                                            }
+                                            tooltipProps={e => ({
+                                                children: [e.name],
+                                            })}
+                                            TooltipComponent={Tooltip}
+                                            isCircle
+                                        />
+                                    </Pane>
                                 ),
                             )}
                     </Map>

@@ -2,14 +2,14 @@ import React, { useCallback } from 'react';
 import { Grid } from '@material-ui/core';
 import { LoadingSpinner } from 'bluesquare-components';
 import { useMutation, useQueryClient } from 'react-query';
-import { defineMessages } from 'react-intl';
+import { defineMessages, useIntl } from 'react-intl';
+import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 import { useFormState } from '../../../../../hat/assets/js/apps/Iaso/hooks/form';
 import ConfirmCancelDialogComponent from '../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import { iasoPostRequest } from '../../../../../hat/assets/js/apps/Iaso/utils/requests';
 import FileInputComponent from '../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
-import PropTypes from 'prop-types';
 import { enqueueSnackbar } from '../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
-import { useDispatch } from 'react-redux';
 
 const initialFormState = () => ({
     file: null,
@@ -17,15 +17,16 @@ const initialFormState = () => ({
 
 const MESSAGES = defineMessages({
     import_file: {
-        id: 'polio.import_file.label',
+        id: 'iaso.polio.import_file.label',
         defaultMessage: 'Excel Line File',
     },
     title: {
-        id: 'polio.import_line_list',
+        id: 'iaso.polio.import_line_list',
         defaultMessage: 'Import Line List',
     },
     successMessage: {
-        id: 'polio.import_line_list.successMessage',
+        id: 'iaso.polio.import_line_list.successMessage',
+        defaultMessage: 'Imported successfully {amount} campaign(s)',
     },
 });
 
@@ -43,6 +44,8 @@ const ImportLineListDialog = ({ renderTrigger }) => {
     const [form, setFormField, setFieldErrors, setFormState] = useFormState(
         initialFormState(),
     );
+    // FIXME: useSafeIntl don't pass values, replace when fixed
+    const { formatMessage } = useIntl();
 
     const { mutateAsync, isLoading } = useMutation(postLineListFile);
     const queryClient = useQueryClient();
@@ -58,15 +61,12 @@ const ImportLineListDialog = ({ renderTrigger }) => {
                 file: form.file.value,
             });
             queryClient.invalidateQueries(['polio', 'campaigns']);
-            // FIXME: Snackbar is bugging and want to format itself but don't pass value
-            // FIXME persistant success snackbare have no close button
-            const message = `Imported successfully ${res.import_result.created} campaign(s)`;
+            // FIXME persistant success snackbar have no close button
             dispatch(
                 enqueueSnackbar({
-                    messageObject: {
-                        id: 'successMessage',
-                        defaultMessage: message,
-                    },
+                    messageObject: formatMessage(MESSAGES.successMessage, {
+                        amount: res.import_result.created,
+                    }),
                     options: {
                         variant: 'success',
                         persist: false,

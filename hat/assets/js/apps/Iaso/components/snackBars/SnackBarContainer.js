@@ -51,7 +51,16 @@ class SnackBarContainer extends Component {
         // Display snackbar using notistack
         let message;
         if (notification.messageObject) {
-            message = formatMessage(notification.messageObject);
+            if (typeof notification.messageObject === 'string') {
+                message = notification.messageObject;
+            } else if (notification.messageObject.id) {
+                message = formatMessage(notification.messageObject);
+            } else {
+                console.error(
+                    `Invalid translation message for snackbar ${notification.messageObject}`,
+                );
+                message = 'Error';
+            }
         } else if (MESSAGES[notification.messageKey]) {
             message = formatMessage(MESSAGES[notification.messageKey]);
         } else {

@@ -101,6 +101,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.vaccine',
         defaultMessage: 'Vaccine',
     },
+    vaccines: {
+        id: 'iaso.polio.vaccines',
+        defaultMessage: 'Vaccines',
+    },
     endDateBeforeStartDate: {
         id: 'iaso.polio.form.validator.error.endDateBeforeStartDate',
         defaultMessage: "End date can't be before start date",
@@ -108,6 +112,10 @@ const MESSAGES = defineMessages({
     positiveInteger: {
         id: 'iaso.polio.form.validator.error.positiveInteger',
         defaultMessage: 'Please use a positive integer',
+    },
+    noCampaign: {
+        id: 'iaso.polio.noCampaign',
+        defaultMessage: 'No campaign to display',
     },
     // Start
     epid: {
@@ -121,10 +129,6 @@ const MESSAGES = defineMessages({
     virus: {
         id: 'iaso.polio.form.label.virus',
         defaultMessage: 'Virus',
-    },
-    vaccines: {
-        id: 'iaso.polio.form.label.vaccines',
-        defaultMessage: 'Vaccines',
     },
     description: {
         id: 'iaso.polio.form.label.description',
@@ -199,7 +203,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Region',
     },
     district: {
-        id: 'iaso.polio.table.label.district',
+        id: 'iaso.polio.district',
         defaultMessage: 'District',
     },
     selectRegion: {

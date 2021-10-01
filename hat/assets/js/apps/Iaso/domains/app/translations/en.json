@@ -159,6 +159,7 @@
     "iaso.label.algorithmsRuns": "Algorithms runs",
     "iaso.label.altitude": "Altitude",
     "iaso.label.before": "Before",
+    "iaso.label.campaigns": "Campaigns",
     "iaso.label.cancel": "Cancel",
     "iaso.label.catchment": "Catchment",
     "iaso.label.children": "Children",
@@ -453,6 +454,7 @@
     "iaso.permissions.projects": "Projects",
     "iaso.permissions.sources": "Sources",
     "iaso.permissions.users": "Users",
+
     "iaso.projects.appId": "App ID",
     "iaso.projects.create": "Create project",
     "iaso.projects.false": "User doesn't need authentication",

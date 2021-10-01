@@ -22,13 +22,13 @@ const MESSAGES = defineMessages({
 const useStyles = makeStyles(theme => ({
     button: {
         border: `3px solid ${theme.palette.ligthGray.border}`,
-        borderRadius: theme.spacing(4),
-        width: theme.spacing(4),
-        height: theme.spacing(4),
+        borderRadius: theme.spacing(3),
+        width: theme.spacing(3),
+        height: theme.spacing(3),
         cursor: 'pointer',
         display: 'inline-block',
         position: 'relative',
-        top: 10,
+        top: 6,
         left: theme.spacing(1),
         outline: 'none !important',
     },

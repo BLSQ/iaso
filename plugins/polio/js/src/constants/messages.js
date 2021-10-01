@@ -113,13 +113,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.validator.error.positiveInteger',
         defaultMessage: 'Please use a positive integer',
     },
-    district: {
-        id: 'iaso.polio.district',
-        defaultMessage: 'District',
-    },
     noCampaign: {
         id: 'iaso.polio.noCampaign',
         defaultMessage: 'No campaign to display',
+    },
     // Start
     epid: {
         id: 'iaso.polio.form.label.epid',
@@ -206,7 +203,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Region',
     },
     district: {
-        id: 'iaso.polio.table.label.district',
+        id: 'iaso.polio.district',
         defaultMessage: 'District',
     },
     selectRegion: {

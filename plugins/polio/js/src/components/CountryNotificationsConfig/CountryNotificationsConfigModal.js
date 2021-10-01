@@ -1,10 +1,9 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { isEqual } from 'lodash';
 import { arrayOf, object, func, string, number } from 'prop-types';
 import ConfirmCancelDialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../constants/messages';
-import { getCountryConfigDetails, putCountryConfigDetails } from './requests';
-import { useAPI } from '../../../../../../hat/assets/js/apps/Iaso/utils/requests';
+import { putCountryConfigDetails } from './requests';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { useFormState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/form';
@@ -81,7 +80,7 @@ export const CountryNotificationsConfigModal = ({
             renderTrigger={renderTrigger}
             titleMessage={{
                 ...MESSAGES.configEmailNotif,
-                values: { country:countryName },
+                values: { country: countryName },
             }}
             confirmMessage={MESSAGES.confirm}
             cancelMessage={MESSAGES.cancel}
@@ -130,7 +129,7 @@ CountryNotificationsConfigModal.propTypes = {
     notifyParent: func,
     allUsers: arrayOf(object),
     allLanguages: arrayOf(object).isRequired,
-    countryName:string.isRequired,
+    countryName: string.isRequired,
 };
 
 CountryNotificationsConfigModal.defaultProps = {

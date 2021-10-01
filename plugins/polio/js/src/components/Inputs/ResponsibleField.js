@@ -1,5 +1,7 @@
 import React from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { Select } from './Select';
+import MESSAGES from '../../constants/messages';
 
 const RESPONSIBLES = [
     {
@@ -28,6 +30,14 @@ const RESPONSIBLES = [
     },
 ];
 
-export const ResponsibleField = props => (
-    <Select label="Responsible" options={RESPONSIBLES} {...props} />
-);
+export const ResponsibleField = props => {
+    const { formatMessage } = useSafeIntl();
+
+    return (
+        <Select
+            label={formatMessage(MESSAGES.responsible)}
+            options={RESPONSIBLES}
+            {...props}
+        />
+    );
+};

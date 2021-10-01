@@ -30,18 +30,23 @@ export default function iasoApp(element, enabledPluginsName) {
     const baseRoutes = allRoutesConfigs.map(routeConfig => (
         <Route
             path={getPath(routeConfig)}
-            component={props => (
-                <ProtectedRoute
-                    {...props}
-                    featureFlag={routeConfig.featureFlag}
-                    permission={routeConfig.permission}
-                    component={routeConfig.component(props)}
-                    isRootUrl={routeConfig.isRootUrl}
-                    allRoutes={allRoutesConfigs}
-                />
-            )}
+            component={
+                routeConfig.allowAnonymous
+                    ? routeConfig.component
+                    : props => (
+                          <ProtectedRoute
+                              {...props}
+                              featureFlag={routeConfig.featureFlag}
+                              permission={routeConfig.permission}
+                              component={routeConfig.component(props)}
+                              isRootUrl={routeConfig.isRootUrl}
+                              allRoutes={allRoutesConfigs}
+                          />
+                      )
+            }
         />
     ));
+
     const routes = addRoutes(baseRoutes);
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>

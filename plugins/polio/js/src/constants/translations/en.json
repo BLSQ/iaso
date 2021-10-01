@@ -20,6 +20,10 @@
     "iaso.polio.table.label.language": "Language",
     "iaso.polio.table.label.usersToNotify": "Users to notify",
     "iaso.polio.vaccine": "Vaccine",
+    "iaso.polio.vaccines": "Vaccines",
+
+    "iaso.polio.district": "District",
+    "iaso.polio.noCampaign": "No campaign to display",
 
     "iaso.polio.import_line_list.successMessage": "Imported successfully {amount} campaign(s)",
     "iaso.polio.import_line_list": "Import Line List",
@@ -27,7 +31,6 @@
     "iaso.polio.form.label.epid": "EPID",
     "iaso.polio.form.label.obrName": "OBR Name",
     "iaso.polio.form.label.virus": "Virus",
-    "iaso.polio.form.label.vaccines": "Vaccines",
     "iaso.polio.form.label.description": "Description",
     "iaso.polio.form.label.gpeiCoordinator": "GPEI Coordinator",
     "iaso.polio.form.label.selectInitialRegion": "Select initial region",
@@ -46,7 +49,6 @@
     "iaso.polio.form.label.targetpopulationRoundTwo": "Target population Round 2",
     "iaso.polio.form.label.dosesRequested": "Doses Requested (both rounds)",
     "iaso.polio.table.label.region": "Region",
-    "iaso.polio.table.label.district": "District",
     "iaso.polio.table.label.selectRegion": "Select region",
     "iaso.polio.table.label.refreshing": "Refreshing...",
     "iaso.polio.form.label.pleaseSaveCampaign": "Please save the Campaign before selecting scope.",

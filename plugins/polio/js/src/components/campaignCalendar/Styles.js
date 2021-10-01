@@ -74,12 +74,8 @@ export const useStyles = makeStyles(theme => ({
         borderBottom: `1px solid ${theme.palette.ligthGray.border}`,
     },
     round: {
-        backgroundColor: theme.palette.secondary.main,
         color: theme.palette.common.white,
         fontSize: 12,
-    },
-    round2: {
-        backgroundColor: theme.palette.secondary.light,
     },
     campaign: {
         backgroundColor: theme.palette.grey[200],
@@ -88,12 +84,6 @@ export const useStyles = makeStyles(theme => ({
     },
     currentWeek: {
         backgroundColor: red['100'],
-    },
-    navButton: {
-        marginTop: theme.spacing(3),
-        borderRadius: 100,
-        padding: theme.spacing(1),
-        minWidth: 0,
     },
     nav: {
         left: theme.spacing(2),
@@ -104,8 +94,11 @@ export const useStyles = makeStyles(theme => ({
         display: 'flex',
         justifyContent: 'center',
     },
-    navButtonPrev: {
-        marginRight: '5vw',
+    navButton: {
+        margin: theme.spacing(1.5),
+        borderRadius: 100,
+        padding: theme.spacing(1),
+        minWidth: 0,
     },
     tableCellSpan: {
         position: 'absolute',
@@ -151,5 +144,36 @@ export const useStyles = makeStyles(theme => ({
         top: 4,
         right: 4,
         fontSize: 12,
+    },
+    mapLegend: {
+        position: 'absolute',
+        zIndex: 499,
+        fontSize: 10,
+        top: theme.spacing(2),
+        right: theme.spacing(2),
+    },
+    mapLegendVaccine: {
+        width: 100,
+        marginTop: theme.spacing(2),
+    },
+    mapLegendCampaigns: {
+        width: 165,
+    },
+    mapLegendTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: theme.spacing(1),
+    },
+    roundColor: {
+        borderRadius: theme.spacing(3),
+        height: theme.spacing(3),
+        width: theme.spacing(3),
+        border: `2px solid ${theme.palette.ligthGray.border}`,
+    },
+    mapLegendLabel: {
+        textAlign: 'right',
+    },
+    noCampaign: {
+        textAlign: 'center',
     },
 }));

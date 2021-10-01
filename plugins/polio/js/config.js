@@ -7,6 +7,8 @@ import { Dashboard } from './src/components/Dashboard';
 import { Calendar } from './src/pages/Calendar';
 import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
 import MESSAGES from './src/constants/messages';
+import fr from './src/constants/translations/fr.json';
+import en from './src/constants/translations/en.json';
 
 const routes = [
     {
@@ -87,7 +89,13 @@ const menu = [
     },
 ];
 
+const translations = {
+    fr,
+    en,
+};
+
 export default {
     routes,
     menu,
+    translations,
 };

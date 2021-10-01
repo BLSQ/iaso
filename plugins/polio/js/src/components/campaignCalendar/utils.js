@@ -95,7 +95,7 @@ const filterCampaigns = (allCampaigns, firstMonday, lastSunday) => {
 };
 
 const mapCampaigns = allCampaigns => {
-    return allCampaigns.map((c, index) => {
+    return allCampaigns.map(c => {
         const R1Start =
             c.round_one?.started_at &&
             moment(c.round_one.started_at, dateFormat);

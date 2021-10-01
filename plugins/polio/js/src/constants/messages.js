@@ -171,7 +171,11 @@ const MESSAGES = defineMessages({
     },
     vaccine: {
         id: 'iaso.polio.vaccine',
-        defaultMessage: 'Vacine',
+        defaultMessage: 'Vaccine',
+    },
+    vaccines: {
+        id: 'iaso.polio.vaccines',
+        defaultMessage: 'Vaccines',
     },
     endDateBeforeStartDate: {
         id: 'iaso.polio.form.validator.error.endDateBeforeStartDate',
@@ -180,6 +184,14 @@ const MESSAGES = defineMessages({
     positiveInteger: {
         id: 'iaso.polio.form.validator.error.positiveInteger',
         defaultMessage: 'Please use a positive integer',
+    },
+    district: {
+        id: 'iaso.polio.district',
+        defaultMessage: 'District',
+    },
+    noCampaign: {
+        id: 'iaso.polio.noCampaign',
+        defaultMessage: 'No campaign to display',
     },
 });
 

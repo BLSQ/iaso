@@ -1,6 +1,5 @@
 import { makeStyles } from '@material-ui/core';
 import red from '@material-ui/core/colors/red';
-import green from '@material-ui/core/colors/green';
 
 const cellHeight = 50;
 const smallCellHeight = 20;
@@ -145,5 +144,36 @@ export const useStyles = makeStyles(theme => ({
         top: 4,
         right: 4,
         fontSize: 12,
+    },
+    mapLegend: {
+        position: 'absolute',
+        zIndex: 499,
+        fontSize: 10,
+        top: theme.spacing(2),
+        right: theme.spacing(2),
+    },
+    mapLegendVaccine: {
+        width: 100,
+        marginTop: theme.spacing(2),
+    },
+    mapLegendCampaigns: {
+        width: 165,
+    },
+    mapLegendTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: theme.spacing(1),
+    },
+    roundColor: {
+        borderRadius: theme.spacing(3),
+        height: theme.spacing(3),
+        width: theme.spacing(3),
+        border: `2px solid ${theme.palette.ligthGray.border}`,
+    },
+    mapLegendLabel: {
+        textAlign: 'right',
+    },
+    noCampaign: {
+        textAlign: 'center',
     },
 }));

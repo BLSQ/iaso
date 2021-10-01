@@ -1,15 +1,22 @@
 import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { LoadingSpinner } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import { Box } from '@material-ui/core';
 import { Map, TileLayer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import { polioVacines } from '../../../constants/virus';
 
 import { sendRequest } from '../../../utils/networking';
 
+import { VaccinesLegend } from './VaccinesLegend';
+import { CampaignsLegend } from './CampaignsLegend';
+import MESSAGES from '../../../constants/messages';
+import { useStyles } from '../Styles';
+
 import 'leaflet/dist/leaflet.css';
 
 const CalendarMap = ({ campaigns, loadingCampaigns }) => {
+    const classes = useStyles();
     const [loadingShapes, setLoadingShapes] = useState(true);
     const [campaignsShapes, setCampaignsShapes] = useState([]);
     const map = useRef();
@@ -45,12 +52,14 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                 setLoadingShapes(false);
                 const newCampaingsShapes = [];
                 newShapesArrays.forEach((newShapes, index) => {
-                    newCampaingsShapes.push({
-                        campaign: {
-                            ...displayedCampaigns[index],
-                        },
-                        shapes: newShapes,
-                    });
+                    if (newShapes.length > 0) {
+                        newCampaingsShapes.push({
+                            campaign: {
+                                ...displayedCampaigns[index],
+                            },
+                            shapes: newShapes,
+                        });
+                    }
                 });
                 setCampaignsShapes(newCampaingsShapes);
             });
@@ -59,10 +68,16 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     return (
         <Box position="relative">
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
+            <div className={classes.mapLegend}>
+                <CampaignsLegend campaigns={campaignsShapes} />
+                <Box display="flex" justifyContent="flex-end">
+                    <VaccinesLegend />
+                </Box>
+            </div>
             <Map
                 ref={map}
                 style={{ height: 900 }}
-                center={[1, 10]}
+                center={[1, 20]}
                 zoom={4}
                 scrollWheelZoom={false}
             >
@@ -94,7 +109,24 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                                     }}
                                 >
                                     <Tooltip>
-                                        <span>{`District: ${shape.name}`}</span>
+                                        <div>
+                                            <FormattedMessage
+                                                {...MESSAGES.country}
+                                            />
+                                            {`: ${cs.campaign.country}`}
+                                        </div>
+                                        <div>
+                                            <FormattedMessage
+                                                {...MESSAGES.district}
+                                            />
+                                            {`: ${shape.name}`}
+                                        </div>
+                                        <div>
+                                            <FormattedMessage
+                                                {...MESSAGES.vaccine}
+                                            />
+                                            {`: ${vacine.label}`}
+                                        </div>
                                     </Tooltip>
                                 </GeoJSON>
                             ))}

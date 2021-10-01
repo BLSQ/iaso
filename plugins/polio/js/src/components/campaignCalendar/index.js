@@ -20,29 +20,22 @@ const CampaignsCalendar = ({
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
 
     return (
-        <>
-            <Box
-                mb={2}
-                mt={2}
-                display="flex"
-                alignItems="flex-start"
-                position="relative"
-            >
-                <Nav currentMonday={currentMonday} />
-                <TableContainer className={classes.tableContainer}>
-                    {loadingCampaigns && <LoadingSpinner absolute />}
-                    <Table stickyHeader>
-                        <Head headers={headers} />
-                        <Body
-                            campaigns={campaigns}
-                            currentWeekIndex={currentWeekIndex}
-                            firstMonday={firstMonday}
-                            lastSunday={lastSunday}
-                        />
-                    </Table>
-                </TableContainer>
-            </Box>
-        </>
+        <Box mb={2} display="flex" alignItems="flex-start" position="relative">
+            <Nav currentMonday={currentMonday} />
+            <TableContainer className={classes.tableContainer}>
+                {loadingCampaigns && <LoadingSpinner absolute />}
+                <Table stickyHeader>
+                    <Head headers={headers} />
+                    <Body
+                        loadingCampaigns={loadingCampaigns}
+                        campaigns={campaigns}
+                        currentWeekIndex={currentWeekIndex}
+                        firstMonday={firstMonday}
+                        lastSunday={lastSunday}
+                    />
+                </Table>
+            </TableContainer>
+        </Box>
     );
 };
 

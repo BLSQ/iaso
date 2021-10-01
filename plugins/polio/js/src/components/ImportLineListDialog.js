@@ -60,13 +60,17 @@ const ImportLineListDialog = ({ renderTrigger }) => {
             queryClient.invalidateQueries(['polio', 'campaigns']);
             // FIXME: Snackbar is bugging and want to format itself but don't pass value
             // FIXME persistant success snackbare have no close button
+            const message = `Imported successfully ${res.import_result.created} campaign(s)`;
             dispatch(
                 enqueueSnackbar({
                     messageObject: {
                         id: 'successMessage',
-                        defaultMessage:
-                            'Imported successfully {amount} campaign(s)',
-                        values: { amount: res.import_result.created },
+                        defaultMessage: message,
+
+                        // TODO uncomment when snackbar bug is fixed
+                        //     defaultMessage:
+                        //         'Imported successfully {amount} campaign(s)',
+                        //     values: { amount: res.import_result.created },
                     },
                     options: {
                         variant: 'success',

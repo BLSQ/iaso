@@ -25,7 +25,7 @@ const Nav = ({ currentMonday, router }) => {
     const urlToday = urlForDate(moment().startOf('isoWeek'));
 
     const prev = range => currentMonday.clone().subtract(range, 'week');
-    const next = range => currentMonday.clone().subtract(range, 'week');
+    const next = range => currentMonday.clone().add(range, 'week');
     return (
         <Box className={classes.nav}>
             <Link to={urlForDate(prev(4))}>

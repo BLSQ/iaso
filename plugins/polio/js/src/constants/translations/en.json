@@ -21,10 +21,8 @@
     "iaso.polio.table.label.usersToNotify": "Users to notify",
     "iaso.polio.vaccine": "Vaccine",
     "iaso.polio.vaccines": "Vaccines",
-
     "iaso.polio.district": "District",
     "iaso.polio.noCampaign": "No campaign to display",
-
     "iaso.polio.import_line_list.successMessage": "Imported successfully {amount} campaign(s)",
     "iaso.polio.import_line_list": "Import Line List",
     "iaso.polio.import_file.label": "Excel Line File",

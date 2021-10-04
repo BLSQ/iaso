@@ -1,12 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import { LoadingSpinner } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import { Box } from '@material-ui/core';
-import { Map, TileLayer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
+import { GeoJSON, Map, Pane, TileLayer, Tooltip } from 'react-leaflet';
+import { useQueries } from 'react-query';
 import { polioVacines } from '../../../constants/virus';
-
-import { sendRequest } from '../../../utils/networking';
 
 import { VaccinesLegend } from './VaccinesLegend';
 import { CampaignsLegend } from './CampaignsLegend';
@@ -14,57 +13,42 @@ import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../Styles';
 
 import 'leaflet/dist/leaflet.css';
+import { getRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const classes = useStyles();
-    const [loadingShapes, setLoadingShapes] = useState(true);
-    const [campaignsShapes, setCampaignsShapes] = useState([]);
     const map = useRef();
-    useEffect(() => {
-        if (!loadingCampaigns) {
-            const displayedCampaigns = [...campaigns].filter(c =>
-                Boolean(c.original.group?.id),
-            );
-            setLoadingShapes(true);
-            const promisesArray = [];
-            displayedCampaigns.forEach(campaign => {
-                const groupId = campaign.original.group?.id;
+    const shapesQueries = useQueries(
+        campaigns
+            .filter(c => Boolean(c.original.group?.id))
+            .map(campaign => {
                 const baseParams = {
-                    defaultVersion: true,
-                    validation_status: 'all',
                     asLocation: true,
                     limit: 3000,
-                    order: 'id',
-                    orgUnitParentId: campaign.country_id,
-                    orgUnitTypeCategory: 'DISTRICT',
-                    group: groupId,
+                    group: campaign.original.group.id,
                 };
 
                 const queryString = new URLSearchParams(baseParams);
-                promisesArray.push(
-                    sendRequest(
-                        'GET',
-                        `/api/orgunits/?${queryString.toString()}`,
-                    ),
-                );
-            });
-            Promise.all(promisesArray).then(newShapesArrays => {
-                setLoadingShapes(false);
-                const newCampaingsShapes = [];
-                newShapesArrays.forEach((newShapes, index) => {
-                    if (newShapes.length > 0) {
-                        newCampaingsShapes.push({
-                            campaign: {
-                                ...displayedCampaigns[index],
-                            },
-                            shapes: newShapes,
-                        });
-                    }
-                });
-                setCampaignsShapes(newCampaingsShapes);
-            });
-        }
-    }, [campaigns, loadingCampaigns]);
+                return {
+                    queryKey: ['campaignShape', baseParams],
+                    queryFn: () =>
+                        getRequest(`/api/orgunits/?${queryString.toString()}`),
+                    select: data => ({
+                        campaign,
+                        vacine: polioVacines.find(
+                            v => v.value === campaign.original.vacine,
+                        ),
+                        shapes: data,
+                    }),
+                    enabled: !loadingCampaigns,
+                };
+            }),
+    );
+    const loadingShapes = shapesQueries.some(q => q.isLoading);
+    const campaignsShapes = shapesQueries
+        .filter(sq => sq.data)
+        .map(sq => sq.data);
+
     return (
         <Box position="relative">
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
@@ -86,9 +70,6 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 {campaignsShapes.map(cs => {
-                    const vacine = polioVacines.find(
-                        v => v.value === cs.campaign.original.vacine,
-                    );
                     return (
                         <Pane
                             name={`campaign-${cs.campaign.id}`}
@@ -103,7 +84,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                                             color: cs.campaign.color,
                                             opacity: 0.6,
                                             fillOpacity: 0.6,
-                                            fillColor: vacine?.color,
+                                            fillColor: cs.vacine?.color,
                                             weight: '2',
                                         };
                                     }}
@@ -125,7 +106,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                                             <FormattedMessage
                                                 {...MESSAGES.vaccine}
                                             />
-                                            {`: ${vacine?.label}`}
+                                            {`: ${cs.vacine?.label}`}
                                         </div>
                                     </Tooltip>
                                 </GeoJSON>

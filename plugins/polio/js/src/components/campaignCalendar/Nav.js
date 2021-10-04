@@ -84,7 +84,7 @@ const Nav = ({ currentMonday, router }) => {
 
 Nav.propTypes = {
     currentMonday: PropTypes.object.isRequired,
-    router: PropTypes.shape.isRequired,
+    router: PropTypes.object.isRequired,
 };
 const wrappedNav = withRouter(Nav);
 export { wrappedNav as Nav };

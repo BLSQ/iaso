@@ -16,7 +16,7 @@ logger = getLogger(__name__)
 
 
 def send_notification_email(campaign):
-    country = campaign.country()
+    country = campaign.country
     domain = settings.DNS_DOMAIN
     if not (campaign.obr_name and campaign.virus and country and campaign.onset_at):
         return False

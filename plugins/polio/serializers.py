@@ -273,7 +273,9 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
 
         lang = "EN"
         try:
-            country = campaign.country()
+            country = campaign.country
+            if not country:
+                exceptions.ValidationError({"message": _("No country found for campaign")})
             cug = CountryUsersGroup.objects.get(country=country)
             lang = cug.language
         except Exception as e:
@@ -285,7 +287,7 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
             spreadsheet.worksheet("National"),
             vacine=campaign.vacine,
             payment_mode=campaign.payment_mode,
-            country=campaign.country(),
+            country=campaign.country,
         )
 
         regional_template_worksheet = spreadsheet.worksheet("Regional")
@@ -308,24 +310,18 @@ class CampaignSerializer(serializers.ModelSerializer):
     round_one = RoundSerializer()
     round_two = RoundSerializer()
     org_unit = OrgUnitSerializer(source="initial_org_unit", read_only=True)
-    top_level_org_unit_name = serializers.SerializerMethodField()
-    top_level_org_unit_id = serializers.SerializerMethodField()
+    top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
+    top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
     general_status = serializers.SerializerMethodField()
 
     def get_top_level_org_unit_name(self, campaign):
-        if campaign.initial_org_unit:
-            parent = campaign.initial_org_unit
-            while parent.parent:
-                parent = parent.parent
-            return parent.name
+        if campaign.country:
+            return campaign.country.name
         return ""
 
     def get_top_level_org_unit_id(self, campaign):
-        if campaign.initial_org_unit:
-            parent = campaign.initial_org_unit
-            while parent.parent:
-                parent = parent.parent
-            return parent.id
+        if campaign.country:
+            return campaign.country.id
         return ""
 
     def get_general_status(self, campaign):

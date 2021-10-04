@@ -30,7 +30,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
 
                 const queryString = new URLSearchParams(baseParams);
                 return {
-                    key: ['campaignShape', baseParams],
+                    queryKey: ['campaignShape', baseParams],
                     queryFn: () =>
                         getRequest(`/api/orgunits/?${queryString.toString()}`),
                     select: data => ({

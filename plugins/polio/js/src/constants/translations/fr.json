@@ -47,7 +47,7 @@
     "iaso.polio.form.label.targetpopulationRoundOne": "Target population Round 1",
     "iaso.polio.form.label.targetpopulationRoundTwo": "Target population Round 2",
     "iaso.polio.form.label.dosesRequested": "Doses Requested (both rounds)",
-    "iaso.polio.table.label.region": "Region",
+    "iaso.polio.table.label.region": "Région",
     "iaso.polio.table.label.selectRegion": "Select region",
     "iaso.polio.table.label.refreshing": "Refreshing...",
     "iaso.polio.form.label.pleaseSaveCampaign": "Please save the Campaign before selecting scope.",

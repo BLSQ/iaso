@@ -24,7 +24,7 @@ export const useGetPages = options => {
 
     return useSnackQuery(
         ['iaso', 'pages', params],
-        () => getRequest('GET', getURL(params)),
+        () => getRequest(getURL(params)),
         undefined,
         { cacheTime: 0, structuralSharing: false },
     );

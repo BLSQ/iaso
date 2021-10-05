@@ -8,7 +8,8 @@ import { useSelector } from 'react-redux';
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 
 import { CampaignsCalendar } from '../components/campaignCalendar';
-import { CalendarMap } from '../components/MapComponent/CalendarMap';
+import { getCampaignColor } from '../constants/campaignsColors';
+import { CalendarMap } from '../components/campaignCalendar/map/CalendarMap';
 import {
     mapCampaigns,
     filterCampaigns,
@@ -50,7 +51,7 @@ const Calendar = ({ params }) => {
                 mappedCampaigns,
                 calendarData.firstMonday,
                 calendarData.lastSunday,
-            ),
+            ).map((c, index) => ({ ...c, color: getCampaignColor(index) })),
         [mappedCampaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
     return (

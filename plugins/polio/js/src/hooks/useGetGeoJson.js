@@ -13,7 +13,7 @@ export const useGetGeoJson = (country, orgUnitCategory) => {
         orgUnitTypeCategory: 'DISTRICT',
     };
     const provinceParam = {
-        orgUnitTypeId: 6,
+        orgUnitTypeCategory: 'REGION',
     };
     const params =
         orgUnitCategory === 'DISTRICT'

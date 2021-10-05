@@ -23,6 +23,7 @@ const R1Cell = ({ colSpan, campaign }) => {
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.round)}
+            style={{ backgroundColor: campaign.color }}
             colSpan={colSpan}
         >
             <span

@@ -152,6 +152,7 @@ export const saveAction = (
     errorKeyMessage,
     setIsLoading = null,
     ignoredErrorCodes,
+    setResultFunction = null,
 ) => {
     if (setIsLoading !== null) {
         dispatch(setIsLoading(true));
@@ -161,6 +162,13 @@ export const saveAction = (
             dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
             return res;
         })
+        .then(res => {
+            if (setResultFunction) {
+                dispatch(setResultFunction(res));
+            }
+            return res;
+        })
+
         .catch(err => {
             if (
                 !ignoredErrorCodes ||

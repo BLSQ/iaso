@@ -75,6 +75,18 @@ export const saveUserProFile = profile => dispatch =>
         setIsFetching,
     );
 
+export const saveCurrentUserProFile = profile => dispatch =>
+    saveAction(
+        dispatch,
+        { ...profile, id: 'me' },
+        apiKey,
+        'saveUserSuccessful',
+        'saveUserError',
+        setIsFetching,
+        undefined,
+        setCurrentUser,
+    );
+
 export const createUserProFile = profile => dispatch =>
     createAction(
         dispatch,

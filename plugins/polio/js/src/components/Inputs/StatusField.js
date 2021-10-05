@@ -50,6 +50,7 @@ const RABudgetstatuses = formatMessage => [
 ];
 
 export const RABudgetStatusField = props => {
+    const { formatMessage } = useSafeIntl();
     return (
         <Select
             label="Status"

@@ -515,6 +515,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.approved',
         defaultMessage: 'Approved',
     },
+    who: {
+        id: 'iaso.polio.label.who',
+        defaultMessage: 'WHO',
+    },
+    unicef: {
+        id: 'iaso.polio.label.unicef',
+        defaultMessage: 'UNICEF',
+    },
+    moh: {
+        id: 'iaso.polio.label.moh',
+        defaultMessage: 'MOH',
+    },
+    provinceOption: {
+        id: 'iaso.polio.label.provinceOption',
+        defaultMessage: 'PROVINCE',
+    },
 });
 
 export default MESSAGES;

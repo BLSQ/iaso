@@ -3,30 +3,30 @@ import { useSafeIntl } from 'bluesquare-components';
 import { Select } from './Select';
 import MESSAGES from '../../constants/messages';
 
-const RESPONSIBLES = [
+const responsibles = formatMessage => [
     {
         value: 'WHO',
-        label: 'WHO',
+        label: formatMessage(MESSAGES.who),
     },
     {
         value: 'UNICEF',
-        label: 'UNICEF',
+        label: formatMessage(MESSAGES.unicef),
     },
     {
         value: 'NAT',
-        label: 'National',
+        label: formatMessage(MESSAGES.national),
     },
     {
         value: 'MOH',
-        label: 'MOH',
+        label: formatMessage(MESSAGES.moh),
     },
     {
         value: 'PROV',
-        label: 'PROVINCE',
+        label: formatMessage(MESSAGES.provinceOption),
     },
     {
         value: 'DIST',
-        label: 'District',
+        label: formatMessage(MESSAGES.district),
     },
 ];
 
@@ -36,7 +36,7 @@ export const ResponsibleField = props => {
     return (
         <Select
             label={formatMessage(MESSAGES.responsible)}
-            options={RESPONSIBLES}
+            options={responsibles(formatMessage)}
             {...props}
         />
     );

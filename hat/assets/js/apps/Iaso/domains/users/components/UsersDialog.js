@@ -14,6 +14,7 @@ import {
     saveUserProFile as saveUserProFileAction,
     fetchUsersProfiles as fetchUsersProfilesAction,
     createUserProFile as createUserProFileAction,
+    fetchCurrentUser as fetchCurrentUserAction,
 } from '../actions';
 import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
@@ -71,6 +72,8 @@ class UserDialogComponent extends Component {
             saveUserProFile,
             createUserProFile,
             initialData,
+            connectedUser,
+            fetchCurrentUser,
         } = this.props;
         const currentUser = {};
         Object.keys(this.state.user).forEach(key => {
@@ -92,6 +95,9 @@ class UserDialogComponent extends Component {
                     user: this.initialUser(),
                 });
                 fetchUsersProfiles(params);
+                if (initialData.id === connectedUser.id) {
+                    fetchCurrentUser();
+                }
             })
             .catch(error => {
                 if (error.status === 400) {
@@ -268,6 +274,8 @@ UserDialogComponent.propTypes = {
     params: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
+    fetchCurrentUser: PropTypes.func.isRequired,
+    connectedUser: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -275,6 +283,7 @@ const MapStateToProps = state => ({
     count: state.users.count,
     pages: state.users.pages,
     fetching: state.users.fetching,
+    connectedUser: state.users.current,
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -283,6 +292,7 @@ const mapDispatchToProps = dispatch => ({
             fetchUsersProfiles: fetchUsersProfilesAction,
             saveUserProFile: saveUserProFileAction,
             createUserProFile: createUserProFileAction,
+            fetchCurrentUser: fetchCurrentUserAction,
         },
         dispatch,
     ),

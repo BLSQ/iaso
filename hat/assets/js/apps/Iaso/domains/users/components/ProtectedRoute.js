@@ -56,11 +56,9 @@ class ProtectedRoute extends Component {
             permission,
             activeLocale,
             featureFlag,
+            location,
         } = this.props;
-        const clonedProps = {
-            ...this.props,
-        };
-        delete clonedProps.children;
+
         let isAuthorized = permission
             ? userHasPermission(permission, currentUser)
             : true;
@@ -76,7 +74,7 @@ class ProtectedRoute extends Component {
                 locale={activeLocale.code}
             >
                 <>
-                    <SidebarMenu {...clonedProps} />
+                    <SidebarMenu location={location} />
                     {isAuthorized && component}
                     {!isAuthorized && <PageError errorCode="401" />}
                 </>
@@ -103,6 +101,7 @@ ProtectedRoute.propTypes = {
     dispatch: PropTypes.func.isRequired,
     featureFlag: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     allRoutes: PropTypes.array,
+    location: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({

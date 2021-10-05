@@ -487,6 +487,34 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.responsible',
         defaultMessage: 'Responsible',
     },
+    pending: {
+        id: 'iaso.polio.label.pending',
+        defaultMessage: 'Pending',
+    },
+    ongoing: {
+        id: 'iaso.polio.label.ongoing',
+        defaultMessage: 'Ongoing',
+    },
+    finished: {
+        id: 'iaso.polio.label.finished',
+        defaultMessage: 'Finished',
+    },
+    reviewedByRrt: {
+        id: 'iaso.polio.label.reviewedByRrt',
+        defaultMessage: 'Reviewed by RRT',
+    },
+    submitted: {
+        id: 'iaso.polio.label.submitted',
+        defaultMessage: 'Submitted',
+    },
+    toSubmit: {
+        id: 'iaso.polio.label.toSubmit',
+        defaultMessage: 'To submit',
+    },
+    approved: {
+        id: 'iaso.polio.label.approved',
+        defaultMessage: 'Approved',
+    },
 });
 
 export default MESSAGES;

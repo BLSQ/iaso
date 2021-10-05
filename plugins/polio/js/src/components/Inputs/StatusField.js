@@ -3,18 +3,18 @@ import { useSafeIntl } from 'bluesquare-components';
 import { Select } from './Select';
 import MESSAGES from '../../constants/messages';
 
-const statuses = [
+const statuses = formatMessage => [
     {
         value: 'PENDING',
-        label: 'Pending',
+        label: formatMessage(MESSAGES.pending),
     },
     {
         value: 'ONGOING',
-        label: 'Ongoing',
+        label: formatMessage(MESSAGES.ongoing),
     },
     {
         value: 'FINISHED',
-        label: 'Finished',
+        label: formatMessage(MESSAGES.finished),
     },
 ];
 
@@ -24,31 +24,37 @@ export const StatusField = props => {
     return (
         <Select
             label={formatMessage(MESSAGES.status)}
-            options={statuses}
+            options={statuses(formatMessage)}
             {...props}
         />
     );
 };
 
-const RABudgetstatuses = [
+const RABudgetstatuses = formatMessage => [
     {
         value: 'REVIEWED',
-        label: 'Reviewed by RRT',
+        label: formatMessage(MESSAGES.reviewedByRrt),
     },
     {
         value: 'SUBMITTED',
-        label: 'Submitted',
+        label: formatMessage(MESSAGES.submitted),
     },
     {
         value: 'TO_SUBMIT',
-        label: 'To submit',
+        label: formatMessage(MESSAGES.toSubmit),
     },
     {
         value: 'APPROVED',
-        label: 'Approved',
+        label: formatMessage(MESSAGES.approved),
     },
 ];
 
 export const RABudgetStatusField = props => {
-    return <Select label="Status" options={RABudgetstatuses} {...props} />;
+    return (
+        <Select
+            label="Status"
+            options={RABudgetstatuses(formatMessage)}
+            {...props}
+        />
+    );
 };

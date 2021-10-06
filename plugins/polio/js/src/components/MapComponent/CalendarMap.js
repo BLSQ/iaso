@@ -4,8 +4,8 @@ import { useTheme } from '@material-ui/core/styles';
 import { LoadingSpinner } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 
-import { sendRequest } from '../../utils/networking';
 import { MapComponent } from './MapComponent';
+import { getRequest } from '../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const [loadingShapes, setLoadingShapes] = useState(true);
@@ -25,17 +25,14 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                         asLocation: true,
                         limit: 3000,
                         order: 'id',
-                        orgUnitParentId: campaign.country_id,
                         orgUnitTypeCategory: 'DISTRICT',
                         group: groupId,
+                        app_id: 'com.poliooutbreaks.app',
                     };
 
                     const queryString = new URLSearchParams(baseParams);
                     promisesArray.push(
-                        sendRequest(
-                            'GET',
-                            `/api/orgunits/?${queryString.toString()}`,
-                        ),
+                        getRequest(`/api/orgunits/?${queryString.toString()}`),
                     );
                 }
             });

@@ -4,8 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Button, makeStyles } from '@material-ui/core';
-import Grid from '@material-ui/core/Grid';
+import { Button, makeStyles, Box, Grid } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -198,13 +197,15 @@ const InstancesFiltersComponent = ({
                                 ]}
                                 onEnterPressed={() => handleSearch()}
                             />
-                            <OrgUnitTreeviewModal
-                                toggleOnLabelClick={false}
-                                titleMessage={MESSAGES.search}
-                                onConfirm={orgUnitId => {
-                                    onSelectOrgUnitFromTree(orgUnitId);
-                                }}
-                            />
+                            <Box mt={1}>
+                                <OrgUnitTreeviewModal
+                                    toggleOnLabelClick={false}
+                                    titleMessage={MESSAGES.search}
+                                    onConfirm={orgUnitId => {
+                                        onSelectOrgUnitFromTree(orgUnitId);
+                                    }}
+                                />
+                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>

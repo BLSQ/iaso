@@ -37,8 +37,25 @@ export const status = (formatMessage, urlKey = 'validation_status') => ({
     urlKey,
     isMultiSelect: false,
     isClearable: false,
-    options: orgUnitStatusAsOptions(formatMessage),
-    label: MESSAGES.status,
+    options: [
+        {
+            label: formatMessage(MESSAGES.all),
+            value: 'all',
+        },
+        {
+            label: formatMessage(MESSAGES.new),
+            value: 'NEW',
+        },
+        {
+            label: formatMessage(MESSAGES.validated),
+            value: 'VALID',
+        },
+        {
+            label: formatMessage(MESSAGES.rejected),
+            value: 'REJECTED',
+        },
+    ],
+    label: MESSAGES.validationStatus,
     type: 'select',
 });
 
@@ -285,6 +302,32 @@ export const shape = (formatMessage, urlKey = 'withShape') => ({
         },
     ],
     label: MESSAGES.shape,
+    type: 'select',
+});
+
+export const geography = (formatMessage, urlKey = 'geography') => ({
+    urlKey,
+    isMultiSelect: false,
+    isClearable: true,
+    options: [
+        {
+            label: formatMessage(MESSAGES.anyGeography),
+            value: 'any',
+        },
+        {
+            label: formatMessage(MESSAGES.withLocation),
+            value: 'location',
+        },
+        {
+            label: formatMessage(MESSAGES.withShape),
+            value: 'shape',
+        },
+        {
+            label: formatMessage(MESSAGES.noGeographicalData),
+            value: 'none',
+        },
+    ],
+    label: MESSAGES.geographicalData,
     type: 'select',
 });
 

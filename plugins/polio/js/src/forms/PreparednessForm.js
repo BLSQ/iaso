@@ -1,6 +1,8 @@
+/* eslint-disable camelcase */
 import { Button, CircularProgress, Grid, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import React, { useMemo, useState } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import {
@@ -8,9 +10,11 @@ import {
     useGetPreparednessData,
     useSurgeData,
 } from '../hooks/useGetPreparednessData';
+import MESSAGES from '../constants/messages';
 
 export const PreparednessForm = () => {
     const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
     const [preparednessDataTotals, setPreparednessDataTotals] = useState();
     const [surgeDataTotals, setSurgeDataTotals] = useState();
     const { values, setFieldValue } = useFormikContext();
@@ -110,10 +114,14 @@ export const PreparednessForm = () => {
                         <Field
                             placeholder={
                                 values.id
-                                    ? 'Enter Google Sheet url or use the button to generate a new one'
-                                    : 'Enter Google Sheet url'
+                                    ? formatMessage(
+                                          MESSAGES.enterOrCreateGoogleSheet,
+                                      )
+                                    : formatMessage(MESSAGES.enterGoogleSheet)
                             }
-                            label="Preparedness Google Sheet URL"
+                            label={formatMessage(
+                                MESSAGES.preparednessGoogleSheetUrl,
+                            )}
                             name="preperadness_spreadsheet_url"
                             component={TextInput}
                             disabled={isLoading || isGeneratingSpreadsheet}
@@ -145,7 +153,9 @@ export const PreparednessForm = () => {
                                     disabled={isLoading || isProcessingData}
                                     onClick={refreshData}
                                 >
-                                    Refresh Preparedness data
+                                    {formatMessage(
+                                        MESSAGES.refreshPreparednessData,
+                                    )}
                                 </Button>
                             </Grid>
                         </Grid>
@@ -166,7 +176,7 @@ export const PreparednessForm = () => {
                                 disabled={isGeneratingSpreadsheet}
                                 onClick={generateSpreadsheet}
                             >
-                                Generate a spreadsheet
+                                {formatMessage(MESSAGES.generateSpreadsheet)}
                             </Button>
                         </Grid>
                     )}
@@ -183,26 +193,45 @@ export const PreparednessForm = () => {
                                 )}
                                 {generationError && (
                                     <Typography color="error">
-                                        Error Generating preparedness:{' '}
-                                        {generationError.message}
+                                        {`${formatMessage(
+                                            MESSAGES.preparednessError,
+                                        )}: ${generationError.message}`}
                                     </Typography>
                                 )}
                                 {totalSummary && (
                                     <>
                                         <Typography>
-                                            {`Status: ${values.preperadness_sync_status}`}
+                                            {`${formatMessage(
+                                                MESSAGES.status,
+                                            )}: ${
+                                                values.preperadness_sync_status
+                                            }`}
                                         </Typography>
                                         <Typography>
-                                            {`National: ${totalSummary.national_score}%`}
+                                            {`${formatMessage(
+                                                MESSAGES.national,
+                                            )}: ${
+                                                totalSummary.national_score
+                                            }%`}
                                         </Typography>
                                         <Typography>
-                                            {`Regional: ${totalSummary.regional_score}%`}
+                                            {`${formatMessage(
+                                                MESSAGES.regional,
+                                            )}: ${
+                                                totalSummary.regional_score
+                                            }%`}
                                         </Typography>
                                         <Typography>
-                                            {`District: ${totalSummary.district_score}%`}
+                                            {`${formatMessage(
+                                                MESSAGES.districtScore,
+                                            )}: ${
+                                                totalSummary.district_score
+                                            }%`}
                                         </Typography>
                                         <Typography variant="caption">
-                                            {`Refreshed at: ${(totalSummary.created_at
+                                            {`${formatMessage(
+                                                MESSAGES.refreshedAt,
+                                            )}: ${(totalSummary.created_at
                                                 ? new Date(
                                                       totalSummary.created_at,
                                                   )
@@ -220,14 +249,14 @@ export const PreparednessForm = () => {
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={8} item>
                         <Field
-                            label="Recruitment Surge Google Sheet URL"
+                            label={formatMessage(MESSAGES.recruitmentSurgeUrl)}
                             name="surge_spreadsheet_url"
                             component={TextInput}
                             disabled={isLoading}
                             className={classes.input}
                         />
                         <Field
-                            label="Country Name in sheet"
+                            label={formatMessage(MESSAGES.countryNameInSheet)}
                             name="country_name_in_surge_spreadsheet"
                             component={TextInput}
                             disabled={isLoading}
@@ -250,7 +279,7 @@ export const PreparednessForm = () => {
                             disabled={surgeIsLoading}
                             onClick={refreshSurgeData}
                         >
-                            Refresh Recruitment Data
+                            {formatMessage(MESSAGES.refreshRecruitmentData)}
                         </Button>
                     </Grid>
 
@@ -267,19 +296,37 @@ export const PreparednessForm = () => {
                                 {surgeSummary && (
                                     <>
                                         <Typography>
-                                            {`WHO To Recruit: ${surgeSummary.who_recruitment}`}
+                                            {`${formatMessage(
+                                                MESSAGES.whoToRecruit,
+                                            )}: ${
+                                                surgeSummary.who_recruitment
+                                            }`}
                                         </Typography>
                                         <Typography>
-                                            {`WHO Completed Recruitment: ${surgeSummary.who_recruitment}`}
+                                            {`${formatMessage(
+                                                MESSAGES.whoCompletedRecruitement,
+                                            )}: ${
+                                                surgeSummary.who_recruitment
+                                            }`}
                                         </Typography>
                                         <Typography>
-                                            {`UNICEF To Recruit: ${surgeSummary.unicef_recruitment}`}
+                                            {`${formatMessage(
+                                                MESSAGES.unicefToRecruit,
+                                            )}: ${
+                                                surgeSummary.unicef_recruitment
+                                            }`}
                                         </Typography>
                                         <Typography>
-                                            {`UNICEF Completed Recruitment: ${surgeSummary.unicef_completed_recruitment}`}
+                                            {`${formatMessage(
+                                                MESSAGES.unicefCompletedRecruitement,
+                                            )}: ${
+                                                surgeSummary.unicef_completed_recruitment
+                                            }`}
                                         </Typography>
                                         <Typography variant="caption">
-                                            {`Refreshed at: ${(surgeSummary.created_at
+                                            {`${formatMessage(
+                                                MESSAGES.refreshedAt,
+                                            )}: ${(surgeSummary.created_at
                                                 ? new Date(
                                                       surgeSummary.created_at,
                                                   )

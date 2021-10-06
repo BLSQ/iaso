@@ -1,5 +1,7 @@
 import { useQuery } from 'react-query';
 import { iasoGetRequest } from '../../../../utils/requests';
+import { useSnackQuery } from '../../../../libs/apiHooks';
+import { getRequest } from '../../../../libs/Api';
 
 const getChildrenData = async id => {
     const response = await iasoGetRequest({
@@ -66,24 +68,14 @@ const searchOrgUnits = async (searchValue, resultsCount, source, version) => {
     });
 };
 
-const getOrgUnit = orgUnitId =>
-    iasoGetRequest({
-        requestParams: { url: `/api/orgunits/${orgUnitId}` },
-        disableSuccessSnackBar: true,
-    });
-
-export const useChildrenData = (request, id, enabled) =>
-    useQuery(
-        ['getChildrenData', request, id],
-        async () => {
-            return request(id);
+const useGetOrgUnit = OrgUnitId =>
+    useSnackQuery(
+        ['orgunits', OrgUnitId],
+        () => getRequest(`/api/orgunits/${OrgUnitId}/`),
+        undefined,
+        {
+            enabled: OrgUnitId !== undefined && OrgUnitId !== null,
         },
-        { enabled },
     );
 
-export const useRootData = request =>
-    useQuery(['getRootData', request], async () => request(), {
-        keepPreviousData: false,
-    });
-
-export { getRootData, getChildrenData, searchOrgUnits, getOrgUnit };
+export { getRootData, getChildrenData, searchOrgUnits, useGetOrgUnit };

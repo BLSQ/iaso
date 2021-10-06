@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, makeStyles } from '@material-ui/core';
 import { commonStyles } from 'bluesquare-components';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
@@ -19,5 +18,3 @@ export const CountryNotificationsConfig = () => {
         </div>
     );
 };
-
-

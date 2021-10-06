@@ -4,11 +4,22 @@ import {
     IconButton as IconButtonComponent,
     textPlaceholder,
 } from 'bluesquare-components';
+import { Link } from 'react-router';
 import GroupsDialog from './components/GroupsDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { baseUrls } from '../../../constants/urls';
+import { getChipColors } from '../../../constants/chipColors';
 
+const getUrl = groupId => {
+    const defaultChipColor = getChipColors(0).replace('#', '');
+    return (
+        `${baseUrls.orgUnits}/locationLimit/3000/order/id` +
+        `/pageSize/50/page/1/searchTabIndex/0/searchActive/true` +
+        `/searches/[{"validation_status":"all", "color":"${defaultChipColor}", "group":"${groupId}", "source": null}]`
+    );
+};
 const TableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.name),
@@ -36,7 +47,11 @@ const TableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.orgUnit),
         accessor: 'org_unit_count',
-        Cell: settings => formatThousand(settings.row.original.org_unit_count),
+        Cell: settings => (
+            <Link to={getUrl(settings.row.original.id)}>
+                {formatThousand(settings.value)}
+            </Link>
+        ),
     },
     {
         Header: formatMessage(MESSAGES.actions),

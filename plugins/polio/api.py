@@ -9,14 +9,19 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import routers, filters, viewsets, serializers
+from rest_framework import routers, filters, viewsets, serializers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
-from plugins.polio.serializers import CampaignSerializer, PreparednessPreviewSerializer, LineListImportSerializer
+from plugins.polio.serializers import (
+    CampaignSerializer,
+    PreparednessPreviewSerializer,
+    LineListImportSerializer,
+    AnonymousCampaignSerializer,
+)
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
 )
@@ -46,7 +51,7 @@ class CustomFilterBackend(filters.BaseFilterBackend):
 
 
 class CampaignViewSet(ModelViewSet):
-    serializer_class = CampaignSerializer
+
     results_key = "campaigns"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend]
@@ -57,8 +62,10 @@ class CampaignViewSet(ModelViewSet):
         "round_one__started_at",
         "round_two__started_at",
         "vacine",
+        "country__name",
     ]
     filterset_fields = {
+        "country__name": ["exact"],
         "obr_name": ["exact"],
         "vacine": ["exact"],
         "cvdpv2_notified_at": ["gte", "lte", "range"],
@@ -66,32 +73,42 @@ class CampaignViewSet(ModelViewSet):
         "round_one__started_at": ["gte", "lte", "range"],
     }
 
+    # We allow anonymous read access for the embeddable calendar map view
+    # in this case we use a restricted serializer with less field
+    # notably not the url that we want to remain private.
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_serializer_class(self):
+        if self.request.user.is_authenticated:
+            return CampaignSerializer
+        else:
+            return AnonymousCampaignSerializer
+
     def get_queryset(self):
         user = self.request.user
 
-        if user.iaso_profile.org_units.count():
+        if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-
             return Campaign.objects.filter(initial_org_unit__in=org_units)
         else:
             return Campaign.objects.all()
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = PreparednessPreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request, pk=None, **kwargs):
-        serializer = self.get_serializer(data={"campaign": pk})
+        serializer = CampaignPreparednessSpreadsheetSerializer(data={"campaign": pk})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
     @action(methods=["POST"], detail=False, serializer_class=SurgePreviewSerializer)
     def preview_surge(self, request, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = SurgePreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
@@ -113,7 +130,7 @@ Timeline tracker Automated message
     @action(methods=["POST"], detail=True, serializer_class=serializers.Serializer)
     def send_notification_email(self, request, pk, **kwargs):
         campaign = get_object_or_404(Campaign, pk=pk)
-        country = campaign.country()
+        country = campaign.country
 
         domain = settings.DNS_DOMAIN
         if campaign.creation_email_send_at:

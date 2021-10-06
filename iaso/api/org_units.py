@@ -60,6 +60,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     PATCH /api/orgunits/<id>
     """
 
+    # this bypass UserAccessPermission and allow anonymous access
     permission_classes = [HasOrgUnitPermission]
 
     def get_queryset(self):

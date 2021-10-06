@@ -98,6 +98,16 @@ class Campaign(models.Model):
     initial_org_unit = models.ForeignKey(
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
     )
+
+    country = models.ForeignKey(
+        "iaso.orgunit",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="campaigns_country",
+        help_text="Country for campaign, set automatically from initial_org_unit",
+    )
+
     creation_email_send_at = models.DateTimeField(
         null=True, blank=True, help_text="When and if we sent an email for creation"
     )
@@ -262,12 +272,6 @@ class Campaign(models.Model):
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
 
-    def country(self):
-        if self.initial_org_unit is not None:
-            countries = self.initial_org_unit.country_ancestors()
-            if countries is not None and len(countries) > 0:
-                return countries[0]
-
     def get_districts(self):
         if self.group is None:
             return OrgUnit.objects.none()
@@ -285,6 +289,16 @@ class Campaign(models.Model):
 
     def last_surge(self):
         return self.surge_set.filter(spreadsheet_url=self.surge_spreadsheet_url).order_by("-created_at").first()
+
+    def save(self, *args, **kwargs):
+        if self.initial_org_unit is not None:
+            try:
+                country = self.initial_org_unit.ancestors().filter(org_unit_type__category="COUNTRY").first()
+                self.country = country
+            except OrgUnit.DoesNotExist:
+                pass
+
+        super().save(*args, **kwargs)
 
 
 class Preparedness(models.Model):

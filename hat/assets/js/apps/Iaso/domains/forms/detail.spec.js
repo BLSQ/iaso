@@ -2,7 +2,6 @@ import React from 'react';
 import nock from 'nock';
 
 import { expect } from 'chai';
-import { LoadingSpinner } from 'bluesquare-components';
 import Detail from './detail';
 import SingleTable from '../../components/tables/SingleTable';
 import { renderWithStore } from '../../../../test/utils/redux';
@@ -13,6 +12,7 @@ import {
 } from '../../../../test/utils/requests';
 import formsFixture from './fixtures/forms.json';
 import TopBar from '../../components/nav/TopBarComponent';
+import { withQueryClientProvider } from '../../../../test/utils';
 
 const projectActions = require('../projects/actions');
 const orgUnitTypesActions = require('../orgUnits/types/actions');
@@ -66,16 +66,18 @@ describe('Detail form connected component', () => {
         before(() => {
             resetAndMock('0');
             connectedWrapper = mount(
-                renderWithStore(
-                    <Detail
-                        params={{ formId: '0' }}
-                        router={{ goBack: () => null }}
-                    />,
-                    {
-                        forms: {
-                            current: undefined,
+                withQueryClientProvider(
+                    renderWithStore(
+                        <Detail
+                            params={{ formId: '0' }}
+                            router={{ goBack: () => null }}
+                        />,
+                        {
+                            forms: {
+                                current: undefined,
+                            },
                         },
-                    },
+                    ),
                 ),
             );
         });
@@ -173,16 +175,18 @@ describe('Detail form connected component', () => {
         before(() => {
             resetAndMock(formId);
             connectedWrapper = mount(
-                renderWithStore(
-                    <Detail
-                        params={{ formId }}
-                        router={{ goBack: () => null }}
-                    />,
-                    {
-                        forms: {
-                            current: fakeForm,
+                withQueryClientProvider(
+                    renderWithStore(
+                        <Detail
+                            params={{ formId }}
+                            router={{ goBack: () => null }}
+                        />,
+                        {
+                            forms: {
+                                current: fakeForm,
+                            },
                         },
-                    },
+                    ),
                 ),
             );
         });
@@ -236,26 +240,6 @@ describe('Detail form connected component', () => {
             });
         });
 
-        it('displays loadingSpinner if is loading', () => {
-            resetAndMock(formId);
-            connectedWrapper = mount(
-                renderWithStore(
-                    <Detail
-                        params={{ formId }}
-                        router={{ goBack: () => null }}
-                    />,
-                    {
-                        forms: {
-                            current: fakeForm,
-                            isLoading: true,
-                        },
-                    },
-                ),
-            );
-            const loader = connectedWrapper.find(LoadingSpinner).at(0);
-            expect(loader).to.have.lengthOf(1);
-            sinon.restore();
-        });
         describe('mount properly', () => {
             beforeEach(() => {
                 resetAndMock(formId);
@@ -270,16 +254,18 @@ describe('Detail form connected component', () => {
                 delete newForm.org_unit_type_ids;
                 delete newForm.project_ids;
                 connectedWrapper = mount(
-                    renderWithStore(
-                        <Detail
-                            params={{ formId }}
-                            router={{ goBack: () => null }}
-                        />,
-                        {
-                            forms: {
-                                current: newForm,
+                    withQueryClientProvider(
+                        renderWithStore(
+                            <Detail
+                                params={{ formId }}
+                                router={{ goBack: () => null }}
+                            />,
+                            {
+                                forms: {
+                                    current: newForm,
+                                },
                             },
-                        },
+                        ),
                     ),
                 );
                 expect(connectedWrapper.exists()).to.equal(true);
@@ -293,22 +279,24 @@ describe('Detail form connected component', () => {
                     .stub(projectActions, 'fetchAllProjects')
                     .returns({ type: 'ZELDA' });
                 connectedWrapper = mount(
-                    renderWithStore(
-                        <Detail
-                            params={{ formId }}
-                            router={{ goBack: () => null }}
-                        />,
-                        {
-                            forms: {
-                                current: fakeForm,
+                    withQueryClientProvider(
+                        renderWithStore(
+                            <Detail
+                                params={{ formId }}
+                                router={{ goBack: () => null }}
+                            />,
+                            {
+                                forms: {
+                                    current: fakeForm,
+                                },
+                                orgUnitsTypes: {
+                                    allTypes: [69],
+                                },
+                                projects: {
+                                    allProjects: [69],
+                                },
                             },
-                            orgUnitsTypes: {
-                                allTypes: [69],
-                            },
-                            projects: {
-                                allProjects: [69],
-                            },
-                        },
+                        ),
                     ),
                 );
                 expect(fetchAllOrgUnitTypesStub).not.to.have.been.called;
@@ -347,13 +335,15 @@ describe('Detail form connected component', () => {
                     };
                     const goBackStub = sinon.stub(router, 'goBack');
                     connectedWrapper = mount(
-                        renderWithStore(
-                            <Detail params={{ formId }} router={router} />,
-                            {
-                                routerCustom: {
-                                    prevPathname: 'HYRULE',
+                        withQueryClientProvider(
+                            renderWithStore(
+                                <Detail params={{ formId }} router={router} />,
+                                {
+                                    routerCustom: {
+                                        prevPathname: 'HYRULE',
+                                    },
                                 },
-                            },
+                            ),
                         ),
                     );
                     topBar = connectedWrapper.find(TopBar);

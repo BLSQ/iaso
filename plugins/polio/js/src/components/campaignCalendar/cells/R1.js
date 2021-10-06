@@ -5,14 +5,14 @@ import classnames from 'classnames';
 import { TableCell } from '@material-ui/core';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
-import { CreateEditDialog } from '../../Dashboard';
+import { PolioCreateEditDialog as CreateEditDialog } from '../../CreateEditDialog';
 import { R1Popper } from '../popper/R1';
 import { useStyles } from '../Styles';
 
 const R1Cell = ({ colSpan, campaign }) => {
     const classes = useStyles();
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
 
     const handleClick = event => {
         setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -23,6 +23,7 @@ const R1Cell = ({ colSpan, campaign }) => {
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.round)}
+            style={{ backgroundColor: campaign.color }}
             colSpan={colSpan}
         >
             <span

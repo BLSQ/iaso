@@ -401,7 +401,10 @@ class OrgUnits extends Component {
                         params={params}
                         defaultItem={{
                             validation_status: 'all',
-                            color: getChipColors(0).replace('#', ''),
+                            color: getChipColors(searches.length + 1).replace(
+                                '#',
+                                '',
+                            ),
                             source: defaultSource && defaultSource.id,
                         }}
                         paramKey="searches"
@@ -509,15 +512,7 @@ class OrgUnits extends Component {
                                                 classes.containerMarginNeg
                                             }
                                         >
-                                            <OrgunitsMap
-                                                params={params}
-                                                baseUrl={baseUrl}
-                                                setFiltersUpdated={() =>
-                                                    this.props.setFiltersUpdated(
-                                                        true,
-                                                    )
-                                                }
-                                            />
+                                            <OrgunitsMap params={params} />
                                         </div>
                                     )}
                                     {tab === 'list' && reduxPage.count > 0 && (

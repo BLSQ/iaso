@@ -11,12 +11,10 @@ import { connect } from 'react-redux';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import isEqual from 'lodash/isEqual';
 
-import { Grid, Divider, Box, withStyles } from '@material-ui/core';
+import { Grid, Divider, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import { injectIntl, commonStyles } from 'bluesquare-components';
-import FiltersComponent from '../../../components/filters/FiltersComponent';
-import { locationsLimit } from '../../../constants/filters';
 
 import {
     ZoomControl,
@@ -39,6 +37,7 @@ import OrgUnitPopupComponent from './OrgUnitPopupComponent';
 import { fetchOrgUnitDetail } from '../../../utils/requests';
 import { getChipColors } from '../../../constants/chipColors';
 import { getColorsFromParams, decodeSearch } from '../utils';
+import { waitFor } from '../../../utils';
 import MESSAGES from '../messages';
 import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
 import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
@@ -104,12 +103,15 @@ class OrgunitsMap extends Component {
     shouldComponentUpdate(nextProps) {
         return (
             !isEqual(nextProps.orgUnits, this.props.orgUnits) ||
-            !isEqual(nextProps.orgUnitTypes, this.props.orgUnitTypes) ||
-            !isEqual(getColorsFromParams(nextProps.params, this.props.params))
+            !isEqual(
+                getColorsFromParams(nextProps.params),
+                getColorsFromParams(this.props.params),
+            )
         );
     }
 
-    componentDidUpdate() {
+    async componentDidUpdate(prevProps) {
+        await waitFor(500);
         const { orgUnits } = this.props;
         this.checkFitToBounds(orgUnits);
     }
@@ -181,10 +183,7 @@ class OrgunitsMap extends Component {
             currentTile,
             isClusterActive,
             intl: { formatMessage },
-            params,
-            baseUrl,
             classes,
-            setFiltersUpdated,
             orgUnitTypes,
         } = this.props;
         const bounds = getOrgUnitsBounds(orgUnits);
@@ -228,19 +227,6 @@ class OrgunitsMap extends Component {
                             <TileSwitch />
                             <Divider />
                             <ClusterSwitch />
-                            <Divider />
-                            <Box
-                                px={2}
-                                className={classes.innerDrawerToolbar}
-                                component="div"
-                            >
-                                <FiltersComponent
-                                    params={params}
-                                    baseUrl={baseUrl}
-                                    onFilterChanged={() => setFiltersUpdated()}
-                                    filters={[locationsLimit()]}
-                                />
-                            </Box>
                             <Divider />
                         </>
                     }
@@ -383,9 +369,6 @@ class OrgunitsMap extends Component {
         );
     }
 }
-OrgunitsMap.defaultProps = {
-    baseUrl: '',
-};
 
 OrgunitsMap.propTypes = {
     orgUnits: PropTypes.object.isRequired,
@@ -397,9 +380,7 @@ OrgunitsMap.propTypes = {
     dispatch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     params: PropTypes.object.isRequired,
-    baseUrl: PropTypes.string,
     classes: PropTypes.object.isRequired,
-    setFiltersUpdated: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

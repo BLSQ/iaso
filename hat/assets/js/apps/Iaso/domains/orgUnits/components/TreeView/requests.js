@@ -1,4 +1,3 @@
-import { useQuery } from 'react-query';
 import { iasoGetRequest } from '../../../../utils/requests';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { getRequest } from '../../../../libs/Api';

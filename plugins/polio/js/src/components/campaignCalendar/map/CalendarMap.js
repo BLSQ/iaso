@@ -26,6 +26,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                     asLocation: true,
                     limit: 3000,
                     group: campaign.original.group.id,
+                    app_id: 'com.poliooutbreaks.app',
                 };
 
                 const queryString = new URLSearchParams(baseParams);

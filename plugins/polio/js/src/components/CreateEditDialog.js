@@ -141,6 +141,8 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
                     textColor="primary"
                     onChange={handleChange}
                     aria-label="disabled tabs example"
+                    variant="scrollable"
+                    scrollButtons="auto"
                 >
                     {tabs.map(({ title }) => {
                         return <Tab key={title} label={title} />;

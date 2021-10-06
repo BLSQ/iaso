@@ -12,7 +12,7 @@ import { useStyles } from '../Styles';
 const R1Cell = ({ colSpan, campaign }) => {
     const classes = useStyles();
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
 
     const handleClick = event => {
         setAnchorEl(anchorEl ? null : event.currentTarget);

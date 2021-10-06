@@ -44,6 +44,9 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
     search_index = serializers.SerializerMethodField()
     source_id = serializers.SerializerMethodField()
     has_geo_json = serializers.SerializerMethodField()
+    latitude = serializers.SerializerMethodField()
+    longitude = serializers.SerializerMethodField()
+    altitude = serializers.SerializerMethodField()
 
     # If in a subclass this will correctly use the subclass own serializer
     parent = serializers.SerializerMethodField()
@@ -70,6 +73,15 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
     def get_has_geo_json(self, org_unit):
         return True if org_unit.simplified_geom else False
 
+    def get_latitude(self, org_unit):
+        return org_unit.location.y if org_unit.location else None
+
+    def get_longitude(self, org_unit):
+        return org_unit.location.x if org_unit.location else None
+
+    def get_altitude(self, org_unit):
+        return org_unit.location.z if org_unit.location else None
+
     class Meta:
         model = OrgUnit
 
@@ -85,6 +97,9 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
             "sub_source",
             "org_unit_type_name",
             "parent",
+            "latitude",
+            "longitude",
+            "altitude",
             "has_geo_json",
             "search_index",
             "created_at",
@@ -143,6 +158,9 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
             "sub_source",
             "org_unit_type_name",
             "parent",
+            "latitude",
+            "longitude",
+            "altitude",
             "has_geo_json",
             "search_index",
             "created_at",

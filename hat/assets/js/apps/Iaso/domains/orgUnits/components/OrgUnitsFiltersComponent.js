@@ -3,9 +3,8 @@ import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { CirclePicker } from 'react-color';
 
-import { FormLabel, Button, Box, makeStyles } from '@material-ui/core';
+import { Button, Box, makeStyles, Divider } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 
 import Add from '@material-ui/icons/Add';
@@ -14,8 +13,9 @@ import classNames from 'classnames';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
+import { ColorPicker } from '../../../components/forms/ColorPicker';
 import { redirectTo } from '../../../routing/actions';
-import { getChipColors, chipColors } from '../../../constants/chipColors';
+import { getChipColors } from '../../../constants/chipColors';
 
 import {
     search,
@@ -23,9 +23,9 @@ import {
     hasInstances,
     orgUnitType,
     source,
-    shape,
-    location,
     group,
+    geography,
+    locationsLimit,
 } from '../../../constants/filters';
 import {
     setFiltersUpdated,
@@ -48,14 +48,6 @@ const useStyles = makeStyles(theme => ({
     root: {
         paddingBottom: theme.spacing(4),
     },
-    colorContainer: {
-        marginBottom: theme.spacing(2),
-        marginTop: theme.spacing(2),
-    },
-    marginBottom: {
-        marginBottom: theme.spacing(2),
-        display: 'block',
-    },
     marginRight: {
         marginRight: theme.spacing(2),
     },
@@ -73,6 +65,7 @@ const OrgUnitsFiltersComponent = ({
     baseUrl,
     searchIndex,
     onSearch,
+    currentTab,
 }) => {
     const initalSearches = [...decodeSearch(params.searches)];
     const searchParams = initalSearches[searchIndex];
@@ -131,6 +124,10 @@ const OrgUnitsFiltersComponent = ({
             ...searches[searchIndex],
             [urlKey]: value,
         };
+        if (urlKey === 'hasInstances' && value === 'false') {
+            delete searches[searchIndex].dateFrom;
+            delete searches[searchIndex].dateTo;
+        }
 
         const tempParams = {
             ...params,
@@ -166,7 +163,7 @@ const OrgUnitsFiltersComponent = ({
 
     const currentColor = searchParams.color
         ? `#${searchParams.color}`
-        : getChipColors(0);
+        : getChipColors(searchIndex);
 
     const sourceFilter = extendFilter(
         searchParams,
@@ -177,11 +174,14 @@ const OrgUnitsFiltersComponent = ({
         (value, urlKey) => onChange(value, urlKey),
         searchIndex,
     );
-
     return (
         <div className={classes.root}>
             <Grid container spacing={4}>
                 <Grid item xs={4}>
+                    <ColorPicker
+                        currentColor={currentColor}
+                        onChangeColor={color => onChange(color, 'color')}
+                    />
                     <FiltersComponent
                         params={params}
                         baseUrl={baseUrl}
@@ -193,111 +193,115 @@ const OrgUnitsFiltersComponent = ({
                                     handleSearchFilterChange(value, urlKey),
                                 searchIndex,
                             ),
-                            extendFilter(
-                                searchParams,
-                                {
-                                    ...orgUnitType(orgUnitTypes),
-                                    loading: fetchingOrgUnitTypes,
-                                },
-                                (value, urlKey) => onChange(value, urlKey),
-                                searchIndex,
-                            ),
-                            extendFilter(
-                                searchParams,
-                                {
-                                    ...group(groups),
-                                    loading: fetchingGroups,
-                                },
-                                (value, urlKey) => onChange(value, urlKey),
-                                searchIndex,
-                            ),
+                            sourceFilter,
                         ]}
                         onEnterPressed={() => handleSearch()}
                     />
-                    <div className={classes.colorContainer}>
-                        <FormLabel className={classes.marginBottom}>
-                            <FormattedMessage {...MESSAGES.color} />:
-                        </FormLabel>
-                        <CirclePicker
-                            width="100%"
-                            colors={chipColors}
-                            color={currentColor}
-                            onChangeComplete={color =>
-                                onChange(color.hex.replace('#', ''), 'color')
-                            }
-                        />
-                    </div>
                 </Grid>
-                <Grid item xs={8}>
-                    <Grid container item xs={12}>
-                        <DatesRange
-                            onChangeDate={(key, value) => {
-                                onChange(value, key);
-                            }}
-                            dateFrom={searchParams.dateFrom}
-                            dateTo={searchParams.dateTo}
-                        />
-                    </Grid>
 
-                    <Grid container spacing={4}>
-                        <Grid item xs={6}>
-                            <FiltersComponent
-                                params={params}
-                                baseUrl={baseUrl}
-                                filters={[
-                                    extendFilter(
-                                        searchParams,
-                                        location(intl.formatMessage),
-                                        (value, urlKey) =>
-                                            onChange(value, urlKey),
-                                        searchIndex,
-                                    ),
-                                    extendFilter(
-                                        searchParams,
-                                        shape(intl.formatMessage),
-                                        (value, urlKey) =>
-                                            onChange(value, urlKey),
-                                        searchIndex,
-                                    ),
-                                    extendFilter(
-                                        searchParams,
-                                        hasInstances(intl.formatMessage),
-                                        (value, urlKey) =>
-                                            onChange(value, urlKey),
-                                        searchIndex,
-                                    ),
-                                ]}
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <Box>
+                <Grid item xs={4}>
+                    <Box mb={3}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            filters={[
+                                extendFilter(
+                                    searchParams,
+                                    {
+                                        ...orgUnitType(orgUnitTypes),
+                                        loading: fetchingOrgUnitTypes,
+                                    },
+                                    (value, urlKey) => onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                                extendFilter(
+                                    searchParams,
+                                    {
+                                        ...group(groups),
+                                        loading: fetchingGroups,
+                                    },
+                                    (value, urlKey) => onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                                extendFilter(
+                                    searchParams,
+                                    status(intl.formatMessage),
+                                    (value, urlKey) => onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                            ]}
+                        />
+                    </Box>
+                    {currentTab === 'map' && (
+                        <>
+                            <Divider />
+                            <Box mt={2}>
                                 <FiltersComponent
                                     params={params}
                                     baseUrl={baseUrl}
-                                    filters={[
-                                        extendFilter(
-                                            searchParams,
-                                            status(intl.formatMessage),
-                                            (value, urlKey) =>
-                                                onChange(value, urlKey),
-                                            searchIndex,
-                                        ),
-                                        sourceFilter,
-                                    ]}
-                                />
-                                <OrgUnitTreeviewModal
-                                    toggleOnLabelClick={false}
-                                    titleMessage={MESSAGES.parent}
-                                    onConfirm={orgUnit => {
-                                        // TODO rename levels in to parent
-                                        onChange(orgUnit?.id, 'levels');
-                                    }}
-                                    source={sourceFilter.value}
-                                    initialSelection={initialOrgUnit}
+                                    onFilterChanged={() =>
+                                        dispatch(setFiltersUpdated(true))
+                                    }
+                                    filters={[locationsLimit()]}
                                 />
                             </Box>
-                        </Grid>
-                    </Grid>
+                        </>
+                    )}
+                </Grid>
+                <Grid item xs={4}>
+                    <Box mt={1} mb={2}>
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.parent}
+                            onConfirm={orgUnit => {
+                                // TODO rename levels in to parent
+                                onChange(orgUnit?.id, 'levels');
+                            }}
+                            source={sourceFilter.value}
+                            initialSelection={initialOrgUnit}
+                        />
+                    </Box>
+                    <Box mb={3}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            filters={[
+                                extendFilter(
+                                    searchParams,
+                                    geography(intl.formatMessage),
+                                    (value, urlKey) => onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                            ]}
+                        />
+                    </Box>
+                    <Divider />
+                    <Box mt={3}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            filters={[
+                                extendFilter(
+                                    searchParams,
+                                    hasInstances(intl.formatMessage),
+                                    (value, urlKey) => onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                            ]}
+                        />
+                    </Box>
+                    {(searchParams.hasInstances === 'true' ||
+                        searchParams.hasInstances === 'duplicates') && (
+                        <Box mt={-3}>
+                            <DatesRange
+                                onChangeDate={(key, value) => {
+                                    onChange(value, key);
+                                }}
+                                dateFrom={searchParams.dateFrom}
+                                dateTo={searchParams.dateTo}
+                            />
+                        </Box>
+                    )}
                 </Grid>
             </Grid>
 
@@ -359,6 +363,7 @@ OrgUnitsFiltersComponent.propTypes = {
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
     searchIndex: PropTypes.number.isRequired,
+    currentTab: PropTypes.string.isRequired,
 };
 
 export default OrgUnitsFiltersComponent;

@@ -7,11 +7,11 @@ export const useRemoveCampaign = () =>
         id => deleteRequest(`/api/polio/campaigns/${id}`),
         defineMessage({
             defaultMessage: 'Campaign successfully removed',
-            id: 'polio.campaign.deleteSuccess',
+            id: 'iaso.polio.campaign.deleteSuccess',
         }),
         defineMessage({
             defaultMessage: 'Error removing campaign',
-            id: 'polio.campaign.deleteError',
+            id: 'iaso.polio.campaign.deleteError',
         }),
         ['polio', 'campaigns'],
     );

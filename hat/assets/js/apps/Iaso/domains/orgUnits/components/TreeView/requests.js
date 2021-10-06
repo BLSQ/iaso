@@ -1,4 +1,6 @@
 import { iasoGetRequest } from '../../../../utils/requests';
+import { useSnackQuery } from '../../../../libs/apiHooks';
+import { getRequest } from '../../../../libs/Api';
 
 const getChildrenData = async id => {
     const response = await iasoGetRequest({
@@ -54,10 +56,14 @@ const searchOrgUnits = async (searchValue, resultsCount, source) => {
     });
 };
 
-const getOrgUnit = orgUnitId =>
-    iasoGetRequest({
-        requestParams: { url: `/api/orgunits/${orgUnitId}` },
-        disableSuccessSnackBar: true,
-    });
+const useGetOrgUnit = OrgUnitId =>
+    useSnackQuery(
+        ['orgunits', OrgUnitId],
+        () => getRequest(`/api/orgunits/${OrgUnitId}/`),
+        undefined,
+        {
+            enabled: OrgUnitId !== undefined && OrgUnitId !== null,
+        },
+    );
 
-export { getRootData, getChildrenData, searchOrgUnits, getOrgUnit };
+export { getRootData, getChildrenData, searchOrgUnits, useGetOrgUnit };

@@ -439,6 +439,8 @@
     "iaso.orgUnitsTypes.dialog.deleteText": "This operation cannot be undone.",
     "iaso.orgUnitsTypes.projects": "Projects",
     "iaso.orgUnitsTypes.update": "Update org unit type",
+    "iaso.page.deleteError": "Error removing page",
+    "iaso.page.deleteSuccess": "Page successfully removed",
     "iaso.page.viewpages": "View page.{linebreak} New tab: ctrl + click",
     "iaso.pages.create": "Create page",
     "iaso.pages.dialog.delete.content": "This operation cannot be undone",
@@ -462,7 +464,6 @@
     "iaso.permissions.projects": "Projects",
     "iaso.permissions.sources": "Sources",
     "iaso.permissions.users": "Users",
-
     "iaso.projects.appId": "App ID",
     "iaso.projects.create": "Create project",
     "iaso.projects.false": "User doesn't need authentication",

@@ -1,24 +1,13 @@
-import { useMutation, useQueryClient } from 'react-query';
-import { sendRequest } from './networking';
+import { useSnackMutation } from '../../../libs/apiHooks';
+import { postRequest, putRequest } from '../../../libs/Api';
 
-export const useSavePage = () => {
-    const queryClient = useQueryClient();
-
-    const { mutate, ...result } = useMutation(body => {
-        const method = body.id ? 'PUT' : 'POST';
-        const path = `/api/pages/${body.id ? `${body.id}/` : ''}`;
-        return sendRequest(method, path, body);
-    });
-
-    return {
-        ...result,
-        mutate: (variables, { onSuccess, ...options }) =>
-            mutate(variables, {
-                ...options,
-                onSuccess: async (...args) => {
-                    await queryClient.invalidateQueries(['iaso', 'pages']);
-                    onSuccess(...args);
-                },
-            }),
-    };
-};
+export const useSavePage = () =>
+    useSnackMutation(
+        body =>
+            body.id
+                ? putRequest(`/api/pages/${body.id}/`, body)
+                : postRequest('/api/pages/', body),
+        undefined,
+        undefined,
+        ['iaso', 'pages'],
+    );

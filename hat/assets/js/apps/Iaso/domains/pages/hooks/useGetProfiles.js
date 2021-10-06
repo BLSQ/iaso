@@ -1,15 +1,14 @@
-import { useQuery } from 'react-query';
-import { sendRequest } from './networking';
+import { useSnackQuery } from '../../../libs/apiHooks';
+import { getRequest } from '../../../libs/Api';
 
-export const useGetProfiles = () => {
-    return {
-        query: useQuery(
-            ['iaso', 'users'],
-            async () => {
-                const request = await sendRequest('GET', '/api/profiles/');
-                return request.profiles;
-            },
-            { cacheTime: 0, structuralSharing: false },
-        ),
-    };
-};
+export const useGetProfiles = () =>
+    useSnackQuery(
+        ['iaso', 'users'],
+        () => getRequest('/api/profiles/'),
+        undefined,
+        {
+            cacheTime: 0,
+            structuralSharing: false,
+            select: data => data.profiles,
+        },
+    );

@@ -7,6 +7,8 @@
     "iaso.polio.calendar.obrName": "Nom",
     "iaso.polio.calendar.r1StartDate": "Date de début R1",
     "iaso.polio.calendar.weeks": "semaine(s)",
+    "iaso.polio.campaign.deleteError": "Erreur lors de la suppression de la campagne",
+    "iaso.polio.campaign.deleteSuccess": "Campagne supprimé",
     "iaso.polio.createCampaign": "Créer une campagne",
     "iaso.polio.district": "District",
     "iaso.polio.editCampaign": "Editer une campagne",

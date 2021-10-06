@@ -435,6 +435,8 @@
     "iaso.orgUnitsTypes.dialog.deleteText": "Cette opération est définitive.",
     "iaso.orgUnitsTypes.projects": "Projets",
     "iaso.orgUnitsTypes.update": "Mettre à jour le type d'unité d'organisation",
+    "iaso.page.deleteError": "Erreur lors de la suppression de la page",
+    "iaso.page.deleteSuccess": "Page supprimée",
     "iaso.page.viewpages": "Voir la page. {linebreak} Nouvel onglet: ctrl + click",
     "iaso.pages.create": "Créer une page",
     "iaso.pages.dialog.delete.content": "Cette opération est irréversible",

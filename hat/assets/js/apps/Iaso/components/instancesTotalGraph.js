@@ -1,27 +1,22 @@
 import React from 'react';
-import { useQuery } from 'react-query';
 import {
+    CartesianGrid,
     Line,
     LineChart,
-    CartesianGrid,
     ResponsiveContainer,
     Tooltip,
     XAxis,
     YAxis,
 } from 'recharts';
-import { iasoGetRequest } from '../utils/requests';
 import { Typography } from '@material-ui/core';
 import { LoadingSpinner } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+import { useSnackQuery } from '../libs/apiHooks';
+import { getRequest } from '../libs/Api';
 
 export const InstancesTotalGraph = () => {
-    const { data, isLoading } = useQuery(['instances', 'stats_sum'], () =>
-        iasoGetRequest({
-            requestParams: {
-                url: '/api/instances/stats_sum/',
-            },
-            disableSuccessSnackBar: true,
-        }),
+    const { data, isLoading } = useSnackQuery(['instances', 'stats_sum'], () =>
+        getRequest('/api/instances/stats_sum/'),
     );
 
     return (

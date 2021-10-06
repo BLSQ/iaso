@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect } from 'react';
 import { isEqual } from 'lodash';
-import { arrayOf, object, func, string, number } from 'prop-types';
+import { arrayOf, func, number, object, string } from 'prop-types';
 import ConfirmCancelDialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../constants/messages';
-import { putCountryConfigDetails } from './requests';
+import { usePutCountryMutation } from './requests';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { useFormState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/form';
@@ -33,26 +33,22 @@ export const CountryNotificationsConfigModal = ({
     countryName,
     language,
     users,
-    notifyParent,
     allUsers,
     allLanguages,
 }) => {
     const [config, setConfig] = useFormState(initialState(language, users));
+    const { mutateAsync } = usePutCountryMutation();
 
-    const onConfirm = useCallback(
-        async closeDialog => {
-            const result = await putCountryConfigDetails({
-                id: countryId,
-                users: config.users.value,
-                language: config.language.value,
-            });
-            setConfig('users', result.users);
-            setConfig('language', result.language);
-            closeDialog();
-            notifyParent();
-        },
-        [countryId, config.users, config.language, notifyParent, setConfig],
-    );
+    const onConfirm = async closeDialog => {
+        const result = await mutateAsync({
+            id: countryId,
+            users: config.users.value,
+            language: config.language.value,
+        });
+        setConfig('users', result.users);
+        setConfig('language', result.language);
+        closeDialog();
+    };
 
     const syncStateWithProps = useCallback(() => {
         setConfig('users', users);
@@ -126,14 +122,12 @@ CountryNotificationsConfigModal.propTypes = {
     countryId: number.isRequired,
     language: string,
     users: arrayOf(number).isRequired,
-    notifyParent: func,
     allUsers: arrayOf(object),
     allLanguages: arrayOf(object).isRequired,
     countryName: string.isRequired,
 };
 
 CountryNotificationsConfigModal.defaultProps = {
-    notifyParent: () => null,
     allUsers: [],
     language: '',
 };

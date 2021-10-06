@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
@@ -41,7 +41,7 @@ import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
-import { iasoGetRequest, useAPI } from '../../../utils/requests';
+import { useGetOrgUnit } from './TreeView/requests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -60,23 +60,6 @@ const extendFilter = (searchParams, filter, onChange, searchIndex) => ({
     callback: (value, urlKey) => onChange(value, urlKey),
 });
 
-const useInitialOrgUnit = orgUnitId => {
-    const request = useCallback(async () => {
-        let data = null;
-        if (orgUnitId) {
-            data = await iasoGetRequest({
-                disableSuccessSnackBar: true,
-                requestParams: {
-                    url: `/api/orgunits/${orgUnitId}`,
-                },
-            });
-        }
-        return data;
-    }, [orgUnitId]);
-    const result = useAPI(request, null);
-    return result;
-};
-
 const OrgUnitsFiltersComponent = ({
     params,
     baseUrl,
@@ -89,7 +72,7 @@ const OrgUnitsFiltersComponent = ({
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(
         searchParams?.levels,
     );
-    const { data: initialOrgUnit } = useInitialOrgUnit(initialOrgUnitId);
+    const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const intl = useSafeIntl();
     const classes = useStyles();
     const [fetchingGroups, setFetchingGroups] = useState(false);

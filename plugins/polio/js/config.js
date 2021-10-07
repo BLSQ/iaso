@@ -32,7 +32,11 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'country__id__in',
+                key: 'countries',
+            },
+            {
+                isRequired: false,
+                key: 'obrName',
             },
         ],
     },

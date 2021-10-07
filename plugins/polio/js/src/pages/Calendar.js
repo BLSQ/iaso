@@ -35,7 +35,8 @@ const Calendar = ({ params }) => {
     const orders = params.order || defaultOrder;
     const { query } = useGetCampaigns({
         order: orders,
-        country__id__in: params.country__id__in,
+        countries: params.countries,
+        obrName: params.obrName,
     });
 
     const { data: campaigns = [], status } = query;

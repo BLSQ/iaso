@@ -15,7 +15,8 @@ import { useGetCountries } from '../../hooks/useGetCountries';
 
 const Filters = ({ params, baseUrl }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
-    const [countries, setCountries] = useState(params.country__id__in);
+    const [countries, setCountries] = useState(params.countries);
+    const [obrName, setObrName] = useState(params.obrName);
     const classes = useStyles();
     const dispatch = useDispatch();
     const handleSearch = () => {
@@ -23,7 +24,8 @@ const Filters = ({ params, baseUrl }) => {
             setFiltersUpdated(false);
             const newParams = {
                 ...params,
-                country__id__in: countries,
+                countries,
+                obrName,
             };
             dispatch(redirectTo(baseUrl, newParams));
         }
@@ -33,12 +35,12 @@ const Filters = ({ params, baseUrl }) => {
     return (
         <>
             <Grid container spacing={4}>
-                <Grid item xs={3}>
+                <Grid item xs={4}>
                     <InputComponent
                         loading={isFetchingCountries}
+                        keyValue="countries"
                         multi
                         clearable
-                        keyValue="country__id__in"
                         onChange={(key, value) => {
                             setFiltersUpdated(true);
                             setCountries(value);
@@ -50,6 +52,19 @@ const Filters = ({ params, baseUrl }) => {
                             value: c.id,
                         }))}
                         label={MESSAGES.country}
+                    />
+                </Grid>
+                <Grid item xs={4}>
+                    <InputComponent
+                        keyValue="orbName"
+                        onChange={(key, value) => {
+                            setFiltersUpdated(true);
+                            setObrName(value);
+                        }}
+                        value={obrName}
+                        type="search"
+                        label={MESSAGES.name}
+                        onEnterPressed={handleSearch}
                     />
                 </Grid>
             </Grid>

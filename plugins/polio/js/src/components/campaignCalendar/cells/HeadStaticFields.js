@@ -20,16 +20,23 @@ const HeadStaticFieldsCells = ({ orders, params }) => {
     const shiftKeyIsDown = useKeyPressListener('Shift');
     const ordersArray = getOrderArray(orders);
     const handleSort = (field, existingSort) => {
+        let desc = true;
+        if (existingSort && existingSort.desc) {
+            desc = false;
+        }
         const currentSort = {
-            desc: existingSort && !existingSort.desc,
+            desc,
             id: field.sortKey,
         };
-        const newSort = [
-            ...ordersArray.filter(
-                o => o.id !== field.sortKey && shiftKeyIsDown,
-            ),
-            currentSort,
-        ];
+        let newSort = [];
+        if (shiftKeyIsDown) {
+            newSort = [
+                ...ordersArray.filter(
+                    o => o.id !== field.sortKey && shiftKeyIsDown,
+                ),
+            ];
+        }
+        newSort.push(currentSort);
         const newParams = {
             ...params,
             order: getSort(newSort),

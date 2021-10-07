@@ -531,9 +531,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.provinceOption',
         defaultMessage: 'PROVINCE',
     },
-    search: {
-        id: 'iaso.search',
-        defaultMessage: 'Search',
+    filter: {
+        id: 'iaso.polio.label.filter',
+        defaultMessage: 'Filter',
+    },
+    R1StartFrom: {
+        id: 'iaso.polio.label.R1StartFrom',
+        defaultMessage: 'R1 start date from',
+    },
+    R1StartTo: {
+        id: 'iaso.polio.label.R1StartTo',
+        defaultMessage: 'R1 start date to',
     },
 });
 

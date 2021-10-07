@@ -3,21 +3,22 @@ import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { Grid, Button } from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
+import { Grid, Button, Box } from '@material-ui/core';
+import FiltersIcon from '@material-ui/icons/FilterList';
 
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import DatesRange from '../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import { redirectTo } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 
 import MESSAGES from '../../constants/messages';
-import { useStyles } from './Styles';
 import { useGetCountries } from '../../hooks/useGetCountries';
 
 const Filters = ({ params, baseUrl }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [obrName, setObrName] = useState(params.obrName);
-    const classes = useStyles();
+    const [obrFrom, setObrFrom] = useState(params.obrFrom);
+    const [obrTo, setObrTo] = useState(params.obrTo);
     const dispatch = useDispatch();
     const handleSearch = () => {
         if (filtersUpdated) {
@@ -26,6 +27,8 @@ const Filters = ({ params, baseUrl }) => {
                 ...params,
                 countries,
                 obrName,
+                obrFrom,
+                obrTo,
             };
             dispatch(redirectTo(baseUrl, newParams));
         }
@@ -35,7 +38,7 @@ const Filters = ({ params, baseUrl }) => {
     return (
         <>
             <Grid container spacing={4}>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                     <InputComponent
                         loading={isFetchingCountries}
                         keyValue="countries"
@@ -54,7 +57,7 @@ const Filters = ({ params, baseUrl }) => {
                         label={MESSAGES.country}
                     />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                     <InputComponent
                         keyValue="orbName"
                         onChange={(key, value) => {
@@ -65,6 +68,23 @@ const Filters = ({ params, baseUrl }) => {
                         type="search"
                         label={MESSAGES.name}
                         onEnterPressed={handleSearch}
+                    />
+                </Grid>
+                <Grid item xs={6}>
+                    <DatesRange
+                        onChangeDate={(key, value) => {
+                            if (key === 'dateFrom') {
+                                setObrFrom(value);
+                            }
+                            if (key === 'dateTo') {
+                                setObrTo(value);
+                            }
+                            setFiltersUpdated(true);
+                        }}
+                        labelFrom={MESSAGES.R1StartFrom}
+                        labelTo={MESSAGES.R1StartTo}
+                        dateFrom={obrFrom}
+                        dateTo={obrTo}
                     />
                 </Grid>
             </Grid>
@@ -87,8 +107,10 @@ const Filters = ({ params, baseUrl }) => {
                         color="primary"
                         onClick={() => handleSearch()}
                     >
-                        <SearchIcon className={classes.buttonIcon} />
-                        <FormattedMessage {...MESSAGES.search} />
+                        <Box mr={1} top={3} position="relative">
+                            <FiltersIcon />
+                        </Box>
+                        <FormattedMessage {...MESSAGES.filter} />
                     </Button>
                 </Grid>
             </Grid>

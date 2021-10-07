@@ -7,7 +7,6 @@ import ArrowForward from '@material-ui/icons/ArrowForward';
 import ChevronRight from '@material-ui/icons/ChevronRight';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 import Today from '@material-ui/icons/Today';
-
 import moment from 'moment';
 
 import { formatPattern, Link, withRouter } from 'react-router';
@@ -16,10 +15,11 @@ import { dateFormat } from './constants';
 
 const genUrl = (router, params) => formatPattern(router.routes[0].path, params);
 
-const Nav = ({ currentMonday, router }) => {
+const Nav = ({ currentMonday, router, params }) => {
     const classes = useStyles();
     const urlForDate = date =>
         genUrl(router, {
+            ...params,
             currentDate: date.format(dateFormat),
         });
     const urlToday = urlForDate(moment().startOf('isoWeek'));
@@ -85,6 +85,7 @@ const Nav = ({ currentMonday, router }) => {
 Nav.propTypes = {
     currentMonday: PropTypes.object.isRequired,
     router: PropTypes.object.isRequired,
+    params: PropTypes.object.isRequired,
 };
 const wrappedNav = withRouter(Nav);
 export { wrappedNav as Nav };

@@ -38,6 +38,14 @@ const routes = [
                 isRequired: false,
                 key: 'obrName',
             },
+            {
+                isRequired: false,
+                key: 'obrFrom',
+            },
+            {
+                isRequired: false,
+                key: 'obrTo',
+            },
         ],
     },
     {

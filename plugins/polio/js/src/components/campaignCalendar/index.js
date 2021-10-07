@@ -23,7 +23,7 @@ const CampaignsCalendar = ({
 
     return (
         <Box mb={2} display="flex" alignItems="flex-start" position="relative">
-            <Nav currentMonday={currentMonday} />
+            <Nav currentMonday={currentMonday} params={params} />
             <TableContainer className={classes.tableContainer}>
                 {loadingCampaigns && <LoadingSpinner absolute />}
                 <Table stickyHeader className={classes.table}>

@@ -113,7 +113,6 @@ export const useStyles = makeStyles(theme => ({
         textTransform: 'uppercase',
     },
     tableCellSpanTitle: {
-        fontSize: 12,
         alignItems: 'center',
         justifyContent: 'flex-start',
         paddingLeft: theme.spacing(2),
@@ -179,15 +178,5 @@ export const useStyles = makeStyles(theme => ({
     },
     table: {
         overflow: 'hidden',
-    },
-    sortLabel: {
-        display: 'inline-block',
-        width: '80%',
-    },
-    icon: {
-        color: `${theme.palette.primary.main}!important`,
-        position: 'absolute',
-        left: '100%',
-        top: 3,
     },
 }));

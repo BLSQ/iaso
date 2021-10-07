@@ -7,17 +7,14 @@ const statuses = [
     {
         value: 'PENDING',
         label: MESSAGES.pending,
-        // label: formatMessage(MESSAGES.pending),
     },
     {
         value: 'ONGOING',
         label: MESSAGES.ongoing,
-        // label: formatMessage(MESSAGES.ongoing),
     },
     {
         value: 'FINISHED',
         label: MESSAGES.finished,
-        // label: formatMessage(MESSAGES.finished),
     },
 ];
 

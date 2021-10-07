@@ -40,8 +40,8 @@ const style = theme => ({
 
 const useStyles = makeStyles(style);
 
-const initialExportData = {
-    source_version_id: null, // version id of the origin data source
+const initialExportData = defaultVersionId => ({
+    source_version_id: defaultVersionId, // version id of the origin data source
     source_top_org_unit_id: null,
     source_org_unit_type_ids: [],
     source_status: 'ALL', // "New", "Validated" etc, cf orgunit search
@@ -52,7 +52,7 @@ const initialExportData = {
     ],
     ref_version_id: null, // version id of the target data source
     ref_top_org_unit_id: null,
-};
+});
 
 export const ExportToDHIS2Dialog = ({
     renderTrigger,
@@ -81,16 +81,18 @@ export const ExportToDHIS2Dialog = ({
         // eslint-disable-next-line no-unused-vars
         _setExportDataErrors,
         setExportData,
-    ] = useFormState(initialExportData);
+    ] = useFormState(initialExportData(defaultVersionId));
 
-    const destinationDataVersionId = exportData.ref_version_id.value;
+    const destinationDataVersionId = exportData?.ref_version_id?.value;
+    const sourceDataVersionId = exportData?.source_version_id?.value;
 
-    // this ref to enable resetting the treeview when datasource changes
-    const treeviewResetControl = useRef(destinationDataVersionId);
+    // these ref to enable resetting the treeview when datasource changes
+    const refTreeviewResetControl = useRef(destinationDataVersionId);
+    const sourceTreeviewResetControl = useRef(sourceDataVersionId);
 
     const reset = useCallback(() => {
-        setExportData(initialExportData);
-    }, [setExportData]);
+        setExportData(initialExportData(defaultVersionId));
+    }, [setExportData, defaultVersionId]);
 
     const onXlsPreview = useCallback(async () => {
         setIsCsvLoading(true);
@@ -116,18 +118,25 @@ export const ExportToDHIS2Dialog = ({
     );
 
     const allowConfirm =
-        Boolean(exportData.source_version_id.value) &&
-        (Boolean(exportData.source_status.value) ||
-            exportData.source_status.value === '') &&
-        exportData.fields_to_export.value.length > 0 &&
-        Boolean(exportData.ref_version_id.value);
+        Boolean(exportData.source_version_id?.value) &&
+        (Boolean(exportData.source_status?.value) ||
+            exportData.source_status?.value === '') &&
+        exportData.fields_to_export?.value.length > 0 &&
+        Boolean(exportData.ref_version_id?.value);
 
     const allowConfirmExport = allowConfirm && credentials?.is_valid;
 
+    // Reset Treeview when changing source datasource
+    useEffect(() => {
+        if (sourceTreeviewResetControl.current !== sourceDataVersionId) {
+            sourceTreeviewResetControl.current = sourceDataVersionId;
+        }
+    }, [sourceDataVersionId]);
+
     // Reset Treeview when changing ref datasource
     useEffect(() => {
-        if (treeviewResetControl.current !== destinationDataVersionId) {
-            treeviewResetControl.current = destinationDataVersionId;
+        if (refTreeviewResetControl.current !== destinationDataVersionId) {
+            refTreeviewResetControl.current = destinationDataVersionId;
         }
     }, [destinationDataVersionId]);
 
@@ -162,7 +171,7 @@ export const ExportToDHIS2Dialog = ({
                                 type="select"
                                 keyValue="source_version_id"
                                 labelString={formatMessage(MESSAGES.version)}
-                                value={exportData.source_version_id.value}
+                                value={exportData.source_version_id?.value}
                                 errors={exportData.source_version_id.errors}
                                 onChange={setExportDataField}
                                 options={dataSourceVersionsAsOptions(
@@ -182,10 +191,14 @@ export const ExportToDHIS2Dialog = ({
                                             value?.id ?? null,
                                         );
                                     }}
-                                    version={exportData.source_version_id.value}
+                                    version={sourceDataVersionId}
                                     titleMessage={formatMessage(
                                         MESSAGES.selectTopOrgUnit,
                                     )}
+                                    resetTrigger={
+                                        sourceTreeviewResetControl.current !==
+                                        sourceDataVersionId
+                                    }
                                 />
                             </Box>
                         </Grid>
@@ -195,7 +208,7 @@ export const ExportToDHIS2Dialog = ({
                             type="select"
                             labelString={formatMessage(MESSAGES.status)}
                             keyValue="source_status"
-                            value={exportData.source_status.value}
+                            value={exportData.source_status?.value}
                             errors={exportData.source_status.errors}
                             onChange={setExportDataField}
                             options={orgUnitStatusAsOptions(formatMessage)}
@@ -207,7 +220,7 @@ export const ExportToDHIS2Dialog = ({
                             type="select"
                             keyValue="source_org_unit_type_ids"
                             labelString={formatMessage(MESSAGES.orgUnitTypes)}
-                            value={exportData.source_org_unit_type_ids.value}
+                            value={exportData.source_org_unit_type_ids?.value}
                             errors={exportData.source_org_unit_type_ids.errors}
                             onChange={(keyValue, newValue) => {
                                 setExportDataField(
@@ -280,7 +293,7 @@ export const ExportToDHIS2Dialog = ({
                                     MESSAGES.selectTopOrgUnit,
                                 )}
                                 resetTrigger={
-                                    treeviewResetControl.current !==
+                                    refTreeviewResetControl.current !==
                                     destinationDataVersionId
                                 }
                                 disabled={!destinationDataVersionId}

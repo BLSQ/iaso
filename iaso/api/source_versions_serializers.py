@@ -12,7 +12,7 @@ from iaso.tasks.dhis2_ou_exporter import dhis2_ou_exporter
 logger = logging.getLogger(__name__)
 
 STATUSES = list(OrgUnit.VALIDATION_STATUS_CHOICES) + [("", "all")]
-FIELDS = ["name", "parent", "geometry"]
+FIELDS = ["name", "parent", "geometry", "groups"]
 
 
 class DiffSerializer(serializers.Serializer):
@@ -68,10 +68,16 @@ class DiffSerializer(serializers.Serializer):
         data = self.validated_data
         print("Validated data", data)
         iaso_logger = CommandLogger(sys.stdout)
+        if "groups" in data["fields_to_export"]:
+            data["fields_to_export"].remove("groups")
+            ignore_groups = False
+        else:
+            ignore_groups = True
+
         diffs, fields = Differ(iaso_logger).diff(
             data["ref_version_id"],
             data["source_version_id"],
-            ignore_groups=False,
+            ignore_groups=ignore_groups,
             show_deleted_org_units=True,
             validation_status=data.get("source_status"),
             top_org_unit=data.get("source_top_org_unit_id"),
@@ -99,10 +105,16 @@ class ExportSerializer(DiffSerializer):
     def launch_export(self, user):
         # use data and not validated data so we have the id
         data = self.data
+        if "groups" in data["fields_to_export"]:
+            data["fields_to_export"].remove("groups")
+            ignore_groups = False
+        else:
+            ignore_groups = True
+
         task: Task = dhis2_ou_exporter(
             ref_version_id=data["ref_version_id"],
             version_id=data["source_version_id"],
-            ignore_groups=False,
+            ignore_groups=ignore_groups,
             show_deleted_org_units=True,
             validation_status=data.get("source_status"),
             ref_validation_status=data.get("ref_status"),

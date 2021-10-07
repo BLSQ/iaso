@@ -7,7 +7,6 @@ import CheckBoxOutlineBlankOutlinedIcon from '@material-ui/icons/CheckBoxOutline
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
 import { makeStyles } from '@material-ui/core/styles';
-import { useChildrenData } from './requests';
 
 const styles = theme => ({
     treeItem: {

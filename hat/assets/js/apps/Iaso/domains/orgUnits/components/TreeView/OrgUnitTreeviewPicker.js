@@ -74,9 +74,10 @@ const OrgUnitTreeviewPicker = ({
         ? classes.placeholder
         : `${classes.placeholder} ${classes.pointer}`;
     const formattedPlaceholder =
-        formatPlaceholder(placeholder, intl.formatMessage) ?? multiselect
+        formatPlaceholder(placeholder, intl.formatMessage) ??
+        (multiselect
             ? intl.formatMessage(MESSAGES.selectMultiple)
-            : intl.formatMessage(MESSAGES.selectSingle);
+            : intl.formatMessage(MESSAGES.selectSingle));
     const noOp = () => null;
 
     const makeTruncatedTrees = treesData => {

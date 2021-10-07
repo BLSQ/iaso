@@ -1,6 +1,6 @@
 import React from 'react';
 import { Switch, ListItemText, Tooltip } from '@material-ui/core';
-import { string, bool, func } from 'prop-types';
+import { string, bool, func, oneOfType, object } from 'prop-types';
 import { truncateText } from 'bluesquare-components';
 
 export const ColumnDrawerSwitch = ({
@@ -26,13 +26,17 @@ export const ColumnDrawerSwitch = ({
                 }}
                 className={className}
             />
-            <Tooltip title={toolTipTitle} placement="left-start">
+            <Tooltip
+                title={toolTipTitle}
+                placement="left-start"
+                components={{ Tooltip: 'div' }}
+            >
                 <ListItemText
                     style={{
                         cursor: 'default',
                     }}
-                    primary={truncateText(primaryText, 40)}
-                    secondary={secondaryText}
+                    primary={truncateText(primaryText, 33)}
+                    secondary={truncateText(secondaryText, 35)}
                 />
             </Tooltip>
         </>
@@ -43,7 +47,7 @@ ColumnDrawerSwitch.propTypes = {
     onChange: func,
     className: string,
     checked: bool,
-    toolTipTitle: string.isRequired,
+    toolTipTitle: oneOfType([string, object]).isRequired,
     primaryText: string.isRequired,
     secondaryText: string,
     size: string,

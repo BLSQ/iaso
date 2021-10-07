@@ -4,6 +4,7 @@ import { TreeView } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/core/styles';
 import { CircularProgress, Box } from '@material-ui/core';
 import { EnrichedTreeItem } from './EnrichedTreeItem';
+import { useRootData } from './requests';
 
 const styles = theme => ({
     root: {

@@ -1,3 +1,4 @@
+import { useQuery } from 'react-query';
 import { iasoGetRequest } from '../../../../utils/requests';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { getRequest } from '../../../../libs/Api';
@@ -76,5 +77,19 @@ const useGetOrgUnit = OrgUnitId =>
             enabled: OrgUnitId !== undefined && OrgUnitId !== null,
         },
     );
+
+export const useChildrenData = (request, id, enabled) =>
+    useQuery(
+        ['getChildrenData', request, id],
+        async () => {
+            return request(id);
+        },
+        { enabled },
+    );
+
+export const useRootData = request =>
+    useQuery(['getRootData', request], async () => request(), {
+        keepPreviousData: false,
+    });
 
 export { getRootData, getChildrenData, searchOrgUnits, useGetOrgUnit };

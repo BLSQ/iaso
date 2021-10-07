@@ -29,6 +29,11 @@ function TopBar(props) {
         displayBackButton,
         goBack,
     } = props;
+    // Set the page title from the top bar title.
+    React.useEffect(() => {
+        document.title = `Iaso ${title}`;
+    }, [title]);
+
     return (
         <>
             <AppBar position="relative" color="primary">

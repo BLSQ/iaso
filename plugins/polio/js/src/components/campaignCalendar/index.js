@@ -24,7 +24,7 @@ const CampaignsCalendar = ({
             <Nav currentMonday={currentMonday} />
             <TableContainer className={classes.tableContainer}>
                 {loadingCampaigns && <LoadingSpinner absolute />}
-                <Table stickyHeader>
+                <Table stickyHeader className={classes.table}>
                     <Head headers={headers} />
                     <Body
                         loadingCampaigns={loadingCampaigns}

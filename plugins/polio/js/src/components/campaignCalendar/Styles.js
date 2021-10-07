@@ -176,4 +176,7 @@ export const useStyles = makeStyles(theme => ({
     noCampaign: {
         textAlign: 'center',
     },
+    table: {
+        overflow: 'hidden',
+    },
 }));

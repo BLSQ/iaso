@@ -1,5 +1,7 @@
-export const setCookie = (name, value, days) => {
+export const setCookie = (name, value, days, sameSite = 'Lax') => {
     let expires;
+    const sameSiteString =
+        sameSite === 'None' ? `${sameSite}; Secure` : sameSite;
 
     if (days) {
         const date = new Date();
@@ -9,7 +11,7 @@ export const setCookie = (name, value, days) => {
         expires = '';
     }
 
-    document.cookie = `${name}=${value}${expires}; path=/`;
+    document.cookie = `${name}=${value}${expires}; path=/; SameSite=${sameSiteString};`;
 };
 
 export const getCookie = name => {

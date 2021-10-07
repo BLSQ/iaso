@@ -34,31 +34,33 @@ export const StatusField = props => {
     );
 };
 
-const RABudgetstatuses = formatMessage => [
+const RABudgetstatuses = [
     {
         value: 'REVIEWED',
-        label: formatMessage(MESSAGES.reviewedByRrt),
+        label: MESSAGES.reviewedByRrt,
     },
     {
         value: 'SUBMITTED',
-        label: formatMessage(MESSAGES.submitted),
+        label: MESSAGES.submitted,
     },
     {
         value: 'TO_SUBMIT',
-        label: formatMessage(MESSAGES.toSubmit),
+        label: MESSAGES.toSubmit,
     },
     {
         value: 'APPROVED',
-        label: formatMessage(MESSAGES.approved),
+        label: MESSAGES.approved,
     },
 ];
 
 export const RABudgetStatusField = props => {
     const { formatMessage } = useSafeIntl();
+    const options = useTranslatedOptions(RABudgetstatuses);
+
     return (
         <Select
-            label="Status"
-            options={RABudgetstatuses(formatMessage)}
+            label={formatMessage(MESSAGES.status)}
+            options={options}
             {...props}
         />
     );

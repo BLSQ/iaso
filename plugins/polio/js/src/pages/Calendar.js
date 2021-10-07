@@ -22,6 +22,7 @@ import {
 } from '../components/campaignCalendar/constants';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import MESSAGES from '../constants/messages';
+import { Filters } from '../components/campaignCalendar/Filters';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -34,6 +35,7 @@ const Calendar = ({ params }) => {
     const orders = params.order || defaultOrder;
     const { query } = useGetCampaigns({
         order: orders,
+        country__id__in: params.country__id__in,
     });
 
     const { data: campaigns = [], status } = query;
@@ -58,6 +60,7 @@ const Calendar = ({ params }) => {
             ).map((c, index) => ({ ...c, color: getCampaignColor(index) })),
         [mappedCampaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
+    const loadingCampaigns = status === 'loading';
     return (
         <div>
             {isLogged && (
@@ -67,6 +70,9 @@ const Calendar = ({ params }) => {
                 />
             )}
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <Box mb={4}>
+                    <Filters params={params} baseUrl="polio/calendar" />
+                </Box>
                 <Box width={1} position="relative">
                     <CampaignsCalendar
                         params={params}
@@ -74,13 +80,13 @@ const Calendar = ({ params }) => {
                         campaigns={filteredCampaigns}
                         calendarData={calendarData}
                         currentMonday={currentMonday}
-                        loadingCampaigns={status === 'loading'}
+                        loadingCampaigns={loadingCampaigns}
                     />
                 </Box>
                 <Box width={1}>
                     <CalendarMap
                         campaigns={filteredCampaigns}
-                        loadingCampaigns={status === 'loading'}
+                        loadingCampaigns={loadingCampaigns}
                     />
                 </Box>
             </Box>

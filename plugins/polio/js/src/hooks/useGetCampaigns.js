@@ -7,6 +7,7 @@ export const useGetCampaigns = options => {
         page: options.page,
         order: options.order,
         search: options.searchQuery,
+        country__id__in: options.country__id__in,
     };
 
     const getURL = urlParams => {

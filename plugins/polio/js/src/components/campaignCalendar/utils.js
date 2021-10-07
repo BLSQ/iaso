@@ -373,6 +373,7 @@ const getSort = sortList => {
     });
     return orderTemp;
 };
+
 export {
     getCalendarData,
     filterCampaigns,

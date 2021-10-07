@@ -66,6 +66,7 @@ class CampaignViewSet(ModelViewSet):
     ]
     filterset_fields = {
         "country__name": ["exact"],
+        "country__id": ["in"],
         "obr_name": ["exact"],
         "vacine": ["exact"],
         "cvdpv2_notified_at": ["gte", "lte", "range"],

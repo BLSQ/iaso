@@ -531,6 +531,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.provinceOption',
         defaultMessage: 'PROVINCE',
     },
+    search: {
+        id: 'iaso.search',
+        defaultMessage: 'Search',
+    },
 });
 
 export default MESSAGES;

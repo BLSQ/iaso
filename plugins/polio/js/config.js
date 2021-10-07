@@ -30,6 +30,10 @@ const routes = [
                 isRequired: false,
                 key: 'order',
             },
+            {
+                isRequired: false,
+                key: 'country__id__in',
+            },
         ],
     },
     {

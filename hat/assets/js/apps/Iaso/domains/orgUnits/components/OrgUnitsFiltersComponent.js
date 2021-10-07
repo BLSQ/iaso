@@ -249,7 +249,7 @@ const OrgUnitsFiltersComponent = ({
                     )}
                 </Grid>
                 <Grid item xs={4}>
-                    <Box mt={1} mb={2}>
+                    <Box mb={2}>
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
                             titleMessage={MESSAGES.parent}

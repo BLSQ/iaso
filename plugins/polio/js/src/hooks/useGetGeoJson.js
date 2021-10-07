@@ -1,41 +1,24 @@
-import { useQuery } from 'react-query';
-import { sendRequest } from '../utils/networking';
-import { useGetAuthenticatedUser } from './useGetAuthenticatedUser';
+import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
 export const useGetGeoJson = (country, orgUnitCategory) => {
-    const { data: user = {}, isFetching } = useGetAuthenticatedUser();
-    const source = user?.account?.default_version?.data_source?.id || '';
-    const baseParams = {
-        source,
+    const params = {
         validation_status: 'all',
         asLocation: true,
         limit: 3000,
         order: 'id',
         orgUnitParentId: country,
+        orgUnitTypeCategory: orgUnitCategory,
     };
-    const districtParam = {
-        orgUnitTypeCategory: 'DISTRICT',
-    };
-    const provinceParam = {
-        orgUnitTypeCategory: "REGION",
-    };
-    const params =
-        orgUnitCategory === 'DISTRICT'
-            ? { ...baseParams, ...districtParam }
-            : { ...baseParams, ...provinceParam };
 
-    return useQuery(
+    const queryString = new URLSearchParams(params);
+
+    return useSnackQuery(
         ['geo_json', params],
-        () => {
-            const queryString = new URLSearchParams(params);
-            return sendRequest(
-                'GET',
-                `/api/orgunits/?${queryString.toString()}`,
-            );
-        },
+        () => getRequest(`/api/orgunits/?${queryString.toString()}`),
+        undefined,
         {
             enabled: Boolean(country),
-            refetchOnWindowFocus: false,
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
         },

@@ -1,5 +1,4 @@
 import React from 'react';
-import { useQuery } from 'react-query';
 import { LoadingSpinner } from 'bluesquare-components';
 import {
     Bar,
@@ -14,16 +13,12 @@ import {
 import { Typography } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { getChipColors } from '../constants/chipColors';
-import { iasoGetRequest } from '../utils/requests';
+import { getRequest } from '../libs/Api';
+import { useSnackQuery } from '../libs/apiHooks';
 
 export const InstancesPerFormGraph = () => {
-    const { data, isLoading } = useQuery(['instances', 'stats'], () =>
-        iasoGetRequest({
-            requestParams: {
-                url: '/api/instances/stats/',
-            },
-            disableSuccessSnackBar: true,
-        }),
+    const { data, isLoading } = useSnackQuery(['instances', 'stats'], () =>
+        getRequest('/api/instances/stats/'),
     );
 
     return (

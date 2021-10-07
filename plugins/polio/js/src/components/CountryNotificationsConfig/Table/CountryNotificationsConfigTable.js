@@ -1,15 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
-    textPlaceholder,
     IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
 import { object } from 'prop-types';
 import { withRouter } from 'react-router';
-import { getCountryUsersGroup, getAllUsers } from '../requests';
+import { useGetCountryUsersGroup, useGetProfiles } from '../requests';
 import MESSAGES from '../../../constants/messages';
 import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
-import { useAPI } from '../../../../../../../hat/assets/js/apps/Iaso/utils/requests';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
 const makeUserNameToDisplay = user => {
@@ -26,7 +24,6 @@ const allLanguages = [
 
 const CountryNotificationsConfigTable = ({ params }) => {
     const { formatMessage } = useSafeIntl();
-    const [refresh, setRefresh] = useState(false);
     const tableParams = useMemo(
         () => ({
             order: params.order ?? 'country__name', // Watch out, needs 2 underscores
@@ -35,15 +32,9 @@ const CountryNotificationsConfigTable = ({ params }) => {
         }),
         [params.order, params.page, params.pageSize],
     );
-    const { data: allUsers } = useAPI(getAllUsers);
-    const { data: tableData, isLoading } = useAPI(
-        getCountryUsersGroup,
-        tableParams,
-        {
-            preventTrigger: false,
-            additionalDependencies: [refresh],
-        },
-    );
+
+    const { data: allUsers } = useGetProfiles();
+    const { data: tableData, isLoading } = useGetCountryUsersGroup(tableParams);
 
     const columns = [
         {
@@ -52,11 +43,6 @@ const CountryNotificationsConfigTable = ({ params }) => {
             accessor: 'country_name', // Watch out, needs 2 underscores
             sortable: true,
             align: 'left',
-            Cell: settings => {
-                const text =
-                    settings?.row?.original?.country_name ?? textPlaceholder;
-                return text;
-            },
         },
         {
             Header: formatMessage(MESSAGES.usersToNotify),
@@ -64,22 +50,13 @@ const CountryNotificationsConfigTable = ({ params }) => {
             width: 100,
             sortable: false,
             align: 'left',
-            Cell: settings => {
-                const userNames = settings.row.original.read_only_users_field
-                    .map(makeUserNameToDisplay)
-                    .toString()
-                    .trim();
-                return userNames;
-            },
+            Cell: settings =>
+                settings.value.map(makeUserNameToDisplay).toString().trim(),
         },
         {
             Header: formatMessage(MESSAGES.language),
             sortable: true,
             accessor: 'language',
-            Cell: settings => {
-                const text = settings.row.original.language ?? textPlaceholder;
-                return text;
-            },
         },
         {
             Header: formatMessage(MESSAGES.actions),
@@ -88,7 +65,6 @@ const CountryNotificationsConfigTable = ({ params }) => {
             Cell: settings => {
                 return (
                     <CountryNotificationsConfigModal
-                        notifyParent={() => setRefresh(!refresh)}
                         onConfirm={() => null}
                         countryId={settings.row.original.id}
                         countryName={settings.row.original.country_name}

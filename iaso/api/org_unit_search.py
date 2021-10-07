@@ -16,6 +16,7 @@ def build_org_units_queryset(queryset, params, profile):
     source_id = params.get("sourceId", None)
     with_shape = params.get("withShape", None)
     with_location = params.get("withLocation", None)
+    geography = params.get("geography", None)
     parent_id = params.get("parent_id", None)
     source = params.get("source", None)
     group = params.get("group", None)
@@ -110,6 +111,18 @@ def build_org_units_queryset(queryset, params, profile):
 
     if org_unit_type_id:
         queryset = queryset.filter(org_unit_type__id__in=org_unit_type_id.split(","))
+
+    if geography == "location":
+        queryset = queryset.filter(location__isnull=False)
+
+    if geography == "shape":
+        queryset = queryset.filter(simplified_geom__isnull=False)
+
+    if geography == "none":
+        queryset = queryset.filter(Q(location__isnull=True) & Q(simplified_geom__isnull=True))
+
+    if geography == "any":
+        queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
 
     if with_shape == "true":
         queryset = queryset.filter(simplified_geom__isnull=False)

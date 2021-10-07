@@ -1,16 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
-import { Box, makeStyles, Button } from '@material-ui/core';
+import { Box, Button, makeStyles } from '@material-ui/core';
 import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
 import isEqual from 'lodash/isEqual';
 
 import {
-    useSafeIntl,
     commonStyles,
     LoadingSpinner,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
@@ -23,13 +23,13 @@ import { useFormState } from '../../hooks/form';
 
 import { baseUrls } from '../../constants/urls';
 
-import { createForm, updateForm, useAPI } from '../../utils/requests';
+import { createForm, updateForm } from '../../utils/requests';
 import FormVersions from './components/FormVersionsComponent';
 import FormForm from './components/FormFormComponent';
 
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../constants/snackBars';
-import { fetchFormDetails } from './requests';
+import { useGetForm } from './requests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -84,14 +84,7 @@ const FormDetail = ({ router, params }) => {
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
     const allProjects = useSelector(state => state.projects.allProjects);
-    const { data: form, isLoading: isFormLoading } = useAPI(
-        fetchFormDetails,
-        params.formId,
-        {
-            preventTrigger: !(params.formId && params.formId !== '0'),
-            additionalDependencies: [],
-        },
-    );
+    const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);

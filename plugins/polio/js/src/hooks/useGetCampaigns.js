@@ -1,5 +1,5 @@
-import { useQuery } from 'react-query';
-import { sendRequest } from '../utils/networking';
+import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 export const useGetCampaigns = options => {
     const params = {
@@ -31,12 +31,10 @@ export const useGetCampaigns = options => {
                 page: undefined,
                 format: 'csv',
             })}`),
-        query: useQuery(
+        query: useSnackQuery(
             ['polio', 'campaigns', params],
-            async () => {
-                // additional props are WIP
-                return sendRequest('GET', getURL(params));
-            },
+            () => getRequest(getURL(params)),
+            undefined,
             {
                 cacheTime: 0,
                 structuralSharing: false,

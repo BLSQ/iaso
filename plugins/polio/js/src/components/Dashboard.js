@@ -110,8 +110,9 @@ export const Dashboard = () => {
         () => [
             {
                 Header: formatMessage(MESSAGES.country),
+                id: 'country__name',
                 accessor: 'top_level_org_unit_name',
-                sortable: false,
+                sortable: true,
             },
             {
                 Header: formatMessage(MESSAGES.name),

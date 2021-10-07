@@ -6,6 +6,8 @@
     "iaso.polio.calendar": "Calendar",
     "iaso.polio.calendar.obrName": "Name",
     "iaso.polio.calendar.weeks": "week(s)",
+    "iaso.polio.campaign.deleteError": "Error removing campaign",
+    "iaso.polio.campaign.deleteSuccess": "Campaign successfully removed",
     "iaso.polio.createCampaign": "Create campaign",
     "iaso.polio.district": "District",
     "iaso.polio.editCampaign": "Edit campaign",

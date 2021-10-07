@@ -80,13 +80,11 @@ const Pages = () => {
         [setSelectedPageSlug, openDeleteConfirmDialog],
     );
 
-    const { query } = useGetPages({
+    const { data: pages = [], status } = useGetPages({
         page,
         pageSize,
         order,
     });
-
-    const { data: pages = [], status } = query;
 
     const selectedPage = pages?.results?.find(
         result => result.slug === selectedPageSlug,

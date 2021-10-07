@@ -62,8 +62,10 @@ class CampaignViewSet(ModelViewSet):
         "round_one__started_at",
         "round_two__started_at",
         "vacine",
+        "country__name",
     ]
     filterset_fields = {
+        "country__name": ["exact"],
         "obr_name": ["exact"],
         "vacine": ["exact"],
         "cvdpv2_notified_at": ["gte", "lte", "range"],
@@ -128,7 +130,7 @@ Timeline tracker Automated message
     @action(methods=["POST"], detail=True, serializer_class=serializers.Serializer)
     def send_notification_email(self, request, pk, **kwargs):
         campaign = get_object_or_404(Campaign, pk=pk)
-        country = campaign.country()
+        country = campaign.country
 
         domain = settings.DNS_DOMAIN
         if campaign.creation_email_send_at:

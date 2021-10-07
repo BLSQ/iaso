@@ -1,30 +1,31 @@
 import React from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, useTranslatedOptions } from 'bluesquare-components';
 import { Select } from './Select';
 import MESSAGES from '../../constants/messages';
 
 const statuses = [
     {
         value: 'PENDING',
-        label: 'Pending',
+        label: MESSAGES.pending,
     },
     {
         value: 'ONGOING',
-        label: 'Ongoing',
+        label: MESSAGES.ongoing,
     },
     {
         value: 'FINISHED',
-        label: 'Finished',
+        label: MESSAGES.finished,
     },
 ];
 
 export const StatusField = props => {
     const { formatMessage } = useSafeIntl();
+    const options = useTranslatedOptions(statuses);
 
     return (
         <Select
             label={formatMessage(MESSAGES.status)}
-            options={statuses}
+            options={options}
             {...props}
         />
     );
@@ -33,22 +34,31 @@ export const StatusField = props => {
 const RABudgetstatuses = [
     {
         value: 'REVIEWED',
-        label: 'Reviewed by RRT',
+        label: MESSAGES.reviewedByRrt,
     },
     {
         value: 'SUBMITTED',
-        label: 'Submitted',
+        label: MESSAGES.submitted,
     },
     {
         value: 'TO_SUBMIT',
-        label: 'To submit',
+        label: MESSAGES.toSubmit,
     },
     {
         value: 'APPROVED',
-        label: 'Approved',
+        label: MESSAGES.approved,
     },
 ];
 
 export const RABudgetStatusField = props => {
-    return <Select label="Status" options={RABudgetstatuses} {...props} />;
+    const { formatMessage } = useSafeIntl();
+    const options = useTranslatedOptions(RABudgetstatuses);
+
+    return (
+        <Select
+            label={formatMessage(MESSAGES.status)}
+            options={options}
+            {...props}
+        />
+    );
 };

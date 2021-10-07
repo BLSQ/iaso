@@ -487,6 +487,50 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.responsible',
         defaultMessage: 'Responsible',
     },
+    pending: {
+        id: 'iaso.polio.label.pending',
+        defaultMessage: 'Pending',
+    },
+    ongoing: {
+        id: 'iaso.polio.label.ongoing',
+        defaultMessage: 'Ongoing',
+    },
+    finished: {
+        id: 'iaso.polio.label.finished',
+        defaultMessage: 'Finished',
+    },
+    reviewedByRrt: {
+        id: 'iaso.polio.label.reviewedByRrt',
+        defaultMessage: 'Reviewed by RRT',
+    },
+    submitted: {
+        id: 'iaso.polio.label.submitted',
+        defaultMessage: 'Submitted',
+    },
+    toSubmit: {
+        id: 'iaso.polio.label.toSubmit',
+        defaultMessage: 'To submit',
+    },
+    approved: {
+        id: 'iaso.polio.label.approved',
+        defaultMessage: 'Approved',
+    },
+    who: {
+        id: 'iaso.polio.label.who',
+        defaultMessage: 'WHO',
+    },
+    unicef: {
+        id: 'iaso.polio.label.unicef',
+        defaultMessage: 'UNICEF',
+    },
+    moh: {
+        id: 'iaso.polio.label.moh',
+        defaultMessage: 'MOH',
+    },
+    provinceOption: {
+        id: 'iaso.polio.label.provinceOption',
+        defaultMessage: 'PROVINCE',
+    },
 });
 
 export default MESSAGES;

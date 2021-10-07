@@ -1,30 +1,34 @@
 import React from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, useTranslatedOptions } from 'bluesquare-components';
 import { Select } from './Select';
 import MESSAGES from '../../constants/messages';
 
-const statuses = formatMessage => [
+const statuses = [
     {
         value: 'PENDING',
-        label: formatMessage(MESSAGES.pending),
+        label: MESSAGES.pending,
+        // label: formatMessage(MESSAGES.pending),
     },
     {
         value: 'ONGOING',
-        label: formatMessage(MESSAGES.ongoing),
+        label: MESSAGES.ongoing,
+        // label: formatMessage(MESSAGES.ongoing),
     },
     {
         value: 'FINISHED',
-        label: formatMessage(MESSAGES.finished),
+        label: MESSAGES.finished,
+        // label: formatMessage(MESSAGES.finished),
     },
 ];
 
 export const StatusField = props => {
     const { formatMessage } = useSafeIntl();
+    const options = useTranslatedOptions(statuses);
 
     return (
         <Select
             label={formatMessage(MESSAGES.status)}
-            options={statuses(formatMessage)}
+            options={options}
             {...props}
         />
     );

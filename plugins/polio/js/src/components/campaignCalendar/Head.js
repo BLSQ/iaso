@@ -2,16 +2,14 @@ import React from 'react';
 
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-
 import { TableHead, TableRow, TableCell, Typography } from '@material-ui/core';
 
 import { useStyles } from './Styles';
 
 import { colSpanTitle, staticFields } from './constants';
-import MESSAGES from '../../constants/messages';
+import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
 
-const Head = ({ headers }) => {
+const Head = ({ headers, params, orders }) => {
     const classes = useStyles();
     return (
         <TableHead>
@@ -79,26 +77,7 @@ const Head = ({ headers }) => {
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
-                {staticFields.map(f => (
-                    <TableCell
-                        key={f.key}
-                        className={classnames(
-                            classes.tableCellTitle,
-                            classes.tableCellTitleLarge,
-                        )}
-                        colSpan={colSpanTitle}
-                        style={{ top: 100 }}
-                    >
-                        <span
-                            className={classnames(
-                                classes.tableCellSpan,
-                                classes.tableCellSpanTitle,
-                            )}
-                        >
-                            <FormattedMessage {...MESSAGES[f.key]} />
-                        </span>
-                    </TableCell>
-                ))}
+                <HeadStaticFieldsCells params={params} orders={orders} />
                 {headers.weeks.map(week => (
                     <TableCell
                         className={classnames([
@@ -148,6 +127,8 @@ const Head = ({ headers }) => {
 
 Head.propTypes = {
     headers: PropTypes.object.isRequired,
+    params: PropTypes.object.isRequired,
+    orders: PropTypes.string.isRequired,
 };
 
 export { Head };

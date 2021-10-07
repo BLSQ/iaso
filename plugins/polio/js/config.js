@@ -26,6 +26,10 @@ const routes = [
                 isRequired: false,
                 key: 'currentDate',
             },
+            {
+                isRequired: false,
+                key: 'order',
+            },
         ],
     },
     {

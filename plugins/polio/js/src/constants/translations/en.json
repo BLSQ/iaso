@@ -5,6 +5,7 @@
     "iaso.polio.button.label.removeRegion": "Unselect region",
     "iaso.polio.calendar": "Calendar",
     "iaso.polio.calendar.obrName": "Name",
+    "iaso.polio.calendar.r1StartDate": "R1 date",
     "iaso.polio.calendar.weeks": "week(s)",
     "iaso.polio.campaign.deleteError": "Error removing campaign",
     "iaso.polio.campaign.deleteSuccess": "Campaign successfully removed",

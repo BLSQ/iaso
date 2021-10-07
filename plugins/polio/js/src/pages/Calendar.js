@@ -16,7 +16,10 @@ import {
     getCalendarData,
 } from '../components/campaignCalendar/utils';
 
-import { dateFormat } from '../components/campaignCalendar/constants';
+import {
+    dateFormat,
+    defaultOrder,
+} from '../components/campaignCalendar/constants';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import MESSAGES from '../constants/messages';
 
@@ -28,8 +31,9 @@ const Calendar = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const isLogged = useSelector(state => Boolean(state.users.current));
+    const orders = params.order || defaultOrder;
     const { query } = useGetCampaigns({
-        order: 'top_level_org_unit_name',
+        order: orders,
     });
 
     const { data: campaigns = [], status } = query;
@@ -65,6 +69,8 @@ const Calendar = ({ params }) => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box width={1} position="relative">
                     <CampaignsCalendar
+                        params={params}
+                        orders={orders}
                         campaigns={filteredCampaigns}
                         calendarData={calendarData}
                         currentMonday={currentMonday}

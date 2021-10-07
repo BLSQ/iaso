@@ -356,4 +356,28 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
     return cells;
 };
 
-export { getCalendarData, filterCampaigns, mapCampaigns, getCells };
+const getOrderArray = orders =>
+    orders.split(',').map(stringValue => ({
+        id: stringValue.replace('-', ''),
+        desc: stringValue.indexOf('-') !== -1,
+    }));
+
+const getOrderValue = obj => (!obj.desc ? obj.id : `-${obj.id}`);
+
+const getSort = sortList => {
+    let orderTemp;
+    sortList.forEach((sort, index) => {
+        orderTemp = `${orderTemp || ''}${index > 0 ? ',' : ''}${getOrderValue(
+            sort,
+        )}`;
+    });
+    return orderTemp;
+};
+export {
+    getCalendarData,
+    filterCampaigns,
+    mapCampaigns,
+    getCells,
+    getOrderArray,
+    getSort,
+};

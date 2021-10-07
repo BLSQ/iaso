@@ -15,6 +15,8 @@ const CampaignsCalendar = ({
     calendarData,
     currentMonday,
     loadingCampaigns,
+    params,
+    orders,
 }) => {
     const classes = useStyles();
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
@@ -25,7 +27,7 @@ const CampaignsCalendar = ({
             <TableContainer className={classes.tableContainer}>
                 {loadingCampaigns && <LoadingSpinner absolute />}
                 <Table stickyHeader className={classes.table}>
-                    <Head headers={headers} />
+                    <Head headers={headers} params={params} orders={orders} />
                     <Body
                         loadingCampaigns={loadingCampaigns}
                         campaigns={campaigns}
@@ -48,6 +50,8 @@ CampaignsCalendar.propTypes = {
     calendarData: PropTypes.object.isRequired,
     currentMonday: PropTypes.object.isRequired,
     loadingCampaigns: PropTypes.bool.isRequired,
+    params: PropTypes.object.isRequired,
+    orders: PropTypes.string.isRequired,
 };
 
 export { CampaignsCalendar };

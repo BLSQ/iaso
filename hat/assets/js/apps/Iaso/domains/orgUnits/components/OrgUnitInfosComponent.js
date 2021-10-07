@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Grid } from '@material-ui/core';
+import { Grid, Box } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -120,7 +120,10 @@ const OrgUnitInfosComponent = ({
             />
         </Grid>
         <Grid item xs={4} container>
-            <FormControlComponent errors={orgUnit.parent_id.errors}>
+            <FormControlComponent
+                errors={orgUnit.parent_id.errors}
+                marginTopZero
+            >
                 <OrgUnitTreeviewModal
                     toggleOnLabelClick={false}
                     titleMessage={MESSAGES.selectParentOrgUnit}

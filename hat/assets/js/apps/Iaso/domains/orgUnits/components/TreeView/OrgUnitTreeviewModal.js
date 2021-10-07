@@ -29,6 +29,7 @@ const OrgUnitTreeviewModal = ({
     initialSelection,
     source,
     resetTrigger,
+    hardReset,
     disabled,
     version,
     required,
@@ -135,9 +136,14 @@ const OrgUnitTreeviewModal = ({
     useEffect(() => {
         if (resetTrigger) {
             setToInitialValues(initialSelection);
-            resetSelection();
         }
     }, [resetTrigger, initialSelection, resetSelection]);
+
+    useEffect(() => {
+        if (resetTrigger && hardReset) {
+            resetSelection();
+        }
+    }, [resetTrigger, hardReset, resetSelection]);
 
     return (
         <ConfirmCancelDialogComponent
@@ -192,6 +198,7 @@ OrgUnitTreeviewModal.propTypes = {
     source: any,
     version: any,
     resetTrigger: bool,
+    hardReset: bool, // when true, it will clear the selectedOrgUnits on reset, emptying the TreeviewPIcker selection
     disabled: bool,
     required: bool,
 };
@@ -206,6 +213,7 @@ OrgUnitTreeviewModal.defaultProps = {
     resetTrigger: false,
     disabled: false,
     required: false,
+    hardReset: false,
 };
 
 export { OrgUnitTreeviewModal };

@@ -37,70 +37,61 @@ const Filters = ({ params, baseUrl }) => {
     const countriesList = (data && data.orgUnits) || [];
     return (
         <>
-            <Grid container spacing={4}>
-                <Grid item xs={3}>
-                    <InputComponent
-                        loading={isFetchingCountries}
-                        keyValue="countries"
-                        multi
-                        clearable
-                        onChange={(key, value) => {
-                            setFiltersUpdated(true);
-                            setCountries(value);
-                        }}
-                        value={countries}
-                        type="select"
-                        options={countriesList.map(c => ({
-                            label: c.name,
-                            value: c.id,
-                        }))}
-                        label={MESSAGES.country}
-                    />
+            <Box display="inline-flex" width="90%">
+                <Grid container spacing={4}>
+                    <Grid item xs={3}>
+                        <InputComponent
+                            loading={isFetchingCountries}
+                            keyValue="countries"
+                            multi
+                            clearable
+                            onChange={(key, value) => {
+                                setFiltersUpdated(true);
+                                setCountries(value);
+                            }}
+                            value={countries}
+                            type="select"
+                            options={countriesList.map(c => ({
+                                label: c.name,
+                                value: c.id,
+                            }))}
+                            label={MESSAGES.country}
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <InputComponent
+                            keyValue="orbName"
+                            onChange={(key, value) => {
+                                setFiltersUpdated(true);
+                                setObrName(value);
+                            }}
+                            value={obrName}
+                            type="search"
+                            label={MESSAGES.name}
+                            onEnterPressed={handleSearch}
+                        />
+                    </Grid>
+                    <Grid item xs={6}>
+                        <DatesRange
+                            onChangeDate={(key, value) => {
+                                if (key === 'dateFrom') {
+                                    setObrFrom(value);
+                                }
+                                if (key === 'dateTo') {
+                                    setObrTo(value);
+                                }
+                                setFiltersUpdated(true);
+                            }}
+                            labelFrom={MESSAGES.R1StartFrom}
+                            labelTo={MESSAGES.R1StartTo}
+                            dateFrom={obrFrom}
+                            dateTo={obrTo}
+                        />
+                    </Grid>
                 </Grid>
-                <Grid item xs={3}>
-                    <InputComponent
-                        keyValue="orbName"
-                        onChange={(key, value) => {
-                            setFiltersUpdated(true);
-                            setObrName(value);
-                        }}
-                        value={obrName}
-                        type="search"
-                        label={MESSAGES.name}
-                        onEnterPressed={handleSearch}
-                    />
-                </Grid>
-                <Grid item xs={6}>
-                    <DatesRange
-                        onChangeDate={(key, value) => {
-                            if (key === 'dateFrom') {
-                                setObrFrom(value);
-                            }
-                            if (key === 'dateTo') {
-                                setObrTo(value);
-                            }
-                            setFiltersUpdated(true);
-                        }}
-                        labelFrom={MESSAGES.R1StartFrom}
-                        labelTo={MESSAGES.R1StartTo}
-                        dateFrom={obrFrom}
-                        dateTo={obrTo}
-                    />
-                </Grid>
-            </Grid>
-            <Grid
-                container
-                spacing={4}
-                justifyContent="flex-end"
-                alignItems="center"
-            >
-                <Grid
-                    item
-                    xs={2}
-                    container
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
+            </Box>
+            <Box display="inline-flex" width="10%" justifyContent="flex-end">
+                <Box position="relative" top={16}>
                     <Button
                         disabled={!filtersUpdated}
                         variant="contained"
@@ -112,8 +103,8 @@ const Filters = ({ params, baseUrl }) => {
                         </Box>
                         <FormattedMessage {...MESSAGES.filter} />
                     </Button>
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
         </>
     );
 };

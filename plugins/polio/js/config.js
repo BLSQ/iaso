@@ -3,19 +3,38 @@ import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import SettingsIcon from '@material-ui/icons/Settings';
 import CalendarToday from '@material-ui/icons/CalendarToday';
-import { Dashboard } from './src/components/Dashboard';
+import { Dashboard } from './src/pages/Dashboard';
 import { Calendar } from './src/pages/Calendar';
 import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
 import MESSAGES from './src/constants/messages';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
 
+const campaignsFilters = [
+    {
+        isRequired: false,
+        key: 'countries',
+    },
+    {
+        isRequired: false,
+        key: 'obrName',
+    },
+    {
+        isRequired: false,
+        key: 'r1StartFrom',
+    },
+    {
+        isRequired: false,
+        key: 'r1StartTo',
+    },
+];
+
 const routes = [
     {
         baseUrl: 'polio/list',
-        component: () => <Dashboard />,
+        component: props => <Dashboard {...props} />,
         permission: 'iaso_polio',
-        params: [],
+        params: [...campaignsFilters],
     },
     {
         baseUrl: 'polio/calendar',
@@ -30,22 +49,7 @@ const routes = [
                 isRequired: false,
                 key: 'order',
             },
-            {
-                isRequired: false,
-                key: 'countries',
-            },
-            {
-                isRequired: false,
-                key: 'obrName',
-            },
-            {
-                isRequired: false,
-                key: 'obrFrom',
-            },
-            {
-                isRequired: false,
-                key: 'obrTo',
-            },
+            ...campaignsFilters,
         ],
     },
     {

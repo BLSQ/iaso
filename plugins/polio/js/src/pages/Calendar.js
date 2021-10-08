@@ -37,8 +37,8 @@ const Calendar = ({ params }) => {
         order: orders,
         countries: params.countries,
         obrName: params.obrName,
-        obrFrom: params.obrFrom,
-        obrTo: params.obrTo,
+        r1StartFrom: params.r1StartFrom,
+        r1StartTo: params.r1StartTo,
     });
 
     const { data: campaigns = [], status } = query;

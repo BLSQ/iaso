@@ -17,8 +17,8 @@ const Filters = ({ params, baseUrl }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [obrName, setObrName] = useState(params.obrName);
-    const [obrFrom, setObrFrom] = useState(params.obrFrom);
-    const [obrTo, setObrTo] = useState(params.obrTo);
+    const [r1StartFrom, setObrFrom] = useState(params.r1StartFrom);
+    const [r1StartTo, setObrTo] = useState(params.r1StartTo);
     const dispatch = useDispatch();
     const handleSearch = () => {
         if (filtersUpdated) {
@@ -27,8 +27,8 @@ const Filters = ({ params, baseUrl }) => {
                 ...params,
                 countries,
                 obrName,
-                obrFrom,
-                obrTo,
+                r1StartFrom,
+                r1StartTo,
             };
             dispatch(redirectTo(baseUrl, newParams));
         }
@@ -84,8 +84,8 @@ const Filters = ({ params, baseUrl }) => {
                             }}
                             labelFrom={MESSAGES.R1StartFrom}
                             labelTo={MESSAGES.R1StartTo}
-                            dateFrom={obrFrom}
-                            dateTo={obrTo}
+                            dateFrom={r1StartFrom}
+                            dateTo={r1StartTo}
                         />
                     </Grid>
                 </Grid>

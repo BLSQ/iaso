@@ -6,11 +6,10 @@ export const useGetCampaigns = options => {
         limit: options.pageSize,
         page: options.page,
         order: options.order,
-        search: options.searchQuery,
         country__id__in: options.countries,
         obr_name__contains: options.obrName,
-        round_one__started_at__gte: options.obrFrom?.replace(/-/gi, '/'),
-        round_one__started_at__lte: options.obrTo?.replace(/-/gi, '/'),
+        round_one__started_at__gte: options.r1StartFrom?.replace(/-/gi, '/'),
+        round_one__started_at__lte: options.r1StartTo?.replace(/-/gi, '/'),
     };
 
     const getURL = urlParams => {

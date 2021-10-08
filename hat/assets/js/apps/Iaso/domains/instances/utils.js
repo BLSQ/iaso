@@ -8,6 +8,7 @@ import instancesTableColumns from './config';
 import MESSAGES from './messages';
 import DeleteDialog from './components/DeleteInstanceDialog';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
+import { getCookie } from '../../utils/cookies';
 
 const NO_VALUE = '/';
 const hasNoValue = value => !value || value === '';
@@ -106,25 +107,28 @@ export const getMetasColumns = () =>
 
 const labelLocales = { fr: 'French', en: 'English' };
 
-const localizeLabel = (field, locale) => {
-    const formattedlabel = field.label.replaceAll("'", '"');
+const localizeLabel = field => {
+    const locale = getCookie('django_language') ?? 'en';
+    const singleToDoubleQuotes = field.label.replaceAll("'", '"');
+    const wrongDoubleQuotes = /(?<=[a-zA-Z])"(?=[a-zA-Z])/g;
+    const formattedLabel = singleToDoubleQuotes.replace(wrongDoubleQuotes, "'");
     let result;
     try {
-        const localeOptions = JSON.parse(formattedlabel);
+        const localeOptions = JSON.parse(formattedLabel);
         const localeKey = labelLocales[locale] ?? labelLocales.en;
         result = localeOptions[localeKey];
     } catch (e) {
         // some fields are using single quotes. Logging just for info, this can be deleted if it clutters the console
-        console.warn('Error parsing JSON', field.label);
-        result = field.key;
+        console.warn('Error parsing JSON', formattedLabel, e);
+        result = field.name;
     }
     return result;
 };
 
-const formatLabel = (field, locale) => {
-    if (field.label.charAt(0) === '{') return localizeLabel(field, locale);
-    if (!field.label) return field.key;
-    if (!field.label.trim()) return field.key;
+export const formatLabel = field => {
+    if (field.label.charAt(0) === '{') return localizeLabel(field);
+    if (!field.label) return field.name;
+    if (!field.label.trim()) return field.name;
     if (field.label.includes(':')) return field.label.split(':')[0];
     if (field.label.includes('$')) return field.label.split('$')[0];
     return field.label;
@@ -136,7 +140,6 @@ export const getInstancesVisibleColumns = ({
     order,
     defaultOrder,
     possibleFields,
-    locale,
 }) => {
     const activeOrders = (order || defaultOrder).split(',');
     const columnsNames = columns ? columns.split(',') : [];
@@ -157,7 +160,7 @@ export const getInstancesVisibleColumns = ({
 
     if (instance) {
         possibleFields.forEach(field => {
-            const label = formatLabel(field, locale);
+            const label = formatLabel(field);
             newColumns.push({
                 key: field.name,
                 label,

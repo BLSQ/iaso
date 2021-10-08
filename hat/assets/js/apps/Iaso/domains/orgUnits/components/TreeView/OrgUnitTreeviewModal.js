@@ -5,7 +5,7 @@ import {
     object,
     arrayOf,
     oneOfType,
-    any,
+    number,
     string,
 } from 'prop-types';
 import { isEqual } from 'lodash';
@@ -195,8 +195,8 @@ OrgUnitTreeviewModal.propTypes = {
     onConfirm: func,
     multiselect: bool,
     initialSelection: oneOfType([arrayOf(object), object]),
-    source: any,
-    version: any,
+    source: oneOfType([number, string]),
+    version: oneOfType([number, string]),
     resetTrigger: bool,
     hardReset: bool, // when true, it will clear the selectedOrgUnits on reset, emptying the TreeviewPIcker selection
     disabled: bool,

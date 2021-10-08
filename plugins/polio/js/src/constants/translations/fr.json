@@ -134,5 +134,7 @@
     "iaso.polio.title.roundTwo": "Round 2",
     "iaso.polio.title.scope": "Périmètre",
     "iaso.polio.vaccine": "Vaccin",
-    "iaso.polio.vaccines": "Vaccins"
+    "iaso.polio.vaccines": "Vaccins",
+    "iaso.polio.label.sortAsc": "Trier par ordre croissant",
+    "iaso.polio.label.sortDesc": "Trier par ordre décroissant"
 }

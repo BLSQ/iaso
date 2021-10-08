@@ -3,10 +3,9 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
-import { useKeyPressListener } from 'bluesquare-components';
+import { useKeyPressListener, useSafeIntl } from 'bluesquare-components';
 
 import { TableCell, TableSortLabel } from '@material-ui/core';
-import { FormattedMessage } from 'react-intl';
 
 import { colSpanTitle, staticFields } from '../constants';
 import { getOrderArray, getSort } from '../utils';
@@ -16,6 +15,7 @@ import { redirectTo } from '../../../../../../../hat/assets/js/apps/Iaso/routing
 
 const HeadStaticFieldsCells = ({ orders, params }) => {
     const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const shiftKeyIsDown = useKeyPressListener('Shift');
     const ordersArray = getOrderArray(orders);
@@ -46,6 +46,13 @@ const HeadStaticFieldsCells = ({ orders, params }) => {
     return staticFields.map(f => {
         const sort = ordersArray.find(o => o.id === f.sortKey);
         const sortActive = Boolean(sort);
+        const direction = sortActive && !sort.desc ? 'asc' : 'desc';
+        let title = MESSAGES.sortDesc;
+        if (sortActive) {
+            if (sort?.desc) {
+                title = MESSAGES.sortAsc;
+            }
+        }
         return (
             <TableCell
                 key={f.key}
@@ -67,14 +74,14 @@ const HeadStaticFieldsCells = ({ orders, params }) => {
                 >
                     <TableSortLabel
                         active={sortActive}
-                        direction={sortActive && !sort.desc ? 'asc' : 'desc'}
-                        title="title"
+                        direction={direction}
+                        title={formatMessage(title)}
                         classes={{
                             root: classes.sortLabel,
                             icon: classes.icon,
                         }}
                     >
-                        <FormattedMessage {...MESSAGES[f.key]} />
+                        {formatMessage(MESSAGES[f.key])}
                     </TableSortLabel>
                 </span>
             </TableCell>

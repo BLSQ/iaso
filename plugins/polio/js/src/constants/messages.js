@@ -543,6 +543,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.R1StartTo',
         defaultMessage: 'R1 start date to',
     },
+    sortAsc: {
+        id: 'iaso.polio.label.sortAsc',
+        defaultMessage: 'Sort ascending',
+    },
+    sortDesc: {
+        id: 'iaso.polio.label.sortDesc',
+        defaultMessage: 'Sort descending',
+    },
 });
 
 export default MESSAGES;

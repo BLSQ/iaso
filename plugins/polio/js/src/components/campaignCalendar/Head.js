@@ -9,7 +9,7 @@ import { useStyles } from './Styles';
 import { colSpanTitle, staticFields } from './constants';
 import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
 
-const Head = ({ headers, params, orders }) => {
+const Head = ({ headers, params, orders, currentWeekIndex }) => {
     const classes = useStyles();
     return (
         <TableHead>
@@ -78,12 +78,15 @@ const Head = ({ headers, params, orders }) => {
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
                 <HeadStaticFieldsCells params={params} orders={orders} />
-                {headers.weeks.map(week => (
+                {headers.weeks.map((week, weekIndex) => (
                     <TableCell
-                        className={classnames([
-                            classes.tableCellHead,
-                            classes.tableCellSmall,
-                        ])}
+                        className={classnames(
+                            [classes.tableCellHead, classes.tableCellSmall],
+                            {
+                                [classes.currentWeek]:
+                                    weekIndex + 1 === currentWeekIndex,
+                            },
+                        )}
                         style={{ top: 100 }}
                         key={`week-${week.year}-${week.month}-${week.value}`}
                         align="center"
@@ -129,6 +132,7 @@ Head.propTypes = {
     headers: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     orders: PropTypes.string.isRequired,
+    currentWeekIndex: PropTypes.number.isRequired,
 };
 
 export { Head };

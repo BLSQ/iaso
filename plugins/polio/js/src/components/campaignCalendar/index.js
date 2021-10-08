@@ -27,7 +27,12 @@ const CampaignsCalendar = ({
             <TableContainer className={classes.tableContainer}>
                 {loadingCampaigns && <LoadingSpinner absolute />}
                 <Table stickyHeader className={classes.table}>
-                    <Head headers={headers} params={params} orders={orders} />
+                    <Head
+                        headers={headers}
+                        params={params}
+                        orders={orders}
+                        currentWeekIndex={currentWeekIndex}
+                    />
                     <Body
                         loadingCampaigns={loadingCampaigns}
                         campaigns={campaigns}

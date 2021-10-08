@@ -5,7 +5,7 @@ import {
     object,
     arrayOf,
     oneOfType,
-    any,
+    number,
     string,
 } from 'prop-types';
 import { isEqual } from 'lodash';
@@ -29,6 +29,10 @@ const OrgUnitTreeviewModal = ({
     initialSelection,
     source,
     resetTrigger,
+    hardReset,
+    disabled,
+    version,
+    required,
 }) => {
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
 
@@ -90,18 +94,27 @@ const OrgUnitTreeviewModal = ({
     );
 
     const getRootDataWithSource = useCallback(async () => {
+        if (version) return getRootData(version, 'version');
         return getRootData(source);
-    }, [source]);
+    }, [source, version]);
 
-    const searchOrgUnitsWithSource = async (value, count) => {
-        return searchOrgUnits(value, count, source);
-    };
+    const searchOrgUnitsWithSource = useCallback(
+        async (value, count) => {
+            return searchOrgUnits(value, count, source, version);
+        },
+        [source, version],
+    );
 
-    const resetSelection = () => {
+    const resetSelection = useCallback(() => {
         setSelectedOrgUnitsIds([]);
         setSelectedOrgUnitParents(new Map());
-        onConfirm(null);
-    };
+        if (multiselect) {
+            onConfirm([]);
+        } else {
+            onConfirm(null);
+        }
+    }, [onConfirm, multiselect]);
+
     const setToInitialValues = initialValues => {
         setSelectedOrgUnits(initialValues);
         setSelectedOrgUnitsIds(formatInitialSelectedIds(initialValues));
@@ -121,8 +134,16 @@ const OrgUnitTreeviewModal = ({
     }, [initialSelection]);
 
     useEffect(() => {
-        if (resetTrigger) setToInitialValues(initialSelection);
-    }, [resetTrigger, initialSelection]);
+        if (resetTrigger) {
+            setToInitialValues(initialSelection);
+        }
+    }, [resetTrigger, initialSelection, resetSelection]);
+
+    useEffect(() => {
+        if (resetTrigger && hardReset) {
+            resetSelection();
+        }
+    }, [resetTrigger, hardReset, resetSelection]);
 
     return (
         <ConfirmCancelDialogComponent
@@ -133,6 +154,8 @@ const OrgUnitTreeviewModal = ({
                     resetSelection={resetSelection}
                     multiselect={multiselect}
                     placeholder={titleMessage}
+                    required={required}
+                    disabled={disabled}
                 />
             )}
             titleMessage={titleMessage}
@@ -172,8 +195,12 @@ OrgUnitTreeviewModal.propTypes = {
     onConfirm: func,
     multiselect: bool,
     initialSelection: oneOfType([arrayOf(object), object]),
-    source: any,
+    source: oneOfType([number, string]),
+    version: oneOfType([number, string]),
     resetTrigger: bool,
+    hardReset: bool, // when true, it will clear the selectedOrgUnits on reset, emptying the TreeviewPIcker selection
+    disabled: bool,
+    required: bool,
 };
 
 OrgUnitTreeviewModal.defaultProps = {
@@ -182,7 +209,11 @@ OrgUnitTreeviewModal.defaultProps = {
     multiselect: false,
     initialSelection: null,
     source: null,
+    version: null,
     resetTrigger: false,
+    disabled: false,
+    required: false,
+    hardReset: false,
 };
 
 export { OrgUnitTreeviewModal };

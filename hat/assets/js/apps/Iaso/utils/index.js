@@ -101,3 +101,11 @@ export const PluginsContext = createContext({ plugins: [] });
 // Added it here because using the one from test/utils would cause compilation errors
 export const waitFor = delay =>
     new Promise(resolve => setTimeout(resolve, delay));
+
+export const fakeResponse =
+    response =>
+    async (isError = false) => {
+        if (isError) throw new Error('mock request failed');
+        await waitFor(200);
+        return response;
+    };

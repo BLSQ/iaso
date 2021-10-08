@@ -7,6 +7,11 @@ import { Dashboard } from './src/pages/Dashboard';
 import { Calendar } from './src/pages/Calendar';
 import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
 import MESSAGES from './src/constants/messages';
+import {
+    DASHBOARD_BASE_URL,
+    CALENDAR_BASE_URL,
+    CONFIG_BASE_URL,
+} from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
 
@@ -31,13 +36,13 @@ const campaignsFilters = [
 
 const routes = [
     {
-        baseUrl: 'polio/list',
+        baseUrl: DASHBOARD_BASE_URL,
         component: props => <Dashboard {...props} />,
         permission: 'iaso_polio',
         params: [...campaignsFilters],
     },
     {
-        baseUrl: 'polio/calendar',
+        baseUrl: CALENDAR_BASE_URL,
         component: props => <Calendar {...props} />,
         permission: 'iaso_polio',
         params: [
@@ -53,7 +58,7 @@ const routes = [
         ],
     },
     {
-        baseUrl: 'polio/config',
+        baseUrl: CONFIG_BASE_URL,
         component: () => <CountryNotificationsConfig />,
         permission: 'iaso_polio',
         params: [

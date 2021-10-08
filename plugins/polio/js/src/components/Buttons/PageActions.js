@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Grid } from '@material-ui/core';
 import { useStyles } from '../../styles/theme';
 import { Filters } from '../campaignCalendar/Filters';
+import { DASHBOARD_BASE_URL } from '../../constants/routes';
 
 export const PageActions = ({ children, params }) => {
     const classes = useStyles();
@@ -16,7 +17,7 @@ export const PageActions = ({ children, params }) => {
             alignItems="center"
         >
             <Grid item xs={12}>
-                <Filters params={params} baseUrl="polio/list" />
+                <Filters params={params} baseUrl={DASHBOARD_BASE_URL} />
             </Grid>
             <Grid
                 item

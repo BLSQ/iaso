@@ -194,9 +194,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.fieldsToExport',
         defaultMessage: 'Fields to export',
     },
-    datasourceRef: {
-        id: 'iaso.datasources.label.datasourceRef',
-        defaultMessage: 'Reference data source',
+    datasourceSource: {
+        id: 'iaso.datasources.label.datasourceSource',
+        defaultMessage: 'Source data source',
     },
     credentials: {
         id: 'iaso.datasources.label.credentials',
@@ -204,10 +204,10 @@ const MESSAGES = defineMessages({
     },
     exportTitle: {
         id: 'iaso.datasources.title.export',
-        defaultMessage: 'Export',
+        defaultMessage: 'OrgUnits to export',
     },
-    targetDataSource: {
-        id: 'iaso.datasources.title.targetDataSource',
+    sourceDataSource: {
+        id: 'iaso.datasources.title.sourceDataSource',
         defaultMessage: 'Target data source',
     },
     compareAndExport: {

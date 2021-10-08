@@ -41,17 +41,18 @@ const style = theme => ({
 const useStyles = makeStyles(style);
 
 const initialExportData = defaultVersionId => ({
-    source_version_id: defaultVersionId, // version id of the origin data source
-    source_top_org_unit_id: null,
-    source_org_unit_type_ids: [],
-    source_status: 'ALL', // "New", "Validated" etc, cf orgunit search
+    ref_version_id: defaultVersionId, // version id of the target data source
+    ref_top_org_unit_id: null,
+
+    ref_org_unit_type_ids: [],
+    ref_status: 'ALL', // "New", "Validated" etc, cf orgunit search
     fields_to_export: [
         FIELDS_TO_EXPORT.name,
         FIELDS_TO_EXPORT.parent,
         FIELDS_TO_EXPORT.geometry,
     ],
-    ref_version_id: null, // version id of the target data source
-    ref_top_org_unit_id: null,
+    source_version_id: null, // version id of the origin data source
+    source_top_org_unit_id: null,
 });
 
 export const ExportToDHIS2Dialog = ({
@@ -83,11 +84,11 @@ export const ExportToDHIS2Dialog = ({
         setExportData,
     ] = useFormState(initialExportData(defaultVersionId));
 
-    const destinationDataVersionId = exportData?.ref_version_id?.value;
+    const refDataVersionId = exportData?.ref_version_id?.value;
     const sourceDataVersionId = exportData?.source_version_id?.value;
 
     // these ref to enable resetting the treeview when datasource changes
-    const refTreeviewResetControl = useRef(destinationDataVersionId);
+    const refTreeviewResetControl = useRef(refDataVersionId);
     const sourceTreeviewResetControl = useRef(sourceDataVersionId);
 
     const reset = useCallback(() => {
@@ -119,8 +120,8 @@ export const ExportToDHIS2Dialog = ({
 
     const allowConfirm =
         Boolean(exportData.source_version_id?.value) &&
-        (Boolean(exportData.source_status?.value) ||
-            exportData.source_status?.value === '') &&
+        (Boolean(exportData.ref_status?.value) ||
+            exportData.ref_status?.value === '') &&
         exportData.fields_to_export?.value.length > 0 &&
         Boolean(exportData.ref_version_id?.value);
 
@@ -135,10 +136,10 @@ export const ExportToDHIS2Dialog = ({
 
     // Reset Treeview when changing ref datasource
     useEffect(() => {
-        if (refTreeviewResetControl.current !== destinationDataVersionId) {
-            refTreeviewResetControl.current = destinationDataVersionId;
+        if (refTreeviewResetControl.current !== refDataVersionId) {
+            refTreeviewResetControl.current = refDataVersionId;
         }
-    }, [destinationDataVersionId]);
+    }, [refDataVersionId]);
 
     return (
         <ConfirmCancelDialogComponent
@@ -169,10 +170,10 @@ export const ExportToDHIS2Dialog = ({
                         <Grid xs={6} item>
                             <InputComponent
                                 type="select"
-                                keyValue="source_version_id"
+                                keyValue="ref_version_id"
                                 labelString={formatMessage(MESSAGES.version)}
-                                value={exportData.source_version_id?.value}
-                                errors={exportData.source_version_id.errors}
+                                value={exportData.ref_version_id?.value}
+                                errors={exportData.ref_version_id.errors}
                                 onChange={setExportDataField}
                                 options={dataSourceVersionsAsOptions(
                                     versions,
@@ -187,7 +188,7 @@ export const ExportToDHIS2Dialog = ({
                                 <OrgUnitTreeviewModal
                                     onConfirm={value => {
                                         setExportDataField(
-                                            'source_top_org_unit_id',
+                                            'ref_top_org_unit_id',
                                             value?.id ?? null,
                                         );
                                     }}
@@ -196,8 +197,8 @@ export const ExportToDHIS2Dialog = ({
                                         MESSAGES.selectTopOrgUnit,
                                     )}
                                     resetTrigger={
-                                        sourceTreeviewResetControl.current !==
-                                        sourceDataVersionId
+                                        refTreeviewResetControl.current !==
+                                        refDataVersionId
                                     }
                                 />
                             </Box>
@@ -207,9 +208,9 @@ export const ExportToDHIS2Dialog = ({
                         <InputComponent
                             type="select"
                             labelString={formatMessage(MESSAGES.status)}
-                            keyValue="source_status"
-                            value={exportData.source_status?.value}
-                            errors={exportData.source_status.errors}
+                            keyValue="ref_status"
+                            value={exportData.ref_status?.value}
+                            errors={exportData.ref_status.errors}
                             onChange={setExportDataField}
                             options={orgUnitStatusAsOptions(formatMessage)}
                             required
@@ -218,10 +219,10 @@ export const ExportToDHIS2Dialog = ({
                     <Grid xs={6} item>
                         <InputComponent
                             type="select"
-                            keyValue="source_org_unit_type_ids"
+                            keyValue="ref_org_unit_type_ids"
                             labelString={formatMessage(MESSAGES.orgUnitTypes)}
-                            value={exportData.source_org_unit_type_ids?.value}
-                            errors={exportData.source_org_unit_type_ids.errors}
+                            value={exportData.ref_org_unit_type_ids?.value}
+                            errors={exportData.ref_org_unit_type_ids.errors}
                             onChange={(keyValue, newValue) => {
                                 setExportDataField(
                                     keyValue,
@@ -258,16 +259,18 @@ export const ExportToDHIS2Dialog = ({
                 {/* End data to export */}
                 <Grid container item spacing={2}>
                     <ModalSubTitle
-                        message={formatMessage(MESSAGES.targetDataSource)}
+                        message={formatMessage(MESSAGES.sourceDataSource)}
                     />
 
                     <Grid xs={6} item>
                         <InputComponent
                             type="select"
-                            keyValue="ref_version_id"
-                            labelString={formatMessage(MESSAGES.datasourceRef)}
-                            value={exportData.ref_version_id.value}
-                            errors={exportData.ref_version_id.errors}
+                            keyValue="source_version_id"
+                            labelString={formatMessage(
+                                MESSAGES.datasourceSource,
+                            )}
+                            value={exportData.source_version_id.value}
+                            errors={exportData.source_version_id.errors}
                             onChange={(keyValue, value) => {
                                 setExportDataField(keyValue, value?.toString());
                             }}
@@ -284,19 +287,19 @@ export const ExportToDHIS2Dialog = ({
                             <OrgUnitTreeviewModal
                                 onConfirm={value => {
                                     setExportDataField(
-                                        'ref_top_org_unit_id',
+                                        'source_top_org_unit_id',
                                         value?.id ?? null,
                                     );
                                 }}
-                                version={destinationDataVersionId}
+                                version={sourceDataVersionId}
                                 titleMessage={formatMessage(
                                     MESSAGES.selectTopOrgUnit,
                                 )}
                                 resetTrigger={
-                                    refTreeviewResetControl.current !==
-                                    destinationDataVersionId
+                                    sourceTreeviewResetControl.current !==
+                                    sourceDataVersionId
                                 }
-                                disabled={!destinationDataVersionId}
+                                disabled={!sourceDataVersionId}
                             />
                         </Box>
                     </Grid>

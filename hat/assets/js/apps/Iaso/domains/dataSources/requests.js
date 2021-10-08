@@ -82,13 +82,13 @@ export const useDataSourceVersions = () => {
 
 const adaptForApi = data => {
     const adaptedData = { ...data };
-    if (data.source_status === 'ALL') {
-        adaptedData.source_status = '';
+    if (data.ref_status === 'ALL') {
+        adaptedData.ref_status = '';
     }
     // For now we decided to not expose theses parameters to the user
     // and reuse them between the source and the ref
-    adaptedData.ref_org_unit_type_ids = data.source_org_unit_type_ids;
-    adaptedData.ref_status = adaptedData.source_status;
+    adaptedData.source_org_unit_type_ids = data.ref_org_unit_type_ids;
+    adaptedData.source_status = adaptedData.ref_status;
     return adaptedData;
 };
 

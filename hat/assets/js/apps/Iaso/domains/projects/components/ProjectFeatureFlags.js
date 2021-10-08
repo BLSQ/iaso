@@ -26,7 +26,6 @@ const ProjectFeatureFlags = ({
                 value: fF.id,
             }))}
             label={MESSAGES.featureFlags}
-            required
         />
     );
 };

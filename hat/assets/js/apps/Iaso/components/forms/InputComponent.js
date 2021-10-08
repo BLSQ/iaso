@@ -15,10 +15,6 @@ import {
 import { FormControl, FormLabel } from '@material-ui/core';
 import MESSAGES from '../../domains/forms/messages';
 
-/**
- * @deprecated
- * Import specific components from bluesquare-components library instead
- */
 class InputComponent extends Component {
     constructor(props) {
         super(props);

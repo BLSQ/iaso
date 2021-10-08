@@ -390,8 +390,13 @@ class CampaignSerializer(serializers.ModelSerializer):
         round_two_data = validated_data.pop("round_two")
         group = validated_data.pop("group") if "group" in validated_data else None
 
-        Round.objects.filter(pk=instance.round_one_id).update(**round_one_data)
-        Round.objects.filter(pk=instance.round_two_id).update(**round_two_data)
+        round_one_serializer = RoundSerializer(instance=instance.round_one, data=round_one_data)
+        round_one_serializer.is_valid(raise_exception=True)
+        instance.round_one = round_one_serializer.save()
+
+        round_two_serializer = RoundSerializer(instance=instance.round_two, data=round_two_data)
+        round_two_serializer.is_valid(raise_exception=True)
+        instance.round_two = round_two_serializer.save()
 
         if group:
             org_units = group.pop("org_units") if "org_units" in group else []
@@ -401,6 +406,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
             instance.group = campaign_group
 
+        # we want to create a new preparedness and surge data object each time
         if "preparedness_data" in validated_data:
             Preparedness.objects.create(campaign=instance, **validated_data.pop("preparedness_data"))
         if "surge_data" in validated_data:

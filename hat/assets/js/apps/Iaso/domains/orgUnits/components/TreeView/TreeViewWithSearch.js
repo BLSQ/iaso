@@ -14,6 +14,13 @@ import { MESSAGES } from './messages';
 import { IasoTreeView } from './IasoTreeView';
 import { adaptMap } from './utils';
 
+const formatInitialSelectedData = (selectedData, multiselect) => {
+    if (multiselect && !selectedData) return [];
+    if (multiselect && !Array.isArray(selectedData))
+        throw new Error('Multiselect Treeview requires an array');
+    return selectedData;
+};
+
 const TreeViewWithSearch = ({
     labelField, // name
     nodeField, // id
@@ -34,9 +41,7 @@ const TreeViewWithSearch = ({
     preexpanded, // TODO rename
     selectedData,
 }) => {
-    const [data, setData] = useState(
-        Array.isArray(selectedData) ? selectedData : selectedData,
-    );
+    const [data, setData] = useState(formatInitialSelectedData(selectedData));
     const [selected, setSelected] = useState(
         preselected || (multiselect ? [] : ''),
     );
@@ -91,7 +96,7 @@ const TreeViewWithSearch = ({
             setParentsTicked(updatedParents);
             setData(updatedSelectedData);
         },
-        [onUpdate, ticked, parentsTicked, multiselect, data],
+        [onUpdate, ticked, parentsTicked, multiselect, data, parseNodeIds],
     );
 
     const onSearchSelect = useCallback(
@@ -121,7 +126,7 @@ const TreeViewWithSearch = ({
             }
             setScrollIntoView(currentId);
         },
-        [parseNodeIds, onNodeSelect, selected, onUpdate],
+        [parseNodeIds, onNodeSelect, selected, onUpdate, expanded, multiselect],
     );
 
     return (

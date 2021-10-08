@@ -1,4 +1,3 @@
-from django.db.models.query import prefetch_related_objects
 from iaso.models import OrgUnit, GroupSet
 from .comparisons import as_field_types, Diff, Comparison
 
@@ -30,7 +29,7 @@ class Differ:
         if validation_status:
             queryset = queryset.filter(validation_status=validation_status)
         if top_org_unit:
-            parent = OrgUnit.objects.get(id=top_org_unit)
+            parent = OrgUnit.objects.get(id=top_org_unit) if isinstance(top_org_unit, int) else top_org_unit
             queryset = queryset.hierarchy(parent)
         if org_unit_types:
             queryset = queryset.filter(org_unit_type__in=org_unit_types)
@@ -48,8 +47,11 @@ class Differ:
         top_org_unit_ref=None,
         org_unit_types=None,
         org_unit_types_ref=None,
+        field_names=None,
     ):
-        field_names = ["name", "geometry", "parent"]
+
+        if field_names is None:
+            field_names = ["name", "geometry", "parent"]
         if not ignore_groups:
             for group_set in GroupSet.objects.filter(source_version=version):
                 field_names.append("groupset:" + group_set.source_ref + ":" + group_set.name)

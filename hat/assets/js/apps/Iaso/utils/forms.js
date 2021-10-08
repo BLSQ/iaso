@@ -21,3 +21,12 @@ export function commaSeparatedIdsToStringArray(string) {
         .filter(s => s !== '')
         .sort();
 }
+
+export const convertFormStateToDict = formState => {
+    const result = {};
+    const fields = Object.keys(formState);
+    fields.forEach(field => {
+        result[field] = formState[field].value;
+    });
+    return result;
+};

@@ -103,6 +103,7 @@ class OrgunitsMap extends Component {
     shouldComponentUpdate(nextProps) {
         return (
             !isEqual(nextProps.orgUnits, this.props.orgUnits) ||
+            !isEqual(nextProps.currentTile, this.props.currentTile) ||
             !isEqual(nextProps.isClusterActive, this.props.isClusterActive) ||
             !isEqual(
                 getColorsFromParams(nextProps.params),

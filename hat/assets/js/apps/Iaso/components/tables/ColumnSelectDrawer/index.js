@@ -44,7 +44,7 @@ const makeTooltipTitle = option => {
         <div>
             {option.label} -
             <br />
-            {option.key};
+            {option.key}
         </div>
     );
 };

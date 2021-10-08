@@ -104,7 +104,12 @@ export const useSnackQuery = (
         onError: (error, variables, context) => {
             if (snackErrorMsg) {
                 dispatch(
-                    enqueueSnackbar(null, errorSnackBar(snackErrorMsg, error)),
+                    enqueueSnackbar(
+                        errorSnackBar(
+                            null,
+                            errorSnackBar(snackErrorMsg, error),
+                        ),
+                    ),
                 );
             }
             if (options.onError) {

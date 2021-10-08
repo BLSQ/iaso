@@ -149,10 +149,9 @@ const ColumnsSelectDrawer = ({
                                                         className={
                                                             classes.switch
                                                         }
-                                                        toolTipTitle={
-                                                            // o.label ?? o.key
-                                                            makeTooltipTitle(o)
-                                                        }
+                                                        toolTipTitle={makeTooltipTitle(
+                                                            o,
+                                                        )}
                                                         primaryText={
                                                             o.label
                                                                 ? o.label

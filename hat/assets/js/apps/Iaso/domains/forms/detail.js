@@ -84,7 +84,11 @@ const FormDetail = ({ router, params }) => {
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
     const allProjects = useSelector(state => state.projects.allProjects);
-    const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
+    const {
+        data: form,
+        isLoading: isFormLoading,
+        refetch,
+    } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
@@ -117,6 +121,7 @@ const FormDetail = ({ router, params }) => {
         let savedFormData;
         try {
             savedFormData = await saveForm;
+            refetch();
             dispatch(enqueueSnackbar(succesfullSnackBar()));
             if (!isUpdate) {
                 dispatch(
@@ -146,8 +151,8 @@ const FormDetail = ({ router, params }) => {
 
     const onChange = useCallback(
         (keyValue, value) => {
-            setFieldValue(keyValue, value);
             if (isSaved) setIsSaved(false);
+            setFieldValue(keyValue, value);
         },
         [isSaved, setFieldValue],
     );
@@ -171,6 +176,7 @@ const FormDetail = ({ router, params }) => {
             mapValues(currentForm, v => v.value),
             formatFormData(form),
         ) && !isSaved;
+
     return (
         <>
             <TopBar

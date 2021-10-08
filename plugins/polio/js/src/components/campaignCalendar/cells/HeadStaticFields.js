@@ -11,6 +11,7 @@ import { colSpanTitle, staticFields } from '../constants';
 import { getOrderArray, getSort } from '../utils';
 import { useStyles } from '../Styles';
 import MESSAGES from '../../../constants/messages';
+import { CALENDAR_BASE_URL } from '../../../constants/routes';
 import { redirectTo } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 
 const HeadStaticFieldsCells = ({ orders, params }) => {
@@ -41,7 +42,7 @@ const HeadStaticFieldsCells = ({ orders, params }) => {
             ...params,
             order: getSort(newSort),
         };
-        dispatch(redirectTo('polio/calendar', newParams));
+        dispatch(redirectTo(CALENDAR_BASE_URL, newParams));
     };
     return staticFields.map(f => {
         const sort = ordersArray.find(o => o.id === f.sortKey);

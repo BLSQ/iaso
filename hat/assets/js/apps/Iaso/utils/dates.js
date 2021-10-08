@@ -57,5 +57,8 @@ export const setLocale = code => {
     moment.locale(code);
     moment.updateLocale(code, {
         longDateFormat: longDateFormats[code],
+        week: {
+            dow: 1,
+        },
     });
 };

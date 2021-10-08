@@ -170,6 +170,10 @@ export const useStyles = makeStyles(theme => ({
         fontWeight: 'bold',
         marginBottom: theme.spacing(1),
     },
+    mapLegendCampaignTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
     roundColor: {
         borderRadius: theme.spacing(3),
         height: theme.spacing(3),

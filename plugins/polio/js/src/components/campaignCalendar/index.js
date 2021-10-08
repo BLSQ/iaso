@@ -17,13 +17,18 @@ const CampaignsCalendar = ({
     loadingCampaigns,
     params,
     orders,
+    currentDate,
 }) => {
     const classes = useStyles();
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
 
     return (
         <Box mb={2} display="flex" alignItems="flex-start" position="relative">
-            <Nav currentMonday={currentMonday} params={params} />
+            <Nav
+                currentMonday={currentMonday}
+                params={params}
+                currentDate={currentDate}
+            />
             <TableContainer className={classes.tableContainer}>
                 {loadingCampaigns && <LoadingSpinner absolute />}
                 <Table stickyHeader className={classes.table}>
@@ -57,6 +62,7 @@ CampaignsCalendar.propTypes = {
     loadingCampaigns: PropTypes.bool.isRequired,
     params: PropTypes.object.isRequired,
     orders: PropTypes.string.isRequired,
+    currentDate: PropTypes.object.isRequired,
 };
 
 export { CampaignsCalendar };

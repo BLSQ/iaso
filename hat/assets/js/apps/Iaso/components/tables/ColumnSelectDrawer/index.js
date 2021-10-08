@@ -31,11 +31,22 @@ const filterResults = (searchString, options) => {
         const search = searchString.toLowerCase();
         displayedOptions = displayedOptions.filter(
             o =>
-                o?.key.toLowerCase().includes(search) ||
-                o?.label.toLowerCase().includes(search),
+                o?.key?.toLowerCase().includes(search) ||
+                o?.label?.toLowerCase().includes(search),
         );
     }
     return displayedOptions;
+};
+
+const makeTooltipTitle = option => {
+    if (!option.label) return option.key;
+    return (
+        <div>
+            {option.label} -
+            <br />
+            {option.key}
+        </div>
+    );
 };
 
 const ColumnsSelectDrawer = ({
@@ -138,9 +149,9 @@ const ColumnsSelectDrawer = ({
                                                         className={
                                                             classes.switch
                                                         }
-                                                        toolTipTitle={
-                                                            o.label ?? o.key
-                                                        }
+                                                        toolTipTitle={makeTooltipTitle(
+                                                            o,
+                                                        )}
                                                         primaryText={
                                                             o.label
                                                                 ? o.label

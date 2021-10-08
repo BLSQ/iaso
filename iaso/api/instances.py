@@ -2,7 +2,6 @@ import pandas as pd
 from django.db import connection
 from django.contrib.gis.geos import Point
 from rest_framework import viewsets, permissions
-from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.decorators import action
@@ -33,9 +32,7 @@ class InstanceSerializer(serializers.ModelSerializer):
         fields = ["org_unit", "period", "deleted"]
 
     def validate_org_unit(self, value):
-        """
-        Check if user has acces to this org_unit.
-        """
+        """Check if user has access to this org_unit."""
         if value.org_unit_type in self.instance.form.org_unit_types.all():
             try:
                 return OrgUnit.objects.filter_for_user_and_app_id(self.context["request"].user, None).get(pk=value.pk)

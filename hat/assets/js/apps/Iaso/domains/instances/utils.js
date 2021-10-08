@@ -107,16 +107,18 @@ export const getMetasColumns = () =>
 const labelLocales = { fr: 'French', en: 'English' };
 
 const localizeLabel = (field, locale) => {
-    const formattedlabel = field.label.replaceAll("'", '"');
+    const singleToDoubleQuotes = field.label.replaceAll("'", '"');
+    const wrongDoubleQuotes = /(?<=[a-zA-Z])"(?=[a-zA-Z])/g;
+    const formattedLabel = singleToDoubleQuotes.replace(wrongDoubleQuotes, "'");
     let result;
     try {
-        const localeOptions = JSON.parse(formattedlabel);
+        const localeOptions = JSON.parse(formattedLabel);
         const localeKey = labelLocales[locale] ?? labelLocales.en;
         result = localeOptions[localeKey];
     } catch (e) {
         // some fields are using single quotes. Logging just for info, this can be deleted if it clutters the console
-        console.warn('Error parsing JSON', field.label);
-        result = field.key;
+        console.warn('Error parsing JSON', formattedLabel, e);
+        result = field.key ?? field.name;
     }
     return result;
 };

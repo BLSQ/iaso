@@ -48,6 +48,7 @@ admin.site.register(OrgUnit, OrgUnitAdmin)
 class OrgUnitTypeAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
     list_display = ("name", "projects_list", "short_name", "depth")
+    list_filter = ("projects",)
 
     def projects_list(self, obj):
         projects = obj.projects.all()

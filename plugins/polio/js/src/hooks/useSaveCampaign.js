@@ -1,13 +1,15 @@
-import { sendRequest } from '../utils/networking';
 import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import {
+    postRequest,
+    putRequest,
+} from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 export const useSaveCampaign = () =>
     useSnackMutation(
-        body => {
-            const method = body.id ? 'PUT' : 'POST';
-            const path = `/api/polio/campaigns/${body.id ? `${body.id}/` : ''}`;
-            return sendRequest(method, path, body);
-        },
+        body =>
+            body.id
+                ? putRequest(`/api/polio/campaigns/${body.id}/`, body)
+                : postRequest('/api/polio/campaigns/', body),
         undefined,
         undefined,
         ['polio', 'campaigns'],

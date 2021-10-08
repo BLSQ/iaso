@@ -54,7 +54,7 @@ class CountryUsersGroupSerializer(serializers.ModelSerializer):
 def _error(message, exc=None):
     errors = {"file": [message]}
     if exc:
-        errors["debug"]: [str(exc)]
+        errors["debug"] = [str(exc)]
     return errors
 
 
@@ -273,7 +273,9 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
 
         lang = "EN"
         try:
-            country = campaign.country()
+            country = campaign.country
+            if not country:
+                exceptions.ValidationError({"message": _("No country found for campaign")})
             cug = CountryUsersGroup.objects.get(country=country)
             lang = cug.language
         except Exception as e:
@@ -285,7 +287,7 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
             spreadsheet.worksheet("National"),
             vacine=campaign.vacine,
             payment_mode=campaign.payment_mode,
-            country=campaign.country(),
+            country=campaign.country,
         )
 
         regional_template_worksheet = spreadsheet.worksheet("Regional")
@@ -308,24 +310,18 @@ class CampaignSerializer(serializers.ModelSerializer):
     round_one = RoundSerializer()
     round_two = RoundSerializer()
     org_unit = OrgUnitSerializer(source="initial_org_unit", read_only=True)
-    top_level_org_unit_name = serializers.SerializerMethodField()
-    top_level_org_unit_id = serializers.SerializerMethodField()
+    top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
+    top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
     general_status = serializers.SerializerMethodField()
 
     def get_top_level_org_unit_name(self, campaign):
-        if campaign.initial_org_unit:
-            parent = campaign.initial_org_unit
-            while parent.parent:
-                parent = parent.parent
-            return parent.name
+        if campaign.country:
+            return campaign.country.name
         return ""
 
     def get_top_level_org_unit_id(self, campaign):
-        if campaign.initial_org_unit:
-            parent = campaign.initial_org_unit
-            while parent.parent:
-                parent = parent.parent
-            return parent.id
+        if campaign.country:
+            return campaign.country.id
         return ""
 
     def get_general_status(self, campaign):
@@ -416,3 +412,58 @@ class CampaignSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status", "creation_email_send_at"]
         extra_kwargs = {"preparedness_data": {"write_only": True}}
+
+
+class AnonymousCampaignSerializer(CampaignSerializer):
+    class Meta:
+        model = Campaign
+        fields = [
+            "id",
+            "epid",
+            "obr_name",
+            "gpei_coordinator",
+            "gpei_email",
+            "description",
+            "initial_org_unit",
+            "creation_email_send_at",
+            "group",
+            "onset_at",
+            "three_level_call_at",
+            "cvdpv_notified_at",
+            "cvdpv2_notified_at",
+            "pv_notified_at",
+            "pv2_notified_at",
+            "virus",
+            "vacine",
+            "detection_status",
+            "detection_responsible",
+            "detection_first_draft_submitted_at",
+            "detection_rrt_oprtt_approval_at",
+            "risk_assessment_status",
+            "risk_assessment_responsible",
+            "investigation_at",
+            "risk_assessment_first_draft_submitted_at",
+            "risk_assessment_rrt_oprtt_approval_at",
+            "ag_nopv_group_met_at",
+            "dg_authorized_at",
+            "verification_score",
+            "doses_requested",
+            "country_name_in_surge_spreadsheet",
+            "budget_status",
+            "budget_responsible",
+            "who_disbursed_to_co_at",
+            "who_disbursed_to_moh_at",
+            "unicef_disbursed_to_co_at",
+            "unicef_disbursed_to_moh_at",
+            "eomg",
+            "no_regret_fund_amount",
+            "payment_mode",
+            "round_one",
+            "round_two",
+            "created_at",
+            "updated_at",
+            "district_count",
+            "budget_rrt_oprtt_approval_at",
+            "budget_submitted_at",
+        ]
+        read_only_fields = fields

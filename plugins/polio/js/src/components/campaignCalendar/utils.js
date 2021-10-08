@@ -77,21 +77,21 @@ const getCalendarData = currentMonday => {
 };
 
 const filterCampaigns = (allCampaigns, firstMonday, lastSunday) => {
-    return allCampaigns.filter(
-        campaign =>
-            campaign.R1End &&
-            campaign.R1Start &&
-            ((moment(campaign.R1Start, dateFormat).isSameOrAfter(firstMonday) &&
-                moment(campaign.R1Start, dateFormat).isSameOrBefore(
-                    lastSunday,
-                )) ||
-                (moment(campaign.R2End, dateFormat).isSameOrBefore(
-                    lastSunday,
-                ) &&
-                    moment(campaign.R2End, dateFormat).isSameOrAfter(
-                        firstMonday,
-                    ))),
-    );
+    return allCampaigns.filter(campaign => {
+        const { R1Start, R1End, R2End } = campaign;
+        return (
+            R1End &&
+            R1Start &&
+            ((R1Start.isSameOrAfter(firstMonday) &&
+                R1Start.isSameOrBefore(lastSunday)) ||
+                (R2End &&
+                    R2End.isSameOrBefore(lastSunday) &&
+                    R2End.isSameOrAfter(firstMonday)) ||
+                (!R2End &&
+                    R1End.clone().add(6, 'weeks').isSameOrBefore(lastSunday) &&
+                    R1End.clone().add(6, 'weeks').isSameOrAfter(firstMonday)))
+        );
+    });
 };
 
 const mapCampaigns = allCampaigns => {
@@ -236,6 +236,7 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
                     <R2Cell
                         key={`round2Cost-campaign-${id}`}
                         colSpan={colSpan}
+                        campaign={campaign}
                     />,
                 );
             } else if (
@@ -247,6 +248,7 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
                     <R2Cell
                         key={`round2Cost-campaign-${id}`}
                         colSpan={colSpan}
+                        campaign={campaign}
                     />,
                 );
             }

@@ -27,7 +27,9 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
         account = user.iaso_profile.account
 
         try:
-            source = DataSource.objects.filter(projects__in=account.project_set.all()).get(id=attrs["source_id"])
+            source = (
+                DataSource.objects.filter(projects__in=account.project_set.all()).distinct().get(id=attrs["source_id"])
+            )
         except DataSource.DoesNotExist:
             raise serializers.ValidationError("Unauthorized source_id")
         dhis2_url = attrs.get("dhis2_url", None)

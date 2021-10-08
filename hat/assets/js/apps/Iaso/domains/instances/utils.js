@@ -156,7 +156,7 @@ export const getInstancesVisibleColumns = ({
     }));
 
     if (instance) {
-        possibleFields.forEach(field => {
+        possibleFields?.forEach(field => {
             const label = formatLabel(field, locale);
             newColumns.push({
                 key: field.name,

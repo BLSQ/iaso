@@ -37,6 +37,12 @@ const useStyles = makeStyles(theme => ({
         width: 300,
         paddingTop: theme.spacing(2),
         marginLeft: -5,
+        '& .twitter-picker': {
+            width: '350px !important',
+            '& div div:nth-last-child(2), & div div:nth-last-child(3)': {
+                display: 'none !important',
+            },
+        },
     },
 }));
 

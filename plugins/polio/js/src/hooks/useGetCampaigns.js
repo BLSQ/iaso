@@ -7,7 +7,7 @@ export const useGetCampaigns = options => {
         page: options.page,
         order: options.order,
         country__id__in: options.countries,
-        obr_name__contains: options.obrName,
+        search: options.search,
         round_one__started_at__gte: options.r1StartFrom?.replace(/-/gi, '/'),
         round_one__started_at__lte: options.r1StartTo?.replace(/-/gi, '/'),
     };

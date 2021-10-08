@@ -44,7 +44,7 @@ export const Dashboard = ({ params }) => {
         pageSize,
         order,
         countries: params.countries,
-        obrName: params.obrName,
+        search: params.search,
         r1StartFrom: params.r1StartFrom,
         r1StartTo: params.r1StartTo,
     });

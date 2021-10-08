@@ -37,7 +37,7 @@ const Calendar = ({ params }) => {
     const { query } = useGetCampaigns({
         order: orders,
         countries: params.countries,
-        obrName: params.obrName,
+        search: params.search,
         r1StartFrom: params.r1StartFrom,
         r1StartTo: params.r1StartTo,
     });

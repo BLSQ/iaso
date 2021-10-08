@@ -99,6 +99,9 @@
     "iaso.polio.label.regional": "Régional",
     "iaso.polio.label.responsible": "Responsable",
     "iaso.polio.label.reviewedByRrt": "Revu par RRT",
+    "iaso.polio.label.search": "Recherche textuelle",
+    "iaso.polio.label.sortAsc": "Trier par ordre croissant",
+    "iaso.polio.label.sortDesc": "Trier par ordre décroissant",
     "iaso.polio.label.submitted": "Soumis",
     "iaso.polio.label.toSubmit": "À soumettre",
     "iaso.polio.label.unicef": "UNICEF",
@@ -134,7 +137,5 @@
     "iaso.polio.title.roundTwo": "Round 2",
     "iaso.polio.title.scope": "Périmètre",
     "iaso.polio.vaccine": "Vaccin",
-    "iaso.polio.vaccines": "Vaccins",
-    "iaso.polio.label.sortAsc": "Trier par ordre croissant",
-    "iaso.polio.label.sortDesc": "Trier par ordre décroissant"
+    "iaso.polio.vaccines": "Vaccins"
 }

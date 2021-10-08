@@ -22,7 +22,7 @@ const campaignsFilters = [
     },
     {
         isRequired: false,
-        key: 'obrName',
+        key: 'search',
     },
     {
         isRequired: false,

@@ -16,7 +16,7 @@ import { useGetCountries } from '../../hooks/useGetCountries';
 const Filters = ({ params, baseUrl }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
-    const [obrName, setObrName] = useState(params.obrName);
+    const [search, setSearch] = useState(params.search);
     const [r1StartFrom, setObrFrom] = useState(params.r1StartFrom);
     const [r1StartTo, setObrTo] = useState(params.r1StartTo);
     const dispatch = useDispatch();
@@ -26,7 +26,7 @@ const Filters = ({ params, baseUrl }) => {
             const newParams = {
                 ...params,
                 countries,
-                obrName,
+                search,
                 r1StartFrom,
                 r1StartTo,
             };
@@ -39,6 +39,19 @@ const Filters = ({ params, baseUrl }) => {
         <>
             <Box display="inline-flex" width="85%">
                 <Grid container spacing={4}>
+                    <Grid item xs={3}>
+                        <InputComponent
+                            keyValue="search"
+                            onChange={(key, value) => {
+                                setFiltersUpdated(true);
+                                setSearch(value);
+                            }}
+                            value={search}
+                            type="search"
+                            label={MESSAGES.search}
+                            onEnterPressed={handleSearch}
+                        />
+                    </Grid>
                     <Grid item xs={3}>
                         <InputComponent
                             loading={isFetchingCountries}
@@ -56,19 +69,6 @@ const Filters = ({ params, baseUrl }) => {
                                 value: c.id,
                             }))}
                             label={MESSAGES.country}
-                        />
-                    </Grid>
-                    <Grid item xs={3}>
-                        <InputComponent
-                            keyValue="orbName"
-                            onChange={(key, value) => {
-                                setFiltersUpdated(true);
-                                setObrName(value);
-                            }}
-                            value={obrName}
-                            type="search"
-                            label={MESSAGES.name}
-                            onEnterPressed={handleSearch}
                         />
                     </Grid>
                     <Grid item xs={6}>

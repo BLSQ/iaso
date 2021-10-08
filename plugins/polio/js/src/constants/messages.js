@@ -551,6 +551,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.sortDesc',
         defaultMessage: 'Sort descending',
     },
+    search: {
+        id: 'iaso.polio.label.search',
+        defaultMessage: 'Search',
+    },
 });
 
 export default MESSAGES;

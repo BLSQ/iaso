@@ -60,10 +60,11 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                 </Box>
             </div>
             <Map
+                zoomSnap={0.25}
                 ref={map}
-                style={{ height: 900 }}
+                style={{ height: '72vh' }}
                 center={[1, 20]}
-                zoom={4}
+                zoom={3.25}
                 scrollWheelZoom={false}
             >
                 <TileLayer

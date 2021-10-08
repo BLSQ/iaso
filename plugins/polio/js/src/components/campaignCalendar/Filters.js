@@ -37,7 +37,7 @@ const Filters = ({ params, baseUrl }) => {
     const countriesList = (data && data.orgUnits) || [];
     return (
         <>
-            <Box display="inline-flex" width="90%">
+            <Box display="inline-flex" width="85%">
                 <Grid container spacing={4}>
                     <Grid item xs={3}>
                         <InputComponent
@@ -90,7 +90,7 @@ const Filters = ({ params, baseUrl }) => {
                     </Grid>
                 </Grid>
             </Box>
-            <Box display="inline-flex" width="10%" justifyContent="flex-end">
+            <Box display="inline-flex" width="15%" justifyContent="flex-end">
                 <Box position="relative" top={16}>
                     <Button
                         disabled={!filtersUpdated}

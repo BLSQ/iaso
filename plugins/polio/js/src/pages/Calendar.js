@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { Box, makeStyles } from '@material-ui/core';
+import { Box, makeStyles, Grid } from '@material-ui/core';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useSelector } from 'react-redux';
 
@@ -77,22 +77,25 @@ const Calendar = ({ params }) => {
                 <Box mb={4}>
                     <Filters params={params} baseUrl={CALENDAR_BASE_URL} />
                 </Box>
-                <Box width={1} position="relative">
-                    <CampaignsCalendar
-                        params={params}
-                        orders={orders}
-                        campaigns={filteredCampaigns}
-                        calendarData={calendarData}
-                        currentMonday={currentMonday}
-                        loadingCampaigns={loadingCampaigns}
-                    />
-                </Box>
-                <Box width={1}>
-                    <CalendarMap
-                        campaigns={filteredCampaigns}
-                        loadingCampaigns={loadingCampaigns}
-                    />
-                </Box>
+
+                <Grid container spacing={2}>
+                    <Grid item xs={12} lg={8}>
+                        <CampaignsCalendar
+                            params={params}
+                            orders={orders}
+                            campaigns={filteredCampaigns}
+                            calendarData={calendarData}
+                            currentMonday={currentMonday}
+                            loadingCampaigns={loadingCampaigns}
+                        />
+                    </Grid>
+                    <Grid item xs={12} lg={4}>
+                        <CalendarMap
+                            campaigns={filteredCampaigns}
+                            loadingCampaigns={loadingCampaigns}
+                        />
+                    </Grid>
+                </Grid>
             </Box>
         </div>
     );

@@ -19,7 +19,7 @@ from iaso.models.org_unit import OrgUnitType
 
 
 from django.utils.timezone import now
-from datetime import timedelta
+from datetime import timedelta, datetime
 import json
 
 from .models import Campaign, Config, LineListImport, URLCache
@@ -311,32 +311,92 @@ class IMViewSet(viewsets.ViewSet):
             return response
 
 
+def find_campaign(campaigns, today, country):
+    for c in campaigns:
+        if c.country_id == country.id and c.round_one.started_at + timedelta(
+            days=-20
+        ) < today < c.round_one.started_at + timedelta(days=+60):
+            return c
+    return None
+
+
+def convert_dicts_to_table(list_of_dicts):
+    keys = set()
+    for d in list_of_dicts:
+        keys.update(set(d.keys()))
+    keys = list(keys)
+    keys.sort()
+    values = [keys]
+
+    for d in list_of_dicts:
+        l = []
+        for k in keys:
+            l.append(d.get(k, None))
+        values.append(l)
+
+    return values
+
+
+def get_url_content(url, login, password, minutes=60):
+    cached_response, created = URLCache.objects.get_or_create(url=url)
+    delta = now() - cached_response.updated_at
+    if created or delta > timedelta(minutes=minutes):
+        response = requests.get(url, auth=(login, password))
+        cached_response.content = response.text
+        cached_response.save()
+        j = response.json()
+    else:
+        j = json.loads(cached_response.content)
+    return j
+
+
+class VaccineStocksViewSet(viewsets.ViewSet):
+    """
+    Endpoint used to transform Vaccine Stocks data from existing ODK forms stored in ONA.
+    sample config: [{"url": "https://afro.who.int/api/v1/data/yyy", "login": "d", "country": "hyrule", "password": "zeldarules", "country_id": 2115781}]
+    """
+
+    def list(self, request):
+        as_csv = request.GET.get("format", None) == "csv"
+        config = get_object_or_404(Config, slug="vaccines")
+        res = []
+        failure_count = 0
+        campaigns = Campaign.objects.all()
+        form_count = 0
+        for config in config.content:
+            forms = get_url_content(
+                url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
+            )
+            country = OrgUnit.objects.get(id=config["country_id"])
+
+            for form in forms:
+                today = datetime.strptime(form["today"], "%Y-%m-%d").date()
+                campaign = find_campaign(campaigns, today, country)
+                form["country"] = country.name
+                if campaign:
+                    form["epid"] = campaign.epid
+                    form["obr"] = campaign.obr_name
+                else:
+                    print("campaign not found")
+                res.append(form)
+                form_count += 1
+        print("parsed:", len(res), "failed:", failure_count)
+        # print("all_keys", all_keys)
+        res = convert_dicts_to_table(res)
+        if as_csv:
+            response = HttpResponse(content_type="text/csv")
+            writer = csv.writer(response)
+            i = 1
+            for item in res:
+                writer.writerow(item)
+            return response
+        else:
+            return JsonResponse(res, safe=False)
+
+
 class IMViewSet2(viewsets.ViewSet):
     """
-           Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA. Very custom to the polio project.
-
-    sample Config:
-
-    configs = [
-           {
-               "keys": {"roundNumber": "roundNumber",
-                       "Response": "Response",
-                },
-               "prefix": "OHH",
-               "url": 'https://brol.com/api/v1/data/5888',
-               "login": "qmsdkljf",
-               "password": "qmsdlfj"
-           },
-           {
-               "keys": {'roundNumber': "roundNumber",
-                       "Response": "Response",
-                },
-               "prefix": "HH",
-               "url":  'https://brol.com/api/v1/data/5887',
-               "login": "qmsldkjf",
-               "password": "qsdfmlkj"
-           }
-       ]
+    Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
     """
 
     def list(self, request):
@@ -404,5 +464,6 @@ router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/im", IMViewSet, basename="IM")
 router.register(r"polio/imstats", IMViewSet2, basename="imstats")
+router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")

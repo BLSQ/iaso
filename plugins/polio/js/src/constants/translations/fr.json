@@ -132,9 +132,9 @@
     "iaso.polio.title.scope": "Périmètre",
     "iaso.polio.vaccine": "Vaccin",
     "iaso.polio.vaccines": "Vaccins",
-    "iaso.polio.PREPARING": "Preparing",
-    "iaso.polio.ROUND1START": "Round 1 started",
-    "iaso.polio.ROUND1DONE": "Round 1 completed",
-    "iaso.polio.ROUND2START": "Round 2 started",
-    "iaso.polio.ROUND2DONE": "Round 2 completed"
+    "iaso.polio.PREPARING": "En préparation",
+    "iaso.polio.ROUND1START": "Round 1 commencé",
+    "iaso.polio.ROUND1DONE": "Round 1 terminé",
+    "iaso.polio.ROUND2START": "Round 2 commencé",
+    "iaso.polio.ROUND2DONE": "Round 2 terminé"
 }

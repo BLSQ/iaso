@@ -44,8 +44,7 @@ const ImportLineListDialog = ({ renderTrigger }) => {
     const [form, setFormField, setFieldErrors, setFormState] = useFormState(
         initialFormState(),
     );
-    // FIXME: useSafeIntl don't pass values, replace when fixed
-    const { formatMessage } = useIntl();
+    const { formatMessage } = useSafeIntl();
 
     const { mutateAsync, isLoading } = useMutation(postLineListFile);
     const queryClient = useQueryClient();

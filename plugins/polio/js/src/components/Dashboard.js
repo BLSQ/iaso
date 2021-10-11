@@ -135,7 +135,7 @@ export const Dashboard = () => {
             {
                 Header: formatMessage(MESSAGES.status),
                 sortable: false,
-                accessor: 'general_status',
+                accessor: row => formatMessage(MESSAGES[row.general_status]),
             },
             {
                 Header: formatMessage(MESSAGES.actions),

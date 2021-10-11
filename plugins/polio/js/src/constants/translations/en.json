@@ -129,5 +129,10 @@
     "iaso.polio.title.roundTwo": "Round 2",
     "iaso.polio.title.scope": "Scope",
     "iaso.polio.vaccine": "Vaccine",
-    "iaso.polio.vaccines": "Vaccines"
+    "iaso.polio.vaccines": "Vaccines",
+    "iaso.polio.PREPARING": "Preparing",
+    "iaso.polio.ROUND1START": "Round 1 started",
+    "iaso.polio.ROUND1DONE": "Round 1 completed",
+    "iaso.polio.ROUND2START": "Round 2 started",
+    "iaso.polio.ROUND2DONE": "Round 2 completed"
 }

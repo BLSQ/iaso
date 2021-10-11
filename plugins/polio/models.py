@@ -3,7 +3,6 @@ from uuid import uuid4
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext as _
-
 from iaso.models import Group, OrgUnit
 
 VIRUSES = [
@@ -57,6 +56,21 @@ PAYMENT = [
     ("DIRECT", _("Direct")),
     ("DFC", _("DFC")),
 ]
+
+PREPARING = "PREPARING" 
+ROUND1START = "ROUND1START"
+ROUND1DONE = "ROUND1DONE"
+ROUND2START = "ROUND2START"
+ROUND2DONE = "ROUND2DONE"
+
+ROUNDSTATUS = [
+    (PREPARING, _("Preparing")),
+    (ROUND1START,_("Round 1 started")),
+    (ROUND1DONE, _("Round 1 completed")),
+    (ROUND2START,_("Round 2 started")),
+    (ROUND2DONE, _("Round 2 completed")),
+]
+
 
 
 class Round(models.Model):

@@ -192,7 +192,7 @@ export const ExportToDHIS2Dialog = ({
                                             value?.id ?? null,
                                         );
                                     }}
-                                    version={sourceDataVersionId}
+                                    version={refDataVersionId}
                                     titleMessage={formatMessage(
                                         MESSAGES.selectTopOrgUnit,
                                     )}
@@ -200,6 +200,7 @@ export const ExportToDHIS2Dialog = ({
                                         refTreeviewResetControl.current !==
                                         refDataVersionId
                                     }
+                                    hardReset
                                 />
                             </Box>
                         </Grid>
@@ -300,6 +301,7 @@ export const ExportToDHIS2Dialog = ({
                                     sourceDataVersionId
                                 }
                                 disabled={!sourceDataVersionId}
+                                hardReset
                             />
                         </Box>
                     </Grid>

@@ -12,7 +12,20 @@ from rest_framework import serializers
 
 from iaso.models import Group, OrgUnit
 from plugins.polio.preparedness.calculator import get_preparedness_score
-from .models import Preparedness, Round, Campaign, Surge, CountryUsersGroup, LineListImport, VIRUSES, PREPARING,ROUND1START,ROUND1DONE,ROUND2START,ROUND2DONE
+from .models import (
+    Preparedness,
+    Round,
+    Campaign,
+    Surge,
+    CountryUsersGroup,
+    LineListImport,
+    VIRUSES,
+    PREPARING,
+    ROUND1START,
+    ROUND1DONE,
+    ROUND2START,
+    ROUND2DONE,
+)
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,

@@ -33,20 +33,20 @@ class Descriptor {
         let questions = [];
         if (this.isGroup(node)) {
             const childrenNames = node.children.map(c => c.name);
+
+            const comparePathWithChildrenNames = question =>
+                question.path?.some(p => childrenNames.includes(p)) &&
+                !this.isGroup(question);
+
             if (isTopNode) {
                 questions = Object.values(indexedQuestions).filter(
                     q =>
-                        (q?.path?.some(p => childrenNames.includes(p)) &&
-                            !this.isGroup(q)) ||
+                        comparePathWithChildrenNames(q) ||
                         (!this.isGroup(q) && !q.path),
                 );
             } else {
                 questions = Object.values(indexedQuestions).filter(q => {
-                    return (
-                        q?.path?.some(p => {
-                            return childrenNames.includes(p);
-                        }) && !this.isGroup(q)
-                    );
+                    return comparePathWithChildrenNames(q);
                 });
                 questions = questions.filter(question =>
                     question.path.includes(node.name),

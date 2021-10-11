@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
+import { replace } from 'react-router-redux';
 
 import { Grid, Button, Box } from '@material-ui/core';
 import FiltersIcon from '@material-ui/icons/FilterList';
+import { withRouter } from 'react-router';
 
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import DatesRange from '../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
@@ -13,7 +15,9 @@ import { redirectTo } from '../../../../../../hat/assets/js/apps/Iaso/routing/ac
 import MESSAGES from '../../constants/messages';
 import { useGetCountries } from '../../hooks/useGetCountries';
 
-const Filters = ({ params, baseUrl }) => {
+import { genUrl } from '../../utils/routing';
+
+const Filters = ({ params, baseUrl, router }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [search, setSearch] = useState(params.search);
@@ -23,14 +27,14 @@ const Filters = ({ params, baseUrl }) => {
     const handleSearch = () => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
-            const newParams = {
-                ...params,
+            const url = genUrl(router, {
+                ...router.params,
                 countries,
                 search,
                 r1StartFrom,
                 r1StartTo,
-            };
-            dispatch(redirectTo(baseUrl, newParams));
+            });
+            dispatch(replace(url));
         }
     };
     const { data, isFetching: isFetchingCountries } = useGetCountries();
@@ -116,6 +120,8 @@ Filters.defaultProps = {
 Filters.propTypes = {
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string,
+    router: PropTypes.object.isRequired,
 };
 
-export { Filters };
+const wrappedFilters = withRouter(Filters);
+export { wrappedFilters as Filters };

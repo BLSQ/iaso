@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { replace } from 'react-router-redux';
 import { useDispatch } from 'react-redux';
 
 import { Box, Button, Popper, ClickAwayListener } from '@material-ui/core';
@@ -12,12 +13,11 @@ import Today from '@material-ui/icons/Today';
 
 import { formatPattern, Link, withRouter } from 'react-router';
 
-import { redirectTo } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { useStyles } from './Styles';
 import { dateFormat } from './constants';
-import { CALENDAR_BASE_URL } from '../../constants/routes';
 
-const genUrl = (router, params) => formatPattern(router.routes[0].path, params);
+const genUrl = (router, newParams) =>
+    formatPattern(router.routes[0].path, { ...router.params, ...newParams });
 
 const Nav = ({ currentMonday, router, currentDate }) => {
     const classes = useStyles();
@@ -34,12 +34,11 @@ const Nav = ({ currentMonday, router, currentDate }) => {
     };
     const handleDateChange = newDate => {
         handleClickDate();
-        dispatch(
-            redirectTo(CALENDAR_BASE_URL, {
-                ...router.params,
-                currentDate: newDate,
-            }),
-        );
+        const url = genUrl(router, {
+            ...router.params,
+            currentDate: newDate,
+        });
+        dispatch(replace(url));
     };
     const prev = range => currentMonday.clone().subtract(range, 'week');
     const next = range => currentMonday.clone().add(range, 'week');

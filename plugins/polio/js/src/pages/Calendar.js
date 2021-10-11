@@ -44,7 +44,7 @@ const Calendar = ({ params }) => {
         r1StartTo: getApiParamDateString(params.r1StartTo),
     });
 
-    const { data: campaigns = [], status } = query;
+    const { data: campaigns = [], isLoading } = query;
 
     const currentDate = params.currentDate
         ? moment(params.currentDate, dateFormat)
@@ -66,7 +66,6 @@ const Calendar = ({ params }) => {
             ).map((c, index) => ({ ...c, color: getCampaignColor(index) })),
         [mappedCampaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
-    const loadingCampaigns = status === 'loading';
     return (
         <div>
             {isLogged && (
@@ -89,13 +88,13 @@ const Calendar = ({ params }) => {
                             campaigns={filteredCampaigns}
                             calendarData={calendarData}
                             currentMonday={currentMonday}
-                            loadingCampaigns={loadingCampaigns}
+                            loadingCampaigns={isLoading}
                         />
                     </Grid>
                     <Grid item xs={12} lg={4}>
                         <CalendarMap
                             campaigns={filteredCampaigns}
-                            loadingCampaigns={loadingCampaigns}
+                            loadingCampaigns={isLoading}
                         />
                     </Grid>
                 </Grid>

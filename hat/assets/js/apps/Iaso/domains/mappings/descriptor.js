@@ -41,10 +41,15 @@ class Descriptor {
                         (!this.isGroup(q) && !q.path),
                 );
             } else {
-                questions = Object.values(indexedQuestions).filter(
-                    q =>
-                        q?.path?.some(p => childrenNames.includes(p)) &&
-                        !this.isGroup(q),
+                questions = Object.values(indexedQuestions).filter(q => {
+                    return (
+                        q?.path?.some(p => {
+                            return childrenNames.includes(p);
+                        }) && !this.isGroup(q)
+                    );
+                });
+                questions = questions.filter(question =>
+                    question.path.includes(node.name),
                 );
             }
         }
@@ -78,7 +83,11 @@ class Descriptor {
     }
 
     static recursiveIndex(node, acc, path) {
-        acc[this.getNodeName(node)] = node;
+        if (!acc[this.getNodeName(node)]) {
+            acc[this.getNodeName(node)] = node;
+        } else {
+            acc[`${this.getNodeName(node)}1`] = node;
+        }
         if (this.hasChildren(node)) {
             node.children.forEach(child => {
                 const val = child;

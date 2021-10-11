@@ -25,6 +25,8 @@ import MESSAGES from '../constants/messages';
 import { CALENDAR_BASE_URL } from '../constants/routes';
 import { Filters } from '../components/campaignCalendar/Filters';
 
+import { getApiParamDateString } from '../../../../../hat/assets/js/apps/Iaso/utils/dates';
+
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
@@ -38,8 +40,8 @@ const Calendar = ({ params }) => {
         order: orders,
         countries: params.countries,
         search: params.search,
-        r1StartFrom: params.r1StartFrom,
-        r1StartTo: params.r1StartTo,
+        r1StartFrom: getApiParamDateString(params.r1StartFrom),
+        r1StartTo: getApiParamDateString(params.r1StartTo),
     });
 
     const { data: campaigns = [], status } = query;

@@ -17,8 +17,8 @@ const Filters = ({ params, baseUrl }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [search, setSearch] = useState(params.search);
-    const [r1StartFrom, setObrFrom] = useState(params.r1StartFrom);
-    const [r1StartTo, setObrTo] = useState(params.r1StartTo);
+    const [r1StartFrom, setR1StartFrom] = useState(params.r1StartFrom);
+    const [r1StartTo, set1StartTo] = useState(params.r1StartTo);
     const dispatch = useDispatch();
     const handleSearch = () => {
         if (filtersUpdated) {
@@ -75,10 +75,10 @@ const Filters = ({ params, baseUrl }) => {
                         <DatesRange
                             onChangeDate={(key, value) => {
                                 if (key === 'dateFrom') {
-                                    setObrFrom(value);
+                                    setR1StartFrom(value);
                                 }
                                 if (key === 'dateTo') {
-                                    setObrTo(value);
+                                    set1StartTo(value);
                                 }
                                 setFiltersUpdated(true);
                             }}

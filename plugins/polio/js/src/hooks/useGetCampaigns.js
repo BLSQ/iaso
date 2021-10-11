@@ -8,8 +8,8 @@ export const useGetCampaigns = options => {
         order: options.order,
         country__id__in: options.countries,
         search: options.search,
-        round_one__started_at__gte: options.r1StartFrom?.replace(/-/gi, '/'),
-        round_one__started_at__lte: options.r1StartTo?.replace(/-/gi, '/'),
+        round_one__started_at__gte: options.r1StartFrom,
+        round_one__started_at__lte: options.r1StartTo,
     };
 
     const getURL = urlParams => {

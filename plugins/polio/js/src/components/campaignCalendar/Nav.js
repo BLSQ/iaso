@@ -19,13 +19,13 @@ import { CALENDAR_BASE_URL } from '../../constants/routes';
 
 const genUrl = (router, params) => formatPattern(router.routes[0].path, params);
 
-const Nav = ({ currentMonday, router, params, currentDate }) => {
+const Nav = ({ currentMonday, router, currentDate }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
     const [anchorEl, setAnchorEl] = useState(null);
     const urlForDate = date =>
         genUrl(router, {
-            ...params,
+            ...router.params,
             currentDate: date.format(dateFormat),
         });
 
@@ -35,7 +35,10 @@ const Nav = ({ currentMonday, router, params, currentDate }) => {
     const handleDateChange = newDate => {
         handleClickDate();
         dispatch(
-            redirectTo(CALENDAR_BASE_URL, { ...params, currentDate: newDate }),
+            redirectTo(CALENDAR_BASE_URL, {
+                ...router.params,
+                currentDate: newDate,
+            }),
         );
     };
     const prev = range => currentMonday.clone().subtract(range, 'week');

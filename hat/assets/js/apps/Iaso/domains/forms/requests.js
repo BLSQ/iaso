@@ -1,3 +1,4 @@
+import { useQueryClient } from 'react-query';
 import { useSnackQuery } from '../../libs/apiHooks';
 import { getRequest } from '../../libs/Api';
 
@@ -14,3 +15,8 @@ export const useGetForm = formId =>
             enabled: formId && formId !== '0',
         },
     );
+
+export const useRefreshForm = formId => {
+    const queryClient = useQueryClient();
+    return data => queryClient.setQueryData(['forms', formId], data);
+};

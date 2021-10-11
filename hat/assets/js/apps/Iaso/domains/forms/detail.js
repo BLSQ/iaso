@@ -29,7 +29,7 @@ import FormForm from './components/FormFormComponent';
 
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../constants/snackBars';
-import { useGetForm } from './requests';
+import { useGetForm, useRefreshForm } from './requests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -84,11 +84,8 @@ const FormDetail = ({ router, params }) => {
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
     const allProjects = useSelector(state => state.projects.allProjects);
-    const {
-        data: form,
-        isLoading: isFormLoading,
-        refetch,
-    } = useGetForm(params.formId);
+    const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
+    const refreshForm = useRefreshForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
@@ -121,7 +118,7 @@ const FormDetail = ({ router, params }) => {
         let savedFormData;
         try {
             savedFormData = await saveForm;
-            refetch();
+            refreshForm(savedFormData);
             dispatch(enqueueSnackbar(succesfullSnackBar()));
             if (!isUpdate) {
                 dispatch(

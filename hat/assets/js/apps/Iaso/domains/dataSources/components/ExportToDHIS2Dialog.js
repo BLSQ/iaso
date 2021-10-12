@@ -25,7 +25,7 @@ import {
     useFieldsToExport,
     FIELDS_TO_EXPORT,
     dataSourceVersionsAsOptions,
-    refDataSourceVersionsAsOptions,
+    versionsAsOptionsWithSourceName,
 } from '../utils';
 
 const style = theme => ({
@@ -275,7 +275,7 @@ export const ExportToDHIS2Dialog = ({
                             onChange={(keyValue, value) => {
                                 setExportDataField(keyValue, value?.toString());
                             }}
-                            options={refDataSourceVersionsAsOptions({
+                            options={versionsAsOptionsWithSourceName({
                                 formatMessage,
                                 versions: sourceVersions,
                             })}

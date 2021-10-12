@@ -71,7 +71,10 @@ const formatSourceVersionLabel = (formatMessage, sourceVersion) => {
     return label;
 };
 
-export const refDataSourceVersionsAsOptions = ({ versions, formatMessage }) => {
+export const versionsAsOptionsWithSourceName = ({
+    versions,
+    formatMessage,
+}) => {
     if (!versions) return [];
     return versions.map(version => {
         return {

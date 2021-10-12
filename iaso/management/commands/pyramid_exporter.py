@@ -1,16 +1,12 @@
-import time
-import json
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.contrib.gis.geos import Point
-from django.contrib.gis.geos import GEOSGeometry
-from django.core.serializers import serialize
 from .command_logger import CommandLogger
 
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Group, GroupSet, generate_id_for_dhis_2
+from iaso.models import DataSource, SourceVersion
 from iaso.diffing import Differ, Dumper, Exporter
 
 
@@ -49,7 +45,7 @@ class Command(BaseCommand):
         parser.add_argument("--output_csv", type=str, help="A file to output the diff as csv")
         parser.add_argument("--ignore_groups", action="store_true", help="Don't modify groups on dhis2")
 
-        parser.add_argument("--dhis2_url", type=str, help="Dhis2 url to import from (without user/password)")
+        parser.add_argument("--dhis2_url", type=str, help="Dhis2 url to export from (without user/password)")
         parser.add_argument("--dhis2_user", type=str, help="dhis2 user name")
 
         parser.add_argument("--dhis2_password", type=str, help="dhis2 password of the dhis2_user")
@@ -97,7 +93,14 @@ class Command(BaseCommand):
             org_unit_types=org_unit_types,
             org_unit_types_ref=org_unit_types_ref,
         )
-        Dumper(iaso_logger, csv_file_name=file_name).dump(diffs, fields)
+        dumper = Dumper(iaso_logger)
+        stats = dumper.dump_stats(diffs, fields)
+        if file_name:
+            with open(file_name, "w") as csv_file:
+                dumper.dump_as_csv(diffs, fields, csv_file)
+        else:
+            dumper.dump_as_table(diffs, fields, stats)
+
         export = options.get("export")
 
         if export:

@@ -13,6 +13,26 @@ export const search = (urlKey = 'search') => ({
     type: 'search',
 });
 
+// CAUTION: value ALL has to be converted to empty string before being sent to API
+export const orgUnitStatusAsOptions = formatMessage => [
+    {
+        label: formatMessage(MESSAGES.all),
+        value: 'ALL',
+    },
+    {
+        label: formatMessage(MESSAGES.new),
+        value: 'NEW',
+    },
+    {
+        label: formatMessage(MESSAGES.validated),
+        value: 'VALID',
+    },
+    {
+        label: formatMessage(MESSAGES.rejected),
+        value: 'REJECTED',
+    },
+];
+
 export const status = (formatMessage, urlKey = 'validation_status') => ({
     urlKey,
     isMultiSelect: false,
@@ -35,7 +55,7 @@ export const status = (formatMessage, urlKey = 'validation_status') => ({
             value: 'REJECTED',
         },
     ],
-    label: MESSAGES.status,
+    label: MESSAGES.validationStatus,
     type: 'select',
 });
 
@@ -282,6 +302,32 @@ export const shape = (formatMessage, urlKey = 'withShape') => ({
         },
     ],
     label: MESSAGES.shape,
+    type: 'select',
+});
+
+export const geography = (formatMessage, urlKey = 'geography') => ({
+    urlKey,
+    isMultiSelect: false,
+    isClearable: true,
+    options: [
+        {
+            label: formatMessage(MESSAGES.anyGeography),
+            value: 'any',
+        },
+        {
+            label: formatMessage(MESSAGES.withLocation),
+            value: 'location',
+        },
+        {
+            label: formatMessage(MESSAGES.withShape),
+            value: 'shape',
+        },
+        {
+            label: formatMessage(MESSAGES.noGeographicalData),
+            value: 'none',
+        },
+    ],
+    label: MESSAGES.geographicalData,
     type: 'select',
 });
 

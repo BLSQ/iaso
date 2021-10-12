@@ -1,8 +1,13 @@
 import { func, any, bool, object, oneOfType, string } from 'prop-types';
 import React from 'react';
-import { Paper } from '@material-ui/core';
+import { Paper, InputLabel } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { IconButton, useSafeIntl } from 'bluesquare-components';
+import {
+    FormControl,
+    IconButton,
+    // InputLabel,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { MESSAGES } from './messages';
 import { TruncatedTreeview } from './TruncatedTreeview';
 
@@ -12,15 +17,15 @@ const styles = theme => ({
         fontSize: '16px',
         flex: '1',
         marginLeft: '14px',
-        cursor: 'pointer',
-        color: theme.palette.gray.main,
+        cursor: 'default',
+        color: 'transparent',
     },
     treeviews: {
         alignItems: 'center',
         fontSize: '16px',
         flex: '1',
         marginLeft: '10px',
-        cursor: 'pointer',
+        // cursor: 'pointer',
     },
     paper: {
         display: 'flex',
@@ -28,10 +33,20 @@ const styles = theme => ({
         border: '1px solid rgba(0,0,0,0.23)', // aligning with AutoSelect
         paddingTop: '3px',
         paddingBottom: '3px',
+        // '&:hover': {
+        //     border: '1px solid rgba(0,0,0,0.87)', // aligning with AutoSelect
+        // },
+    },
+    inputLabel: {
+        backgroundColor: 'white',
+        color: theme.palette.mediumGray.main,
+    },
+    enabled: {
         '&:hover': {
             border: '1px solid rgba(0,0,0,0.87)', // aligning with AutoSelect
         },
     },
+    pointer: { cursor: 'pointer' },
 });
 const formatPlaceholder = (placeholder, formatMessage) => {
     if (!placeholder) return null;
@@ -46,28 +61,40 @@ const OrgUnitTreeviewPicker = ({
     resetSelection,
     multiselect,
     placeholder,
+    required,
+    disabled,
 }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
-    const formattedPlaceholder = formatPlaceholder(
-        placeholder,
-        intl.formatMessage,
-    );
+    const className = disabled
+        ? classes.paper
+        : `${classes.paper} ${classes.enabled}`;
+
+    const placeholderStyle = disabled
+        ? classes.placeholder
+        : `${classes.placeholder} ${classes.pointer}`;
+    const formattedPlaceholder =
+        formatPlaceholder(placeholder, intl.formatMessage) ??
+        (multiselect
+            ? intl.formatMessage(MESSAGES.selectMultiple)
+            : intl.formatMessage(MESSAGES.selectSingle));
+    const noOp = () => null;
+
     const makeTruncatedTrees = treesData => {
         if (treesData.size === 0)
             return (
-                <p onClick={onClick} className={classes.placeholder}>
-                    {formattedPlaceholder ||
-                        (multiselect
-                            ? intl.formatMessage(MESSAGES.selectMultiple)
-                            : intl.formatMessage(MESSAGES.selectSingle))}
+                <p
+                    onClick={disabled ? noOp : onClick}
+                    className={placeholderStyle}
+                >
+                    {formattedPlaceholder}
                 </p>
             );
         const treeviews = [];
         treesData.forEach((value, key) => {
             const treeview = (
                 <TruncatedTreeview
-                    onClick={onClick}
+                    onClick={disabled ? noOp : onClick}
                     selectedItems={value}
                     key={`TruncatedTree${key.toString()}`}
                 />
@@ -76,27 +103,35 @@ const OrgUnitTreeviewPicker = ({
         });
         return <div className={classes.treeviews}>{treeviews}</div>;
     };
-
     return (
-        <Paper variant="outlined" elevation={0} className={classes.paper}>
-            {makeTruncatedTrees(selectedItems)}
-            {resetSelection && selectedItems.size > 0 && (
+        <FormControl withMarginTop>
+            <InputLabel
+                shrink={selectedItems.size > 0}
+                required={required}
+                className={classes.inputLabel}
+            >
+                {formattedPlaceholder}
+            </InputLabel>
+            <Paper variant="outlined" elevation={0} className={className}>
+                {makeTruncatedTrees(selectedItems)}
+                {resetSelection && selectedItems.size > 0 && (
+                    <IconButton
+                        icon="clear"
+                        tooltipMessage={MESSAGES.clear}
+                        onClick={resetSelection}
+                    />
+                )}
                 <IconButton
-                    icon="clear"
-                    tooltipMessage={MESSAGES.clear}
-                    onClick={resetSelection}
+                    tooltipMessage={
+                        multiselect
+                            ? MESSAGES.selectMultiple
+                            : MESSAGES.selectSingle
+                    }
+                    icon="orgUnit"
+                    onClick={onClick}
                 />
-            )}
-            <IconButton
-                tooltipMessage={
-                    multiselect
-                        ? MESSAGES.selectMultiple
-                        : MESSAGES.selectSingle
-                }
-                icon="orgUnit"
-                onClick={onClick}
-            />
-        </Paper>
+            </Paper>
+        </FormControl>
     );
 };
 
@@ -107,12 +142,16 @@ OrgUnitTreeviewPicker.propTypes = {
     resetSelection: func,
     multiselect: bool,
     placeholder: oneOfType([object, string]),
+    required: bool,
+    disabled: bool,
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: [],
     resetSelection: null,
     multiselect: false,
     placeholder: null,
+    required: false,
+    disabled: false,
 };
 
 export { OrgUnitTreeviewPicker };

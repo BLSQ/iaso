@@ -623,7 +623,12 @@ export const requestHandler = dispatch => request => params => {
         .catch(error => {
             dispatch(
                 enqueueSnackbar(
-                    errorSnackBar(params.errorKeyMessage, null, error),
+                    errorSnackBar(
+                        params.errorKeyMessage,
+                        params.errorMessageObject ?? null,
+                        // null,
+                        error,
+                    ),
                 ),
             );
             console.error(

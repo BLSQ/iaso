@@ -3,7 +3,6 @@ from uuid import uuid4
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext as _
-
 from iaso.models import Group, OrgUnit
 
 VIRUSES = [
@@ -58,6 +57,20 @@ PAYMENT = [
     ("DFC", _("DFC")),
 ]
 
+PREPARING = "PREPARING"
+ROUND1START = "ROUND1START"
+ROUND1DONE = "ROUND1DONE"
+ROUND2START = "ROUND2START"
+ROUND2DONE = "ROUND2DONE"
+
+ROUNDSTATUS = [
+    (PREPARING, _("Preparing")),
+    (ROUND1START, _("Round 1 started")),
+    (ROUND1DONE, _("Round 1 completed")),
+    (ROUND2START, _("Round 2 started")),
+    (ROUND2DONE, _("Round 2 completed")),
+]
+
 
 class Round(models.Model):
     started_at = models.DateField(null=True, blank=True)
@@ -98,6 +111,16 @@ class Campaign(models.Model):
     initial_org_unit = models.ForeignKey(
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
     )
+
+    country = models.ForeignKey(
+        "iaso.orgunit",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="campaigns_country",
+        help_text="Country for campaign, set automatically from initial_org_unit",
+    )
+
     creation_email_send_at = models.DateTimeField(
         null=True, blank=True, help_text="When and if we sent an email for creation"
     )
@@ -262,12 +285,6 @@ class Campaign(models.Model):
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
 
-    def country(self):
-        if self.initial_org_unit is not None:
-            countries = self.initial_org_unit.country_ancestors()
-            if countries is not None and len(countries) > 0:
-                return countries[0]
-
     def get_districts(self):
         if self.group is None:
             return OrgUnit.objects.none()
@@ -285,6 +302,16 @@ class Campaign(models.Model):
 
     def last_surge(self):
         return self.surge_set.filter(spreadsheet_url=self.surge_spreadsheet_url).order_by("-created_at").first()
+
+    def save(self, *args, **kwargs):
+        if self.initial_org_unit is not None:
+            try:
+                country = self.initial_org_unit.ancestors().filter(org_unit_type__category="COUNTRY").first()
+                self.country = country
+            except OrgUnit.DoesNotExist:
+                pass
+
+        super().save(*args, **kwargs)
 
 
 class Preparedness(models.Model):
@@ -353,3 +380,14 @@ class LineListImport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+
+
+class URLCache(models.Model):
+    url = models.URLField(unique=True)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.url

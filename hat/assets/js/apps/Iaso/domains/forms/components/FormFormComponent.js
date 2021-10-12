@@ -16,6 +16,7 @@ import {
 } from '../../../utils/forms';
 
 import MESSAGES from '../messages';
+import { formatLabel } from '../../instances/utils';
 
 const styles = theme => ({
     radio: {
@@ -223,9 +224,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                             type="select"
                             options={currentForm.possible_fields.value
                                 .map(field => ({
-                                    label: field.label.trim() // some labels are just an empty space
-                                        ? field.label
-                                        : field.name,
+                                    label: formatLabel(field),
                                     value: field.name,
                                 }))
                                 .sort(

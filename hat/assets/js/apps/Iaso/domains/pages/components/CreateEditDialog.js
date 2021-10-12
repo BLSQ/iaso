@@ -42,9 +42,8 @@ const useStyles = makeStyles(theme => ({
 
 const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
     const { mutate: savePage } = useSavePage();
-    const { query } = useGetProfiles();
+    const { data: profiles = [] } = useGetProfiles();
     const currentUser = useSelector(state => state.users.current);
-    const { data: profiles = [] } = query;
     const profilesList = profiles
         .filter(p => p.id !== currentUser.id)
         .map(p => ({

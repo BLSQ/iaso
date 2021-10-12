@@ -12,7 +12,20 @@ from rest_framework import serializers
 
 from iaso.models import Group, OrgUnit
 from plugins.polio.preparedness.calculator import get_preparedness_score
-from .models import Preparedness, Round, Campaign, Surge, CountryUsersGroup, LineListImport, VIRUSES
+from .models import (
+    Preparedness,
+    Round,
+    Campaign,
+    Surge,
+    CountryUsersGroup,
+    LineListImport,
+    VIRUSES,
+    PREPARING,
+    ROUND1START,
+    ROUND1DONE,
+    ROUND2START,
+    ROUND2DONE,
+)
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
@@ -273,7 +286,9 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
 
         lang = "EN"
         try:
-            country = campaign.country()
+            country = campaign.country
+            if not country:
+                exceptions.ValidationError({"message": _("No country found for campaign")})
             cug = CountryUsersGroup.objects.get(country=country)
             lang = cug.language
         except Exception as e:
@@ -285,7 +300,7 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
             spreadsheet.worksheet("National"),
             vacine=campaign.vacine,
             payment_mode=campaign.payment_mode,
-            country=campaign.country(),
+            country=campaign.country,
         )
 
         regional_template_worksheet = spreadsheet.worksheet("Regional")
@@ -308,40 +323,34 @@ class CampaignSerializer(serializers.ModelSerializer):
     round_one = RoundSerializer()
     round_two = RoundSerializer()
     org_unit = OrgUnitSerializer(source="initial_org_unit", read_only=True)
-    top_level_org_unit_name = serializers.SerializerMethodField()
-    top_level_org_unit_id = serializers.SerializerMethodField()
+    top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
+    top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
     general_status = serializers.SerializerMethodField()
 
     def get_top_level_org_unit_name(self, campaign):
-        if campaign.initial_org_unit:
-            parent = campaign.initial_org_unit
-            while parent.parent:
-                parent = parent.parent
-            return parent.name
+        if campaign.country:
+            return campaign.country.name
         return ""
 
     def get_top_level_org_unit_id(self, campaign):
-        if campaign.initial_org_unit:
-            parent = campaign.initial_org_unit
-            while parent.parent:
-                parent = parent.parent
-            return parent.id
+        if campaign.country:
+            return campaign.country.id
         return ""
 
     def get_general_status(self, campaign):
         now_utc = datetime.now(timezone.utc).date()
         if campaign.round_two:
             if campaign.round_two.ended_at and now_utc > campaign.round_two.ended_at:
-                return _("Round 2 completed")
+                return ROUND2DONE
             if campaign.round_two.started_at and now_utc >= campaign.round_two.started_at:
-                return _("Round 2 started")
+                return ROUND2START
         if campaign.round_one:
             if campaign.round_one.ended_at and now_utc > campaign.round_one.ended_at:
-                return _("Round 1 completed")
+                return ROUND1DONE
             if campaign.round_one.started_at and now_utc >= campaign.round_one.started_at:
-                return _("Round 1 started")
+                return ROUND1START
 
-        return _("Preparing")
+        return PREPARING
 
     group = GroupSerializer(required=False, allow_null=True)
 
@@ -394,8 +403,13 @@ class CampaignSerializer(serializers.ModelSerializer):
         round_two_data = validated_data.pop("round_two")
         group = validated_data.pop("group") if "group" in validated_data else None
 
-        Round.objects.filter(pk=instance.round_one_id).update(**round_one_data)
-        Round.objects.filter(pk=instance.round_two_id).update(**round_two_data)
+        round_one_serializer = RoundSerializer(instance=instance.round_one, data=round_one_data)
+        round_one_serializer.is_valid(raise_exception=True)
+        instance.round_one = round_one_serializer.save()
+
+        round_two_serializer = RoundSerializer(instance=instance.round_two, data=round_two_data)
+        round_two_serializer.is_valid(raise_exception=True)
+        instance.round_two = round_two_serializer.save()
 
         if group:
             org_units = group.pop("org_units") if "org_units" in group else []
@@ -405,6 +419,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
             instance.group = campaign_group
 
+        # we want to create a new preparedness and surge data object each time
         if "preparedness_data" in validated_data:
             Preparedness.objects.create(campaign=instance, **validated_data.pop("preparedness_data"))
         if "surge_data" in validated_data:

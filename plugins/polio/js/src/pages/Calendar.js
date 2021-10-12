@@ -22,7 +22,6 @@ import {
 } from '../components/campaignCalendar/constants';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import MESSAGES from '../constants/messages';
-import { CALENDAR_BASE_URL } from '../constants/routes';
 import { Filters } from '../components/campaignCalendar/Filters';
 
 import { getApiParamDateString } from '../../../../../hat/assets/js/apps/Iaso/utils/dates';
@@ -76,7 +75,7 @@ const Calendar = ({ params }) => {
             )}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box mb={4}>
-                    <Filters params={params} baseUrl={CALENDAR_BASE_URL} />
+                    <Filters />
                 </Box>
 
                 <Grid container spacing={2}>

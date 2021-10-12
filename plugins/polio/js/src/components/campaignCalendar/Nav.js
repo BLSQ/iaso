@@ -11,13 +11,12 @@ import ChevronRight from '@material-ui/icons/ChevronRight';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 import Today from '@material-ui/icons/Today';
 
-import { formatPattern, Link, withRouter } from 'react-router';
+import { Link, withRouter } from 'react-router';
 
 import { useStyles } from './Styles';
 import { dateFormat } from './constants';
 
-const genUrl = (router, newParams) =>
-    formatPattern(router.routes[0].path, { ...router.params, ...newParams });
+import { genUrl } from '../../utils/routing';
 
 const Nav = ({ currentMonday, router, currentDate }) => {
     const classes = useStyles();
@@ -25,7 +24,6 @@ const Nav = ({ currentMonday, router, currentDate }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const urlForDate = date =>
         genUrl(router, {
-            ...router.params,
             currentDate: date.format(dateFormat),
         });
 
@@ -35,7 +33,6 @@ const Nav = ({ currentMonday, router, currentDate }) => {
     const handleDateChange = newDate => {
         handleClickDate();
         const url = genUrl(router, {
-            ...router.params,
             currentDate: newDate,
         });
         dispatch(replace(url));

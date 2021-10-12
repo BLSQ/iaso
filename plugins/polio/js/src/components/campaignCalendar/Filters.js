@@ -10,14 +10,14 @@ import { withRouter } from 'react-router';
 
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import DatesRange from '../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
-import { redirectTo } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 
 import MESSAGES from '../../constants/messages';
 import { useGetCountries } from '../../hooks/useGetCountries';
 
 import { genUrl } from '../../utils/routing';
 
-const Filters = ({ params, baseUrl, router }) => {
+const Filters = ({ router }) => {
+    const { params } = router;
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [search, setSearch] = useState(params.search);
@@ -28,7 +28,6 @@ const Filters = ({ params, baseUrl, router }) => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const url = genUrl(router, {
-                ...router.params,
                 countries,
                 search,
                 r1StartFrom,

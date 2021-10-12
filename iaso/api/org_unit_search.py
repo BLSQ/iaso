@@ -153,9 +153,13 @@ def build_org_units_queryset(queryset, params, profile):
         queryset = queryset.hierarchy(parent)
 
     if linked_to:
-        queryset = queryset.filter(destination_set__destination_id=linked_to)
+        is_destination = Q(destination_set__destination_id=linked_to)
         if link_validated != "all":
-            queryset = queryset.filter(destination_set__validated=link_validated)
+            is_destination &= Q(destination_set__validated=link_validated)
+        is_source = Q(source_set__source_id=linked_to)
+        if link_validated != "all":
+            is_source &= Q(source_set__validated=link_validated)
+        queryset = queryset.filter(is_source | is_destination)
 
         if link_source:
             queryset = queryset.filter(version__data_source_id=link_source)

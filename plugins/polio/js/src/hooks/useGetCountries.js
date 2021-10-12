@@ -1,0 +1,24 @@
+import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { appId } from '../constants/app';
+
+export const useGetCountries = () => {
+    const params = {
+        validation_status: 'all',
+        order: 'name',
+        orgUnitTypeCategory: 'country',
+        app_id: appId,
+    };
+
+    const queryString = new URLSearchParams(params);
+
+    return useSnackQuery(
+        ['countries', params],
+        () => getRequest(`/api/orgunits/?${queryString.toString()}`),
+        undefined,
+        {
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+        },
+    );
+};

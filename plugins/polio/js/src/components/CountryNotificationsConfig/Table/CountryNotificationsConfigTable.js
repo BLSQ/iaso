@@ -9,6 +9,7 @@ import { useGetCountryUsersGroup, useGetProfiles } from '../requests';
 import MESSAGES from '../../../constants/messages';
 import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { CONFIG_BASE_URL } from '../../../constants/routes';
 
 const makeUserNameToDisplay = user => {
     if (user.email) return ` ${user.email}`;
@@ -92,7 +93,7 @@ const CountryNotificationsConfigTable = ({ params }) => {
             data={tableData?.country_users_group ?? []}
             params={tableParams}
             columns={columns}
-            baseUrl="polio/config"
+            baseUrl={CONFIG_BASE_URL}
             pages={tableData?.pages ?? 1}
             count={tableData?.count ?? 1}
             multiselect={false}

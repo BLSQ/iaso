@@ -7,6 +7,9 @@ export const useStyles = makeStyles(theme => ({
     tableContainer: {
         overflow: 'auto',
         width: '100%',
+        [theme.breakpoints.up('lg')]: {
+            height: '71vh',
+        },
     },
     tableRow: {
         height: cellHeight,
@@ -90,9 +93,12 @@ export const useStyles = makeStyles(theme => ({
         top: 0,
         zIndex: 3,
         position: 'absolute',
-        width: '31vw',
         display: 'flex',
+        width: '31vw',
         justifyContent: 'center',
+        [theme.breakpoints.up('lg')]: {
+            width: '21vw',
+        },
     },
     navButton: {
         margin: theme.spacing(1.5),
@@ -125,9 +131,9 @@ export const useStyles = makeStyles(theme => ({
     tableCellSpanRow: {
         alignItems: 'center',
         justifyContent: 'flex-start',
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(2),
-        fontSize: 13,
+        paddingLeft: theme.spacing(1),
+        paddingRight: theme.spacing(1),
+        fontSize: 11,
     },
     popper: {
         zIndex: 500,
@@ -164,6 +170,10 @@ export const useStyles = makeStyles(theme => ({
         fontWeight: 'bold',
         marginBottom: theme.spacing(1),
     },
+    mapLegendCampaignTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
     roundColor: {
         borderRadius: theme.spacing(3),
         height: theme.spacing(3),
@@ -175,8 +185,5 @@ export const useStyles = makeStyles(theme => ({
     },
     noCampaign: {
         textAlign: 'center',
-    },
-    table: {
-        overflow: 'hidden',
     },
 }));

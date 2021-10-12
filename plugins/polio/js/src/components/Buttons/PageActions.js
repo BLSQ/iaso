@@ -1,27 +1,27 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Grid } from '@material-ui/core';
 import { useStyles } from '../../styles/theme';
-import { SearchInput } from '../Inputs/SearchInput';
+import { Filters } from '../campaignCalendar/Filters';
+import { DASHBOARD_BASE_URL } from '../../constants/routes';
 
-export const PageActions = ({ onSearch, children }) => {
+export const PageActions = ({ children, params }) => {
     const classes = useStyles();
 
     return (
         <Grid
             container
             className={classes.pageActions}
-            spacing={4}
+            spacing={2}
             justifyContent="flex-end"
             alignItems="center"
         >
-            {onSearch && (
-                <Grid item xs={8}>
-                    <SearchInput onChange={onSearch} />
-                </Grid>
-            )}
+            <Grid item xs={12}>
+                <Filters params={params} baseUrl={DASHBOARD_BASE_URL} />
+            </Grid>
             <Grid
                 item
-                xs={4}
+                xs={12}
                 container
                 justifyContent="flex-end"
                 alignItems="center"
@@ -30,4 +30,12 @@ export const PageActions = ({ onSearch, children }) => {
             </Grid>
         </Grid>
     );
+};
+PageActions.defaultProps = {
+    children: null,
+};
+
+PageActions.propTypes = {
+    params: PropTypes.object.isRequired,
+    children: PropTypes.any,
 };

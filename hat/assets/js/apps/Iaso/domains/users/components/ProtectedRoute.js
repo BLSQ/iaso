@@ -4,8 +4,6 @@ import { bindActionCreators } from 'redux';
 
 import PropTypes from 'prop-types';
 
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import MomentUtils from '@date-io/moment';
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
 
 import { fetchCurrentUser as fetchCurrentUserAction } from '../actions';
@@ -54,13 +52,7 @@ class ProtectedRoute extends Component {
     }
 
     render() {
-        const {
-            component,
-            currentUser,
-            permission,
-            activeLocale,
-            featureFlag,
-        } = this.props;
+        const { component, currentUser, permission, featureFlag } = this.props;
         const clonedProps = {
             ...this.props,
         };
@@ -75,16 +67,11 @@ class ProtectedRoute extends Component {
             return null;
         }
         return (
-            <MuiPickersUtilsProvider
-                utils={MomentUtils}
-                locale={activeLocale.code}
-            >
-                <>
-                    <SidebarMenu {...clonedProps} />
-                    {isAuthorized && component}
-                    {!isAuthorized && <PageError errorCode="401" />}
-                </>
-            </MuiPickersUtilsProvider>
+            <>
+                <SidebarMenu {...clonedProps} />
+                {isAuthorized && component}
+                {!isAuthorized && <PageError errorCode="401" />}
+            </>
         );
     }
 }

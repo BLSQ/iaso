@@ -10,6 +10,7 @@ import { polioVacines } from '../../../constants/virus';
 import { VaccinesLegend } from './VaccinesLegend';
 import { CampaignsLegend } from './CampaignsLegend';
 import MESSAGES from '../../../constants/messages';
+import { appId } from '../../../constants/app';
 import { useStyles } from '../Styles';
 
 import 'leaflet/dist/leaflet.css';
@@ -26,7 +27,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                     asLocation: true,
                     limit: 3000,
                     group: campaign.original.group.id,
-                    app_id: 'com.poliooutbreaks.app',
+                    app_id: appId,
                 };
 
                 const queryString = new URLSearchParams(baseParams);
@@ -60,10 +61,11 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                 </Box>
             </div>
             <Map
+                zoomSnap={0.25}
                 ref={map}
-                style={{ height: 900 }}
+                style={{ height: '72vh' }}
                 center={[1, 20]}
-                zoom={4}
+                zoom={3.25}
                 scrollWheelZoom={false}
             >
                 <TileLayer

@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import React, { useCallback, useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import {
     Table,
     LoadingSpinner,
@@ -10,11 +11,10 @@ import { Box } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import { useDebounce } from 'use-debounce';
-import { PolioCreateEditDialog as CreateEditDialog } from './CreateEditDialog';
-import { PageAction } from './Buttons/PageAction';
-import { PageActions } from './Buttons/PageActions';
-import { DeleteConfirmDialog } from './DeleteConfirmDialog';
+import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateEditDialog';
+import { PageAction } from '../components/Buttons/PageAction';
+import { PageActions } from '../components/Buttons/PageActions';
+import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
 
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
@@ -22,13 +22,13 @@ import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import ImportLineListDialog from './ImportLineListDialog';
+import ImportLineListDialog from '../components/ImportLineListDialog';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
 const DEFAULT_ORDER = '-cvdpv2_notified_at';
 
-export const Dashboard = () => {
+export const Dashboard = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
@@ -36,8 +36,6 @@ export const Dashboard = () => {
     const [selectedCampaignId, setSelectedCampaignId] = useState();
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
-    const [searchQueryText, setSearchQuery] = useState(undefined);
-    const [searchQuery] = useDebounce(searchQueryText, 500);
     const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
@@ -45,7 +43,10 @@ export const Dashboard = () => {
         page,
         pageSize,
         order,
-        searchQuery,
+        countries: params.countries,
+        search: params.search,
+        r1StartFrom: params.r1StartFrom,
+        r1StartTo: params.r1StartTo,
     });
 
     const { data: campaigns = [], status } = query;
@@ -101,10 +102,6 @@ export const Dashboard = () => {
         setSelectedCampaignId(undefined);
         openCreateEditDialog();
     };
-
-    const handleSearch = useCallback(event => {
-        setSearchQuery(event.target.value);
-    }, []);
 
     const columns = useMemo(
         () => [
@@ -201,7 +198,7 @@ export const Dashboard = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {status === 'loading' && <LoadingSpinner />}
-                <PageActions onSearch={handleSearch}>
+                <PageActions params={params}>
                     <PageAction
                         icon={AddIcon}
                         onClick={handleClickCreateButton}
@@ -224,6 +221,7 @@ export const Dashboard = () => {
                 </PageActions>
                 {status === 'success' && (
                     <Table
+                        marginTop={false}
                         params={tableParams}
                         count={campaigns.count}
                         pages={Math.ceil(campaigns.count / pageSize)}
@@ -236,4 +234,8 @@ export const Dashboard = () => {
             </Box>
         </>
     );
+};
+
+Dashboard.propTypes = {
+    params: PropTypes.object.isRequired,
 };

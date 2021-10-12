@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
 import { Grid } from '@material-ui/core';
-import { LoadingSpinner } from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { useMutation, useQueryClient } from 'react-query';
-import { defineMessages, useIntl } from 'react-intl';
+import { defineMessages } from 'react-intl';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useFormState } from '../../../../../hat/assets/js/apps/Iaso/hooks/form';

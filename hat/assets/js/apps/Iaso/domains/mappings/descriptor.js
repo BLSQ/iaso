@@ -16,19 +16,43 @@ class Descriptor {
             : node.label[language];
     }
 
-    static getCoverage(indexedQuestions, mappingVersion, node) {
-        let questions = [];
-        if (
+    static isGroup(node) {
+        return (
             node.type === 'survey' ||
             node.type === 'group' ||
             node.type === 'repeat'
-        ) {
-            const childrenNames = node.children.map(c => c.name);
-            questions = Object.values(indexedQuestions).filter(
-                q => q.path && q.path.some(p => childrenNames.includes(p)),
-            );
-        }
+        );
+    }
 
+    static getCoverage(
+        indexedQuestions,
+        mappingVersion,
+        node,
+        isTopNode = false,
+    ) {
+        let questions = [];
+        if (this.isGroup(node)) {
+            const childrenNames = node.children.map(c => c.name);
+
+            const comparePathWithChildrenNames = question =>
+                question.path?.some(p => childrenNames.includes(p)) &&
+                !this.isGroup(question);
+
+            if (isTopNode) {
+                questions = Object.values(indexedQuestions).filter(
+                    q =>
+                        comparePathWithChildrenNames(q) ||
+                        (!this.isGroup(q) && !q.path),
+                );
+            } else {
+                questions = Object.values(indexedQuestions).filter(q => {
+                    return comparePathWithChildrenNames(q);
+                });
+                questions = questions.filter(question =>
+                    question.path.includes(node.name),
+                );
+            }
+        }
         const mappedQuestions = questions.filter(
             q => mappingVersion.question_mappings[q.name],
         );
@@ -59,7 +83,11 @@ class Descriptor {
     }
 
     static recursiveIndex(node, acc, path) {
-        acc[this.getNodeName(node)] = node;
+        if (!acc[this.getNodeName(node)]) {
+            acc[this.getNodeName(node)] = node;
+        } else {
+            acc[`${this.getNodeName(node)}1`] = node;
+        }
         if (this.hasChildren(node)) {
             node.children.forEach(child => {
                 const val = child;

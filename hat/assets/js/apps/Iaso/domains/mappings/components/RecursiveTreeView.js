@@ -36,11 +36,12 @@ const RecursiveTreeView = props => {
             onQuestionSelected(val);
         }
     };
-    const renderTree = node => {
+    const renderTree = (node, isTopNode = false) => {
         const coverage = Descriptor.getCoverage(
             indexedQuestions,
             mappingVersion,
             node,
+            isTopNode,
         );
         const questionMapping = mappingVersion.question_mappings[node.name];
         const mapped = isMapped(questionMapping);
@@ -83,7 +84,7 @@ const RecursiveTreeView = props => {
                 defaultExpandIcon={<ChevronRightIcon />}
                 onNodeSelect={onNodeSelected}
             >
-                {renderTree(descriptor)}
+                {renderTree(descriptor, true)}
             </TreeView>
         </div>
     );

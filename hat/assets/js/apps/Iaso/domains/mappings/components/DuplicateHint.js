@@ -6,7 +6,7 @@ import { isNeverMapped } from '../question_mappings';
 import MESSAGES from '../messages';
 
 export const DuplicateHint = ({ mapping, mappingVersion }) => {
-    const { formatMessage } = useSafeIntl;
+    const { formatMessage } = useSafeIntl();
     if (isNeverMapped(mapping) || Object.keys(mapping).length === 0) {
         return null;
     }

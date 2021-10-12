@@ -25,7 +25,7 @@ import {
     useFieldsToExport,
     FIELDS_TO_EXPORT,
     dataSourceVersionsAsOptions,
-    refDataSourceVersionsAsOptions,
+    versionsAsOptionsWithSourceName,
 } from '../utils';
 
 const style = theme => ({
@@ -192,7 +192,7 @@ export const ExportToDHIS2Dialog = ({
                                             value?.id ?? null,
                                         );
                                     }}
-                                    version={sourceDataVersionId}
+                                    version={refDataVersionId}
                                     titleMessage={formatMessage(
                                         MESSAGES.selectTopOrgUnit,
                                     )}
@@ -200,6 +200,7 @@ export const ExportToDHIS2Dialog = ({
                                         refTreeviewResetControl.current !==
                                         refDataVersionId
                                     }
+                                    hardReset
                                 />
                             </Box>
                         </Grid>
@@ -274,7 +275,7 @@ export const ExportToDHIS2Dialog = ({
                             onChange={(keyValue, value) => {
                                 setExportDataField(keyValue, value?.toString());
                             }}
-                            options={refDataSourceVersionsAsOptions({
+                            options={versionsAsOptionsWithSourceName({
                                 formatMessage,
                                 versions: sourceVersions,
                             })}
@@ -300,6 +301,7 @@ export const ExportToDHIS2Dialog = ({
                                     sourceDataVersionId
                                 }
                                 disabled={!sourceDataVersionId}
+                                hardReset
                             />
                         </Box>
                     </Grid>

@@ -725,12 +725,6 @@ class InstanceQuerySet(models.QuerySet):
 
         if form_ids:
             queryset = queryset.filter(form_id__in=form_ids.split(","))
-        # add status annotation
-        queryset = queryset.with_status()
-
-        if status:
-            statuses = status.split(",")
-            queryset = queryset.filter(status__in=statuses)
 
         if show_deleted:
             queryset = queryset.filter(deleted=True)
@@ -751,7 +745,12 @@ class InstanceQuerySet(models.QuerySet):
                 queryset = queryset.filter(
                     Q(org_unit__name__icontains=search) | Q(org_unit__aliases__contains=[search])
                 )
+        # add status annotation
+        queryset = queryset.with_status()
 
+        if status:
+            statuses = status.split(",")
+            queryset = queryset.filter(status__in=statuses)
         return queryset
 
     def for_org_unit_hierarchy(self, org_unit):

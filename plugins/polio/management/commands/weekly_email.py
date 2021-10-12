@@ -48,7 +48,8 @@ def send_notification_email(campaign):
     email_text = f"""Dear GPEI coordinator – {country.name},
 
 Weekly status update: Today is day {day_number} since outbreak notification.
-Below is the summary of the campaign {c.obr_name}, if there are missing data/date; visit {url} to update:
+Below is the summary of the campaign {c.obr_name}. for more details, visit https://afro-rrt-who.hub.arcgis.com/pages/country-summary
+If there are missing data or dates; visit {url} to update
 
 * Notification date              : {c.cvdpv2_notified_at}
 * Round one                      : {c.round_one.started_at if c.round_one  and c.round_one.started_at else ''}

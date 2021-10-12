@@ -29,6 +29,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.save',
         defaultMessage: 'Save',
     },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
     edit: {
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
@@ -137,6 +141,86 @@ const MESSAGES = defineMessages({
     versions: {
         id: 'iaso.datasources.version',
         defaultMessage: 'Versions',
+    },
+    exportDataSource: {
+        id: 'iaso.datasources.exportDataSource',
+        defaultMessage: 'Export data source: {dataSourceName}',
+    },
+    name: {
+        id: 'iaso.datasources.options.label.name',
+        defaultMessage: 'Name',
+    },
+    parent: {
+        id: 'iaso.datasources.options.label.parent',
+        defaultMessage: 'Parent',
+    },
+    groups: {
+        id: 'iaso.datasources.options.label.groups',
+        defaultMessage: 'Groups',
+    },
+    geometry: {
+        id: 'iaso.datasources.options.label.geometry',
+        defaultMessage: 'Geometry',
+    },
+    version: {
+        id: 'iaso.datasources.options.label.version',
+        defaultMessage: 'Version',
+    },
+    default: {
+        id: 'iaso.datasources.options.label.default',
+        defaultMessage: 'default',
+    },
+    selectTopOrgUnit: {
+        id: 'iaso.datasources.label.selectTopOrgUnit',
+        defaultMessage: 'Please select top Orgunit',
+    },
+    export: {
+        id: 'iaso.datasources.button.label.export',
+        defaultMessage: 'Export',
+    },
+    csvPreview: {
+        id: 'iaso.datasources.button.label.csvPreview',
+        defaultMessage: 'Preview',
+    },
+    orgUnitTypes: {
+        id: 'iaso.datasources.label.orgUnitTypes',
+        defaultMessage: 'OrgUnit types',
+    },
+    status: {
+        id: 'iaso.datasources.label.status',
+        defaultMessage: 'Status',
+    },
+    fieldsToExport: {
+        id: 'iaso.datasources.label.fieldsToExport',
+        defaultMessage: 'Fields to export',
+    },
+    datasourceSource: {
+        id: 'iaso.datasources.label.datasourceSource',
+        defaultMessage: 'Source data source',
+    },
+    credentials: {
+        id: 'iaso.datasources.label.credentials',
+        defaultMessage: 'Credentials',
+    },
+    exportTitle: {
+        id: 'iaso.datasources.title.export',
+        defaultMessage: 'OrgUnits to export',
+    },
+    sourceDataSource: {
+        id: 'iaso.datasources.title.sourceDataSource',
+        defaultMessage: 'Target data source',
+    },
+    compareAndExport: {
+        id: 'iaso.datasources.tooltip.compareAndExport',
+        defaultMessage: 'Compare data sources and export to DHIS2',
+    },
+    credentialsForExport: {
+        id: 'iaso.datasources.credentialsForExport',
+        defaultMessage: 'Export to:',
+    },
+    noCredentialsForExport: {
+        id: 'iaso.datasources.noCredentialsForExport',
+        defaultMessage: 'Please configure DHIS2 on source to enable export',
     },
 });
 

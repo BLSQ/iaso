@@ -30,7 +30,7 @@ const tryJson = async response => {
 // fetch throw on network error but not bad status code
 // so throw manually since the code expect it.
 // Wrap all errors in ApiError.
-const iasoFetch = async (resource, init = undefined) => {
+export const iasoFetch = async (resource, init = undefined) => {
     let response;
     const url = resource.url ?? resource;
     const method = init?.ignoreMethod ?? 'GET';

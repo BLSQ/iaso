@@ -103,6 +103,8 @@ class OrgunitsMap extends Component {
     shouldComponentUpdate(nextProps) {
         return (
             !isEqual(nextProps.orgUnits, this.props.orgUnits) ||
+            !isEqual(nextProps.currentTile, this.props.currentTile) ||
+            !isEqual(nextProps.isClusterActive, this.props.isClusterActive) ||
             !isEqual(
                 getColorsFromParams(nextProps.params),
                 getColorsFromParams(this.props.params),
@@ -110,7 +112,7 @@ class OrgunitsMap extends Component {
         );
     }
 
-    async componentDidUpdate(prevProps) {
+    async componentDidUpdate() {
         await waitFor(500);
         const { orgUnits } = this.props;
         this.checkFitToBounds(orgUnits);
@@ -305,7 +307,7 @@ class OrgunitsMap extends Component {
                                         >
                                             <Pane
                                                 name="markers"
-                                                style={{ zIndex: 699 }}
+                                                style={{ zIndex: 500 }}
                                             >
                                                 <MarkersListComponent
                                                     markerProps={() => ({
@@ -336,7 +338,7 @@ class OrgunitsMap extends Component {
                                 (orgUnitsBySearch, searchIndex) => (
                                     <Pane
                                         name="markers"
-                                        style={{ zIndex: 699 }}
+                                        style={{ zIndex: 500 }}
                                     >
                                         <MarkersListComponent
                                             key={searchIndex}

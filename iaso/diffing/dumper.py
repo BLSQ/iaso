@@ -27,16 +27,8 @@ class ShapelyJsonEncoder(json.JSONEncoder):
 
 
 class Dumper:
-    def __init__(self, logger, csv_file_name=None):
+    def __init__(self, logger):
         self.iaso_logger = logger
-        self.csv_file_name = csv_file_name
-
-    def dump(self, diffs, fields):
-        stats = self.dump_stats(diffs, fields)
-        if self.csv_file_name:
-            self.dump_as_csv(diffs, fields)
-        else:
-            self.dump_as_table(diffs, fields, stats)
 
     def dump_stats(self, diffs, fields):
         stats_ou = {}
@@ -69,7 +61,7 @@ class Dumper:
     def dump_as_json(self, diffs, fields):
         self.iaso_logger.info(json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder))
 
-    def dump_as_csv(self, diffs, fields):
+    def dump_as_csv(self, diffs, fields, csv_file):
         res = []
 
         header = ["externalId", "diff status", "type"]
@@ -86,7 +78,11 @@ class Dumper:
         res.append(header)
 
         for diff in diffs:
-            results = [diff.org_unit.source_ref, diff.status, diff.org_unit.org_unit_type.name if diff.org_unit else ""]
+            results = [
+                diff.org_unit.source_ref,
+                diff.status,
+                diff.org_unit.org_unit_type.name if diff.org_unit and diff.org_unit.org_unit_type else "",
+            ]
 
             for field in fields:
                 comparison = list(filter(lambda x: x.field == field, diff.comparisons))[0]
@@ -95,10 +91,9 @@ class Dumper:
                 results.append(str(comparison.after))
 
             res.append(results)
-        with open(self.csv_file_name, "w") as output_file:
-            writer = csv.writer(output_file)
-            for row in res:
-                writer.writerow(row)
+        writer = csv.writer(csv_file)
+        for row in res:
+            writer.writerow(row)
 
     def dump_as_table(self, diffs, fields, stats):
         display = []

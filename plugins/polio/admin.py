@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Campaign, Preparedness, Surge, Round, Config, CountryUsersGroup
+from .models import Campaign, Preparedness, Surge, Round, Config, CountryUsersGroup, URLCache
 
 
 class CampaignAdmin(admin.ModelAdmin):
@@ -14,3 +14,4 @@ admin.site.register(Config)
 admin.site.register(Surge)
 admin.site.register(Round)
 admin.site.register(CountryUsersGroup)
+admin.site.register(URLCache)

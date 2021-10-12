@@ -7,7 +7,7 @@ import CheckBoxOutlineBlankOutlinedIcon from '@material-ui/icons/CheckBoxOutline
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
 import { makeStyles } from '@material-ui/core/styles';
-import { useAPI } from '../../../../utils/requests';
+import { useChildrenData } from './requests';
 
 const styles = theme => ({
     treeItem: {
@@ -44,9 +44,11 @@ const EnrichedTreeItem = ({
     const isExpanded = expanded.includes(id);
     const isTicked = ticked.includes(id);
     const isTickedParent = parentsTicked.includes(id);
-    const { data: childrenData, isLoading } = useAPI(fetchChildrenData, id, {
-        preventTrigger: !isExpanded,
-    });
+    const { data: childrenData, isLoading } = useChildrenData(
+        fetchChildrenData,
+        id,
+        isExpanded,
+    );
     const ref = useRef();
 
     const makeIcon = (hasCheckbox, hasBeenTicked, tickedParent) => {
@@ -79,14 +81,14 @@ const EnrichedTreeItem = ({
             }
             onLabelClick(id, data);
         },
-        [childrenData, onLabelClick],
+        [data, id, onLabelClick, toggleOnLabelClick],
     );
 
     useEffect(() => {
         if (scrollIntoView === id) {
             ref.current.scrollIntoView();
         }
-    }, [scrollIntoView, id]);
+    }, [scrollIntoView, id, ref]);
 
     const makeSubTree = subTreeData => {
         if (!subTreeData) return null;

@@ -10,7 +10,6 @@ import {
     injectIntl,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { FormattedMessage } from 'react-intl';
 import {
     setCurrentMappingVersion as setCurrentMappingVersionAction,
     fetchMappingVersionDetail as fetchMappingVersionDetailAction,
@@ -124,21 +123,16 @@ class MappingDetails extends Component {
             <section className={classes.relativeContainer}>
                 <TopBar
                     title={
-                        currentMappingVersion ? (
-                            <FormattedMessage
-                                {...MESSAGES.mapping}
-                                values={{
-                                    name: currentMappingVersion.form_version
-                                        .form.name,
-                                    id: currentMappingVersion.form_version
-                                        .version_id,
-                                    type: currentMappingVersion.mapping
-                                        .mapping_type,
-                                }}
-                            />
-                        ) : (
-                            <FormattedMessage {...MESSAGES.loading} />
-                        )
+                        currentMappingVersion
+                            ? intl.formatMessage(MESSAGES.mapping, {
+                                  name: currentMappingVersion.form_version.form
+                                      .name,
+                                  id: currentMappingVersion.form_version
+                                      .version_id,
+                                  type: currentMappingVersion.mapping
+                                      .mapping_type,
+                              })
+                            : intl.formatMessage(MESSAGES.loading)
                     }
                     displayBackButton
                     goBack={() => {

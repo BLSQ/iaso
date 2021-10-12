@@ -3,7 +3,6 @@ from uuid import uuid4
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext as _
-
 from iaso.models import Group, OrgUnit
 
 VIRUSES = [
@@ -56,6 +55,20 @@ PREPAREDNESS_SYNC_STATUS = [
 PAYMENT = [
     ("DIRECT", _("Direct")),
     ("DFC", _("DFC")),
+]
+
+PREPARING = "PREPARING"
+ROUND1START = "ROUND1START"
+ROUND1DONE = "ROUND1DONE"
+ROUND2START = "ROUND2START"
+ROUND2DONE = "ROUND2DONE"
+
+ROUNDSTATUS = [
+    (PREPARING, _("Preparing")),
+    (ROUND1START, _("Round 1 started")),
+    (ROUND1DONE, _("Round 1 completed")),
+    (ROUND2START, _("Round 2 started")),
+    (ROUND2DONE, _("Round 2 completed")),
 ]
 
 
@@ -367,3 +380,14 @@ class LineListImport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+
+
+class URLCache(models.Model):
+    url = models.URLField(unique=True)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.url

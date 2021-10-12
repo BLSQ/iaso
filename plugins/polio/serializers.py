@@ -471,5 +471,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "district_count",
             "budget_rrt_oprtt_approval_at",
             "budget_submitted_at",
+            "top_level_org_unit_name",
+            "top_level_org_unit_id",
         ]
         read_only_fields = fields

@@ -13,16 +13,11 @@ import { userHasPermission, getFirstAllowedUrl } from '../utils';
 
 import PageError from '../../../components/errors/PageError';
 import { switchLocale } from '../../app/actions';
-import { setCookie, getCookie } from '../../../utils/cookies';
-
-import { setLocale } from '../../../utils/dates';
 import { hasFeatureFlag } from '../../../utils/featureFlags';
 
 class ProtectedRoute extends Component {
     componentDidMount() {
         this.props.fetchCurrentUser();
-        const { activeLocale } = this.props;
-        setLocale(activeLocale.code);
     }
 
     componentDidUpdate(prevProps) {
@@ -43,20 +38,18 @@ class ProtectedRoute extends Component {
                 }
             }
             // Use defined default language if it exists and if the user didn't set it manually
-            if (currentUser?.language && !getCookie('django_language')) {
-                setCookie('django_language', currentUser.language);
-                setLocale(currentUser.language);
+            if (
+                currentUser?.language &&
+                currentUser?.language !== prevProps.currentUser?.language
+            ) {
                 this.props.dispatch(switchLocale(currentUser.language));
             }
         }
     }
 
     render() {
-        const { component, currentUser, permission, featureFlag } = this.props;
-        const clonedProps = {
-            ...this.props,
-        };
-        delete clonedProps.children;
+        const { component, currentUser, permission, featureFlag, location } =
+            this.props;
         let isAuthorized = permission
             ? userHasPermission(permission, currentUser)
             : true;
@@ -68,7 +61,7 @@ class ProtectedRoute extends Component {
         }
         return (
             <>
-                <SidebarMenu {...clonedProps} />
+                <SidebarMenu location={location} />
                 {isAuthorized && component}
                 {!isAuthorized && <PageError errorCode="401" />}
             </>
@@ -90,15 +83,14 @@ ProtectedRoute.propTypes = {
     permission: PropTypes.any,
     currentUser: PropTypes.object,
     isRootUrl: PropTypes.bool,
-    activeLocale: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     featureFlag: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     allRoutes: PropTypes.array,
+    location: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentUser: state.users.current,
-    activeLocale: state.app.locale,
 });
 
 const MapDispatchToProps = dispatch => ({

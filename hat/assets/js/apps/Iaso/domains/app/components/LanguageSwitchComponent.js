@@ -5,9 +5,8 @@ import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 
-import { switchLocale } from '../actions';
 import { APP_LOCALES } from '../constants';
-import { setLocale } from '../../../utils/dates';
+import { saveCurrentUserProFile } from '../../users/actions';
 
 const useStyles = makeStyles(theme => ({
     currentLocale: {
@@ -30,8 +29,11 @@ export default function LanguageSwitchComponent() {
     };
 
     const handleLocaleSwitch = localeCode => {
-        setLocale(localeCode);
-        dispatch(switchLocale(localeCode));
+        dispatch(
+            saveCurrentUserProFile({
+                language: localeCode,
+            }),
+        );
         setAnchorEl(null);
     };
 

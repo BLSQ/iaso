@@ -45,6 +45,7 @@ import {
     orgUnitsTypesInitialState,
     reducer as orgUnitsTypesReducer,
 } from '../domains/orgUnits/types/reducer';
+import { localeMiddleware } from '../domains/app/middleware';
 
 // TODO pass baseUrl without hardcoding it
 let storeHistory = useRouterHistory(createHistory)({
@@ -87,7 +88,7 @@ const store = createStore(
         groups: groupsReducer,
         orgUnitsTypes: orgUnitsTypesReducer,
     },
-    [routerMiddleware(storeHistory), thunk],
+    [routerMiddleware(storeHistory), thunk, localeMiddleware],
 );
 // TODO: see if mutation necessary. If not don't reassign history and initialize history const here
 storeHistory = syncHistoryWithStore(storeHistory, store);

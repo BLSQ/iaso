@@ -12,7 +12,20 @@ from rest_framework import serializers
 
 from iaso.models import Group, OrgUnit
 from plugins.polio.preparedness.calculator import get_preparedness_score
-from .models import Preparedness, Round, Campaign, Surge, CountryUsersGroup, LineListImport, VIRUSES
+from .models import (
+    Preparedness,
+    Round,
+    Campaign,
+    Surge,
+    CountryUsersGroup,
+    LineListImport,
+    VIRUSES,
+    PREPARING,
+    ROUND1START,
+    ROUND1DONE,
+    ROUND2START,
+    ROUND2DONE,
+)
 from .preparedness.parser import (
     open_sheet_by_url,
     get_regional_level_preparedness,
@@ -328,16 +341,16 @@ class CampaignSerializer(serializers.ModelSerializer):
         now_utc = datetime.now(timezone.utc).date()
         if campaign.round_two:
             if campaign.round_two.ended_at and now_utc > campaign.round_two.ended_at:
-                return _("Round 2 completed")
+                return ROUND2DONE
             if campaign.round_two.started_at and now_utc >= campaign.round_two.started_at:
-                return _("Round 2 started")
+                return ROUND2START
         if campaign.round_one:
             if campaign.round_one.ended_at and now_utc > campaign.round_one.ended_at:
-                return _("Round 1 completed")
+                return ROUND1DONE
             if campaign.round_one.started_at and now_utc >= campaign.round_one.started_at:
-                return _("Round 1 started")
+                return ROUND1START
 
-        return _("Preparing")
+        return PREPARING
 
     group = GroupSerializer(required=False, allow_null=True)
 

@@ -531,6 +531,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.provinceOption',
         defaultMessage: 'PROVINCE',
     },
+    PREPARING: {
+        id: 'iaso.polio.PREPARING',
+        defaultMessage: 'Preparing',
+    },
+    ROUND1START: {
+        id: 'iaso.polio.ROUND1START',
+        defaultMessage: 'Round 1 started',
+    },
+    ROUND1DONE: {
+        id: 'iaso.polio.ROUND1DONE',
+        defaultMessage: 'Round 1 completed',
+    },
+    ROUND2START: {
+        id: 'iaso.polio.ROUND2START',
+        defaultMessage: 'Round 2 started',
+    },
+    ROUND2DONE: {
+        id: 'iaso.polio.ROUND2DONE',
+        defaultMessage: 'Round 2 completed',
+    },
 });
 
 export default MESSAGES;

@@ -77,7 +77,7 @@ const Head = ({ headers, params, orders, currentWeekIndex }) => {
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
-                <HeadStaticFieldsCells params={params} orders={orders} />
+                <HeadStaticFieldsCells orders={orders} />
                 {headers.weeks.map((week, weekIndex) => (
                     <TableCell
                         className={classnames(

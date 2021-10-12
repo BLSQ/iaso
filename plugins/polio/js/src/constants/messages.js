@@ -551,6 +551,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.ROUND2DONE',
         defaultMessage: 'Round 2 completed',
     },
+    filter: {
+        id: 'iaso.polio.label.filter',
+        defaultMessage: 'Filter',
+    },
+    R1StartFrom: {
+        id: 'iaso.polio.label.R1StartFrom',
+        defaultMessage: 'R1 start date from',
+    },
+    R1StartTo: {
+        id: 'iaso.polio.label.R1StartTo',
+        defaultMessage: 'R1 start date to',
+    },
+    sortAsc: {
+        id: 'iaso.polio.label.sortAsc',
+        defaultMessage: 'Sort ascending',
+    },
+    sortDesc: {
+        id: 'iaso.polio.label.sortDesc',
+        defaultMessage: 'Sort descending',
+    },
+    search: {
+        id: 'iaso.polio.label.search',
+        defaultMessage: 'Search',
+    },
 });
 
 export default MESSAGES;

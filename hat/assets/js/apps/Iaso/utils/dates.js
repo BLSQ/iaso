@@ -12,11 +12,23 @@ export const getUrlParamDateObject = date => {
 // this is the date format used in api calls
 export const apiDateFormat = 'YYYY-MM-DD HH:MM';
 
+// this is the short date format used in api calls
+export const shortApiDateFormat = 'YYYY-MM-DD';
+
+/**
+ * @param {Object} date - date as a moment object
+ */
+export const getApiParamDateTimeString = date => {
+    return date.format(apiDateFormat);
+};
+
 /**
  * @param {Object} date - date as a moment object
  */
 export const getApiParamDateString = date => {
-    return date.format(apiDateFormat);
+    return date
+        ? getUrlParamDateObject(date).format(shortApiDateFormat)
+        : undefined;
 };
 
 /**
@@ -24,14 +36,16 @@ export const getApiParamDateString = date => {
  */
 export const getFromDateString = dateFrom =>
     dateFrom
-        ? getApiParamDateString(getUrlParamDateObject(dateFrom).startOf('day'))
+        ? getApiParamDateTimeString(
+              getUrlParamDateObject(dateFrom).startOf('day'),
+          )
         : null;
 /**
  * @param {String} date - date as string
  */
 export const getToDateString = dateTo =>
     dateTo
-        ? getApiParamDateString(getUrlParamDateObject(dateTo).endOf('day'))
+        ? getApiParamDateTimeString(getUrlParamDateObject(dateTo).endOf('day'))
         : null;
 
 const longDateFormats = {
@@ -57,5 +71,8 @@ export const setLocale = code => {
     moment.locale(code);
     moment.updateLocale(code, {
         longDateFormat: longDateFormats[code],
+        week: {
+            dow: 1,
+        },
     });
 };

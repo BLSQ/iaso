@@ -2,16 +2,14 @@ import React from 'react';
 
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-
 import { TableHead, TableRow, TableCell, Typography } from '@material-ui/core';
 
 import { useStyles } from './Styles';
 
 import { colSpanTitle, staticFields } from './constants';
-import MESSAGES from '../../constants/messages';
+import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
 
-const Head = ({ headers }) => {
+const Head = ({ headers, params, orders, currentWeekIndex }) => {
     const classes = useStyles();
     return (
         <TableHead>
@@ -79,32 +77,16 @@ const Head = ({ headers }) => {
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
-                {staticFields.map(f => (
+                <HeadStaticFieldsCells params={params} orders={orders} />
+                {headers.weeks.map((week, weekIndex) => (
                     <TableCell
-                        key={f.key}
                         className={classnames(
-                            classes.tableCellTitle,
-                            classes.tableCellTitleLarge,
+                            [classes.tableCellHead, classes.tableCellSmall],
+                            {
+                                [classes.currentWeek]:
+                                    weekIndex + 1 === currentWeekIndex,
+                            },
                         )}
-                        colSpan={colSpanTitle}
-                        style={{ top: 100 }}
-                    >
-                        <span
-                            className={classnames(
-                                classes.tableCellSpan,
-                                classes.tableCellSpanTitle,
-                            )}
-                        >
-                            <FormattedMessage {...MESSAGES[f.key]} />
-                        </span>
-                    </TableCell>
-                ))}
-                {headers.weeks.map(week => (
-                    <TableCell
-                        className={classnames([
-                            classes.tableCellHead,
-                            classes.tableCellSmall,
-                        ])}
                         style={{ top: 100 }}
                         key={`week-${week.year}-${week.month}-${week.value}`}
                         align="center"
@@ -148,6 +130,9 @@ const Head = ({ headers }) => {
 
 Head.propTypes = {
     headers: PropTypes.object.isRequired,
+    params: PropTypes.object.isRequired,
+    orders: PropTypes.string.isRequired,
+    currentWeekIndex: PropTypes.number.isRequired,
 };
 
 export { Head };

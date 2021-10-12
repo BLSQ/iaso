@@ -28,6 +28,8 @@ const DatesRange = ({
     dateTo,
     onChangeDate,
     intl: { formatMessage },
+    labelTo,
+    labelFrom,
 }) => {
     const classes = useStyles();
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
@@ -48,7 +50,7 @@ const DatesRange = ({
                             shrink: Boolean(dateFrom),
                         }}
                         format="L"
-                        label={formatMessage(MESSAGES.from)}
+                        label={formatMessage(labelFrom)}
                         helperText=""
                         inputVariant="outlined"
                         value={
@@ -92,7 +94,7 @@ const DatesRange = ({
                             shrink: Boolean(dateTo),
                         }}
                         format="L"
-                        label={formatMessage(MESSAGES.to)}
+                        label={formatMessage(labelTo)}
                         helperText=""
                         value={
                             dateTo === '' || dateTo === null
@@ -127,6 +129,8 @@ DatesRange.defaultProps = {
     dateFrom: '',
     dateTo: '',
     onChangeDate: () => null,
+    labelTo: MESSAGES.to,
+    labelFrom: MESSAGES.from,
 };
 
 DatesRange.propTypes = {
@@ -134,6 +138,8 @@ DatesRange.propTypes = {
     dateFrom: PropTypes.string,
     dateTo: PropTypes.string,
     intl: PropTypes.object.isRequired,
+    labelTo: PropTypes.object,
+    labelFrom: PropTypes.object,
 };
 
 const DatesRangeIntl = injectIntl(DatesRange);

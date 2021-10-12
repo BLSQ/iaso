@@ -489,6 +489,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.noGeographicalData',
         defaultMessage: 'Without geography',
     },
+    validateXlsForm: {
+        id: 'iaso.label.validateXLSForm',
+        defaultMessage: 'Validate your XLSForm',
+    },
+    here: {
+        id: 'iaso.label.here',
+        defaultMessage: 'here',
+    },
 });
 
 export default MESSAGES;

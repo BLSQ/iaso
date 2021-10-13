@@ -1,7 +1,5 @@
 import _ from 'lodash/fp';
-import React from 'react';
 import { textPlaceholder } from 'bluesquare-components';
-import { FormattedMessage } from 'react-intl';
 import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
@@ -198,13 +196,12 @@ export class Period {
 
     static getPrettyPeriod(period, formatMessage) {
         if (!period) return textPlaceholder;
-        if (period.length === 4) {
+        const periodClass = new Period(period);
+        if (periodClass.periodType === PERIOD_TYPE_YEAR) {
             return period;
         }
-        const periodClass = new Period(period);
-        const year = period.substring(0, 4);
         const prefix = period.substring(4, 6);
-        const prettyPeriod = `${prefix}-${year}`;
+        const prettyPeriod = `${prefix}-${periodClass.year}`;
 
         let monthRangeString;
         if (

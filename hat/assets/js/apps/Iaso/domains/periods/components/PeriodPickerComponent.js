@@ -18,7 +18,9 @@ import {
     PERIOD_TYPE_YEAR,
     MONTHS,
     QUARTERS,
+    QUARTERS_RANGE,
     SEMESTERS,
+    SEMESTERS_RANGE,
 } from '../constants';
 import MESSAGES from '../messages';
 
@@ -143,7 +145,11 @@ const PeriodPicker = ({
                                         type="select"
                                         options={Object.entries(QUARTERS).map(
                                             ([value, label]) => ({
-                                                label,
+                                                label: `${label} (${intl.formatMessage(
+                                                    QUARTERS_RANGE[value][0],
+                                                )}-${intl.formatMessage(
+                                                    QUARTERS_RANGE[value][1],
+                                                )})`,
                                                 value,
                                             }),
                                         )}

@@ -89,7 +89,6 @@ const InstancesFiltersComponent = ({
         setFetchingDevicesOwnerships,
         setFetchingPeriodsList,
     );
-    console.log('periodsList', periodsList);
     if (periodsList.length > 0) {
         secondColumnFilters.unshift({
             ...periods(periodsList, intl.formatMessage),

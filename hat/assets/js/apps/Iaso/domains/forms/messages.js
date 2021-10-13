@@ -491,11 +491,11 @@ const MESSAGES = defineMessages({
     },
     validateXlsForm: {
         id: 'iaso.label.validateXLSForm',
-        defaultMessage: 'Validate your XLSForm',
+        defaultMessage: 'Validate your Form beforehand using the ',
     },
-    here: {
-        id: 'iaso.label.here',
-        defaultMessage: 'here',
+    validateXLSFormLink: {
+        id: 'iaso.label.validateXLSFormLink',
+        defaultMessage: 'online tool',
     },
 });
 

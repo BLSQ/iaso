@@ -369,12 +369,12 @@ export const group = (groupList, urlKey = 'group') => ({
     type: 'select',
 });
 
-export const periods = periodsList => ({
+export const periods = (periodsList, formatMessage) => ({
     urlKey: 'periods',
     isMultiSelect: true,
     isClearable: true,
     options: periodsList.map(p => ({
-        label: Period.getPrettyPeriod(p),
+        label: Period.getPrettyPeriod(p, formatMessage),
         value: p,
     })),
     label: MESSAGES.periods,

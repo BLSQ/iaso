@@ -89,10 +89,10 @@ const InstancesFiltersComponent = ({
         setFetchingDevicesOwnerships,
         setFetchingPeriodsList,
     );
-
+    console.log('periodsList', periodsList);
     if (periodsList.length > 0) {
         secondColumnFilters.unshift({
-            ...periods(periodsList),
+            ...periods(periodsList, intl.formatMessage),
             loading: fetchingPeriodsList,
         });
     }
@@ -197,7 +197,7 @@ const InstancesFiltersComponent = ({
                                 ]}
                                 onEnterPressed={() => handleSearch()}
                             />
-                            <Box mt={1}>
+                            <Box>
                                 <OrgUnitTreeviewModal
                                     toggleOnLabelClick={false}
                                     titleMessage={MESSAGES.search}

@@ -1,12 +1,14 @@
 import _ from 'lodash/fp';
-
+import React from 'react';
 import { textPlaceholder } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
+    MONTHS,
 } from './constants';
 
 export class Period {
@@ -194,14 +196,30 @@ export class Period {
         };
     }
 
-    static getPrettyPeriod(period) {
+    static getPrettyPeriod(period, formatMessage) {
         if (!period) return textPlaceholder;
         if (period.length === 4) {
             return period;
         }
+        const periodClass = new Period(period);
         const year = period.substring(0, 4);
         const prefix = period.substring(4, 6);
-        return `${prefix}-${year}`;
+        const prettyPeriod = `${prefix}-${year}`;
+
+        let monthRangeString;
+        if (
+            formatMessage &&
+            periodClass.periodType !== PERIOD_TYPE_DAY &&
+            periodClass.periodType !== PERIOD_TYPE_MONTH
+        ) {
+            const { monthRange } = periodClass;
+            const firstMonth = MONTHS[monthRange[0]];
+            const lastMonth = MONTHS[monthRange[monthRange.length - 1]];
+            monthRangeString = ` (${formatMessage(firstMonth)}-${formatMessage(
+                lastMonth,
+            )})`;
+        }
+        return `${prettyPeriod}${monthRangeString || ''}`;
     }
 
     static padMonth(n) {

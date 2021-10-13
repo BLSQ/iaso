@@ -7,14 +7,15 @@ import { useKeyPressListener, useSafeIntl } from 'bluesquare-components';
 
 import { TableCell, TableSortLabel } from '@material-ui/core';
 
+import { replace } from 'react-router-redux';
+import { withRouter } from 'react-router';
 import { colSpanTitle, staticFields } from '../constants';
 import { getOrderArray, getSort } from '../utils';
 import { useStyles } from '../Styles';
 import MESSAGES from '../../../constants/messages';
-import { CALENDAR_BASE_URL } from '../../../constants/routes';
-import { redirectTo } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import { genUrl } from '../../../utils/routing';
 
-const HeadStaticFieldsCells = ({ orders, params }) => {
+const HeadStaticFieldsCells = ({ orders, router }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -38,11 +39,12 @@ const HeadStaticFieldsCells = ({ orders, params }) => {
             ];
         }
         newSort.push(currentSort);
-        const newParams = {
-            ...params,
+
+        const url = genUrl(router, {
             order: getSort(newSort),
-        };
-        dispatch(redirectTo(CALENDAR_BASE_URL, newParams));
+        });
+
+        dispatch(replace(url));
     };
     return staticFields.map(f => {
         const sort = ordersArray.find(o => o.id === f.sortKey);
@@ -92,7 +94,7 @@ const HeadStaticFieldsCells = ({ orders, params }) => {
 
 HeadStaticFieldsCells.propTypes = {
     orders: PropTypes.string.isRequired,
-    params: PropTypes.object.isRequired,
 };
 
-export { HeadStaticFieldsCells };
+const wrappedHeadStaticFieldsCells = withRouter(HeadStaticFieldsCells);
+export { wrappedHeadStaticFieldsCells as HeadStaticFieldsCells };

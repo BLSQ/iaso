@@ -346,6 +346,8 @@
     "iaso.label.uuid": "Uuid",
     "iaso.label.valid": "Validated",
     "iaso.label.validate": "Validate",
+    "iaso.label.validateXLSForm":"Validate your Form beforehand using the ",
+    "iaso.label.validateXLSFormLink":"online tool",
     "iaso.label.validatedOrgUnitCount": "Validated org units count",
     "iaso.label.validator": "Validator",
     "iaso.label.value": "Value",

@@ -29,7 +29,7 @@ const Filters = ({ router }) => {
             setFiltersUpdated(false);
             const url = genUrl(router, {
                 countries,
-                search,
+                search: search && search !== '' ? search : undefined,
                 r1StartFrom,
                 r1StartTo,
             });

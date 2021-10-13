@@ -1,7 +1,7 @@
 const colsCount = 16;
 const dateFormat = 'YYYY-MM-DD';
 const colSpanTitle = 21;
-const defaultOrder = 'country__name';
+const defaultOrder = 'round_one__started_at';
 const staticFields = [
     {
         key: 'country',

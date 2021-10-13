@@ -29,29 +29,6 @@ export const getYears = (yearsCount, offset = 0, reverse = false) => {
     return years;
 };
 
-export const addPositionIndex = array => {
-    const tempArray = [];
-    if (array) {
-        array.forEach((e, index) => {
-            tempArray.push({
-                value: e,
-                position: index,
-            });
-        });
-    }
-    return tempArray;
-};
-
-export const removePositionIndex = array => {
-    const tempArray = [];
-    if (array) {
-        array.forEach(e => {
-            tempArray.push(e.value);
-        });
-    }
-    return tempArray;
-};
-
 export const userHasPermission = (
     permissions,
     currentUser,

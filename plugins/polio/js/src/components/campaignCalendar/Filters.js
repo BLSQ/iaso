@@ -117,7 +117,6 @@ Filters.defaultProps = {
 };
 
 Filters.propTypes = {
-    params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string,
     router: PropTypes.object.isRequired,
 };

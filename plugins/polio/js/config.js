@@ -39,7 +39,13 @@ const routes = [
         baseUrl: DASHBOARD_BASE_URL,
         component: props => <Dashboard {...props} />,
         permission: 'iaso_polio',
-        params: [...campaignsFilters],
+        params: [
+            {
+                isRequired: false,
+                key: 'campaignId',
+            },
+            ...campaignsFilters,
+        ],
     },
     {
         baseUrl: CALENDAR_BASE_URL,

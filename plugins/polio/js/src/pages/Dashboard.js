@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
     Table,
@@ -7,6 +7,9 @@ import {
     IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
+import { withRouter } from 'react-router';
+import { useDispatch } from 'react-redux';
+import { replace } from 'react-router-redux';
 import { Box } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
@@ -23,12 +26,15 @@ import MESSAGES from '../constants/messages';
 
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import ImportLineListDialog from '../components/ImportLineListDialog';
+import { genUrl } from '../utils/routing';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
 const DEFAULT_ORDER = '-cvdpv2_notified_at';
 
-export const Dashboard = ({ params }) => {
+const Dashboard = ({ router }) => {
+    const { params } = router;
+    const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
@@ -57,13 +63,24 @@ export const Dashboard = ({ params }) => {
         campaign => campaign.id === selectedCampaignId,
     );
 
-    const openCreateEditDialog = useCallback(() => {
-        setIsCreateEditDialogOpen(true);
-    }, [setIsCreateEditDialogOpen]);
+    const openCreateEditDialog = useCallback(
+        campaignId => {
+            setIsCreateEditDialogOpen(true);
+            const url = genUrl(router, {
+                campaignId,
+            });
+            dispatch(replace(url));
+        },
+        [setIsCreateEditDialogOpen, router, dispatch],
+    );
 
     const closeCreateEditDialog = () => {
         setSelectedCampaignId(undefined);
         setIsCreateEditDialogOpen(false);
+        const url = genUrl(router, {
+            campaignId: undefined,
+        });
+        dispatch(replace(url));
     };
 
     const openDeleteConfirmDialog = useCallback(() => {
@@ -85,7 +102,7 @@ export const Dashboard = ({ params }) => {
     const handleClickEditRow = useCallback(
         id => {
             setSelectedCampaignId(id);
-            openCreateEditDialog();
+            openCreateEditDialog(id);
         },
         [setSelectedCampaignId, openCreateEditDialog],
     );
@@ -102,6 +119,13 @@ export const Dashboard = ({ params }) => {
         setSelectedCampaignId(undefined);
         openCreateEditDialog();
     };
+
+    useEffect(() => {
+        if (params.campaignId) {
+            setSelectedCampaignId(params.campaignId);
+            openCreateEditDialog(params.campaignId);
+        }
+    }, []);
 
     const columns = useMemo(
         () => [
@@ -237,5 +261,8 @@ export const Dashboard = ({ params }) => {
 };
 
 Dashboard.propTypes = {
-    params: PropTypes.object.isRequired,
+    router: PropTypes.object.isRequired,
 };
+
+const wrappedDashboard = withRouter(Dashboard);
+export { wrappedDashboard as Dashboard };

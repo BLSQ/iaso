@@ -59,10 +59,10 @@ const longDateFormats = {
     },
     en: {
         LT: 'h:mm A',
-        LTS: 'MM/DD/YYYY HH:mm',
-        L: 'MM/DD/YYYY',
-        LL: 'MMMM Do YYYY',
-        LLL: 'MMMM Do YYYY LT',
+        LTS: 'DD/MM/YYYY HH:mm',
+        L: 'DD/MM/YYYY',
+        LL: 'Do MMMM YYYY',
+        LLL: 'Do MMMM YYYY LT',
         LLLL: 'dddd, MMMM Do YYYY LT',
     },
 };

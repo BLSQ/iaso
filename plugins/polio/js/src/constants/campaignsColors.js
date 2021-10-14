@@ -20,8 +20,8 @@ import {
 const colors = [
     red[500],
     teal[500],
-    lightGreen[500],
-    purple[500],
+    lightGreen[800],
+    purple[800],
     blue[500],
     amber[500],
     lightBlue[500],
@@ -33,7 +33,7 @@ const colors = [
     pink[500],
     indigo[500],
     yellow[500],
-    deepOrange[500],
+    deepOrange[700],
 ];
 
 const getCampaignColor = (i, reverse = false) => {

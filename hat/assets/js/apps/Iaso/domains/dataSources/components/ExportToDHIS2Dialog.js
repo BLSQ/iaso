@@ -112,8 +112,12 @@ export const ExportToDHIS2Dialog = ({
 
     const onConfirm = useCallback(
         closeDialog => {
-            exportToDHIS2(convertFormStateToDict(exportData));
-            closeDialog();
+            // eslint-disable-next-line no-restricted-globals
+            const r = confirm(formatMessage(MESSAGES.dhis2ExportSure));
+            if (r) {
+                exportToDHIS2(convertFormStateToDict(exportData));
+                closeDialog();
+            }
         },
         [exportData, exportToDHIS2],
     );

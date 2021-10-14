@@ -166,6 +166,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.options.label.version',
         defaultMessage: 'Version',
     },
+    dhis2ExportSure: {
+        id: 'iaso.datasources.title.dhis2ExportSure',
+        defaultMessage: 'Are you sure? \n' +
+          'This might make a lot of changes in DHIS2.',
+    },
     default: {
         id: 'iaso.datasources.options.label.default',
         defaultMessage: 'default',

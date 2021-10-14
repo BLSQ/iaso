@@ -64,6 +64,7 @@
     "iaso.datasources.options.label.version": "Version",
     "iaso.datasources.title.export": "OrgUnits à exporter",
     "iaso.datasources.title.sourceDataSource": "Source de comparaison",
+    "iaso.datasources.title.dhis2ExportSure": "Êtes vous sûr? \nCeci pourrait faire beaucoup de changements dans DHIS2.",
     "iaso.datasources.tooltip.compareAndExport": "Comparer des sources et exporter vers DHIS2",
     "iaso.datasources.version": "Versions",
     "iaso.devices.imei": "IMEI",

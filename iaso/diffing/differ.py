@@ -96,9 +96,7 @@ class Differ:
             elif status != "new" and all_same:
                 status = "same"
 
-            diff = Diff(
-                org_unit=orgunit_dhis2 if orgunit_dhis2 else orgunit_ref, status=status, comparisons=comparisons
-            )
+            diff = Diff(org_unit=orgunit_ref if orgunit_ref else orgunit_dhis2, status=status, comparisons=comparisons)
             diffs.append(diff)
 
         if show_deleted_org_units:

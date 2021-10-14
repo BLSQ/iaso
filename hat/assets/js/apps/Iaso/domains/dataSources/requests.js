@@ -85,10 +85,6 @@ const adaptForApi = data => {
     if (data.ref_status === 'ALL') {
         adaptedData.ref_status = '';
     }
-    // For now we decided to not expose theses parameters to the user
-    // and reuse them between the source and the ref
-    adaptedData.source_org_unit_type_ids = data.ref_org_unit_type_ids;
-    adaptedData.source_status = adaptedData.ref_status;
     return adaptedData;
 };
 

@@ -61,7 +61,7 @@ class Dumper:
     def dump_as_json(self, diffs, fields):
         self.iaso_logger.info(json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder))
 
-    def dump_as_csv(self, diffs, fields, csv_file):
+    def dump_as_csv(self, diffs, fields, csv_file, number_of_parents=5):
         res = []
 
         header = ["externalId", "diff status", "type"]
@@ -74,7 +74,8 @@ class Dumper:
                 diffable_fields.append(field)
         for field in diffable_fields:
             header.extend((field, field + " before", field + " after"))
-
+        for i in range(1, number_of_parents + 1):
+            header.extend(["parent %d name before" % i, "parent %d name after" % i])
         res.append(header)
 
         for diff in diffs:
@@ -85,10 +86,24 @@ class Dumper:
             ]
 
             for field in fields:
+
                 comparison = list(filter(lambda x: x.field == field, diff.comparisons))[0]
                 results.append(comparison.status)
-                results.append(str(comparison.before))
-                results.append(str(comparison.after))
+                if field != "geometry":
+                    results.append(str(comparison.before))
+                    results.append(str(comparison.after))
+                else:
+                    results.append(str(comparison.before)[:40])
+                    results.append(str(comparison.after)[:40])
+            current_dhis2 = diff.orgunit_dhis2
+            current_ref = diff.orgunit_ref
+            for i in range(number_of_parents):
+                if current_dhis2:
+                    current_dhis2 = current_dhis2.parent
+                results.append(current_dhis2.name if current_dhis2 else None)
+                if current_ref:
+                    current_ref = current_ref.parent
+                results.append(current_ref.name if current_ref else None)
 
             res.append(results)
         writer = csv.writer(csv_file)

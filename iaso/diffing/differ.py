@@ -96,7 +96,7 @@ class Differ:
             elif status != "new" and all_same:
                 status = "same"
 
-            diff = Diff(org_unit=orgunit_ref if orgunit_ref else orgunit_dhis2, status=status, comparisons=comparisons)
+            diff = Diff(orgunit_ref=orgunit_ref, orgunit_dhis2=orgunit_dhis2, status=status, comparisons=comparisons)
             diffs.append(diff)
 
         if show_deleted_org_units:
@@ -117,7 +117,7 @@ class Differ:
                     comparisons.append(comparison)
                 used_to_exist = OrgUnit.objects.filter(source_ref=deleted_id, version=version).count() > 0
                 status = "deleted" if used_to_exist else "never_seen"
-                diff = Diff(orgunit_dhis2, status=status, comparisons=comparisons)
+                diff = Diff(orgunit_ref=None, orgunit_dhis2=orgunit_dhis2, status=status, comparisons=comparisons)
                 diffs.append(diff)
 
         return diffs, field_names

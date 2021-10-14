@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { TextField } from '@material-ui/core';
 import { get } from 'lodash';
 
@@ -18,4 +19,16 @@ export const TextInput = ({ field = {}, form = {}, value, ...props } = {}) => {
             helperText={form.errors && get(form.errors, field.name)}
         />
     );
+};
+
+TextInput.defaultProps = {
+    field: {},
+    form: {},
+    value: undefined,
+};
+
+TextInput.propTypes = {
+    field: PropTypes.object,
+    form: PropTypes.object,
+    value: PropTypes.any,
 };

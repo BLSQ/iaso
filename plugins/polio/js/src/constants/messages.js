@@ -575,6 +575,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.search',
         defaultMessage: 'Search',
     },
+    clear: {
+        id: 'iaso.polio.label.clear',
+        defaultMessage: 'Clear',
+    },
 });
 
 export default MESSAGES;

@@ -1,18 +1,32 @@
 import React from 'react';
-import { TextInput } from './TextInput';
-import { useInputStyles } from './Styles';
+import PropTypes from 'prop-types';
+import { Box } from '@material-ui/core';
+import { DatePicker } from 'bluesquare-components';
+import { get } from 'lodash';
+import { shortApiDateFormat } from '../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 
-export const DateInput = ({ field, form, ...props }) => {
-    const classes = useInputStyles();
+import MESSAGES from '../../constants/messages';
 
+export const DateInput = ({ field, form }) => {
     return (
-        <TextInput
-            className={classes.input}
-            id={`date-${field.name}`}
-            type="date"
-            field={field}
-            form={form}
-            {...props}
-        />
+        <Box mb={2}>
+            <DatePicker
+                placeholder="DD/MM/YYYY"
+                clearMessage={MESSAGES.clear}
+                currentDate={field.value || null}
+                hasError={form.errors && Boolean(get(form.errors, field.name))}
+                onChange={date =>
+                    form.setFieldValue(
+                        field.name,
+                        date ? date.format(shortApiDateFormat) : null,
+                    )
+                }
+            />
+        </Box>
     );
+};
+
+DateInput.propTypes = {
+    field: PropTypes.object.isRequired,
+    form: PropTypes.object.isRequired,
 };

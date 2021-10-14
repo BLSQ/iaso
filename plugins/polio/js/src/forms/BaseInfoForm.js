@@ -79,14 +79,12 @@ export const BaseInfoForm = () => {
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>
                         <Field
-                            className={classes.input}
                             label={formatMessage(MESSAGES.dateOfOnset)}
                             fullWidth
                             name="onset_at"
                             component={DateInput}
                         />
                         <Field
-                            className={classes.input}
                             label={formatMessage(
                                 MESSAGES.cvdpv2NotificationDate,
                             )}
@@ -97,14 +95,12 @@ export const BaseInfoForm = () => {
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Field
-                            className={classes.input}
                             label={formatMessage(MESSAGES.pv2NotificationDate)}
                             fullWidth
                             name="pv_notified_at"
                             component={DateInput}
                         />
                         <Field
-                            className={classes.input}
                             label={formatMessage(MESSAGES.threelevelCall)}
                             fullWidth
                             name="three_level_call_at"

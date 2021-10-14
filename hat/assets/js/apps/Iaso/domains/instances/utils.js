@@ -110,7 +110,7 @@ const labelLocales = { fr: 'French', en: 'English' };
 const localizeLabel = field => {
     const locale = getCookie('django_language') ?? 'en';
     const singleToDoubleQuotes = field.label.replaceAll("'", '"');
-    const wrongDoubleQuotes = /(?<=[a-zA-Z])"(?=[a-zA-Z])/g;
+    const wrongDoubleQuotes = /(?:[a-zA-Z])"(?=[a-zA-Z])/g;
     const formattedLabel = singleToDoubleQuotes.replace(wrongDoubleQuotes, "'");
     let result;
     try {

@@ -309,33 +309,6 @@ export const ExportToDHIS2Dialog = ({
                             />
                         </Box>
                     </Grid>
-                    <Grid xs={12} item>
-                        <Box display="flex" alignItems="center">
-                            <Typography
-                                variant="subtitle1"
-                                className={classes.subtitle}
-                            >
-                                {formatMessage(MESSAGES.credentialsForExport)}
-                            </Typography>
-                            {credentials?.is_valid && (
-                                <Typography variant="body1">
-                                    {credentials.name
-                                        ? `: ${credentials.name} (${credentials.url})`
-                                        : `: ${credentials.url}`}
-                                </Typography>
-                            )}
-                            {!credentials?.is_valid && (
-                                <Typography
-                                    variant="body1"
-                                    className={classes.noCreds}
-                                >
-                                    {`: ${formatMessage(
-                                        MESSAGES.noCredentialsForExport,
-                                    )}`}
-                                </Typography>
-                            )}
-                        </Box>
-                    </Grid>
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>

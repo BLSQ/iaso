@@ -177,7 +177,7 @@ const MESSAGES = defineMessages({
     },
     selectTopOrgUnit: {
         id: 'iaso.datasources.label.selectTopOrgUnit',
-        defaultMessage: 'Please select top Orgunit',
+        defaultMessage: 'Please select top org unit',
     },
     export: {
         id: 'iaso.datasources.button.label.export',
@@ -201,7 +201,7 @@ const MESSAGES = defineMessages({
     },
     datasourceSource: {
         id: 'iaso.datasources.label.datasourceSource',
-        defaultMessage: 'Source data source',
+        defaultMessage: 'Version',
     },
     credentials: {
         id: 'iaso.datasources.label.credentials',
@@ -209,11 +209,11 @@ const MESSAGES = defineMessages({
     },
     exportTitle: {
         id: 'iaso.datasources.title.export',
-        defaultMessage: 'OrgUnits to export',
+        defaultMessage: 'Org units to export',
     },
     sourceDataSource: {
         id: 'iaso.datasources.title.sourceDataSource',
-        defaultMessage: 'Target data source',
+        defaultMessage: 'Version to compare with to generate export',
     },
     compareAndExport: {
         id: 'iaso.datasources.tooltip.compareAndExport',

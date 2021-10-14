@@ -43,7 +43,7 @@ const MESSAGES = defineMessages({
     },
     july: {
         defaultMessage: 'July',
-        id: 'iaso.label.months.jully',
+        id: 'iaso.label.months.july',
     },
     august: {
         defaultMessage: 'August',

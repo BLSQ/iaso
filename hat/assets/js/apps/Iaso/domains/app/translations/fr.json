@@ -343,6 +343,8 @@
     "iaso.label.uuid": "Identifiant unique",
     "iaso.label.valid": "Valide",
     "iaso.label.validate": "Valider",
+    "iaso.label.validateXLSForm":"Validez votre XLSForm avant en utilisant ",
+        "iaso.label.validateXLSFormLink":"l'outil en ligne",
     "iaso.label.validatedOrgUnitCount": "Unité(s) d'organisation validée(s)",
     "iaso.label.validator": "Validateur",
     "iaso.label.value": "Valeur",

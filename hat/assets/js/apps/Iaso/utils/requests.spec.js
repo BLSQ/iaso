@@ -220,7 +220,7 @@ const Component = ({ preventTrigger, additionalDeps, request }) => {
 
 let component;
 let refStub;
-describe('useAPI', () => {
+describe.skip('useAPI', () => {
     describe('default behaviour', () => {
         beforeEach(() => {
             spyRequest.resetHistory();

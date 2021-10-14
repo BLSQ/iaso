@@ -156,6 +156,20 @@ const FormVersionsDialogComponent = ({
                                 required
                             />
                         )}
+                        {!formState.id.value && (
+                            <span>
+                                {intl.formatMessage(MESSAGES.validateXlsForm)}
+                                <a
+                                    href="https://getodk.org/xlsform/"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    {intl.formatMessage(
+                                        MESSAGES.validateXLSFormLink,
+                                    )}
+                                </a>
+                            </span>
+                        )}
                         <PeriodPicker
                             hasError={Boolean(periodsErrors.start)}
                             periodType={periodType}

@@ -169,7 +169,11 @@ const PeriodPicker = ({
                                         type="select"
                                         options={Object.entries(SEMESTERS).map(
                                             ([value, label]) => ({
-                                                label,
+                                                label: `${label} (${intl.formatMessage(
+                                                    SEMESTERS_RANGE[value][0],
+                                                )}-${intl.formatMessage(
+                                                    SEMESTERS_RANGE[value][1],
+                                                )})`,
                                                 value,
                                             }),
                                         )}

@@ -6,6 +6,9 @@ import { defineMessages } from 'react-intl';
 import { MapControl, withLeaflet } from 'react-leaflet';
 import { ZoomBar } from '../components/leaflet/zoom-bar';
 
+export const defaultCenter = [5, 20];
+export const defaultZoom = 4;
+
 export const orderOrgUnitsByDepth = orgUnits =>
     orderBy(orgUnits, [o => o.org_unit_type_depth], ['asc']);
 export const orderOrgUnitTypeByDepth = orgUnitTypes =>

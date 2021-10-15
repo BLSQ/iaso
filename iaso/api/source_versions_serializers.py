@@ -80,6 +80,7 @@ class DiffSerializer(serializers.Serializer):
             ignore_groups=ignore_groups,
             show_deleted_org_units=True,
             validation_status=data.get("source_status"),
+            validation_status_ref=data.get("ref_status"),
             top_org_unit=data.get("source_top_org_unit_id"),
             top_org_unit_ref=data.get("ref_top_org_unit_id"),
             org_unit_types=data.get("source_org_unit_type_ids"),

@@ -3,7 +3,7 @@ import { getParamsKey } from 'bluesquare-components';
 import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
-import { Period } from '../domains/periods/models';
+import { usePrettyPeriod } from '../domains/periods/utils';
 import { orgUnitLabelString } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';
 
@@ -369,17 +369,22 @@ export const group = (groupList, urlKey = 'group') => ({
     type: 'select',
 });
 
-export const periods = (periodsList, formatMessage) => ({
+const periods = (periodsList, formatPeriods) => ({
     urlKey: 'periods',
     isMultiSelect: true,
     isClearable: true,
     options: periodsList.map(p => ({
-        label: Period.getPrettyPeriod(p, formatMessage),
+        label: formatPeriods(p),
         value: p,
     })),
     label: MESSAGES.periods,
     type: 'select',
 });
+
+export const useFormatPeriodFilter = () => {
+    const formatPeriod = usePrettyPeriod();
+    return periodList => periods(periodList, formatPeriod);
+};
 
 export const instanceStatus = options => ({
     urlKey: 'status',

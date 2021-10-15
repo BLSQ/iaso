@@ -1,12 +1,10 @@
 import _ from 'lodash/fp';
-import { textPlaceholder } from 'bluesquare-components';
 import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
-    MONTHS,
 } from './constants';
 
 export class Period {
@@ -192,31 +190,6 @@ export class Period {
             year,
             day: 31,
         };
-    }
-
-    static getPrettyPeriod(period, formatMessage) {
-        if (!period) return textPlaceholder;
-        const periodClass = new Period(period);
-        if (periodClass.periodType === PERIOD_TYPE_YEAR) {
-            return period;
-        }
-        const prefix = period.substring(4, 6);
-        const prettyPeriod = `${prefix}-${periodClass.year}`;
-
-        let monthRangeString;
-        if (
-            formatMessage &&
-            periodClass.periodType !== PERIOD_TYPE_DAY &&
-            periodClass.periodType !== PERIOD_TYPE_MONTH
-        ) {
-            const { monthRange } = periodClass;
-            const firstMonth = MONTHS[monthRange[0]];
-            const lastMonth = MONTHS[monthRange[monthRange.length - 1]];
-            monthRangeString = ` (${formatMessage(firstMonth)}-${formatMessage(
-                lastMonth,
-            )})`;
-        }
-        return `${prettyPeriod}${monthRangeString || ''}`;
     }
 
     static padMonth(n) {

@@ -7,7 +7,7 @@ import { TreeItem, TreeView } from '@material-ui/lab';
 import Grid from '@material-ui/core/Grid';
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import { geoJSON } from 'leaflet';
-import { sendRequest } from '../pages/hooks/networking';
+import { getRequest } from '../../libs/Api';
 
 const defaultConfig = {
     staleTime: 1000 * 60 * 1,
@@ -18,27 +18,24 @@ const defaultConfig = {
 const useGetDSTree = () =>
     useQuery(
         ['datasource.tree'],
-        async () => {
-            return sendRequest('GET', `/api/orgunits/tree_source_data`);
-        },
+        async () => getRequest(`/api/orgunits/tree_source_data`),
         defaultConfig,
     );
 
-const useGetTree = slug =>
-    useQuery(
+const useGetTree = slug => {
+    return useQuery(
         ['orgunittree', slug],
-        async () => {
-            return sendRequest('GET', `/api/orgunits/tree?version_id=${slug}`);
-        },
+        async () => getRequest(`/api/orgunits/tree?version_id=${slug}`),
         defaultConfig,
     );
+};
 
 const useGetShapes = slugs =>
     useQueries(
         slugs.map(slug => {
             return {
                 queryKey: ['orgunitshape', slug],
-                queryFn: () => sendRequest('GET', `/api/orgunits/${slug}/`),
+                queryFn: () => getRequest(`/api/orgunits/${slug}/`),
                 enabled: Boolean(slug),
                 ...defaultConfig,
             };
@@ -98,7 +95,7 @@ const MapComponent = ({ children, bounds }) => {
 };
 
 const TreePage = () => {
-    const { data, isFetching, error } = useGetTree(39);
+    const { data, isFetching, error } = useGetTree(3);
     const [selectedNodes = [], setSelectedNodes] = useState();
     const queries = useGetShapes(selectedNodes);
     const shapes = queries.map(q => q.data);

@@ -23,6 +23,10 @@ class Differ:
         queryset = (
             OrgUnit.objects.prefetch_related("groups")
             .prefetch_related("groups__group_sets")
+            .prefetch_related("parent")
+            .prefetch_related("parent__parent")
+            .prefetch_related("parent__parent__parent")
+            .prefetch_related("parent__parent__parent__parent")
             .select_related("org_unit_type")
             .filter(version=version)
         )

@@ -1,4 +1,6 @@
 import csv
+import json
+from datetime import timedelta, datetime
 
 import requests
 from django.conf import settings
@@ -16,27 +18,20 @@ from rest_framework.response import Response
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
-
-
-from django.utils.timezone import now
-from datetime import timedelta, datetime
-import json
-
-from .models import Campaign, Config, LineListImport, URLCache
-
 from plugins.polio.serializers import (
     CampaignSerializer,
     PreparednessPreviewSerializer,
     LineListImportSerializer,
     AnonymousCampaignSerializer,
+    PreparednessSerializer,
 )
-
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
 )
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
 from .models import Campaign, Config, LineListImport
 from .models import CountryUsersGroup
+from .models import URLCache, Preparedness
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -207,6 +202,16 @@ class LineListImportViewSet(ModelViewSet):
 
     def get_queryset(self):
         return LineListImport.objects.all()
+
+
+class PreparednessViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Preparedness.objects.all()
+    serializer_class = PreparednessSerializer
+    filter_backends = (DjangoFilterBackend,)
+
+    filterset_fields = {
+        "campaign_id": ["exact"],
+    }
 
 
 class IMViewSet(viewsets.ViewSet):
@@ -463,6 +468,7 @@ class IMViewSet2(viewsets.ViewSet):
 
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
+router.register(r"polio/preparedness", PreparednessViewSet)
 router.register(r"polio/im", IMViewSet, basename="IM")
 router.register(r"polio/imstats", IMViewSet2, basename="imstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")

@@ -35,7 +35,7 @@ const polioVacines = [
     {
         value: 'bOPV',
         label: 'bOPV',
-        color: green['300'],
+        color: orange['300'],
     },
 ];
 

@@ -78,7 +78,7 @@ export const INSTANCE_METAS_FIELDS = [
     },
     {
         key: 'period',
-        render: value => PrettyPeriod({ value }),
+        render: value => <PrettyPeriod value={value} />,
         tableOrder: 3,
         type: 'info',
     },

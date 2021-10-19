@@ -1,6 +1,8 @@
+import json
+
 from django.contrib.auth.models import User
 from django.contrib.gis import admin
-from django.utils.html import format_html_join
+from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
 
 from .models import (
@@ -196,9 +198,13 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
 
 
 class TaskAdmin(admin.ModelAdmin):
-    readonly_fields = ("created_at",)
-    list_display = ("name", "account", "status", "created_at")
-    list_filter = ("account", "status", "name", "result")
+    list_display = ("name", "account", "status", "created_at", "result")
+    list_filter = ("account", "status", "name")
+    readonly_fields = ("stacktrace", "created_at", "result")
+
+    def stacktrace(self, task):
+        stack = task.result.get("stack_trace")
+        return format_html("<p>{}</p><pre>{}</pre>", task.result.get("message", ""), stack)
 
 
 class SourceVersionAdmin(admin.ModelAdmin):

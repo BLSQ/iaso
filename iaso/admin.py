@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.contrib.gis import admin
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
@@ -139,8 +140,18 @@ class GroupAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
 
 
+class UserAdmin(admin.GeoModelAdmin):
+    search_fields = ("username", "email", "first_name", "last_name", "iaso_profile__account__name")
+    list_filter = ("iaso_profile__account", "is_staff", "is_superuser", "is_active")
+    list_display = ("username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
+
+
 class ProfileAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_units",)
+    search_fields = ("user__username", "user__first_name", "user__last_name", "account__name")
+    list_select_related = ("user", "account")
+    list_filter = ("account",)
+    list_display = ("id", "user", "account", "language")
 
 
 class ExportRequestAdmin(admin.GeoModelAdmin):
@@ -187,7 +198,7 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
 class TaskAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
     list_display = ("name", "account", "status", "created_at")
-    list_filter = ("account", "status", "name")
+    list_filter = ("account", "status", "name", "result")
 
 
 class SourceVersionAdmin(admin.ModelAdmin):
@@ -223,3 +234,5 @@ admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
 admin.site.register(Page)
 admin.site.register(Task, TaskAdmin)
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)

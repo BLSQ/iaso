@@ -8,7 +8,6 @@ import {
     SET_SOURCES,
     SET_GROUPS,
     SET_ORG_UNITS_LIST_FETCHING,
-    SET_SUB_ORG_UNITS_TYPES_SELECTED,
     SET_SOURCES_SELECTED,
     SET_FETCHING_ORG_UNITS_TYPES,
     SET_FILTERS_UPDATED,
@@ -19,12 +18,9 @@ import {
 export const orgUnitsInitialState = {
     current: null,
     currentSubOrgUnit: null,
-    currentSubOrgUnitsTypesSelected: undefined,
-    currentSubOrgUnitsTypesList: [],
     currentSourcesSelected: undefined,
     fetchingList: false,
     fetchingDetail: true,
-    fetchingSubOrgUnits: false,
     fetchingOrgUnitTypes: true,
     orgUnitsPage: {
         list: [],
@@ -108,18 +104,6 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_FETCHING_DETAIL: {
             const fetchingDetail = action.payload;
             return { ...state, fetchingDetail };
-        }
-
-        case SET_SUB_ORG_UNITS_TYPES_SELECTED: {
-            const {
-                currentSubOrgUnitsTypesSelected,
-                currentSubOrgUnitsTypesList,
-            } = action.payload;
-            return {
-                ...state,
-                currentSubOrgUnitsTypesSelected,
-                currentSubOrgUnitsTypesList,
-            };
         }
 
         case SET_SOURCES_SELECTED: {

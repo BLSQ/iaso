@@ -24,7 +24,7 @@ import TileSwitch from '../../../../components/maps/tools/TileSwitchComponent';
 import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../OrgunitOptionSaveComponent';
 import OrgUnitTypeChipsFilterComponent from '../OrgUnitTypeChipsFilterComponent';
-import FormsChipsFilterComponent from '../../../forms/components/FormsChipsFilterComponent';
+import FormsFilterComponent from '../../../forms/components/FormsFilterComponent';
 import SourcesChipsFilterComponent from '../../../../components/filters/chips/SourcesChipsFilterComponent';
 import MarkerComponent from '../../../../components/maps/markers/MarkerComponent';
 import InnerDrawer from '../../../../components/nav/InnerDrawer';
@@ -88,6 +88,7 @@ const initialState = currentUser => {
         canEditLocation: hasFeatureFlag(currentUser, EDIT_GEO_JSON_RIGHT),
         canEditCatchment: hasFeatureFlag(currentUser, EDIT_CATCHMENT_RIGHT),
         currentOption: 'filters',
+        formsSelected: [],
         ...buttonsInitialState,
     };
 };
@@ -189,14 +190,10 @@ class OrgUnitMapComponent extends Component {
     }
 
     fitToBounds() {
-        const {
-            currentTile,
-            orgUnit,
-            orgUnitTypesSelected,
-            sourcesSelected,
-            formsSelected,
-        } = this.props;
-        const { location, locationGroup, catchmentGroup } = this.state;
+        const { currentTile, orgUnit, orgUnitTypesSelected, sourcesSelected } =
+            this.props;
+        const { location, locationGroup, catchmentGroup, formsSelected } =
+            this.state;
         fitToBounds({
             padding,
             currentTile,
@@ -303,7 +300,6 @@ class OrgUnitMapComponent extends Component {
             orgUnit,
             currentTile,
             sourcesSelected,
-            formsSelected,
             orgUnitTypesSelected,
             saveOrgUnit,
             orgUnitLocationModified,
@@ -318,6 +314,7 @@ class OrgUnitMapComponent extends Component {
             locationGroup,
             canEditLocation,
             canEditCatchment,
+            formsSelected,
         } = this.state;
         const hasMarker =
             Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
@@ -378,8 +375,11 @@ class OrgUnitMapComponent extends Component {
                             <OrgUnitTypeChipsFilterComponent
                                 fitToBounds={() => this.fitToBounds()}
                             />
-                            <FormsChipsFilterComponent
-                                fitToBounds={() => this.fitToBounds()}
+                            <FormsFilterComponent
+                                formsSelected={formsSelected}
+                                setFormsSelected={forms => {
+                                    this.setState({ formsSelected: forms });
+                                }}
                             />
                         </>
                     }
@@ -622,7 +622,6 @@ OrgUnitMapComponent.propTypes = {
     onChangeLocation: PropTypes.func.isRequired,
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
-    formsSelected: PropTypes.array.isRequired,
     setCurrentSubOrgUnit: PropTypes.func.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
     sourcesSelected: PropTypes.oneOfType([PropTypes.number, PropTypes.array]),
@@ -642,10 +641,9 @@ OrgUnitMapComponent.propTypes = {
 
 const MapStateToProps = state => ({
     currentUser: state.users.current,
-    formsSelected: state.orgUnits.currentFormsSelected,
     currentTile: state.map.currentTile,
-    orgUnitTypesSelected: state.orgUnits.currentSubOrgUnitsTypesSelected,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
+    orgUnitTypesSelected: state.orgUnits.currentSubOrgUnitsTypesSelected,
     sourcesSelected: state.orgUnits.currentSourcesSelected,
 });
 

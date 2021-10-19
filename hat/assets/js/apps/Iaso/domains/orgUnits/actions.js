@@ -17,8 +17,6 @@ export const SET_ORG_UNITS_LIST_FETCHING = 'SET_ORG_UNITS_LIST_FETCHING';
 export const SET_SUB_ORG_UNITS_TYPES_SELECTED =
     'SET_SUB_ORG_UNITS_TYPES_SELETED';
 export const SET_SOURCES_SELECTED = 'SET_SOURCES_SELECTED';
-export const SET_FORMS_SELECTED = 'SET_FORMS_SELECTED';
-export const SET_CURRENT_FORMS = 'SET_CURRENT_FORMS';
 export const SET_FETCHING_ORG_UNITS_TYPES = 'SET_FETCHING_ORG_UNITS_TYPES';
 export const SET_FILTERS_UPDATED = 'SET_FILTERS_UPDATED';
 
@@ -65,11 +63,6 @@ export const setOrgUnitTypes = orgUnitTypes => ({
     payload: orgUnitTypes,
 });
 
-export const setCurrentForms = currentForms => ({
-    type: SET_CURRENT_FORMS,
-    payload: currentForms,
-});
-
 export const setSources = sources => ({
     type: SET_SOURCES,
     payload: sources,
@@ -88,11 +81,6 @@ export const setOrgUnitsListFetching = currentSubOrgUnit => ({
 export const setSourcesSelected = currentSourcesSelected => ({
     type: SET_SOURCES_SELECTED,
     payload: currentSourcesSelected,
-});
-
-export const setFormsSelected = currentFormsSelected => ({
-    type: SET_FORMS_SELECTED,
-    payload: currentFormsSelected,
 });
 
 export const setCurrentSubOrgUnitTypesSelected = (

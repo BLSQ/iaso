@@ -20,7 +20,6 @@ import {
     setCurrentOrgUnit,
     setOrgUnitTypes,
     resetOrgUnits,
-    setCurrentForms,
     setSources,
     setGroups,
     setFetchingDetail,
@@ -394,21 +393,6 @@ class OrgUnitDetail extends Component {
                     redirectTo(baseUrl, newParams);
                 }
                 this.props.setCurrentOrgUnit(orgUnit);
-                if (orgUnit.org_unit_type_id) {
-                    fetchForms(
-                        this.props.dispatch,
-                        `/api/forms/?orgUnitTypeId=${orgUnit.org_unit_type_id}`,
-                    ).then(data => {
-                        const forms = [];
-                        data.forms.forEach((f, i) => {
-                            forms.push({
-                                ...f,
-                                color: getChipColors(i, true),
-                            });
-                        });
-                        this.props.setCurrentForms(forms);
-                    });
-                }
 
                 this.setState({
                     currentOrgUnit: orgUnit,
@@ -541,7 +525,7 @@ class OrgUnitDetail extends Component {
                 {fetching && <LoadingSpinner />}
                 {currentOrgUnit && (
                     <section>
-                        {tab === 'infos' && (
+                        {/* {tab === 'infos' && (
                             <Box
                                 className={
                                     isNewOrgunit
@@ -564,7 +548,7 @@ class OrgUnitDetail extends Component {
                                     orgUnitModified={orgUnitModified}
                                 />
                             </Box>
-                        )}
+                        )} */}
                         <div
                             className={
                                 tab === 'map' ? '' : classes.hiddenOpacity
@@ -595,7 +579,7 @@ class OrgUnitDetail extends Component {
                             </Box>
                         </div>
 
-                        {tab === 'history' && (
+                        {/* {tab === 'history' && (
                             <Logs
                                 params={params}
                                 logObjectId={currentOrgUnit.id}
@@ -719,7 +703,7 @@ class OrgUnitDetail extends Component {
                                     />
                                 </Grid>
                             </Grid>
-                        )}
+                        )} */}
                     </section>
                 )}
             </section>
@@ -739,7 +723,6 @@ OrgUnitDetail.propTypes = {
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     setCurrentOrgUnit: PropTypes.func.isRequired,
-    setCurrentForms: PropTypes.func.isRequired,
     setOrgUnitTypes: PropTypes.func.isRequired,
     currentOrgUnit: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
@@ -770,7 +753,6 @@ const MapStateToProps = state => ({
     fetching: state.orgUnits.fetchingDetail,
     currentOrgUnit: state.orgUnits.current,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
-    currentForms: state.orgUnits.currentForms,
     sources: state.orgUnits.sources,
     prevPathname: state.routerCustom.prevPathname,
     groups: state.orgUnits.groups,
@@ -783,7 +765,6 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     setCurrentOrgUnit: orgUnit => dispatch(setCurrentOrgUnit(orgUnit)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
-    setCurrentForms: currentForms => dispatch(setCurrentForms(currentForms)),
     redirectTo: (key, params) =>
         dispatch(replace(`${key}${createUrl(params, '')}`)),
     redirectToPush: (key, params) =>

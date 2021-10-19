@@ -52,20 +52,6 @@ export const fetchOrgUnitsTypes = dispatch =>
             console.error('Error while fetching org unit types list:', error);
             throw error;
         });
-
-export const fetchSources = dispatch =>
-    getRequest('/api/datasources/')
-        .then(res => res.sources)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchSourcesError', null, error),
-                ),
-            );
-            console.error('Error while fetching source list:', error);
-            throw error;
-        });
-
 export const fetchGroups = (dispatch, defaultVersion = false) => {
     const url = `/api/groups/${defaultVersion ? '?&defaultVersion=true' : ''}`;
     return getRequest(url)
@@ -229,6 +215,19 @@ export const fetchAssociatedOrgUnits = (
             throw error;
         });
 };
+
+export const fetchSources = dispatch =>
+    getRequest('/api/datasources/')
+        .then(res => res.sources)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('fetchSourcesError', null, error),
+                ),
+            );
+            console.error('Error while fetching source list:', error);
+            throw error;
+        });
 
 export const fetchAssociatedDataSources = (dispatch, orgUnitId) => {
     const url = `/api/datasources/?linkedTo=${orgUnitId}`;

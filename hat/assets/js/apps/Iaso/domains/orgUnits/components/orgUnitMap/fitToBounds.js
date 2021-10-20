@@ -13,6 +13,7 @@ const fitToBounds = ({
     catchmentGroup,
     map,
 }) => {
+    console.log('formsSelected', formsSelected);
     if (map) {
         const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(
             orgUnitTypesSelected || [],

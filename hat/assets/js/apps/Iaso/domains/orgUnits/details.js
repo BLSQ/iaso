@@ -205,6 +205,7 @@ class OrgUnitDetail extends Component {
                         sources,
                         currentOrgUnit.source_id,
                     );
+                    // getting the org unit source linked to current one and preselect them
                     const linkSources = tempSources.filter(
                         s =>
                             (s.id === l.source.source_id &&
@@ -525,7 +526,7 @@ class OrgUnitDetail extends Component {
                 {fetching && <LoadingSpinner />}
                 {currentOrgUnit && (
                     <section>
-                        {/* {tab === 'infos' && (
+                        {tab === 'infos' && (
                             <Box
                                 className={
                                     isNewOrgunit
@@ -548,7 +549,7 @@ class OrgUnitDetail extends Component {
                                     orgUnitModified={orgUnitModified}
                                 />
                             </Box>
-                        )} */}
+                        )}
                         <div
                             className={
                                 tab === 'map' ? '' : classes.hiddenOpacity
@@ -579,7 +580,7 @@ class OrgUnitDetail extends Component {
                             </Box>
                         </div>
 
-                        {/* {tab === 'history' && (
+                        {tab === 'history' && (
                             <Logs
                                 params={params}
                                 logObjectId={currentOrgUnit.id}
@@ -703,7 +704,7 @@ class OrgUnitDetail extends Component {
                                     />
                                 </Grid>
                             </Grid>
-                        )} */}
+                        )}
                     </section>
                 )}
             </section>

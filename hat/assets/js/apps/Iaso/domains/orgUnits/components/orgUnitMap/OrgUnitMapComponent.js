@@ -25,7 +25,7 @@ import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../OrgunitOptionSaveComponent';
 import FormsFilterComponent from '../../../forms/components/FormsFilterComponent';
 import OrgUnitTypeFilterComponent from '../../../forms/components/OrgUnitTypeFilterComponent';
-import SourcesChipsFilterComponent from '../../../../components/filters/chips/SourcesChipsFilterComponent';
+import SourcesFilterComponent from '../../../forms/components/SourcesFilterComponent';
 import MarkerComponent from '../../../../components/maps/markers/MarkerComponent';
 import InnerDrawer from '../../../../components/nav/InnerDrawer';
 
@@ -308,7 +308,6 @@ class OrgUnitMapComponent extends Component {
             sourcesSelected,
             saveOrgUnit,
             orgUnitLocationModified,
-            theme,
             classes,
             orgUnitTypes,
         } = this.props;
@@ -321,6 +320,7 @@ class OrgUnitMapComponent extends Component {
             canEditCatchment,
             formsSelected,
             orgUnitTypesSelected,
+            catchmentGroup,
         } = this.state;
         const hasMarker =
             Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
@@ -375,7 +375,7 @@ class OrgUnitMapComponent extends Component {
                     }
                     filtersOptionComponent={
                         <>
-                            <SourcesChipsFilterComponent
+                            <SourcesFilterComponent
                                 fitToBounds={() => this.fitToBounds()}
                             />
                             <OrgUnitTypeFilterComponent
@@ -388,10 +388,21 @@ class OrgUnitMapComponent extends Component {
                                 }}
                             />
                             <FormsFilterComponent
-                                fitToBounds={() => this.fitToBounds()}
                                 formsSelected={formsSelected}
                                 setFormsSelected={forms => {
                                     this.setState({ formsSelected: forms });
+                                    fitToBounds({
+                                        padding,
+                                        currentTile,
+                                        orgUnit,
+                                        orgUnitTypesSelected,
+                                        sourcesSelected,
+                                        formsSelected: forms,
+                                        editLocationEnabled: location.edit,
+                                        locationGroup,
+                                        catchmentGroup,
+                                        map: this.map.leafletElement,
+                                    });
                                 }}
                             />
                         </>
@@ -547,58 +558,87 @@ class OrgUnitMapComponent extends Component {
                             </>
                         )}
 
-                        <MarkerClusterGroup
-                            maxClusterRadius={0} // only apply cluster on markers with same coordinates
-                            iconCreateFunction={cluster =>
-                                colorClusterCustomMarker(
-                                    cluster,
-                                    theme.palette.secondary.main,
-                                )
-                            }
+                        <Pane
+                            name={`${orgunitsPane}-markers`}
+                            style={{ zIndex: 698 }}
                         >
-                            <Pane
-                                name={`${orgunitsPane}-markers`}
-                                style={{ zIndex: 699 }}
-                            >
-                                {mappedOrgUnitTypesSelected.map(ot =>
-                                    getMarkerList(
+                            {mappedOrgUnitTypesSelected.map(ot => (
+                                <MarkerClusterGroup
+                                    key={ot.id}
+                                    maxClusterRadius={5}
+                                    iconCreateFunction={cluster =>
+                                        colorClusterCustomMarker(
+                                            cluster,
+                                            ot.color,
+                                        )
+                                    }
+                                >
+                                    {getMarkerList(
                                         ot.orgUnits.locations,
                                         a => this.fetchSubOrgUnitDetail(a),
                                         ot.color,
                                         ot.id,
-                                    ),
-                                )}
-                                {mappedSourcesSelected.map(s =>
-                                    getMarkerList(
+                                    )}
+                                </MarkerClusterGroup>
+                            ))}
+                            {mappedSourcesSelected.map(s => (
+                                <MarkerClusterGroup
+                                    key={s.id}
+                                    maxClusterRadius={5}
+                                    iconCreateFunction={cluster =>
+                                        colorClusterCustomMarker(
+                                            cluster,
+                                            s.color,
+                                        )
+                                    }
+                                >
+                                    {getMarkerList(
                                         s.orgUnits.locations,
                                         a => this.fetchSubOrgUnitDetail(a),
                                         s.color,
                                         s.id,
-                                    ),
-                                )}
-                                {formsSelected.map(f =>
-                                    getMarkerList(
+                                    )}
+                                </MarkerClusterGroup>
+                            ))}
+
+                            {formsSelected.map(f => (
+                                <MarkerClusterGroup
+                                    key={f.id}
+                                    maxClusterRadius={5}
+                                    iconCreateFunction={cluster =>
+                                        colorClusterCustomMarker(
+                                            cluster,
+                                            f.color,
+                                        )
+                                    }
+                                >
+                                    {getMarkerList(
                                         f.instances,
                                         a => this.fetchInstanceDetail(a),
                                         f.color,
                                         f.id,
                                         InstancePopupComponent,
-                                    ),
-                                )}
-                                {hasMarker && currentOption !== 'edit' && (
-                                    <MarkerComponent
-                                        item={orgUnit}
-                                        draggable={currentOption === 'edit'}
-                                        onDragend={newMarker =>
-                                            this.props.onChangeLocation(
-                                                newMarker.getLatLng(),
-                                            )
-                                        }
-                                    />
-                                )}
-                            </Pane>
-                        </MarkerClusterGroup>
+                                    )}
+                                </MarkerClusterGroup>
+                            ))}
+                        </Pane>
 
+                        {hasMarker && currentOption !== 'edit' && (
+                            <Pane
+                                name={`${orgunitsPane}-current-marker`}
+                                style={{ zIndex: 699 }}
+                            >
+                                <MarkerComponent
+                                    item={orgUnit}
+                                    draggable={currentOption === 'edit'}
+                                    onDragend={newMarker =>
+                                        this.props.onChangeLocation(
+                                            newMarker.getLatLng(),
+                                        )
+                                    }
+                                />
+                            </Pane>
+                        )}
                         {hasMarker && currentOption === 'edit' && (
                             <Pane
                                 name={`${orgunitsPane}-edit-markers`}
@@ -641,7 +681,6 @@ OrgUnitMapComponent.propTypes = {
     saveOrgUnit: PropTypes.func.isRequired,
     setOrgUnitLocationModified: PropTypes.func.isRequired,
     orgUnitLocationModified: PropTypes.bool.isRequired,
-    theme: PropTypes.object.isRequired,
     currentUser: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
@@ -664,4 +703,4 @@ const MapDispatchToProps = dispatch => ({
 export default connect(
     MapStateToProps,
     MapDispatchToProps,
-)(withStyles(styles, { withTheme: true })(injectIntl(OrgUnitMapComponent)));
+)(withStyles(styles)(injectIntl(OrgUnitMapComponent)));

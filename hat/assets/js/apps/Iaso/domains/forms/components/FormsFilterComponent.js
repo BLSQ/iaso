@@ -48,7 +48,7 @@ export const FormsChipsFilterComponent = ({
         <Box m={4}>
             <Select
                 keyValue="forms"
-                label={formatMessage(MESSAGES.title)}
+                label={formatMessage(MESSAGES.hasInstances)}
                 disabled={forms.length === 0}
                 loading={isLoading}
                 clearable

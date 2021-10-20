@@ -13,8 +13,8 @@ import { getOtChipColors } from '../../../constants/chipColors';
 import MESSAGES from '../../orgUnits/messages';
 
 const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList = []) => {
-    let newOrgUnitTypesList = [...orgUnitTypesList];
-    if (orgUnit.sub_unit_types.length > 0) {
+    if (orgUnit?.sub_unit_types.length > 0) {
+        let newOrgUnitTypesList = [...orgUnitTypesList];
         orgUnit.sub_unit_types.forEach(subOrgUnit => {
             const fullSubOrgUnit = orgUnitTypes.find(
                 o => o.id === subOrgUnit.id,
@@ -33,8 +33,9 @@ const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList = []) => {
                 );
             }
         });
+        return newOrgUnitTypesList;
     }
-    return newOrgUnitTypesList;
+    return [];
 };
 
 const OrgUnitTypeFilterComponent = props => {
@@ -87,6 +88,7 @@ const OrgUnitTypeFilterComponent = props => {
 
     useEffect(() => {
         const newOrgUnitTypesSelected = [];
+        let newOrgUnitTypesList = [];
         orgUnitTypes.forEach(ot => {
             if (
                 currentOrgUnit.org_unit_type &&
@@ -95,16 +97,18 @@ const OrgUnitTypeFilterComponent = props => {
                 )
             ) {
                 newOrgUnitTypesSelected.push(ot);
+                newOrgUnitTypesList.push(ot);
+            } else {
+                const subsOt = getSubOrgunits(ot, orgUnitTypes, [ot]);
+                const missingOt = subsOt.filter(
+                    out => !newOrgUnitTypesList.includes(out),
+                );
+                newOrgUnitTypesList = newOrgUnitTypesList.concat(missingOt);
             }
         });
         newOrgUnitTypesSelected.forEach((ot, index) => {
             newOrgUnitTypesSelected[index].color = getOtChipColors(index);
         });
-        const newOrgUnitTypesList = getSubOrgunits(
-            newOrgUnitTypesSelected[0],
-            orgUnitTypes,
-            [newOrgUnitTypesSelected[0]],
-        );
         updateOrgUnitTypesSelected(newOrgUnitTypesSelected, false);
         setOrgUnitTypesList(newOrgUnitTypesList);
         return () => setOrgUnitTypesSelected([]);
@@ -115,7 +119,7 @@ const OrgUnitTypeFilterComponent = props => {
             <Box m={4}>
                 <Select
                     keyValue="forms"
-                    label={formatMessage(MESSAGES.title)}
+                    label={formatMessage(MESSAGES.org_unit_type)}
                     disabled={orgUnitTypesList.length === 0}
                     clearable
                     multi

@@ -133,8 +133,7 @@ class OrgUnitMapComponent extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { locationGroup, catchmentGroup, orgUnitTypesSelected } =
-            this.state;
+        const { locationGroup, catchmentGroup } = this.state;
         const {
             intl: { formatMessage },
             orgUnit,
@@ -151,13 +150,6 @@ class OrgUnitMapComponent extends Component {
                 'secondary',
                 formatMessage(MESSAGES.catchment),
             );
-        }
-        if (
-            this.props.sourcesSelected &&
-            !prevProps.sourcesSelected &&
-            orgUnitTypesSelected
-        ) {
-            this.fitToBounds();
         }
     }
 

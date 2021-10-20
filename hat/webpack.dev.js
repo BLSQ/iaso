@@ -1,11 +1,11 @@
-var path = require('path');
-var webpack = require('webpack');
-var BundleTracker = require('webpack-bundle-tracker');
+const path = require('path');
+const webpack = require('webpack');
+const BundleTracker = require('webpack-bundle-tracker');
 // Switch here for french. This is set to 'en' in dev to not get react-intl warnings
 // remember to switch in webpack.prod.js and
 // django settings as well
-var LOCALE = 'fr';
-var WEBPACK_URL = 'http://localhost:3000';
+const LOCALE = 'fr';
+const WEBPACK_URL = 'http://localhost:3000';
 
 module.exports = {
     context: __dirname,
@@ -41,7 +41,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './assets/webpack/'),
         filename: '[name].js',
-        publicPath: WEBPACK_URL + '/static/', // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+        publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
     },
 
     // config for webpack-dev-server
@@ -195,10 +195,19 @@ module.exports = {
     externals: [{ './cptable': 'var cptable' }],
 
     resolve: {
+        alias: {
+            'bluesquare-components': path.resolve(
+                __dirname,
+                '../../../bluesquare-components/src/',
+            ),
+        },
         fallback: {
             fs: false,
         },
-        modules: ['node_modules'],
+        modules: [
+            'node_modules',
+            '../../../bluesquare-components/node_modules/',
+        ],
         extensions: ['.js'],
     },
 };

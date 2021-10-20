@@ -13,10 +13,7 @@ import { useGetInstances } from '../hooks/useGetInstances';
 
 import MESSAGES from '../messages';
 
-export const FormsChipsFilterComponent = ({
-    setFormsSelected,
-    formsSelected,
-}) => {
+export const FormsFilterComponent = ({ setFormsSelected, formsSelected }) => {
     const { formatMessage } = useSafeIntl();
     const [forms, setForms] = useState([]);
     const currentOrgUnit = useSelector(state => state.orgUnits.current);
@@ -82,13 +79,13 @@ export const FormsChipsFilterComponent = ({
     );
 };
 
-FormsChipsFilterComponent.defaultProps = {
+FormsFilterComponent.defaultProps = {
     setFormsSelected: () => null,
 };
 
-FormsChipsFilterComponent.propTypes = {
+FormsFilterComponent.propTypes = {
     formsSelected: PropTypes.array.isRequired,
     setFormsSelected: PropTypes.func,
 };
 
-export default FormsChipsFilterComponent;
+export default FormsFilterComponent;

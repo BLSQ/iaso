@@ -8,8 +8,6 @@ import { Select, useSafeIntl } from 'bluesquare-components';
 
 import { fetchSubOrgUnitsByType } from '../../../utils/requests';
 
-import { getOtChipColors } from '../../../constants/chipColors';
-
 import MESSAGES from '../../orgUnits/messages';
 
 const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList = []) => {
@@ -78,11 +76,7 @@ const OrgUnitTypeFilterComponent = props => {
         if (!selection) {
             setOrgUnitTypesSelected([]);
         } else {
-            const newOrgUnitTypesSelected = [...selection];
-            newOrgUnitTypesSelected.forEach((ot, index) => {
-                newOrgUnitTypesSelected[index].color = getOtChipColors(index);
-            });
-            updateOrgUnitTypesSelected(newOrgUnitTypesSelected);
+            updateOrgUnitTypesSelected(selection);
         }
     };
 
@@ -105,9 +99,6 @@ const OrgUnitTypeFilterComponent = props => {
                 );
                 newOrgUnitTypesList = newOrgUnitTypesList.concat(missingOt);
             }
-        });
-        newOrgUnitTypesSelected.forEach((ot, index) => {
-            newOrgUnitTypesSelected[index].color = getOtChipColors(index);
         });
         updateOrgUnitTypesSelected(newOrgUnitTypesSelected, false);
         setOrgUnitTypesList(newOrgUnitTypesList);

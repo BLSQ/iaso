@@ -3,9 +3,11 @@ import { useSnackQuery } from '../../../libs/apiHooks';
 
 export const useGetInstances = ({ orgUnitId }) => {
     const params = {
-        orgUnitId,
         order: 'id',
     };
+    if (orgUnitId) {
+        params.orgUnitId = orgUnitId;
+    }
 
     const queryString = new URLSearchParams(params);
 

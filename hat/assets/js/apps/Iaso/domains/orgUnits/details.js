@@ -49,7 +49,7 @@ import {
 import {
     getAliasesArrayFromString,
     getOrgUnitsTree,
-    getSourcesWithoutCurrentSource,
+    getLinksSources,
 } from './utils';
 import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
@@ -59,7 +59,7 @@ import Logs from '../../components/logs/LogsComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import LinksDetails from '../links/components/LinksDetailsComponent';
 
-import { getChipColors } from '../../constants/chipColors';
+import { getChipColors, getOtChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 
@@ -142,14 +142,6 @@ class OrgUnitDetail extends Component {
             fetchUsersProfiles,
             setSelectedSources,
         } = this.props;
-        const promisesArray = [];
-        if (this.props.orgUnitTypes.length === 0) {
-            promisesArray.push(
-                fetchOrgUnitsTypes(dispatch).then(orgUnitTypes =>
-                    this.props.setOrgUnitTypes(orgUnitTypes),
-                ),
-            );
-        }
 
         fetchUsersProfiles();
         fetchAlgorithms(dispatch).then(algoList =>
@@ -158,74 +150,40 @@ class OrgUnitDetail extends Component {
         fetchAlgorithmRuns(dispatch).then(algoRunsList =>
             this.props.setAlgorithmRuns(algoRunsList),
         );
-        if (!this.props.sources) {
-            promisesArray.push(
-                fetchSources(dispatch).then(data => {
-                    const sources = [];
-                    data.forEach((s, i) => {
-                        sources.push({
-                            ...s,
-                            color: getChipColors(i),
-                        });
-                    });
-                    this.props.setSources(sources);
-                }),
-            );
-        }
+        fetchGroups(dispatch, orgUnitId === '0').then(groups =>
+            this.props.setGroups(groups),
+        );
 
-        if (this.props.groups.length === 0) {
-            promisesArray.push(
-                fetchGroups(dispatch, orgUnitId === '0').then(groups =>
-                    this.props.setGroups(groups),
-                ),
-            );
-        }
-        const sources = [];
+        const promisesArray = [
+            fetchOrgUnitsTypes(dispatch),
+            fetchLinks(dispatch, `/api/links/?orgUnitId=${orgUnitId}`),
+        ];
         if (orgUnitId !== '0') {
-            fetchAssociatedDataSources(dispatch, orgUnitId).then(data => {
-                data.forEach((s, i) => {
-                    sources.push({
-                        ...s,
-                        color: getChipColors(i),
-                    });
-                });
-                this.props.setSources(sources);
-            });
+            promisesArray.push(fetchAssociatedDataSources(dispatch, orgUnitId));
+        } else {
+            promisesArray.push(fetchSources(dispatch));
         }
 
-        Promise.all(promisesArray).then(() => {
-            this.fetchDetail().then(async currentOrgUnit => {
-                const { links } = await fetchLinks(
-                    dispatch,
-                    `/api/links/?orgUnitId=${orgUnitId}`,
+        Promise.all(promisesArray).then(
+            ([orgUnitTypes, { links }, sources]) => {
+                this.props.setOrgUnitTypes(
+                    orgUnitTypes.map((ot, i) => ({
+                        ...ot,
+                        color: getOtChipColors(i),
+                    })),
                 );
-                let selectedSources = [];
-                links.forEach(l => {
-                    const tempSources = getSourcesWithoutCurrentSource(
-                        sources,
-                        currentOrgUnit.source_id,
+                const coloredSources = sources.map((s, i) => ({
+                    ...s,
+                    color: getChipColors(i),
+                }));
+                this.props.setSources(coloredSources);
+                this.fetchDetail().then(async currentOrgUnit => {
+                    const selectedSources = getLinksSources(
+                        links,
+                        coloredSources,
+                        currentOrgUnit,
                     );
-                    // getting the org unit source linked to current one and preselect them
-                    const linkSources = tempSources.filter(
-                        s =>
-                            (s.id === l.source.source_id &&
-                                !selectedSources.find(
-                                    ss => ss.id === l.source.source_id,
-                                )) ||
-                            (s.id === l.destination.source_id &&
-                                !selectedSources.find(
-                                    ss => ss.id === l.destination.source_id,
-                                )),
-                    );
-                    if (linkSources.length > 0) {
-                        selectedSources = selectedSources.concat(linkSources);
-                    }
-                });
-                if (selectedSources.length === 0) {
-                    setSelectedSources([]);
-                } else {
                     const fullSelectedSources = [];
-
                     for (let i = 0; i < selectedSources.length; i += 1) {
                         const ss = selectedSources[i];
                         // eslint-disable-next-line no-await-in-loop
@@ -235,14 +193,12 @@ class OrgUnitDetail extends Component {
                             currentOrgUnit,
                         );
                         fullSelectedSources.push(detail);
-                        if (i === selectedSources.length - 1) {
-                            setSelectedSources(fullSelectedSources);
-                        }
                     }
-                }
-                dispatch(setFetchingDetail(false));
-            });
-        });
+                    setSelectedSources(fullSelectedSources);
+                    dispatch(setFetchingDetail(false));
+                });
+            },
+        );
     }
 
     componentDidUpdate(prevProps) {

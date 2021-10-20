@@ -1,0 +1,30 @@
+version: "3"
+services:
+  # Database for local dhis2
+  db_dhis2:
+    image:
+      iaso/postgis
+    # Workaround until there is a stable Postgis image for Apple Silicon
+    build: .docker/db
+    volumes:
+      - ../pgdata-dhis2:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: dhis2
+      POSTGRES_USER: dhis
+      POSTGRES_PASSWORD: dhis
+  dhis2:
+    image: dhis2/core:2.36.3
+    restart: always
+    volumes:
+      - ${DHIS2_CORE_CONFIG:-./.docker/DHIS2_home/dhis.conf}:/DHIS2_home/dhis.conf
+      #      - ./.docker/server.xml:/usr/local/tomcat/conf/server.xml
+      - ./.docker/DHIS2_home:/DHIS2_home
+    depends_on:
+      - "db_dhis2"
+    ports:
+      - "8080:8080"
+    environment:
+      POSTGRES_DB: dhis2
+      POSTGRES_USER: dhis
+      POSTGRES_PASSWORD: dhis
+

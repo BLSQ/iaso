@@ -57,7 +57,7 @@ services:
   db:
     image:
       iaso/postgis
-      # Workaround until there is a stable Postgis image for Apple Silicon
+    # Workaround until there is a stable Postgis image for Apple Silicon
     build: .docker/db
     logging: *iaso_logging
     ports:
@@ -68,7 +68,6 @@ services:
       POSTGRES_DB: ${RDS_DB_NAME}
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-
   # the webpack dev server
   webpack:
     image: iaso-webpack

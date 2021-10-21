@@ -5,6 +5,7 @@ services:
     tty: true
     build:
       context: .
+      dockerfile: docker/django/Dockerfile
     image: iaso
     ports:
       - "8081:8081"

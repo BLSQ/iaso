@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import PropTypes from 'prop-types';
 import { Box, Chip } from '@material-ui/core';
 
 import { Select, useSafeIntl } from 'bluesquare-components';
-import { setSourcesSelected } from '../../orgUnits/actions';
 
 import { fetchAssociatedOrgUnits } from '../../../utils/requests';
 
@@ -13,12 +12,14 @@ import { getSourcesWithoutCurrentSource } from '../../orgUnits/utils';
 
 import MESSAGES from '../messages';
 
-const SourcesFilterComponent = ({ fitToBounds }) => {
+const SourcesFilterComponent = ({
+    fitToBounds,
+    sourcesSelected,
+    setSourcesSelected,
+}) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const sourcesSelected = useSelector(
-        state => state.orgUnits.currentSourcesSelected,
-    );
+    const [isLoading, setIsLoading] = useState(false);
     const currentSources = useSelector(state => state.orgUnits.sources);
     const currentOrgUnit = useSelector(state => state.orgUnits.current);
     if (!currentOrgUnit) return null;
@@ -31,6 +32,7 @@ const SourcesFilterComponent = ({ fitToBounds }) => {
             dispatch(setSourcesSelected([]));
         } else {
             const fullSources = [...newSources];
+            setIsLoading(true);
             for (let i = 0; i < newSources.length; i += 1) {
                 const ss = newSources[i];
                 if (!ss.orgUnits) {
@@ -43,6 +45,7 @@ const SourcesFilterComponent = ({ fitToBounds }) => {
                     fullSources[i] = detail;
                 }
             }
+            setIsLoading(false);
             dispatch(setSourcesSelected(fullSources || []));
         }
         fitToBounds();
@@ -53,9 +56,10 @@ const SourcesFilterComponent = ({ fitToBounds }) => {
                 keyValue="sources"
                 label={formatMessage(MESSAGES.sources)}
                 disabled={sources.length === 0}
+                loading={isLoading}
                 clearable
                 multi
-                value={sourcesSelected || []}
+                value={sourcesSelected}
                 getOptionLabel={option => option?.name}
                 getOptionSelected={(option, val) => {
                     return val && option.id === val.id;
@@ -81,8 +85,11 @@ const SourcesFilterComponent = ({ fitToBounds }) => {
         </Box>
     );
 };
+
 SourcesFilterComponent.propTypes = {
     fitToBounds: PropTypes.func.isRequired,
+    sourcesSelected: PropTypes.array.isRequired,
+    setSourcesSelected: PropTypes.func.isRequired,
 };
 
 export default SourcesFilterComponent;

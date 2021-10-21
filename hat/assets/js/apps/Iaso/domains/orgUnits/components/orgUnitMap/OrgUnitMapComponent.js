@@ -18,7 +18,7 @@ import {
     orderOrgUnitTypeByDepth,
     ZoomControl,
 } from '../../../../utils/mapUtils';
-import { getMarkerList } from '../../utils';
+import { getMarkerList, getLinksSources } from '../../utils';
 
 import TileSwitch from '../../../../components/maps/tools/TileSwitchComponent';
 import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
@@ -56,6 +56,7 @@ import {
 
 export const zoom = 5;
 export const padding = [75, 75];
+const clusterSize = 25;
 
 const buttonsInitialState = {
     location: {
@@ -100,7 +101,7 @@ class OrgUnitMapComponent extends Component {
         this.state = initialState(props.currentUser);
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         const {
             intl: { formatMessage },
             orgUnit,
@@ -297,11 +298,12 @@ class OrgUnitMapComponent extends Component {
         const {
             orgUnit,
             currentTile,
-            sourcesSelected,
             saveOrgUnit,
             orgUnitLocationModified,
             classes,
             orgUnitTypes,
+            setSourcesSelected,
+            sourcesSelected,
         } = this.props;
         const {
             location,
@@ -369,6 +371,8 @@ class OrgUnitMapComponent extends Component {
                         <>
                             <SourcesFilterComponent
                                 fitToBounds={() => this.fitToBounds()}
+                                sourcesSelected={sourcesSelected}
+                                setSourcesSelected={setSourcesSelected}
                             />
                             <OrgUnitTypeFilterComponent
                                 fitToBounds={() => this.fitToBounds()}
@@ -562,6 +566,7 @@ class OrgUnitMapComponent extends Component {
                                         colorClusterCustomMarker(
                                             cluster,
                                             ot.color,
+                                            clusterSize,
                                         )
                                     }
                                 >
@@ -581,6 +586,7 @@ class OrgUnitMapComponent extends Component {
                                         colorClusterCustomMarker(
                                             cluster,
                                             s.color,
+                                            clusterSize,
                                         )
                                     }
                                 >
@@ -601,6 +607,7 @@ class OrgUnitMapComponent extends Component {
                                         colorClusterCustomMarker(
                                             cluster,
                                             f.color,
+                                            clusterSize,
                                         )
                                     }
                                 >
@@ -655,7 +662,7 @@ class OrgUnitMapComponent extends Component {
 }
 
 OrgUnitMapComponent.defaultProps = {
-    sourcesSelected: undefined,
+    sourcesSelected: [],
 };
 
 OrgUnitMapComponent.propTypes = {
@@ -668,7 +675,7 @@ OrgUnitMapComponent.propTypes = {
     resetMapReducer: PropTypes.func.isRequired,
     setCurrentSubOrgUnit: PropTypes.func.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
-    sourcesSelected: PropTypes.oneOfType([PropTypes.number, PropTypes.array]),
+    sourcesSelected: PropTypes.array,
     resetOrgUnit: PropTypes.func.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,
     setOrgUnitLocationModified: PropTypes.func.isRequired,
@@ -676,13 +683,13 @@ OrgUnitMapComponent.propTypes = {
     currentUser: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
+    setSourcesSelected: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentUser: state.users.current,
     currentTile: state.map.currentTile,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
-    sourcesSelected: state.orgUnits.currentSourcesSelected,
 });
 
 const MapDispatchToProps = dispatch => ({

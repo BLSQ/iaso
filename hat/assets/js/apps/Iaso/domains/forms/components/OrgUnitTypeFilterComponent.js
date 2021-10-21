@@ -44,6 +44,8 @@ const OrgUnitTypeFilterComponent = props => {
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
     const currentOrgUnit = useSelector(state => state.orgUnits.current);
     const [orgUnitTypesList, setOrgUnitTypesList] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
     const updateOrgUnitTypesSelected = (
         newOrgUnitTypesSelected,
         fitToBoundsAction = true,
@@ -63,9 +65,11 @@ const OrgUnitTypeFilterComponent = props => {
                 oldOrgUnitsTypes.push(ot);
             }
         });
+        setIsLoading(true);
         Promise.all(promisesArray).then(orgUnits => {
             const orgUnitsTypesWithData = oldOrgUnitsTypes.concat(orgUnits);
             setOrgUnitTypesSelected(orgUnitsTypesWithData);
+            setIsLoading(false);
             if (fitToBoundsAction) {
                 fitToBounds();
             }
@@ -91,6 +95,8 @@ const OrgUnitTypeFilterComponent = props => {
                 )
             ) {
                 newOrgUnitTypesSelected.push(ot);
+            }
+            if (!newOrgUnitTypesList.find(o => o.id !== ot.id)) {
                 newOrgUnitTypesList.push(ot);
             } else {
                 const subsOt = getSubOrgunits(ot, orgUnitTypes, [ot]);
@@ -113,6 +119,7 @@ const OrgUnitTypeFilterComponent = props => {
                     label={formatMessage(MESSAGES.org_unit_type)}
                     disabled={orgUnitTypesList.length === 0}
                     clearable
+                    loading={isLoading}
                     multi
                     value={orgUnitTypesSelected}
                     getOptionLabel={option => option && option.name}

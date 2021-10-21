@@ -195,10 +195,19 @@ module.exports = {
     externals: [{ './cptable': 'var cptable' }],
 
     resolve: {
+        alias: {
+            'bluesquare-components': path.resolve(
+                __dirname,
+                '../../../bluesquare-components/src/',
+            ),
+        },
         fallback: {
             fs: false,
         },
-        modules: ['node_modules'],
+        modules: [
+            'node_modules',
+            '../../../bluesquare-components/node_modules/',
+        ],
         extensions: ['.js'],
     },
 };

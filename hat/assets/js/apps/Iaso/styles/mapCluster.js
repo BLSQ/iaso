@@ -5,16 +5,12 @@ export const styles = {
     },
 
     '.marker-cluster div,.marker-custom div': {
-        width: 30,
-        height: 30,
+        width: 'calc(100% - 4px)',
+        height: 'calc(100% - 4px)',
         marginLeft: 5,
         marginTop: 5,
         textAlign: 'center',
         borderRadius: '100%',
         fontSize: 12,
-    },
-
-    '.marker-cluster span': {
-        lineHeight: 2.5,
     },
 };

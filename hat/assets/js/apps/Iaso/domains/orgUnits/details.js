@@ -25,7 +25,6 @@ import {
     setFetchingDetail,
     saveOrgUnit as saveOrgUnitAction,
     createOrgUnit as createOrgUnitAction,
-    setSourcesSelected,
 } from './actions';
 import { setAlgorithms, setAlgorithmRuns } from '../links/actions';
 
@@ -126,6 +125,7 @@ class OrgUnitDetail extends Component {
             currentOrgUnit: undefined,
             orgUnitModified: false,
             orgUnitLocationModified: false,
+            sourcesSelected: undefined,
             tableColumns: formsTableColumns(
                 props.intl.formatMessage,
                 this,
@@ -140,7 +140,6 @@ class OrgUnitDetail extends Component {
             dispatch,
             params: { orgUnitId },
             fetchUsersProfiles,
-            setSelectedSources,
         } = this.props;
 
         fetchUsersProfiles();
@@ -154,18 +153,18 @@ class OrgUnitDetail extends Component {
             this.props.setGroups(groups),
         );
 
-        const promisesArray = [
-            fetchOrgUnitsTypes(dispatch),
-            fetchLinks(dispatch, `/api/links/?orgUnitId=${orgUnitId}`),
-        ];
+        const promisesArray = [fetchOrgUnitsTypes(dispatch)];
         if (orgUnitId !== '0') {
             promisesArray.push(fetchAssociatedDataSources(dispatch, orgUnitId));
+            promisesArray.push(
+                fetchLinks(dispatch, `/api/links/?orgUnitId=${orgUnitId}`),
+            );
         } else {
             promisesArray.push(fetchSources(dispatch));
         }
 
         Promise.all(promisesArray).then(
-            ([orgUnitTypes, { links }, sources]) => {
+            ([orgUnitTypes, sources, { links } = []]) => {
                 this.props.setOrgUnitTypes(
                     orgUnitTypes.map((ot, i) => ({
                         ...ot,
@@ -177,11 +176,11 @@ class OrgUnitDetail extends Component {
                     color: getChipColors(i),
                 }));
                 this.props.setSources(coloredSources);
-                this.fetchDetail().then(async currentOrgUnit => {
+                this.fetchDetail().then(async orgUnit => {
                     const selectedSources = getLinksSources(
                         links,
                         coloredSources,
-                        currentOrgUnit,
+                        orgUnit,
                     );
                     const fullSelectedSources = [];
                     for (let i = 0; i < selectedSources.length; i += 1) {
@@ -190,11 +189,13 @@ class OrgUnitDetail extends Component {
                         const detail = await fetchAssociatedOrgUnits(
                             dispatch,
                             ss,
-                            currentOrgUnit,
+                            orgUnit,
                         );
                         fullSelectedSources.push(detail);
                     }
-                    setSelectedSources(fullSelectedSources);
+                    this.setState({
+                        sourcesSelected: fullSelectedSources,
+                    });
                     dispatch(setFetchingDetail(false));
                 });
             },
@@ -419,6 +420,7 @@ class OrgUnitDetail extends Component {
             currentOrgUnit,
             orgUnitModified,
             orgUnitLocationModified,
+            sourcesSelected,
         } = this.state;
         const isNewOrgunit = params.orgUnitId === '0';
         let title = '';
@@ -513,6 +515,12 @@ class OrgUnitDetail extends Component {
                         >
                             <Box className={classes.containerFullHeight}>
                                 <OrgUnitMap
+                                    sourcesSelected={sourcesSelected}
+                                    setSourcesSelected={newSourcesSelected => {
+                                        this.setState({
+                                            sourcesSelected: newSourcesSelected,
+                                        });
+                                    }}
                                     setOrgUnitLocationModified={isModified =>
                                         this.setOrgUnitLocationModified(
                                             isModified,
@@ -703,7 +711,6 @@ OrgUnitDetail.propTypes = {
     algorithms: PropTypes.array.isRequired,
     algorithmRuns: PropTypes.array.isRequired,
     fetchUsersProfiles: PropTypes.func.isRequired,
-    setSelectedSources: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -731,7 +738,6 @@ const MapDispatchToProps = dispatch => ({
     setGroups: groups => dispatch(setGroups(groups)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setAlgorithmRuns: algoRunsList => dispatch(setAlgorithmRuns(algoRunsList)),
-    setSelectedSources: sources => dispatch(setSourcesSelected(sources)),
     ...bindActionCreators(
         {
             setForms: setFormsAction,

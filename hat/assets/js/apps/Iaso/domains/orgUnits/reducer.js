@@ -8,7 +8,6 @@ import {
     SET_SOURCES,
     SET_GROUPS,
     SET_ORG_UNITS_LIST_FETCHING,
-    SET_SOURCES_SELECTED,
     SET_FETCHING_ORG_UNITS_TYPES,
     SET_FILTERS_UPDATED,
     SET_SUB_ORG_UNIT,
@@ -18,7 +17,6 @@ import {
 export const orgUnitsInitialState = {
     current: null,
     currentSubOrgUnit: null,
-    currentSourcesSelected: undefined,
     fetchingList: false,
     fetchingDetail: true,
     fetchingOrgUnitTypes: true,
@@ -104,11 +102,6 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_FETCHING_DETAIL: {
             const fetchingDetail = action.payload;
             return { ...state, fetchingDetail };
-        }
-
-        case SET_SOURCES_SELECTED: {
-            const currentSourcesSelected = action.payload;
-            return { ...state, currentSourcesSelected };
         }
 
         case SET_ORG_UNITS_LOCATIONS: {

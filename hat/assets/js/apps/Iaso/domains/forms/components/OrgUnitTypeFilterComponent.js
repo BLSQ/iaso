@@ -116,7 +116,8 @@ const OrgUnitTypeFilterComponent = props => {
             <Box m={4}>
                 <Select
                     keyValue="ou-types"
-                    label={formatMessage(MESSAGES.ouTypesHelperText)}
+                    label={formatMessage(MESSAGES.org_unit_type)}
+                    helperText={formatMessage(MESSAGES.ouTypesHelperText)}
                     disabled={orgUnitTypesList.length === 0}
                     clearable
                     loading={isLoading}

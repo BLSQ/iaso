@@ -517,6 +517,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.formsHelperText',
         defaultMessage: 'Form submissions',
     },
+    forms: {
+        id: 'iaso.forms.title',
+        defaultMessage: 'Forms',
+    },
 });
 
 export default MESSAGES;

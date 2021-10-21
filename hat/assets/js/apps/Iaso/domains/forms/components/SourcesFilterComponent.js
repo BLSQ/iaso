@@ -54,7 +54,8 @@ const SourcesFilterComponent = ({
         <Box m={4}>
             <Select
                 keyValue="sources"
-                label={formatMessage(MESSAGES.sourcesHelperText)}
+                label={formatMessage(MESSAGES.sources)}
+                helperText={formatMessage(MESSAGES.sourcesHelperText)}
                 disabled={sources.length === 0}
                 loading={isLoading}
                 clearable

@@ -133,3 +133,4 @@ lintErrors.html
 /hat/assets/js/apps/Iaso/domains/app/translations/extracted/
 
 hat/assets/webpack/
+.docker/DHIS2_home/

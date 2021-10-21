@@ -23,6 +23,7 @@ export const getApiParamDateTimeString = date => {
 };
 
 /**
+ * Convert a date string from a router params to a Date for the API
  * @param {Object} date - date as a moment object
  */
 export const getApiParamDateString = date => {
@@ -30,7 +31,9 @@ export const getApiParamDateString = date => {
 };
 
 /**
- * @param dateFrom {String} date - date as string
+ * Convert a date string from a router params to a DateTime for the API
+ * since it's the lower bound force it to the start of the day
+ * @param  {String} dateFrom - date as string
  */
 export const getFromDateString = dateFrom =>
     dateFrom
@@ -39,7 +42,9 @@ export const getFromDateString = dateFrom =>
           )
         : null;
 /**
- * @param dateTo {String} date - date as string
+ * Convert a date string from a router params to a DateTime for the API
+ * since it's the *higher bound* force it to the *end of the day*
+ * @param  {String} dateTo - date as string
  */
 export const getToDateString = dateTo =>
     dateTo
@@ -65,6 +70,10 @@ const longDateFormats = {
     },
 };
 
+/**
+ * Configure the local for time displayed to the user.
+ * @param {"en"|"fr"} code - Language code string
+ */
 export const setLocale = code => {
     moment.locale(code);
     moment.updateLocale(code, {

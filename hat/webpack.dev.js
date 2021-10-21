@@ -1,11 +1,11 @@
-var path = require('path');
-var webpack = require('webpack');
-var BundleTracker = require('webpack-bundle-tracker');
+const path = require('path');
+const webpack = require('webpack');
+const BundleTracker = require('webpack-bundle-tracker');
 // Switch here for french. This is set to 'en' in dev to not get react-intl warnings
 // remember to switch in webpack.prod.js and
 // django settings as well
-var LOCALE = 'fr';
-var WEBPACK_URL = 'http://localhost:3000';
+const LOCALE = 'fr';
+const WEBPACK_URL = 'http://localhost:3000';
 
 module.exports = {
     context: __dirname,

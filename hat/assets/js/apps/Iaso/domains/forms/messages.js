@@ -122,7 +122,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.type',
     },
     records: {
-        defaultMessage: 'Record(s)',
+        defaultMessage: 'Submissions',
         id: 'iaso.forms.records',
     },
     instance_updated_at: {

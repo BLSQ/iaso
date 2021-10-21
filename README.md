@@ -222,7 +222,7 @@ Enketo, go to the Enketo setup section of this README (down below).
 
 Once you are done, you can click on the eye for your newly added form,
 click on "+ Create", tap a letter, then enter, select the org unit, then
-click "Create instance".
+click "Create submission".
 
 If Enketo is running and well setup, you can fill the form now.
 

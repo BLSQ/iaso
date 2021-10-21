@@ -210,6 +210,9 @@ export const ScopeForm = () => {
     };
 
     const sortShapesForTable = useCallback(() => {
+        if (!regionShapes) {
+            return null;
+        }
         if (sortFocus === 'DISTRICT' && sortBy === 'asc') {
             return districtShapes?.filter(shape =>
                 group.org_units.includes(shape.id),

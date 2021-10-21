@@ -304,6 +304,7 @@ All the container definitions for development can be found in the
 > Postgresql uses Django ORM models for table configuration and
 > migrations.
 
+You can also have a dhis2 and db_dhis2 docker, refer to section below.
 
 ### note : docker-compose run VS docker-compose exec
 
@@ -369,7 +370,10 @@ Replace your invocations of `docker-compose` by `docker-compose -f docker-compos
 docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
 ```
 
-The DHIS2 will be available on your computer on the port 8080.
+The DHIS2 will be available on your computer on http://localhost:8080 and is reachable from Iaso as http://dhis2:8080. The login and password are admin / district. If you use it as an import source do not set a trailing /
+
+Database file are stored in `../pgdata-dhis2` and dhis2 log and uploaded files in `docker/DHIS2_home`.
+
 ### Sample dhis2 database
 You will probably require some sample data in your instance. It is possible to
 populate your DHIS2 server with sample data from a database dump like it's done

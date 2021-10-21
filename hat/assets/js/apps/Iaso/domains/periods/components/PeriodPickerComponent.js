@@ -70,7 +70,7 @@ const PeriodPicker = ({
         >
             {periodType === PERIOD_TYPE_DAY && (
                 <DatePicker
-                    placeholder={title}
+                    label={title}
                     clearMessage={MESSAGES.clear}
                     currentDate={activePeriodString}
                     hasError={hasError}

@@ -7,11 +7,13 @@ import { shortApiDateFormat } from '../../../../../../hat/assets/js/apps/Iaso/ut
 
 import MESSAGES from '../../constants/messages';
 
-export const DateInput = ({ field, form }) => {
+export const DateInput = ({ field, form, label }) => {
+    console.log('field', field);
+    console.log('label', label);
     return (
         <Box mb={2}>
             <DatePicker
-                placeholder="DD/MM/YYYY"
+                label={label}
                 clearMessage={MESSAGES.clear}
                 currentDate={field.value || null}
                 hasError={form.errors && Boolean(get(form.errors, field.name))}
@@ -29,4 +31,5 @@ export const DateInput = ({ field, form }) => {
 DateInput.propTypes = {
     field: PropTypes.object.isRequired,
     form: PropTypes.object.isRequired,
+    label: PropTypes.string.isRequired,
 };

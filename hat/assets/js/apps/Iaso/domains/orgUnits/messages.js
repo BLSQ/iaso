@@ -322,6 +322,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.selectOrgUnit',
         defaultMessage: 'Please select an Org Unit',
     },
+    ouTypesHelperText: {
+        id: 'iaso.orgUnits.ouTypesHelperText',
+        defaultMessage: 'Children org units',
+    },
 });
 
 export default MESSAGES;

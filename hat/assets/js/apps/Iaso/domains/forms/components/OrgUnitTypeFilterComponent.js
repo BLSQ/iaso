@@ -95,16 +95,16 @@ const OrgUnitTypeFilterComponent = props => {
                 )
             ) {
                 newOrgUnitTypesSelected.push(ot);
+                if (!newOrgUnitTypesList.find(o => o.id === ot.id)) {
+                    newOrgUnitTypesList.push(ot);
+                }
             }
-            if (!newOrgUnitTypesList.find(o => o.id !== ot.id)) {
-                newOrgUnitTypesList.push(ot);
-            } else {
-                const subsOt = getSubOrgunits(ot, orgUnitTypes, [ot]);
-                const missingOt = subsOt.filter(
-                    out => !newOrgUnitTypesList.includes(out),
-                );
-                newOrgUnitTypesList = newOrgUnitTypesList.concat(missingOt);
-            }
+
+            const subsOt = getSubOrgunits(ot, orgUnitTypes, [ot]);
+            const missingOt = subsOt.filter(
+                out => !newOrgUnitTypesList.some(o => o.id === out.id),
+            );
+            newOrgUnitTypesList = newOrgUnitTypesList.concat(missingOt);
         });
         updateOrgUnitTypesSelected(newOrgUnitTypesSelected, false);
         setOrgUnitTypesList(newOrgUnitTypesList);
@@ -115,8 +115,8 @@ const OrgUnitTypeFilterComponent = props => {
         <>
             <Box m={4}>
                 <Select
-                    keyValue="forms"
-                    label={formatMessage(MESSAGES.org_unit_type)}
+                    keyValue="ou-types"
+                    label={formatMessage(MESSAGES.ouTypesHelperText)}
                     disabled={orgUnitTypesList.length === 0}
                     clearable
                     loading={isLoading}

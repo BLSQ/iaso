@@ -652,5 +652,7 @@
     "map.draw.label.undo": "Undo",
     "map.label.fitToBounds": "Center the map",
     "map.label.zoom.box": "Draw a square to zoom",
-    "map.label.zoom.info": "Current zoom level"
+    "map.label.zoom.info": "Current zoom level",
+    "iaso.orgUnits.ouTypesHelperText": "Children org units",
+    "iaso.orgUnits.sourcesHelperText": "Linked org units"
 }

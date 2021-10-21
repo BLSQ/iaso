@@ -509,6 +509,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.addSource',
         defaultMessage: 'Add source',
     },
+    sourcesHelperText: {
+        id: 'iaso.orgUnits.sourcesHelperText',
+        defaultMessage: 'Linked org units',
+    },
+    formsHelperText: {
+        id: 'iaso.orgUnits.formsHelperText',
+        defaultMessage: 'Form submissions',
+    },
 });
 
 export default MESSAGES;

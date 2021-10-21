@@ -29,7 +29,7 @@ const SourcesFilterComponent = ({
     );
     const handleChange = async newSources => {
         if (!newSources) {
-            dispatch(setSourcesSelected([]));
+            setSourcesSelected([]);
         } else {
             const fullSources = [...newSources];
             setIsLoading(true);
@@ -46,7 +46,7 @@ const SourcesFilterComponent = ({
                 }
             }
             setIsLoading(false);
-            dispatch(setSourcesSelected(fullSources || []));
+            setSourcesSelected(fullSources || []);
         }
         fitToBounds();
     };
@@ -54,7 +54,7 @@ const SourcesFilterComponent = ({
         <Box m={4}>
             <Select
                 keyValue="sources"
-                label={formatMessage(MESSAGES.sources)}
+                label={formatMessage(MESSAGES.sourcesHelperText)}
                 disabled={sources.length === 0}
                 loading={isLoading}
                 clearable

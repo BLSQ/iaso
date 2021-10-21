@@ -16,7 +16,7 @@ import { useGetCountries } from '../../hooks/useGetCountries';
 
 import { genUrl } from '../../utils/routing';
 
-const Filters = ({ router }) => {
+const Filters = ({ router, disableDates }) => {
     const { params } = router;
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
@@ -74,23 +74,25 @@ const Filters = ({ router }) => {
                             label={MESSAGES.country}
                         />
                     </Grid>
-                    <Grid item xs={6}>
-                        <DatesRange
-                            onChangeDate={(key, value) => {
-                                if (key === 'dateFrom') {
-                                    setR1StartFrom(value);
-                                }
-                                if (key === 'dateTo') {
-                                    set1StartTo(value);
-                                }
-                                setFiltersUpdated(true);
-                            }}
-                            labelFrom={MESSAGES.R1StartFrom}
-                            labelTo={MESSAGES.R1StartTo}
-                            dateFrom={r1StartFrom}
-                            dateTo={r1StartTo}
-                        />
-                    </Grid>
+                    {!disableDates && (
+                        <Grid item xs={6}>
+                            <DatesRange
+                                onChangeDate={(key, value) => {
+                                    if (key === 'dateFrom') {
+                                        setR1StartFrom(value);
+                                    }
+                                    if (key === 'dateTo') {
+                                        set1StartTo(value);
+                                    }
+                                    setFiltersUpdated(true);
+                                }}
+                                labelFrom={MESSAGES.R1StartFrom}
+                                labelTo={MESSAGES.R1StartTo}
+                                dateFrom={r1StartFrom}
+                                dateTo={r1StartTo}
+                            />
+                        </Grid>
+                    )}
                 </Grid>
             </Box>
             <Box display="inline-flex" width="15%" justifyContent="flex-end">
@@ -114,11 +116,13 @@ const Filters = ({ router }) => {
 
 Filters.defaultProps = {
     baseUrl: '',
+    disableDates: false,
 };
 
 Filters.propTypes = {
     baseUrl: PropTypes.string,
     router: PropTypes.object.isRequired,
+    disableDates: PropTypes.bool,
 };
 
 const wrappedFilters = withRouter(Filters);

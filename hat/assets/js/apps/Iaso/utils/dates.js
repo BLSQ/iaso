@@ -9,30 +9,28 @@ export const getUrlParamDateObject = date => {
     return moment(date, dateFormat);
 };
 
-// this is the date format used in api calls
-export const apiDateFormat = 'YYYY-MM-DD HH:MM';
+// this is the date time format used in api calls
+export const apiDateTimeFormat = 'YYYY-MM-DD HH:MM';
 
-// this is the short date format used in api calls
-export const shortApiDateFormat = 'YYYY-MM-DD';
+// this is the short date format used in api calls (only date not time!)
+export const apiDateFormat = 'YYYY-MM-DD';
 
 /**
  * @param {Object} date - date as a moment object
  */
 export const getApiParamDateTimeString = date => {
-    return date.format(apiDateFormat);
+    return date.format(apiDateTimeFormat);
 };
 
 /**
  * @param {Object} date - date as a moment object
  */
 export const getApiParamDateString = date => {
-    return date
-        ? getUrlParamDateObject(date).format(shortApiDateFormat)
-        : undefined;
+    return date ? getUrlParamDateObject(date).format(apiDateFormat) : undefined;
 };
 
 /**
- * @param {String} date - date as string
+ * @param dateFrom {String} date - date as string
  */
 export const getFromDateString = dateFrom =>
     dateFrom
@@ -41,7 +39,7 @@ export const getFromDateString = dateFrom =>
           )
         : null;
 /**
- * @param {String} date - date as string
+ * @param dateTo {String} date - date as string
  */
 export const getToDateString = dateTo =>
     dateTo

@@ -9,7 +9,7 @@ import MESSAGES from './messages';
 import DeleteDialog from './components/DeleteInstanceDialog';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import { getCookie } from '../../utils/cookies';
-import { apiDateFormat, shortApiDateFormat } from '../../utils/dates';
+import { apiDateTimeFormat, apiDateFormat } from '../../utils/dates';
 
 const NO_VALUE = '/';
 const hasNoValue = value => !value || value === '';
@@ -29,11 +29,11 @@ const KeyValueFields = ({ entry }) =>
  */
 const formatValue = value => {
     // use strict mode so it doesn't try to interpret number as timestamp.
-    const asDay = moment(value, shortApiDateFormat, true);
+    const asDay = moment(value, apiDateFormat, true);
     if (asDay.isValid()) {
         return asDay.format('L');
     }
-    const asDT = moment(value, apiDateFormat, true);
+    const asDT = moment(value, apiDateTimeFormat, true);
     if (asDT.isValid()) {
         return asDT.format('LTS');
     }

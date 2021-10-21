@@ -429,18 +429,19 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
 
         for campaign in campaigns:
             districts = OrgUnit.objects.filter(groups=campaign.group_id)
-            all_facilities = OrgUnit.objects.hierarchy(districts)
-            if org_unit_type:
-                all_facilities = all_facilities.filter(org_unit_type_id=org_unit_type)
-            all_facilities = (
-                all_facilities.prefetch_related("parent")
-                .prefetch_related("parent__parent")
-                .prefetch_related("parent__parent__parent")
-                .prefetch_related("parent__parent__parent__parent")
-            )
-            all_facilities = all_facilities.annotate(campaign_id=Value(campaign.id, UUIDField()))
-            all_facilities = all_facilities.annotate(campaign_obr=Value(campaign.obr_name, TextField()))
-            queryset = queryset.union(all_facilities)
+            if districts:
+                all_facilities = OrgUnit.objects.hierarchy(districts)
+                if org_unit_type:
+                    all_facilities = all_facilities.filter(org_unit_type_id=org_unit_type)
+                all_facilities = (
+                    all_facilities.prefetch_related("parent")
+                    .prefetch_related("parent__parent")
+                    .prefetch_related("parent__parent__parent")
+                    .prefetch_related("parent__parent__parent__parent")
+                )
+                all_facilities = all_facilities.annotate(campaign_id=Value(campaign.id, UUIDField()))
+                all_facilities = all_facilities.annotate(campaign_obr=Value(campaign.obr_name, TextField()))
+                queryset = queryset.union(all_facilities)
 
         headers = [
             "campaign_id",

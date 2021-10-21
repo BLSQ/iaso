@@ -360,6 +360,37 @@ cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --
 This will put the data in a database called iaso5. You can choose in your .env file which database is used by editing
 the `RDS_DB_NAME` settings.
 
+Local DHIS2
+-----------
+Experimental. For development if you need a local dhis2 server, you can spin up one in your docker-compose by using the `.docker/docker-compose-dhis2.yml ` configuration file.
+
+Replace your invocations of `docker-compose` by `docker-compose -f docker-compose.yml -f .docker/docker-compose-dhis2.yml` you need to specify both config files. e.g to launch the cluster:
+```
+docker-compose -f docker-compose.yml -f .docker/docker-compose-dhis2.yml up
+```
+
+The DHIS2 will be available on your computer on the port 8080.
+### Sample dhis2 database
+You will probably require some sample data in your instance. It is possible to
+populate your DHIS2 server with sample data from a database dump like it's done
+for the official play servers. The DHIS2 database take around 3 GB.
+
+The steps as are follow:
+Download the file, stop all the docker, remove the postgres database directory, start only the database docker, load the database dump and then restart everything.
+
+```
+wget https://databases.dhis2.org/sierra-leone/2.36.4/dhis2-db-sierra-leone.sql.gz
+docker-compose down
+sudo rm ../pgdata-dhis2 -r
+docker-compose up db_dhis2
+zcat dhis2-db-sierra-leone.sql.gz| docker-compose exec -T db_dhis2 psql -U dhis dhis2 -f /dev/stdin
+docker-compose up
+cd Projects/blsq/iaso
+docker-compose up dhis2 db_dhis2
+```
+
+
+
 
 Contributing
 ============

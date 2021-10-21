@@ -360,6 +360,31 @@ cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --
 This will put the data in a database called iaso5. You can choose in your .env file which database is used by editing
 the `RDS_DB_NAME` settings.
 
+Live Bluesquare components
+--------------------------
+
+It is possible to configure the project to load a version of Bluesquare components from a local git repository instead of the one installed from a package. This enabled to develop feature necessitating modification in the components code.
+
+To do so:
+ * place the repository in the parent repository of Iaso `../bluesquare-components/`
+ * install the dependency for bluesquare-component by running npm install in its directory
+ * set the environment variable `LIVE_COMPONENTS=true`
+ * start your docker-compose
+
+```
+cd ..
+git clone git@github.com:BLSQ/bluesquare-components.git
+cd  bluesquare-components
+npm install
+cd ../iaso
+LIVE_COMPONENTS=true docker-compose up
+```
+
+This way the page will reload automatically if you make a change to the bluesquare-components code.
+
+This functionality also works if you launch webpack outside of docker.
+
+If you encounter any problem, first check that your repo is on the correct branch and the deps are up to date
 
 Contributing
 ============
@@ -414,7 +439,7 @@ Code reloading
 --------------
 
 In development the servers will reload when they detect a file
-change, either in Python or Javascript. 
+change, either in Python or Javascript. If you need reloading for the bluesquare-components code, see the "Live Bluesquare Components" section. 
 
 Troubleshooting
 ---------------

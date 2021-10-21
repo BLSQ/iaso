@@ -278,11 +278,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.see',
     },
     instanceCreateAction: {
-        defaultMessage: 'Create instance',
+        defaultMessage: 'Create submission',
         id: 'iaso.instance.instanceCreateAction',
     },
     instanceCreationDialogTitle: {
-        defaultMessage: 'Create instance',
+        defaultMessage: 'Create submission',
         id: 'iaso.instance.instanceCreationDialogTitle',
     },
     deleteInstance: {

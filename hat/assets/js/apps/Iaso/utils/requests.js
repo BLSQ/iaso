@@ -117,7 +117,7 @@ export const fetchInstancesAsDict = (dispatch, url) =>
                     errorSnackBar('fetchInstanceDictError', null, error),
                 ),
             );
-            console.error('Error while fetching instances list:', error);
+            console.error('Error while fetching submissions list:', error);
             throw error;
         });
 

@@ -5,7 +5,7 @@ services:
     image:
       iaso/postgis
     # Workaround until there is a stable Postgis image for Apple Silicon
-    build: .docker/db
+    build: docker/db
     volumes:
       - ../pgdata-dhis2:/var/lib/postgresql/data
     environment:
@@ -16,9 +16,9 @@ services:
     image: dhis2/core:2.36.3
     restart: always
     volumes:
-      - ${DHIS2_CORE_CONFIG:-./.docker/DHIS2_home/dhis.conf}:/DHIS2_home/dhis.conf
-      #      - ./.docker/server.xml:/usr/local/tomcat/conf/server.xml
-      - ./.docker/DHIS2_home:/DHIS2_home
+      - ${DHIS2_CORE_CONFIG:-./docker/DHIS2_home/dhis.conf}:/DHIS2_home/dhis.conf
+      #      - ./docker/server.xml:/usr/local/tomcat/conf/server.xml
+      - ./docker/DHIS2_home:/DHIS2_home
     depends_on:
       - "db_dhis2"
     ports:

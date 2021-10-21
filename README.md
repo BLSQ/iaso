@@ -362,11 +362,11 @@ the `RDS_DB_NAME` settings.
 
 Local DHIS2
 -----------
-Experimental. For development if you need a local dhis2 server, you can spin up one in your docker-compose by using the `.docker/docker-compose-dhis2.yml ` configuration file.
+Experimental. For development if you need a local dhis2 server, you can spin up one in your docker-compose by using the `docker/docker-compose-dhis2.yml ` configuration file.
 
-Replace your invocations of `docker-compose` by `docker-compose -f docker-compose.yml -f .docker/docker-compose-dhis2.yml` you need to specify both config files. e.g to launch the cluster:
+Replace your invocations of `docker-compose` by `docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml` you need to specify both config files. e.g to launch the cluster:
 ```
-docker-compose -f docker-compose.yml -f .docker/docker-compose-dhis2.yml up
+docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
 ```
 
 The DHIS2 will be available on your computer on the port 8080.

@@ -58,7 +58,7 @@ services:
     image:
       iaso/postgis
     # Workaround until there is a stable Postgis image for Apple Silicon
-    build: .docker/db
+    build: docker/db
     logging: *iaso_logging
     ports:
       - "5433:5432"
@@ -73,7 +73,7 @@ services:
     image: iaso-webpack
     build:
       context: .
-      dockerfile: .docker/webpack/Dockerfile
+      dockerfile: docker/webpack/Dockerfile
     depends_on:
       - iaso
     ports:

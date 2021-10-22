@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Box, Chip } from '@material-ui/core';
+import { Box, Chip, Typography } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -79,6 +79,7 @@ const OrgUnitTypeFilterComponent = props => {
     const hanldeOnChange = selection => {
         if (!selection) {
             setOrgUnitTypesSelected([]);
+            fitToBounds();
         } else {
             updateOrgUnitTypesSelected(selection);
         }
@@ -112,43 +113,45 @@ const OrgUnitTypeFilterComponent = props => {
     }, []);
 
     return (
-        <>
-            <Box m={4}>
-                <Select
-                    keyValue="ou-types"
-                    label={formatMessage(MESSAGES.org_unit_type)}
-                    helperText={formatMessage(MESSAGES.ouTypesHelperText)}
-                    disabled={orgUnitTypesList.length === 0}
-                    clearable
-                    loading={isLoading}
-                    multi
-                    value={orgUnitTypesSelected}
-                    getOptionLabel={option => option && option.name}
-                    getOptionSelected={(option, val) => {
-                        return val && option.id === val.id;
-                    }}
-                    options={orgUnitTypesList}
-                    returnFullObject
-                    onChange={newValue => {
-                        hanldeOnChange(newValue);
-                    }}
-                    renderTags={(tagValue, getTagProps) =>
-                        tagValue
-                            .filter(option => option)
-                            .map((option, index) => (
-                                <Chip
-                                    style={{
-                                        backgroundColor: option.color,
-                                        color: 'white',
-                                    }}
-                                    label={option.short_name || option.name}
-                                    {...getTagProps({ index })}
-                                />
-                            ))
-                    }
-                />
+        <Box m={4}>
+            <Box mb={2}>
+                <Typography variant="body2">
+                    {formatMessage(MESSAGES.ouTypesHelperText)}:
+                </Typography>
             </Box>
-        </>
+            <Select
+                keyValue="ou-types"
+                label={formatMessage(MESSAGES.org_unit_type)}
+                disabled={orgUnitTypesList.length === 0}
+                clearable
+                loading={isLoading}
+                multi
+                value={orgUnitTypesSelected}
+                getOptionLabel={option => option && option.name}
+                getOptionSelected={(option, val) => {
+                    return val && option.id === val.id;
+                }}
+                options={orgUnitTypesList}
+                returnFullObject
+                onChange={newValue => {
+                    hanldeOnChange(newValue);
+                }}
+                renderTags={(tagValue, getTagProps) =>
+                    tagValue
+                        .filter(option => option)
+                        .map((option, index) => (
+                            <Chip
+                                style={{
+                                    backgroundColor: option.color,
+                                    color: 'white',
+                                }}
+                                label={option.short_name || option.name}
+                                {...getTagProps({ index })}
+                            />
+                        ))
+                }
+            />
+        </Box>
     );
 };
 

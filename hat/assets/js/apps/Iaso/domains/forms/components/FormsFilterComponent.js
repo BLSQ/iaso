@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import PropTypes from 'prop-types';
 
-import { Chip, Box } from '@material-ui/core';
+import { Chip, Box, Typography } from '@material-ui/core';
 
 import { Select, useSafeIntl } from 'bluesquare-components';
 
@@ -15,14 +15,14 @@ import MESSAGES from '../messages';
 
 export const FormsFilterComponent = ({ setFormsSelected, formsSelected }) => {
     const { formatMessage } = useSafeIntl();
-    const [forms, setForms] = useState([]);
     const currentOrgUnit = useSelector(state => state.orgUnits.current);
     const { data, isLoading } = useGetInstances({
         orgUnitId: currentOrgUnit?.id,
     });
-    useEffect(() => {
+
+    const forms = useMemo(() => {
+        const newForms = [];
         if (data?.instances) {
-            const newForms = [];
             data.instances.forEach(i => {
                 const exisitingFormIndex = newForms.findIndex(
                     f => f.id === i.form_id,
@@ -38,15 +38,20 @@ export const FormsFilterComponent = ({ setFormsSelected, formsSelected }) => {
                     newForms[exisitingFormIndex].instances.push(i);
                 }
             });
-            setForms(newForms);
         }
+        return newForms;
     }, [data]);
+
     return (
         <Box m={4}>
+            <Box mb={2}>
+                <Typography variant="body2">
+                    {formatMessage(MESSAGES.hasInstances)}:
+                </Typography>
+            </Box>
             <Select
                 keyValue="forms"
                 label={formatMessage(MESSAGES.forms)}
-                helperText={formatMessage(MESSAGES.hasInstances)}
                 disabled={forms.length === 0}
                 loading={isLoading}
                 clearable

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import PropTypes from 'prop-types';
-import { Box, Chip } from '@material-ui/core';
+import { Box, Chip, Typography } from '@material-ui/core';
 
 import { Select, useSafeIntl } from 'bluesquare-components';
 
@@ -52,10 +52,14 @@ const SourcesFilterComponent = ({
     };
     return (
         <Box m={4}>
+            <Box mb={2}>
+                <Typography variant="body2">
+                    {formatMessage(MESSAGES.sourcesHelperText)}:
+                </Typography>
+            </Box>
             <Select
                 keyValue="sources"
                 label={formatMessage(MESSAGES.sources)}
-                helperText={formatMessage(MESSAGES.sourcesHelperText)}
                 disabled={sources.length === 0}
                 loading={isLoading}
                 clearable

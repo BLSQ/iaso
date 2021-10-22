@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
-import { FormControl, Grid, Tooltip, IconButton } from '@material-ui/core';
-import Clear from '@material-ui/icons/Clear';
-import { injectIntl } from 'bluesquare-components';
+import { FormControl, Grid } from '@material-ui/core';
+import { injectIntl, IconButton } from 'bluesquare-components';
+import EventIcon from '@material-ui/icons/Event';
 import MESSAGES from './messages';
 import { getUrlParamDateObject, dateFormat } from '../../utils/dates';
 
@@ -18,8 +18,8 @@ const useStyles = makeStyles(theme => ({
         marginRight: theme.spacing(2),
         padding: 0,
         position: 'absolute',
-        right: theme.spacing(6),
-        top: 15,
+        right: theme.spacing(4),
+        top: 13,
     },
 }));
 
@@ -49,6 +49,10 @@ const DatesRange = ({
                         InputLabelProps={{
                             shrink: Boolean(dateFrom),
                         }}
+                        KeyboardButtonProps={{
+                            size: 'small',
+                        }}
+                        keyboardIcon={<EventIcon size="small" />}
                         format="L"
                         label={formatMessage(labelFrom)}
                         helperText=""
@@ -66,15 +70,14 @@ const DatesRange = ({
                         }
                     />
                     {dateFrom && (
-                        <Tooltip arrow title={formatMessage(MESSAGES.clear)}>
+                        <span className={classes.clearDateButton}>
                             <IconButton
-                                color="inherit"
+                                size="small"
+                                icon="clear"
+                                tooltipMessage={MESSAGES.clear}
                                 onClick={() => onChangeDate('dateFrom', null)}
-                                className={classes.clearDateButton}
-                            >
-                                <Clear color="primary" />
-                            </IconButton>
-                        </Tooltip>
+                            />
+                        </span>
                     )}
                 </FormControl>
             </Grid>
@@ -93,6 +96,10 @@ const DatesRange = ({
                         InputLabelProps={{
                             shrink: Boolean(dateTo),
                         }}
+                        KeyboardButtonProps={{
+                            size: 'small',
+                        }}
+                        keyboardIcon={<EventIcon size="small" />}
                         format="L"
                         label={formatMessage(labelTo)}
                         helperText=""
@@ -109,15 +116,14 @@ const DatesRange = ({
                         }
                     />
                     {dateTo && (
-                        <Tooltip arrow title={formatMessage(MESSAGES.clear)}>
+                        <span className={classes.clearDateButton}>
                             <IconButton
-                                color="inherit"
+                                size="small"
+                                icon="clear"
+                                tooltipMessage={MESSAGES.clear}
                                 onClick={() => onChangeDate('dateTo', null)}
-                                className={classes.clearDateButton}
-                            >
-                                <Clear color="primary" />
-                            </IconButton>
-                        </Tooltip>
+                            />
+                        </span>
                     )}
                 </FormControl>
             </Grid>

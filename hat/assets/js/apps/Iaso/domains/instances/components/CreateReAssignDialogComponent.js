@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { Period } from '../../periods/models';
+import { usePrettyPeriod } from '../../periods/utils';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
@@ -15,6 +16,7 @@ const CreateReAssignDialogComponent = ({
     currentInstance,
     onCreateOrReAssign,
 }) => {
+    const formatPeriod = usePrettyPeriod();
     const currentFormOrInstanceProp = currentInstance || formType;
     const currentFormOrInstance = { ...currentFormOrInstanceProp };
 
@@ -118,7 +120,7 @@ const CreateReAssignDialogComponent = ({
                 errors={fieldValue.period.errors}
                 type="select"
                 options={allPeriods.map(p => ({
-                    label: Period.getPrettyPeriod(p),
+                    label: formatPeriod(p),
                     value: p,
                 }))}
                 label={MESSAGES.period}

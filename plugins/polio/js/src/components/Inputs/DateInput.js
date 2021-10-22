@@ -8,8 +8,6 @@ import { shortApiDateFormat } from '../../../../../../hat/assets/js/apps/Iaso/ut
 import MESSAGES from '../../constants/messages';
 
 export const DateInput = ({ field, form, label }) => {
-    console.log('field', field);
-    console.log('label', label);
     return (
         <Box mb={2}>
             <DatePicker
@@ -17,6 +15,7 @@ export const DateInput = ({ field, form, label }) => {
                 clearMessage={MESSAGES.clear}
                 currentDate={field.value || null}
                 hasError={form.errors && Boolean(get(form.errors, field.name))}
+                helperText={form.errors && get(form.errors, field.name)}
                 onChange={date =>
                     form.setFieldValue(
                         field.name,

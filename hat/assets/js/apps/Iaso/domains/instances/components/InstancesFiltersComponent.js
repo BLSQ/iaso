@@ -16,9 +16,9 @@ import {
     location,
     device,
     deviceOwnership,
-    periods,
     instanceStatus,
     instanceDeleted,
+    useFormatPeriodFilter,
 } from '../../../constants/filters';
 import DatesRange from '../../../components/filters/DatesRange';
 
@@ -58,6 +58,7 @@ const InstancesFiltersComponent = ({
     const intl = useSafeIntl();
     const dispatch = useDispatch();
     const classes = useStyles();
+    const formatPeriodFilter = useFormatPeriodFilter();
 
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
@@ -89,10 +90,9 @@ const InstancesFiltersComponent = ({
         setFetchingDevicesOwnerships,
         setFetchingPeriodsList,
     );
-
     if (periodsList.length > 0) {
         secondColumnFilters.unshift({
-            ...periods(periodsList),
+            ...formatPeriodFilter(periodsList),
             loading: fetchingPeriodsList,
         });
     }
@@ -197,7 +197,7 @@ const InstancesFiltersComponent = ({
                                 ]}
                                 onEnterPressed={() => handleSearch()}
                             />
-                            <Box mt={1}>
+                            <Box>
                                 <OrgUnitTreeviewModal
                                     toggleOnLabelClick={false}
                                     titleMessage={MESSAGES.search}

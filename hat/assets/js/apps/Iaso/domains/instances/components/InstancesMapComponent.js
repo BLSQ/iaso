@@ -3,13 +3,14 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Map, ScaleControl, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { injectIntl } from 'bluesquare-components';
 import { Grid, Divider } from '@material-ui/core';
 
 import {
     getLatLngBounds,
     clusterCustomMarker,
     ZoomControl,
+    defaultCenter,
+    defaultZoom,
 } from '../../../utils/mapUtils';
 
 import { resetMapReducer } from '../../../redux/mapReducer';
@@ -109,7 +110,8 @@ class InstancesMap extends Component {
                         style={{ height: '100%' }}
                         bounds={bounds}
                         boundsOptions={boundsOptions}
-                        zoom={13}
+                        zoom={defaultZoom}
+                        center={defaultCenter}
                         zoomControl={false}
                         keyboard={false}
                     >
@@ -157,7 +159,6 @@ InstancesMap.propTypes = {
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
     isClusterActive: PropTypes.bool.isRequired,
-    intl: PropTypes.object.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
@@ -178,7 +179,4 @@ const MapDispatchToProps = dispatch => ({
     setCurrentInstance: i => dispatch(setCurrentInstance(i)),
 });
 
-export default connect(
-    MapStateToProps,
-    MapDispatchToProps,
-)(injectIntl(InstancesMap));
+export default connect(MapStateToProps, MapDispatchToProps)(InstancesMap);

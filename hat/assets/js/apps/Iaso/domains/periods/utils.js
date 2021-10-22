@@ -1,11 +1,14 @@
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { Period } from './models';
 import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
+    PERIOD_TYPE_YEAR,
     PERIOD_TYPE_SIX_MONTH,
     QUARTERS,
     SEMESTERS,
+    MONTHS,
 } from './constants';
 import MESSAGES from './messages';
 
@@ -108,4 +111,33 @@ export const getPeriodPickerString = (periodType, period, value) => {
         default:
             return period.year ? `${period.year}` : null;
     }
+};
+export const getPrettyPeriod = (period, formatMessage) => {
+    if (!period) return textPlaceholder;
+    const periodClass = new Period(period);
+    if (periodClass.periodType === PERIOD_TYPE_YEAR) {
+        return period;
+    }
+    const prefix = period.substring(4, 6);
+    const prettyPeriod = `${prefix}-${periodClass.year}`;
+
+    let monthRangeString;
+    if (
+        formatMessage &&
+        periodClass.periodType !== PERIOD_TYPE_DAY &&
+        periodClass.periodType !== PERIOD_TYPE_MONTH
+    ) {
+        const { monthRange } = periodClass;
+        const firstMonth = MONTHS[monthRange[0]];
+        const lastMonth = MONTHS[monthRange[monthRange.length - 1]];
+        monthRangeString = ` (${formatMessage(firstMonth)}-${formatMessage(
+            lastMonth,
+        )})`;
+    }
+    return `${prettyPeriod}${monthRangeString || ''}`;
+};
+
+export const usePrettyPeriod = () => {
+    const { formatMessage } = useSafeIntl();
+    return period => getPrettyPeriod(period, formatMessage);
 };

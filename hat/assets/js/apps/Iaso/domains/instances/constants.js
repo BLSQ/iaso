@@ -3,7 +3,7 @@ import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { displayDateFromTimestamp } from 'bluesquare-components';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
-import { Period } from '../periods/models';
+import { usePrettyPeriod } from '../periods/utils';
 import { OrgUnitLabel } from '../orgUnits/utils';
 import MESSAGES from './messages';
 
@@ -16,6 +16,11 @@ export const INSTANCE_STATUSES = [
     INSTANCE_STATUS_ERROR,
     INSTANCE_STATUS_EXPORTED,
 ];
+
+const PrettyPeriod = ({ value }) => {
+    const formatPeriod = usePrettyPeriod();
+    return formatPeriod(value);
+};
 
 export const INSTANCE_METAS_FIELDS = [
     {
@@ -73,7 +78,7 @@ export const INSTANCE_METAS_FIELDS = [
     },
     {
         key: 'period',
-        render: value => Period.getPrettyPeriod(value),
+        render: value => <PrettyPeriod value={value} />,
         tableOrder: 3,
         type: 'info',
     },

@@ -2,7 +2,7 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     title: {
-        defaultMessage: 'Record(s) for the form',
+        defaultMessage: 'Submissions for the form',
         id: 'iaso.instance.form',
     },
     forceExport: {
@@ -14,7 +14,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.export',
     },
     exportSelection: {
-        defaultMessage: 'Export {count} records ',
+        defaultMessage: 'Export {count} submissions ',
         id: 'iaso.label.exportSelection',
     },
     reAssignInstance: {
@@ -278,11 +278,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.see',
     },
     instanceCreateAction: {
-        defaultMessage: 'Create instance',
+        defaultMessage: 'Create submission',
         id: 'iaso.instance.instanceCreateAction',
     },
     instanceCreationDialogTitle: {
-        defaultMessage: 'Create instance',
+        defaultMessage: 'Create submission',
         id: 'iaso.instance.instanceCreationDialogTitle',
     },
     deleteInstance: {

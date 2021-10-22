@@ -24,8 +24,6 @@ import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import MESSAGES from '../constants/messages';
 import { Filters } from '../components/campaignCalendar/Filters';
 
-import { getApiParamDateString } from '../../../../../hat/assets/js/apps/Iaso/utils/dates';
-
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
@@ -39,8 +37,6 @@ const Calendar = ({ params }) => {
         order: orders,
         countries: params.countries,
         search: params.search,
-        r1StartFrom: getApiParamDateString(params.r1StartFrom),
-        r1StartTo: getApiParamDateString(params.r1StartTo),
     });
 
     const { data: campaigns = [], isLoading } = query;
@@ -75,7 +71,7 @@ const Calendar = ({ params }) => {
             )}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box mb={4}>
-                    <Filters />
+                    <Filters disableDates />
                 </Box>
 
                 <Grid container spacing={2}>

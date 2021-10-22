@@ -3,13 +3,20 @@ import PropTypes from 'prop-types';
 import { replace } from 'react-router-redux';
 import { useDispatch } from 'react-redux';
 
-import { Box, Button, Popper, ClickAwayListener } from '@material-ui/core';
+import {
+    Box,
+    Button,
+    Popper,
+    ClickAwayListener,
+    Tooltip,
+} from '@material-ui/core';
 import ChevronLeft from '@material-ui/icons/ChevronLeft';
 import ArrowForward from '@material-ui/icons/ArrowForward';
 import { KeyboardDatePicker } from '@material-ui/pickers';
 import ChevronRight from '@material-ui/icons/ChevronRight';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 import Today from '@material-ui/icons/Today';
+import { useSafeIntl } from 'bluesquare-components';
 
 import { Link, withRouter } from 'react-router';
 
@@ -17,10 +24,12 @@ import { useStyles } from './Styles';
 import { dateFormat } from './constants';
 
 import { genUrl } from '../../utils/routing';
+import MESSAGES from '../../constants/messages';
 
 const Nav = ({ currentMonday, router, currentDate }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
+    const { formatMessage } = useSafeIntl();
     const [anchorEl, setAnchorEl] = useState(null);
     const urlForDate = date =>
         genUrl(router, {
@@ -43,34 +52,42 @@ const Nav = ({ currentMonday, router, currentDate }) => {
     return (
         <Box className={classes.nav}>
             <Link to={urlForDate(prev(4))}>
-                <Button
-                    className={classes.navButton}
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                >
-                    <ArrowBack />
-                </Button>
+                <Tooltip arrow title={formatMessage(MESSAGES.fastPrevious)}>
+                    <Button
+                        className={classes.navButton}
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                    >
+                        <ArrowBack />
+                    </Button>
+                </Tooltip>
             </Link>
             <Link to={urlForDate(prev(1))}>
-                <Button
-                    className={classes.navButton}
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                >
-                    <ChevronLeft />
-                </Button>
+                <Tooltip arrow title={formatMessage(MESSAGES.previous)}>
+                    <Button
+                        className={classes.navButton}
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                    >
+                        <ChevronLeft />
+                    </Button>
+                </Tooltip>
             </Link>
-            <Button
-                onClick={handleClickDate}
-                className={classes.navButton}
-                size="small"
-                variant="outlined"
-                color="primary"
-            >
-                <Today />
-            </Button>
+            <span>
+                <Tooltip arrow title={formatMessage(MESSAGES.selectDate)}>
+                    <Button
+                        onClick={handleClickDate}
+                        className={classes.navButton}
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                    >
+                        <Today />
+                    </Button>
+                </Tooltip>
+            </span>
             {open && (
                 <ClickAwayListener onClickAway={handleClickDate}>
                     <Popper
@@ -97,24 +114,28 @@ const Nav = ({ currentMonday, router, currentDate }) => {
             )}
 
             <Link to={urlForDate(next(1))}>
-                <Button
-                    className={classes.navButton}
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                >
-                    <ChevronRight color="primary" />
-                </Button>
+                <Tooltip arrow title={formatMessage(MESSAGES.next)}>
+                    <Button
+                        className={classes.navButton}
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                    >
+                        <ChevronRight color="primary" />
+                    </Button>
+                </Tooltip>
             </Link>
             <Link to={urlForDate(next(4))}>
-                <Button
-                    className={classes.navButton}
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                >
-                    <ArrowForward color="primary" />
-                </Button>
+                <Tooltip arrow title={formatMessage(MESSAGES.fastNext)}>
+                    <Button
+                        className={classes.navButton}
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                    >
+                        <ArrowForward color="primary" />
+                    </Button>
+                </Tooltip>
             </Link>
         </Box>
     );
@@ -123,7 +144,6 @@ const Nav = ({ currentMonday, router, currentDate }) => {
 Nav.propTypes = {
     currentMonday: PropTypes.object.isRequired,
     router: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
     currentDate: PropTypes.object.isRequired,
 };
 const wrappedNav = withRouter(Nav);

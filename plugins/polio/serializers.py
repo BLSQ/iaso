@@ -171,6 +171,12 @@ class RoundSerializer(serializers.ModelSerializer):
 class PreparednessSerializer(serializers.ModelSerializer):
     class Meta:
         model = Preparedness
+        exclude = ["spreadsheet_url"]
+
+
+class LastPreparednessSerializer(PreparednessSerializer):
+    class Meta:
+        model = Preparedness
         exclude = ["campaign"]
         extra_kwargs = {"payload": {"write_only": True}}
 
@@ -354,8 +360,8 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     group = GroupSerializer(required=False, allow_null=True)
 
-    preparedness_data = PreparednessSerializer(required=False)
-    last_preparedness = PreparednessSerializer(
+    preparedness_data = LastPreparednessSerializer(required=False)
+    last_preparedness = LastPreparednessSerializer(
         required=False,
         read_only=True,
         allow_null=True,

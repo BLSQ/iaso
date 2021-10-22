@@ -1,7 +1,7 @@
-import { shortApiDateFormat } from '../../../../../../hat/assets/js/apps/Iaso/utils/dates';
+import { apiDateFormat } from '../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 
 const colsCount = 16;
-const dateFormat = shortApiDateFormat;
+const dateFormat = apiDateFormat;
 const colSpanTitle = 21;
 const defaultOrder = 'round_one__started_at';
 const staticFields = [

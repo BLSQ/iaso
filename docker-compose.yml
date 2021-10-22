@@ -24,6 +24,7 @@ services:
       - ./testdata:/opt/app/testdata
       # jupyter notebooks
       - ./notebooks:/opt/notebooks
+      - ../bluesquare-components:/opt/bluesquare-components
     links: &hat_links
       - db
     environment: &hat_environment
@@ -47,6 +48,7 @@ services:
       ENKETO_API_TOKEN: AZE78974654azeAZE
       ENKETO_URL:
       EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
+      LIVE_COMPONENTS:
     # Limit logging in dev to not overflow terminal
     logging: &iaso_logging
       driver: "json-file"

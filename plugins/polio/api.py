@@ -14,6 +14,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import routers, filters, viewsets, serializers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db.models import Value, IntegerField, TextField, UUIDField
 
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
@@ -400,6 +401,74 @@ class VaccineStocksViewSet(viewsets.ViewSet):
             return JsonResponse(res, safe=False)
 
 
+def org_unit_as_array(o):
+    res = [
+        o.campaign_id,
+        o.campaign_obr,
+        o.id,
+        o.name,
+    ]
+
+    parent = o.parent
+    for i in range(4):
+        if parent:
+            parent = parent.parent
+        if parent:
+            res.extend([parent.id, parent.name])
+        else:
+            res.extend((None, None))
+    return res
+
+
+class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
+    def list(self, request):
+        org_unit_type = request.GET.get("org_unit_type_id", None)
+        as_csv = request.GET.get("format", None) == "csv"
+        campaigns = Campaign.objects.all()
+        queryset = OrgUnit.objects.none()
+
+        for campaign in campaigns:
+            districts = OrgUnit.objects.filter(groups=campaign.group_id)
+            if districts:
+                all_facilities = OrgUnit.objects.hierarchy(districts)
+                if org_unit_type:
+                    all_facilities = all_facilities.filter(org_unit_type_id=org_unit_type)
+                all_facilities = (
+                    all_facilities.prefetch_related("parent")
+                    .prefetch_related("parent__parent")
+                    .prefetch_related("parent__parent__parent")
+                    .prefetch_related("parent__parent__parent__parent")
+                )
+                all_facilities = all_facilities.annotate(campaign_id=Value(campaign.id, UUIDField()))
+                all_facilities = all_facilities.annotate(campaign_obr=Value(campaign.obr_name, TextField()))
+                queryset = queryset.union(all_facilities)
+
+        headers = [
+            "campaign_id",
+            "campaign_obr",
+            "org_unit_id",
+            "org_unit_name",
+            "parent1_id",
+            "parent1_name",
+            "parent2_id",
+            "parent2_name",
+            "parent3_id",
+            "parent3_name",
+            "parent4_id",
+            "parent4_name",
+        ]
+        res = [headers]
+        res.extend([org_unit_as_array(o) for o in queryset])
+        if as_csv:
+            response = HttpResponse(content_type="text/csv")
+            writer = csv.writer(response)
+            for item in res:
+                writer.writerow(item)
+            return response
+        else:
+            return JsonResponse(res, safe=False)
+
+
 class IMViewSet2(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
@@ -474,3 +543,4 @@ router.register(r"polio/imstats", IMViewSet2, basename="imstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
+router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")

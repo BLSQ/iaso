@@ -282,6 +282,8 @@ class Campaign(models.Model):
         verbose_name=_("Budget Submission"),
     )
 
+    is_preventive = models.BooleanField(default=False, help_text="Preventive campaign")
+
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
 

@@ -46,7 +46,7 @@ services:
       PYTHONUNBUFFERED: "true"
       ENKETO_DEV: "true"
       ENKETO_API_TOKEN: AZE78974654azeAZE
-      ENKETO_URL:
+      ENKETO_URL: http://enketo:8005/
       EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
       LIVE_COMPONENTS:
     # Limit logging in dev to not overflow terminal
@@ -54,7 +54,6 @@ services:
       driver: "json-file"
       options:
         max-size: "5k"
-
     command: start_dev
 
   db:

@@ -1,0 +1,32 @@
+version: "3"
+services:
+  enketo:
+    image: enketo/enketo-express:3.0.2
+#    entrypoint: pm2 start --no-daemon app.js -n enketo
+#    environment:
+      # uncomment for more debug output
+#       DEBUG: "express"
+    depends_on:
+      - redis_cache
+      - redis_main
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./docker/enketo/config/config.json:/srv/src/enketo_express/config/config.json
+      - ./docker/enketo/checksum/:/srv/src/enketo_express/checksum
+      - ./docker/enketo/css:/srv/src/enketo_express/public/css
+      - ./docker/enketo/js:/srv/src/enketo_express/public/js/build
+      - ./docker/enketo/locales:/srv/src/enketo_express/locales/build
+      - ./docker/enketo/secrets/:/srv/src/enketo_express/setup/docker/secrets/
+      # Override enketo script for a fix, see top comment
+      - ./docker/enketo/start.sh:/srv/src/enketo_express/setup/docker/start.sh
+  redis_main:
+    image: redis:5
+    volumes:
+      - ./docker/enketo/redis/redis-enketo-main.conf:/etc/redis/redis.conf:ro
+      - ./docker/enketo/redis_main_data/:/data/
+  redis_cache:
+    image: redis:5
+    volumes:
+      - ./docker/enketo/redis-enketo-cache.conf:/etc/redis/redis.conf:ro
+      - ./docker/enketo/redis_cache_data/:/data/

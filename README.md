@@ -322,25 +322,19 @@ disk space and need to be cleaned occasionally with `docker-compose rm` to recla
 Enketo
 ------
 
-To enable the Enketo editor in your local environment, you will have to
-install our fork of enketo-express:
+To submit and edit existing form submission from the browser, an Enketo service is needed. 
 
-``` {.sourceCode .shell}
-git clone https://github.com/BLSQ/enketo.git
-cd setup/docker
-docker-compose up
+To enable the Enketo editor in your local environment, include the additional docker compose configuration file for Enketo. Do so by invoking docker-compose with both files.
+```
+docker-compose -f docker-compose.yml -f docker/docker-compose-enketo.yml
 ```
 
-Then, you need to make sure your .env file is properly configured.
-ENKETO_URL should be set to http://192.168.1.15:81 (Replace
-192.168.1.15 by your host)
+No additional configuration is needed. The first time the docker image is launched, it will download dependencies and do a build witch may take a few minutes. Subsequents launches are faster.
 
-To seed your DB with typical example forms, see the  Import data from DHIS2 section
+You can check that the server is correctly launched. By going to http://localhost:8005
 
-Enketo and Iaso will each run separately in their own  docker-compose but still need to communicate together.
-This is done via your host, which is why you will need to change the IP in .env each time your ip change.
+To seed your DB with typical example forms editable by Enketo, see the  Import data from DHIS2 section
 
-TODO: This setup should be simplified a bit
 
 Database restore and dump
 -------------------------

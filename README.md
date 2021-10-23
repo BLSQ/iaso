@@ -250,18 +250,13 @@ you can then log in through <http://127.0.0.1:8081/dashboard> with :
  -   user : testemail2.35.3
  -   password: testemail2.35.3
 
-### 11. Activating the Polio plugin
+### 11. Activating the Polio plugin (optional)
 
-Create a file `plugins/polio/js/.env` with the content
-
-```env
-SKIP_PREFLIGHT_CHECK=true
-PUBLIC_URL=/static/polio
-APP_ENV=local%
+Set the PLUGINS environment variable  to `polio`.
+You can do so by adding the following line in your root .env:
 ```
-
-in your root .env set
-```PLUGINS=polio```
+PLUGINS=polio
+```
 
  
 Run commands inside the docker
@@ -436,7 +431,7 @@ if the formatting is respected!
 Tests and linting
 -----------------
 
-For python, we use django builtin test framework. Tests can be executed with
+For python, we use the Django builtin test framework. Tests can be executed with
 
 ``` {.sourceCode .bash}
 docker-compose exec iaso ./manage.py test
@@ -446,7 +441,7 @@ Translations
 ------------
 
 The few translation for the Django side (login and reset password email etc..)
-are separated from the test. We only translate the tempalte for now
+are separated from the test. We only translate the template for now
 not the python code (string on model or admin).
 
 When modifying or adding new strings to translate, use the following command to

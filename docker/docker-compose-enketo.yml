@@ -7,7 +7,6 @@ services:
       # uncomment for more debug output
 #       DEBUG: "express"
     depends_on:
-      - redis_cache
       - redis_main
     ports:
       - "8005:8005"
@@ -25,8 +24,3 @@ services:
     volumes:
       - ./docker/enketo/redis/redis-enketo-main.conf:/etc/redis/redis.conf:ro
       - ./docker/enketo/redis_main_data/:/data/
-  redis_cache:
-    image: redis:5
-    volumes:
-      - ./docker/enketo/redis-enketo-cache.conf:/etc/redis/redis.conf:ro
-      - ./docker/enketo/redis_cache_data/:/data/

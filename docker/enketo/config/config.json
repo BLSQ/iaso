@@ -9,7 +9,7 @@
     "offline enabled": false,
     "redis": {
         "cache": {
-            "host": "redis_cache",
+            "host": "redis_main",
             "port": "6379"
         },
         "main": {

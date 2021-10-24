@@ -46,6 +46,7 @@ class OrgUnitType(models.Model):
         ("COUNTRY", _("Country")),
         ("REGION", _("Region")),
         ("DISTRICT", _("District")),
+        ("HF", _("Health Facility")),
     ]
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=255)

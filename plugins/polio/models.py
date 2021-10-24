@@ -103,7 +103,7 @@ class Round(models.Model):
 class Campaign(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
-    obr_name = models.CharField(max_length=255)
+    obr_name = models.CharField(max_length=255, unique=True)
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
     gpei_email = models.EmailField(max_length=254, null=True, blank=True)
     description = models.TextField(null=True, blank=True)

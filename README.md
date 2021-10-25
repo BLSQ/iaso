@@ -321,7 +321,7 @@ To submit and edit existing form submission from the browser, an Enketo service 
 
 To enable the Enketo editor in your local environment, include the additional docker compose configuration file for Enketo. Do so by invoking docker-compose with both files.
 ```
-docker-compose -f docker-compose.yml -f docker/docker-compose-enketo.yml
+docker-compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up
 ```
 
 No additional configuration is needed. The first time the docker image is launched, it will download dependencies and do a build witch may take a few minutes. Subsequents launches are faster.

@@ -134,3 +134,14 @@ lintErrors.html
 
 hat/assets/webpack/
 docker/DHIS2_home/
+
+# enketo build
+docker/enketo/checksum/
+docker/enketo/css/
+docker/enketo/js/
+docker/enketo/locales/
+docker/enketo/redis/
+docker/enketo/redis_main_data/
+docker/enketo/secrets/
+docker/enketo/redis-enketo-main.conf
+docker/enketo/start.sh

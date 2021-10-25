@@ -24,6 +24,7 @@ services:
       - ./testdata:/opt/app/testdata
       # jupyter notebooks
       - ./notebooks:/opt/notebooks
+      # Optional Used to load dev bluesquare-components JS. See `Live Bluesquare components` in doc
       - ../bluesquare-components:/opt/bluesquare-components
     links: &hat_links
       - db

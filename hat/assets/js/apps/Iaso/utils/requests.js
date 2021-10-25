@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useCallback } from 'react';
 import {
     getRequest,
     patchRequest,
@@ -7,6 +6,7 @@ import {
     deleteRequest,
     restoreRequest,
 } from '../libs/Api';
+import { useSnackQuery } from '../libs/apiHooks';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { succesfullSnackBar, errorSnackBar } from '../constants/snackBars';
 import { dispatch as storeDispatch } from '../redux/store';
@@ -645,105 +645,18 @@ export const requestHandler = dispatch => request => params => {
  */
 export const iasoGetRequest = requestHandler(storeDispatch)(getRequest);
 export const iasoPostRequest = requestHandler(storeDispatch)(postRequest);
-export const iasoPutRequest = requestHandler(storeDispatch)(putRequest);
-export const iasoPatchRequest = requestHandler(storeDispatch)(patchRequest);
-export const iasoDeleteRequest = requestHandler(storeDispatch)(deleteRequest);
-export const iasoRestoreRequest = requestHandler(storeDispatch)(restoreRequest);
 
-/**
- *
- * @typedef APIHookResponse
- * @property {boolean} - isLoading
- * @property {boolean} - isError
- * @property {any} - result
- */
-
-/**
- *
- * @param {function} request - IMPORTANT: must be wrapped in useCallback
- * @param {Object} [params={trigger:true,additionalDependencies:[]}]
- * @param {boolean} [params.trigger=true]
- * @param {any[]} [params.additionalDependencies=[]]
- * @returns {APIHookResponse} - { isLoading: boolean, isError: boolean, data: any }
- */
-
-const defaultHookParams = { preventTrigger: false, additionalDependencies: [] };
-
-export const useAPI = (request, requestArgs, params = defaultHookParams) => {
-    const [data, setData] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isError, setIsError] = useState(false);
-    // useRef to avoid memory leak if user navigates away while async action not completed
-    // credit: https://medium.com/wesionary-team/how-to-fix-memory-leak-issue-in-react-js-using-hook-a5ecbf9becf8
-    const mountedRef = React.useRef();
-
-    useEffect(() => {
-        mountedRef.current = true;
-        const executeRequest = async () => {
-            if (params.preventTrigger) {
-                return;
-            }
-            setIsLoading(true);
-            try {
-                const response = await request(requestArgs);
-                if (mountedRef.current) {
-                    setData(response);
-                    setIsLoading(false);
-                }
-            } catch (e) {
-                if (mountedRef.current) {
-                    setIsLoading(false);
-                    setIsError(true);
-                }
-            }
-        };
-        executeRequest();
-        return () => {
-            mountedRef.current = false;
-        };
-    }, [
-        ...(params.additionalDependencies ?? []),
-        request,
-        params.preventTrigger,
-        params.trigger,
-        requestArgs,
-    ]);
-
-    const result = { data, isLoading, isError };
-    return result;
-};
-
-export const useGetComments = ({
-    orgUnitId,
-    offset,
-    limit,
-    refreshTrigger,
-}) => {
+export const useGetComments = params => {
+    const { orgUnitId, offset, limit } = params;
     const url = offset
         ? `/api/comments/?object_pk=${orgUnitId}&content_type=iaso-orgunit&limit=${limit}&offset=${offset}`
         : `/api/comments/?object_pk=${orgUnitId}&content_type=iaso-orgunit&limit=${limit}`;
-    const request = useCallback(
-        async () =>
-            iasoGetRequest({
-                disableSuccessSnackBar: true,
-                requestParams: {
-                    url,
-                },
-            }),
-        [url, refreshTrigger],
-    );
-    const result = useAPI(request, null, {
-        preventTrigger: Boolean(!orgUnitId),
-    });
-    return result;
+
+    return useSnackQuery(['comments', params], async () => getRequest(url));
 };
 
-export const postComment = async comment => {
-    const result = await iasoPostRequest({
-        requestParams: { url: '/api/comments/', body: comment },
-    });
-    return result;
-};
+export const sendComment = async comment =>
+    postRequest('/api/comments/', comment);
 
 export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') =>
     iasoGetRequest({

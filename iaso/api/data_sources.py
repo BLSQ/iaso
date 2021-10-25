@@ -80,10 +80,14 @@ class DataSourceSerializer(serializers.ModelSerializer):
             else:
                 new_credentials = ExternalCredentials()
                 new_credentials.account = account
+
             new_credentials.name = credentials["dhis_name"]
             new_credentials.login = credentials["dhis_login"]
             if credentials["dhis_password"]:
                 new_credentials.password = credentials["dhis_password"]
+            if credentials["dhis_url"] != new_credentials.url and not credentials["dhis_password"]:
+                # Don't keep old password if we change the dhis2 url so the password can't be ex-filtrated.
+                new_credentials.password = ""
             new_credentials.url = credentials["dhis_url"]
             new_credentials.save()
             data_source.credentials = new_credentials

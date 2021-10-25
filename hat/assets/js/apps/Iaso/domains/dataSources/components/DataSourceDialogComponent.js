@@ -21,15 +21,26 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useFormState } from '../../../hooks/form';
 
 // This wrapper to import translations to project_ids
-const ProjectIds = ({ keyValue, value, onChange, errors, options, label }) => {
-    const intl = useSafeIntl();
+const ProjectSelectorIds = ({ keyValue, value, onChange, errors, label }) => {
+    const { formatMessage } = useSafeIntl();
+    const projects = useSelector(state => state.projects.allProjects ?? []);
+    const allErrors = [...errors];
+    if (value.length === 0) {
+        allErrors.unshift(formatMessage(MESSAGES.emptyProjectsError));
+    }
     return (
         <InputComponent
             keyValue={keyValue}
             value={value}
-            onChange={onChange}
-            errors={errors.length === 1 ? [intl.formatMessage(errors[0])] : []}
-            options={options}
+            onChange={(key, newValue) =>
+                onChange(key, commaSeparatedIdsToArray(newValue))
+            }
+            errors={allErrors}
+            hasErrors
+            options={projects.map(p => ({
+                label: p.name,
+                value: p.id,
+            }))}
             label={label}
             type="select"
             multi
@@ -38,12 +49,15 @@ const ProjectIds = ({ keyValue, value, onChange, errors, options, label }) => {
     );
 };
 
-ProjectIds.propTypes = {
+ProjectSelectorIds.defaultProps = {
+    errors: [],
+};
+
+ProjectSelectorIds.propTypes = {
     keyValue: PropTypes.string.isRequired,
-    value: PropTypes.any.isRequired,
+    value: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
-    errors: PropTypes.array.isRequired,
-    options: PropTypes.array.isRequired,
+    errors: PropTypes.array,
     label: PropTypes.any.isRequired,
 };
 
@@ -97,12 +111,9 @@ export const DataSourceDialogComponent = ({
         initialForm(),
     );
     const [isSaving, setIsSaving] = React.useState(false);
-    const setProjects = (keyName, value) => {
-        setFieldValue(keyName, commaSeparatedIdsToArray(value));
-    };
+
     const dispatch = useDispatch();
     const currentUser = useSelector(state => state.users.current);
-    const projects = useSelector(state => state.projects.allProjects ?? []);
 
     const onConfirm = async closeDialog => {
         setIsSaving(true);
@@ -146,19 +157,6 @@ export const DataSourceDialogComponent = ({
             }
             setIsSaving(false);
             return;
-        }
-
-        if (
-            form.is_default_source.value &&
-            currentUser &&
-            form.defaut_version_id.value
-        ) {
-            await updateDefaultSource(
-                dispatch,
-                currentUser.account.id,
-                form.default_version_id.value,
-            );
-            fetchCurrentUser();
         }
         setIsSaving(false);
         // Notify parents to refetch. Remove if passing parent to react-query
@@ -223,23 +221,11 @@ export const DataSourceDialogComponent = ({
                         multiline
                     />
                     <Box>
-                        <ProjectIds
-                            multi
-                            clearable
+                        <ProjectSelectorIds
                             keyValue="project_ids"
-                            onChange={(key, value) => {
-                                setProjects(key, value);
-                            }}
-                            value={form.project_ids.value.join(',')}
-                            errors={
-                                projectsIsEmpty
-                                    ? [MESSAGES.emptyProjectsError]
-                                    : []
-                            }
-                            options={projects.map(p => ({
-                                label: p.name,
-                                value: p.id,
-                            }))}
+                            onChange={setFieldValue}
+                            value={form.project_ids.value}
+                            errors={form.project_ids.error}
                             label={MESSAGES.projects}
                         />
                     </Box>

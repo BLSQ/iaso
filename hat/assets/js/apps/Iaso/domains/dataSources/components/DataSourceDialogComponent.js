@@ -100,6 +100,14 @@ const initialForm = (defaultSourceVersion, initialData, sourceCredentials) => {
     return values;
 };
 
+const formIsValid = form => {
+    const projectsIsEmpty = form.project_ids?.value.length === 0;
+    return (
+        !projectsIsEmpty &&
+        !(form.default_version_id.value && !form.is_default_source.value)
+    );
+};
+
 export const DataSourceDialogComponent = ({
     defaultSourceVersion,
     initialData,
@@ -164,10 +172,8 @@ export const DataSourceDialogComponent = ({
         closeDialog();
     };
 
-    const projectsIsEmpty = form.project_ids?.value.length === 0;
-    const allowConfirm =
-        !projectsIsEmpty &&
-        !(form.default_version_id.value && !form.is_default_source.value);
+    const allowConfirm = formIsValid(form);
+
     const setCredentials = (credentialsField, credentialsFieldValue) => {
         const newCredentials = {
             ...form.credentials.value,

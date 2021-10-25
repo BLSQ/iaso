@@ -1,7 +1,12 @@
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from .common import ModelViewSet
 from iaso.models import DataSource, OrgUnit, SourceVersion, ExternalCredentials
 from rest_framework import serializers, permissions
 from rest_framework.generics import get_object_or_404
+
+from ..tasks.dhis2_ou_exporter import get_api_from_credential
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
@@ -147,3 +152,16 @@ class DataSourceViewSet(ModelViewSet):
             useful_sources = org_unit.source_set.values_list("algorithm_run__version_2__data_source_id", flat=True)
             sources = sources.filter(id__in=useful_sources)
         return sources.order_by(*order)
+
+    @action(methods=["POST"], detail=True, serializer_class=serializers.Serializer)
+    def ping(self, request, pk, **kwargs):
+        data_source = get_object_or_404(self.get_queryset(), pk=pk)
+        api = get_api_from_credential(data_source.credentials)
+        if not api:
+            raise serializers.ValidationError({"dhis2_url": ["Missing credentials"]})
+
+        rep = api.get("system/ping")
+        if rep.status_code == 401:
+            raise serializers.ValidationError({"dhis2_password": ["Invalid user or password"]})
+        print(rep)
+        return Response(rep)

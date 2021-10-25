@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { DatePicker } from 'bluesquare-components';
 import { get } from 'lodash';
-import { shortApiDateFormat } from '../../../../../../hat/assets/js/apps/Iaso/utils/dates';
+import { apiDateFormat } from '../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 
 import MESSAGES from '../../constants/messages';
 
@@ -19,7 +19,7 @@ export const DateInput = ({ field, form, label }) => {
                 onChange={date =>
                     form.setFieldValue(
                         field.name,
-                        date ? date.format(shortApiDateFormat) : null,
+                        date ? date.format(apiDateFormat) : null,
                     )
                 }
             />

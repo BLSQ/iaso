@@ -458,14 +458,9 @@ class FormAStocksViewSet(viewsets.ViewSet):
 
 
 def org_unit_as_array(o):
-    res = [
-        o.campaign_id,
-        o.campaign_obr,
-        o.id,
-        o.name,
-    ]
+    res = [o.campaign_id, o.campaign_obr, o.id, o.name, o.org_unit_type.name]
 
-    parent = o.parent
+    parent = o
     for i in range(4):
         if parent:
             parent = parent.parent
@@ -504,6 +499,7 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
             "campaign_obr",
             "org_unit_id",
             "org_unit_name",
+            "type",
             "parent1_id",
             "parent1_name",
             "parent2_id",

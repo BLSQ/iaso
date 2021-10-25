@@ -27,7 +27,7 @@ const KeyValueFields = ({ entry }) =>
  * Try to guess if it is a date or datetime to display in appropriate locale
  * @param value string
  */
-const formatValue = value => {
+export const formatValue = value => {
     // use strict mode so it doesn't try to interpret number as timestamp.
     const asDay = moment(value, apiDateFormat, true);
     if (asDay.isValid()) {

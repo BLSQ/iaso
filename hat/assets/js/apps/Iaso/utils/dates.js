@@ -10,7 +10,7 @@ export const getUrlParamDateObject = date => {
 };
 
 // this is the date time format used in api calls
-export const apiDateTimeFormat = 'YYYY-MM-DD HH:MM';
+export const apiDateTimeFormat = 'YYYY-MM-DD HH:mm';
 
 // this is the short date format used in api calls (only date not time!)
 export const apiDateFormat = 'YYYY-MM-DD';

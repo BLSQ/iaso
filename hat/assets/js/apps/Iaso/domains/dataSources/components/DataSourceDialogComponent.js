@@ -1,29 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button, Grid, Typography } from '@material-ui/core';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { merge } from 'lodash';
-import { useMutation } from 'react-query';
 import { FormattedMessage } from 'react-intl';
-import {
-    createDataSource,
-    updateDataSource,
-    updateDefaultSource,
-} from '../../../utils/requests';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
-import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
-import { succesfullSnackBar } from '../../../constants/snackBars';
-
-import { fetchCurrentUser } from '../../users/actions';
 import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useFormState } from '../../../hooks/form';
-import { postRequest } from '../../../libs/Api';
+import { useCheckDhis2Mutation, useSaveDataSource } from '../requests';
 
-// This wrapper to import translations to project_ids
 const ProjectSelectorIds = ({ keyValue, value, onChange, errors, label }) => {
     const { formatMessage } = useSafeIntl();
     const projects = useSelector(state => state.projects.allProjects ?? []);
@@ -31,6 +20,7 @@ const ProjectSelectorIds = ({ keyValue, value, onChange, errors, label }) => {
     if (value.length === 0) {
         allErrors.unshift(formatMessage(MESSAGES.emptyProjectsError));
     }
+    // FIXME error don't show up
     return (
         <InputComponent
             keyValue={keyValue}
@@ -120,92 +110,11 @@ export const DataSourceDialogComponent = ({
     const [form, setFieldValue, setFieldErrors, setFormState] = useFormState(
         initialForm(),
     );
-    const [isSaving, setIsSaving] = React.useState(false);
-
-    const dispatch = useDispatch();
-    const currentUser = useSelector(state => state.users.current);
-
-    const checkDhis2 = useMutation(
-        () =>
-            postRequest(`/api/datasources/check_dhis2/`, {
-                data_source: form.id.value,
-                dhis2_url: form.credentials.value.dhis_url,
-                dhis2_login: form.credentials.value.dhis_login,
-                dhis2_password: form.credentials.value.dhis_password,
-            }),
-        {
-            onSuccess: () => {
-                // Clean errors
-                [
-                    'credentials',
-                    'credentials_dhis2_url',
-                    'credentials_dhis2_login',
-                    'credentials_dhis2_password',
-                ].forEach(key => setFieldErrors(key, []));
-            },
-            onError: error => {
-                if (error.status === 400)
-                    Object.entries(error.details).forEach(
-                        ([errorKey, errorMessages]) => {
-                            setFieldErrors(
-                                `credentials_${errorKey}`,
-                                errorMessages,
-                            );
-                        },
-                    );
-                else {
-                    setFieldErrors('credentials', [
-                        error.details?.detail ?? 'Test failed',
-                    ]);
-                }
-            },
-        },
-    );
+    const { saveDataSource, isSaving } = useSaveDataSource(setFieldErrors);
+    const checkDhis2 = useCheckDhis2Mutation(setFieldErrors);
 
     const onConfirm = async closeDialog => {
-        setIsSaving(true);
-        const currentDataSource = {};
-        Object.keys(form).forEach(key => {
-            if (key !== 'is_default_source') {
-                currentDataSource[key] = form[key].value;
-            }
-        });
-        if (
-            form.is_default_source.value &&
-            currentUser &&
-            form.default_version_id.value
-        ) {
-            await updateDefaultSource(
-                dispatch,
-                currentUser.account.id,
-                form.default_version_id.value,
-            );
-            fetchCurrentUser();
-        }
-
-        try {
-            if (initialData) {
-                await updateDataSource(
-                    dispatch,
-                    form.id.value,
-                    currentDataSource,
-                );
-            } else {
-                await createDataSource(dispatch, currentDataSource);
-            }
-            dispatch(enqueueSnackbar(succesfullSnackBar()));
-        } catch (error) {
-            if (error.status === 400) {
-                Object.entries(error.details).forEach(
-                    ([errorKey, errorMessages]) => {
-                        setFieldErrors(errorKey, errorMessages);
-                    },
-                );
-            }
-            setIsSaving(false);
-            return;
-        }
-        setIsSaving(false);
+        await saveDataSource(form);
         // Notify parents to refetch. Remove if passing parent to react-query
         onSuccess();
         closeDialog();
@@ -352,7 +261,7 @@ export const DataSourceDialogComponent = ({
                     />
                     {checkDhis2.isLoading && <LoadingSpinner />}
                     <Button
-                        onClick={checkDhis2.mutate}
+                        onClick={() => checkDhis2.mutate(form)}
                         disabled={!form.credentials.value.dhis_url}
                     >
                         <FormattedMessage

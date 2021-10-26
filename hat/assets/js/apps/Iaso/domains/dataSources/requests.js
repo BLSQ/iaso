@@ -1,10 +1,14 @@
-import { useQuery } from 'react-query';
+import React from 'react';
+import { useMutation, useQuery } from 'react-query';
+import { useDispatch, useSelector } from 'react-redux';
 import { iasoGetRequest, iasoPostRequest } from '../../utils/requests';
-import { dispatch } from '../../redux/store';
-import { iasoFetch } from '../../libs/Api';
+import { dispatch as storeDispatch } from '../../redux/store';
+import { iasoFetch, postRequest, putRequest } from '../../libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../constants/snackBars';
 import snackBarMessages from '../../components/snackBars/messages';
+import { fetchCurrentUser } from '../users/actions';
+import { useSnackMutation } from '../../libs/apiHooks';
 
 /**
  *
@@ -126,7 +130,7 @@ export const csvPreview = async data => {
     return iasoFetch(url, requestSettings)
         .then(result => result.text())
         .catch(error => {
-            dispatch(
+            storeDispatch(
                 enqueueSnackbar(
                     errorSnackBar(
                         'iaso.snackBar.generateCSVError',
@@ -139,3 +143,114 @@ export const csvPreview = async data => {
             throw error;
         });
 };
+
+export const updateDefaultDataSource = (accountId, defaultVersionId) =>
+    putRequest(`/api/accounts/${accountId}/`, {
+        default_version: defaultVersionId,
+    });
+
+/**
+ * Save DataSource on server
+ * If the data source is marked as default this necessitate a separate request to
+ * save and then we refetch the user since it's updated
+ * Mark errors in form.
+ * @param {func} setFieldErrors
+ */
+export const useSaveDataSource = setFieldErrors => {
+    const [isSaving, setIsSaving] = React.useState(false);
+    const currentUser = useSelector(state => state.users.current);
+    const dispatch = useDispatch();
+
+    const { mutateAsync: saveMutation } = useSnackMutation(
+        campaignData =>
+            putRequest(`/api/datasources/${campaignData.id}/`, campaignData),
+        undefined,
+        snackBarMessages.updateDataSourceError,
+    );
+    const { mutateAsync: createMutation } = useSnackMutation(
+        campaignData => postRequest('/api/datasources/', campaignData),
+        undefined,
+        snackBarMessages.createDataSourceError,
+    );
+    const saveDefaultDataSourceMutation = useSnackMutation(
+        updateDefaultDataSource,
+        false,
+        snackBarMessages.updateDefaultSourceError,
+    );
+
+    const saveDataSource = async form => {
+        setIsSaving(true);
+        // eslint-disable-next-line camelcase
+        const { is_default_source, ...campaignData } = Object.keys(form).map(
+            (key, valueDict) => valueDict.value,
+        );
+
+        try {
+            if (campaignData.id) {
+                await saveMutation(campaignData);
+            } else {
+                await createMutation(campaignData);
+            }
+        } catch (error) {
+            // Update error on forms
+            if (error.status === 400) {
+                Object.entries(error.details).forEach(
+                    ([errorKey, errorMessages]) => {
+                        setFieldErrors(errorKey, errorMessages);
+                    },
+                );
+            }
+            setIsSaving(false);
+            return;
+        }
+
+        // eslint-disable-next-line camelcase
+        if (is_default_source && form.default_version_id.value) {
+            await saveDefaultDataSourceMutation.mutateAsync(
+                currentUser.account.id,
+                form.default_version_id.value,
+            );
+            dispatch(fetchCurrentUser());
+        }
+        setIsSaving(false);
+    };
+    return { saveDataSource, isSaving };
+};
+
+export const useCheckDhis2Mutation = setFieldErrors =>
+    useMutation(
+        form =>
+            postRequest(`/api/datasources/check_dhis2/`, {
+                data_source: form.id.value,
+                dhis2_url: form.credentials.value.dhis_url,
+                dhis2_login: form.credentials.value.dhis_login,
+                dhis2_password: form.credentials.value.dhis_password,
+            }),
+        {
+            onSuccess: () => {
+                // Clean errors
+                [
+                    'credentials',
+                    'credentials_dhis2_url',
+                    'credentials_dhis2_login',
+                    'credentials_dhis2_password',
+                ].forEach(key => setFieldErrors(key, []));
+            },
+            onError: error => {
+                if (error.status === 400)
+                    Object.entries(error.details).forEach(
+                        ([errorKey, errorMessages]) => {
+                            setFieldErrors(
+                                `credentials_${errorKey}`,
+                                errorMessages,
+                            );
+                        },
+                    );
+                else {
+                    setFieldErrors('credentials', [
+                        error.details?.detail ?? 'Test failed',
+                    ]);
+                }
+            },
+        },
+    );

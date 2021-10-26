@@ -67,7 +67,6 @@ const dataSourcesTableColumns = (
                             projects: settings.row.original.projects.flat(),
                         }}
                         defaultSourceVersion={defaultSourceVersion}
-                        titleMessage={MESSAGES.updateDataSource}
                         key={settings.row.original.updated_at}
                         onSuccess={() => setForceRefresh(true)}
                         sourceCredentials={

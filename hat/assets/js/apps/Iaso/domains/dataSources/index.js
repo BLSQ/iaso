@@ -59,7 +59,6 @@ const DataSources = () => {
                     extraComponent={
                         <DataSourceDialogComponent
                             defaultSourceVersion={defaultSourceVersion}
-                            titleMessage={MESSAGES.createDataSource}
                             renderTrigger={({ openDialog }) => (
                                 <AddButtonComponent onClick={openDialog} />
                             )}

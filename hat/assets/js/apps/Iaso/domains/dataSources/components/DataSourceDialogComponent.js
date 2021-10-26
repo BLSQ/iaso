@@ -1,10 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Grid } from '@material-ui/core';
+import { Box, Button, Grid, Typography } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { merge } from 'lodash';
+import { useMutation } from 'react-query';
+import { FormattedMessage } from 'react-intl';
 import {
     createDataSource,
     updateDataSource,
@@ -19,6 +21,7 @@ import { fetchCurrentUser } from '../../users/actions';
 import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useFormState } from '../../../hooks/form';
+import { postRequest } from '../../../libs/Api';
 
 // This wrapper to import translations to project_ids
 const ProjectSelectorIds = ({ keyValue, value, onChange, errors, label }) => {
@@ -36,7 +39,6 @@ const ProjectSelectorIds = ({ keyValue, value, onChange, errors, label }) => {
                 onChange(key, commaSeparatedIdsToArray(newValue))
             }
             errors={allErrors}
-            hasErrors
             options={projects.map(p => ({
                 label: p.name,
                 value: p.id,
@@ -122,6 +124,43 @@ export const DataSourceDialogComponent = ({
 
     const dispatch = useDispatch();
     const currentUser = useSelector(state => state.users.current);
+
+    const checkDhis2 = useMutation(
+        () =>
+            postRequest(`/api/datasources/check_dhis2/`, {
+                data_source: form.id.value,
+                dhis2_url: form.credentials.value.dhis_url,
+                dhis2_login: form.credentials.value.dhis_login,
+                dhis2_password: form.credentials.value.dhis_password,
+            }),
+        {
+            onSuccess: () => {
+                // Clean errors
+                [
+                    'credentials',
+                    'credentials_dhis2_url',
+                    'credentials_dhis2_login',
+                    'credentials_dhis2_password',
+                ].forEach(key => setFieldErrors(key, []));
+            },
+            onError: error => {
+                if (error.status === 400)
+                    Object.entries(error.details).forEach(
+                        ([errorKey, errorMessages]) => {
+                            setFieldErrors(
+                                `credentials_${errorKey}`,
+                                errorMessages,
+                            );
+                        },
+                    );
+                else {
+                    setFieldErrors('credentials', [
+                        error.details?.detail ?? 'Test failed',
+                    ]);
+                }
+            },
+        },
+    );
 
     const onConfirm = async closeDialog => {
         setIsSaving(true);
@@ -291,25 +330,49 @@ export const DataSourceDialogComponent = ({
                     <InputComponent
                         value={form.credentials.value.dhis_url}
                         keyValue="dhis_url"
-                        // errors={form.credentials.errors}
+                        errors={form.credentials_dhis2_url?.errors}
                         label={MESSAGES.dhisUrl}
                         onChange={setCredentials}
                     />
                     <InputComponent
                         value={form.credentials.value.dhis_login}
                         keyValue="dhis_login"
-                        // errors={form.credentials.errors}
+                        errors={form.credentials_dhis2_login?.errors}
                         label={MESSAGES.dhisLogin}
                         onChange={setCredentials}
                     />
                     <InputComponent
                         value={form.credentials.value.dhis_password}
                         keyValue="dhis_password"
-                        // errors={form.credentials.errors}
+                        errors={form.credentials_dhis2_password?.errors}
                         label={MESSAGES.dhisPassword}
                         onChange={setCredentials}
                         password
                     />
+                    {checkDhis2.isLoading && <LoadingSpinner />}
+                    <Button
+                        onClick={checkDhis2.mutate}
+                        disabled={!form.credentials.value.dhis_url}
+                    >
+                        <FormattedMessage
+                            id="iaso.label.checkDHIS"
+                            defaultMessage="Test settings"
+                        />
+                    </Button>
+                    <Typography>
+                        {checkDhis2.isSuccess && (
+                            <FormattedMessage
+                                id="iaso.checkDHIS.success"
+                                defaultMessage="✅ Connection to server ok"
+                            />
+                        )}
+                        {checkDhis2.isError && (
+                            <FormattedMessage
+                                id="iaso.checkDHIS.error"
+                                defaultMessage="❌ Connection Error check settings"
+                            />
+                        )}
+                    </Typography>
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>

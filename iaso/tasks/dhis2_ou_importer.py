@@ -51,9 +51,12 @@ class DhisOrgunit(TypedDict):
     organisationUnitGroups: List[DhisGroup]
 
 
-def get_api(options):
-    api = Api(options["dhis2_url"], options["dhis2_user"], options["dhis2_password"])
-    return api
+def get_api(options_or_url, login, password):
+    if isinstance(options_or_url, dict):
+        options = options_or_url
+        return Api(options["dhis2_url"], options["dhis2_user"], options["dhis2_password"])
+    print(options_or_url, login, password)
+    return Api(options_or_url, login, password)
 
 
 def fetch_orgunits(api: Api) -> List[DhisOrgunit]:

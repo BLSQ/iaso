@@ -1,3 +1,4 @@
+import dhis2
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -7,6 +8,7 @@ from rest_framework import serializers, permissions
 from rest_framework.generics import get_object_or_404
 
 from ..tasks.dhis2_ou_exporter import get_api_from_credential
+from ..tasks.dhis2_ou_importer import get_api
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
@@ -126,6 +128,42 @@ class DataSourceSerializer(serializers.ModelSerializer):
         return data_source
 
 
+class TestCredentialSerializer(serializers.Serializer):
+    dhis2_url = serializers.CharField()
+    dhis2_login = serializers.CharField()
+    dhis2_password = serializers.CharField(required=False, allow_blank=True)
+    data_source = serializers.PrimaryKeyRelatedField(queryset=DataSource.objects.all(), required=False)
+
+    def test_api(self):
+        self.is_valid(raise_exception=True)
+        data = self.validated_data
+
+        password = data["dhis2_password"]
+        # Since we obviously don't send password to front but may want to test an
+        # existing setup, if url is same we reuse the current password
+        ds: DataSource = data["data_source"]
+        if not password and ds and ds.credentials and ds.credentials.url == data["dhis2_url"]:
+            password = ds.credentials.password
+
+        if not password:
+            raise serializers.ValidationError({"dhis2_password": ["This field may not be blank."]})
+
+        api = get_api(
+            data["dhis2_url"],
+            data["dhis2_login"],
+            password,
+        )
+
+        try:
+            rep = api.get("system/ping")
+        except dhis2.exceptions.RequestException as err:
+            if err.code == 401:
+                print(err)
+                raise serializers.ValidationError({"dhis2_password": ["Invalid user or password"]})
+            raise serializers.ValidationError({"dhis2_password": [err.description]})
+        return rep
+
+
 class DataSourceViewSet(ModelViewSet):
     """Data source API
 
@@ -153,15 +191,9 @@ class DataSourceViewSet(ModelViewSet):
             sources = sources.filter(id__in=useful_sources)
         return sources.order_by(*order)
 
-    @action(methods=["POST"], detail=True, serializer_class=serializers.Serializer)
-    def ping(self, request, pk, **kwargs):
-        data_source = get_object_or_404(self.get_queryset(), pk=pk)
-        api = get_api_from_credential(data_source.credentials)
-        if not api:
-            raise serializers.ValidationError({"dhis2_url": ["Missing credentials"]})
+    @action(methods=["POST"], detail=False, serializer_class=TestCredentialSerializer)
+    def check_dhis2(self, request):
+        serializer = TestCredentialSerializer(data=request.data)
+        serializer.test_api()
 
-        rep = api.get("system/ping")
-        if rep.status_code == 401:
-            raise serializers.ValidationError({"dhis2_password": ["Invalid user or password"]})
-        print(rep)
-        return Response(rep)
+        return Response({"test": "ok"})

@@ -115,7 +115,7 @@ export const DataSourceDialogComponent = ({
 
     const onConfirm = async closeDialog => {
         await saveDataSource(form);
-        // Notify parents to refetch. Remove if passing parent to react-query
+        // Notify parents to refetch. Remove if porting parent to react-query
         onSuccess();
         closeDialog();
     };

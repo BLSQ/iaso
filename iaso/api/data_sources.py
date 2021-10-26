@@ -132,7 +132,7 @@ class TestCredentialSerializer(serializers.Serializer):
     dhis2_url = serializers.CharField()
     dhis2_login = serializers.CharField()
     dhis2_password = serializers.CharField(required=False, allow_blank=True)
-    data_source = serializers.PrimaryKeyRelatedField(queryset=DataSource.objects.all(), required=False)
+    data_source = serializers.PrimaryKeyRelatedField(queryset=DataSource.objects.all(), required=False, allow_null=True)
 
     def test_api(self):
         self.is_valid(raise_exception=True)

@@ -231,6 +231,7 @@ export const DataSourceDialogComponent = ({
             }
             onConfirm={closeDialog => onConfirm(closeDialog)}
             onOpen={() => {
+                checkDhis2.reset();
                 setFormState(
                     initialForm(
                         defaultSourceVersion,

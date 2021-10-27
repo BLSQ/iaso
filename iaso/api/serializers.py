@@ -182,4 +182,4 @@ class OrgUnitTreeSearchSerializer(OrgUnitSerializer):
 
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "parent", "has_children","validation_status"]
+        fields = ["id", "name", "parent", "has_children", "validation_status"]

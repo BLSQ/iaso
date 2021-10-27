@@ -71,6 +71,7 @@ const IasoTreeView = ({
                     ticked={ticked}
                     parentsTicked={parentsTicked}
                     scrollIntoView={scrollIntoView}
+                    validationStatus={item.validationStatus}
                 />
             ));
         },

@@ -1,20 +1,8 @@
 import React, { useCallback, useRef, useEffect } from 'react';
-import {
-    string,
-    func,
-    arrayOf,
-    bool,
-    any,
-    array,
-    oneOfType,
-    oneOf,
-} from 'prop-types';
+import { string, func, arrayOf, bool, any, array, oneOfType } from 'prop-types';
 import { TreeItem } from '@material-ui/lab';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
-import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import FlareIcon from '@material-ui/icons/Flare';
 import CheckBoxOutlineBlankOutlinedIcon from '@material-ui/icons/CheckBoxOutlineBlankOutlined';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
@@ -34,21 +22,6 @@ const styles = theme => ({
         fontSize: '16px',
         marginRight: '5px',
     },
-    valid: {
-        color: theme.palette.success.main,
-        fontSize: '16px',
-        marginLeft: '10px',
-    },
-    new: {
-        color: theme.palette.primary.main,
-        fontSize: '16px',
-        marginLeft: '10px',
-    },
-    rejected: {
-        color: theme.palette.error.main,
-        fontSize: '16px',
-        marginLeft: '10px',
-    },
 });
 
 const useStyles = makeStyles(styles);
@@ -66,7 +39,7 @@ const EnrichedTreeItem = ({
     ticked,
     parentsTicked,
     scrollIntoView,
-    validationStatus,
+    tailIcon,
 }) => {
     const classes = useStyles();
     const isExpanded = expanded.includes(id);
@@ -88,26 +61,6 @@ const EnrichedTreeItem = ({
             <CheckBoxOutlineBlankOutlinedIcon className={classes.checkbox} />
         );
     };
-    // TODO move that logic into a suffix Icon prop or something, to uncouple from OrgUnit logic
-    const makeStatusIcon = status => {
-        if (status === 'NEW')
-            return <FlareIcon fontSize="small" className={classes.new} />;
-        if (status === 'VALID')
-            return (
-                <CheckCircleOutlineIcon
-                    fontSize="small"
-                    className={classes.valid}
-                />
-            );
-        if (status === 'REJECTED')
-            return (
-                <HighlightOffIcon
-                    fontSize="small"
-                    className={classes.rejected}
-                />
-            );
-        return null;
-    };
 
     const makeLabel = (child, hasCheckbox, hasBeenTicked, tickedParent) => (
         <div
@@ -119,7 +72,8 @@ const EnrichedTreeItem = ({
         >
             {makeIcon(hasCheckbox, hasBeenTicked, tickedParent)}
             {child}
-            {makeStatusIcon(validationStatus)}
+            {/* {makeStatusIcon(validationStatus)} */}
+            {tailIcon}
         </div>
     );
 
@@ -236,8 +190,9 @@ EnrichedTreeItem.propTypes = {
     ticked: oneOfType([string, array]),
     parentsTicked: array,
     scrollIntoView: string,
-    validationStatus: oneOf(['NEW', 'VALID', 'REJECTED', null, undefined])
-        .isRequired,
+    tailIcon: any,
+    // validationStatus: oneOf(['NEW', 'VALID', 'REJECTED', null, undefined])
+    //     .isRequired,
 };
 
 EnrichedTreeItem.defaultProps = {
@@ -251,6 +206,7 @@ EnrichedTreeItem.defaultProps = {
     ticked: [],
     parentsTicked: [],
     scrollIntoView: null,
+    tailIcon: null,
 };
 
 export { EnrichedTreeItem };

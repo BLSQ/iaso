@@ -1,6 +1,9 @@
 import React from 'react';
-import OrgUnitTooltip from '../OrgUnitTooltip';
+import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
+import HighlightOffIcon from '@material-ui/icons/HighlightOff';
+import FlareIcon from '@material-ui/icons/Flare';
 import { getOrgUnitAncestors } from '../../utils';
+import OrgUnitTooltip from '../OrgUnitTooltip';
 
 const formatInitialSelectedIds = orgUnits => {
     if (!orgUnits) return [];
@@ -41,6 +44,23 @@ const adaptMap = value => {
                     ), // removing last entry in the array to avoid expanding it
         )
         .flat();
+};
+
+export const makeValidationStatusIcon = classes => orgUnit => {
+    if (orgUnit?.validationStatus === 'NEW')
+        return <FlareIcon fontSize="small" className={classes.new} />;
+    if (orgUnit?.validationStatus === 'VALID')
+        return (
+            <CheckCircleOutlineIcon
+                fontSize="small"
+                className={classes.valid}
+            />
+        );
+    if (orgUnit?.validationStatus === 'REJECTED')
+        return (
+            <HighlightOffIcon fontSize="small" className={classes.rejected} />
+        );
+    return null;
 };
 
 export {

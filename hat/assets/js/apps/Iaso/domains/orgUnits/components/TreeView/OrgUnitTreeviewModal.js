@@ -9,17 +9,39 @@ import {
     string,
 } from 'prop-types';
 import { isEqual } from 'lodash';
+import { makeStyles } from '@material-ui/core/styles';
 import { TreeViewWithSearch } from './TreeViewWithSearch';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { MESSAGES } from './messages';
 import { getRootData, getChildrenData, searchOrgUnits } from './requests';
 import { OrgUnitLabel, getOrgUnitAncestors } from '../../utils';
+
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
 import {
     formatInitialSelectedIds,
     formatInitialSelectedParents,
     tooltip,
+    makeValidationStatusIcon,
 } from './utils';
+
+const styles = theme => ({
+    valid: {
+        color: theme.palette.success.main,
+        fontSize: '16px',
+        marginLeft: '10px',
+    },
+    new: {
+        color: theme.palette.primary.main,
+        fontSize: '16px',
+        marginLeft: '10px',
+    },
+    rejected: {
+        color: theme.palette.error.main,
+        fontSize: '16px',
+        marginLeft: '10px',
+    },
+});
+const useStyles = makeStyles(styles);
 
 const OrgUnitTreeviewModal = ({
     titleMessage,
@@ -34,6 +56,7 @@ const OrgUnitTreeviewModal = ({
     version,
     required,
 }) => {
+    const classes = useStyles();
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
 
     const [selectedOrgUnitsIds, setSelectedOrgUnitsIds] = useState(
@@ -184,6 +207,7 @@ const OrgUnitTreeviewModal = ({
                 preexpanded={selectedOrgUnitParents}
                 onUpdate={onUpdate}
                 selectedData={selectedOrgUnits}
+                tailIcon={makeValidationStatusIcon(classes)}
             />
         </ConfirmCancelDialogComponent>
     );

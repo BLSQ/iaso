@@ -40,6 +40,7 @@ const TreeViewWithSearch = ({
     preselected, // TODO rename
     preexpanded, // TODO rename
     selectedData,
+    tailIcon,
 }) => {
     const [data, setData] = useState(formatInitialSelectedData(selectedData));
     const [selected, setSelected] = useState(
@@ -155,6 +156,7 @@ const TreeViewWithSearch = ({
                 ticked={ticked}
                 parentsTicked={adaptMap(parentsTicked)}
                 scrollIntoView={scrollIntoView}
+                tailIcon={tailIcon}
             />
         </>
     );
@@ -180,6 +182,7 @@ TreeViewWithSearch.propTypes = {
     // preexpanded is a Map
     preexpanded: any,
     selectedData: oneOfType([object, array]),
+    tailIcon: func,
 };
 
 TreeViewWithSearch.defaultProps = {
@@ -196,6 +199,7 @@ TreeViewWithSearch.defaultProps = {
     preselected: null,
     preexpanded: null,
     selectedData: [],
+    tailIcon: () => null,
 };
 
 export { TreeViewWithSearch };

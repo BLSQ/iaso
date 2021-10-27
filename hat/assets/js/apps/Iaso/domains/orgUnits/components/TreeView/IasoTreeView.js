@@ -41,6 +41,7 @@ const IasoTreeView = ({
     ticked,
     parentsTicked,
     scrollIntoView,
+    tailIcon,
 }) => {
     const classes = useStyles();
     const fetchChildrenData = useCallback(getChildrenData, [getChildrenData]);
@@ -71,7 +72,7 @@ const IasoTreeView = ({
                     ticked={ticked}
                     parentsTicked={parentsTicked}
                     scrollIntoView={scrollIntoView}
-                    validationStatus={item.validationStatus}
+                    tailIcon={tailIcon(item)}
                 />
             ));
         },
@@ -88,6 +89,7 @@ const IasoTreeView = ({
             ticked,
             parentsTicked,
             scrollIntoView,
+            tailIcon,
         ],
     );
     return (
@@ -134,6 +136,7 @@ IasoTreeView.propTypes = {
     ticked: oneOfType([string, arrayOf(string)]),
     parentsTicked: array,
     scrollIntoView: string,
+    tailIcon: func,
 };
 
 IasoTreeView.defaultProps = {
@@ -148,6 +151,7 @@ IasoTreeView.defaultProps = {
     ticked: [],
     parentsTicked: [],
     scrollIntoView: null,
+    tailIcon: () => null,
 };
 
 export { IasoTreeView };

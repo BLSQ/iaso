@@ -27,6 +27,7 @@ import MESSAGES from '../constants/messages';
 import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import ImportLineListDialog from '../components/ImportLineListDialog';
 import { genUrl } from '../utils/routing';
+import { getApiParamDateString } from '../../../../../hat/assets/js/apps/Iaso/utils/dates';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
@@ -51,8 +52,8 @@ const Dashboard = ({ router }) => {
         order,
         countries: params.countries,
         search: params.search,
-        r1StartFrom: params.r1StartFrom,
-        r1StartTo: params.r1StartTo,
+        r1StartFrom: getApiParamDateString(params.r1StartFrom),
+        r1StartTo: getApiParamDateString(params.r1StartTo),
     });
 
     const { data: campaigns = [], status } = query;

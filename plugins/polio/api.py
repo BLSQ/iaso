@@ -14,6 +14,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import routers, filters, viewsets, serializers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db.models import Value, IntegerField, TextField, UUIDField
+from collections import defaultdict
 
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
@@ -356,6 +358,85 @@ def get_url_content(url, login, password, minutes=60):
     return j
 
 
+def get_facility_id(district_name, facility_name, facilities_dict):
+    facility_list = facilities_dict.get(facility_name)
+    if facility_list is None:
+        return None
+    if len(facility_list) == 1:
+        return facility_list[0].id
+    if len(facility_list) > 1:
+
+        for facility in facility_list:
+            if facility.parent.name.lower() == district_name.lower() or district_name in facility.parent.aliases:
+                return facility.id
+
+    return None
+
+
+def handle_ona_request_with_key(request, key):
+    as_csv = request.GET.get("format", None) == "csv"
+    config = get_object_or_404(Config, slug=key)
+    res = []
+    failure_count = 0
+    campaigns = Campaign.objects.all()
+    form_count = 0
+    for config in config.content:
+        forms = get_url_content(
+            url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
+        )
+        country = OrgUnit.objects.get(id=config["country_id"])
+        facilities = (
+            OrgUnit.objects.hierarchy(country)
+            .filter(org_unit_type_id__category="HF")
+            .only("name", "id", "parent")
+            .prefetch_related("parent")
+        )
+        facilities_dict = defaultdict(list)
+        for f in facilities:
+            facilities_dict[f.name].append(f)
+
+        for form in forms:
+            try:
+                today = datetime.strptime(form["today"], "%Y-%m-%d").date()
+                campaign = find_campaign(campaigns, today, country)
+                district_name = form.get("District", None)
+                facility_name = form.get("facility", None)
+
+                if district_name and facility_name:
+                    form["facility_id"] = get_facility_id(district_name, facility_name, facilities_dict)
+                else:
+                    form["facility_id"] = None
+
+                form["country"] = country.name
+
+                if campaign:
+                    form["campaign_id"] = campaign.id
+                    form["epid"] = campaign.epid
+                    form["obr"] = campaign.obr_name
+                else:
+                    form["campaign_id"] = None
+                    form["epid"] = None
+                    form["obr"] = None
+                res.append(form)
+                form_count += 1
+            except:
+                print("failed parsing of ", form)
+                failure_count += 1
+    print("parsed:", len(res), "failed:", failure_count)
+    # print("all_keys", all_keys)
+    res = convert_dicts_to_table(res)
+
+    if as_csv:
+        response = HttpResponse(content_type="text/csv")
+        writer = csv.writer(response)
+        i = 1
+        for item in res:
+            writer.writerow(item)
+        return response
+    else:
+        return JsonResponse(res, safe=False)
+
+
 class VaccineStocksViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform Vaccine Stocks data from existing ODK forms stored in ONA.
@@ -363,36 +444,76 @@ class VaccineStocksViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-        as_csv = request.GET.get("format", None) == "csv"
-        config = get_object_or_404(Config, slug="vaccines")
-        res = []
-        failure_count = 0
-        campaigns = Campaign.objects.all()
-        form_count = 0
-        for config in config.content:
-            forms = get_url_content(
-                url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
-            )
-            country = OrgUnit.objects.get(id=config["country_id"])
+        return handle_ona_request_with_key(request, "vaccines")
 
-            for form in forms:
-                today = datetime.strptime(form["today"], "%Y-%m-%d").date()
-                campaign = find_campaign(campaigns, today, country)
-                form["country"] = country.name
-                if campaign:
-                    form["epid"] = campaign.epid
-                    form["obr"] = campaign.obr_name
-                else:
-                    print("campaign not found")
-                res.append(form)
-                form_count += 1
-        print("parsed:", len(res), "failed:", failure_count)
-        # print("all_keys", all_keys)
-        res = convert_dicts_to_table(res)
+
+class FormAStocksViewSet(viewsets.ViewSet):
+    """
+    Endpoint used to transform Vaccine Stocks data from existing ODK forms stored in ONA.
+    sample config: [{"url": "https://afro.who.int/api/v1/data/yyy", "login": "d", "country": "hyrule", "password": "zeldarules", "country_id": 2115781}]
+    """
+
+    def list(self, request):
+        return handle_ona_request_with_key(request, "forma")
+
+
+def org_unit_as_array(o):
+    res = [o.campaign_id, o.campaign_obr, o.id, o.name, o.org_unit_type.name]
+
+    parent = o
+    for i in range(4):
+        if parent:
+            parent = parent.parent
+        if parent:
+            res.extend([parent.id, parent.name])
+        else:
+            res.extend((None, None))
+    return res
+
+
+class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
+    def list(self, request):
+        org_unit_type = request.GET.get("org_unit_type_id", None)
+        as_csv = request.GET.get("format", None) == "csv"
+        campaigns = Campaign.objects.all()
+        queryset = OrgUnit.objects.none()
+
+        for campaign in campaigns:
+            districts = OrgUnit.objects.filter(groups=campaign.group_id)
+            if districts:
+                all_facilities = OrgUnit.objects.hierarchy(districts)
+                if org_unit_type:
+                    all_facilities = all_facilities.filter(org_unit_type_id=org_unit_type)
+                all_facilities = (
+                    all_facilities.prefetch_related("parent")
+                    .prefetch_related("parent__parent")
+                    .prefetch_related("parent__parent__parent")
+                    .prefetch_related("parent__parent__parent__parent")
+                )
+                all_facilities = all_facilities.annotate(campaign_id=Value(campaign.id, UUIDField()))
+                all_facilities = all_facilities.annotate(campaign_obr=Value(campaign.obr_name, TextField()))
+                queryset = queryset.union(all_facilities)
+
+        headers = [
+            "campaign_id",
+            "campaign_obr",
+            "org_unit_id",
+            "org_unit_name",
+            "type",
+            "parent1_id",
+            "parent1_name",
+            "parent2_id",
+            "parent2_name",
+            "parent3_id",
+            "parent3_name",
+            "parent4_id",
+            "parent4_name",
+        ]
+        res = [headers]
+        res.extend([org_unit_as_array(o) for o in queryset])
         if as_csv:
             response = HttpResponse(content_type="text/csv")
             writer = csv.writer(response)
-            i = 1
             for item in res:
                 writer.writerow(item)
             return response
@@ -472,5 +593,7 @@ router.register(r"polio/preparedness", PreparednessViewSet)
 router.register(r"polio/im", IMViewSet, basename="IM")
 router.register(r"polio/imstats", IMViewSet2, basename="imstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
+router.register(r"polio/forma", FormAStocksViewSet, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
+router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")

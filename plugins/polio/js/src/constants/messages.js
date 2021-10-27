@@ -575,6 +575,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.search',
         defaultMessage: 'Search',
     },
+    fastPrevious: {
+        id: 'iaso.polio.label.calendar.fastPrevious',
+        defaultMessage: 'Previous 4 weeks',
+    },
+    previous: {
+        id: 'iaso.polio.label.calendar.previous',
+        defaultMessage: 'Previous week',
+    },
+    next: {
+        id: 'iaso.polio.label.calendar.next',
+        defaultMessage: 'Next week',
+    },
+    fastNext: {
+        id: 'iaso.polio.label.calendar.fastNext',
+        defaultMessage: 'Next 4 weeks',
+    },
+    selectDate: {
+        id: 'iaso.polio.label.calendar.selectDate',
+        defaultMessage: 'Select a date',
+    },
+    clear: {
+        id: 'iaso.polio.label.clear',
+        defaultMessage: 'Clear',
+    },
 });
 
 export default MESSAGES;

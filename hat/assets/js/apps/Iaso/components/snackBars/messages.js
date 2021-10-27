@@ -52,7 +52,7 @@ const MESSAGES = defineMessages({
     fetchEnketoError: {
         id: 'iaso.snackBar.fetchEnketoError',
         defaultMessage:
-            'Failed to upload to enketo, either the record is currently edited or enketo is not available',
+            'Failed to upload to enketo, either the submission is currently edited or enketo is not available',
     },
     fetchSourcesError: {
         id: 'iaso.snackBar.fetchSourcesError',

@@ -1,11 +1,11 @@
-var path = require('path');
-var webpack = require('webpack');
-var BundleTracker = require('webpack-bundle-tracker');
+const path = require('path');
+const webpack = require('webpack');
+const BundleTracker = require('webpack-bundle-tracker');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // Switch here for french
 // remember to switch in webpack.dev.js and
 // django settings as well
-var LOCALE = 'fr';
+const LOCALE = 'fr';
 
 module.exports = {
     // fail the entire build on 'module not found'

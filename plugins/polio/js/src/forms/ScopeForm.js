@@ -63,7 +63,7 @@ const separate = (array, referenceArray) => {
 const findRegion = (shape, regionShapes) => {
     return regionShapes.filter(
         regionShape => regionShape.id === shape.parent_id,
-    )[0].name;
+    )[0]?.name;
 };
 
 export const ScopeForm = () => {
@@ -210,6 +210,9 @@ export const ScopeForm = () => {
     };
 
     const sortShapesForTable = useCallback(() => {
+        if (!regionShapes) {
+            return null;
+        }
         if (sortFocus === 'DISTRICT' && sortBy === 'asc') {
             return districtShapes?.filter(shape =>
                 group.org_units.includes(shape.id),

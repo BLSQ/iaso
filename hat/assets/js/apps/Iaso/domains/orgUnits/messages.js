@@ -227,7 +227,7 @@ const MESSAGES = defineMessages({
     },
     instances_count: {
         id: 'iaso.orgUnits.instances_count',
-        defaultMessage: "Nombre d'instances",
+        defaultMessage: 'Number of submissions',
     },
     parent: {
         id: 'iaso.label.parent',

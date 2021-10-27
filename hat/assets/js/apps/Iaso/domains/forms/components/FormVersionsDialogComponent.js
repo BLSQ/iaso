@@ -137,7 +137,7 @@ const FormVersionsDialogComponent = ({
             <ConfirmCancelDialogComponent
                 allowConfirm={allowConfirm()}
                 onCancel={handleCancel}
-                maxWidth="xs"
+                maxWidth="sm"
                 titleMessage={titleMessage}
                 onConfirm={onConfirm}
                 cancelMessage={MESSAGES.cancel}

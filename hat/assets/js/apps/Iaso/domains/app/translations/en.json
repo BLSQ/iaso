@@ -1,7 +1,7 @@
 {
     "PeriodSelectorComponent.label.apply": "Apply",
-    "blsq.treeview.label.selectMultiple": "Select org Unit(s)",
-    "blsq.treeview.label.selectSingle": "Select an org Unit",
+    "blsq.treeview.label.selectMultiple": "Select org unit(s)",
+    "blsq.treeview.label.selectSingle": "Select an org unit",
     "blsq.treeview.loading": "Loading",
     "blsq.treeview.search.cancel": "Cancel",
     "blsq.treeview.search.confirm": "Confirm",

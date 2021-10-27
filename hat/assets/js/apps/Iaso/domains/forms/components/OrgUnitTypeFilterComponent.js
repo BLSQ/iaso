@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Box, Chip, Typography } from '@material-ui/core';
+import { Box, Typography } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import { Select, useSafeIntl } from 'bluesquare-components';
+import { Select, useSafeIntl, renderTags } from 'bluesquare-components';
 
 import { fetchSubOrgUnitsByType } from '../../../utils/requests';
 
@@ -136,20 +136,7 @@ const OrgUnitTypeFilterComponent = props => {
                 onChange={newValue => {
                     hanldeOnChange(newValue);
                 }}
-                renderTags={(tagValue, getTagProps) =>
-                    tagValue
-                        .filter(option => option)
-                        .map((option, index) => (
-                            <Chip
-                                style={{
-                                    backgroundColor: option.color,
-                                    color: 'white',
-                                }}
-                                label={option.short_name || option.name}
-                                {...getTagProps({ index })}
-                            />
-                        ))
-                }
+                renderTags={renderTags(o => o.short_name || o.name)}
             />
         </Box>
     );

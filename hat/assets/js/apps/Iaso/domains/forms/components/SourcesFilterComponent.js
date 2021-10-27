@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import PropTypes from 'prop-types';
-import { Box, Chip, Typography } from '@material-ui/core';
+import { Box, Typography } from '@material-ui/core';
 
-import { Select, useSafeIntl } from 'bluesquare-components';
+import { Select, useSafeIntl, renderTags } from 'bluesquare-components';
 
 import { fetchAssociatedOrgUnits } from '../../../utils/requests';
 
@@ -72,20 +72,7 @@ const SourcesFilterComponent = ({
                 options={sources}
                 returnFullObject
                 onChange={handleChange}
-                renderTags={(tagValue, getTagProps) =>
-                    tagValue
-                        .filter(option => option)
-                        .map((option, index) => (
-                            <Chip
-                                style={{
-                                    backgroundColor: option.color,
-                                    color: 'white',
-                                }}
-                                label={option.name}
-                                {...getTagProps({ index })}
-                            />
-                        ))
-                }
+                renderTags={renderTags(o => o.name)}
             />
         </Box>
     );

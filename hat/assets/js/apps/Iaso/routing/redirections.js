@@ -1,9 +1,10 @@
 import React from 'react';
-import { Redirect } from 'react-router';
+import { Redirect, Route } from 'react-router';
 import { baseUrls } from '../constants/urls';
 import { getChipColors } from '../constants/chipColors';
 
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
+import Page404 from '../components/errors/Page404';
 
 const addRoutes = baseRoutes =>
     baseRoutes.concat([
@@ -32,7 +33,11 @@ const addRoutes = baseRoutes =>
             path={baseUrls.orgUnitTypes}
             to={`${baseUrls.orgUnitTypes}/order/name/pageSize/20/page/1`}
         />,
-        <Redirect path="/*" to={baseUrls.error404} />,
+        // Catch all route, need to be at the end
+        <Route
+            path="/*"
+            component={({ location }) => <Page404 location={location} />}
+        />,
     ]);
 
 export { addRoutes };

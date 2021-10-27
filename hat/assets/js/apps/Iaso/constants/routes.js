@@ -527,6 +527,5 @@ export const routeConfigs = [
     orgUnitTypesPath,
     pagesPath,
     page401,
-    page404,
     page500,
 ];

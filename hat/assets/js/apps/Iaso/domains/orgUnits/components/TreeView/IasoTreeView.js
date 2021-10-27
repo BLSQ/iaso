@@ -55,26 +55,28 @@ const IasoTreeView = ({
     const makeChildren = useCallback(
         data => {
             if (!data) return null;
-            return data.map(item => (
-                <EnrichedTreeItem
-                    label={item[labelField]}
-                    id={item[nodeField].toString()}
-                    data={item.data}
-                    key={`RootTreeItem ${item[nodeField]}`}
-                    fetchChildrenData={fetchChildrenData}
-                    expanded={expanded}
-                    selected={selected}
-                    hasChildren={item.hasChildren}
-                    toggleOnLabelClick={toggleOnLabelClick}
-                    onCheckBoxClick={onCheckBoxClick}
-                    onLabelClick={onLabelClick}
-                    withCheckbox={multiselect}
-                    ticked={ticked}
-                    parentsTicked={parentsTicked}
-                    scrollIntoView={scrollIntoView}
-                    tailIcon={tailIcon(item)}
-                />
-            ));
+            return data.map(item => {
+                return (
+                    <EnrichedTreeItem
+                        label={item[labelField]}
+                        id={item[nodeField].toString()}
+                        data={item.data}
+                        key={`RootTreeItem ${item[nodeField]}`}
+                        fetchChildrenData={fetchChildrenData}
+                        expanded={expanded}
+                        selected={selected}
+                        hasChildren={item.hasChildren}
+                        toggleOnLabelClick={toggleOnLabelClick}
+                        onCheckBoxClick={onCheckBoxClick}
+                        onLabelClick={onLabelClick}
+                        withCheckbox={multiselect}
+                        ticked={ticked}
+                        parentsTicked={parentsTicked}
+                        scrollIntoView={scrollIntoView}
+                        tailIcon={tailIcon}
+                    />
+                );
+            });
         },
         [
             labelField,

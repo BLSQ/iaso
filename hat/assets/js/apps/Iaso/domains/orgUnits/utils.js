@@ -177,7 +177,15 @@ export const getOrgUnitAncestorsIds = orgUnit => {
 export const getOrgUnitAncestors = orgUnit => {
     const result = new Map(
         getOrgUnitsParentsUntilRoot(orgUnit)
-            .map(parent => [parent.id, parent.name])
+            .map(parent => [
+                parent.id,
+                {
+                    name: parent.name,
+                    tailIconData: {
+                        validation_status: parent.validation_status,
+                    },
+                },
+            ])
             .reverse(),
     );
     return result;

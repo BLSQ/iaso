@@ -47,21 +47,39 @@ const adaptMap = value => {
 };
 
 export const makeValidationStatusIcon = classes => orgUnit => {
-    if (orgUnit?.validationStatus === 'NEW')
+    if (orgUnit?.validation_status === 'NEW')
         return <FlareIcon fontSize="small" className={classes.new} />;
-    if (orgUnit?.validationStatus === 'VALID')
+    if (orgUnit?.validation_status === 'VALID')
         return (
             <CheckCircleOutlineIcon
                 fontSize="small"
                 className={classes.valid}
             />
         );
-    if (orgUnit?.validationStatus === 'REJECTED')
+    if (orgUnit?.validation_status === 'REJECTED')
         return (
             <HighlightOffIcon fontSize="small" className={classes.rejected} />
         );
     return null;
 };
+
+export const orgUnitTreeviewStatusIconsStyle = theme => ({
+    valid: {
+        color: theme.palette.success.main,
+        fontSize: '16px',
+        marginLeft: '10px',
+    },
+    new: {
+        color: theme.palette.primary.main,
+        fontSize: '16px',
+        marginLeft: '10px',
+    },
+    rejected: {
+        color: theme.palette.error.main,
+        fontSize: '16px',
+        marginLeft: '10px',
+    },
+});
 
 export {
     formatInitialSelectedIds,

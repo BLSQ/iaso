@@ -22,26 +22,10 @@ import {
     formatInitialSelectedParents,
     tooltip,
     makeValidationStatusIcon,
+    orgUnitTreeviewStatusIconsStyle,
 } from './utils';
 
-const styles = theme => ({
-    valid: {
-        color: theme.palette.success.main,
-        fontSize: '16px',
-        marginLeft: '10px',
-    },
-    new: {
-        color: theme.palette.primary.main,
-        fontSize: '16px',
-        marginLeft: '10px',
-    },
-    rejected: {
-        color: theme.palette.error.main,
-        fontSize: '16px',
-        marginLeft: '10px',
-    },
-});
-const useStyles = makeStyles(styles);
+const useStyles = makeStyles(orgUnitTreeviewStatusIconsStyle);
 
 const OrgUnitTreeviewModal = ({
     titleMessage,
@@ -62,6 +46,7 @@ const OrgUnitTreeviewModal = ({
     const [selectedOrgUnitsIds, setSelectedOrgUnitsIds] = useState(
         formatInitialSelectedIds(initialSelection),
     );
+    // Using this value to generate TruncatedTree and tell the Treeview which nodes are already expanded
     const [selectedOrgUnitParents, setSelectedOrgUnitParents] = useState(
         formatInitialSelectedParents(initialSelection),
     );
@@ -179,6 +164,7 @@ const OrgUnitTreeviewModal = ({
                     placeholder={titleMessage}
                     required={required}
                     disabled={disabled}
+                    tailIcon={makeValidationStatusIcon(classes)}
                 />
             )}
             titleMessage={titleMessage}

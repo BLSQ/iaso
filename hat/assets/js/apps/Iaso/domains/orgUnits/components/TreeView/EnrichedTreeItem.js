@@ -72,8 +72,7 @@ const EnrichedTreeItem = ({
         >
             {makeIcon(hasCheckbox, hasBeenTicked, tickedParent)}
             {child}
-            {/* {makeStatusIcon(validationStatus)} */}
-            {tailIcon}
+            {data && tailIcon(data)}
         </div>
     );
 
@@ -95,24 +94,26 @@ const EnrichedTreeItem = ({
 
     const makeSubTree = subTreeData => {
         if (!subTreeData) return null;
-        return subTreeData.map(unit => (
-            <EnrichedTreeItem
-                key={`TreeItem ${unit.id}`}
-                label={unit.name || `id: ${unit.id.toString()}`}
-                id={unit.id.toString()}
-                fetchChildrenData={fetchChildrenData}
-                expanded={expanded}
-                hasChildren={unit.hasChildren}
-                toggleOnLabelClick={toggleOnLabelClick}
-                onLabelClick={onLabelClick}
-                data={unit.data ?? null}
-                withCheckbox={withCheckbox}
-                ticked={ticked}
-                parentsTicked={parentsTicked}
-                scrollIntoView={scrollIntoView}
-                validationStatus={unit.validationStatus}
-            />
-        ));
+        return subTreeData.map(unit => {
+            return (
+                <EnrichedTreeItem
+                    key={`TreeItem ${unit.id}`}
+                    label={unit.name || `id: ${unit.id.toString()}`}
+                    id={unit.id.toString()}
+                    fetchChildrenData={fetchChildrenData}
+                    expanded={expanded}
+                    hasChildren={unit.hasChildren}
+                    toggleOnLabelClick={toggleOnLabelClick}
+                    onLabelClick={onLabelClick}
+                    data={unit.data ?? null}
+                    withCheckbox={withCheckbox}
+                    ticked={ticked}
+                    parentsTicked={parentsTicked}
+                    scrollIntoView={scrollIntoView}
+                    tailIcon={tailIcon}
+                />
+            );
+        });
     };
     if (isExpanded && isLoading) {
         return (
@@ -190,9 +191,7 @@ EnrichedTreeItem.propTypes = {
     ticked: oneOfType([string, array]),
     parentsTicked: array,
     scrollIntoView: string,
-    tailIcon: any,
-    // validationStatus: oneOf(['NEW', 'VALID', 'REJECTED', null, undefined])
-    //     .isRequired,
+    tailIcon: func,
 };
 
 EnrichedTreeItem.defaultProps = {
@@ -206,7 +205,7 @@ EnrichedTreeItem.defaultProps = {
     ticked: [],
     parentsTicked: [],
     scrollIntoView: null,
-    tailIcon: null,
+    tailIcon: () => null,
 };
 
 export { EnrichedTreeItem };

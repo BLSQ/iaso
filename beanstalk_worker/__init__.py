@@ -42,11 +42,9 @@ def task_decorator(task_name=""):
                 return the_task
             else:  # enqueue the task
                 task = Task()
-                user = kwargs.pop("user", None)
-
-                if user:
-                    task.account = user.iaso_profile.account
-                    task.launcher = user
+                user = kwargs.pop("user")
+                task.account = user.iaso_profile.account
+                task.launcher = user
                 task.name = task_name
                 task.params = {"args": args, "kwargs": kwargs, "module": func.__module__, "method": func.__name__}
                 # Save it here so we can have the id

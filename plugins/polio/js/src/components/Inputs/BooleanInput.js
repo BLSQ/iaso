@@ -17,11 +17,9 @@ export const BooleanInput = ({ field = {}, label } = {}) => {
 
 BooleanInput.defaultProps = {
     field: {},
-    // form: {},
 };
 
 BooleanInput.propTypes = {
     field: PropTypes.object,
-    // form: PropTypes.object,
     label: PropTypes.string.isRequired,
 };

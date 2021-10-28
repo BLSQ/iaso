@@ -101,6 +101,9 @@ class PostgresTaskService(_TaskServiceBase):
             count += 1
         return count
 
+    def clear(self):
+        Task.objects.filter(status=QUEUED).update(status=KILLED)
+
 
 class TaskService(_TaskServiceBase):
     def _enqueue(self, body):

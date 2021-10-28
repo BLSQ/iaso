@@ -155,7 +155,8 @@ class OrgUnitPopupComponent extends Component {
                                         size="small"
                                     >
                                         <Link
-                                            to={`${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}`}
+                                            target="_blank"
+                                            to={`${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}/tab/infos`}
                                             className={classes.linkButton}
                                         >
                                             <FormattedMessage

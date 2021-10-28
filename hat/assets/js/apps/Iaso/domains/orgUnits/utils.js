@@ -228,3 +228,27 @@ export const getMarkerList = (
         })}
     />
 );
+
+export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
+    let sources = [];
+    links.forEach(l => {
+        const tempSources = getSourcesWithoutCurrentSource(
+            coloredSources,
+            currentOrgUnit.source_id,
+        );
+        const isSelectedSource = sourceId =>
+            sources.find(ss => ss.id === sourceId);
+        // getting the org unit source linked to current one and preselect them
+        const linkSources = tempSources.filter(
+            s =>
+                (s.id === l.source.source_id &&
+                    !isSelectedSource(l.source.source_id)) ||
+                (s.id === l.destination.source_id &&
+                    !isSelectedSource(l.destination.source_id)),
+        );
+        if (linkSources.length > 0) {
+            sources = sources.concat(linkSources);
+        }
+    });
+    return sources;
+};

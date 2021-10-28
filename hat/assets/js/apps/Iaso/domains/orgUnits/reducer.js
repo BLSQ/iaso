@@ -8,10 +8,6 @@ import {
     SET_SOURCES,
     SET_GROUPS,
     SET_ORG_UNITS_LIST_FETCHING,
-    SET_SUB_ORG_UNITS_TYPES_SELECTED,
-    SET_SOURCES_SELECTED,
-    SET_FORMS_SELECTED,
-    SET_CURRENT_FORMS,
     SET_FETCHING_ORG_UNITS_TYPES,
     SET_FILTERS_UPDATED,
     SET_SUB_ORG_UNIT,
@@ -21,14 +17,8 @@ import {
 export const orgUnitsInitialState = {
     current: null,
     currentSubOrgUnit: null,
-    currentSubOrgUnitsTypesSelected: undefined,
-    currentSubOrgUnitsTypesList: [],
-    currentForms: null,
-    currentFormsSelected: [],
-    currentSourcesSelected: undefined,
     fetchingList: false,
     fetchingDetail: true,
-    fetchingSubOrgUnits: false,
     fetchingOrgUnitTypes: true,
     orgUnitsPage: {
         list: [],
@@ -81,12 +71,6 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
             const orgUnitTypes = action.payload;
             return { ...state, orgUnitTypes };
         }
-
-        case SET_CURRENT_FORMS: {
-            const currentForms = action.payload;
-            return { ...state, currentForms };
-        }
-
         case SET_SOURCES: {
             const sources = action.payload;
             return { ...state, sources, orgUnitLevel: [] };
@@ -118,28 +102,6 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_FETCHING_DETAIL: {
             const fetchingDetail = action.payload;
             return { ...state, fetchingDetail };
-        }
-
-        case SET_SUB_ORG_UNITS_TYPES_SELECTED: {
-            const {
-                currentSubOrgUnitsTypesSelected,
-                currentSubOrgUnitsTypesList,
-            } = action.payload;
-            return {
-                ...state,
-                currentSubOrgUnitsTypesSelected,
-                currentSubOrgUnitsTypesList,
-            };
-        }
-
-        case SET_FORMS_SELECTED: {
-            const currentFormsSelected = action.payload;
-            return { ...state, currentFormsSelected };
-        }
-
-        case SET_SOURCES_SELECTED: {
-            const currentSourcesSelected = action.payload;
-            return { ...state, currentSourcesSelected };
         }
 
         case SET_ORG_UNITS_LOCATIONS: {

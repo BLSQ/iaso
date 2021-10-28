@@ -109,6 +109,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',
     },
+    orgUnitsTypes: {
+        defaultMessage: 'Org unit types',
+        id: 'iaso.label.orgUnitsTypes',
+    },
     type: {
         defaultMessage: 'Type',
         id: 'iaso.orgUnits.type',
@@ -317,6 +321,10 @@ const MESSAGES = defineMessages({
     selectOrgUnit: {
         id: 'iaso.orgUnits.selectOrgUnit',
         defaultMessage: 'Please select an Org Unit',
+    },
+    ouTypesHelperText: {
+        id: 'iaso.orgUnits.ouTypesHelperText',
+        defaultMessage: 'Children org units',
     },
 });
 

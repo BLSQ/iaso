@@ -138,6 +138,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.gpeiCoordinator',
         defaultMessage: 'GPEI Coordinator',
     },
+    preventive: {
+        id: 'iaso.polio.form.label.preventive',
+        defaultMessage: 'Preventive campaign',
+    },
     selectInitialRegion: {
         id: 'iaso.polio.form.label.selectInitialRegion',
         defaultMessage: 'Select initial region',

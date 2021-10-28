@@ -50,16 +50,18 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
         });
     };
 
-    const defaultValues = {
+    const initialValues = {
         round_one: {},
         round_two: {},
         group: {
             name: 'hidden group',
             org_units: [],
         },
+        is_preventive: false,
     };
 
-    const initialValues = merge(selectedCampaign, defaultValues);
+    // Merge inplace default values with the one we get from the campaign.
+    merge(initialValues, selectedCampaign);
 
     const formik = useFormik({
         initialValues,

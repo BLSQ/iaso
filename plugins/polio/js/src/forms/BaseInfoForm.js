@@ -6,7 +6,12 @@ import { useStyles } from '../styles/theme';
 import { SendEmailButton } from '../components/Buttons/SendEmailButton';
 import { polioVacines, polioViruses } from '../constants/virus';
 import { OrgUnitsLevels } from '../components/Inputs/OrgUnitsSelect';
-import { Select, TextInput, DateInput } from '../components/Inputs';
+import {
+    BooleanInput,
+    DateInput,
+    Select,
+    TextInput,
+} from '../components/Inputs';
 import MESSAGES from '../constants/messages';
 
 export const BaseInfoForm = () => {
@@ -74,6 +79,12 @@ export const BaseInfoForm = () => {
                     />
                 </Grid>
                 <Grid item xs={6} md={6}>
+                    <Field
+                        className={classes.input}
+                        label={formatMessage(MESSAGES.preventive)}
+                        name="is_preventive"
+                        component={BooleanInput}
+                    />
                     <SendEmailButton />
                 </Grid>
                 <Grid container item spacing={2}>

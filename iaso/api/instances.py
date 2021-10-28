@@ -55,7 +55,7 @@ class HasInstancePermission(permissions.BasePermission):
         if request.method == "POST":
             return True
 
-        return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
+        return request.user.is_authenticated and (request.user.has_perm("menupermissions.iaso_forms") or request.user.has_perm("menupermissions.iaso_submissions"))
 
     def has_object_permission(self, request: Request, view, obj: Instance):
         # TODO: should not be necessary once the instances viewset uses a get_queryset that handle accounts

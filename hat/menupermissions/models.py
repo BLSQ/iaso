@@ -16,12 +16,14 @@ PROJECTS = _("Projets")
 SOURCES = _("Sources")
 TASKS = _("Tâches")
 POLIO = _("Polio")
+SUBMISSIONS = _("Soumissions")
 
 
 class CustomPermissionSupport(models.Model):
     # Used in setup_account api
     DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER = [
         "iaso_forms",
+        "iaso_submissions",
         "iaso_mappings",
         "iaso_completeness",
         "iaso_org_units",
@@ -52,4 +54,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_sources", SOURCES),
             ("iaso_data_tasks", TASKS),
             ("iaso_polio", POLIO),
+            ("iaso_submissions",SUBMISSIONS)
         )

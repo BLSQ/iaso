@@ -2,8 +2,7 @@ import decimal
 import importlib
 import json
 from datetime import datetime
-from unittest import mock
-from iaso.models.base import Task, RUNNING, QUEUED
+from iaso.models.base import Task, RUNNING, QUEUED, KILLED
 import boto3
 import dateparser
 from django.conf import settings
@@ -67,37 +66,40 @@ class _TaskServiceBase:
         return self._enqueue(body)
 
 
-class FakeTaskService(_TaskServiceBase):
-    def __init__(self):
-        self.clear()
-
+class PostgresTaskService(_TaskServiceBase):
     def _enqueue(self, body):
-        self.queue.append(body)
-        return {"result": "recorded into fake queue service"}
+        cursor = connection.cursor()
+        cursor.execute("NOTIFY NEW_TASK, ''")
+        return {"result": "recorded into DB"}
 
-    def clear(self):
-        """wipe the test queue"""
-        self.queue = []
+    def run_task(self, task):
+        params = task.params
+        print(params)
+        if not (params and "module" in params and "method" in params):
+            # This is for old task that may be in the DB but are not in the new system
+            logger.warning(f"Skipping {task} missing method in params: {params}")
+            task.status = KILLED
+            task.save()
+            return
+        self.run(params["module"], params["method"], task.id, params["args"], params["kwargs"])
 
     def run_all(self):
-        """run everything in the test queue"""
+        """run everything in the queue"""
         # clear on_commit stuff
 
         if connection.in_atomic_block:
             while connection.run_on_commit:
                 sids, func = connection.run_on_commit.pop(0)
                 func()
-
-        count = len(self.queue)
-        while self.queue:
-            b = self.queue.pop(0)
-
-            self.run_task(b)
+        count = 0
+        task = Task.objects.filter(status=QUEUED).first()
+        while task:
+            self.run_task(task)
+            logger.info("=" * 20 + " End task exec " + "=" * 20)
+            # Fetch next task
+            task = Task.objects.filter(status=QUEUED).first()
+            count += 1
         return count
-
-    def run_task(self, body):
-        with mock.patch("django.conf.settings.BEANSTALK_WORKER", True):
-            return super().run_task(body)
 
 
 class TaskService(_TaskServiceBase):

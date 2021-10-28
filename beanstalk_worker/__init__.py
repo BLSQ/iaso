@@ -48,11 +48,9 @@ def task_decorator(task_name=""):
                     task.account = user.iaso_profile.account
                     task.launcher = user
                 task.name = task_name
-
+                task.params = {"args": args, "kwargs": kwargs, "module": func.__module__, "method": func.__name__}
                 # Save it here so we can have the id
                 task.save()
-
-                task.params = {"args": args, "kwargs": kwargs, "task_id": task.id}
                 task.queue_answer = task_service.enqueue(func.__module__, func.__name__, args, kwargs, task_id=task.id)
                 task.save()
 

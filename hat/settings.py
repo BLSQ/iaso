@@ -332,7 +332,7 @@ BEANSTALK_SQS_URL = os.environ.get(
 BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
 
 if DEBUG:
-    BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.FakeTaskService"
+    BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.PostgresTaskService"
 else:
     BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
 

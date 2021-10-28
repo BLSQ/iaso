@@ -7,7 +7,7 @@ import Links from '../domains/links';
 import Runs from '../domains/links/Runs';
 import OrgUnitDetail from '../domains/orgUnits/details';
 import Completeness from '../domains/completeness';
-import Instances from '../domains/instances/index-2';
+import Instances from '../domains/instances';
 import InstanceDetail from '../domains/instances/details';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';

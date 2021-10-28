@@ -76,7 +76,7 @@ const InstancesTopBar = ({
             enrichedParams.columns = columnsWithLabelKeys;
             const cols = getInstancesVisibleColumns({
                 formatMessage,
-                instance: reduxPage?.list[0],
+                instance: reduxPage && reduxPage.list && reduxPage.list[0],
                 columns: enrichedParams.columns,
                 order: enrichedParams.order,
                 defaultOrder,

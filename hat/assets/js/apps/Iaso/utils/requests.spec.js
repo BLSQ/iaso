@@ -1,14 +1,8 @@
-import React, { useEffect, useState } from 'react';
 import { expect } from 'chai';
 import nock from 'nock';
 
 import sinon from 'sinon';
-import { ErrorBoundary } from 'bluesquare-components';
-import {
-    mockRequest,
-    mockRequestError,
-    waitFor,
-} from '../../../test/utils/requests';
+import { mockRequest, mockRequestError } from '../../../test/utils/requests';
 import {
     deleteRequest,
     getRequest,
@@ -17,7 +11,7 @@ import {
     putRequest,
     restoreRequest,
 } from '../libs/Api';
-import { requestHandler, useAPI } from './requests';
+import { requestHandler } from './requests';
 
 const URL = '/api/test';
 const FAIL_URL = '/api/fail';
@@ -151,170 +145,3 @@ const testRequestOfType = requestType => () => {
 
 describe('getRequestHandler', testRequestOfType('get'));
 describe('postRequestHandler', testRequestOfType('post'));
-describe('putRequestHandler', testRequestOfType('put'));
-describe('patchRequestHandler', testRequestOfType('patch'));
-describe('deleteRequestHandler', testRequestOfType('delete'));
-describe('restoreRequestHandler', testRequestOfType('restore'));
-
-const successfulRequest = async () => {
-    // TODO remove hard coded timeout values
-    await waitFor(100);
-    return 'data';
-};
-
-const failedRequest = async () => {
-    await waitFor(100);
-    throw new Error('Hook request failed!');
-};
-
-const refValue = { current: true };
-
-const spyRequest = sinon.spy(successfulRequest);
-const spyFailedRequest = sinon.spy(failedRequest);
-
-class UpdateableTag {
-    constructor(assign, parent) {
-        this.value = assign();
-        this.updater = assign;
-        this.parent = parent;
-    }
-
-    update() {
-        this.parent.update();
-        this.value = this.updater();
-    }
-
-    current() {
-        return this.value;
-    }
-}
-
-// eslint-disable-next-line react/prop-types
-const Component = ({ preventTrigger, additionalDeps, request }) => {
-    const [additionalDep, setAdditionalDep] = useState('additionalDep');
-    const hookParams =
-        preventTrigger || additionalDeps
-            ? {
-                  preventTrigger: preventTrigger || undefined,
-                  additionalDependencies: additionalDeps
-                      ? [additionalDep]
-                      : undefined,
-              }
-            : undefined;
-    const { data, isLoading, isError } = useAPI(request, null, hookParams);
-    useEffect(() => {
-        if (additionalDeps && additionalDep !== 'updatedDep') {
-            setAdditionalDep('updatedDep');
-        }
-    }, [additionalDep]);
-    return (
-        <ErrorBoundary>
-            <ul>
-                <li id="data">{data}</li>
-                <li id="loading">{isLoading ? 'Loading' : 'Not loading'}</li>
-                <li id="error">{isError ? 'Error' : 'No error'}</li>
-            </ul>
-        </ErrorBoundary>
-    );
-};
-
-let component;
-let refStub;
-describe.skip('useAPI', () => {
-    describe('default behaviour', () => {
-        beforeEach(() => {
-            spyRequest.resetHistory();
-            component = mount(
-                <Component
-                    preventTrigger={undefined}
-                    additionalDeps={undefined}
-                    request={spyRequest}
-                />,
-            );
-        });
-        it('makes the request', async () => {
-            expect(component.exists()).to.equal(true);
-            expect(spyRequest).to.have.been.called;
-        });
-        it('returns data with correct error state', async () => {
-            // TODO make function/class to handle refreshing of elements
-            const dataTag = new UpdateableTag(
-                () => component.find('#data').at(0),
-                component,
-            );
-            const errorTag = new UpdateableTag(
-                () => component.find('#error').at(0),
-                component,
-            );
-            expect(dataTag.current().props().children).to.equal(null);
-            expect(errorTag.current().props().children).to.equal('No error');
-            await waitFor(150);
-            dataTag.update();
-            errorTag.update();
-            expect(dataTag.current().props().children).to.equal('data');
-            expect(errorTag.current().props().children).to.equal('No error');
-        });
-        it('returns correct loading state', async () => {
-            let loadingTag = component.find('#loading').at(0);
-            expect(loadingTag.props().children).to.equal('Loading');
-            await waitFor(150);
-            component.update();
-            loadingTag = component.find('#loading').at(0);
-            expect(loadingTag.props().children).to.equal('Not loading');
-        });
-    });
-    describe('when preventTrigger is true', () => {
-        beforeEach(() => {
-            spyRequest.resetHistory();
-            component = mount(
-                <Component preventTrigger request={spyRequest} />,
-            );
-        });
-        it('does not make the request', () => {
-            expect(component.exists()).to.equal(true);
-            expect(spyRequest).to.not.have.been.called;
-        });
-    });
-    describe('when additional dependencies are defined', () => {
-        before(() => {
-            spyRequest.resetHistory();
-            component = mount(
-                <Component additionalDeps request={spyRequest} />,
-            );
-        });
-        it('makes the request when additional dependencies update', () => {
-            expect(component.exists()).to.equal(true);
-            expect(spyRequest).to.have.been.calledTwice;
-        });
-    });
-    describe('when request fails', () => {
-        before(() => {
-            spyRequest.resetHistory();
-            component = mount(<Component request={spyFailedRequest} />);
-        });
-        it('returns correct error state', async () => {
-            let dataTag = component.find('#data').at(0);
-            let errorTag = component.find('#error').at(0);
-            expect(dataTag.props().children).to.equal(null);
-            expect(errorTag.props().children).to.equal('No error');
-            await waitFor(150);
-            component.update();
-            dataTag = component.find('#data').at(0);
-            errorTag = component.find('#error').at(0);
-            expect(dataTag.props().children).to.equal(null);
-            expect(errorTag.props().children).to.equal('Error');
-        });
-    });
-    describe('when component unmounts', () => {
-        before(() => {
-            // useRef needs to be stubbed here, otherwise it will break other tests
-            refStub = sinon.stub(React, 'useRef').returns(refValue);
-            component = mount(<Component request={spyRequest} />);
-        });
-        it('stops updating its internal state', () => {
-            component.unmount();
-            expect(refValue.current).to.equal(false);
-            refStub.restore();
-        });
-    });
-});

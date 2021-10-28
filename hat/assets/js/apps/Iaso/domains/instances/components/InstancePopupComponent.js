@@ -137,6 +137,7 @@ class InstancePopupComponent extends Component {
                                         size="small"
                                     >
                                         <Link
+                                            target="_blank"
                                             to={`${baseUrls.instanceDetail}/instanceId/${currentInstance.id}`}
                                             className={classes.linkButton}
                                         >

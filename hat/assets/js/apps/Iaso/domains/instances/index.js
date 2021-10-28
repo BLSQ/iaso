@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withStyles, Tabs, Grid, Tab, Box } from '@material-ui/core';
+import { withStyles, Grid, Box } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import isEqual from 'lodash/isEqual';
 
 import {
     getTableUrl,
@@ -13,7 +12,6 @@ import {
     LoadingSpinner,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { ColumnsSelectDrawer } from '../../components/tables/ColumnSelectDrawer';
 import {
     resetInstances,
     setInstances,
@@ -33,15 +31,13 @@ import {
 
 import {
     getInstancesFilesList,
-    getInstancesVisibleColumns,
-    getInstancesColumns,
     getMetasColumns,
     getSelectionActions,
 } from './utils';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 import { getFromDateString, getToDateString } from '../../utils/dates';
 
-import TopBar from '../../components/nav/TopBarComponent';
+import { TopBar } from './components/TopBar';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
@@ -86,7 +82,6 @@ class Instances extends Component {
         this.state = {
             tableColumns: [],
             tab: props.params.tab ?? 'list',
-            visibleColumns: [],
             forceRefresh: false,
             labelKeys: [],
             formName: '',
@@ -139,13 +134,7 @@ class Instances extends Component {
     }
 
     async componentDidUpdate(prevProps) {
-        const {
-            params,
-            reduxPage,
-            intl: { formatMessage },
-            instancesSmall,
-        } = this.props;
-        const { tableColumns } = this.state;
+        const { params, instancesSmall } = this.props;
         let { possibleFields } = { ...this.state };
         if (!possibleFields) {
             possibleFields = await fetchPossibleFields(
@@ -166,27 +155,6 @@ class Instances extends Component {
             if (params.tab !== 'list' && !instancesSmall) {
                 this.fetchSmallInstances();
             }
-        }
-        if (
-            reduxPage.list &&
-            (!isEqual(reduxPage.list, prevProps.reduxPage.list) ||
-                tableColumns.length === 0)
-        ) {
-            const enrichedParams = { ...params };
-            const columnsWithLabelKeys = `${
-                params.columns
-            },${this.state.labelKeys.join(',')}`;
-            enrichedParams.columns = columnsWithLabelKeys;
-            this.changeVisibleColumns(
-                getInstancesVisibleColumns({
-                    formatMessage,
-                    instance: reduxPage.list[0],
-                    columns: enrichedParams.columns,
-                    order: enrichedParams.order,
-                    defaultOrder,
-                    possibleFields,
-                }),
-            );
         }
     }
 
@@ -264,12 +232,6 @@ class Instances extends Component {
         });
     }
 
-    goBack() {
-        const { params, router } = this.props;
-        this.props.setInstances([], params, 0, 0);
-        router.goBack();
-    }
-
     fetchSmallInstances() {
         const { dispatch } = this.props;
         const urlSmall = this.getEndpointUrl(false, '', true);
@@ -307,47 +269,6 @@ class Instances extends Component {
         });
     }
 
-    changeVisibleColumns(visibleColumns) {
-        const {
-            intl: { formatMessage },
-            redirectToReplace,
-            params,
-        } = this.props;
-
-        const tempVisibleColumns =
-            this.state.periodType === null
-                ? visibleColumns.filter(column => column.key !== 'period')
-                : visibleColumns;
-
-        const newParams = {
-            ...params,
-            columns: tempVisibleColumns
-                .filter(c => c.active)
-                .map(c => c.key)
-                .join(','),
-        };
-        this.setState(state => {
-            return {
-                ...state,
-                visibleColumns: tempVisibleColumns,
-                tableColumns: getInstancesColumns(
-                    formatMessage,
-                    tempVisibleColumns,
-                    params.showDeleted === 'true',
-                ),
-            };
-        });
-
-        redirectToReplace(baseUrl, newParams);
-    }
-
-    openInstanceDetails(instance) {
-        this.props.redirectTo(
-            `${baseUrls.instanceDetail}/instanceId/${instance.id}`,
-            {},
-        );
-    }
-
     render() {
         const {
             classes,
@@ -357,68 +278,33 @@ class Instances extends Component {
             fetching,
             intl: { formatMessage },
             router,
-            prevPathname,
-            redirectTo,
         } = this.props;
-        const { tab, tableColumns, visibleColumns, forceRefresh } = this.state;
+        const {
+            tab,
+            tableColumns,
+            forceRefresh,
+            formName,
+            periodType,
+            labelKeys,
+            possibleFields,
+        } = this.state;
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
-                    title={`${formatMessage(MESSAGES.title)}: ${
-                        this.state.formName
-                    }`}
-                    displayBackButton
-                    goBack={() => {
-                        if (prevPathname) {
-                            router.goBack();
-                        } else {
-                            redirectTo(baseUrls.forms, {});
-                        }
-                    }}
-                >
-                    <Grid container spacing={0}>
-                        <Grid xs={10} item>
-                            <Tabs
-                                value={tab}
-                                classes={{
-                                    root: classes.tabs,
-                                    indicator: classes.indicator,
-                                }}
-                                onChange={(event, newtab) =>
-                                    this.handleChangeTab(newtab)
-                                }
-                            >
-                                <Tab
-                                    value="list"
-                                    label={formatMessage(MESSAGES.list)}
-                                />
-                                <Tab
-                                    value="map"
-                                    label={formatMessage(MESSAGES.map)}
-                                />
-                                <Tab
-                                    value="files"
-                                    label={formatMessage(MESSAGES.files)}
-                                />
-                            </Tabs>
-                        </Grid>
-                        <Grid
-                            xs={2}
-                            item
-                            container
-                            alignItems="center"
-                            justifyContent="flex-end"
-                            className={classes.selectColmunsContainer}
-                        >
-                            <ColumnsSelectDrawer
-                                options={visibleColumns}
-                                setOptions={cols =>
-                                    this.changeVisibleColumns(cols)
-                                }
-                            />
-                        </Grid>
-                    </Grid>
-                </TopBar>
+                    formName={formName}
+                    router={router}
+                    tab={tab}
+                    handleChangeTab={newTab => this.handleChangeTab(newTab)}
+                    params={params}
+                    periodType={periodType}
+                    setTableColumns={newCols =>
+                        this.setState({ tableColumns: newCols })
+                    }
+                    tableColumns={tableColumns}
+                    baseUrl={baseUrl}
+                    labelKeys={labelKeys}
+                    possibleFields={possibleFields}
+                />
 
                 {fetching && <LoadingSpinner />}
                 <Box className={classes.containerFullHeightPadded}>
@@ -525,7 +411,6 @@ class Instances extends Component {
 }
 Instances.defaultProps = {
     reduxPage: undefined,
-    prevPathname: null,
     instancesSmall: null,
 };
 
@@ -544,7 +429,6 @@ Instances.propTypes = {
     resetInstances: PropTypes.func.isRequired,
     router: PropTypes.object.isRequired,
     redirectToReplace: PropTypes.func.isRequired,
-    prevPathname: PropTypes.any,
     createInstance: PropTypes.func.isRequired,
 };
 
@@ -552,7 +436,6 @@ const MapStateToProps = state => ({
     reduxPage: state.instances.instancesPage,
     instancesSmall: state.instances.instancesSmall,
     fetching: state.instances.fetching,
-    prevPathname: state.routerCustom.prevPathname,
 });
 
 const MapDispatchToProps = dispatch => ({

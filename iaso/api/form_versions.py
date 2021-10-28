@@ -130,7 +130,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 class FormVersionsViewSet(ModelViewSet):
     """Form versions API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
+    This API is restricted to authenticated users having the "menupermissions.iaso_forms" or "menupermissions.iaso_submissions" permissions.
 
     GET /api/formversions/
     GET /api/formversions/<id>
@@ -139,7 +139,10 @@ class FormVersionsViewSet(ModelViewSet):
     """
 
     serializer_class = FormVersionSerializer
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),
+    ]
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser, parsers.JSONParser)

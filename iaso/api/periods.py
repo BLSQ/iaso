@@ -10,12 +10,15 @@ class PeriodsViewSet(viewsets.ViewSet):
 
     Note: only used to list periods for a specific form (the form_id query param is mandatory).
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission.
+    This API is restricted to authenticated users having the "menupermissions.iaso_forms" or "menupermissions.iaso_submissions" permissions.
 
     GET /api/periods/?form_id=id
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),
+    ]
 
     def list(self, request):
         form_id = request.GET.get("form_id", None)

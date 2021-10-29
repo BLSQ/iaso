@@ -198,11 +198,16 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
 
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ("name", "account", "status", "created_at", "result")
+    list_display = ("name", "account", "status", "created_at", "launcher", "result_message")
     list_filter = ("account", "status", "name")
     readonly_fields = ("stacktrace", "created_at", "result")
 
+    def result_message(self, task):
+        return task.result and task.result.get("message", "")
+
     def stacktrace(self, task):
+        if not task.result:
+            return
         stack = task.result.get("stack_trace")
         return format_html("<p>{}</p><pre>{}</pre>", task.result.get("message", ""), stack)
 

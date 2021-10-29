@@ -30,7 +30,7 @@ def public_url_for_enketo(request, path):
     resolved_path = request.build_absolute_uri(path)
 
     if enketo_settings().get("ENKETO_DEV"):
-        resolved_path = resolved_path.replace("localhost", "docker-host")
+        resolved_path = resolved_path.replace("localhost:8081", "iaso:8081")
     return resolved_path
 
 

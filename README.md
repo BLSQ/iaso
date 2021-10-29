@@ -250,18 +250,13 @@ you can then log in through <http://127.0.0.1:8081/dashboard> with :
  -   user : testemail2.35.3
  -   password: testemail2.35.3
 
-### 11. Activating the Polio plugin
+### 11. Activating the Polio plugin (optional)
 
-Create a file `plugins/polio/js/.env` with the content
-
-```env
-SKIP_PREFLIGHT_CHECK=true
-PUBLIC_URL=/static/polio
-APP_ENV=local%
+Set the PLUGINS environment variable  to `polio`.
+You can do so by adding the following line in your root .env:
 ```
-
-in your root .env set
-```PLUGINS=polio```
+PLUGINS=polio
+```
 
  
 Run commands inside the docker
@@ -304,6 +299,7 @@ All the container definitions for development can be found in the
 > Postgresql uses Django ORM models for table configuration and
 > migrations.
 
+You can also have a dhis2 and db_dhis2 docker, refer to section below.
 
 ### note : docker-compose run VS docker-compose exec
 
@@ -321,25 +317,19 @@ disk space and need to be cleaned occasionally with `docker-compose rm` to recla
 Enketo
 ------
 
-To enable the Enketo editor in your local environment, you will have to
-install our fork of enketo-express:
+To submit and edit existing form submission from the browser, an Enketo service is needed. 
 
-``` {.sourceCode .shell}
-git clone https://github.com/BLSQ/enketo.git
-cd setup/docker
-docker-compose up
+To enable the Enketo editor in your local environment, include the additional docker compose configuration file for Enketo. Do so by invoking docker-compose with both files.
+```
+docker-compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up
 ```
 
-Then, you need to make sure your .env file is properly configured.
-ENKETO_URL should be set to http://192.168.1.15:81 (Replace
-192.168.1.15 by your host)
+No additional configuration is needed. The first time the docker image is launched, it will download dependencies and do a build witch may take a few minutes. Subsequents launches are faster.
 
-To seed your DB with typical example forms, see the  Import data from DHIS2 section
+You can check that the server is correctly launched. By going to http://localhost:8005
 
-Enketo and Iaso will each run separately in their own  docker-compose but still need to communicate together.
-This is done via your host, which is why you will need to change the IP in .env each time your ip change.
+To seed your DB with typical example forms editable by Enketo, see the  Import data from DHIS2 section
 
-TODO: This setup should be simplified a bit
 
 Database restore and dump
 -------------------------
@@ -359,6 +349,39 @@ cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --
 
 This will put the data in a database called iaso5. You can choose in your .env file which database is used by editing
 the `RDS_DB_NAME` settings.
+
+Local DHIS2
+-----------
+Experimental. For development if you need a local dhis2 server, you can spin up one in your docker-compose by using the `docker/docker-compose-dhis2.yml ` configuration file.
+
+Replace your invocations of `docker-compose` by `docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml` you need to specify both config files. e.g to launch the cluster:
+```
+docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
+```
+
+The DHIS2 will be available on your computer on http://localhost:8080 and is reachable from Iaso as http://dhis2:8080. The login and password are admin / district. If you use it as an import source do not set a trailing /
+
+Database file are stored in `../pgdata-dhis2` and dhis2 log and uploaded files in `docker/DHIS2_home`.
+
+### Sample dhis2 database
+You will probably require some sample data in your instance. It is possible to
+populate your DHIS2 server with sample data from a database dump like it's done
+for the official play servers. The DHIS2 database take around 3 GB.
+
+The steps as are follow:
+Download the file, stop all the docker, remove the postgres database directory, start only the database docker, load the database dump and then restart everything.
+
+```
+wget https://databases.dhis2.org/sierra-leone/2.36.4/dhis2-db-sierra-leone.sql.gz
+docker-compose down
+sudo rm ../pgdata-dhis2 -r
+docker-compose up db_dhis2
+zcat dhis2-db-sierra-leone.sql.gz| docker-compose exec -T db_dhis2 psql -U dhis dhis2 -f /dev/stdin
+docker-compose up
+cd Projects/blsq/iaso
+docker-compose up dhis2 db_dhis2
+```
+
 
 Live Bluesquare components
 --------------------------
@@ -408,7 +431,7 @@ if the formatting is respected!
 Tests and linting
 -----------------
 
-For python, we use django builtin test framework. Tests can be executed with
+For python, we use the Django builtin test framework. Tests can be executed with
 
 ``` {.sourceCode .bash}
 docker-compose exec iaso ./manage.py test
@@ -418,7 +441,7 @@ Translations
 ------------
 
 The few translation for the Django side (login and reset password email etc..)
-are separated from the test. We only translate the tempalte for now
+are separated from the test. We only translate the template for now
 not the python code (string on model or admin).
 
 When modifying or adding new strings to translate, use the following command to

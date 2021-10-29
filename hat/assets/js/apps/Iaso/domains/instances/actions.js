@@ -142,9 +142,15 @@ export const createInstance = (currentForm, payload) => dispatch => {
         org_unit_id: payload.org_unit,
         form_id: currentForm.id,
         period: payload.period,
-    }).then(createRequest => {
-        window.location = createRequest.edit_url;
-    });
+    }).then(
+        createRequest => {
+            window.location = createRequest.edit_url;
+        },
+        err => {
+            dispatch(enqueueSnackbar(errorSnackBar(null, 'Enketo', err)));
+            dispatch(setInstancesFetching(false));
+        },
+    );
 };
 
 export const createExportRequest = (filterParams, selection) => dispatch => {

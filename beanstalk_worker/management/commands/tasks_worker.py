@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.db import connection
+from django.db import connections
 from beanstalk_worker import task_service
 from logging import getLogger
 
@@ -16,6 +16,8 @@ class Command(BaseCommand):
     For local and dev, don't run more than one as it is not designed for concurrency"""
 
     def handle(self, *args, **kwargs):
+        # see `Worker connection` in services.py
+        connection = connections["worker"]
 
         cur = connection.cursor()
         cur.execute("LISTEN new_task;")

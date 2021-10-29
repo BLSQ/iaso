@@ -13,6 +13,17 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
+# Worker connection
+# The problem we had before was that, if a task launched a transaction, the progress on the transaction was not visible from the outside:
+#  we have background tasks, executed in a worker, for database heavy operation that modify or create a lot of records
+#  we execute some of them in a transaction, via transaction.atomic) so we can rollback the changes in case of error (and also speed up stuff a bit)
+#  at the same time we have a Task object in DB, on which we record the task progress (status and percentage of completion) during the execution of the task, so we can present it to the users
+#  when a task is run in a transaction, the progress cannot be seen from the web, since the transaction is not commited yet
+#
+# So to resolve this we wanted to open the Task object in a new connection, we didn't find a way in django to open
+#  directly a separate connection outside of the transaction. (transaction are tied to a database connexion)
+#  so the work around we found was to make a new database configuration in the django system, which is a copy of the original one.
+
 
 def json_dump(obj):
     if isinstance(obj, datetime):
@@ -43,7 +54,8 @@ class _TaskServiceBase:
     def run(self, module_name, method_name, task_id, args, kwargs):
         """run a task, called by the view that receives them from the queue"""
         kwargs["_immediate"] = True
-        task = Task.objects.get(id=task_id)
+        #  for the using() see Worker connection above
+        task = Task.objects.using("worker").get(id=task_id)
         if task.status == QUEUED:  # ensure a task is only run once
             task.status = RUNNING
             task.started_at = timezone.now()
@@ -92,12 +104,12 @@ class PostgresTaskService(_TaskServiceBase):
                 sids, func = connection.run_on_commit.pop(0)
                 func()
         count = 0
-        task = Task.objects.filter(status=QUEUED).first()
+        task = Task.objects.using("worker").filter(status=QUEUED).first()
         while task:
             self.run_task(task)
             logger.info("=" * 20 + " End task exec " + "=" * 20)
             # Fetch next task
-            task = Task.objects.filter(status=QUEUED).first()
+            task = Task.objects.using("worker").filter(status=QUEUED).first()
             count += 1
         return count
 

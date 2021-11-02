@@ -12,7 +12,7 @@ import {
     useOrgUnitTypes,
     postToDHIS2,
     csvPreview,
-    useDataSources,
+    useDataSourceForVersion,
 } from '../requests';
 import { orgUnitStatusAsOptions } from '../../../constants/filters';
 import {
@@ -69,7 +69,6 @@ export const ExportToDHIS2Dialog = ({
     const { data: orgUnitTypes, isLoading: areOrgUnitTypesLoading } =
         useOrgUnitTypes();
 
-    const { data: sources } = useDataSources();
     const { data: sourceVersions, isLoading: areSourceVersionsLoading } =
         useDataSourceVersions();
 
@@ -84,6 +83,12 @@ export const ExportToDHIS2Dialog = ({
         _setExportDataErrors,
         setExportData,
     ] = useFormState(initialExportData(defaultVersionId));
+
+    const sourceVersion = sourceVersions?.find(
+        v => v.id.toString() === exportData.source_version_id.value,
+    );
+    const { data: source } = useDataSourceForVersion(sourceVersion);
+    const credentials = source?.credentials;
 
     const refDataVersionId = exportData?.ref_version_id?.value;
     const sourceDataVersionId = exportData?.source_version_id?.value;
@@ -122,17 +127,6 @@ export const ExportToDHIS2Dialog = ({
         },
         [exportData, exportToDHIS2],
     );
-
-    let credentials = null;
-    if (sourceVersions && exportData.source_version_id.value) {
-        const version = sourceVersions.find(
-            v => v.id.toString() === exportData.source_version_id.value,
-        );
-        if (version) {
-            const source = sources.find(s => s.id === version.data_source);
-            credentials = source.credentials;
-        }
-    }
 
     const allowConfirm =
         Boolean(exportData.source_version_id?.value) &&

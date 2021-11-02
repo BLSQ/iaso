@@ -142,12 +142,20 @@ export const csvPreview = async data => {
         });
 };
 
-export const useDataSources = () =>
+export const useDataSourceForVersion = sourceVersion =>
     useSnackQuery(
         ['dataSources'],
         () => getRequest('/api/datasources/'),
         snackBarMessages.fetchSourcesError,
         {
-            select: data => data.sources,
+            select: data => {
+                if (sourceVersion) {
+                    const source = data.sources.find(
+                        s => s.id === sourceVersion.data_source,
+                    );
+                    return source;
+                }
+                return null;
+            },
         },
     );

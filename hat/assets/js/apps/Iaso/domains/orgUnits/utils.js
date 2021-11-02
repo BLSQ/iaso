@@ -231,7 +231,7 @@ export const getMarkerList = (
 
 export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
     let sources = [];
-    links.forEach(l => {
+    links?.forEach(l => {
         const tempSources = getSourcesWithoutCurrentSource(
             coloredSources,
             currentOrgUnit.source_id,

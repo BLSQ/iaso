@@ -54,18 +54,9 @@ const determineClassName = (items, nextItems, style) => {
 };
 const useStyles = makeStyles(styles);
 
-const TruncatedTreeview = ({ onClick, selectedItems, tailIcon }) => {
+const TruncatedTreeview = ({ onClick, selectedItems, label }) => {
     const style = useStyles();
     const mouseDownTime = useRef();
-
-    const makeLabel = item => {
-        return (
-            <>
-                {item.name}
-                {tailIcon(item.tailIconData)}
-            </>
-        );
-    };
 
     const makeTreeItems = (items, initialItems) => {
         if (items.size === 0) return null;
@@ -84,8 +75,8 @@ const TruncatedTreeview = ({ onClick, selectedItems, tailIcon }) => {
                     <ArrowDropDownIcon style={{ fontSize: 'large' }} />
                 }
                 expandIcon={<ArrowRightIcon style={{ fontSize: 'large' }} />}
-                label={makeLabel(item[1])}
-                nodeId={item[0].toString()}
+                label={label(item[1])}
+                nodeId={item[0]}
             >
                 {items.size >= 1
                     ? makeTreeItems(nextItems, initialItems)
@@ -118,11 +109,10 @@ TruncatedTreeview.propTypes = {
     onClick: func.isRequired,
     // in fact a nested map : {orgUnitId:{parentId:parentName}}
     selectedItems: any,
-    tailIcon: func,
+    label: func.isRequired,
 };
 TruncatedTreeview.defaultProps = {
     selectedItems: null,
-    tailIcon: () => null,
 };
 
 export { TruncatedTreeview };

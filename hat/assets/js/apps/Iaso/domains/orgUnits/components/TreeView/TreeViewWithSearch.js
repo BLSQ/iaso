@@ -22,8 +22,6 @@ const formatInitialSelectedData = (selectedData, multiselect) => {
 };
 
 const TreeViewWithSearch = ({
-    // labelField, // name
-    // nodeField, // id
     label,
     getChildrenData,
     getRootData,
@@ -41,7 +39,6 @@ const TreeViewWithSearch = ({
     preselected, // TODO rename
     preexpanded, // TODO rename
     selectedData,
-    tailIcon,
 }) => {
     const [data, setData] = useState(formatInitialSelectedData(selectedData));
     const [selected, setSelected] = useState(
@@ -94,7 +91,6 @@ const TreeViewWithSearch = ({
                     updatedSelectedData = [itemData];
                 }
             }
-            // console.log('updatedSelected', updatedSelectedData);
             onUpdate(newTicked, updatedParents, updatedSelectedData);
             setParentsTicked(updatedParents);
             setData(updatedSelectedData);
@@ -144,8 +140,6 @@ const TreeViewWithSearch = ({
                 toolTip={toolTip}
             />
             <IasoTreeView
-                // labelField={labelField}
-                // nodeField={nodeField}
                 label={label}
                 getChildrenData={getChildrenData}
                 getRootData={getRootData}
@@ -159,7 +153,6 @@ const TreeViewWithSearch = ({
                 ticked={ticked}
                 parentsTicked={adaptMap(parentsTicked)}
                 scrollIntoView={scrollIntoView}
-                tailIcon={tailIcon}
             />
         </>
     );
@@ -168,8 +161,6 @@ const TreeViewWithSearch = ({
 TreeViewWithSearch.propTypes = {
     getChildrenData: func,
     getRootData: func,
-    // labelField: string.isRequired,
-    // nodeField: string.isRequired,
     toggleOnLabelClick: bool,
     onSelect: func,
     minResultCount: number,
@@ -185,7 +176,6 @@ TreeViewWithSearch.propTypes = {
     // preexpanded is a Map
     preexpanded: any,
     selectedData: oneOfType([object, array]),
-    tailIcon: func,
     label: func.isRequired,
 };
 
@@ -203,7 +193,6 @@ TreeViewWithSearch.defaultProps = {
     preselected: null,
     preexpanded: null,
     selectedData: [],
-    tailIcon: () => null,
 };
 
 export { TreeViewWithSearch };

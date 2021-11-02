@@ -30,6 +30,7 @@ const tooltip = (orgUnit, icon) => (
     </OrgUnitTooltip>
 );
 
+// TODO rename
 const adaptMap = value => {
     if (!value) return null;
     return Array.from(value.entries()) // original map in array form [[key1, entry1],[key2, entry2]]
@@ -46,7 +47,7 @@ const adaptMap = value => {
         .flat();
 };
 
-export const makeValidationStatusIcon = classes => orgUnit => {
+export const makeTreeviewLabel = classes => orgUnit => {
     let icon = null;
     if (orgUnit?.validation_status === 'NEW')
         icon = <FlareIcon fontSize="small" className={classes.new} />;

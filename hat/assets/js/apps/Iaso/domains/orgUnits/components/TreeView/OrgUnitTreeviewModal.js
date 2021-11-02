@@ -21,7 +21,7 @@ import {
     formatInitialSelectedIds,
     formatInitialSelectedParents,
     tooltip,
-    makeValidationStatusIcon,
+    makeTreeviewLabel,
     orgUnitTreeviewStatusIconsStyle,
 } from './utils';
 
@@ -164,8 +164,7 @@ const OrgUnitTreeviewModal = ({
                     placeholder={titleMessage}
                     required={required}
                     disabled={disabled}
-                    // tailIcon={makeValidationStatusIcon(classes)}
-                    label={makeValidationStatusIcon(classes)}
+                    label={makeTreeviewLabel(classes)}
                 />
             )}
             titleMessage={titleMessage}
@@ -177,10 +176,9 @@ const OrgUnitTreeviewModal = ({
             allowConfirm={selectedOrgUnitsIds?.length > 0}
         >
             <TreeViewWithSearch
-                // labelField="name"
-                // nodeField="id"
                 getChildrenData={getChildrenData}
                 getRootData={getRootDataWithSource}
+                label={makeTreeviewLabel(classes)}
                 toggleOnLabelClick={toggleOnLabelClick}
                 onSelect={onOrgUnitSelect}
                 request={searchOrgUnitsWithSource}
@@ -192,10 +190,8 @@ const OrgUnitTreeviewModal = ({
                 multiselect={multiselect}
                 preselected={selectedOrgUnitsIds}
                 preexpanded={selectedOrgUnitParents}
-                onUpdate={onUpdate}
                 selectedData={selectedOrgUnits}
-                // tailIcon={makeValidationStatusIcon(classes)}
-                label={makeValidationStatusIcon(classes)}
+                onUpdate={onUpdate}
             />
         </ConfirmCancelDialogComponent>
     );

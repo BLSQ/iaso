@@ -8,7 +8,7 @@ from hat.audit import models as am
 from iaso.test import APITestCase
 from iaso.models import Task, QUEUED
 
-from beanstalk_worker import task_service
+from beanstalk_worker.services import TestTaskService
 
 
 class OrgUnitsBulkUpdateAPITestCase(APITestCase):
@@ -367,6 +367,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
     def runAndValidateTask(self, task, new_status):
         "Run all task in queue and validate that task is run"
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 1)
+        task_service = TestTaskService()
         task_service.run_all()
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 

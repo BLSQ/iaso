@@ -11,6 +11,7 @@ from django.utils import timezone
 
 from logging import getLogger
 
+
 logger = getLogger(__name__)
 
 # Worker connection
@@ -47,6 +48,11 @@ def json_load(obj):
 
 
 class _TaskServiceBase:
+    def get_queryset(self):
+        # This allow overriding in test. Since all test are run in transactions, the newly created task were not visible
+        # from the worker.
+        return Task.objects.using("worker")
+
     def run_task(self, body):
         data = json.loads(body, object_hook=json_load)
         self.run(data["module"], data["method"], data["task_id"], data["args"], data["kwargs"])
@@ -55,7 +61,7 @@ class _TaskServiceBase:
         """run a task, called by the view that receives them from the queue"""
         kwargs["_immediate"] = True
         #  for the using() see Worker connection above
-        task = Task.objects.using("worker").get(id=task_id)
+        task = self.get_queryset().get(id=task_id)
         if task.status == QUEUED:  # ensure a task is only run once
             task.status = RUNNING
             task.started_at = timezone.now()
@@ -104,17 +110,22 @@ class PostgresTaskService(_TaskServiceBase):
                 sids, func = connection.run_on_commit.pop(0)
                 func()
         count = 0
-        task = Task.objects.using("worker").filter(status=QUEUED).first()
+        task = self.get_queryset().filter(status=QUEUED).first()
         while task:
             self.run_task(task)
             logger.info("=" * 20 + " End task exec " + "=" * 20)
             # Fetch next task
-            task = Task.objects.using("worker").filter(status=QUEUED).first()
+            task = self.get_queryset().filter(status=QUEUED).first()
             count += 1
         return count
 
     def clear(self):
         Task.objects.filter(status=QUEUED).update(status=KILLED)
+
+
+class TestTaskService(PostgresTaskService):
+    def get_queryset(self):
+        return Task.objects.using("default")
 
 
 class TaskService(_TaskServiceBase):

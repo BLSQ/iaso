@@ -21,7 +21,7 @@ from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
-from .api.forms import FormsViewSet
+from .api.forms import FormsViewSet, MobileFormViewSet
 from .api.form_versions import FormVersionsViewSet
 from .api.links import LinkViewSet
 from .api.profiles import ProfilesViewSet
@@ -65,6 +65,7 @@ router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
 router.register(r"instances", InstancesViewSet, basename="instances")
 router.register(r"forms", FormsViewSet, basename="forms")
+router.register(r"mobile/forms", MobileFormViewSet, basename="formsmobile")
 router.register(r"pages", PagesViewSet, basename="pages")
 router.register(r"formversions", FormVersionsViewSet, basename="formversions")
 router.register(r"periods", PeriodsViewSet, basename="periods")

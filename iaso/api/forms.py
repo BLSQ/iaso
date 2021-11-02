@@ -260,3 +260,9 @@ class FormsViewSet(ModelViewSet):
             created_at,
             updated_at,
         ]
+
+
+class MobileFormViewSet(FormsViewSet):
+    # Filtering out forms without form versions to prevent mobile app from crashing
+    def get_queryset(self):
+        return super().get_queryset().exclude(form_versions=None)

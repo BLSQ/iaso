@@ -94,3 +94,18 @@ export const INSTANCE_METAS_FIELDS = [
         type: 'info',
     },
 ];
+
+export const filtersKeys = [
+    'withLocation',
+    'showDeleted',
+    'orgUnitTypeId',
+    'periods',
+    'status',
+    'deviceId',
+    'deviceOwnershipId',
+    'search',
+    'levels',
+    'dateFrom',
+    'dateTo',
+];
+// export const tableKeys = ['pageSize', 'formId', 'order', 'page'];

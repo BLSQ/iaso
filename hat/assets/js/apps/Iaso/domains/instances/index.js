@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import {
-    getTableUrl,
     commonStyles,
     LoadingSpinner,
     AddButton as AddButtonComponent,
@@ -14,7 +13,6 @@ import {
 import {
     resetInstances,
     setInstances,
-    setInstancesSmallDict,
     setInstancesFetching,
     createInstance,
 } from './actions';
@@ -25,9 +23,12 @@ import {
     fetchInstancesAsSmallDict,
 } from '../../utils/requests';
 
-import { getInstancesFilesList, getSelectionActions } from './utils';
-import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
-import { getFromDateString, getToDateString } from '../../utils/dates';
+import {
+    getInstancesFilesList,
+    getSelectionActions,
+    getFilters,
+    getEndpointUrl,
+} from './utils';
 
 import { TopBar } from './components/TopBar';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
@@ -43,17 +44,6 @@ import MESSAGES from './messages';
 
 const baseUrl = baseUrls.instances;
 
-const defaultOrder = 'updated_at';
-const asBackendStatus = status => {
-    if (status) {
-        return status
-            .split(',')
-            .map(s => (s === 'ERROR' ? 'DUPLICATED' : s))
-            .join(',');
-    }
-    return status;
-};
-
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     selectColmunsContainer: {
@@ -65,77 +55,35 @@ const useStyles = makeStyles(theme => ({
 
 const Instances = ({ router, params }) => {
     const classes = useStyles();
-    const reduxPage = useSelector(state => state.instances.instancesPage);
-    const instancesSmall = useSelector(state => state.instances.instancesSmall);
-    const fetching = useSelector(state => state.instances.fetching);
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
+
+    const reduxPage = useSelector(state => state.instances.instancesPage);
+    const loadingList = useSelector(state => state.instances.fetching);
+
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
+    const [loadingMap, setLoadingMap] = useState(tab === 'map');
     const [forceRefresh, setForceRefresh] = useState(false);
+    const [instancesSmall, setInstancesSmall] = useState(null);
     const [labelKeys, setLabelKeys] = useState([]);
     const [formName, setFormName] = useState('');
     const [possibleFields, setPossibleFields] = useState(null);
     const [periodType, setPeriodType] = useState(null);
 
-    const getFilters = () => {
-        const allFilters = {
-            form_id: parseInt(params.formId, 10),
-            withLocation: params.withLocation,
-            orgUnitTypeId: params.orgUnitTypeId,
-            deviceId: params.deviceId,
-            periods: params.periods,
-            status: asBackendStatus(params.status),
-            deviceOwnershipId: params.deviceOwnershipId,
-            search: params.search,
-            orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
-            dateFrom: getFromDateString(params.dateFrom),
-            dateTo: getToDateString(params.dateTo),
-            showDeleted: params.showDeleted,
-        };
-        const filters = {};
-        Object.keys(allFilters).forEach(k => {
-            if (allFilters[k]) {
-                filters[k] = allFilters[k];
-            }
-        });
-        return filters;
-    };
-    const getEndpointUrl = (
-        toExport,
-        exportType = 'csv',
-        asSmallDict = false,
-    ) => {
-        const urlParams = {
-            limit: params.pageSize ? params.pageSize : 20,
-            order: params.order ? params.order : `-${defaultOrder}`,
-            page: params.page ? params.page : 1,
-            asSmallDict: true,
-            ...getFilters(),
-        };
-        return getTableUrl(
-            'instances',
-            urlParams,
-            toExport,
-            exportType,
-            false,
-            asSmallDict,
-        );
-    };
-
-    const fetchSmallInstances = () => {
-        const urlSmall = getEndpointUrl(false, '', true);
-        dispatch(setInstancesFetching(true));
+    const fetchSmallInstances = (queryParams = params) => {
+        const urlSmall = getEndpointUrl(queryParams, false, '', true);
+        setLoadingMap(true);
         return fetchInstancesAsSmallDict(dispatch, urlSmall).then(
             smallInstancesData => {
-                dispatch(setInstancesSmallDict(smallInstancesData));
-                dispatch(setInstancesFetching(false));
+                setInstancesSmall(smallInstancesData || []);
+                setLoadingMap(false);
             },
         );
     };
 
-    const fetchInstances = (changeLoad = true) => {
-        const url = getEndpointUrl();
+    const fetchInstances = (changeLoad = true, queryParams = params) => {
+        const url = getEndpointUrl(queryParams);
         if (changeLoad) {
             dispatch(setInstancesFetching(true));
         }
@@ -146,7 +94,7 @@ const Instances = ({ router, params }) => {
             dispatch(
                 setInstances(
                     instancesData.instances,
-                    params,
+                    queryParams,
                     instancesData.count,
                     instancesData.pages,
                 ),
@@ -159,52 +107,64 @@ const Instances = ({ router, params }) => {
         });
     };
 
-    const handleChangeTab = (newTab, redirect = true) => {
-        if (redirect) {
-            const newParams = {
-                ...params,
-                newTab,
-            };
-            dispatch(redirectToReplace(baseUrl, newParams));
+    const handleChangeTab = newTab => {
+        const newParams = {
+            ...params,
+            tab: newTab,
+        };
+        if (newTab === 'map' && !instancesSmall) {
+            fetchSmallInstances(params);
         }
+        dispatch(redirectToReplace(baseUrl, newParams));
         setTab(newTab);
     };
 
-    const onSearch = () => {
-        fetchInstances();
-        if (params.tab === 'map') {
-            fetchSmallInstances();
-        } else {
-            dispatch(setInstancesSmallDict(null));
-        }
+    const onSearch = newParams => {
+        dispatch(redirectToReplace(baseUrl, newParams));
     };
 
     useEffect(() => {
+        dispatch(resetInstances);
         fetchInstances();
-    }, [params.pageSize, params.formId, params.order, params.page]);
+        if (params.tab === 'map') {
+            fetchSmallInstances(params);
+        } else {
+            setInstancesSmall(null);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        params.pageSize,
+        params.formId,
+        params.order,
+        params.page,
+        params.withLocation,
+        params.showDeleted,
+        params.orgUnitTypeId,
+        params.periods,
+        params.status,
+        params.deviceId,
+        params.deviceOwnershipId,
+        params.search,
+        params.levels,
+        params.dateFrom,
+        params.dateTo,
+    ]);
 
     useEffect(() => {
-        handleChangeTab(params.tab, false);
-        if (params.tab !== 'list' && !instancesSmall) {
-            fetchSmallInstances();
-        }
-    }, [params.tab]);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(async () => {
-        dispatch(resetInstances);
-        fetchInstances(tab !== 'map');
-        if (tab === 'map') {
-            fetchSmallInstances();
-        }
-        const formDetails = await fetchFormDetailsForInstance(params.formId);
-        const newPossibleFields = await fetchPossibleFields(params.formId);
-        setLabelKeys(formDetails.label_keys ?? []);
-        setFormName(formDetails.name);
-        setPeriodType(formDetails.period_type);
-        setPossibleFields(newPossibleFields);
+        const onLoad = async () => {
+            const formDetails = await fetchFormDetailsForInstance(
+                params.formId,
+            );
+            const newPossibleFields = await fetchPossibleFields(params.formId);
+            setLabelKeys(formDetails.label_keys ?? []);
+            setFormName(formDetails.name);
+            setPeriodType(formDetails.period_type);
+            setPossibleFields(newPossibleFields);
+        };
+        onLoad();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
+    const fetching = loadingMap || loadingList;
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -226,7 +186,7 @@ const Instances = ({ router, params }) => {
                 <InstancesFiltersComponent
                     baseUrl={baseUrl}
                     params={params}
-                    onSearch={() => onSearch()}
+                    onSearch={onSearch}
                 />
                 {tab === 'list' && (
                     <Grid
@@ -266,8 +226,12 @@ const Instances = ({ router, params }) => {
                                     )}
                                 />
                                 <DownloadButtonsComponent
-                                    csvUrl={getEndpointUrl(true, 'csv')}
-                                    xlsxUrl={getEndpointUrl(true, 'xlsx')}
+                                    csvUrl={getEndpointUrl(params, true, 'csv')}
+                                    xlsxUrl={getEndpointUrl(
+                                        params,
+                                        true,
+                                        'xlsx',
+                                    )}
                                 />
                             </div>
                         </Grid>
@@ -287,32 +251,30 @@ const Instances = ({ router, params }) => {
                         dataKey="list"
                         columns={tableColumns}
                         defaultPageSize={20}
-                        fetchItems={() =>
-                            fetchInstances().then(
-                                instancesPages => instancesPages,
-                            )
-                        }
                         hideGpkg
                         exportButtons={false}
                         isFullHeight={false}
                         multiSelect
                         selectionActions={getSelectionActions(
                             formatMessage,
-                            getFilters(),
+                            getFilters(params),
                             () => setForceRefresh(true),
                             params.showDeleted === 'true',
                             classes,
                         )}
                     />
                 )}
-                {!fetching && instancesSmall && tab === 'map' && (
+                {tab === 'map' && (
                     <div className={classes.containerMarginNeg}>
-                        <InstancesMap instances={instancesSmall} />
+                        <InstancesMap
+                            instances={instancesSmall || []}
+                            fetching={loadingMap}
+                        />
                     </div>
                 )}
-                {!fetching && instancesSmall && tab === 'files' && (
+                {tab === 'files' && (
                     <InstancesFilesList
-                        files={getInstancesFilesList(instancesSmall)}
+                        files={getInstancesFilesList(instancesSmall || [])}
                     />
                 )}
             </Box>

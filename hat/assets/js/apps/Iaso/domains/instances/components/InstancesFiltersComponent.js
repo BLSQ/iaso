@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
@@ -22,11 +22,11 @@ import {
 } from '../../../constants/filters';
 import DatesRange from '../../../components/filters/DatesRange';
 
-import { INSTANCE_STATUSES } from '../constants';
+import { INSTANCE_STATUSES, filtersKeys } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
-import { redirectTo, redirectToReplace } from '../../../routing/actions';
 
 import { useInstancesFiltersData } from '../hooks';
+import { useFormState } from '../../../hooks/form';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
@@ -60,19 +60,22 @@ const InstancesFiltersComponent = ({
     const classes = useStyles();
     const formatPeriodFilter = useFormatPeriodFilter();
 
-    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
-    const periodsList = useSelector(state => state.periods.list);
     const [fetchingPeriodsList, setFetchingPeriodsList] = useState(false);
-    const devices = useSelector(state => state.devices.list);
     const [fetchingDevices, setFetchingDevices] = useState(false);
-    const devicesOwnerships = useSelector(state => state.devices.ownershipList);
     const [fetchingDevicesOwnerships, setFetchingDevicesOwnerships] =
         useState(false);
 
+    const [formState, setFormState] = useFormState(params);
+
+    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
+    const periodsList = useSelector(state => state.periods.list);
+    const devices = useSelector(state => state.devices.list);
+    const devicesOwnerships = useSelector(state => state.devices.ownershipList);
     const isInstancesFilterUpdated = useSelector(
         state => state.instances.isInstancesFilterUpdated,
     );
+
     const searchParams = [{ search: params.search }];
     const secondColumnFilters = [
         location(intl.formatMessage),
@@ -90,6 +93,7 @@ const InstancesFiltersComponent = ({
         setFetchingDevicesOwnerships,
         setFetchingPeriodsList,
     );
+
     if (periodsList.length > 0) {
         secondColumnFilters.unshift({
             ...formatPeriodFilter(periodsList),
@@ -97,42 +101,35 @@ const InstancesFiltersComponent = ({
         });
     }
 
+    const getFilterParams = filterKeys => {
+        const newParams = {};
+        filterKeys.forEach(fk => {
+            newParams[fk] = formState[fk]?.value;
+        });
+        return newParams;
+    };
+
     const handleSearch = () => {
         if (isInstancesFilterUpdated) {
             dispatch(setInstancesFilterUpdated(false));
-            const tempParams = {
+            onSearch({
                 ...params,
-            };
-            tempParams.page = 1;
-            dispatch(redirectToReplace(baseUrl, tempParams));
+                ...getFilterParams(filtersKeys),
+                page: 1,
+            });
         }
-        onSearch();
     };
 
-    const onSelectOrgUnitFromTree = orgUnit => {
-        if (orgUnit) {
-            const tempParams = { ...params, levels: [orgUnit.id] };
-            dispatch(redirectTo(baseUrl, tempParams));
-            dispatch(setInstancesFilterUpdated(true));
-        } else {
-            const noLevels = { ...params };
-            delete noLevels.levels;
-            dispatch(redirectTo(baseUrl, noLevels));
-            if (params.levels) {
-                dispatch(setInstancesFilterUpdated(true));
+    const handleFormChange = useCallback(
+        (value, key) => {
+            // checking only as value can be null or false
+            if (key) {
+                setFormState(key, value);
             }
-        }
-    };
-
-    const onChange = (value, urlKey) => {
-        dispatch(setInstancesFilterUpdated(true));
-
-        const tempParams = {
-            ...params,
-            [urlKey]: value,
-        };
-        dispatch(redirectToReplace(baseUrl, tempParams));
-    };
+            dispatch(setInstancesFilterUpdated(true));
+        },
+        [setFormState, dispatch],
+    );
 
     return (
         <div className={classes.marginBottomBig}>
@@ -140,29 +137,38 @@ const InstancesFiltersComponent = ({
                 <Grid item xs={8}>
                     <Grid container item xs={12}>
                         <DatesRange
-                            onChangeDate={(key, value) => onChange(value, key)}
-                            dateFrom={params.dateFrom}
-                            dateTo={params.dateTo}
+                            onChangeDate={(key, value) =>
+                                handleFormChange(value, key)
+                            }
+                            dateFrom={formState.dateFrom?.value}
+                            dateTo={formState.dateTo?.value}
                         />
                     </Grid>
                     <Grid container spacing={4}>
                         <Grid item xs={6}>
                             <FiltersComponent
-                                params={params}
+                                params={getFilterParams([
+                                    'withLocation',
+                                    'showDeleted',
+                                    'orgUnitTypeId',
+                                    'periods',
+                                ])}
                                 baseUrl={baseUrl}
-                                onFilterChanged={() =>
-                                    dispatch(setInstancesFilterUpdated(true))
-                                }
+                                redirectOnChange={false}
+                                onFilterChanged={handleFormChange}
                                 filters={secondColumnFilters}
                             />
                         </Grid>
                         <Grid item xs={6}>
                             <FiltersComponent
-                                params={params}
+                                params={getFilterParams([
+                                    'status',
+                                    'deviceId',
+                                    'deviceOwnershipId',
+                                ])}
                                 baseUrl={baseUrl}
-                                onFilterChanged={() =>
-                                    dispatch(setInstancesFilterUpdated(true))
-                                }
+                                redirectOnChange={false}
+                                onFilterChanged={handleFormChange}
                                 filters={[
                                     instanceStatus(instanceStatusOptions),
                                     {
@@ -182,17 +188,16 @@ const InstancesFiltersComponent = ({
                     <Grid container spacing={4}>
                         <Grid item xs={12}>
                             <FiltersComponent
-                                params={params}
+                                params={getFilterParams(['search'])}
                                 baseUrl={baseUrl}
-                                onFilterChanged={() =>
-                                    dispatch(setInstancesFilterUpdated(true))
-                                }
+                                redirectOnChange={false}
+                                onFilterChanged={handleFormChange}
                                 filters={[
                                     extendFilter(
                                         searchParams,
                                         search(),
                                         (value, urlKey) =>
-                                            onChange(value, urlKey),
+                                            handleFormChange(value, urlKey),
                                     ),
                                 ]}
                                 onEnterPressed={() => handleSearch()}
@@ -201,9 +206,12 @@ const InstancesFiltersComponent = ({
                                 <OrgUnitTreeviewModal
                                     toggleOnLabelClick={false}
                                     titleMessage={MESSAGES.search}
-                                    onConfirm={orgUnitId => {
-                                        onSelectOrgUnitFromTree(orgUnitId);
-                                    }}
+                                    onConfirm={orgUnit =>
+                                        handleFormChange(
+                                            orgUnit ? [orgUnit.id] : undefined,
+                                            'levels',
+                                        )
+                                    }
                                 />
                             </Box>
                         </Grid>

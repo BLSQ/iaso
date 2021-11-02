@@ -914,6 +914,7 @@ class Instance(models.Model):
             "file_url": self.file.url if self.file else None,
             "id": self.id,
             "form_id": self.form_id,
+            "form_name": self.form.name,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "org_unit": self.org_unit.as_dict(with_groups=False) if self.org_unit else None,

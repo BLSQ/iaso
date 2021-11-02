@@ -94,6 +94,7 @@ const Instances = ({ router, params }) => {
             dispatch(
                 setInstances(
                     instancesData.instances,
+                    true,
                     queryParams,
                     instancesData.count,
                     instancesData.pages,
@@ -113,7 +114,7 @@ const Instances = ({ router, params }) => {
             tab: newTab,
         };
         if (newTab === 'map' && !instancesSmall) {
-            fetchSmallInstances(params);
+            fetchSmallInstances(newParams);
         }
         dispatch(redirectToReplace(baseUrl, newParams));
         setTab(newTab);
@@ -127,14 +128,14 @@ const Instances = ({ router, params }) => {
         dispatch(resetInstances);
         fetchInstances();
         if (params.tab === 'map') {
-            fetchSmallInstances(params);
+            fetchSmallInstances();
         } else {
             setInstancesSmall(null);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         params.pageSize,
-        params.formId,
+        params.formIds,
         params.order,
         params.page,
         params.withLocation,
@@ -148,23 +149,28 @@ const Instances = ({ router, params }) => {
         params.levels,
         params.dateFrom,
         params.dateTo,
+        params.formIds,
     ]);
 
     useEffect(() => {
         const onLoad = async () => {
-            const formDetails = await fetchFormDetailsForInstance(
-                params.formId,
-            );
-            const newPossibleFields = await fetchPossibleFields(params.formId);
-            setLabelKeys(formDetails.label_keys ?? []);
-            setFormName(formDetails.name);
-            setPeriodType(formDetails.period_type);
-            setPossibleFields(newPossibleFields);
+            const formIds = params.formIds?.split(',');
+            if (formIds?.length === 1) {
+                const formDetails = await fetchFormDetailsForInstance(
+                    formIds[0],
+                );
+                const newPossibleFields = await fetchPossibleFields(formIds[0]);
+                setLabelKeys(formDetails.label_keys ?? []);
+                setFormName(formDetails.name);
+                setPeriodType(formDetails.period_type);
+                setPossibleFields(newPossibleFields);
+            }
         };
         onLoad();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [params.formIds]);
     const fetching = loadingMap || loadingList;
+
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -206,7 +212,7 @@ const Instances = ({ router, params }) => {
                                     }
                                     formType={{
                                         periodType,
-                                        id: params.formId,
+                                        id: params.formIds,
                                     }}
                                     onCreateOrReAssign={(
                                         currentForm,

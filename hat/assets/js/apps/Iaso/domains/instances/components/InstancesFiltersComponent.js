@@ -19,13 +19,14 @@ import {
     instanceStatus,
     instanceDeleted,
     useFormatPeriodFilter,
+    forms,
 } from '../../../constants/filters';
 import DatesRange from '../../../components/filters/DatesRange';
 
 import { INSTANCE_STATUSES, filtersKeys } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
-import { useInstancesFiltersData } from '../hooks';
+import { useInstancesFiltersData, useGetForms } from '../hooks';
 import { useFormState } from '../../../hooks/form';
 
 import MESSAGES from '../messages';
@@ -50,7 +51,7 @@ const extendFilter = (searchParams, filter, onChange) => ({
 
 // TODO make better track of changes (search button activates too easily)
 const InstancesFiltersComponent = ({
-    params: { formId },
+    params: { formIds },
     params,
     onSearch,
     baseUrl,
@@ -77,7 +78,15 @@ const InstancesFiltersComponent = ({
     );
 
     const searchParams = [{ search: params.search }];
+
+    const { data, isFetching: fetchingForms } = useGetForms();
+    const formsList = (data && data.forms) || [];
+
     const secondColumnFilters = [
+        {
+            ...forms(formsList),
+            loading: fetchingForms,
+        },
         location(intl.formatMessage),
         {
             ...orgUnitType(orgUnitTypes),
@@ -87,7 +96,7 @@ const InstancesFiltersComponent = ({
     ];
     useInstancesFiltersData(
         periodsList,
-        formId,
+        formIds,
         setFetchingOrgUnitTypes,
         setFetchingDevices,
         setFetchingDevicesOwnerships,
@@ -148,12 +157,11 @@ const InstancesFiltersComponent = ({
                         <Grid item xs={6}>
                             <FiltersComponent
                                 params={getFilterParams([
+                                    'formIds',
                                     'withLocation',
-                                    'showDeleted',
                                     'orgUnitTypeId',
                                     'periods',
                                 ])}
-                                baseUrl={baseUrl}
                                 redirectOnChange={false}
                                 onFilterChanged={handleFormChange}
                                 filters={secondColumnFilters}
@@ -189,7 +197,6 @@ const InstancesFiltersComponent = ({
                         <Grid item xs={12}>
                             <FiltersComponent
                                 params={getFilterParams(['search'])}
-                                baseUrl={baseUrl}
                                 redirectOnChange={false}
                                 onFilterChanged={handleFormChange}
                                 filters={[
@@ -214,6 +221,20 @@ const InstancesFiltersComponent = ({
                                     }
                                 />
                             </Box>
+                            <FiltersComponent
+                                params={getFilterParams(['showDeleted'])}
+                                redirectOnChange={false}
+                                onFilterChanged={handleFormChange}
+                                filters={[
+                                    extendFilter(
+                                        searchParams,
+                                        search(),
+                                        (value, urlKey) =>
+                                            handleFormChange(value, urlKey),
+                                    ),
+                                ]}
+                                onEnterPressed={() => handleSearch()}
+                            />
                         </Grid>
                     </Grid>
                 </Grid>

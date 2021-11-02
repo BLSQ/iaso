@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Submissions for the form',
         id: 'iaso.instance.form',
     },
+    titleMulti: {
+        defaultMessage: 'Form submissions',
+        id: 'iaso.forms.hasInstances',
+    },
     forceExport: {
         id: 'iaso.instances.forceExport',
         defaultMessage: 'Force Export',
@@ -155,6 +159,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.infos',
     },
     form: {
+        defaultMessage: 'Form',
+        id: 'iaso.instance.formShort',
+    },
+    form_name: {
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
     },

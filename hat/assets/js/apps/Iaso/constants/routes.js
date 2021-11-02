@@ -154,8 +154,8 @@ export const instancesPath = {
     component: props => <Instances {...props} />,
     params: [
         {
-            isRequired: true,
-            key: 'formId',
+            isRequired: false,
+            key: 'formIds',
         },
         ...paginationPathParams,
         {

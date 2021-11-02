@@ -41,8 +41,11 @@ const InstancesTopBar = ({
     const dispatch = useDispatch();
     const [visibleColumns, setVisibleColumns] = useState([]);
     const { formatMessage } = useSafeIntl();
-    const prevPathname = useSelector(state => state.instances.instancesPage);
-    const reduxPage = useSelector(state => state.routerCustom.prevPathname);
+    const reduxPage = useSelector(state => state.instances.instancesPage);
+    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
+
+    const formIds = params.formIds?.split(',');
+
     const handleChangeVisibleColmuns = cols => {
         const tempVisibleColumns =
             periodType === null
@@ -84,11 +87,15 @@ const InstancesTopBar = ({
             });
             handleChangeVisibleColmuns(cols);
         }
-    }, [reduxPage, tableColumns]);
+    }, [reduxPage]);
 
+    let title = formatMessage(MESSAGES.titleMulti);
+    if (formIds?.length === 1) {
+        title = `${formatMessage(MESSAGES.title)}: ${formName}`;
+    }
     return (
         <TopBar
-            title={`${formatMessage(MESSAGES.title)}: ${formName}`}
+            title={title}
             displayBackButton
             goBack={() => {
                 if (prevPathname) {

@@ -269,7 +269,6 @@ const asBackendStatus = status => {
 
 export const getFilters = params => {
     const allFilters = {
-        form_id: parseInt(params.formId, 10),
         withLocation: params.withLocation,
         orgUnitTypeId: params.orgUnitTypeId,
         deviceId: params.deviceId,
@@ -281,6 +280,7 @@ export const getFilters = params => {
         dateFrom: getFromDateString(params.dateFrom),
         dateTo: getToDateString(params.dateTo),
         showDeleted: params.showDeleted,
+        form_ids: params.formIds,
     };
     const filters = {};
     Object.keys(allFilters).forEach(k => {

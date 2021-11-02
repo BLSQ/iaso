@@ -28,8 +28,9 @@ const useStyles = makeStyles(styles);
 const IasoTreeView = ({
     getChildrenData,
     getRootData,
-    labelField, // name
-    nodeField, // id
+    // labelField, // name
+    // nodeField, // id
+    label,
     multiselect,
     expanded,
     selected,
@@ -58,14 +59,15 @@ const IasoTreeView = ({
             return data.map(item => {
                 return (
                     <EnrichedTreeItem
-                        label={item[labelField]}
-                        id={item[nodeField].toString()}
-                        data={item.data}
-                        key={`RootTreeItem ${item[nodeField]}`}
+                        // label={item[labelField]}
+                        label={label}
+                        id={item.id}
+                        data={item}
+                        key={`RootTreeItem ${item.id}`}
                         fetchChildrenData={fetchChildrenData}
                         expanded={expanded}
                         selected={selected}
-                        hasChildren={item.hasChildren}
+                        // hasChildren={item.hasChildren}
                         toggleOnLabelClick={toggleOnLabelClick}
                         onCheckBoxClick={onCheckBoxClick}
                         onLabelClick={onLabelClick}
@@ -73,14 +75,15 @@ const IasoTreeView = ({
                         ticked={ticked}
                         parentsTicked={parentsTicked}
                         scrollIntoView={scrollIntoView}
-                        tailIcon={tailIcon}
+                        // tailIcon={tailIcon}
                     />
                 );
             });
         },
         [
-            labelField,
-            nodeField,
+            // labelField,
+            // nodeField,
+            label,
             fetchChildrenData,
             expanded,
             selected,
@@ -125,8 +128,8 @@ const IasoTreeView = ({
 IasoTreeView.propTypes = {
     getChildrenData: func,
     getRootData: func,
-    labelField: string.isRequired,
-    nodeField: string.isRequired,
+    // labelField: string.isRequired,
+    // nodeField: string.isRequired,
     multiselect: bool,
     toggleOnLabelClick: bool,
     expanded: arrayOf(string).isRequired,
@@ -139,6 +142,7 @@ IasoTreeView.propTypes = {
     parentsTicked: array,
     scrollIntoView: string,
     tailIcon: func,
+    label: func.isRequired, // a function that will return the label, including additional icons
 };
 
 IasoTreeView.defaultProps = {

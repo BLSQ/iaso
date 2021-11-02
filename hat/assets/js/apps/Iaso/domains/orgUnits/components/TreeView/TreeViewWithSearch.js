@@ -22,8 +22,9 @@ const formatInitialSelectedData = (selectedData, multiselect) => {
 };
 
 const TreeViewWithSearch = ({
-    labelField, // name
-    nodeField, // id
+    // labelField, // name
+    // nodeField, // id
+    label,
     getChildrenData,
     getRootData,
     toggleOnLabelClick,
@@ -93,6 +94,7 @@ const TreeViewWithSearch = ({
                     updatedSelectedData = [itemData];
                 }
             }
+            // console.log('updatedSelected', updatedSelectedData);
             onUpdate(newTicked, updatedParents, updatedSelectedData);
             setParentsTicked(updatedParents);
             setData(updatedSelectedData);
@@ -142,8 +144,9 @@ const TreeViewWithSearch = ({
                 toolTip={toolTip}
             />
             <IasoTreeView
-                labelField={labelField}
-                nodeField={nodeField}
+                // labelField={labelField}
+                // nodeField={nodeField}
+                label={label}
                 getChildrenData={getChildrenData}
                 getRootData={getRootData}
                 toggleOnLabelClick={toggleOnLabelClick}
@@ -165,8 +168,8 @@ const TreeViewWithSearch = ({
 TreeViewWithSearch.propTypes = {
     getChildrenData: func,
     getRootData: func,
-    labelField: string.isRequired,
-    nodeField: string.isRequired,
+    // labelField: string.isRequired,
+    // nodeField: string.isRequired,
     toggleOnLabelClick: bool,
     onSelect: func,
     minResultCount: number,
@@ -183,6 +186,7 @@ TreeViewWithSearch.propTypes = {
     preexpanded: any,
     selectedData: oneOfType([object, array]),
     tailIcon: func,
+    label: func.isRequired,
 };
 
 TreeViewWithSearch.defaultProps = {

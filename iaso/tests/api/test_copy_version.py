@@ -25,10 +25,6 @@ class CopyVersionTestCase(APITestCase):
         cls.johnny = cls.create_user_with_profile(username="johnny", account=account, permissions=["iaso_sources"])
         cls.miguel = cls.create_user_with_profile(username="miguel", account=account, permissions=[])
 
-        from beanstalk_worker import task_service
-
-        task_service.clear()
-
     def test_copy_version(self):
         """Copying a version through the api"""
 

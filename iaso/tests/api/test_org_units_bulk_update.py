@@ -117,10 +117,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
         )
 
-    @classmethod
-    def setUp(cls):
-        task_service.clear()
-
     @tag("iaso_only")
     def test_org_unit_bulkupdate_not_authenticated(self):
         """POST /orgunits/bulkupdate, no auth -> 403"""

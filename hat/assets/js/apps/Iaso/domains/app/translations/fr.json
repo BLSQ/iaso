@@ -484,6 +484,7 @@
     "iaso.permissions.polio": "Gestion campagnes vaccination Polio",
     "iaso.permissions.projects": "Projets",
     "iaso.permissions.sources": "Sources",
+    "iaso.permissions.submissions": "Soumissions de formulaire",
     "iaso.permissions.users": "Utilisateurs",
     "iaso.projects.appId": "Identifiant de l'App",
     "iaso.projects.create": "Créer un projet",

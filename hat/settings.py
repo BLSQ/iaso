@@ -206,6 +206,9 @@ DATABASES = {
 }
 
 DATABASES["worker"] = DATABASES["default"].copy()
+DATABASE_ROUTERS = [
+    "hat.common.dbrouter.DbRouter",
+]
 # This database settings which duplicate the main db settings, will be used by the background task worker so that they
 # can have a connexion outside of the transaction to report the progress on a Task. see Comments in services.py
 

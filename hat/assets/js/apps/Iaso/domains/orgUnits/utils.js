@@ -205,29 +205,32 @@ export const getOrgUnitGroups = orgUnit => (
     </span>
 );
 
-export const getMarkerList = (
+export const getMarkerList = ({
     locationsList,
     fetchDetail,
     color,
     keyId,
+    useOrgUnitLocation,
     PopupComponent = OrgUnitPopupComponent,
-) => (
-    <MarkersListComponent
-        key={keyId}
-        items={locationsList}
-        onMarkerClick={fetchDetail}
-        PopupComponent={PopupComponent}
-        popupProps={{
-            displayUseLocation: true,
-            useLocation: selectedOrgUnit =>
-                this.useOrgUnitLocation(selectedOrgUnit),
-        }}
-        isCircle
-        markerProps={() => ({
-            ...circleColorMarkerOptions(color),
-        })}
-    />
-);
+}) => {
+    return (
+        <MarkersListComponent
+            key={keyId}
+            items={locationsList}
+            onMarkerClick={fetchDetail}
+            PopupComponent={PopupComponent}
+            popupProps={{
+                displayUseLocation: true,
+                useLocation: selectedOrgUnit =>
+                    useOrgUnitLocation(selectedOrgUnit),
+            }}
+            isCircle
+            markerProps={() => ({
+                ...circleColorMarkerOptions(color),
+            })}
+        />
+    );
+};
 
 export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
     let sources = [];

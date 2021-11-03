@@ -19,6 +19,11 @@ POLIO = _("Polio")
 SUBMISSIONS = _("Soumissions")
 
 
+# When adding a new permissions, it also need to be added in
+# hat/assets/js/apps/Iaso/domains/users/messages.js
+# so that it display properly in both lang
+
+
 class CustomPermissionSupport(models.Model):
     # Used in setup_account api
     DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER = [

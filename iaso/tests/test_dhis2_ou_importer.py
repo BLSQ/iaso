@@ -5,7 +5,7 @@ from os import environ
 import responses
 import json
 
-from iaso.models import OrgUnit, Group, GroupSet, Task, Account, DataSource, SUCCESS
+from iaso.models import OrgUnit, Group, GroupSet, Task, Account, DataSource, SUCCESS, Project
 from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
 from iaso.test import TestCase
 
@@ -212,7 +212,9 @@ class TaskTests(TestCase, DHIS2TestMixin):
     def setUpTestData(cls):
         cls.account = Account.objects.create(name="a")
         cls.user = cls.create_user_with_profile(username="link", account=cls.account)
+        project = Project.objects.create(name="project", account=cls.account)
         cls.source = DataSource.objects.create(name="play")
+        cls.source.projects.set([project])
 
     def setUp(self):
         self.old_counts = self.counts()

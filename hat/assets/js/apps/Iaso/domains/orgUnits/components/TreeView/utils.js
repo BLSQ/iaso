@@ -2,8 +2,12 @@ import React from 'react';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import FlareIcon from '@material-ui/icons/Flare';
+// import FiberNewIcon from '@material-ui/icons/FiberNew';
+import { Tooltip } from '@material-ui/core';
+import { useIntl } from 'react-intl';
 import { getOrgUnitAncestors } from '../../utils';
 import OrgUnitTooltip from '../OrgUnitTooltip';
+import MESSAGES from '../../messages';
 
 const formatInitialSelectedIds = orgUnits => {
     if (!orgUnits) return [];
@@ -48,19 +52,46 @@ const adaptMap = value => {
 };
 
 export const makeTreeviewLabel = classes => orgUnit => {
+    const { formatMessage } = useIntl();
+    const style = {
+        display: 'inline-flex',
+        alignItems: 'center',
+        verticalAlign: 'middle',
+    };
     let icon = null;
     if (orgUnit?.validation_status === 'NEW')
-        icon = <FlareIcon fontSize="small" className={classes.new} />;
+        // The icon has to be wrapped, otherwise Tooltip will crash
+        icon = (
+            <Tooltip title={formatMessage(MESSAGES.statusNew)} size="small">
+                <div style={style}>
+                    <FlareIcon fontSize="small" className={classes.new} />
+                </div>
+            </Tooltip>
+        );
     if (orgUnit?.validation_status === 'VALID')
         icon = (
-            <CheckCircleOutlineIcon
-                fontSize="small"
-                className={classes.valid}
-            />
+            <Tooltip title={formatMessage(MESSAGES.statusValid)} size="small">
+                <div style={style}>
+                    <CheckCircleOutlineIcon
+                        fontSize="small"
+                        className={classes.valid}
+                    />
+                </div>
+            </Tooltip>
         );
     if (orgUnit?.validation_status === 'REJECTED')
         icon = (
-            <HighlightOffIcon fontSize="small" className={classes.rejected} />
+            <Tooltip
+                title={formatMessage(MESSAGES.statusRejected)}
+                size="small"
+            >
+                <div style={style}>
+                    <HighlightOffIcon
+                        fontSize="small"
+                        className={classes.rejected}
+                    />
+                </div>
+            </Tooltip>
         );
     return (
         <>

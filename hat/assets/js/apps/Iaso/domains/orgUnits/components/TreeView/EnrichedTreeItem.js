@@ -37,7 +37,6 @@ const useStyles = makeStyles(styles);
 const EnrichedTreeItem = ({
     label,
     id,
-    // hasChildren,
     fetchChildrenData, // fetchChildrenData(id)
     expanded,
     toggleOnLabelClick,
@@ -47,7 +46,6 @@ const EnrichedTreeItem = ({
     ticked,
     parentsTicked,
     scrollIntoView,
-    // tailIcon,
 }) => {
     const classes = useStyles();
     const isExpanded = expanded.includes(id);
@@ -81,7 +79,6 @@ const EnrichedTreeItem = ({
         >
             {makeIcon(hasCheckbox, hasBeenTicked, tickedParent)}
             {child}
-            {/* {data && tailIcon(data)} */}
         </div>
     );
 
@@ -107,21 +104,17 @@ const EnrichedTreeItem = ({
             return (
                 <EnrichedTreeItem
                     key={`TreeItem ${unit.id}`}
-                    // label={unit.name || `id: ${unit.id}`}
                     label={label}
                     id={unit.id}
                     fetchChildrenData={fetchChildrenData}
                     expanded={expanded}
-                    // hasChildren={unit.has_children}
                     toggleOnLabelClick={toggleOnLabelClick}
                     onLabelClick={onLabelClick}
                     data={unit}
-                    // data={unit.data ?? null}
                     withCheckbox={withCheckbox}
                     ticked={ticked}
                     parentsTicked={parentsTicked}
                     scrollIntoView={scrollIntoView}
-                    // tailIcon={tailIcon}
                 />
             );
         });
@@ -132,7 +125,6 @@ const EnrichedTreeItem = ({
                 classes={{ root: classes.treeItem }}
                 ref={ref}
                 label={makeLabel(
-                    // label || `id: ${id.toString()}`,
                     label(data),
                     withCheckbox,
                     isTicked,
@@ -150,7 +142,6 @@ const EnrichedTreeItem = ({
                     classes={{ root: classes.treeItem }}
                     ref={ref}
                     label={makeLabel(
-                        // label || `id: ${id.toString()}`,
                         label(data),
                         withCheckbox,
                         isTicked,
@@ -174,12 +165,7 @@ const EnrichedTreeItem = ({
             <TreeItem
                 classes={{ root: classes.treeItem }}
                 ref={ref}
-                label={makeLabel(
-                    // label || `id: ${id.toString()}`,
-                    label(data),
-                    withCheckbox,
-                    isTicked,
-                )}
+                label={makeLabel(label(data), withCheckbox, isTicked)}
                 nodeId={id}
                 collapseIcon={
                     <ArrowDropDownIcon style={{ fontSize: '24px' }} />
@@ -196,7 +182,6 @@ EnrichedTreeItem.propTypes = {
     id: string.isRequired,
     fetchChildrenData: func,
     expanded: arrayOf(string),
-    // hasChildren: bool,
     toggleOnLabelClick: bool,
     data: object.isRequired,
     onLabelClick: func,
@@ -204,21 +189,17 @@ EnrichedTreeItem.propTypes = {
     ticked: oneOfType([string, array]),
     parentsTicked: array,
     scrollIntoView: string,
-    // tailIcon: func,
 };
 
 EnrichedTreeItem.defaultProps = {
     fetchChildrenData: () => {},
     expanded: [],
-    // hasChildren: false,
     toggleOnLabelClick: true,
     onLabelClick: () => {},
-    // data: null,
     withCheckbox: false,
     ticked: [],
     parentsTicked: [],
     scrollIntoView: null,
-    // tailIcon: () => null,
 };
 
 export { EnrichedTreeItem };

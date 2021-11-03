@@ -14,9 +14,6 @@ const getChildrenData = async id => {
         return {
             ...orgUnit,
             id: orgUnit.id.toString(),
-            // name: orgUnit.name,
-            // hasChildren: orgUnit.has_children,
-            // data: orgUnit,
         };
     });
     return usableData;
@@ -42,9 +39,6 @@ const getRootData = async (id, type = 'source') => {
         return {
             ...orgUnit,
             id: orgUnit.id.toString(),
-            // name: orgUnit.name,
-            // hasChildren: orgUnit.has_children,
-            // data: orgUnit,
         };
     });
     return usableData;

@@ -45,6 +45,10 @@ function MenuItem(props) {
     const path = `${currentPath}/${menuItem.key}`;
     const activePath = location.pathname.split('/', subMenuLevel + 1).join('/');
     const isMenuActive = path === activePath;
+    let fullPath = path;
+    if (menuItem.extraPath) {
+        fullPath = `${fullPath}${menuItem.extraPath}`;
+    }
     const [open, setOpen] = React.useState(isMenuActive);
     const toggleOpen = () => {
         setOpen(!open);
@@ -61,7 +65,10 @@ function MenuItem(props) {
     };
     return (
         <>
-            <Link className={classes.linkButton} to={!hasSubMenu ? path : ''}>
+            <Link
+                className={classes.linkButton}
+                to={!hasSubMenu ? fullPath : ''}
+            >
                 <ListItem
                     style={itemStyle}
                     button

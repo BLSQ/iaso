@@ -53,7 +53,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const Instances = ({ router, params }) => {
+const Instances = ({ params }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -175,7 +175,6 @@ const Instances = ({ router, params }) => {
         <section className={classes.relativeContainer}>
             <TopBar
                 formName={formName}
-                router={router}
                 tab={tab}
                 handleChangeTab={newTab => handleChangeTab(newTab)}
                 params={params}
@@ -290,7 +289,6 @@ const Instances = ({ router, params }) => {
 
 Instances.propTypes = {
     params: PropTypes.object.isRequired,
-    router: PropTypes.object.isRequired,
 };
 
 export default Instances;

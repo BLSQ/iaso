@@ -2,6 +2,7 @@ import React from 'react';
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import Link from '@material-ui/icons/Link';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
+import Input from '@material-ui/icons/Input';
 import CompareArrows from '@material-ui/icons/CompareArrows';
 import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
 import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
@@ -36,6 +37,14 @@ const menuItems = [
                 permission: paths.formsPath.permission,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
+            },
+            {
+                label: MESSAGES.submissionsTitle,
+                extraPath:
+                    '/tab/list/columns/form__name,updated_at,org_unit__name,created_at,status',
+                permission: paths.instancesPath.permission,
+                key: 'submissions',
+                icon: props => <Input {...props} />,
             },
             {
                 label: MESSAGES.formsStats,

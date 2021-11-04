@@ -6,11 +6,10 @@ import { makeStyles, Grid, Tabs, Tab } from '@material-ui/core';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
 
-import { redirectTo, redirectToReplace } from '../../../routing/actions';
+import { redirectToReplace } from '../../../routing/actions';
 import { getInstancesColumns, getInstancesVisibleColumns } from '../utils';
 
 import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
-import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -26,7 +25,6 @@ const defaultOrder = 'updated_at';
 
 const InstancesTopBar = ({
     formName,
-    router,
     tab,
     handleChangeTab,
     params,
@@ -42,7 +40,6 @@ const InstancesTopBar = ({
     const [visibleColumns, setVisibleColumns] = useState([]);
     const { formatMessage } = useSafeIntl();
     const reduxPage = useSelector(state => state.instances.instancesPage);
-    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
 
     const formIds = params.formIds?.split(',');
 
@@ -94,17 +91,7 @@ const InstancesTopBar = ({
         title = `${formatMessage(MESSAGES.title)}: ${formName}`;
     }
     return (
-        <TopBar
-            title={title}
-            displayBackButton
-            goBack={() => {
-                if (prevPathname) {
-                    router.goBack();
-                } else {
-                    dispatch(redirectTo(baseUrls.forms, {}));
-                }
-            }}
-        >
+        <TopBar title={title}>
             <Grid container spacing={0}>
                 <Grid xs={10} item>
                     <Tabs
@@ -154,7 +141,6 @@ InstancesTopBar.defaultProps = {
 InstancesTopBar.propTypes = {
     formName: PropTypes.string.isRequired,
     tab: PropTypes.string.isRequired,
-    router: PropTypes.object.isRequired,
     handleChangeTab: PropTypes.func.isRequired,
     tableColumns: PropTypes.array,
     params: PropTypes.object.isRequired,

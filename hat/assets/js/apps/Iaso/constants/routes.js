@@ -150,7 +150,7 @@ export const mappingDetailPath = {
 
 export const instancesPath = {
     baseUrl: baseUrls.instances,
-    permission: 'iaso_forms',
+    permission: 'iaso_submissions',
     component: props => <Instances {...props} />,
     params: [
         {

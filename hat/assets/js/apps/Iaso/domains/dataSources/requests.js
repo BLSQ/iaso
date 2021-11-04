@@ -1,10 +1,11 @@
 import { useQuery } from 'react-query';
 import { iasoGetRequest, iasoPostRequest } from '../../utils/requests';
 import { dispatch } from '../../redux/store';
-import { iasoFetch } from '../../libs/Api';
+import { getRequest, iasoFetch } from '../../libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../constants/snackBars';
 import snackBarMessages from '../../components/snackBars/messages';
+import { useSnackQuery } from '../../libs/apiHooks';
 
 /**
  *
@@ -71,6 +72,7 @@ export const useDataSourceVersions = () => {
             return data.versions.map(version => {
                 return {
                     id: version.id,
+                    data_source: version.data_source,
                     data_source_name: version.data_source_name,
                     is_default: version.is_default,
                     number: version.number,
@@ -139,3 +141,21 @@ export const csvPreview = async data => {
             throw error;
         });
 };
+
+export const useDataSourceForVersion = sourceVersion =>
+    useSnackQuery(
+        ['dataSources'],
+        () => getRequest('/api/datasources/'),
+        snackBarMessages.fetchSourcesError,
+        {
+            select: data => {
+                if (sourceVersion) {
+                    const source = data.sources.find(
+                        s => s.id === sourceVersion.data_source,
+                    );
+                    return source;
+                }
+                return null;
+            },
+        },
+    );

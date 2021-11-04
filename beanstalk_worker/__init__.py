@@ -5,7 +5,6 @@ from lazy_services import LazyService
 import sentry_sdk
 from logging import getLogger
 
-from iaso.models import RUNNING
 
 logger = getLogger(__name__)
 
@@ -19,7 +18,7 @@ def task_decorator(task_name=""):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            from iaso.models.base import Task, ERRORED, KilledException
+            from iaso.models.base import Task, ERRORED, KilledException, RUNNING
 
             immediate = kwargs.pop("_immediate", False)  # if true, we need to run the task now, we are a worker
             if immediate:

@@ -5,6 +5,7 @@ services:
     tty: true
     build:
       context: .
+      dockerfile: docker/django/Dockerfile
     image: iaso
     ports:
       - "8081:8081"
@@ -23,6 +24,7 @@ services:
       - ./testdata:/opt/app/testdata
       # jupyter notebooks
       - ./notebooks:/opt/notebooks
+      # Optional Used to load dev bluesquare-components JS. See `Live Bluesquare components` in doc
       - ../bluesquare-components:/opt/bluesquare-components
     links: &hat_links
       - db
@@ -45,7 +47,7 @@ services:
       PYTHONUNBUFFERED: "true"
       ENKETO_DEV: "true"
       ENKETO_API_TOKEN: AZE78974654azeAZE
-      ENKETO_URL:
+      ENKETO_URL: http://enketo:8005/
       EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
       LIVE_COMPONENTS:
     # Limit logging in dev to not overflow terminal
@@ -53,14 +55,13 @@ services:
       driver: "json-file"
       options:
         max-size: "5k"
-
     command: start_dev
 
   db:
     image:
       iaso/postgis
-      # Workaround until there is a stable Postgis image for Apple Silicon
-    build: .docker/db
+    # Workaround until there is a stable Postgis image for Apple Silicon
+    build: docker/db
     logging: *iaso_logging
     ports:
       - "5433:5432"
@@ -70,13 +71,12 @@ services:
       POSTGRES_DB: ${RDS_DB_NAME}
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-
   # the webpack dev server
   webpack:
     image: iaso-webpack
     build:
       context: .
-      dockerfile: .docker/webpack/Dockerfile
+      dockerfile: docker/webpack/Dockerfile
     depends_on:
       - iaso
     ports:

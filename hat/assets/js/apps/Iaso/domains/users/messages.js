@@ -103,11 +103,11 @@ const MESSAGES = defineMessages({
     },
     iaso_completeness: {
         id: 'iaso.permissions.completeness',
-        defaultMessage: 'Complétude des données',
+        defaultMessage: 'Data completeness',
     },
     iaso_mappings: {
         id: 'iaso.permissions.mappings',
-        defaultMessage: 'Correspondances avec DHIS2',
+        defaultMessage: 'Mappings with DHIS2',
     },
     iaso_polio: {
         id: 'iaso.permissions.polio',
@@ -115,26 +115,30 @@ const MESSAGES = defineMessages({
     },
     iaso_links: {
         id: 'iaso.permissions.links',
-        defaultMessage: 'Correspondances sources',
+        defaultMessage: 'Sources matching',
     },
-    iaso_forms: { id: 'iaso.permissions.forms', defaultMessage: 'Formulaires' },
+    iaso_forms: { id: 'iaso.permissions.forms', defaultMessage: 'Forms' },
     iaso_pages: { id: 'iaso.permissions.pages', defaultMessage: 'Pages' },
     iaso_projects: {
         id: 'iaso.permissions.projects',
-        defaultMessage: 'Projets',
+        defaultMessage: 'Projects',
     },
     iaso_sources: { id: 'iaso.permissions.sources', defaultMessage: 'Sources' },
     iaso_data_tasks: {
         id: 'iaso.permissions.dataTasks',
-        defaultMessage: 'Tâches',
+        defaultMessage: 'Tasks',
     },
     iaso_org_units: {
         id: 'iaso.permissions.orgUnits',
-        defaultMessage: "Unités d'organisation",
+        defaultMessage: 'Organisation units',
+    },
+    iaso_submissions: {
+        id: 'iaso.permissions.submissions',
+        defaultMessage: 'Form Submissions',
     },
     iaso_users: {
         id: 'iaso.permissions.users',
-        defaultMessage: 'Utilisateurs',
+        defaultMessage: 'Users',
     },
 });
 

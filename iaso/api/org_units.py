@@ -32,6 +32,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
             and (
                 request.user.has_perm("menupermissions.iaso_forms")
                 or request.user.has_perm("menupermissions.iaso_org_units")
+                or request.user.has_perm("menupermissions.iaso_submissions")
             )
         ):
             return False
@@ -52,7 +53,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     This API is open to anonymous users for actions that are not org unit-specific (see create method for nuance in
     projects that require authentication). Actions on specific org units are restricted to authenticated users with the
-    "menupermissions.iaso_forms" or "menupermissions.iaso_org_units" permission.
+    "menupermissions.iaso_forms", "menupermissions.iaso_org_units" or "menupermissions.iaso_submissions" permission.
 
     GET /api/orgunits/
     GET /api/orgunits/<id>

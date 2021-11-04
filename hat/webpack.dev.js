@@ -41,7 +41,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './assets/webpack/'),
         filename: '[name].js',
-        publicPath: WEBPACK_URL + '/static/', // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+        publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
     },
 
     // config for webpack-dev-server

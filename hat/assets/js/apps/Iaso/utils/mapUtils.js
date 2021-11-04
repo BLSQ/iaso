@@ -79,7 +79,7 @@ export const clusterCustomMarker = (cluster, color = 'primary') =>
         iconAnchor: [20, 30],
     });
 
-export const colorClusterCustomMarker = (cluster, backgroundColor) =>
+export const colorClusterCustomMarker = (cluster, backgroundColor, size = 34) =>
     L.divIcon({
         html:
             `<div style="background-color: ${backgroundColor};" >` +
@@ -89,8 +89,8 @@ export const colorClusterCustomMarker = (cluster, backgroundColor) =>
             `<span>${cluster.getChildCount()}</span>` +
             '</div>',
         className: 'marker-cluster color',
-        iconSize: L.point(34, 34, true),
-        iconAnchor: [17, 17],
+        iconSize: L.point(size, size, true),
+        iconAnchor: [size / 2, size / 2],
         style: () => ({
             backgroundColor,
         }),

@@ -501,6 +501,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.validateXLSFormLink',
         defaultMessage: 'online tool',
     },
+    sources: {
+        id: 'iaso.label.sources',
+        defaultMessage: 'Sources',
+    },
+    noSources: {
+        id: 'iaso.orgUnits.sources.noData',
+        defaultMessage: 'No source',
+    },
+    addSource: {
+        id: 'iaso.orgUnits.addSource',
+        defaultMessage: 'Add source',
+    },
+    sourcesHelperText: {
+        id: 'iaso.orgUnits.sourcesHelperText',
+        defaultMessage: 'Linked org units',
+    },
+    formsHelperText: {
+        id: 'iaso.orgUnits.formsHelperText',
+        defaultMessage: 'Form submissions',
+    },
+    forms: {
+        id: 'iaso.forms.title',
+        defaultMessage: 'Forms',
+    },
 });
 
 export default MESSAGES;

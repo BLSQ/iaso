@@ -5,6 +5,7 @@ from lazy_services import LazyService
 import sentry_sdk
 from logging import getLogger
 
+
 logger = getLogger(__name__)
 
 
@@ -17,7 +18,7 @@ def task_decorator(task_name=""):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            from iaso.models.base import Task, ERRORED, KilledException
+            from iaso.models.base import Task, ERRORED, KilledException, RUNNING
 
             immediate = kwargs.pop("_immediate", False)  # if true, we need to run the task now, we are a worker
             if immediate:
@@ -29,6 +30,8 @@ def task_decorator(task_name=""):
                 try:
                     logger.info(f"Running task {the_task}")
                     func(*args, task=the_task, **kwargs)
+                    if the_task.status == RUNNING:
+                        the_task.report_success()
                 except KilledException as e:
                     # If it was interrupted in the middle of a transaction the new status was not saved so save it again
                     the_task.save()

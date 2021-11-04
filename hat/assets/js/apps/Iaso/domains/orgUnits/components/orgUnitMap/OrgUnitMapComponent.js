@@ -18,14 +18,14 @@ import {
     orderOrgUnitTypeByDepth,
     ZoomControl,
 } from '../../../../utils/mapUtils';
-import { getMarkerList } from '../../utils';
+import { getMarkerList, getLinksSources } from '../../utils';
 
 import TileSwitch from '../../../../components/maps/tools/TileSwitchComponent';
 import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../OrgunitOptionSaveComponent';
-import OrgUnitTypeChipsFilterComponent from '../OrgUnitTypeChipsFilterComponent';
-import FormsChipsFilterComponent from '../../../forms/components/FormsChipsFilterComponent';
-import SourcesChipsFilterComponent from '../../../../components/filters/chips/SourcesChipsFilterComponent';
+import FormsFilterComponent from '../../../forms/components/FormsFilterComponent';
+import OrgUnitTypeFilterComponent from '../../../forms/components/OrgUnitTypeFilterComponent';
+import SourcesFilterComponent from '../../../forms/components/SourcesFilterComponent';
 import MarkerComponent from '../../../../components/maps/markers/MarkerComponent';
 import InnerDrawer from '../../../../components/nav/InnerDrawer';
 
@@ -56,6 +56,7 @@ import {
 
 export const zoom = 5;
 export const padding = [75, 75];
+const clusterSize = 25;
 
 const buttonsInitialState = {
     location: {
@@ -88,6 +89,8 @@ const initialState = currentUser => {
         canEditLocation: hasFeatureFlag(currentUser, EDIT_GEO_JSON_RIGHT),
         canEditCatchment: hasFeatureFlag(currentUser, EDIT_CATCHMENT_RIGHT),
         currentOption: 'filters',
+        formsSelected: [],
+        orgUnitTypesSelected: [],
         ...buttonsInitialState,
     };
 };
@@ -98,7 +101,7 @@ class OrgUnitMapComponent extends Component {
         this.state = initialState(props.currentUser);
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         const {
             intl: { formatMessage },
             orgUnit,
@@ -149,13 +152,6 @@ class OrgUnitMapComponent extends Component {
                 formatMessage(MESSAGES.catchment),
             );
         }
-        if (
-            this.props.sourcesSelected &&
-            !prevProps.sourcesSelected &&
-            this.props.orgUnitTypesSelected
-        ) {
-            this.fitToBounds();
-        }
     }
 
     componentWillUnmount() {
@@ -189,14 +185,14 @@ class OrgUnitMapComponent extends Component {
     }
 
     fitToBounds() {
+        const { currentTile, orgUnit, sourcesSelected } = this.props;
         const {
-            currentTile,
-            orgUnit,
-            orgUnitTypesSelected,
-            sourcesSelected,
+            location,
+            locationGroup,
+            catchmentGroup,
             formsSelected,
-        } = this.props;
-        const { location, locationGroup, catchmentGroup } = this.state;
+            orgUnitTypesSelected,
+        } = this.state;
         fitToBounds({
             padding,
             currentTile,
@@ -302,14 +298,12 @@ class OrgUnitMapComponent extends Component {
         const {
             orgUnit,
             currentTile,
-            sourcesSelected,
-            formsSelected,
-            orgUnitTypesSelected,
             saveOrgUnit,
             orgUnitLocationModified,
-            theme,
             classes,
             orgUnitTypes,
+            setSourcesSelected,
+            sourcesSelected,
         } = this.props;
         const {
             location,
@@ -318,6 +312,9 @@ class OrgUnitMapComponent extends Component {
             locationGroup,
             canEditLocation,
             canEditCatchment,
+            formsSelected,
+            orgUnitTypesSelected,
+            catchmentGroup,
         } = this.state;
         const hasMarker =
             Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
@@ -372,14 +369,37 @@ class OrgUnitMapComponent extends Component {
                     }
                     filtersOptionComponent={
                         <>
-                            <SourcesChipsFilterComponent
+                            <SourcesFilterComponent
                                 fitToBounds={() => this.fitToBounds()}
+                                sourcesSelected={sourcesSelected}
+                                setSourcesSelected={setSourcesSelected}
                             />
-                            <OrgUnitTypeChipsFilterComponent
+                            <OrgUnitTypeFilterComponent
                                 fitToBounds={() => this.fitToBounds()}
+                                orgUnitTypesSelected={orgUnitTypesSelected}
+                                setOrgUnitTypesSelected={outypes => {
+                                    this.setState({
+                                        orgUnitTypesSelected: outypes,
+                                    });
+                                }}
                             />
-                            <FormsChipsFilterComponent
-                                fitToBounds={() => this.fitToBounds()}
+                            <FormsFilterComponent
+                                formsSelected={formsSelected}
+                                setFormsSelected={forms => {
+                                    this.setState({ formsSelected: forms });
+                                    fitToBounds({
+                                        padding,
+                                        currentTile,
+                                        orgUnit,
+                                        orgUnitTypesSelected,
+                                        sourcesSelected,
+                                        formsSelected: forms,
+                                        editLocationEnabled: location.edit,
+                                        locationGroup,
+                                        catchmentGroup,
+                                        map: this.map.leafletElement,
+                                    });
+                                }}
                             />
                         </>
                     }
@@ -534,58 +554,90 @@ class OrgUnitMapComponent extends Component {
                             </>
                         )}
 
-                        <MarkerClusterGroup
-                            maxClusterRadius={0} // only apply cluster on markers with same coordinates
-                            iconCreateFunction={cluster =>
-                                colorClusterCustomMarker(
-                                    cluster,
-                                    theme.palette.secondary.main,
-                                )
-                            }
+                        <Pane
+                            name={`${orgunitsPane}-markers`}
+                            style={{ zIndex: 698 }}
                         >
-                            <Pane
-                                name={`${orgunitsPane}-markers`}
-                                style={{ zIndex: 699 }}
-                            >
-                                {mappedOrgUnitTypesSelected.map(ot =>
-                                    getMarkerList(
+                            {mappedOrgUnitTypesSelected.map(ot => (
+                                <MarkerClusterGroup
+                                    key={ot.id}
+                                    maxClusterRadius={5}
+                                    iconCreateFunction={cluster =>
+                                        colorClusterCustomMarker(
+                                            cluster,
+                                            ot.color,
+                                            clusterSize,
+                                        )
+                                    }
+                                >
+                                    {getMarkerList(
                                         ot.orgUnits.locations,
                                         a => this.fetchSubOrgUnitDetail(a),
                                         ot.color,
                                         ot.id,
-                                    ),
-                                )}
-                                {mappedSourcesSelected.map(s =>
-                                    getMarkerList(
+                                    )}
+                                </MarkerClusterGroup>
+                            ))}
+                            {mappedSourcesSelected.map(s => (
+                                <MarkerClusterGroup
+                                    key={s.id}
+                                    maxClusterRadius={5}
+                                    iconCreateFunction={cluster =>
+                                        colorClusterCustomMarker(
+                                            cluster,
+                                            s.color,
+                                            clusterSize,
+                                        )
+                                    }
+                                >
+                                    {getMarkerList(
                                         s.orgUnits.locations,
                                         a => this.fetchSubOrgUnitDetail(a),
                                         s.color,
                                         s.id,
-                                    ),
-                                )}
-                                {formsSelected.map(f =>
-                                    getMarkerList(
+                                    )}
+                                </MarkerClusterGroup>
+                            ))}
+
+                            {formsSelected.map(f => (
+                                <MarkerClusterGroup
+                                    key={f.id}
+                                    maxClusterRadius={5}
+                                    iconCreateFunction={cluster =>
+                                        colorClusterCustomMarker(
+                                            cluster,
+                                            f.color,
+                                            clusterSize,
+                                        )
+                                    }
+                                >
+                                    {getMarkerList(
                                         f.instances,
                                         a => this.fetchInstanceDetail(a),
                                         f.color,
                                         f.id,
                                         InstancePopupComponent,
-                                    ),
-                                )}
-                                {hasMarker && currentOption !== 'edit' && (
-                                    <MarkerComponent
-                                        item={orgUnit}
-                                        draggable={currentOption === 'edit'}
-                                        onDragend={newMarker =>
-                                            this.props.onChangeLocation(
-                                                newMarker.getLatLng(),
-                                            )
-                                        }
-                                    />
-                                )}
-                            </Pane>
-                        </MarkerClusterGroup>
+                                    )}
+                                </MarkerClusterGroup>
+                            ))}
+                        </Pane>
 
+                        {hasMarker && currentOption !== 'edit' && (
+                            <Pane
+                                name={`${orgunitsPane}-current-marker`}
+                                style={{ zIndex: 699 }}
+                            >
+                                <MarkerComponent
+                                    item={orgUnit}
+                                    draggable={currentOption === 'edit'}
+                                    onDragend={newMarker =>
+                                        this.props.onChangeLocation(
+                                            newMarker.getLatLng(),
+                                        )
+                                    }
+                                />
+                            </Pane>
+                        )}
                         {hasMarker && currentOption === 'edit' && (
                             <Pane
                                 name={`${orgunitsPane}-edit-markers`}
@@ -610,8 +662,7 @@ class OrgUnitMapComponent extends Component {
 }
 
 OrgUnitMapComponent.defaultProps = {
-    sourcesSelected: undefined,
-    orgUnitTypesSelected: undefined,
+    sourcesSelected: [],
 };
 
 OrgUnitMapComponent.propTypes = {
@@ -622,31 +673,23 @@ OrgUnitMapComponent.propTypes = {
     onChangeLocation: PropTypes.func.isRequired,
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
-    formsSelected: PropTypes.array.isRequired,
     setCurrentSubOrgUnit: PropTypes.func.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
-    sourcesSelected: PropTypes.oneOfType([PropTypes.number, PropTypes.array]),
-    orgUnitTypesSelected: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.array,
-    ]),
+    sourcesSelected: PropTypes.array,
     resetOrgUnit: PropTypes.func.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,
     setOrgUnitLocationModified: PropTypes.func.isRequired,
     orgUnitLocationModified: PropTypes.bool.isRequired,
-    theme: PropTypes.object.isRequired,
     currentUser: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
+    setSourcesSelected: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentUser: state.users.current,
-    formsSelected: state.orgUnits.currentFormsSelected,
     currentTile: state.map.currentTile,
-    orgUnitTypesSelected: state.orgUnits.currentSubOrgUnitsTypesSelected,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
-    sourcesSelected: state.orgUnits.currentSourcesSelected,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -659,4 +702,4 @@ const MapDispatchToProps = dispatch => ({
 export default connect(
     MapStateToProps,
     MapDispatchToProps,
-)(withStyles(styles, { withTheme: true })(injectIntl(OrgUnitMapComponent)));
+)(withStyles(styles)(injectIntl(OrgUnitMapComponent)));

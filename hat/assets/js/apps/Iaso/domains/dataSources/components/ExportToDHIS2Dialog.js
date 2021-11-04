@@ -125,7 +125,7 @@ export const ExportToDHIS2Dialog = ({
                 closeDialog();
             }
         },
-        [exportData, exportToDHIS2],
+        [exportData, exportToDHIS2, formatMessage],
     );
 
     const allowConfirm =

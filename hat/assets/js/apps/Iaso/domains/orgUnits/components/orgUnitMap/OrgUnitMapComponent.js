@@ -18,7 +18,7 @@ import {
     orderOrgUnitTypeByDepth,
     ZoomControl,
 } from '../../../../utils/mapUtils';
-import { getMarkerList, getLinksSources } from '../../utils';
+import { getMarkerList } from '../../utils';
 
 import TileSwitch from '../../../../components/maps/tools/TileSwitchComponent';
 import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
@@ -99,6 +99,7 @@ class OrgUnitMapComponent extends Component {
     constructor(props) {
         super(props);
         this.state = initialState(props.currentUser);
+        this.useOrgUnitLocation = this.useOrgUnitLocation.bind(this);
     }
 
     async componentDidMount() {
@@ -570,12 +571,15 @@ class OrgUnitMapComponent extends Component {
                                         )
                                     }
                                 >
-                                    {getMarkerList(
-                                        ot.orgUnits.locations,
-                                        a => this.fetchSubOrgUnitDetail(a),
-                                        ot.color,
-                                        ot.id,
-                                    )}
+                                    {getMarkerList({
+                                        locationsList: ot.orgUnits.locations,
+                                        fetchDetail: a =>
+                                            this.fetchSubOrgUnitDetail(a),
+                                        color: ot.color,
+                                        keyId: ot.id,
+                                        useOrgUnitLocation:
+                                            this.useOrgUnitLocation,
+                                    })}
                                 </MarkerClusterGroup>
                             ))}
                             {mappedSourcesSelected.map(s => (
@@ -590,12 +594,15 @@ class OrgUnitMapComponent extends Component {
                                         )
                                     }
                                 >
-                                    {getMarkerList(
-                                        s.orgUnits.locations,
-                                        a => this.fetchSubOrgUnitDetail(a),
-                                        s.color,
-                                        s.id,
-                                    )}
+                                    {getMarkerList({
+                                        locationsList: s.orgUnits.locations,
+                                        fetchDetail: a =>
+                                            this.fetchSubOrgUnitDetail(a),
+                                        color: s.color,
+                                        keyId: s.id,
+                                        useOrgUnitLocation:
+                                            this.useOrgUnitLocation,
+                                    })}
                                 </MarkerClusterGroup>
                             ))}
 
@@ -611,13 +618,16 @@ class OrgUnitMapComponent extends Component {
                                         )
                                     }
                                 >
-                                    {getMarkerList(
-                                        f.instances,
-                                        a => this.fetchInstanceDetail(a),
-                                        f.color,
-                                        f.id,
-                                        InstancePopupComponent,
-                                    )}
+                                    {getMarkerList({
+                                        locationsList: f.instances,
+                                        fetchDetail: a =>
+                                            this.fetchInstanceDetail(a),
+                                        color: f.color,
+                                        keyId: f.id,
+                                        PopupComponent: InstancePopupComponent,
+                                        useOrgUnitLocation:
+                                            this.useOrgUnitLocation,
+                                    })}
                                 </MarkerClusterGroup>
                             ))}
                         </Pane>

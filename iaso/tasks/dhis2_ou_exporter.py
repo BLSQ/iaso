@@ -33,7 +33,7 @@ def dhis2_ou_exporter(
     field_names,
     task: Task = None,
 ):
-    task.report_progress_and_stop_if_killed(progress_message="Fetching diff")
+    task.report_progress_and_stop_if_killed(progress_message="Computing differences")
     iaso_logger = CommandLogger(sys.stdout)
     source_version = SourceVersion.objects.get(pk=version_id)
     ref_source_version = SourceVersion.objects.get(pk=ref_version_id)
@@ -56,5 +56,5 @@ def dhis2_ou_exporter(
     if not api:
         raise ValueError("No credentials exist for this source, please provide them")
 
-    Exporter(iaso_logger).export_to_dhis2(api, diffs, fields)
-    task.report_success("Export succesful")
+    Exporter(iaso_logger).export_to_dhis2(api, diffs, fields, task)
+    task.report_success(message="Export Done")

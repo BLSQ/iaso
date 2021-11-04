@@ -57,4 +57,4 @@ def dhis2_ou_exporter(
         raise ValueError("No credentials exist for this source, please provide them")
 
     Exporter(iaso_logger).export_to_dhis2(api, diffs, fields, task)
-    task.report_success(progress_message="Export Done")
+    task.report_success(message="Export Done")

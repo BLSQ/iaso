@@ -164,7 +164,7 @@ const formsTableColumns = (
         width: 250,
         accessor: 'actions',
         Cell: settings => {
-            let urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}/tab/list/columns/form_name,updated_at,org_unit__name,created_at,status`;
+            let urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}/tab/list/columns/updated_at,org_unit__name,created_at,status`;
             if (
                 component &&
                 component.state &&

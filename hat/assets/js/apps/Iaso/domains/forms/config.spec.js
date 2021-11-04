@@ -165,7 +165,7 @@ describe('Forms config', () => {
                 wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));
                 const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
                 expect(redEyeIcon.prop('url')).to.equal(
-                    'instances/formId/69/levels/1',
+                    'forms/submissions/formIds/69/tab/list/columns/updated_at,org_unit__name,created_at,status/levels/1',
                 );
                 expect(redEyeIcon).to.have.lengthOf(1);
             });

@@ -5,6 +5,7 @@ import ConnectedInstances from './index';
 
 import { mockGetRequestsList } from '../../../../test/utils/requests';
 import { renderWithStore } from '../../../../test/utils/redux';
+import { withQueryClientProvider } from '../../../../test/utils';
 
 const formId = 1;
 const requests = [
@@ -27,23 +28,8 @@ const requests = [
         },
     },
     {
-        url: `/api/forms/${formId}/?fields=name,period_type,label_keys,id`,
-        body: {},
-    },
-    // Nock complains if we don't list this call, but it doesn't intercept it, hence the value of 1 line 70
-    {
-        url: `/api/forms/${formId}/?fields=possible_fields`,
-        body: {},
-    },
-    {
-        url: `/api/instances/?&limit=20&order=-updated_at&page=1&asSmallDict=true&form_id=${formId}`,
-        body: {
-            instances: [],
-        },
-    },
-    {
-        url: `/api/instances/?&order=-updated_at&asSmallDict=true&form_id=${formId}&asSmallDict=true`,
-        body: [],
+        url: `/api/forms/?all=true&order=name&fields=name%2Cperiod_type%2Clabel_keys%2Cid`,
+        forms: {},
     },
 ];
 
@@ -58,15 +44,17 @@ describe('Instances connected component', () => {
     it('mount properly', () => {
         connectedWrapper = mount(
             renderWithStore(
-                <ConnectedInstances
-                    params={{ formId, tab: 'map' }}
-                    router={{ goBack: () => null }}
-                />,
+                withQueryClientProvider(
+                    <ConnectedInstances
+                        params={{ formId, tab: 'map' }}
+                        router={{ goBack: () => null }}
+                    />,
+                ),
             ),
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });
     it('should connect and call the api', () => {
-        expect(nock.activeMocks()).to.have.lengthOf(1);
+        expect(nock.activeMocks()).to.have.lengthOf(0);
     });
 });

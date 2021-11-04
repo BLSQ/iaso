@@ -181,8 +181,11 @@ export const useSaveDataSource = setFieldErrors => {
     const saveDataSource = async form => {
         setIsSaving(true);
         // eslint-disable-next-line camelcase
-        const { is_default_source, ...campaignData } = Object.keys(form).map(
-            (key, valueDict) => valueDict.value,
+        const { is_default_source, ...campaignData } = Object.fromEntries(
+            Object.entries(form).map(([key, valueDict]) => [
+                key,
+                valueDict.value,
+            ]),
         );
 
         try {
@@ -201,7 +204,7 @@ export const useSaveDataSource = setFieldErrors => {
                 );
             }
             setIsSaving(false);
-            return;
+            throw error;
         }
 
         // eslint-disable-next-line camelcase

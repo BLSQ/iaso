@@ -177,7 +177,16 @@ export const getOrgUnitAncestorsIds = orgUnit => {
 export const getOrgUnitAncestors = orgUnit => {
     const result = new Map(
         getOrgUnitsParentsUntilRoot(orgUnit)
-            .map(parent => [parent.id, parent.name])
+            .map(parent => [
+                parent.id.toString(),
+                {
+                    // selecting the necessary fields, as there are many more than those returned by the API used in the treeview itself
+                    // this will allow to use the same label formatting function in the TruncatedTreeview and in the Treeview
+                    name: parent.name,
+                    id: parent.id.toString(),
+                    validation_status: parent.validation_status,
+                },
+            ])
             .reverse(),
     );
     return result;

@@ -58,6 +58,7 @@ const OrgUnitTreeviewPicker = ({
     placeholder,
     required,
     disabled,
+    label,
 }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
@@ -89,11 +90,13 @@ const OrgUnitTreeviewPicker = ({
             );
         const treeviews = [];
         treesData.forEach((value, key) => {
+            // console.log(value, key);
             const treeview = (
                 <TruncatedTreeview
                     onClick={disabled ? noOp : onClick}
                     selectedItems={value}
                     key={`TruncatedTree${key.toString()}`}
+                    label={label}
                 />
             );
             treeviews.push(treeview);
@@ -145,6 +148,7 @@ OrgUnitTreeviewPicker.propTypes = {
     placeholder: oneOfType([object, string]),
     required: bool,
     disabled: bool,
+    label: func.isRequired,
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: [],

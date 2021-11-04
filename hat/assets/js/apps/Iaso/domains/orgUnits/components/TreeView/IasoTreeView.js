@@ -28,8 +28,7 @@ const useStyles = makeStyles(styles);
 const IasoTreeView = ({
     getChildrenData,
     getRootData,
-    labelField, // name
-    nodeField, // id
+    label,
     multiselect,
     expanded,
     selected,
@@ -54,29 +53,29 @@ const IasoTreeView = ({
     const makeChildren = useCallback(
         data => {
             if (!data) return null;
-            return data.map(item => (
-                <EnrichedTreeItem
-                    label={item[labelField]}
-                    id={item[nodeField].toString()}
-                    data={item.data}
-                    key={`RootTreeItem ${item[nodeField]}`}
-                    fetchChildrenData={fetchChildrenData}
-                    expanded={expanded}
-                    selected={selected}
-                    hasChildren={item.hasChildren}
-                    toggleOnLabelClick={toggleOnLabelClick}
-                    onCheckBoxClick={onCheckBoxClick}
-                    onLabelClick={onLabelClick}
-                    withCheckbox={multiselect}
-                    ticked={ticked}
-                    parentsTicked={parentsTicked}
-                    scrollIntoView={scrollIntoView}
-                />
-            ));
+            return data.map(item => {
+                return (
+                    <EnrichedTreeItem
+                        label={label}
+                        id={item.id}
+                        data={item}
+                        key={`RootTreeItem ${item.id}`}
+                        fetchChildrenData={fetchChildrenData}
+                        expanded={expanded}
+                        selected={selected}
+                        toggleOnLabelClick={toggleOnLabelClick}
+                        onCheckBoxClick={onCheckBoxClick}
+                        onLabelClick={onLabelClick}
+                        withCheckbox={multiselect}
+                        ticked={ticked}
+                        parentsTicked={parentsTicked}
+                        scrollIntoView={scrollIntoView}
+                    />
+                );
+            });
         },
         [
-            labelField,
-            nodeField,
+            label,
             fetchChildrenData,
             expanded,
             selected,
@@ -120,8 +119,7 @@ const IasoTreeView = ({
 IasoTreeView.propTypes = {
     getChildrenData: func,
     getRootData: func,
-    labelField: string.isRequired,
-    nodeField: string.isRequired,
+    label: func.isRequired, // a function that will return the label, including additional icons
     multiselect: bool,
     toggleOnLabelClick: bool,
     expanded: arrayOf(string).isRequired,

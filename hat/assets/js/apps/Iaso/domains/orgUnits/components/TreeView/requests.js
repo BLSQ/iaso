@@ -12,10 +12,8 @@ const getChildrenData = async id => {
     });
     const usableData = response.orgunits.map(orgUnit => {
         return {
-            id: orgUnit.id,
-            name: orgUnit.name,
-            hasChildren: orgUnit.has_children,
-            data: orgUnit,
+            ...orgUnit,
+            id: orgUnit.id.toString(),
         };
     });
     return usableData;
@@ -39,10 +37,8 @@ const getRootData = async (id, type = 'source') => {
     });
     const usableData = response.orgunits.map(orgUnit => {
         return {
+            ...orgUnit,
             id: orgUnit.id.toString(),
-            name: orgUnit.name,
-            hasChildren: orgUnit.has_children,
-            data: orgUnit,
         };
     });
     return usableData;

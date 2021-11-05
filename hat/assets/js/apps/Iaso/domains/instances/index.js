@@ -1,21 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { makeStyles, Grid, Box } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
+import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
 import PropTypes from 'prop-types';
 
 import {
+    AddButton as AddButtonComponent,
     commonStyles,
     LoadingSpinner,
-    AddButton as AddButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    resetInstances,
-    setInstances,
-    setInstancesFetching,
-    createInstance,
-} from './actions';
+import { createInstance, setInstances } from './actions';
 import { redirectToReplace } from '../../routing/actions';
 import { fetchFormDetailsForInstance, fetchPossibleFields } from './requests';
 import {
@@ -24,10 +19,10 @@ import {
 } from '../../utils/requests';
 
 import {
+    getEndpointUrl,
+    getFilters,
     getInstancesFilesList,
     getSelectionActions,
-    getFilters,
-    getEndpointUrl,
 } from './utils';
 
 import { InstancesTopBar as TopBar } from './components/InstancesTopBar';
@@ -41,6 +36,7 @@ import SingleTable from '../../components/tables/SingleTable';
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
+import { useQuery } from 'react-query';
 
 const baseUrl = baseUrls.instances;
 
@@ -59,63 +55,60 @@ const Instances = ({ params }) => {
     const dispatch = useDispatch();
 
     const reduxPage = useSelector(state => state.instances.instancesPage);
-    const loadingList = useSelector(state => state.instances.fetching);
 
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
-    const [loadingMap, setLoadingMap] = useState(tab === 'map');
     const [forceRefresh, setForceRefresh] = useState(false);
-    const [instancesSmall, setInstancesSmall] = useState(null);
-    const [labelKeys, setLabelKeys] = useState([]);
-    const [formName, setFormName] = useState('');
-    const [possibleFields, setPossibleFields] = useState(null);
-    const [periodType, setPeriodType] = useState(null);
 
-    const fetchSmallInstances = (queryParams = params) => {
-        const urlSmall = getEndpointUrl(queryParams, false, '', true);
-        setLoadingMap(true);
-        return fetchInstancesAsSmallDict(dispatch, urlSmall).then(
-            smallInstancesData => {
-                setInstancesSmall(smallInstancesData || []);
-                setLoadingMap(false);
-            },
-        );
-    };
+    const { data: instancesSmall, isLoading: loadingMap } = useQuery(
+        ['instancesSmall', params],
+        () =>
+            fetchInstancesAsSmallDict(
+                dispatch,
+                getEndpointUrl(params, false, '', true),
+            ),
 
-    const fetchInstances = (changeLoad = true, queryParams = params) => {
-        const url = getEndpointUrl(queryParams);
-        if (changeLoad) {
-            dispatch(setInstancesFetching(true));
-        }
-        return fetchInstancesAsDict(dispatch, url).then(instancesData => {
-            if (changeLoad) {
-                dispatch(setInstancesFetching(false));
-            }
-            dispatch(
-                setInstances(
-                    instancesData.instances,
-                    true,
-                    queryParams,
-                    instancesData.count,
-                    instancesData.pages,
+        { enabled: params.tab === 'map' },
+    );
+    const { data: instances, isLoading: loadingList } = useQuery(
+        ['instances', params],
+        () => fetchInstancesAsDict(dispatch, getEndpointUrl(params)),
+        {
+            onSuccess: instancesData =>
+                dispatch(
+                    setInstances(
+                        instancesData.instances,
+                        true,
+                        params,
+                        instancesData.count,
+                        instancesData.pages,
+                    ),
                 ),
-            );
-            return {
-                list: instancesData.instances,
-                count: instancesData.count,
-                pages: instancesData.pages,
-            };
-        });
-    };
+        },
+    );
+    const formIds = params.formIds?.split(',');
+    const formId = formIds?.length === 1 ? formIds[0] : undefined;
+
+    const { data: formDetails } = useQuery(
+        ['FormDetailsForInstance', formId],
+        () => fetchFormDetailsForInstance(formId),
+        { enabled: Boolean(formId) },
+    );
+    const labelKeys = formDetails?.label_keys ?? [];
+    const formName = formDetails?.name ?? '';
+    const periodType = formDetails?.period_type;
+
+    const { data: possibleFields } = useQuery(
+        ['PossibleFieldForForm'],
+        () => fetchPossibleFields(formId),
+        { enabled: Boolean(formId) },
+    );
 
     const handleChangeTab = newTab => {
         const newParams = {
             ...params,
             tab: newTab,
         };
-        if (newTab === 'map' && !instancesSmall) {
-            fetchSmallInstances(newParams);
-        }
         dispatch(redirectToReplace(baseUrl, newParams));
         setTab(newTab);
     };
@@ -124,50 +117,6 @@ const Instances = ({ params }) => {
         dispatch(redirectToReplace(baseUrl, newParams));
     };
 
-    useEffect(() => {
-        dispatch(resetInstances);
-        fetchInstances();
-        if (params.tab === 'map') {
-            fetchSmallInstances();
-        } else {
-            setInstancesSmall(null);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        params.pageSize,
-        params.formIds,
-        params.order,
-        params.page,
-        params.withLocation,
-        params.showDeleted,
-        params.orgUnitTypeId,
-        params.periods,
-        params.status,
-        params.deviceId,
-        params.deviceOwnershipId,
-        params.search,
-        params.levels,
-        params.dateFrom,
-        params.dateTo,
-        params.formIds,
-    ]);
-
-    useEffect(() => {
-        const onLoad = async () => {
-            const formIds = params.formIds?.split(',');
-            if (formIds?.length === 1) {
-                const formDetails = await fetchFormDetailsForInstance(
-                    formIds[0],
-                );
-                const newPossibleFields = await fetchPossibleFields(formIds[0]);
-                setLabelKeys(formDetails.label_keys ?? []);
-                setFormName(formDetails.name);
-                setPeriodType(formDetails.period_type);
-                setPossibleFields(newPossibleFields);
-            }
-        };
-        onLoad();
-    }, [params.formIds]);
     const fetching = loadingMap || loadingList;
 
     return (

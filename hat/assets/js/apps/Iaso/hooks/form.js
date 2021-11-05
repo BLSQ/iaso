@@ -91,3 +91,12 @@ export function useFormState(initialValues) {
 
     return [formState, setFieldValue, setFieldErrors, setFormState];
 }
+
+export const getValues = formState => {
+    return Object.fromEntries(
+        Object.entries(formState).map(([key, valueDict]) => [
+            key,
+            valueDict.value,
+        ]),
+    );
+};

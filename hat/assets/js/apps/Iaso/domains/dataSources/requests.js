@@ -9,6 +9,7 @@ import { errorSnackBar } from '../../constants/snackBars';
 import snackBarMessages from '../../components/snackBars/messages';
 import { fetchCurrentUser } from '../users/actions';
 import { useSnackMutation, useSnackQuery } from '../../libs/apiHooks';
+import { getValues } from '../../hooks/form';
 
 /**
  *
@@ -182,12 +183,7 @@ export const useSaveDataSource = setFieldErrors => {
     const saveDataSource = async form => {
         setIsSaving(true);
         // eslint-disable-next-line camelcase
-        const { is_default_source, ...campaignData } = Object.fromEntries(
-            Object.entries(form).map(([key, valueDict]) => [
-                key,
-                valueDict.value,
-            ]),
-        );
+        const { is_default_source, ...campaignData } = getValues(form);
 
         try {
             if (campaignData.id) {

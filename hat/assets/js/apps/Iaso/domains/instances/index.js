@@ -39,6 +39,7 @@ import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { useSnackQuery } from '../../libs/apiHooks';
 import snackMessages from '../../components/snackBars/messages';
+import { useQueryClient } from 'react-query';
 
 const baseUrl = baseUrls.instances;
 
@@ -55,16 +56,16 @@ const Instances = ({ params }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
+    const queryClient = useQueryClient();
 
     const reduxPage = useSelector(state => state.instances.instancesPage);
 
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
-    const [forceRefresh, setForceRefresh] = useState(false);
 
     // Data for the map, only map tab
     const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
-        ['instancesSmall', params],
+        ['instances', 'small', params],
         () =>
             fetchInstancesAsSmallDict(getEndpointUrl(params, false, '', true)),
         snackMessages.fetchInstanceLocationError,
@@ -89,6 +90,9 @@ const Instances = ({ params }) => {
                 ),
         },
     );
+    // Move to delete when we port dialog to react-query
+    const refetchInstances = () => queryClient.invalidateQueries(['instances']);
+
     const formIds = params.formIds?.split(',');
     const formId = formIds?.length === 1 ? formIds[0] : undefined;
 
@@ -206,8 +210,6 @@ const Instances = ({ params }) => {
                 )}
                 {tab === 'list' && tableColumns.length > 0 && (
                     <SingleTable
-                        forceRefresh={forceRefresh}
-                        onForceRefreshDone={() => setForceRefresh(false)}
                         apiParams={{
                             ...params,
                         }}
@@ -225,7 +227,7 @@ const Instances = ({ params }) => {
                         selectionActions={getSelectionActions(
                             formatMessage,
                             getFilters(params),
-                            () => setForceRefresh(true),
+                            () => refetchInstances(),
                             params.showDeleted === 'true',
                             classes,
                         )}

@@ -1,5 +1,13 @@
 import React, { useCallback, useRef, useEffect } from 'react';
-import { string, func, arrayOf, bool, any, array, oneOfType } from 'prop-types';
+import {
+    string,
+    func,
+    arrayOf,
+    bool,
+    object,
+    array,
+    oneOfType,
+} from 'prop-types';
 import { TreeItem } from '@material-ui/lab';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
@@ -29,7 +37,6 @@ const useStyles = makeStyles(styles);
 const EnrichedTreeItem = ({
     label,
     id,
-    hasChildren,
     fetchChildrenData, // fetchChildrenData(id)
     expanded,
     toggleOnLabelClick,
@@ -50,6 +57,7 @@ const EnrichedTreeItem = ({
         isExpanded,
     );
     const ref = useRef();
+    const hasChildren = data.has_children;
 
     const makeIcon = (hasCheckbox, hasBeenTicked, tickedParent) => {
         if (!hasCheckbox) return null;
@@ -92,23 +100,24 @@ const EnrichedTreeItem = ({
 
     const makeSubTree = subTreeData => {
         if (!subTreeData) return null;
-        return subTreeData.map(unit => (
-            <EnrichedTreeItem
-                key={`TreeItem ${unit.id}`}
-                label={unit.name || `id: ${unit.id.toString()}`}
-                id={unit.id.toString()}
-                fetchChildrenData={fetchChildrenData}
-                expanded={expanded}
-                hasChildren={unit.hasChildren}
-                toggleOnLabelClick={toggleOnLabelClick}
-                onLabelClick={onLabelClick}
-                data={unit.data ?? null}
-                withCheckbox={withCheckbox}
-                ticked={ticked}
-                parentsTicked={parentsTicked}
-                scrollIntoView={scrollIntoView}
-            />
-        ));
+        return subTreeData.map(unit => {
+            return (
+                <EnrichedTreeItem
+                    key={`TreeItem ${unit.id}`}
+                    label={label}
+                    id={unit.id}
+                    fetchChildrenData={fetchChildrenData}
+                    expanded={expanded}
+                    toggleOnLabelClick={toggleOnLabelClick}
+                    onLabelClick={onLabelClick}
+                    data={unit}
+                    withCheckbox={withCheckbox}
+                    ticked={ticked}
+                    parentsTicked={parentsTicked}
+                    scrollIntoView={scrollIntoView}
+                />
+            );
+        });
     };
     if (isExpanded && isLoading) {
         return (
@@ -116,7 +125,7 @@ const EnrichedTreeItem = ({
                 classes={{ root: classes.treeItem }}
                 ref={ref}
                 label={makeLabel(
-                    label || `id: ${id.toString()}`,
+                    label(data),
                     withCheckbox,
                     isTicked,
                     isTickedParent,
@@ -133,7 +142,7 @@ const EnrichedTreeItem = ({
                     classes={{ root: classes.treeItem }}
                     ref={ref}
                     label={makeLabel(
-                        label || `id: ${id.toString()}`,
+                        label(data),
                         withCheckbox,
                         isTicked,
                         isTickedParent,
@@ -156,11 +165,7 @@ const EnrichedTreeItem = ({
             <TreeItem
                 classes={{ root: classes.treeItem }}
                 ref={ref}
-                label={makeLabel(
-                    label || `id: ${id.toString()}`,
-                    withCheckbox,
-                    isTicked,
-                )}
+                label={makeLabel(label(data), withCheckbox, isTicked)}
                 nodeId={id}
                 collapseIcon={
                     <ArrowDropDownIcon style={{ fontSize: '24px' }} />
@@ -173,14 +178,12 @@ const EnrichedTreeItem = ({
 };
 
 EnrichedTreeItem.propTypes = {
-    label: string.isRequired,
+    label: func.isRequired,
     id: string.isRequired,
-    // should be wrapped in useCallback by parent
     fetchChildrenData: func,
     expanded: arrayOf(string),
-    hasChildren: bool,
     toggleOnLabelClick: bool,
-    data: any,
+    data: object.isRequired,
     onLabelClick: func,
     withCheckbox: bool,
     ticked: oneOfType([string, array]),
@@ -191,10 +194,8 @@ EnrichedTreeItem.propTypes = {
 EnrichedTreeItem.defaultProps = {
     fetchChildrenData: () => {},
     expanded: [],
-    hasChildren: false,
     toggleOnLabelClick: true,
     onLabelClick: () => {},
-    data: null,
     withCheckbox: false,
     ticked: [],
     parentsTicked: [],

@@ -177,7 +177,16 @@ export const getOrgUnitAncestorsIds = orgUnit => {
 export const getOrgUnitAncestors = orgUnit => {
     const result = new Map(
         getOrgUnitsParentsUntilRoot(orgUnit)
-            .map(parent => [parent.id, parent.name])
+            .map(parent => [
+                parent.id.toString(),
+                {
+                    // selecting the necessary fields, as there are many more than those returned by the API used in the treeview itself
+                    // this will allow to use the same label formatting function in the TruncatedTreeview and in the Treeview
+                    name: parent.name,
+                    id: parent.id.toString(),
+                    validation_status: parent.validation_status,
+                },
+            ])
             .reverse(),
     );
     return result;
@@ -205,29 +214,32 @@ export const getOrgUnitGroups = orgUnit => (
     </span>
 );
 
-export const getMarkerList = (
+export const getMarkerList = ({
     locationsList,
     fetchDetail,
     color,
     keyId,
+    useOrgUnitLocation,
     PopupComponent = OrgUnitPopupComponent,
-) => (
-    <MarkersListComponent
-        key={keyId}
-        items={locationsList}
-        onMarkerClick={fetchDetail}
-        PopupComponent={PopupComponent}
-        popupProps={{
-            displayUseLocation: true,
-            useLocation: selectedOrgUnit =>
-                this.useOrgUnitLocation(selectedOrgUnit),
-        }}
-        isCircle
-        markerProps={() => ({
-            ...circleColorMarkerOptions(color),
-        })}
-    />
-);
+}) => {
+    return (
+        <MarkersListComponent
+            key={keyId}
+            items={locationsList}
+            onMarkerClick={fetchDetail}
+            PopupComponent={PopupComponent}
+            popupProps={{
+                displayUseLocation: true,
+                useLocation: selectedOrgUnit =>
+                    useOrgUnitLocation(selectedOrgUnit),
+            }}
+            isCircle
+            markerProps={() => ({
+                ...circleColorMarkerOptions(color),
+            })}
+        />
+    );
+};
 
 export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
     let sources = [];

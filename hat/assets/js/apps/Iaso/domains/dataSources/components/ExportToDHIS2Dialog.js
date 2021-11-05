@@ -12,6 +12,7 @@ import {
     useOrgUnitTypes,
     postToDHIS2,
     csvPreview,
+    useDataSourceForVersion,
 } from '../requests';
 import { orgUnitStatusAsOptions } from '../../../constants/filters';
 import {
@@ -60,7 +61,6 @@ export const ExportToDHIS2Dialog = ({
     dataSourceName,
     versions,
     defaultVersionId,
-    credentials,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
@@ -83,6 +83,12 @@ export const ExportToDHIS2Dialog = ({
         _setExportDataErrors,
         setExportData,
     ] = useFormState(initialExportData(defaultVersionId));
+
+    const sourceVersion = sourceVersions?.find(
+        v => v.id.toString() === exportData.source_version_id.value,
+    );
+    const { data: source } = useDataSourceForVersion(sourceVersion);
+    const credentials = source?.credentials;
 
     const refDataVersionId = exportData?.ref_version_id?.value;
     const sourceDataVersionId = exportData?.source_version_id?.value;
@@ -112,14 +118,14 @@ export const ExportToDHIS2Dialog = ({
 
     const onConfirm = useCallback(
         closeDialog => {
-            // eslint-disable-next-line no-restricted-globals
+            // eslint-disable-next-line no-restricted-globals,no-alert
             const r = confirm(formatMessage(MESSAGES.dhis2ExportSure));
             if (r) {
                 exportToDHIS2(convertFormStateToDict(exportData));
                 closeDialog();
             }
         },
-        [exportData, exportToDHIS2],
+        [exportData, exportToDHIS2, formatMessage],
     );
 
     const allowConfirm =
@@ -309,6 +315,37 @@ export const ExportToDHIS2Dialog = ({
                             />
                         </Box>
                     </Grid>
+                    {credentials && (
+                        <Grid xs={12} item>
+                            <Box display="flex" alignItems="center">
+                                <Typography
+                                    variant="subtitle1"
+                                    className={classes.subtitle}
+                                >
+                                    {formatMessage(
+                                        MESSAGES.credentialsForExport,
+                                    )}
+                                </Typography>
+                                {credentials?.is_valid && (
+                                    <Typography variant="body1">
+                                        {credentials.name
+                                            ? `: ${credentials.name} (${credentials.url})`
+                                            : `: ${credentials.url}`}
+                                    </Typography>
+                                )}
+                                {!credentials?.is_valid && (
+                                    <Typography
+                                        variant="body1"
+                                        className={classes.noCreds}
+                                    >
+                                        {`: ${formatMessage(
+                                            MESSAGES.noCredentialsForExport,
+                                        )}`}
+                                    </Typography>
+                                )}
+                            </Box>
+                        </Grid>
+                    )}
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>
@@ -320,10 +357,8 @@ ExportToDHIS2Dialog.propTypes = {
     dataSourceName: string.isRequired,
     versions: arrayOf(object).isRequired,
     defaultVersionId: number,
-    credentials: object,
 };
 
 ExportToDHIS2Dialog.defaultProps = {
     defaultVersionId: null,
-    credentials: null,
 };

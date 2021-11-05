@@ -1,6 +1,13 @@
 import React from 'react';
-import OrgUnitTooltip from '../OrgUnitTooltip';
+import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
+import HighlightOffIcon from '@material-ui/icons/HighlightOff';
+import FlareIcon from '@material-ui/icons/Flare';
+// import FiberNewIcon from '@material-ui/icons/FiberNew';
+import { Tooltip } from '@material-ui/core';
+import { useIntl } from 'react-intl';
 import { getOrgUnitAncestors } from '../../utils';
+import OrgUnitTooltip from '../OrgUnitTooltip';
+import MESSAGES from '../../messages';
 
 const formatInitialSelectedIds = orgUnits => {
     if (!orgUnits) return [];
@@ -27,6 +34,7 @@ const tooltip = (orgUnit, icon) => (
     </OrgUnitTooltip>
 );
 
+// TODO rename
 const adaptMap = value => {
     if (!value) return null;
     return Array.from(value.entries()) // original map in array form [[key1, entry1],[key2, entry2]]
@@ -42,6 +50,74 @@ const adaptMap = value => {
         )
         .flat();
 };
+
+export const makeTreeviewLabel = classes => orgUnit => {
+    const { formatMessage } = useIntl();
+    const style = {
+        display: 'inline-flex',
+        alignItems: 'center',
+        verticalAlign: 'middle',
+    };
+    let icon = null;
+    if (orgUnit?.validation_status === 'NEW')
+        // The icon has to be wrapped, otherwise Tooltip will crash
+        icon = (
+            <Tooltip title={formatMessage(MESSAGES.statusNew)} size="small">
+                <div style={style}>
+                    <FlareIcon fontSize="small" className={classes.new} />
+                </div>
+            </Tooltip>
+        );
+    if (orgUnit?.validation_status === 'VALID')
+        icon = (
+            <Tooltip title={formatMessage(MESSAGES.statusValid)} size="small">
+                <div style={style}>
+                    <CheckCircleOutlineIcon
+                        fontSize="small"
+                        className={classes.valid}
+                    />
+                </div>
+            </Tooltip>
+        );
+    if (orgUnit?.validation_status === 'REJECTED')
+        icon = (
+            <Tooltip
+                title={formatMessage(MESSAGES.statusRejected)}
+                size="small"
+            >
+                <div style={style}>
+                    <HighlightOffIcon
+                        fontSize="small"
+                        className={classes.rejected}
+                    />
+                </div>
+            </Tooltip>
+        );
+    return (
+        <>
+            {orgUnit.name || `id: ${orgUnit.id}`}
+            {icon}
+        </>
+    );
+};
+
+export const orgUnitTreeviewStatusIconsStyle = theme => ({
+    valid: {
+        color: theme.palette.success.main,
+        fontSize: '16px',
+        marginLeft: '10px',
+    },
+    new: {
+        color: theme.palette.primary.main,
+        fontSize: '16px',
+        marginLeft: '10px',
+    },
+    rejected: {
+        color: theme.palette.error.main,
+        fontSize: '16px',
+        marginLeft: '10px',
+    },
+});
 
 export {
     formatInitialSelectedIds,

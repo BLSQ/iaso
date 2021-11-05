@@ -5,6 +5,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 
+const alignTailIcon = { display: 'flex', alignItems: 'center' };
+// TODO remove repetitions
 const styles = theme => ({
     truncatedTreeview: {
         '&:hover .MuiTreeItem-label': {
@@ -18,6 +20,7 @@ const styles = theme => ({
         },
         '& .MuiTreeItem-label': {
             paddingLeft: '0px',
+            ...alignTailIcon,
         },
         color: theme.palette.mediumGray.main,
     },
@@ -28,6 +31,9 @@ const styles = theme => ({
         '&.MuiTreeItem-root:focus > .MuiTreeItem-content .MuiTreeItem-label': {
             backgroundColor: 'white',
         },
+        '& .MuiTreeItem-label': {
+            ...alignTailIcon,
+        },
         color: theme.palette.gray.main,
     },
     singleTreeItem: {
@@ -36,6 +42,7 @@ const styles = theme => ({
         },
         '& .MuiTreeItem-label': {
             paddingLeft: '0px',
+            ...alignTailIcon,
         },
         color: theme.palette.gray.main,
     },
@@ -47,9 +54,10 @@ const determineClassName = (items, nextItems, style) => {
 };
 const useStyles = makeStyles(styles);
 
-const TruncatedTreeview = ({ onClick, selectedItems }) => {
+const TruncatedTreeview = ({ onClick, selectedItems, label }) => {
     const style = useStyles();
     const mouseDownTime = useRef();
+
     const makeTreeItems = (items, initialItems) => {
         if (items.size === 0) return null;
         const nextItems = new Map(items);
@@ -67,8 +75,8 @@ const TruncatedTreeview = ({ onClick, selectedItems }) => {
                     <ArrowDropDownIcon style={{ fontSize: 'large' }} />
                 }
                 expandIcon={<ArrowRightIcon style={{ fontSize: 'large' }} />}
-                label={item[1]}
-                nodeId={item[0].toString()}
+                label={label(item[1])}
+                nodeId={item[0]}
             >
                 {items.size >= 1
                     ? makeTreeItems(nextItems, initialItems)
@@ -101,6 +109,7 @@ TruncatedTreeview.propTypes = {
     onClick: func.isRequired,
     // in fact a nested map : {orgUnitId:{parentId:parentName}}
     selectedItems: any,
+    label: func.isRequired,
 };
 TruncatedTreeview.defaultProps = {
     selectedItems: null,

@@ -9,17 +9,23 @@ import {
     string,
 } from 'prop-types';
 import { isEqual } from 'lodash';
+import { makeStyles } from '@material-ui/core/styles';
 import { TreeViewWithSearch } from './TreeViewWithSearch';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { MESSAGES } from './messages';
 import { getRootData, getChildrenData, searchOrgUnits } from './requests';
 import { OrgUnitLabel, getOrgUnitAncestors } from '../../utils';
+
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
 import {
     formatInitialSelectedIds,
     formatInitialSelectedParents,
     tooltip,
+    makeTreeviewLabel,
+    orgUnitTreeviewStatusIconsStyle,
 } from './utils';
+
+const useStyles = makeStyles(orgUnitTreeviewStatusIconsStyle);
 
 const OrgUnitTreeviewModal = ({
     titleMessage,
@@ -34,11 +40,13 @@ const OrgUnitTreeviewModal = ({
     version,
     required,
 }) => {
+    const classes = useStyles();
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
 
     const [selectedOrgUnitsIds, setSelectedOrgUnitsIds] = useState(
         formatInitialSelectedIds(initialSelection),
     );
+    // Using this value to generate TruncatedTree and tell the Treeview which nodes are already expanded
     const [selectedOrgUnitParents, setSelectedOrgUnitParents] = useState(
         formatInitialSelectedParents(initialSelection),
     );
@@ -156,6 +164,7 @@ const OrgUnitTreeviewModal = ({
                     placeholder={titleMessage}
                     required={required}
                     disabled={disabled}
+                    label={makeTreeviewLabel(classes)}
                 />
             )}
             titleMessage={titleMessage}
@@ -167,10 +176,9 @@ const OrgUnitTreeviewModal = ({
             allowConfirm={selectedOrgUnitsIds?.length > 0}
         >
             <TreeViewWithSearch
-                labelField="name"
-                nodeField="id"
                 getChildrenData={getChildrenData}
                 getRootData={getRootDataWithSource}
+                label={makeTreeviewLabel(classes)}
                 toggleOnLabelClick={toggleOnLabelClick}
                 onSelect={onOrgUnitSelect}
                 request={searchOrgUnitsWithSource}
@@ -182,8 +190,8 @@ const OrgUnitTreeviewModal = ({
                 multiselect={multiselect}
                 preselected={selectedOrgUnitsIds}
                 preexpanded={selectedOrgUnitParents}
-                onUpdate={onUpdate}
                 selectedData={selectedOrgUnits}
+                onUpdate={onUpdate}
             />
         </ConfirmCancelDialogComponent>
     );

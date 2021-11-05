@@ -353,6 +353,7 @@ class Task(models.Model):
 
     def report_success(self, message=None):
         logger.info(f"Task {self} reported success with message {message}")
+        self.progress_message = message
         self.status = SUCCESS
         self.ended_at = timezone.now()
         self.result = {"result": SUCCESS, "message": message}

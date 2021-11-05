@@ -326,6 +326,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.ouTypesHelperText',
         defaultMessage: 'Children org units',
     },
+    statusNew: {
+        id: 'iaso.orgUnits.statusNew',
+        defaultMessage: 'Validation status: NEW',
+    },
+    statusValid: {
+        id: 'iaso.orgUnits.statusNew',
+        defaultMessage: 'Validation status: VALID',
+    },
+    statusRejected: {
+        id: 'iaso.orgUnits.statusNew',
+        defaultMessage: 'Validation status: REJECTED',
+    },
 });
 
 export default MESSAGES;

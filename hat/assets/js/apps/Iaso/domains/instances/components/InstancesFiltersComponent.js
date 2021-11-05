@@ -23,11 +23,11 @@ import {
 } from '../../../constants/filters';
 import DatesRange from '../../../components/filters/DatesRange';
 
-import { INSTANCE_STATUSES, filtersKeys } from '../constants';
+import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
 import { useInstancesFiltersData, useGetForms } from '../hooks';
-import { useFormState } from '../../../hooks/form';
+import { getValues, useFormState } from '../../../hooks/form';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
@@ -126,7 +126,7 @@ const InstancesFiltersComponent = ({
             dispatch(setInstancesFilterUpdated(false));
             onSearch({
                 ...params,
-                ...getFilterParams(filtersKeys),
+                ...getValues(formState),
                 page: 1,
             });
         }
@@ -164,6 +164,7 @@ const InstancesFiltersComponent = ({
                                     'withLocation',
                                     'orgUnitTypeId',
                                     'periods',
+                                    'showDeleted',
                                 ])}
                                 redirectOnChange={false}
                                 onFilterChanged={handleFormChange}
@@ -211,7 +212,7 @@ const InstancesFiltersComponent = ({
                                 />
                             </Box>
                             <FiltersComponent
-                                params={getFilterParams(['showDeleted'])}
+                                params={getFilterParams(['search'])}
                                 redirectOnChange={false}
                                 onFilterChanged={handleFormChange}
                                 filters={[

@@ -91,6 +91,9 @@ class InstancesViewSet(viewsets.ViewSet):
         form_id = filters["form_id"]
         if form_id:
             form = Form.objects.get(pk=form_id)
+        form_ids = filters["form_ids"]
+        if form_ids:
+            form = Form.objects.filter(pk__in=form_ids.split(","))
 
         queryset = Instance.objects.order_by("-id")
 

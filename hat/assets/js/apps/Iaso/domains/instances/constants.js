@@ -33,15 +33,21 @@ export const INSTANCE_METAS_FIELDS = [
         type: 'info',
     },
     {
+        key: 'form_name',
+        accessor: 'form__name',
+        tableOrder: 1,
+        type: 'info',
+    },
+    {
         key: 'updated_at',
         render: value => displayDateFromTimestamp(value),
-        tableOrder: 1,
+        tableOrder: 2,
         type: 'info',
     },
     {
         key: 'created_at',
         render: value => displayDateFromTimestamp(value),
-        tableOrder: 4,
+        tableOrder: 5,
         type: 'info',
     },
     {
@@ -65,7 +71,7 @@ export const INSTANCE_METAS_FIELDS = [
                 </OrgUnitTooltip>
             );
         },
-        tableOrder: 2,
+        tableOrder: 3,
         type: 'location',
     },
     {
@@ -93,4 +99,19 @@ export const INSTANCE_METAS_FIELDS = [
         tableOrder: 5,
         type: 'info',
     },
+];
+
+export const filtersKeys = [
+    'formIds',
+    'withLocation',
+    'showDeleted',
+    'orgUnitTypeId',
+    'periods',
+    'status',
+    'deviceId',
+    'deviceOwnershipId',
+    'search',
+    'levels',
+    'dateFrom',
+    'dateTo',
 ];

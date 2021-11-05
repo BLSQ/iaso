@@ -1,6 +1,5 @@
 import {
     SET_INSTANCES,
-    SET_INSTANCES_SMALL_DICT,
     SET_INSTANCES_FETCHING,
     SET_CURRENT_INSTANCE,
     SET_INSTANCES_FILTER_UDPATED,
@@ -9,7 +8,6 @@ import {
 
 export const instancesInitialState = {
     fetching: true,
-    instancesSmall: null,
     instancesPage: {
         list: null,
         showPagination: false,
@@ -39,11 +37,6 @@ export const instancesReducer = (
                     pages,
                 },
             };
-        }
-
-        case SET_INSTANCES_SMALL_DICT: {
-            const instancesSmall = action.payload;
-            return { ...state, instancesSmall };
         }
 
         case SET_INSTANCES_FETCHING: {

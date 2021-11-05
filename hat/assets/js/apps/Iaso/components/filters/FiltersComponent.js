@@ -11,13 +11,16 @@ class FiltersComponent extends React.Component {
         if (callback) {
             callback(value, urlKey);
         } else {
-            const { params, redirectTo, baseUrl } = this.props;
+            const { params, redirectTo, baseUrl, redirectOnChange } =
+                this.props;
             const newParams = {
                 ...params,
             };
             newParams[urlKey] = value;
-            this.props.onFilterChanged(value);
-            redirectTo(baseUrl, newParams);
+            this.props.onFilterChanged(value, urlKey);
+            if (redirectOnChange) {
+                redirectTo(baseUrl, newParams);
+            }
         }
     }
 
@@ -49,7 +52,7 @@ class FiltersComponent extends React.Component {
     }
 
     toggleCheckbox(checked, urlKey, filter) {
-        const { params, redirectTo, baseUrl } = this.props;
+        const { params, redirectTo, baseUrl, redirectOnChange } = this.props;
         const newParams = {
             ...params,
         };
@@ -60,8 +63,10 @@ class FiltersComponent extends React.Component {
         } else if (newParams[urlKey]) {
             delete newParams[urlKey];
         }
-        this.props.onFilterChanged();
-        redirectTo(baseUrl, newParams);
+        this.props.onFilterChanged(newParams[urlKey], urlKey);
+        if (redirectOnChange) {
+            redirectTo(baseUrl, newParams);
+        }
     }
 
     render() {
@@ -185,6 +190,7 @@ FiltersComponent.defaultProps = {
     baseUrl: '',
     onEnterPressed: () => null,
     onFilterChanged: () => null,
+    redirectOnChange: true,
 };
 
 FiltersComponent.propTypes = {
@@ -194,6 +200,7 @@ FiltersComponent.propTypes = {
     baseUrl: PropTypes.string,
     onEnterPressed: PropTypes.func,
     onFilterChanged: PropTypes.func,
+    redirectOnChange: PropTypes.bool,
 };
 
 const MapStateToProps = () => ({});

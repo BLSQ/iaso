@@ -150,12 +150,8 @@ class InstancesMap extends Component {
     }
 }
 
-InstancesMap.defaultProps = {
-    instances: [],
-};
-
 InstancesMap.propTypes = {
-    instances: PropTypes.array,
+    instances: PropTypes.array.isRequired,
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
     isClusterActive: PropTypes.bool.isRequired,
@@ -168,8 +164,6 @@ InstancesMap.propTypes = {
 const MapStateToProps = state => ({
     currentTile: state.map.currentTile,
     isClusterActive: state.map.isClusterActive,
-    fetching: state.instances.fetching,
-    instances: state.instances.instancesSmall,
     notifications: state.snackBar ? state.snackBar.notifications : [],
 });
 

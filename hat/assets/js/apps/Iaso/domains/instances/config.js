@@ -49,10 +49,12 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
         columns.push({
             Header: formatMessage(MESSAGES[f.key]),
             accessor: f.accessor || f.key,
-            Cell: settings =>
-                f.render
-                    ? f.render(settings.row.original[f.key])
-                    : settings.row.original[f.key],
+            Cell:
+                f.Cell ||
+                (settings =>
+                    f.render
+                        ? f.render(settings.row.original[f.key])
+                        : settings.row.original[f.key]),
         }),
     );
     return columns;

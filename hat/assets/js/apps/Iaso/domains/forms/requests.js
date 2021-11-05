@@ -1,6 +1,6 @@
 import { useQueryClient } from 'react-query';
-import { useSnackQuery } from '../../libs/apiHooks';
-import { getRequest } from '../../libs/Api';
+import { useSnackQuery } from 'iaso/libs/apiHooks';
+import { getRequest } from 'iaso/libs/Api';
 
 export const useGetForm = formId =>
     useSnackQuery(

@@ -13,8 +13,8 @@ import {
 import { Typography } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { getChipColors } from '../constants/chipColors';
-import { getRequest } from '../libs/Api';
-import { useSnackQuery } from '../libs/apiHooks';
+import { getRequest } from 'iaso/libs/Api';
+import { useSnackQuery } from 'iaso/libs/apiHooks';
 
 export const InstancesPerFormGraph = () => {
     const { data, isLoading } = useSnackQuery(['instances', 'stats'], () =>

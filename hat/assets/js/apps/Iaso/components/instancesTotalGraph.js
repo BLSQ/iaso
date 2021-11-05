@@ -11,8 +11,8 @@ import {
 import { Typography } from '@material-ui/core';
 import { LoadingSpinner } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
-import { useSnackQuery } from '../libs/apiHooks';
-import { getRequest } from '../libs/Api';
+import { useSnackQuery } from 'iaso/libs/apiHooks';
+import { getRequest } from 'iaso/libs/Api';
 
 export const InstancesTotalGraph = () => {
     const { data, isLoading } = useSnackQuery(['instances', 'stats_sum'], () =>

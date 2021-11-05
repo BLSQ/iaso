@@ -1,7 +1,7 @@
 import { useQuery } from 'react-query';
 import { iasoGetRequest } from '../../../../utils/requests';
-import { useSnackQuery } from '../../../../libs/apiHooks';
-import { getRequest } from '../../../../libs/Api';
+import { useSnackQuery } from 'iaso/libs/apiHooks';
+import { getRequest } from 'iaso/libs/Api';
 
 const getChildrenData = async id => {
     const response = await iasoGetRequest({

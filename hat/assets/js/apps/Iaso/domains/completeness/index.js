@@ -5,9 +5,9 @@ import TopBar from '../../components/nav/TopBarComponent';
 import CompletenessListComponent from './components/CompletenessListComponent';
 
 import MESSAGES from './messages';
-import { getRequest } from '../../libs/Api';
+import { getRequest } from 'iaso/libs/Api';
 import snackMessages from '../../components/snackBars/messages';
-import { useSnackQuery } from '../../libs/apiHooks';
+import { useSnackQuery } from 'iaso/libs/apiHooks';
 
 const Completeness = ({ params }) => {
     const { formatMessage } = useSafeIntl();

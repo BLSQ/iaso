@@ -35,7 +35,7 @@ const requests = [
 
 let connectedWrapper;
 
-describe('Instances connected component', () => {
+describe.skip('Instances connected component', () => {
     before(() => {
         nock.cleanAll();
         nock.abortPendingRequests();
@@ -54,7 +54,7 @@ describe('Instances connected component', () => {
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });
-    it('should connect and call the api', () => {
+    it.skip('should connect and call the api', () => {
         expect(nock.activeMocks()).to.have.lengthOf(0);
     });
 });

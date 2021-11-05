@@ -105,7 +105,7 @@ export const archivedPath = {
 
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
-    permissions: ['iaso_forms'],
+    permissions: ['iaso_forms', 'iaso_submissions'],
     component: props => <FormDetail {...props} />,
     params: [
         {

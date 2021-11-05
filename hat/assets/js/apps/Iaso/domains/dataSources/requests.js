@@ -3,12 +3,12 @@ import { useMutation, useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { iasoGetRequest, iasoPostRequest } from '../../utils/requests';
 import { dispatch as storeDispatch } from '../../redux/store';
-import { iasoFetch, postRequest, putRequest } from '../../libs/Api';
+import { getRequest, iasoFetch, postRequest, putRequest } from '../../libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../constants/snackBars';
 import snackBarMessages from '../../components/snackBars/messages';
 import { fetchCurrentUser } from '../users/actions';
-import { useSnackMutation } from '../../libs/apiHooks';
+import { useSnackMutation, useSnackQuery } from '../../libs/apiHooks';
 
 /**
  *
@@ -75,6 +75,7 @@ export const useDataSourceVersions = () => {
             return data.versions.map(version => {
                 return {
                     id: version.id,
+                    data_source: version.data_source,
                     data_source_name: version.data_source_name,
                     is_default: version.is_default,
                     number: version.number,
@@ -254,6 +255,24 @@ export const useCheckDhis2Mutation = setFieldErrors =>
                         error.details?.detail ?? 'Test failed',
                     ]);
                 }
+            },
+        },
+    );
+
+export const useDataSourceForVersion = sourceVersion =>
+    useSnackQuery(
+        ['dataSources'],
+        () => getRequest('/api/datasources/'),
+        snackBarMessages.fetchSourcesError,
+        {
+            select: data => {
+                if (sourceVersion) {
+                    const source = data.sources.find(
+                        s => s.id === sourceVersion.data_source,
+                    );
+                    return source;
+                }
+                return null;
             },
         },
     );

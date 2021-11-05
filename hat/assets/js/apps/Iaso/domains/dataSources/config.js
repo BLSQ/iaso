@@ -100,7 +100,6 @@ const dataSourcesTableColumns = (
                         defaultVersionId={
                             settings.row.original?.default_version?.id
                         }
-                        credentials={settings.row.original.credentials}
                     />
                 </section>
             );

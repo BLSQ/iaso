@@ -79,7 +79,7 @@ class SourceVersionViewSet(ModelViewSet):
         if source_id:
             versions = versions.filter(data_source_id=source_id)
 
-        return versions.order_by("id")
+        return versions.order_by("id").distinct()
 
     @action(methods=["GET", "POST"], detail=False, serializer_class=DiffSerializer, url_path="diff.csv")
     def diff_csv(self, request):

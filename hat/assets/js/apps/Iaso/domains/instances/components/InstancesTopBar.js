@@ -107,10 +107,12 @@ const InstancesTopBar = ({
                             label={formatMessage(MESSAGES.list)}
                         />
                         <Tab value="map" label={formatMessage(MESSAGES.map)} />
-                        <Tab
-                            value="files"
-                            label={formatMessage(MESSAGES.files)}
-                        />
+                        {formIds?.length === 1 && (
+                            <Tab
+                                value="files"
+                                label={formatMessage(MESSAGES.files)}
+                            />
+                        )}
                     </Tabs>
                 </Grid>
                 <Grid

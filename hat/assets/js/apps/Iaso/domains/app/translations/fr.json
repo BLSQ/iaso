@@ -238,7 +238,7 @@
     "iaso.label.infos": "Infos",
     "iaso.label.instanceStatus": "Statut",
     "iaso.label.instanceStatus.duplicatedSingle": "dupliquée",
-    "iaso.label.instanceStatus.duplicatedMulti": "Dupliquéed",
+    "iaso.label.instanceStatus.duplicatedMulti": "Dupliquées",
     "iaso.label.instanceStatus.error": "erreur(s)",
     "iaso.label.instanceStatus.errorMulti": "Erreurs",
     "iaso.label.instanceStatus.errorSingle": "erreur",

@@ -1,5 +1,5 @@
-import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from 'iaso/libs/apiHooks';
+import { getRequest } from 'iaso/libs/Api';
 
 export const useGetCampaigns = options => {
     const params = {

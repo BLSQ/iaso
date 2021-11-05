@@ -1,5 +1,5 @@
 import MESSAGES from './messages';
-import { DateTimeCell } from '../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { DateTimeCell } from 'iaso/components/Cells/DateTimeCell';
 
 const TableColumns = formatMessage => [
     {

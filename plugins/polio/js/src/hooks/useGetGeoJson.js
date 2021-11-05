@@ -1,5 +1,5 @@
-import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { getRequest } from 'iaso/libs/Api';
+import { useSnackQuery } from 'iaso/libs/apiHooks';
 
 export const useGetGeoJson = (country, orgUnitCategory) => {
     const params = {

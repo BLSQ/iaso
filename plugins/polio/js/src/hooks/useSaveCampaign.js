@@ -1,8 +1,5 @@
-import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import {
-    postRequest,
-    putRequest,
-} from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackMutation } from 'iaso/libs/apiHooks';
+import { postRequest, putRequest } from 'iaso/libs/Api';
 
 export const useSaveCampaign = () =>
     useSnackMutation(

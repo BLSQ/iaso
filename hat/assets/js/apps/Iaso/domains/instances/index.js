@@ -200,36 +200,36 @@ const Instances = ({ params }) => {
                         className={classes.marginTop}
                     >
                         <Grid xs={12} item className={classes.textAlignRight}>
-                            <div className={classes.paddingBottomBig}>
-                                <CreateReAssignDialogComponent
-                                    titleMessage={
-                                        MESSAGES.instanceCreationDialogTitle
-                                    }
-                                    confirmMessage={
-                                        MESSAGES.instanceCreateAction
-                                    }
-                                    formType={{
-                                        periodType,
-                                        id: params.formIds,
-                                    }}
-                                    onCreateOrReAssign={(
-                                        currentForm,
-                                        payload,
-                                    ) =>
-                                        dispatch(
-                                            createInstance(
-                                                currentForm,
-                                                payload,
-                                            ),
-                                        )
-                                    }
-                                    renderTrigger={({ openDialog }) => (
-                                        <AddButtonComponent
-                                            onClick={openDialog}
-                                        />
-                                    )}
-                                />
-                                {params.formIds?.length === 1 && (
+                            {params.formIds?.length === 1 && (
+                                <div className={classes.paddingBottomBig}>
+                                    <CreateReAssignDialogComponent
+                                        titleMessage={
+                                            MESSAGES.instanceCreationDialogTitle
+                                        }
+                                        confirmMessage={
+                                            MESSAGES.instanceCreateAction
+                                        }
+                                        formType={{
+                                            periodType,
+                                            id: params.formIds,
+                                        }}
+                                        onCreateOrReAssign={(
+                                            currentForm,
+                                            payload,
+                                        ) =>
+                                            dispatch(
+                                                createInstance(
+                                                    currentForm,
+                                                    payload,
+                                                ),
+                                            )
+                                        }
+                                        renderTrigger={({ openDialog }) => (
+                                            <AddButtonComponent
+                                                onClick={openDialog}
+                                            />
+                                        )}
+                                    />
                                     <DownloadButtonsComponent
                                         csvUrl={getEndpointUrl(
                                             params,
@@ -242,8 +242,8 @@ const Instances = ({ params }) => {
                                             'xlsx',
                                         )}
                                     />
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </Grid>
                     </Grid>
                 )}

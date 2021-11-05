@@ -195,15 +195,15 @@ module.exports = {
     externals: [{ './cptable': 'var cptable' }],
 
     resolve: {
-        alias:
-            process.env.LIVE_COMPONENTS === 'true'
-                ? {
-                      'bluesquare-components': path.resolve(
-                          __dirname,
-                          '../../bluesquare-components/src/',
-                      ),
-                  }
-                : undefined,
+        alias: {
+            iaso: path.resolve(__dirname, './assets/js/apps/Iaso/'),
+            ...(process.env.LIVE_COMPONENTS === 'true' && {
+                'bluesquare-components': path.resolve(
+                    __dirname,
+                    '../../bluesquare-components/src/',
+                ),
+            }),
+        },
         fallback: {
             fs: false,
         },

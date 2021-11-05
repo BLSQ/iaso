@@ -5,8 +5,8 @@ import { defineMessage } from 'react-intl';
 import { useFormikContext } from 'formik';
 import { Button, Grid, Typography, Tooltip } from '@material-ui/core';
 import { LoadingSpinner } from 'bluesquare-components';
-import { postRequest } from '../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useSnackMutation } from '../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { postRequest } from 'iaso/libs/Api';
+import { useSnackMutation } from 'iaso/libs/apiHooks';
 
 export const SendEmailButton = () => {
     const mutation = useSnackMutation(

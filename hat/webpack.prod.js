@@ -171,6 +171,9 @@ module.exports = {
     externals: [{ './cptable': 'var cptable' }],
 
     resolve: {
+        alias: {
+            iaso: path.resolve(__dirname, './assets/js/apps/Iaso/'),
+        },
         fallback: {
             fs: false,
         },

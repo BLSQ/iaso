@@ -8,7 +8,7 @@ import { withRouter } from 'react-router';
 import { useGetCountryUsersGroup, useGetProfiles } from '../requests';
 import MESSAGES from '../../../constants/messages';
 import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
-import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { TableWithDeepLink } from 'iaso/components/tables/TableWithDeepLink';
 import { CONFIG_BASE_URL } from '../../../constants/routes';
 
 const makeUserNameToDisplay = user => {

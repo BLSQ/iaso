@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect } from 'react';
 import { isEqual } from 'lodash';
 import { arrayOf, func, number, object, string } from 'prop-types';
-import ConfirmCancelDialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
+import ConfirmCancelDialogComponent from 'iaso/components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../constants/messages';
 import { usePutCountryMutation } from './requests';
-import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { useFormState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/form';
+import InputComponent from 'iaso/components/forms/InputComponent';
+import { commaSeparatedIdsToArray } from 'iaso/utils/forms';
+import { useFormState } from 'iaso/hooks/form';
 
 const makeDropDownListItem = user => {
     return {

@@ -12,13 +12,14 @@ from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from .projects import ProjectSerializer
 
-#Used for form versions
+# Used for form versions
 class HasFormPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
 
         return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
+
 
 # Used for forms, which have limited access front-end side with submissions permission
 class HasFormOrSubmissionPermission(permissions.BasePermission):

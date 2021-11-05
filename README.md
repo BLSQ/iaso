@@ -281,6 +281,7 @@ The following are some examples:
 * Create pending ORM migration files `docker-compose exec iaso ./manage.py makemigrations`
 * Apply pending ORM migrations `docker-compose exec iaso ./manage.py migrate`
 * Show ORM migrations          `docker-compose exec iaso ./manage.py showmigrations`
+* To run a background worker   `docker-compose run iaso manage tasks_worker`  (see  section Background tasks & Worker)
 
 Containers and services
 -----------------------
@@ -574,22 +575,35 @@ to have a local environment serving you the production assets (minified
 and with the same compilation option as in production). This can be
 useful to reproduce production only bugs.
 
-# Workers
+# Background tasks & worker
+
+Iaso  queue certains functions (task) for later execution, so they can run
+outside an HTTP request. This is used for functions that take a long time to execute
+so they don't canceled in the middle by a timeout of a connection closed.
+e.g: bulk import, modifications or export of OrgUnits.  Theses are the functions
+marked by the decorator @task_decorator, when called they get added to a Queue
+and get executed by a worker.
 
 
-To execute task in the background, we use Elastic Beanstalk workers with
-SQS using a fork of the library
+The logic is based on a fork of the library
 [django-beanstalk-worker](https://pypi.org/project/django-beanstalk-worker/)
-from tolomea. The endpoint `/api/copy_version/` is a good example of how
-to create a task and to plug it to the api.
+from tolomea, please consult it's doc for reference.
 
-When calling a function with the @task decorator, it will add it to the
-task queue. You are required to pass it a User objects, in addition to
-the other function's argument, that represent which user is launching
+In production on AWS, we use Elastic Beanstalk workers which use a SQS queue.
+
+In local development, you can run a worker by using the command:
+```
+docker-compose run iaso manage tasks_worker
+```
+
+Alternatively, you can call the url `tasks/run_all` which will run all the pending tasks in queue.
+
+If you want to develop a new background task, the endpoint `/api/copy_version/`
+is a good example of how to create a task and to plug it to the api.
+
+To call a  function with the @task decorator, you need to pass it a User objects, in addition to
+the other function's arguments, this arg represent which user is launching
 the task. At execution time the task will receive a iaso.models.Task
 instance in argument that should be used to report progress. It's
 mandatory for the function, at the end of a successful execution to call
 task.report_success() to mark its proper completion.
-
-In local development you can call the url `tasks/run_all` which will run
-all tasks in queue.

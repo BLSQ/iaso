@@ -115,4 +115,3 @@ export const filtersKeys = [
     'dateFrom',
     'dateTo',
 ];
-// export const tableKeys = ['pageSize', 'formId', 'order', 'page'];

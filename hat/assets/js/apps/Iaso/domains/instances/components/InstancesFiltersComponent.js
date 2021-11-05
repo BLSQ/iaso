@@ -113,7 +113,10 @@ const InstancesFiltersComponent = ({
     const getFilterParams = filterKeys => {
         const newParams = {};
         filterKeys.forEach(fk => {
-            newParams[fk] = formState[fk]?.value;
+            const newValue = formState[fk]?.value;
+            if (newValue) {
+                newParams[fk] = newValue;
+            }
         });
         return newParams;
     };
@@ -195,20 +198,6 @@ const InstancesFiltersComponent = ({
                 <Grid item xs={4}>
                     <Grid container spacing={4}>
                         <Grid item xs={12}>
-                            <FiltersComponent
-                                params={getFilterParams(['search'])}
-                                redirectOnChange={false}
-                                onFilterChanged={handleFormChange}
-                                filters={[
-                                    extendFilter(
-                                        searchParams,
-                                        search(),
-                                        (value, urlKey) =>
-                                            handleFormChange(value, urlKey),
-                                    ),
-                                ]}
-                                onEnterPressed={() => handleSearch()}
-                            />
                             <Box>
                                 <OrgUnitTreeviewModal
                                     toggleOnLabelClick={false}

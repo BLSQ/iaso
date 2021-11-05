@@ -151,4 +151,4 @@ InstancesTopBar.propTypes = {
     labelKeys: PropTypes.array,
 };
 
-export { InstancesTopBar as TopBar };
+export { InstancesTopBar };

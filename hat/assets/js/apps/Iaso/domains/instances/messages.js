@@ -187,20 +187,20 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.instanceStatus',
     },
     ready: {
-        defaultMessage: 'ready',
-        id: 'iaso.label.instanceStatus.readySingle',
+        defaultMessage: 'Ready',
+        id: 'iaso.label.instanceStatus.readyMulti',
     },
     error: {
-        defaultMessage: 'error',
-        id: 'iaso.label.instanceStatus.errorSingle',
+        defaultMessage: 'Errore',
+        id: 'iaso.label.instanceStatus.errorMulti',
     },
     duplicated: {
-        defaultMessage: 'duplicated',
-        id: 'iaso.label.instanceStatus.duplicatedSingle',
+        defaultMessage: 'Duplicated',
+        id: 'iaso.label.instanceStatus.duplicatedMulti',
     },
     exported: {
-        defaultMessage: 'exported',
-        id: 'iaso.label.instanceStatus.exportedSingle',
+        defaultMessage: 'Exported',
+        id: 'iaso.label.instanceStatus.exportedMulti',
     },
     exportRequests: {
         defaultMessage: 'Export requests',

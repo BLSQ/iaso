@@ -45,10 +45,7 @@ function MenuItem(props) {
     const path = `${currentPath}/${menuItem.key}`;
     const activePath = location.pathname.split('/', subMenuLevel + 1).join('/');
     const isMenuActive = path === activePath;
-    let fullPath = path;
-    if (menuItem.extraPath) {
-        fullPath = `${fullPath}${menuItem.extraPath}`;
-    }
+    const fullPath = menuItem.extraPath ? `${path}${menuItem.extraPath}` : path;
     const [open, setOpen] = React.useState(isMenuActive);
     const toggleOpen = () => {
         setOpen(!open);

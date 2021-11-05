@@ -30,7 +30,7 @@ import {
     getEndpointUrl,
 } from './utils';
 
-import { TopBar } from './components/TopBar';
+import { InstancesTopBar as TopBar } from './components/InstancesTopBar';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
@@ -167,7 +167,6 @@ const Instances = ({ params }) => {
             }
         };
         onLoad();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [params.formIds]);
     const fetching = loadingMap || loadingList;
 

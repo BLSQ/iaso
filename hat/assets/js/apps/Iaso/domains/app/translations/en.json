@@ -240,6 +240,7 @@
     "iaso.label.images": "Images",
     "iaso.label.infos": "Infos",
     "iaso.label.instanceStatus": "status",
+    "iaso.label.instanceStatus.duplicateMulti": "Duplicated",
     "iaso.label.instanceStatus.duplicatedSingle": "duplicated",
     "iaso.label.instanceStatus.error": "Error(s)",
     "iaso.label.instanceStatus.errorMulti": "Errors",

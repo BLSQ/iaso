@@ -1,26 +1,28 @@
+import json
+import ntpath
+from time import gmtime, strftime
+
 import pandas as pd
-from django.db import connection
 from django.contrib.gis.geos import Point
+from django.core.paginator import Paginator
+from django.db import connection
+from django.db.models import Q, Count
+from django.http import StreamingHttpResponse, HttpResponse
+from rest_framework import serializers, status
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
-from rest_framework.decorators import action
 from rest_framework.response import Response
+
+import iaso.periods as periods
+from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.audit.models import log_modification, INSTANCE_API
 from hat.common.utils import queryset_iterator
 from iaso.models import Instance, OrgUnit, Form, Project
-from django.db.models import Q, Count
-from django.core.paginator import Paginator
-from time import gmtime, strftime
-import ntpath
-import json
-from django.http import StreamingHttpResponse, HttpResponse
-from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from iaso.utils import timestamp_to_datetime
 from .common import safe_api_import
 from .instance_filters import parse_instance_filters
-from hat.audit.models import log_modification, INSTANCE_API
-from rest_framework import serializers, status
-import iaso.periods as periods
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -88,13 +90,6 @@ class InstancesViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         filters = parse_instance_filters(request.GET)
 
-        form_id = filters["form_id"]
-        if form_id:
-            form = Form.objects.get(pk=form_id)
-        form_ids = filters["form_ids"]
-        if form_ids:
-            form = Form.objects.filter(pk__in=form_ids.split(","))
-
         queryset = Instance.objects.order_by("-id")
 
         profile = request.user.iaso_profile
@@ -158,12 +153,24 @@ class InstancesViewSet(viewsets.ViewSet):
 
             filename = "instances"
 
+            form_id = filters["form_id"]
+            form_ids = filters["form_ids"]
+
+            form = None
+            if form_id:
+                form = Form.objects.get(pk=form_id)
+            elif form_ids:
+                form_ids = form_ids.split(",")
+                if not len(form_ids) > 1:  # if there is only one form_ids specified
+                    form = Form.objects.get(pk=form_ids[0])
             if form:
                 filename = "%s-%s" % (filename, form.id)
                 if form.correlatable:
                     columns.append({"title": "correlation id", "width": 20})
 
             sub_columns = ["" for __ in columns]
+            # TODO: Check the logic here, it's going to fail in any case if there is no form
+            # Don't know what we are trying to achieve exactly
             latest_form_version = form.form_versions.order_by("id").last()
             questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
             if form and form.latest_version:

@@ -12,13 +12,24 @@ from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from .projects import ProjectSerializer
 
-
+#Used for form versions
 class HasFormPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
 
         return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
+
+# Used for forms, which have limited access front-end side with submissions permission
+class HasFormOrSubmissionPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return request.user.is_authenticated and (
+            request.user.has_perm("menupermissions.iaso_forms")
+            or request.user.has_perm("menupermissions.iaso_submissions")
+        )
 
 
 class FormSerializer(DynamicFieldsModelSerializer):
@@ -139,7 +150,7 @@ class FormsViewSet(ModelViewSet):
     """Forms API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "menupermissions.iaso_forms" permission.
+    having the "menupermissions.iaso_forms" or "menupermissions.iaso_submissions" permission.
 
     GET /api/forms/
     GET /api/forms/<id>
@@ -149,7 +160,7 @@ class FormsViewSet(ModelViewSet):
     DELETE /api/forms/<id>
     """
 
-    permission_classes = [HasFormPermission]
+    permission_classes = [HasFormOrSubmissionPermission]
     serializer_class = FormSerializer
     results_key = "forms"
 

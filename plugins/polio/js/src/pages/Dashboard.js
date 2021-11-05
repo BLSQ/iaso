@@ -24,10 +24,10 @@ import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 
-import TopBar from 'iaso/components/nav/TopBarComponent';
+import TopBar from 'Iaso/components/nav/TopBarComponent';
 import ImportLineListDialog from '../components/ImportLineListDialog';
 import { genUrl } from '../utils/routing';
-import { getApiParamDateString } from 'iaso/utils/dates';
+import { getApiParamDateString } from 'Iaso/utils/dates';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;

@@ -1,4 +1,4 @@
-import { getRequest, patchRequest, postRequest } from 'iaso/libs/Api';
+import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../constants/snackBars';
 import { redirectTo } from '../../routing/actions';

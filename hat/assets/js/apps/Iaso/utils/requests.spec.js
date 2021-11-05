@@ -10,7 +10,7 @@ import {
     postRequest,
     putRequest,
     restoreRequest,
-} from 'iaso/libs/Api';
+} from 'Iaso/libs/Api';
 import { requestHandler } from './requests';
 
 const URL = '/api/test';

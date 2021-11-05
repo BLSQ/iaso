@@ -1,5 +1,5 @@
-import { useSnackMutation } from 'iaso/libs/apiHooks';
-import { postRequest } from 'iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { postRequest } from 'Iaso/libs/Api';
 
 // This retrieve data but since it contact data from an external service this is
 // implemented as a post

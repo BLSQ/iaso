@@ -4,7 +4,7 @@ import {
     postRequest,
     putRequest,
     deleteRequest,
-} from 'iaso/libs/Api';
+} from 'Iaso/libs/Api';
 import { enqueueSnackbar } from '../snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 

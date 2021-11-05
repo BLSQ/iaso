@@ -7,13 +7,13 @@ import {
     commonStyles,
     Table,
 } from 'bluesquare-components';
-import TopBar from 'iaso/components/nav/TopBarComponent';
+import TopBar from 'Iaso/components/nav/TopBarComponent';
 
 import tableColumns from './columns';
 import MESSAGES from './messages';
 
-import { redirectTo } from 'iaso/routing/actions';
-import { getRequest } from 'iaso/libs/Api';
+import { redirectTo } from 'Iaso/routing/actions';
+import { getRequest } from 'Iaso/libs/Api';
 
 const baseUrl = 'test';
 

@@ -196,7 +196,6 @@ module.exports = {
 
     resolve: {
         alias: {
-            iaso: path.resolve(__dirname, './assets/js/apps/Iaso/'),
             ...(process.env.LIVE_COMPONENTS === 'true' && {
                 'bluesquare-components': path.resolve(
                     __dirname,
@@ -209,8 +208,12 @@ module.exports = {
         },
         modules:
             process.env.LIVE_COMPONENTS === 'true'
-                ? ['node_modules', '../../bluesquare-components/node_modules/']
-                : ['node_modules'],
+                ? [
+                      'node_modules',
+                      '../../bluesquare-components/node_modules/',
+                      path.resolve(__dirname, 'assets/js/apps/'),
+                  ]
+                : ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
 
         extensions: ['.js'],
     },

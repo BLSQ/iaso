@@ -1,5 +1,5 @@
-import { getRequest, putRequest } from 'iaso/libs/Api';
-import { useSnackMutation, useSnackQuery } from 'iaso/libs/apiHooks';
+import { getRequest, putRequest } from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
 
 export const useGetCountryUsersGroup = params => {
     const searchParams = new URLSearchParams({

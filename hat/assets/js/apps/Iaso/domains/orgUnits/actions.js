@@ -1,6 +1,6 @@
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
-import { postRequest } from 'iaso/libs/Api';
+import { postRequest } from 'Iaso/libs/Api';
 import { saveAction, createAction } from '../../redux/actions/formsActions';
 
 export const SET_ORG_UNITS = 'SET_ORG_UNITS';

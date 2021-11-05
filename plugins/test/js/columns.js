@@ -1,5 +1,5 @@
 import MESSAGES from './messages';
-import { DateTimeCell } from 'iaso/components/Cells/DateTimeCell';
+import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 
 const TableColumns = formatMessage => [
     {

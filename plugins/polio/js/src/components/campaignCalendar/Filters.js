@@ -8,8 +8,8 @@ import { Grid, Button, Box } from '@material-ui/core';
 import FiltersIcon from '@material-ui/icons/FilterList';
 import { withRouter } from 'react-router';
 
-import InputComponent from 'iaso/components/forms/InputComponent';
-import DatesRange from 'iaso/components/filters/DatesRange';
+import InputComponent from 'Iaso/components/forms/InputComponent';
+import DatesRange from 'Iaso/components/filters/DatesRange';
 
 import MESSAGES from '../../constants/messages';
 import { useGetCountries } from '../../hooks/useGetCountries';

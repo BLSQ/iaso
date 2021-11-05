@@ -1,4 +1,4 @@
-import { apiDateFormat } from 'iaso/utils/dates';
+import { apiDateFormat } from 'Iaso/utils/dates';
 
 const colsCount = 16;
 const dateFormat = apiDateFormat;

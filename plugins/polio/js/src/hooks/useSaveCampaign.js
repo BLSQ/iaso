@@ -1,5 +1,5 @@
-import { useSnackMutation } from 'iaso/libs/apiHooks';
-import { postRequest, putRequest } from 'iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { postRequest, putRequest } from 'Iaso/libs/Api';
 
 export const useSaveCampaign = () =>
     useSnackMutation(

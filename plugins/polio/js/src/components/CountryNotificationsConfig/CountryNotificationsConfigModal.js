@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect } from 'react';
 import { isEqual } from 'lodash';
 import { arrayOf, func, number, object, string } from 'prop-types';
-import ConfirmCancelDialogComponent from 'iaso/components/dialogs/ConfirmCancelDialogComponent';
+import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../constants/messages';
 import { usePutCountryMutation } from './requests';
-import InputComponent from 'iaso/components/forms/InputComponent';
-import { commaSeparatedIdsToArray } from 'iaso/utils/forms';
-import { useFormState } from 'iaso/hooks/form';
+import InputComponent from 'Iaso/components/forms/InputComponent';
+import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
+import { useFormState } from 'Iaso/hooks/form';
 
 const makeDropDownListItem = user => {
     return {

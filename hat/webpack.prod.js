@@ -171,13 +171,13 @@ module.exports = {
     externals: [{ './cptable': 'var cptable' }],
 
     resolve: {
-        alias: {
-            iaso: path.resolve(__dirname, './assets/js/apps/Iaso/'),
-        },
         fallback: {
             fs: false,
         },
-        modules: ['node_modules'],
+        modules: [
+            'node_modules',
+            path.resolve(__dirname, 'hat/assets/js/apps/'),
+        ],
         extensions: ['.js'],
     },
 };

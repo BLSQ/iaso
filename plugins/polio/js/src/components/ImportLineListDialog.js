@@ -5,11 +5,11 @@ import { useMutation, useQueryClient } from 'react-query';
 import { defineMessages } from 'react-intl';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { useFormState } from 'iaso/hooks/form';
-import ConfirmCancelDialogComponent from 'iaso/components/dialogs/ConfirmCancelDialogComponent';
-import { iasoPostRequest } from 'iaso/utils/requests';
-import FileInputComponent from 'iaso/components/forms/FileInputComponent';
-import { enqueueSnackbar } from 'iaso/redux/snackBarsReducer';
+import { useFormState } from 'Iaso/hooks/form';
+import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
+import { iasoPostRequest } from 'Iaso/utils/requests';
+import FileInputComponent from 'Iaso/components/forms/FileInputComponent';
+import { enqueueSnackbar } from 'Iaso/redux/snackBarsReducer';
 
 const initialFormState = () => ({
     file: null,

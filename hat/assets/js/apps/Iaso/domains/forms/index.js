@@ -22,11 +22,14 @@ import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
 import { formsFilters } from '../../constants/filters';
+import { userHasPermission } from '../users/utils';
 
 const Forms = ({ params, showOnlyDeleted }) => {
     const baseUrl = showOnlyDeleted ? baseUrls.archived : baseUrls.forms;
     const intl = useSafeIntl();
     const dispatch = useDispatch();
+    const currentUser = useSelector(state => state.users.current);
+    const userHasFormsPermission = userHasPermission('forms', currentUser);
     const [forceRefresh, setForceRefresh] = useState(false);
     const handleDeleteForm = formId =>
         deleteForm(dispatch, formId).then(() => {
@@ -41,8 +44,9 @@ const Forms = ({ params, showOnlyDeleted }) => {
         : formsTableColumns(
               intl.formatMessage,
               null,
-              true,
-              true,
+              userHasFormsPermission,
+              userHasFormsPermission,
+              userHasFormsPermission,
               handleDeleteForm,
           );
     const reduxPage = useSelector(state => state.forms.formsPage);

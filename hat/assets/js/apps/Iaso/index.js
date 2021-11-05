@@ -25,6 +25,7 @@ export default function iasoApp(element, enabledPluginsName) {
     const plugins = getPlugins(enabledPluginsName);
     const allRoutesConfigs = [
         ...routeConfigs,
+        // Beware not to flatten too far
         ...plugins.map(plugin => plugin.routes).flat(),
     ];
     const baseRoutes = allRoutesConfigs.map(routeConfig => (
@@ -34,10 +35,10 @@ export default function iasoApp(element, enabledPluginsName) {
                 routeConfig.allowAnonymous
                     ? routeConfig.component
                     : props => (
-                          <ProtectedRoute
+                        <ProtectedRoute
                               {...props}
                               featureFlag={routeConfig.featureFlag}
-                              permission={routeConfig.permission}
+                              permissions={routeConfig.permissions}
                               component={routeConfig.component(props)}
                               isRootUrl={routeConfig.isRootUrl}
                               allRoutes={allRoutesConfigs}

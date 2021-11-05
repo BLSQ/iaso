@@ -77,7 +77,8 @@ const formsTableColumns = (
     component,
     showEditAction = true,
     showMappingAction = true,
-    deleteForm = null,
+    showDeleteAction = true,
+    deleteForm = () => null,
 ) => [
     {
         Header: formatMessage(MESSAGES.name),
@@ -198,15 +199,17 @@ const formsTableColumns = (
                             tooltipMessage={MESSAGES.dhis2Mappings}
                         />
                     )}
-                    <DeleteDialog
-                        titleMessage={MESSAGES.deleteFormTitle}
-                        message={MESSAGES.deleteFormText}
-                        onConfirm={closeDialog =>
-                            deleteForm(settings.row.original.id).then(
-                                closeDialog,
-                            )
-                        }
-                    />
+                    {showDeleteAction && (
+                        <DeleteDialog
+                            titleMessage={MESSAGES.deleteFormTitle}
+                            message={MESSAGES.deleteFormText}
+                            onConfirm={closeDialog =>
+                                deleteForm(settings.row.original.id).then(
+                                    closeDialog,
+                                )
+                            }
+                        />
+                    )}
                 </section>
             );
         },

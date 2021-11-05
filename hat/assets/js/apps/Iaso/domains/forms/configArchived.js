@@ -1,15 +1,15 @@
 import React from 'react';
-import moment from 'moment';
 import { Grid } from '@material-ui/core';
 import { Link } from 'react-router';
-import {
-    textPlaceholder,
-    IconButton as IconButtonComponent,
-} from 'bluesquare-components';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
-const archivedTableColumn = (formatMessage, restoreForm) => [
+const archivedTableColumn = (
+    formatMessage,
+    restoreForm,
+    hasPermission = false,
+) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
@@ -94,11 +94,13 @@ const archivedTableColumn = (formatMessage, restoreForm) => [
         width: 300,
         Cell: settings => (
             <section>
-                <IconButtonComponent
-                    onClick={() => restoreForm(settings.row.original.id)}
-                    icon="restore-from-trash"
-                    tooltipMessage={MESSAGES.restoreFormTooltip}
-                />
+                {hasPermission && (
+                    <IconButtonComponent
+                        onClick={() => restoreForm(settings.row.original.id)}
+                        icon="restore-from-trash"
+                        tooltipMessage={MESSAGES.restoreFormTooltip}
+                    />
+                )}
             </section>
         ),
     },

@@ -45,10 +45,10 @@ export const listMenuPermission = (menuItem, permissions = []) => {
     let permissionsTemp = [...permissions];
     if (menuItem) {
         if (
-            menuItem.permission &&
-            !permissionsTemp.find(p => p === menuItem.permission) // Avoid duplicate permission
+            menuItem?.permissions?.length > 0 &&
+            !permissionsTemp.find(p => menuItem.permissions.includes(p)) // Avoid duplicate permission
         ) {
-            permissionsTemp.push(menuItem.permission);
+            permissionsTemp = [...permissionsTemp, ...menuItem.permissions];
         }
         menuItem.subMenu &&
             menuItem.subMenu.forEach(subMenuItem => {
@@ -56,7 +56,7 @@ export const listMenuPermission = (menuItem, permissions = []) => {
                     subMenuItem,
                     permissionsTemp,
                 ).filter(sp => !permissionsTemp.includes(sp)); // Avoid duplicate permission
-                permissionsTemp = permissionsTemp.concat(subPerms);
+                permissionsTemp = [...permissionsTemp, ...subPerms];
             });
     }
     return permissionsTemp;
@@ -69,10 +69,10 @@ export const listMenuPermission = (menuItem, permissions = []) => {
  * @param {Object} user
  * @return {String}
  */
-export const getFirstAllowedUrl = (rootPermission, user, routes) => {
+export const getFirstAllowedUrl = (rootPermissions, user, routes) => {
     let newRoot;
     user?.permissions.forEach(p => {
-        if (!newRoot && p !== rootPermission) {
+        if (!newRoot && !rootPermissions.includes(p)) {
             newRoot = p;
         }
     });

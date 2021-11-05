@@ -3,8 +3,9 @@ import ReactDOM from 'react-dom';
 import TestUtils, { act } from 'react-dom/test-utils';
 import { IntlProvider } from 'react-intl';
 import { Provider } from 'react-redux';
-import InputComponent from '../apps/Iaso/components/forms/InputComponent';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import InputComponent from '../apps/Iaso/components/forms/InputComponent';
+
 const queryClient = new QueryClient();
 
 export function renderWithIntl(Component, props) {

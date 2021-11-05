@@ -129,6 +129,7 @@ describe('Forms config', () => {
                     defaultProps,
                     false,
                     false,
+                    true,
                     () => {
                         deleteFormSpy();
                         return new Promise(resolve => resolve());
@@ -160,6 +161,7 @@ describe('Forms config', () => {
                     { ...defaultProps, state: { currentOrgUnit: { id: 1 } } },
                     false,
                     false,
+                    false,
                 );
                 actionColumn = columns[columns.length - 1];
                 wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));
@@ -178,6 +180,7 @@ describe('Forms config', () => {
             columns = archivedTableColumn(
                 () => null,
                 () => restoreFormSpy(),
+                true,
             );
             expect(columns).to.have.lengthOf(9);
         });
@@ -207,8 +210,8 @@ describe('Forms config', () => {
                 }
             });
         });
-        describe('action colmumn', () => {
-            it('should render restore icon', () => {
+        describe('action column', () => {
+            it('should render restore icon if user has permission', () => {
                 actionColumn = columns[columns.length - 1];
                 wrapper = shallow(actionColumn.Cell(colOriginal(fakeForm)));
                 restoreIcon = wrapper.find('[icon="restore-from-trash"]');

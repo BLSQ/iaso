@@ -37,7 +37,8 @@ import SingleTable from '../../components/tables/SingleTable';
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
-import { useQuery } from 'react-query';
+import { useSnackQuery } from '../../libs/apiHooks';
+import snackMessages from '../../components/snackBars/messages';
 
 const baseUrl = baseUrls.instances;
 
@@ -61,20 +62,21 @@ const Instances = ({ params }) => {
     const [tab, setTab] = useState(params.tab ?? 'list');
     const [forceRefresh, setForceRefresh] = useState(false);
 
-    const { data: instancesSmall, isLoading: loadingMap } = useQuery(
+    // Data for the map, only map tab
+    const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
         ['instancesSmall', params],
         () =>
-            fetchInstancesAsSmallDict(
-                dispatch,
-                getEndpointUrl(params, false, '', true),
-            ),
-
+            fetchInstancesAsSmallDict(getEndpointUrl(params, false, '', true)),
+        snackMessages.fetchInstanceLocationError,
         { enabled: params.tab === 'map' },
     );
-    const { data: instances, isLoading: loadingList } = useQuery(
+
+    const { isLoading: loadingList } = useSnackQuery(
         ['instances', params],
-        () => fetchInstancesAsDict(dispatch, getEndpointUrl(params)),
+        () => fetchInstancesAsDict(getEndpointUrl(params)),
+        snackMessages.fetchInstanceDictError,
         {
+            // Temporary  solution till we port the table out of redux
             onSuccess: instancesData =>
                 dispatch(
                     setInstances(
@@ -90,19 +92,24 @@ const Instances = ({ params }) => {
     const formIds = params.formIds?.split(',');
     const formId = formIds?.length === 1 ? formIds[0] : undefined;
 
-    const { data: formDetails } = useQuery(
+    const { data: formDetails } = useSnackQuery(
         ['formDetailsForInstance', formId],
         () => fetchFormDetailsForInstance(formId),
+        undefined,
         { enabled: Boolean(formId) },
     );
     const labelKeys = formDetails?.label_keys ?? [];
     const formName = formDetails?.name ?? '';
     const periodType = formDetails?.period_type;
 
-    const { data: possibleFields } = useQuery(
+    const { data: possibleFields } = useSnackQuery(
         ['possibleFieldForForm', formId],
         () => fetchPossibleFields(formId),
-        { enabled: Boolean(formId) },
+        undefined,
+        {
+            enabled: Boolean(formId),
+            select: response => response.possible_fields,
+        },
     );
 
     const handleChangeTab = newTab => {

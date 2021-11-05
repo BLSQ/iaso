@@ -93,9 +93,8 @@ const initialForm = (defaultSourceVersion, initialData, sourceCredentials) => {
 };
 
 const formIsValid = form => {
-    const projectsIsEmpty = form.project_ids?.value.length === 0;
     return (
-        !projectsIsEmpty &&
+        form.project_ids?.value.length > 0 &&
         !(form.default_version_id.value && !form.is_default_source.value)
     );
 };

@@ -1,4 +1,7 @@
 import { iasoGetRequest } from '../../utils/requests';
+import { getRequest } from '../../libs/Api';
+import { enqueueSnackbar } from '../../redux/snackBarsReducer';
+import { errorSnackBar } from '../../constants/snackBars';
 // import { setCurrentForm } from '../forms/actions';
 // import { dispatch as storeDispatch } from '../../redux/store';
 
@@ -29,3 +32,30 @@ export const fetchPossibleFields = async formId => {
     });
     return response.possible_fields;
 };
+export const fetchInstancesAsDict = (dispatch, url) =>
+    getRequest(url)
+        .then(instances => instances)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('fetchInstanceDictError', null, error),
+                ),
+            );
+            console.error('Error while fetching submissions list:', error);
+            throw error;
+        });
+export const fetchInstancesAsSmallDict = (dispatch, url) =>
+    getRequest(`${url}&asSmallDict=true`)
+        .then(instances => instances)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('fetchInstanceLocationError', null, error),
+                ),
+            );
+            console.error(
+                'Error while fetching instances locations list:',
+                error,
+            );
+            throw error;
+        });

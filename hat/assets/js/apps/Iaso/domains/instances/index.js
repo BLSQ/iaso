@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -12,11 +12,12 @@ import {
 } from 'bluesquare-components';
 import { createInstance, setInstances } from './actions';
 import { redirectToReplace } from '../../routing/actions';
-import { fetchFormDetailsForInstance, fetchPossibleFields } from './requests';
 import {
+    fetchFormDetailsForInstance,
     fetchInstancesAsDict,
     fetchInstancesAsSmallDict,
-} from '../../utils/requests';
+    fetchPossibleFields,
+} from './requests';
 
 import {
     getEndpointUrl,
@@ -90,7 +91,7 @@ const Instances = ({ params }) => {
     const formId = formIds?.length === 1 ? formIds[0] : undefined;
 
     const { data: formDetails } = useQuery(
-        ['FormDetailsForInstance', formId],
+        ['formDetailsForInstance', formId],
         () => fetchFormDetailsForInstance(formId),
         { enabled: Boolean(formId) },
     );
@@ -99,7 +100,7 @@ const Instances = ({ params }) => {
     const periodType = formDetails?.period_type;
 
     const { data: possibleFields } = useQuery(
-        ['PossibleFieldForForm'],
+        ['possibleFieldForForm', formId],
         () => fetchPossibleFields(formId),
         { enabled: Boolean(formId) },
     );

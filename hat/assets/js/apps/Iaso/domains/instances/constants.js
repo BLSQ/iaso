@@ -6,6 +6,7 @@ import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { usePrettyPeriod } from '../periods/utils';
 import { OrgUnitLabel } from '../orgUnits/utils';
 import MESSAGES from './messages';
+import { Link } from 'react-router';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -37,6 +38,11 @@ export const INSTANCE_METAS_FIELDS = [
         accessor: 'form__name',
         tableOrder: 1,
         type: 'info',
+        Cell: settings => {
+            const data = settings.row.original;
+            const formUrl = `/forms/detail/formId/${data.form_id}`;
+            return <Link to={formUrl}>{data.form_name}</Link>;
+        },
     },
     {
         key: 'updated_at',

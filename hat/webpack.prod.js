@@ -174,10 +174,7 @@ module.exports = {
         fallback: {
             fs: false,
         },
-        modules: [
-            'node_modules',
-            path.resolve(__dirname, 'hat/assets/js/apps/'),
-        ],
+        modules: ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
         extensions: ['.js'],
     },
 };

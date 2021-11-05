@@ -191,7 +191,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.instanceStatus.readyMulti',
     },
     error: {
-        defaultMessage: 'Errore',
+        defaultMessage: 'Error',
         id: 'iaso.label.instanceStatus.errorMulti',
     },
     duplicated: {

@@ -134,7 +134,7 @@ class Exporter:
                 task.report_progress_and_stop_if_killed(progress_message="Creating Orgunits", progress_value=index)
 
     def fill_geometry_or_coordinates(self, comparison, payload):
-        if comparison.after:
+        if comparison and comparison.after:
             point_or_shape = GEOSGeometry(comparison.after)
             geometry = json.loads(point_or_shape.geojson)
             # No altitude in DHIS2, remove before exporting

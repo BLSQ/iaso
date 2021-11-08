@@ -140,7 +140,7 @@ class CommandTests(TestCase):
 
         def request_callback_update(request):
             # print(json.loads(request.body))
-            return (200, {}, json.dumps({}))
+            return (200, {}, json.dumps({"status": "OK"}))
 
         responses.add_callback(
             responses.POST,

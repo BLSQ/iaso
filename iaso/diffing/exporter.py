@@ -54,6 +54,15 @@ def dhis2_group_contains(dhis2_group, org_unit):
     return False
 
 
+def format_error(action, exc, errors):
+    message = f"Error when {action}" f"\n" f"URL : {exc.url}\n" f"Received status code: {exc.code}\n"
+    if errors:
+        message += "Errors:\r\n"
+        for error in errors:
+            message += " * " + error + "\n"
+    return message
+
+
 class Exporter:
     def __init__(self, logger):
         self.iaso_logger = logger
@@ -107,26 +116,17 @@ class Exporter:
             try:
                 resp = api.post("organisationUnits", payload)
             except dhis2.exceptions.RequestException as exc:
-                message = (
-                    f"Error when creating Org Unit {to_create.org_unit}\n"
-                    f"\n"
-                    f"Sent: {json.dumps(payload, indent=4)}\n"
-                    f"URL : {exc.url}\n"
-                    f"Received status code: {exc.code}\n"
-                    f"\n"
-                )
-                exc.message = message
-                if exc.code == 404:
-                    raise Exception(message)
+                errors = []
                 try:
-                    error_dict = json.loads(exc.description).get("response", {})
-                    print(error_dict)
-                    message += "Errors:\r\n"
-                    for e in error_dict.get("errorReports", []):
-                        message += " * " + e.get("message", str(e)) + "\r\n"
-                    exc.message = message
-                finally:
-                    raise exc
+                    if exc.code != 404:
+                        error_dict = json.loads(exc.description).get("response", {})
+                        for error_report in error_dict.get("errorReports", []):
+                            errors.append(error_report.get("message", str(error_report)))
+                except:
+                    pass
+                exc.message = format_error(f"Error when creating Org Unit {to_create.org_unit}", exc, errors)
+                exc.extra = {"payload": json.dumps(payload, indent=4), "response": exc.description}
+                raise exc
 
             self.iaso_logger.info("received ", resp.json())
             index = index + 1
@@ -188,51 +188,35 @@ class Exporter:
             try:
                 resp = api.post("metadata", payload)
             except dhis2.exceptions.RequestException as exc:
-
-                m = f"updating Org Unist {','.join(ids)}"
-                error_dict = json.loads(exc.description).get("response", {})
-                message = (
-                    f"Error when {m}"
-                    f"\n"
-                    f"URL : {exc.url}\n"
-                    f"Received status code: {exc.code}\n"
-                    f"Sent: {json.dumps(payload, indent=4)}\n"
-                )
-                exc.message = message
-                if exc.code == 404:
-                    raise exc
+                errors = []
                 try:
-                    message += "Errors:\r\n"
-                    for e in error_dict.get("errorReports", []):
-                        message += " * " + e.get("message", str(e)) + "\n"
-                    exc.message = message
-                finally:
-                    raise exc
+                    if exc.code != 404:
+                        error_dict = json.loads(exc.description).get("response", {})
+                        for error_report in error_dict.get("errorReports", []):
+                            errors.append(error_report.get("message", str(error_report)))
+                except:
+                    pass
+                exc.message = format_error(f"updating Org Units {','.join(ids)}", exc, errors)
+                exc.extra = {"payload": json.dumps(payload, indent=4), "response": resp.text}
+                raise exc
 
             self.iaso_logger.info(resp)
             report = resp.json()
             pprint(report)
+
             if resp.status_code == 200 and report["status"] == "ERROR":
                 exc = dhis2.exceptions.RequestException(code=resp.status_code, url=resp.url, description=resp.text)
-
-                message = (
-                    f"Error when updating Org Unist {','.join(ids)}"
-                    f"\n"
-                    f"URL : {exc.url}\n"
-                    f"Received status code: {exc.code}\n"
-                )
-                exc.extra = {"payload": json.dumps(payload, indent=4), "response": resp.text}
+                errors = []
                 try:
-                    message += "Errors:\r\n"
-                    error_reports = []
                     for type_report in report.get("typeReports", []):
                         for object_report in type_report.get("objectReports", []):
-                            error_reports += object_report.get("errorReports", [])
-                    for e in error_reports:
-                        message += " * " + e.get("message", str(e)) + "\n"
-                finally:
-                    exc.message = message
-                    raise exc
+                            for error_report in object_report.get("errorReports", []):
+                                errors.append(error_report.get("message", str(error_report)))
+                except:
+                    pass
+                exc.message = format_error(f"updating Org Units {','.join(ids)}", exc, errors)
+                exc.extra = {"payload": json.dumps(payload, indent=4), "response": resp.text}
+                raise exc
 
             index = index + 1
             if task and index % 10 == 0:

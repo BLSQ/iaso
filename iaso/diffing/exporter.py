@@ -1,6 +1,9 @@
 import json
 
+import dhis2.exceptions
+from dhis2 import Api
 from django.contrib.gis.geos import GEOSGeometry
+from pprint import pprint
 
 from iaso.models import generate_id_for_dhis_2
 from .comparisons import as_field_types
@@ -101,7 +104,30 @@ class Exporter:
 
             self.iaso_logger.info("will post ", payload)
 
-            resp = api.post("organisationUnits", payload)
+            try:
+                resp = api.post("organisationUnits", payload)
+            except dhis2.exceptions.RequestException as exc:
+                message = (
+                    f"Error when creating Org Unit {to_create.org_unit}\n"
+                    f"\n"
+                    f"Sent: {json.dumps(payload, indent=4)}\n"
+                    f"URL : {exc.url}\n"
+                    f"Received status code: {exc.code}\n"
+                    f"\n"
+                )
+                exc.message = message
+                if exc.code == 404:
+                    raise Exception(message)
+                try:
+                    error_dict = json.loads(exc.description).get("response", {})
+                    print(error_dict)
+                    message += "Errors:\r\n"
+                    for e in error_dict.get("errorReports", []):
+                        message += " * " + e.get("message", str(e)) + "\r\n"
+                    exc.message = message
+                finally:
+                    raise exc
+
             self.iaso_logger.info("received ", resp.json())
             index = index + 1
             if task and index % 10 == 0:
@@ -122,14 +148,13 @@ class Exporter:
             payload["coordinates"] = json.dumps(geometry["coordinates"])
             payload["featureType"] = to_dhis2_feature_type(geometry["type"])
 
-    def update_orgunits(self, api, diffs, task=None):
+    def update_orgunits(self, api: Api, diffs, task=None):
         support_by_update_fields = ("name", "parent", "geometry")
         to_update_diffs = list(
             filter(lambda x: x.status == "modified" and x.are_fields_modified(support_by_update_fields), diffs)
         )
         self.iaso_logger.info("orgunits to update : ", len(to_update_diffs))
         to_update_diffs = sort_by_path(to_update_diffs)
-        self.iaso_logger.info("modified", len(to_update_diffs))
 
         slices = all_slices(to_update_diffs, 4)
         if task:
@@ -157,9 +182,58 @@ class Exporter:
                 for comparison in diff.comparisons:
                     if comparison.status != "same" and not comparison.field.startswith("groupset:"):
                         self.apply_comparison(dhis2_payload, comparison)
-            # self.iaso_logger.info(" will post slice", dhis2_payloads)
-            resp = api.post("metadata", {"organisationUnits": dhis2_payloads})
-            self.iaso_logger.info(resp, resp.json())
+            self.iaso_logger.info(f"will post slice for {', '.join(ids)}")
+            # pprint([{k: (v if k != "geometry" else "...") for k, v in payload.items()} for payload in dhis2_payloads])
+            payload = {"organisationUnits": dhis2_payloads}
+            try:
+                resp = api.post("metadata", payload)
+            except dhis2.exceptions.RequestException as exc:
+
+                m = f"updating Org Unist {','.join(ids)}"
+                error_dict = json.loads(exc.description).get("response", {})
+                message = (
+                    f"Error when {m}"
+                    f"\n"
+                    f"URL : {exc.url}\n"
+                    f"Received status code: {exc.code}\n"
+                    f"Sent: {json.dumps(payload, indent=4)}\n"
+                )
+                exc.message = message
+                if exc.code == 404:
+                    raise exc
+                try:
+                    message += "Errors:\r\n"
+                    for e in error_dict.get("errorReports", []):
+                        message += " * " + e.get("message", str(e)) + "\n"
+                    exc.message = message
+                finally:
+                    raise exc
+
+            self.iaso_logger.info(resp)
+            report = resp.json()
+            pprint(report)
+            if resp.status_code == 200 and report["status"] == "ERROR":
+                exc = dhis2.exceptions.RequestException(code=resp.status_code, url=resp.url, description=resp.text)
+
+                message = (
+                    f"Error when updating Org Unist {','.join(ids)}"
+                    f"\n"
+                    f"URL : {exc.url}\n"
+                    f"Received status code: {exc.code}\n"
+                )
+                exc.extra = {"payload": json.dumps(payload, indent=4), "response": resp.text}
+                try:
+                    message += "Errors:\r\n"
+                    error_reports = []
+                    for type_report in report.get("typeReports", []):
+                        for object_report in type_report.get("objectReports", []):
+                            error_reports += object_report.get("errorReports", [])
+                    for e in error_reports:
+                        message += " * " + e.get("message", str(e)) + "\n"
+                finally:
+                    exc.message = message
+                    raise exc
+
             index = index + 1
             if task and index % 10 == 0:
                 task.report_progress_and_stop_if_killed(progress_message="Updating Orgunits", progress_value=index)

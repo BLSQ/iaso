@@ -31,6 +31,7 @@ def health(request):
     res = {
         "up": "ok",
         "env": settings.ENVIRONMENT,
+        "database": settings.DATABASES["default"]["NAME"],
         "DEPLOYED_ON": DEPLOYED_ON,
         "DEPLOYED_BY": DEPLOYED_BY,
         "VERSION": VERSION,

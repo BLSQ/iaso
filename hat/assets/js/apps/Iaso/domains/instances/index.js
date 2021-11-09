@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { makeStyles, Grid, Box } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
+import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
 import PropTypes from 'prop-types';
 
 import {
+    AddButton as AddButtonComponent,
     commonStyles,
     LoadingSpinner,
-    AddButton as AddButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
 import {
+    createInstance,
     resetInstances,
     setInstances,
     setInstancesFetching,
-    createInstance,
 } from './actions';
 import { redirectToReplace } from '../../routing/actions';
 import { fetchFormDetailsForInstance, fetchPossibleFields } from './requests';
@@ -24,10 +24,10 @@ import {
 } from '../../utils/requests';
 
 import {
+    getEndpointUrl,
+    getFilters,
     getInstancesFilesList,
     getSelectionActions,
-    getFilters,
-    getEndpointUrl,
 } from './utils';
 
 import { InstancesTopBar as TopBar } from './components/InstancesTopBar';
@@ -169,7 +169,6 @@ const Instances = ({ params }) => {
         onLoad();
     }, [params.formIds]);
     const fetching = loadingMap || loadingList;
-
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -200,7 +199,7 @@ const Instances = ({ params }) => {
                         className={classes.marginTop}
                     >
                         <Grid xs={12} item className={classes.textAlignRight}>
-                            {params.formIds?.length === 1 && (
+                            {params.formIds?.split(',').length === 1 && (
                                 <div className={classes.paddingBottomBig}>
                                     <CreateReAssignDialogComponent
                                         titleMessage={

@@ -3,7 +3,6 @@ import {
     SET_INSTANCES_FETCHING,
     SET_CURRENT_INSTANCE,
     SET_INSTANCES_FILTER_UDPATED,
-    RESET_INSTANCES,
 } from './actions';
 
 export const instancesInitialState = {
@@ -52,10 +51,6 @@ export const instancesReducer = (
         case SET_INSTANCES_FILTER_UDPATED: {
             const isInstancesFilterUpdated = action.payload;
             return { ...state, isInstancesFilterUpdated };
-        }
-
-        case RESET_INSTANCES: {
-            return instancesInitialState;
         }
 
         default:

@@ -3,12 +3,10 @@ import {
     SET_INSTANCES_FETCHING,
     SET_CURRENT_INSTANCE,
     SET_INSTANCES_FILTER_UDPATED,
-    RESET_INSTANCES,
     setInstances,
     setInstancesFilterUpdated,
     setInstancesFetching,
     setCurrentInstance,
-    resetInstances,
     // fetchEditUrl,
     // fetchInstanceDetail,
     // softDeleteInstance,
@@ -70,13 +68,6 @@ describe('Instances actions', () => {
             payload,
         };
         const action = setCurrentInstance(payload);
-        expect(action).to.eql(expectedAction);
-    });
-    it('should create an action to reset instance reducer', () => {
-        const expectedAction = {
-            type: RESET_INSTANCES,
-        };
-        const action = resetInstances();
         expect(action).to.eql(expectedAction);
     });
     // it('should call getRequest on fetchEditUrl', () => {

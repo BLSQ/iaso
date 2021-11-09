@@ -1,3 +1,4 @@
+/* eslint-disable no-else-return */
 import React from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
@@ -70,12 +71,29 @@ const getDataSourceVersions = async () => {
     });
 };
 
+// Func to compare version to  order them
+const compareVersions = (a, b) => {
+    if (a.data_source_name === b.data_source_name) {
+        if (a.number < b.number) {
+            return -1;
+        } else if (a.number > b.number) {
+            return 1;
+        } else {
+            return 0;
+        }
+    } else if (a.data_source_name < b.data_source_name) {
+        return -1;
+    } else {
+        return 1;
+    }
+};
+
 export const useDataSourceVersions = () => {
     return useQuery(['dataSourceVersions'], getDataSourceVersions, {
         select: data => {
-            return data.versions.map(version => {
+            return data.versions.sort(compareVersions).map(version => {
                 return {
-                    id: version.id,
+                    id: version.id.toString(),
                     data_source: version.data_source,
                     data_source_name: version.data_source_name,
                     is_default: version.is_default,

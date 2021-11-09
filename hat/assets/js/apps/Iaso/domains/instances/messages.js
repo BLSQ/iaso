@@ -321,6 +321,38 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.table.label.instanceHeaderTooltip',
         defaultMessage: 'Label: {label} - Name: {key}',
     },
+    creationDateFrom: {
+        id: 'iaso.label.creationDateFrom',
+        defaultMessage: 'Creation start date',
+    },
+    creationDateTo: {
+        id: 'iaso.label.creationDateTo',
+        defaultMessage: 'Creation end date',
+    },
+    periodType: {
+        id: 'iaso.label.periodType',
+        defaultMessage: 'Period type',
+    },
+    forms: {
+        defaultMessage: 'Forms',
+        id: 'iaso.forms.title',
+    },
+    textSearch: {
+        id: 'iaso.forms.textSearch',
+        defaultMessage: 'Text search',
+    },
+    deviceOwnership: {
+        id: 'iaso.forms.deviceOwnership',
+        defaultMessage: 'Device ownership',
+    },
+    showDeleted: {
+        id: 'iaso.forms.showDeleted',
+        defaultMessage: 'Show deleted',
+    },
+    org_unit_type_id: {
+        id: 'iaso.forms.org_unit_type_id',
+        defaultMessage: 'Org unit type',
+    },
 });
 
 export default MESSAGES;

@@ -30,12 +30,14 @@ const DatesRange = ({
     intl: { formatMessage },
     labelTo,
     labelFrom,
+    spacing,
+    xs,
 }) => {
     const classes = useStyles();
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
     return (
-        <Grid container spacing={4}>
-            <Grid item xs={6}>
+        <Grid container spacing={spacing}>
+            <Grid item xs={xs}>
                 <FormControl className={classes.formControl}>
                     <KeyboardDatePicker
                         autoOk
@@ -81,7 +83,7 @@ const DatesRange = ({
                     )}
                 </FormControl>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={xs}>
                 <FormControl className={classes.formControl}>
                     <KeyboardDatePicker
                         autoOk
@@ -137,6 +139,8 @@ DatesRange.defaultProps = {
     onChangeDate: () => null,
     labelTo: MESSAGES.to,
     labelFrom: MESSAGES.from,
+    spacing: 4,
+    xs: 6,
 };
 
 DatesRange.propTypes = {
@@ -146,6 +150,8 @@ DatesRange.propTypes = {
     intl: PropTypes.object.isRequired,
     labelTo: PropTypes.object,
     labelFrom: PropTypes.object,
+    spacing: PropTypes.number,
+    xs: PropTypes.number,
 };
 
 const DatesRangeIntl = injectIntl(DatesRange);

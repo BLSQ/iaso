@@ -7,10 +7,11 @@ import { usePrettyPeriod } from '../domains/periods/utils';
 import { orgUnitLabelString } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';
 
-export const search = (urlKey = 'search') => ({
+export const search = (urlKey = 'search', withMarginTop = true) => ({
     urlKey,
     label: MESSAGES.textSearch,
     type: 'search',
+    withMarginTop,
 });
 
 // CAUTION: value ALL has to be converted to empty string before being sent to API
@@ -722,19 +723,3 @@ export const formsFilters = () => {
     ];
     return filters;
 };
-
-export const forms = (
-    formsList,
-    urlKey = 'formIds',
-    label = MESSAGES.forms,
-) => ({
-    urlKey,
-    isMultiSelect: true,
-    isClearable: true,
-    options: formsList.map(t => ({
-        label: t.name,
-        value: t.id,
-    })),
-    label,
-    type: 'select',
-});

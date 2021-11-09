@@ -2,7 +2,6 @@ import {
     fetchOrgUnitsTypes,
     fetchDevices,
     fetchDevicesOwnerships,
-    fetchPeriods,
 } from '../../utils/requests';
 import { setOrgUnitTypes } from '../orgUnits/actions';
 import { getRequest } from '../../libs/Api';
@@ -11,17 +10,14 @@ import {
     setDevicesList,
     setDevicesOwnershipList,
 } from '../../redux/devicesReducer';
-import { setPeriods } from '../periods/actions';
 
 import { useFetchOnMount } from '../../hooks/fetchOnMount';
 
 export const useInstancesFiltersData = (
-    periodsList,
     formId,
     setFetchingOrgUnitTypes,
     setFetchingDevices,
     setFetchingDevicesOwnerships,
-    setFetchingPeriodsList,
 ) => {
     const promisesArray = [
         {
@@ -40,14 +36,6 @@ export const useInstancesFiltersData = (
             setData: setDevicesOwnershipList,
         },
     ];
-    if (periodsList.length > 0) {
-        promisesArray.push({
-            fetch: fetchPeriods,
-            setFetching: setFetchingPeriodsList,
-            setData: setPeriods,
-            args: [formId],
-        });
-    }
 
     useFetchOnMount(promisesArray);
 };
@@ -60,13 +48,21 @@ export const useGetForms = () => {
     };
     const queryString = new URLSearchParams(params);
 
-    return useSnackQuery(
-        ['forms', params],
-        () => getRequest(`/api/forms/?${queryString.toString()}`),
-        undefined,
-        {
-            staleTime: 1000 * 60 * 15, // in MS
-            cacheTime: 1000 * 60 * 5,
-        },
+    return useSnackQuery(['forms', params], () =>
+        getRequest(`/api/forms/?${queryString.toString()}`),
     );
+};
+
+export const useGetPeriods = formIds => {
+    const params = {
+        form_id: formIds ? formIds[0] : null,
+    };
+    const queryString = new URLSearchParams(params);
+
+    return useSnackQuery(['periods', params], () => {
+        if (formIds?.length === 1) {
+            return getRequest(`/api/periods/?${queryString.toString()}`);
+        }
+        return Promise.resolve();
+    });
 };

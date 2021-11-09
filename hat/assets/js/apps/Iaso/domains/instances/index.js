@@ -188,7 +188,6 @@ const Instances = ({ params }) => {
             {fetching && <LoadingSpinner />}
             <Box className={classes.containerFullHeightPadded}>
                 <InstancesFiltersComponent
-                    baseUrl={baseUrl}
                     params={params}
                     onSearch={onSearch}
                 />

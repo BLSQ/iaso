@@ -68,8 +68,8 @@ const tableColumns = source => [
     {
         Header: (
             <FormattedMessage
-                id="iaso.versionsDialog.label.orgunits"
-                defaultMessage="orgunits"
+                id="iaso.label.orgUnit"
+                defaultMessage="Org units"
             />
         ),
         accessor: 'org_units_count',

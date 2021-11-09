@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
-import { makeStyles, Button } from '@material-ui/core';
+import { makeStyles, Button, Grid } from '@material-ui/core';
 import Autorenew from '@material-ui/icons/Autorenew';
 
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
@@ -15,6 +15,7 @@ import { baseUrls } from '../../constants/urls';
 import tasksTableColumns from './config';
 import MESSAGES from './messages';
 import { fetchTasks } from '../../utils/requests';
+import SourceVersionSelector from '../../components/SourceVersionSelector/SourceVersionSelector';
 
 const baseUrl = baseUrls.tasks;
 
@@ -38,6 +39,7 @@ const Tasks = () => {
                 title={intl.formatMessage(MESSAGES.tasks)}
                 displayBackButton={false}
             />
+
             <SingleTable
                 baseUrl={baseUrl}
                 endPointPath="tasks"

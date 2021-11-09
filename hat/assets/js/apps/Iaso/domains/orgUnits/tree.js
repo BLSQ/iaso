@@ -8,6 +8,9 @@ import Grid from '@material-ui/core/Grid';
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import { geoJSON } from 'leaflet';
 import { getRequest } from '../../libs/Api';
+import SourceVersionSelector from '../../components/SourceVersionSelector/SourceVersionSelector';
+import { selectDefaultVersionId } from '../../redux/selectors';
+import { useSelector } from 'react-redux';
 
 const defaultConfig = {
     staleTime: 1000 * 60 * 1,
@@ -15,18 +18,11 @@ const defaultConfig = {
     refetchOnWindowFocus: false,
 };
 
-const useGetDSTree = () =>
-    useQuery(
-        ['datasource.tree'],
-        async () => getRequest(`/api/orgunits/tree_source_data`),
-        defaultConfig,
-    );
-
 const useGetTree = slug => {
     return useQuery(
         ['orgunittree', slug],
         async () => getRequest(`/api/orgunits/tree?version_id=${slug}`),
-        defaultConfig,
+        { ...defaultConfig, enabled: Boolean(slug) },
     );
 };
 
@@ -95,7 +91,9 @@ const MapComponent = ({ children, bounds }) => {
 };
 
 const TreePage = () => {
-    const { data, isFetching, error } = useGetTree(3);
+    const defaultVersionId = useSelector(selectDefaultVersionId);
+    const [version, setVersion] = useState(defaultVersionId);
+    const { data, isFetching, error } = useGetTree(version);
     const [selectedNodes = [], setSelectedNodes] = useState();
     const queries = useGetShapes(selectedNodes);
     const shapes = queries
@@ -117,11 +115,24 @@ const TreePage = () => {
     return (
         <>
             <Grid container>
-                <Grid item xs={6}>
-                    {isFetching && 'Loading ...'}
-                    <TreeComponent data={data} onNodeSelected={handleSelect} />
+                <Grid container item md={4}>
+                    <Grid item md={12}>
+                        <SourceVersionSelector
+                            value={version}
+                            onChange={value => {
+                                setVersion(value);
+                            }}
+                        />
+                        {isFetching && 'Loading ...'}
+                    </Grid>
+                    <Grid item md={12}>
+                        <TreeComponent
+                            data={data}
+                            onNodeSelected={handleSelect}
+                        />
+                    </Grid>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item md={8}>
                     <MapComponent bounds={bounds}>
                         {shapes.map(shape => (
                             <GeoJSON key={shape.id} data={shape.geo_json} />

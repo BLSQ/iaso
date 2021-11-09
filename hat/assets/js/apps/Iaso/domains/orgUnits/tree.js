@@ -98,12 +98,14 @@ const TreePage = () => {
     const { data, isFetching, error } = useGetTree(3);
     const [selectedNodes = [], setSelectedNodes] = useState();
     const queries = useGetShapes(selectedNodes);
-    const shapes = queries.map(q => q.data);
+    const shapes = queries
+        .map(q => q.data)
+        .filter(s => s && Boolean(s.geo_json));
     const bounds = useMemo(() => {
         const shape = shapes[0];
         if (!(shape && shape.geo_json)) return null;
         return geoJSON(shape.geo_json).getBounds();
-    }, [shapes[0]]);
+    }, [shapes]);
 
     if (error) {
         return <>Error from server {error.toString()}</>;
@@ -121,11 +123,9 @@ const TreePage = () => {
                 </Grid>
                 <Grid item xs={6}>
                     <MapComponent bounds={bounds}>
-                        {shapes
-                            .filter(s => s && Boolean(s.geo_json))
-                            .map(shape => (
-                                <GeoJSON key={shape.id} data={shape.geo_json} />
-                            ))}
+                        {shapes.map(shape => (
+                            <GeoJSON key={shape.id} data={shape.geo_json} />
+                        ))}
                     </MapComponent>
                 </Grid>
             </Grid>

@@ -12,7 +12,6 @@ export const SET_INSTANCES = 'SET_INSTANCES';
 export const SET_INSTANCES_FETCHING = 'SET_INSTANCES_FETCHING';
 export const SET_CURRENT_INSTANCE = 'SET_CURRENT_INSTANCE';
 export const SET_INSTANCES_FILTER_UDPATED = 'SET_INSTANCES_FILTER_UDPATED';
-export const RESET_INSTANCES = 'RESET_INSTANCES';
 
 export const setInstances = (list, showPagination, params, count, pages) => ({
     type: SET_INSTANCES,
@@ -38,10 +37,6 @@ export const setInstancesFetching = isFetching => ({
 export const setCurrentInstance = instance => ({
     type: SET_CURRENT_INSTANCE,
     payload: instance,
-});
-
-export const resetInstances = () => ({
-    type: RESET_INSTANCES,
 });
 
 export const fetchEditUrl = (currentInstance, location) => dispatch => {

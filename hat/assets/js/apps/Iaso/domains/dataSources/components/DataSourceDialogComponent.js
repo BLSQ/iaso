@@ -70,6 +70,7 @@ const initialForm = (defaultSourceVersion, initialData, sourceCredentials) => {
             dhis_password: '',
         },
     };
+
     if (initialData) {
         merge(values, {
             id: initialData.id,
@@ -78,7 +79,7 @@ const initialForm = (defaultSourceVersion, initialData, sourceCredentials) => {
             versions: initialData.versions,
             description: initialData.description,
             project_ids: initialData.projects?.map(p => p.id),
-            default_version_id: initialData.default_version_id?.id,
+            default_version_id: initialData.default_version?.id,
             is_default_source:
                 initialData.id === defaultSourceVersion?.source?.id,
             credentials: {

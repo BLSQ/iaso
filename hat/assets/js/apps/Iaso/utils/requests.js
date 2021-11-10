@@ -1,14 +1,14 @@
 import {
+    deleteRequest,
     getRequest,
     patchRequest,
     postRequest,
     putRequest,
-    deleteRequest,
     restoreRequest,
 } from '../libs/Api';
 import { useSnackQuery } from '../libs/apiHooks';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
-import { succesfullSnackBar, errorSnackBar } from '../constants/snackBars';
+import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 import { dispatch as storeDispatch } from '../redux/store';
 
 export const fetchOrgUnits = (dispatch, params) =>
@@ -89,35 +89,6 @@ export const fetchDevicesOwnerships = dispatch =>
             );
             console.error(
                 'Error while fetching devices ownership list:',
-                error,
-            );
-            throw error;
-        });
-
-export const fetchInstancesAsDict = (dispatch, url) =>
-    getRequest(url)
-        .then(instances => instances)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchInstanceDictError', null, error),
-                ),
-            );
-            console.error('Error while fetching submissions list:', error);
-            throw error;
-        });
-
-export const fetchInstancesAsSmallDict = (dispatch, url) =>
-    getRequest(`${url}&asSmallDict=true`)
-        .then(instances => instances)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchInstanceLocationError', null, error),
-                ),
-            );
-            console.error(
-                'Error while fetching instances locations list:',
                 error,
             );
             throw error;

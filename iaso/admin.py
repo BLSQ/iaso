@@ -103,7 +103,8 @@ class FormVersionAdmin(admin.GeoModelAdmin):
 class InstanceAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_unit",)
     search_fields = ("file_name", "uuid")
-    list_display = ("project", "form", "org_unit", "period", "created_at")
+    list_display = ("id", "project", "form", "org_unit", "period", "created_at", "deleted")
+    list_filter = ("project", "deleted")
 
 
 class InstanceFileAdmin(admin.GeoModelAdmin):

@@ -146,7 +146,7 @@ export const csvPreview = async data => {
         });
 };
 
-export const updateDefaultDataSource = (accountId, defaultVersionId) =>
+export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
     putRequest(`/api/accounts/${accountId}/`, {
         default_version: defaultVersionId,
     });
@@ -206,10 +206,10 @@ export const useSaveDataSource = setFieldErrors => {
 
         // eslint-disable-next-line camelcase
         if (is_default_source && form.default_version_id.value) {
-            await saveDefaultDataSourceMutation.mutateAsync(
+            await saveDefaultDataSourceMutation.mutateAsync([
                 currentUser.account.id,
                 form.default_version_id.value,
-            );
+            ]);
             dispatch(fetchCurrentUser());
         }
         setIsSaving(false);

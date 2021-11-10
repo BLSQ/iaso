@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -10,18 +10,16 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    createInstance,
-    resetInstances,
-    setInstances,
-    setInstancesFetching,
-} from './actions';
+
+import { useQueryClient } from 'react-query';
+import { createInstance, setInstances } from './actions';
 import { redirectToReplace } from '../../routing/actions';
-import { fetchFormDetailsForInstance, fetchPossibleFields } from './requests';
 import {
+    fetchFormDetailsForInstance,
     fetchInstancesAsDict,
     fetchInstancesAsSmallDict,
-} from '../../utils/requests';
+    fetchPossibleFields,
+} from './requests';
 
 import {
     getEndpointUrl,
@@ -41,6 +39,8 @@ import SingleTable from '../../components/tables/SingleTable';
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
+import { useSnackQuery } from '../../libs/apiHooks';
+import snackMessages from '../../components/snackBars/messages';
 
 const baseUrl = baseUrls.instances;
 
@@ -57,65 +57,71 @@ const Instances = ({ params }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
+    const queryClient = useQueryClient();
 
     const reduxPage = useSelector(state => state.instances.instancesPage);
-    const loadingList = useSelector(state => state.instances.fetching);
 
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
-    const [loadingMap, setLoadingMap] = useState(tab === 'map');
-    const [forceRefresh, setForceRefresh] = useState(false);
-    const [instancesSmall, setInstancesSmall] = useState(null);
-    const [labelKeys, setLabelKeys] = useState([]);
-    const [formName, setFormName] = useState('');
-    const [possibleFields, setPossibleFields] = useState(null);
-    const [periodType, setPeriodType] = useState(null);
 
-    const fetchSmallInstances = (queryParams = params) => {
-        const urlSmall = getEndpointUrl(queryParams, false, '', true);
-        setLoadingMap(true);
-        return fetchInstancesAsSmallDict(dispatch, urlSmall).then(
-            smallInstancesData => {
-                setInstancesSmall(smallInstancesData || []);
-                setLoadingMap(false);
-            },
-        );
-    };
+    // Data for the map, only map tab
+    const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
+        ['instances', 'small', params],
+        () =>
+            fetchInstancesAsSmallDict(getEndpointUrl(params, false, '', true)),
+        snackMessages.fetchInstanceLocationError,
+        { enabled: params.tab === 'map' },
+    );
 
-    const fetchInstances = (changeLoad = true, queryParams = params) => {
-        const url = getEndpointUrl(queryParams);
-        if (changeLoad) {
-            dispatch(setInstancesFetching(true));
-        }
-        return fetchInstancesAsDict(dispatch, url).then(instancesData => {
-            if (changeLoad) {
-                dispatch(setInstancesFetching(false));
-            }
-            dispatch(
-                setInstances(
-                    instancesData.instances,
-                    true,
-                    queryParams,
-                    instancesData.count,
-                    instancesData.pages,
+    const { isLoading: loadingList } = useSnackQuery(
+        ['instances', params],
+        () => fetchInstancesAsDict(getEndpointUrl(params)),
+        snackMessages.fetchInstanceDictError,
+        {
+            // Temporary  solution till we port the table out of redux
+            onSuccess: instancesData =>
+                dispatch(
+                    setInstances(
+                        instancesData.instances,
+                        true,
+                        params,
+                        instancesData.count,
+                        instancesData.pages,
+                    ),
                 ),
-            );
-            return {
-                list: instancesData.instances,
-                count: instancesData.count,
-                pages: instancesData.pages,
-            };
-        });
-    };
+        },
+    );
+    // Move to delete when we port dialog to react-query
+    const refetchInstances = () => queryClient.invalidateQueries(['instances']);
+
+    const formIds = params.formIds?.split(',');
+    const formId = formIds?.length === 1 ? formIds[0] : undefined;
+
+    const { data: formDetails } = useSnackQuery(
+        ['formDetailsForInstance', formId],
+        () => fetchFormDetailsForInstance(formId),
+        undefined,
+        { enabled: Boolean(formId) },
+    );
+    const labelKeys = formDetails?.label_keys ?? [];
+    const formName = formDetails?.name ?? '';
+    const periodType = formDetails?.period_type;
+
+    const { data: possibleFields } = useSnackQuery(
+        ['possibleFieldForForm', formId],
+        () => fetchPossibleFields(formId),
+        undefined,
+        {
+            enabled: Boolean(formId),
+            select: response => response.possible_fields,
+        },
+    );
 
     const handleChangeTab = newTab => {
         const newParams = {
             ...params,
             tab: newTab,
         };
-        if (newTab === 'map' && !instancesSmall) {
-            fetchSmallInstances(newParams);
-        }
         dispatch(redirectToReplace(baseUrl, newParams));
         setTab(newTab);
     };
@@ -124,50 +130,6 @@ const Instances = ({ params }) => {
         dispatch(redirectToReplace(baseUrl, newParams));
     };
 
-    useEffect(() => {
-        dispatch(resetInstances);
-        fetchInstances();
-        if (params.tab === 'map') {
-            fetchSmallInstances();
-        } else {
-            setInstancesSmall(null);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        params.pageSize,
-        params.formIds,
-        params.order,
-        params.page,
-        params.withLocation,
-        params.showDeleted,
-        params.orgUnitTypeId,
-        params.periods,
-        params.status,
-        params.deviceId,
-        params.deviceOwnershipId,
-        params.search,
-        params.levels,
-        params.dateFrom,
-        params.dateTo,
-        params.formIds,
-    ]);
-
-    useEffect(() => {
-        const onLoad = async () => {
-            const formIds = params.formIds?.split(',');
-            if (formIds?.length === 1) {
-                const formDetails = await fetchFormDetailsForInstance(
-                    formIds[0],
-                );
-                const newPossibleFields = await fetchPossibleFields(formIds[0]);
-                setLabelKeys(formDetails.label_keys ?? []);
-                setFormName(formDetails.name);
-                setPeriodType(formDetails.period_type);
-                setPossibleFields(newPossibleFields);
-            }
-        };
-        onLoad();
-    }, [params.formIds]);
     const fetching = loadingMap || loadingList;
     return (
         <section className={classes.relativeContainer}>
@@ -199,7 +161,7 @@ const Instances = ({ params }) => {
                         className={classes.marginTop}
                     >
                         <Grid xs={12} item className={classes.textAlignRight}>
-                            {params.formIds?.split(',').length === 1 && (
+                            {formIds?.length === 1 && (
                                 <div className={classes.paddingBottomBig}>
                                     <CreateReAssignDialogComponent
                                         titleMessage={
@@ -248,8 +210,6 @@ const Instances = ({ params }) => {
                 )}
                 {tab === 'list' && tableColumns.length > 0 && (
                     <SingleTable
-                        forceRefresh={forceRefresh}
-                        onForceRefreshDone={() => setForceRefresh(false)}
                         apiParams={{
                             ...params,
                         }}
@@ -267,7 +227,7 @@ const Instances = ({ params }) => {
                         selectionActions={getSelectionActions(
                             formatMessage,
                             getFilters(params),
-                            () => setForceRefresh(true),
+                            () => refetchInstances(),
                             params.showDeleted === 'true',
                             classes,
                         )}

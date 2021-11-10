@@ -72,14 +72,14 @@ export const formVersionsTableColumns = (
     },
 ];
 
-const formsTableColumns = (
+const formsTableColumns = ({
     formatMessage,
     component,
     showEditAction = true,
     showMappingAction = true,
     showDeleteAction = true,
     deleteForm = () => null,
-) => [
+}) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',

@@ -29,7 +29,7 @@ const Forms = ({ params, showOnlyDeleted }) => {
     const intl = useSafeIntl();
     const dispatch = useDispatch();
     const currentUser = useSelector(state => state.users.current);
-    const userHasFormsPermission = userHasPermission('forms', currentUser);
+    const userHasFormsPermission = userHasPermission('iaso_forms', currentUser);
     const [forceRefresh, setForceRefresh] = useState(false);
     const handleDeleteForm = formId =>
         deleteForm(dispatch, formId).then(() => {
@@ -40,15 +40,18 @@ const Forms = ({ params, showOnlyDeleted }) => {
             setForceRefresh(true);
         });
     const columnsConfig = showOnlyDeleted
-        ? archivedFormsTableColumns(intl.formatMessage, handleRestoreForm)
-        : formsTableColumns(
+        ? archivedFormsTableColumns(
               intl.formatMessage,
-              null,
+              handleRestoreForm,
               userHasFormsPermission,
-              userHasFormsPermission,
-              userHasFormsPermission,
-              handleDeleteForm,
-          );
+          )
+        : formsTableColumns({
+              formatMessage: intl.formatMessage,
+              showEditAction: userHasFormsPermission,
+              showMappingAction: userHasFormsPermission,
+              showDeleteAction: userHasFormsPermission,
+              deleteForm: handleDeleteForm,
+          });
     const reduxPage = useSelector(state => state.forms.formsPage);
 
     useEffect(() => {
@@ -80,7 +83,8 @@ const Forms = ({ params, showOnlyDeleted }) => {
                 onForceRefreshDone={() => setForceRefresh(false)}
                 results={reduxPage}
                 extraComponent={
-                    !showOnlyDeleted && (
+                    !showOnlyDeleted &&
+                    userHasFormsPermission && (
                         <AddButtonComponent
                             onClick={() => {
                                 dispatch(

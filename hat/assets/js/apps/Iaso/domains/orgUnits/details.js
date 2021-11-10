@@ -126,12 +126,13 @@ class OrgUnitDetail extends Component {
             orgUnitModified: false,
             orgUnitLocationModified: false,
             sourcesSelected: undefined,
-            tableColumns: formsTableColumns(
-                props.intl.formatMessage,
-                this,
-                false,
-                false,
-            ),
+            tableColumns: formsTableColumns({
+                formatMessage: props.intl.formatMessage,
+                component: this,
+                showEditAction: false,
+                showMappingAction: false,
+                showDeleteAction: true,
+            }),
         };
     }
 

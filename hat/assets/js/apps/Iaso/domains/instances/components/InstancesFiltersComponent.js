@@ -17,7 +17,7 @@ import DatesRange from '../../../components/filters/DatesRange';
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
-import { useInstancesFiltersData, useGetForms, useGetPeriods } from '../hooks';
+import { useInstancesFiltersData, useGetForms } from '../hooks';
 import { getValues, useFormState } from '../../../hooks/form';
 
 import MESSAGES from '../messages';
@@ -55,13 +55,7 @@ const InstancesFiltersComponent = ({
     );
 
     const { data, isFetching: fetchingForms } = useGetForms();
-    const { data: periodsList = [], isFetching: fetchingPeriodsList } =
-        useGetPeriods(formIds);
     const formsList = (data && data.forms) || [];
-    const disablePeriodPicker =
-        (fetchingPeriodsList ||
-            (!fetchingPeriodsList && periodsList.length === 0)) &&
-        formIds?.split(',').length === 1;
     useInstancesFiltersData(
         formIds,
         setFetchingOrgUnitTypes,
@@ -93,7 +87,7 @@ const InstancesFiltersComponent = ({
     return (
         <div className={classes.marginBottomBig}>
             <Grid container spacing={4}>
-                <Grid item xs={3}>
+                <Grid item xs={4}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleFormChange}
@@ -128,17 +122,6 @@ const InstancesFiltersComponent = ({
                             }
                         />
                     </Box>
-                </Grid>
-                <Grid item xs={3}>
-                    <InputComponent
-                        keyValue="status"
-                        clearable
-                        onChange={handleFormChange}
-                        value={formState.status.value || null}
-                        type="select"
-                        options={instanceStatusOptions}
-                        label={MESSAGES.status}
-                    />
                     <InputComponent
                         keyValue="orgUnitTypeId"
                         clearable
@@ -153,6 +136,17 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.org_unit_type_id}
                         loading={fetchingOrgUnitTypes}
                     />
+                </Grid>
+                <Grid item xs={4}>
+                    <InputComponent
+                        keyValue="status"
+                        clearable
+                        onChange={handleFormChange}
+                        value={formState.status.value || null}
+                        type="select"
+                        options={instanceStatusOptions}
+                        label={MESSAGES.exportStatus}
+                    />
                     <InputComponent
                         keyValue="withLocation"
                         clearable
@@ -162,29 +156,6 @@ const InstancesFiltersComponent = ({
                         options={instanceStatusOptions}
                         label={MESSAGES.location}
                     />
-                </Grid>
-                <Grid item xs={3}>
-                    <DatesRange
-                        spacing={0}
-                        xs={12}
-                        onChangeDate={handleFormChange}
-                        dateFrom={formState.dateFrom?.value}
-                        dateTo={formState.dateTo?.value}
-                        labelFrom={MESSAGES.creationDateFrom}
-                        labelTo={MESSAGES.creationDateTo}
-                    />
-                    <InputComponent
-                        disabled={disablePeriodPicker}
-                        keyValue="periodType"
-                        clearable
-                        onChange={handleFormChange}
-                        value={formState.periodType.value}
-                        type="select"
-                        options={periodTypeOptions}
-                        label={MESSAGES.periodType}
-                    />
-                </Grid>
-                <Grid item xs={3}>
                     <InputComponent
                         keyValue="deviceId"
                         clearable
@@ -212,6 +183,28 @@ const InstancesFiltersComponent = ({
                             value: o.id,
                         }))}
                         label={MESSAGES.deviceOwnership}
+                    />
+                </Grid>
+                <Grid item xs={4}>
+                    <DatesRange
+                        xs={12}
+                        sm={12}
+                        md={12}
+                        lg={6}
+                        onChangeDate={handleFormChange}
+                        dateFrom={formState.dateFrom?.value}
+                        dateTo={formState.dateTo?.value}
+                        labelFrom={MESSAGES.creationDateFrom}
+                        labelTo={MESSAGES.creationDateTo}
+                    />
+                    <InputComponent
+                        keyValue="periodType"
+                        clearable
+                        onChange={handleFormChange}
+                        value={formState.periodType.value}
+                        type="select"
+                        options={periodTypeOptions}
+                        label={MESSAGES.periodType}
                     />
                     <InputComponent
                         keyValue="showDeleted"

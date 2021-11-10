@@ -53,16 +53,13 @@ export const useGetForms = () => {
     );
 };
 
-export const useGetPeriods = formIds => {
+export const useGetPeriods = formId => {
     const params = {
-        form_id: formIds ? formIds[0] : null,
+        form_id: formId,
     };
     const queryString = new URLSearchParams(params);
 
     return useSnackQuery(['periods', params], () => {
-        if (formIds?.length === 1) {
-            return getRequest(`/api/periods/?${queryString.toString()}`);
-        }
-        return Promise.resolve();
+        return getRequest(`/api/periods/?${queryString.toString()}`);
     });
 };

@@ -323,11 +323,11 @@ const MESSAGES = defineMessages({
     },
     creationDateFrom: {
         id: 'iaso.label.creationDateFrom',
-        defaultMessage: 'Creation start date',
+        defaultMessage: 'Created after',
     },
     creationDateTo: {
         id: 'iaso.label.creationDateTo',
-        defaultMessage: 'Creation end date',
+        defaultMessage: 'Created before',
     },
     periodType: {
         id: 'iaso.label.periodType',

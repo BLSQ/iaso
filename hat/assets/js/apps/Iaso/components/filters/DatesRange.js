@@ -2,7 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
-import { FormControl, Grid } from '@material-ui/core';
+
+import { FormControl, Grid, useTheme, useMediaQuery } from '@material-ui/core';
 import { injectIntl, IconButton } from 'bluesquare-components';
 import EventIcon from '@material-ui/icons/Event';
 import MESSAGES from './messages';
@@ -23,6 +24,28 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+const useCurrentBreakPointSpacing = (xs, sm, md, lg) => {
+    const theme = useTheme();
+    const isXs = useMediaQuery(
+        theme.breakpoints.down('xs') || theme.breakpoints.between('xs', 'sm'),
+    );
+    const isSm = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+    const isMd = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+    const isLg = useMediaQuery(theme.breakpoints.between('lg', 'xl'));
+    const isXl = useMediaQuery(theme.breakpoints.up('xl'));
+    if (
+        (isXs && xs < 12) ||
+        (isSm && sm < 12) ||
+        (isMd && md < 12) ||
+        (isLg && lg < 12) ||
+        (isXl && lg < 12)
+    ) {
+        return 2;
+    }
+
+    return 0;
+};
+
 const DatesRange = ({
     dateFrom,
     dateTo,
@@ -30,14 +53,16 @@ const DatesRange = ({
     intl: { formatMessage },
     labelTo,
     labelFrom,
-    spacing,
     xs,
+    sm,
+    md,
+    lg,
 }) => {
     const classes = useStyles();
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
     return (
-        <Grid container spacing={spacing}>
-            <Grid item xs={xs}>
+        <Grid container spacing={useCurrentBreakPointSpacing(xs, sm, md, lg)}>
+            <Grid item xs={xs} sm={sm} md={md} lg={lg}>
                 <FormControl className={classes.formControl}>
                     <KeyboardDatePicker
                         autoOk
@@ -83,7 +108,7 @@ const DatesRange = ({
                     )}
                 </FormControl>
             </Grid>
-            <Grid item xs={xs}>
+            <Grid item xs={xs} sm={sm} md={md} lg={lg}>
                 <FormControl className={classes.formControl}>
                     <KeyboardDatePicker
                         autoOk
@@ -139,8 +164,10 @@ DatesRange.defaultProps = {
     onChangeDate: () => null,
     labelTo: MESSAGES.to,
     labelFrom: MESSAGES.from,
-    spacing: 4,
     xs: 6,
+    sm: 6,
+    md: 6,
+    lg: 6,
 };
 
 DatesRange.propTypes = {
@@ -150,8 +177,10 @@ DatesRange.propTypes = {
     intl: PropTypes.object.isRequired,
     labelTo: PropTypes.object,
     labelFrom: PropTypes.object,
-    spacing: PropTypes.number,
     xs: PropTypes.number,
+    sm: PropTypes.number,
+    md: PropTypes.number,
+    lg: PropTypes.number,
 };
 
 const DatesRangeIntl = injectIntl(DatesRange);

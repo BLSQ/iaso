@@ -10,6 +10,8 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
+
+import { useQueryClient } from 'react-query';
 import { createInstance, setInstances } from './actions';
 import { redirectToReplace } from '../../routing/actions';
 import {
@@ -39,7 +41,6 @@ import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { useSnackQuery } from '../../libs/apiHooks';
 import snackMessages from '../../components/snackBars/messages';
-import { useQueryClient } from 'react-query';
 
 const baseUrl = baseUrls.instances;
 
@@ -130,7 +131,6 @@ const Instances = ({ params }) => {
     };
 
     const fetching = loadingMap || loadingList;
-
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -161,7 +161,7 @@ const Instances = ({ params }) => {
                         className={classes.marginTop}
                     >
                         <Grid xs={12} item className={classes.textAlignRight}>
-                            {params.formIds?.length === 1 && (
+                            {formIds?.length === 1 && (
                                 <div className={classes.paddingBottomBig}>
                                     <CreateReAssignDialogComponent
                                         titleMessage={

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { Component } from 'react';
 import omit from 'lodash/omit';
 import { connect } from 'react-redux';
@@ -44,6 +45,7 @@ import {
     fetchAlgorithmRuns,
     saveLink,
     fetchAssociatedOrgUnits,
+    deleteForm,
 } from '../../utils/requests';
 import {
     getAliasesArrayFromString,
@@ -120,6 +122,9 @@ const initialOrgUnit = {
 class OrgUnitDetail extends Component {
     constructor(props) {
         super(props);
+        this.handleDeleteForm = this.handleDeleteForm.bind(this);
+        this.resetSingleTableForceRefresh =
+            this.resetSingleTableForceRefresh.bind(this);
         this.state = {
             tab: props.params.tab ? props.params.tab : 'infos',
             currentOrgUnit: undefined,
@@ -132,7 +137,9 @@ class OrgUnitDetail extends Component {
                 showEditAction: false,
                 showMappingAction: false,
                 showDeleteAction: true,
+                deleteForm: this.handleDeleteForm,
             }),
+            forceSingleTableRefresh: false,
         };
     }
 
@@ -322,6 +329,12 @@ class OrgUnitDetail extends Component {
         dispatch(setFetchingDetail(false));
     }
 
+    async handleDeleteForm(formId) {
+        const { dispatch } = this.props;
+        await deleteForm(dispatch, formId);
+        this.setState({ forceSingleTableRefresh: true });
+    }
+
     setOrgUnitLocationModified(orgUnitLocationModified = true) {
         this.setState({
             orgUnitLocationModified,
@@ -332,6 +345,10 @@ class OrgUnitDetail extends Component {
         this.setState({
             currentOrgUnit: undefined,
         });
+    }
+
+    resetSingleTableForceRefresh() {
+        this.setState({ forceSingleTableRefresh: false });
     }
 
     fetchDetail() {
@@ -576,6 +593,12 @@ class OrgUnitDetail extends Component {
                                         pages,
                                     );
                                 }}
+                                forceRefresh={
+                                    this.state.forceSingleTableRefresh
+                                }
+                                onForceRefreshDone={() =>
+                                    this.resetSingleTableForceRefresh()
+                                }
                             />
                         )}
                         <div

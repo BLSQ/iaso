@@ -1,4 +1,5 @@
 import { IconButton } from 'bluesquare-components';
+import { expect } from 'chai';
 import formsTableColumns, { formVersionsTableColumns } from './config';
 import archivedTableColumn from './configArchived';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
@@ -15,6 +16,19 @@ const defaultProps = {
     },
     setState: () => null,
     deleteForm: () => null,
+};
+const defaultColumnParams = {
+    formatMessage: () => null,
+    component: defaultProps,
+    showEditAction: true,
+    showMappingAction: true,
+    showDeleteAction: true,
+    deleteForm: () => null,
+};
+
+const makeColumns = params => {
+    if (!params) return formsTableColumns(defaultColumnParams);
+    return formsTableColumns({ ...defaultColumnParams, ...params });
 };
 
 let columns;
@@ -85,7 +99,10 @@ describe('Forms config', () => {
     });
     describe('formsTableColumns', () => {
         it('sould return an array of 9 columns', () => {
-            columns = formsTableColumns(() => null, defaultProps);
+            columns = formsTableColumns({
+                formatMessage: () => null,
+                component: defaultProps,
+            });
             expect(columns).to.have.lengthOf(9);
         });
         it('should render a component if Cell is defined', () => {
@@ -119,22 +136,20 @@ describe('Forms config', () => {
                 }
             });
         });
-        describe('action colmumn', () => {
-            it('should only display eye icon button if instances_count = 0,showEditAction = false, showMappingAction = false', () => {
+        describe('action column', () => {
+            it('should only display eye icon button and delete icon if instances_count = 0,showEditAction = false, showMappingAction = false', () => {
                 const tempForm = { ...fakeForm };
 
                 deleteFormSpy = sinon.spy();
-                columns = formsTableColumns(
-                    () => null,
-                    defaultProps,
-                    false,
-                    false,
-                    true,
-                    () => {
+                columns = makeColumns({
+                    showEditAction: false,
+                    showMappingAction: false,
+                    showDeleteAction: true,
+                    deleteForm: () => {
                         deleteFormSpy();
                         return new Promise(resolve => resolve());
                     },
-                );
+                });
                 tempForm.instances_count = 0;
                 actionColumn = columns[columns.length - 1];
                 wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));
@@ -145,7 +160,41 @@ describe('Forms config', () => {
                 expect(editIcon).to.have.lengthOf(0);
                 const dhisIcon = wrapper.find('[icon="dhis"]');
                 expect(dhisIcon).to.have.lengthOf(0);
+                const deleteAction = wrapper.find(DeleteDialog);
+                expect(deleteAction).to.have.lengthOf(1);
                 expect(wrapper.find(IconButton)).to.have.lengthOf(1);
+            });
+            describe('When defining which actions to show', () => {
+                it('shows action buttons when params are set to true', () => {
+                    columns = makeColumns();
+                    actionColumn = columns[columns.length - 1];
+                    wrapper = shallow(actionColumn.Cell(colOriginal(fakeForm)));
+                    const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
+                    expect(redEyeIcon).to.have.lengthOf(1);
+                    const editIcon = wrapper.find('[icon="edit"]');
+                    expect(editIcon).to.have.lengthOf(1);
+                    const dhisIcon = wrapper.find('[icon="dhis"]');
+                    expect(dhisIcon).to.have.lengthOf(1);
+                    const deleteAction = wrapper.find(DeleteDialog);
+                    expect(deleteAction).to.have.lengthOf(1);
+                });
+                it('only displays "view" action when params are set to false', () => {
+                    columns = makeColumns({
+                        showEditAction: false,
+                        showMappingAction: false,
+                        showDeleteAction: false,
+                    });
+                    actionColumn = columns[columns.length - 1];
+                    wrapper = shallow(actionColumn.Cell(colOriginal(fakeForm)));
+                    const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
+                    expect(redEyeIcon).to.have.lengthOf(1);
+                    const editIcon = wrapper.find('[icon="edit"]');
+                    expect(editIcon).to.have.lengthOf(0);
+                    const dhisIcon = wrapper.find('[icon="dhis"]');
+                    expect(dhisIcon).to.have.lengthOf(0);
+                    const deleteAction = wrapper.find(DeleteDialog);
+                    expect(deleteAction).to.have.lengthOf(0);
+                });
             });
             it('should trigger deleteFormSpy on onConfirm', () => {
                 deleteDialog = wrapper.find(DeleteDialog);
@@ -156,13 +205,16 @@ describe('Forms config', () => {
             it('should change url if currentOrg unit is defined and display red eye icon', () => {
                 const tempForm = { ...fakeForm };
                 tempForm.instances_count = 5;
-                columns = formsTableColumns(
-                    () => null,
-                    { ...defaultProps, state: { currentOrgUnit: { id: 1 } } },
-                    false,
-                    false,
-                    false,
-                );
+                columns = formsTableColumns({
+                    formatMessage: () => null,
+                    component: {
+                        ...defaultProps,
+                        state: { currentOrgUnit: { id: 1 } },
+                    },
+                    showEditAction: false,
+                    showMappingAction: false,
+                    showDeleteAction: false,
+                });
                 actionColumn = columns[columns.length - 1];
                 wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));
                 const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
@@ -220,6 +272,16 @@ describe('Forms config', () => {
             it('should trigger restoreForm on onConfirm', () => {
                 restoreIcon.props().onClick();
                 expect(restoreFormSpy.calledOnce).to.equal(true);
+            });
+        });
+        describe('When user does not have permission', () => {
+            it('does not display actions column', () => {
+                const restrictedColumns = archivedTableColumn(
+                    () => null,
+                    () => null,
+                    false,
+                );
+                expect(restrictedColumns.length).to.equal(columns.length - 1);
             });
         });
     });

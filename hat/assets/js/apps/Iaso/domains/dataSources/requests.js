@@ -1,3 +1,4 @@
+/* eslint-disable no-else-return */
 import React from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
@@ -70,18 +71,42 @@ const getDataSourceVersions = async () => {
     });
 };
 
+// Func to compare version to  order them
+// string.localeCompare allow us to have case insensitive sorting and to take accents into account
+const compareVersions = (a, b) => {
+    const comparison = a.data_source_name.localeCompare(
+        b.data_source_name,
+        undefined,
+        {
+            sensitivity: 'accent',
+        },
+    );
+    if (comparison === 0) {
+        if (a.number < b.number) {
+            return -1;
+        } else if (a.number > b.number) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    return comparison;
+};
+
 export const useDataSourceVersions = () => {
     return useQuery(['dataSourceVersions'], getDataSourceVersions, {
         select: data => {
-            return data.versions.map(version => {
-                return {
-                    id: version.id,
-                    data_source: version.data_source,
-                    data_source_name: version.data_source_name,
-                    is_default: version.is_default,
-                    number: version.number,
-                };
-            });
+            return data.versions
+                .map(version => {
+                    return {
+                        id: version.id.toString(),
+                        data_source: version.data_source,
+                        data_source_name: version.data_source_name,
+                        is_default: version.is_default,
+                        number: version.number,
+                    };
+                })
+                .sort(compareVersions);
         },
     });
 };

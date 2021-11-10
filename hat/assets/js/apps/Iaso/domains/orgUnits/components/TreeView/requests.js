@@ -1,15 +1,10 @@
-import { useQuery } from 'react-query';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { getRequest } from 'Iaso/libs/Api';
-import { iasoGetRequest } from '../../../../utils/requests';
+import { useSnackQuery } from '../../../../libs/apiHooks';
+import { getRequest } from '../../../../libs/Api';
 
 const getChildrenData = async id => {
-    const response = await iasoGetRequest({
-        disableSuccessSnackBar: true,
-        requestParams: {
-            url: `/api/orgunits/?&parent_id=${id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`,
-        },
-    });
+    const response = await getRequest(
+        `/api/orgunits/?&parent_id=${id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`,
+    );
     const usableData = response.orgunits.map(orgUnit => {
         return {
             ...orgUnit,
@@ -28,13 +23,10 @@ const makeUrl = (id, type) => {
     }
     return `/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all&treeSearch=true&ignoreEmptyNames=true`;
 };
+
+// mapping the request result here i.o in the useRootData hook to keep the hook more generic
 const getRootData = async (id, type = 'source') => {
-    const response = await iasoGetRequest({
-        disableSuccessSnackBar: true,
-        requestParams: {
-            url: makeUrl(id, type),
-        },
-    });
+    const response = await getRequest(makeUrl(id, type));
     const usableData = response.orgunits.map(orgUnit => {
         return {
             ...orgUnit,
@@ -48,6 +40,7 @@ const getRootData = async (id, type = 'source') => {
  * @param {string} searchValue
  * @param {number} resultsCount
  */
+
 const searchOrgUnits = async (searchValue, resultsCount, source, version) => {
     let url = `/api/orgunits/?searches=[{"validation_status":"all","search":"${searchValue}","defaultVersion":"true"}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
     if (source) {
@@ -56,18 +49,31 @@ const searchOrgUnits = async (searchValue, resultsCount, source, version) => {
     if (version) {
         url = `/api/orgunits/?searches=[{"validation_status":"all","search":"${searchValue}","version":${version}}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
     }
-    return iasoGetRequest({
-        requestParams: { url },
-        disableSuccessSnackBar: true,
-        errorKeyMessage: 'Searching Org Units',
-        consoleError: url,
-    });
+    const result = await getRequest(url);
+    return result.orgunits;
+};
+
+export const useTreeviewSearch = (
+    request,
+    searchValue,
+    resultsCount,
+    enabled,
+) => {
+    return useSnackQuery(
+        ['TreeviewSearch', request, searchValue, resultsCount],
+        async () => {
+            const queryResult = await request(searchValue, resultsCount);
+            return queryResult;
+        },
+        undefined,
+        { enabled, initialData: [] },
+    );
 };
 
 const useGetOrgUnit = OrgUnitId =>
     useSnackQuery(
         ['orgunits', OrgUnitId],
-        () => getRequest(`/api/orgunits/${OrgUnitId}/`),
+        async () => getRequest(`/api/orgunits/${OrgUnitId}/`),
         undefined,
         {
             enabled: OrgUnitId !== undefined && OrgUnitId !== null,
@@ -75,16 +81,17 @@ const useGetOrgUnit = OrgUnitId =>
     );
 
 export const useChildrenData = (request, id, enabled) =>
-    useQuery(
+    useSnackQuery(
         ['getChildrenData', request, id],
         async () => {
             return request(id);
         },
+        undefined,
         { enabled },
     );
 
 export const useRootData = request =>
-    useQuery(['getRootData', request], async () => request(), {
+    useSnackQuery(['getRootData', request], async () => request(), undefined, {
         keepPreviousData: false,
     });
 

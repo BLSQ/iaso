@@ -7,14 +7,11 @@ import {
     ListItem,
     ListItemText,
     Typography,
-    IconButton,
     ClickAwayListener,
-    InputBase,
     Divider,
     Button,
 } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
-import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import {
@@ -115,7 +112,6 @@ const DynamicSelect = ({
     const { formatMessage } = useSafeIntl();
     const [searchValue, setSearchValue] = useState('');
     const [resultsCount, setResultsCount] = useState(minResultCount);
-    // const [resultsCountChanged, setResultsCountChanged] = useState(false);
     const [isSearchActive, setIsSearchActive] = useState(false);
     const [searchSent, setSearchSent] = useState(false);
     const [selectCountIsFocused, setSelectCountIsFocused] = useState(false);
@@ -145,12 +141,7 @@ const DynamicSelect = ({
     };
     const handleResultCountChange = newResultCount => {
         setResultsCount(parseInt(newResultCount, 10));
-        // setResultsCountChanged(true);
     };
-    // const validateResultCountChange = () => {
-    //     setResultsCountChanged(false);
-    //     handleSearch();
-    // };
 
     const tooltipIcon = (
         <InfoOutlinedIcon
@@ -161,7 +152,6 @@ const DynamicSelect = ({
         />
     );
 
-    console.log('isSearchActive', isSearchActive);
     return (
         <Box className={classes.root}>
             <ClickAwayListener

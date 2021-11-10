@@ -66,7 +66,8 @@ export const useTreeviewSearch = (
             return queryResult;
         },
         undefined,
-        { enabled, initialData: [] },
+        // keepPreviousData=true avoids flicker when changing resultsCount
+        { enabled, initialData: [], keepPreviousData: true },
     );
 };
 

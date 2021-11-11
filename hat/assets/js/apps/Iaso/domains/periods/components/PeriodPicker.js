@@ -38,6 +38,7 @@ const PeriodPicker = ({
     onChange,
     activePeriodString,
     hasError,
+    disabled,
 }) => {
     const classes = useStyles();
     const theme = useTheme();
@@ -99,6 +100,7 @@ const PeriodPicker = ({
                             sm={periodType === PERIOD_TYPE_YEAR ? 12 : 6}
                         >
                             <InputComponent
+                                disabled={disabled}
                                 keyValue="year"
                                 onChange={handleChange}
                                 clearable
@@ -115,6 +117,7 @@ const PeriodPicker = ({
                             <Grid item sm={6}>
                                 {periodType === PERIOD_TYPE_MONTH && (
                                     <InputComponent
+                                        disabled={disabled}
                                         keyValue="month"
                                         onChange={handleChange}
                                         clearable
@@ -135,6 +138,7 @@ const PeriodPicker = ({
                                 )}
                                 {periodType === PERIOD_TYPE_QUARTER && (
                                     <InputComponent
+                                        disabled={disabled}
                                         keyValue="quarter"
                                         onChange={handleChange}
                                         clearable
@@ -159,6 +163,7 @@ const PeriodPicker = ({
 
                                 {periodType === PERIOD_TYPE_SIX_MONTH && (
                                     <InputComponent
+                                        disabled={disabled}
                                         keyValue="semester"
                                         onChange={handleChange}
                                         clearable
@@ -191,6 +196,7 @@ const PeriodPicker = ({
 
 PeriodPicker.defaultProps = {
     activePeriodString: undefined,
+    disabled: false,
 };
 
 PeriodPicker.propTypes = {
@@ -202,6 +208,7 @@ PeriodPicker.propTypes = {
         PropTypes.object,
     ]),
     hasError: PropTypes.bool.isRequired,
+    disabled: PropTypes.bool,
 };
 
 export default PeriodPicker;

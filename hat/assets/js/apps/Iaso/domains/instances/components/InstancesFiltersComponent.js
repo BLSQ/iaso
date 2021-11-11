@@ -13,6 +13,7 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { periodTypeOptions } from '../../periods/constants';
 import getDisplayName from '../../../utils/usersUtils';
 import DatesRange from '../../../components/filters/DatesRange';
+import PeriodPicker from '../../periods/components/PeriodPicker';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
@@ -205,6 +206,15 @@ const InstancesFiltersComponent = ({
                         type="select"
                         options={periodTypeOptions}
                         label={MESSAGES.periodType}
+                    />
+
+                    <PeriodPicker
+                        disabled={Boolean(!formState.periodType.value)}
+                        periodType={formState.periodType.value}
+                        title="TITLE"
+                        onChange={startPeriod =>
+                            handleFormChange('startPeriod', startPeriod)
+                        }
                     />
                     <InputComponent
                         keyValue="showDeleted"

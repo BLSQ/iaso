@@ -555,21 +555,21 @@ class OrgUnitMapComponent extends Component {
                             </>
                         )}
 
-                        <Pane
-                            name={`${orgunitsPane}-markers`}
-                            style={{ zIndex: 698 }}
-                        >
-                            {mappedOrgUnitTypesSelected.map(ot => (
-                                <MarkerClusterGroup
-                                    key={ot.id}
-                                    maxClusterRadius={5}
-                                    iconCreateFunction={cluster =>
-                                        colorClusterCustomMarker(
-                                            cluster,
-                                            ot.color,
-                                            clusterSize,
-                                        )
-                                    }
+                        {mappedOrgUnitTypesSelected.map(ot => (
+                            <MarkerClusterGroup
+                                key={ot.id}
+                                maxClusterRadius={5}
+                                iconCreateFunction={cluster =>
+                                    colorClusterCustomMarker(
+                                        cluster,
+                                        ot.color,
+                                        clusterSize,
+                                    )
+                                }
+                            >
+                                <Pane
+                                    name={`${orgunitsPane}-markers-${ot.id}`}
+                                    style={{ zIndex: 698 }}
                                 >
                                     {getMarkerList({
                                         locationsList: ot.orgUnits.locations,
@@ -580,19 +580,24 @@ class OrgUnitMapComponent extends Component {
                                         useOrgUnitLocation:
                                             this.useOrgUnitLocation,
                                     })}
-                                </MarkerClusterGroup>
-                            ))}
-                            {mappedSourcesSelected.map(s => (
-                                <MarkerClusterGroup
-                                    key={s.id}
-                                    maxClusterRadius={5}
-                                    iconCreateFunction={cluster =>
-                                        colorClusterCustomMarker(
-                                            cluster,
-                                            s.color,
-                                            clusterSize,
-                                        )
-                                    }
+                                </Pane>
+                            </MarkerClusterGroup>
+                        ))}
+                        {mappedSourcesSelected.map(s => (
+                            <MarkerClusterGroup
+                                key={s.id}
+                                maxClusterRadius={5}
+                                iconCreateFunction={cluster =>
+                                    colorClusterCustomMarker(
+                                        cluster,
+                                        s.color,
+                                        clusterSize,
+                                    )
+                                }
+                            >
+                                <Pane
+                                    name={`${orgunitsPane}-markers-${s.id}`}
+                                    style={{ zIndex: 698 }}
                                 >
                                     {getMarkerList({
                                         locationsList: s.orgUnits.locations,
@@ -603,20 +608,25 @@ class OrgUnitMapComponent extends Component {
                                         useOrgUnitLocation:
                                             this.useOrgUnitLocation,
                                     })}
-                                </MarkerClusterGroup>
-                            ))}
+                                </Pane>
+                            </MarkerClusterGroup>
+                        ))}
 
-                            {formsSelected.map(f => (
-                                <MarkerClusterGroup
-                                    key={f.id}
-                                    maxClusterRadius={5}
-                                    iconCreateFunction={cluster =>
-                                        colorClusterCustomMarker(
-                                            cluster,
-                                            f.color,
-                                            clusterSize,
-                                        )
-                                    }
+                        {formsSelected.map(f => (
+                            <MarkerClusterGroup
+                                key={f.id}
+                                maxClusterRadius={5}
+                                iconCreateFunction={cluster =>
+                                    colorClusterCustomMarker(
+                                        cluster,
+                                        f.color,
+                                        clusterSize,
+                                    )
+                                }
+                            >
+                                <Pane
+                                    name={`${orgunitsPane}-markers-${f.id}`}
+                                    style={{ zIndex: 698 }}
                                 >
                                     {getMarkerList({
                                         locationsList: f.instances,
@@ -628,9 +638,9 @@ class OrgUnitMapComponent extends Component {
                                         useOrgUnitLocation:
                                             this.useOrgUnitLocation,
                                     })}
-                                </MarkerClusterGroup>
-                            ))}
-                        </Pane>
+                                </Pane>
+                            </MarkerClusterGroup>
+                        ))}
 
                         {hasMarker && currentOption !== 'edit' && (
                             <Pane

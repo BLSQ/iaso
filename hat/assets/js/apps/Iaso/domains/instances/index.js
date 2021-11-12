@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -67,10 +67,19 @@ const Instances = ({ params }) => {
     // Data for the map and files, only load in theses tabs
     const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
         ['instances', 'small', params],
+        // Ugly fix to limit results displayed on map, IA-904
         () =>
-            fetchInstancesAsSmallDict(getEndpointUrl(params, false, '', true)),
+            fetchInstancesAsSmallDict(
+                `${getEndpointUrl(params, false, '', true)}&limit=${
+                    params.mapResults || 3000
+                }`,
+            ),
         snackMessages.fetchInstanceLocationError,
-        { enabled: params.tab === 'files' || params.tab === 'maps' },
+
+        {
+            enabled: params.tab === 'files' || params.tab === 'maps',
+            select: result => result.instances,
+        },
     );
 
     const { isLoading: loadingList } = useSnackQuery(
@@ -117,14 +126,17 @@ const Instances = ({ params }) => {
         },
     );
 
-    const handleChangeTab = newTab => {
-        const newParams = {
-            ...params,
-            tab: newTab,
-        };
-        dispatch(redirectToReplace(baseUrl, newParams));
-        setTab(newTab);
-    };
+    const handleChangeTab = useCallback(
+        newTab => {
+            const newParams = {
+                ...params,
+                tab: newTab,
+            };
+            setTab(newTab);
+            dispatch(redirectToReplace(baseUrl, newParams));
+        },
+        [params, dispatch],
+    );
 
     const onSearch = newParams => {
         dispatch(redirectToReplace(baseUrl, newParams));

@@ -9,7 +9,6 @@ import { Button, makeStyles, Box, Grid } from '@material-ui/core';
 import Search from '@material-ui/icons/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
-
 import {
     search,
     orgUnitType,
@@ -21,13 +20,14 @@ import {
     useFormatPeriodFilter,
     forms,
 } from '../../../constants/filters';
+
 import DatesRange from '../../../components/filters/DatesRange';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
 import { useInstancesFiltersData, useGetForms } from '../hooks';
-import { getValues, useFormState } from '../../../hooks/form';
+import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
@@ -110,27 +110,30 @@ const InstancesFiltersComponent = ({
         });
     }
 
-    const getFilterParams = filterKeys => {
-        const newParams = {};
-        filterKeys.forEach(fk => {
-            const newValue = formState[fk]?.value;
-            if (newValue) {
-                newParams[fk] = newValue;
-            }
-        });
-        return newParams;
-    };
+    const getFilterParams = useCallback(
+        filterKeys => {
+            const newParams = {};
+            filterKeys.forEach(fk => {
+                const newValue = formState[fk]?.value;
+                if (newValue) {
+                    newParams[fk] = newValue;
+                }
+            });
+            return newParams;
+        },
+        [formState],
+    );
 
-    const handleSearch = () => {
+    const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
             dispatch(setInstancesFilterUpdated(false));
             onSearch({
                 ...params,
-                ...getValues(formState),
+                ...getInstancesFilterValues(formState),
                 page: 1,
             });
         }
-    };
+    }, [params, onSearch, dispatch, formState, isInstancesFilterUpdated]);
 
     const handleFormChange = useCallback(
         (value, key) => {
@@ -212,15 +215,26 @@ const InstancesFiltersComponent = ({
                                 />
                             </Box>
                             <FiltersComponent
-                                params={getFilterParams(['search'])}
+                                params={getFilterParams([
+                                    'search',
+                                    'mapResults',
+                                ])}
                                 redirectOnChange={false}
                                 onFilterChanged={handleFormChange}
                                 filters={[
                                     extendFilter(
                                         searchParams,
                                         search(),
-                                        (value, urlKey) =>
-                                            handleFormChange(value, urlKey),
+                                        handleFormChange,
+                                    ),
+                                    extendFilter(
+                                        params,
+                                        {
+                                            urlKey: 'mapResults',
+                                            label: MESSAGES.locationLimit,
+                                            type: 'number',
+                                        },
+                                        handleFormChange,
                                     ),
                                 ]}
                                 onEnterPressed={() => handleSearch()}

@@ -100,3 +100,15 @@ export const getValues = formState => {
         ]),
     );
 };
+
+// IA-904 removing 'tab' key from the mapped values to avoid bug
+export const getInstancesFilterValues = formState => {
+    return Object.fromEntries(
+        Object.entries(formState)
+            // skipping tab, since it creates bugs
+            // and shouldn't be managed by the filter anyway
+            // eslint-disable-next-line no-unused-vars
+            .filter(([key, _valueDict]) => key !== 'tab')
+            .map(([key, valueDict]) => [key, valueDict.value]),
+    );
+};

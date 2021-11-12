@@ -71,7 +71,7 @@ const Instances = ({ params }) => {
         () =>
             fetchInstancesAsSmallDict(
                 `${getEndpointUrl(params, false, '', true)}&limit=${
-                    params.mapResults
+                    params.mapResults || 3000
                 }`,
             ),
         snackMessages.fetchInstanceLocationError,

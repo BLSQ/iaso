@@ -194,9 +194,9 @@ export const getInstancesVisibleColumns = ({
 
 export const getInstancesFilesList = instances => {
     const filesList = [];
-    instances.forEach(i => {
-        if (i.files.length > 0) {
-            i.files.forEach(path => {
+    instances?.forEach(i => {
+        if (i.files?.length > 0) {
+            i.files?.forEach(path => {
                 const file = {
                     itemId: i.id,
                     createdAt: i.created_at,

@@ -70,7 +70,7 @@ const Instances = ({ params }) => {
         () =>
             fetchInstancesAsSmallDict(getEndpointUrl(params, false, '', true)),
         snackMessages.fetchInstanceLocationError,
-        { enabled: params.tab === 'map' },
+        { enabled: params.tab === 'map', select: result => result.instances },
     );
 
     const { isLoading: loadingList } = useSnackQuery(

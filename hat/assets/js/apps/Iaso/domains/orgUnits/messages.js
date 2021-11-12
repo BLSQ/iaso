@@ -331,7 +331,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Validation status: NEW',
     },
     statusValid: {
-        id: 'iaso.orgUnits.statusNew',
+        id: 'iaso.orgUnits.statusValid',
         defaultMessage: 'Validation status: VALID',
     },
     statusRejected: {

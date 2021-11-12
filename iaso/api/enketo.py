@@ -58,7 +58,7 @@ def enketo_create_url(request):
         edit_url = enketo_url_for_creation(
             server_url=public_url_for_enketo(request, "/api/enketo"),
             uuid=uuid,
-            return_url=request.build_absolute_uri("/dashboard/instance/instanceId/%s" % i.id),
+            return_url=request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % i.id),
         )
 
         return JsonResponse({"edit_url": edit_url}, status=201)
@@ -137,7 +137,7 @@ def enketo_public_create_url(request):
 
         try:
             if not return_url:
-                return_url = request.build_absolute_uri("/dashboard/instance/instanceId/%s" % instance.id)
+                return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
             edit_url = enketo_url_for_creation(
                 server_url=public_url_for_enketo(request, "/api/enketo"), uuid=uuid, return_url=return_url
             )

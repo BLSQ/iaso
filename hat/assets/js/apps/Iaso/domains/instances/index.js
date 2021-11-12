@@ -67,8 +67,14 @@ const Instances = ({ params }) => {
     // Data for the map, only map tab
     const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
         ['instances', 'small', params],
+        // Ugly fix to limit results displayed on map
+        // A cleaner solution probably requires looking into blsq-comp tableUtils
         () =>
-            fetchInstancesAsSmallDict(getEndpointUrl(params, false, '', true)),
+            fetchInstancesAsSmallDict(
+                `${getEndpointUrl(params, false, '', true)}&limit=${
+                    params.mapResults
+                }`,
+            ),
         snackMessages.fetchInstanceLocationError,
         { enabled: params.tab === 'map', select: result => result.instances },
     );

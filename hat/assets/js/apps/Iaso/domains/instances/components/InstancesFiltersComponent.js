@@ -9,7 +9,6 @@ import { Button, makeStyles, Box, Grid } from '@material-ui/core';
 import Search from '@material-ui/icons/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
-
 import {
     search,
     orgUnitType,
@@ -21,6 +20,7 @@ import {
     useFormatPeriodFilter,
     forms,
 } from '../../../constants/filters';
+
 import DatesRange from '../../../components/filters/DatesRange';
 
 import { INSTANCE_STATUSES } from '../constants';
@@ -219,12 +219,32 @@ const InstancesFiltersComponent = ({
                                     extendFilter(
                                         searchParams,
                                         search(),
-                                        (value, urlKey) =>
-                                            handleFormChange(value, urlKey),
+                                        handleFormChange,
+                                    ),
+                                    extendFilter(
+                                        params,
+                                        {
+                                            urlKey: 'mapResults',
+                                            label: MESSAGES.locationLimit,
+                                            type: 'number',
+                                        },
+                                        handleFormChange,
                                     ),
                                 ]}
                                 onEnterPressed={() => handleSearch()}
-                            />
+                            />{' '}
+                            {/* <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                onFilterChanged={handleFormChange}
+                                filters={[
+                                    {
+                                        urlKey: 'mapResults',
+                                        label: MESSAGES.locationLimit,
+                                        type: 'number',
+                                    },
+                                ]}
+                            /> */}
                         </Grid>
                     </Grid>
                 </Grid>

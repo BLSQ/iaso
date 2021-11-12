@@ -321,6 +321,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.table.label.instanceHeaderTooltip',
         defaultMessage: 'Label: {label} - Name: {key}',
     },
+    locationLimit: {
+        id: 'iaso.map.locationLimit',
+        defaultMessage: 'Map results limit',
+    },
 });
 
 export default MESSAGES;

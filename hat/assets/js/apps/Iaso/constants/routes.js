@@ -210,6 +210,10 @@ export const instancesPath = {
             isRequired: false,
             key: 'showDeleted',
         },
+        {
+            isRequired: false,
+            key: 'mapResults',
+        },
     ],
 };
 

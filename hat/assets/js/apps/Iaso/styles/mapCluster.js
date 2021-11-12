@@ -13,4 +13,12 @@ export const styles = {
         borderRadius: '100%',
         fontSize: 12,
     },
+
+    '.marker-cluster.default > div': {
+        display: 'flex',
+        marginTop: 2,
+        alignItems: 'center',
+        marginLeft: 2,
+        justifyContent: 'center',
+    },
 };

@@ -33,6 +33,16 @@ const addRoutes = baseRoutes =>
             path={baseUrls.orgUnitTypes}
             to={`${baseUrls.orgUnitTypes}/order/name/pageSize/20/page/1`}
         />,
+        // Keep compatibility with the olds url for instance as they got renamed in Nov 2021
+        <Redirect
+            path="/instance/instanceId/:instanceId"
+            to="/forms/submission/instanceId/:instanceId"
+        />,
+        // idem and the formId parameter was renamed to formIds (with s) to support multiple form
+        <Redirect
+            path="/instances/formId/:formId(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)"
+            to="/forms/submissions(/formIds/:formId)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)"
+        />,
         // Catch all route, need to be at the end
         <Route
             path="/*"

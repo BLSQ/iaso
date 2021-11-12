@@ -87,9 +87,7 @@ const Instances = ({ params }) => {
         ['instances', 'files', params],
         // Ugly fix to limit results displayed on map, IA-904
         () =>
-            fetchInstancesAsSmallDict(
-                `${getEndpointUrl(params, false, '', true)}`,
-            ),
+            fetchInstancesAsSmallDict(getEndpointUrl(params, false, '', true)),
         snackMessages.fetchInstanceLocationError,
 
         {

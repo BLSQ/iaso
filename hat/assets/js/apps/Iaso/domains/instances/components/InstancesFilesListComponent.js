@@ -237,9 +237,7 @@ InstancesFilesList.propTypes = {
     instanceDetail: PropTypes.object,
 };
 
-const MapStateToProps = state => ({
-    fetching: state.instances.fetching,
-});
+const MapStateToProps = () => ({});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,

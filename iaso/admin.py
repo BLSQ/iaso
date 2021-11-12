@@ -1,7 +1,10 @@
 import json
 
+from django.contrib.admin import widgets
 from django.contrib.auth.models import User
-from django.contrib.gis import admin
+from django.contrib.gis import admin, forms
+from django.db import models
+from django.contrib.gis.db import models as geomodels
 from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
 
@@ -100,11 +103,46 @@ class FormVersionAdmin(admin.GeoModelAdmin):
     form_id.admin_order_field = "form__id"
 
 
+class InstanceFileAdminInline(admin.TabularInline):
+    model = InstanceFile
+    extra = 0
+    formfield_overrides = {
+        models.TextField: {"widget": widgets.AdminTextInputWidget},
+    }
+
+
 class InstanceAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_unit",)
     search_fields = ("file_name", "uuid")
     list_display = ("id", "project", "form", "org_unit", "period", "created_at", "deleted")
-    list_filter = ("project", "deleted")
+    list_filter = ("project", "form", "deleted")
+    fieldsets = (
+        (
+            None,
+            {"fields": ("deleted", "form", "period", "uuid", "name", "org_unit", "device")},
+        ),
+        (
+            "File",
+            {
+                "fields": (
+                    "file",
+                    "file_name",
+                    "correlation_id",
+                    "json",
+                )
+            },
+        ),
+        ("Export", {"fields": ("to_export", "export_id", "last_export_success_at")}),
+        ("Other", {"fields": ("project", "location", "accuracy")}),
+    )
+
+    formfield_overrides = {
+        models.TextField: {"widget": widgets.AdminTextInputWidget},
+        geomodels.PointField: {"widget": forms.OSMWidget},
+    }
+    inlines = [
+        InstanceFileAdminInline,
+    ]
 
 
 class InstanceFileAdmin(admin.GeoModelAdmin):

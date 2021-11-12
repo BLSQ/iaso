@@ -176,9 +176,13 @@ class MappingVersionAdmin(admin.GeoModelAdmin):
     list_filter = ("form_version_id",)
 
 
-class GroupAdmin(admin.GeoModelAdmin):
+class GroupAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_units",)
-    search_fields = ("name",)
+    search_fields = ("name", "source_version", "domain")
+    list_display = ("name", "source_version", "created_at", "org_unit_count", "domain", "source_ref")
+
+    def org_unit_count(self, obj):
+        return obj.org_units.count()
 
 
 class UserAdmin(admin.GeoModelAdmin):

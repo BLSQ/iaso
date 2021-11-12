@@ -64,7 +64,7 @@ const Instances = ({ params }) => {
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
 
-    // Data for the map, only map tab
+    // Data for the map and files, only load in theses tabs
     const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
         ['instances', 'small', params],
         // Ugly fix to limit results displayed on map, IA-904
@@ -75,7 +75,11 @@ const Instances = ({ params }) => {
                 }`,
             ),
         snackMessages.fetchInstanceLocationError,
-        { enabled: params.tab === 'map', select: result => result.instances },
+
+        {
+            enabled: params.tab === 'files' || params.tab === 'maps',
+            select: result => result.instances,
+        },
     );
 
     const { isLoading: loadingList } = useSnackQuery(
@@ -252,6 +256,7 @@ const Instances = ({ params }) => {
                 {tab === 'files' && (
                     <InstancesFilesList
                         files={getInstancesFilesList(instancesSmall || [])}
+                        fetching={loadingMap}
                     />
                 )}
             </Box>

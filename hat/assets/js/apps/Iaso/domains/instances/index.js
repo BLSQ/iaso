@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -67,8 +67,7 @@ const Instances = ({ params }) => {
     // Data for the map, only map tab
     const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
         ['instances', 'small', params],
-        // Ugly fix to limit results displayed on map
-        // A cleaner solution probably requires looking into blsq-comp tableUtils
+        // Ugly fix to limit results displayed on map, IA-904
         () =>
             fetchInstancesAsSmallDict(
                 `${getEndpointUrl(params, false, '', true)}&limit=${
@@ -123,14 +122,17 @@ const Instances = ({ params }) => {
         },
     );
 
-    const handleChangeTab = newTab => {
-        const newParams = {
-            ...params,
-            tab: newTab,
-        };
-        dispatch(redirectToReplace(baseUrl, newParams));
-        setTab(newTab);
-    };
+    const handleChangeTab = useCallback(
+        newTab => {
+            const newParams = {
+                ...params,
+                tab: newTab,
+            };
+            setTab(newTab);
+            dispatch(redirectToReplace(baseUrl, newParams));
+        },
+        [params, dispatch],
+    );
 
     const onSearch = newParams => {
         dispatch(redirectToReplace(baseUrl, newParams));

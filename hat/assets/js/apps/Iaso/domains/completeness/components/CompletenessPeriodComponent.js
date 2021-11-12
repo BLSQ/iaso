@@ -72,7 +72,7 @@ const CompletenessPeriodComponent = ({
     const onSelectCell = (form, status, selectedPeriod) => {
         dispatch(
             redirectTo(baseUrls.instances, {
-                formId: form.id,
+                formIds: form.id,
                 periods: selectedPeriod.asPeriodType(form.period_type)
                     .periodString,
                 status: status.toUpperCase(),

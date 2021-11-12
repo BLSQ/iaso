@@ -77,7 +77,7 @@ const Instances = ({ params }) => {
         snackMessages.fetchInstanceLocationError,
 
         {
-            enabled: params.tab === 'files' || params.tab === 'maps',
+            enabled: params.tab === 'files' || params.tab === 'map',
             select: result => result.instances,
         },
     );

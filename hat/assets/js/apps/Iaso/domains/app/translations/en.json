@@ -485,6 +485,8 @@
     "iaso.pages.errors.url": "Url is required",
     "iaso.pages.errors.urlNotValid": "Url is not valid",
     "iaso.pages.title": "Pages",
+    "iaso.periods.end": "End period",
+    "iaso.periods.start": "Start period",
     "iaso.permissions.completeness": "Data completeness",
     "iaso.permissions.dataTasks": "Tasks",
     "iaso.permissions.forms": "Forms",

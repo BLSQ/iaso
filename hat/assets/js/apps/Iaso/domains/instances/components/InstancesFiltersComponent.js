@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button, makeStyles, Grid, Box } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
-import { commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
@@ -39,6 +39,7 @@ const InstancesFiltersComponent = ({
     onSearch,
 }) => {
     const dispatch = useDispatch();
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
 
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
@@ -207,15 +208,29 @@ const InstancesFiltersComponent = ({
                         options={periodTypeOptions}
                         label={MESSAGES.periodType}
                     />
+                    {formState.periodType.value && (
+                        <>
+                            <PeriodPicker
+                                activePeriodStringe={
+                                    formState.startPeriod.value
+                                }
+                                periodType={formState.periodType.value}
+                                title={formatMessage(MESSAGES.startPeriod)}
+                                onChange={startPeriod =>
+                                    handleFormChange('startPeriod', startPeriod)
+                                }
+                            />
 
-                    <PeriodPicker
-                        disabled={Boolean(!formState.periodType.value)}
-                        periodType={formState.periodType.value}
-                        title="TITLE"
-                        onChange={startPeriod =>
-                            handleFormChange('startPeriod', startPeriod)
-                        }
-                    />
+                            <PeriodPicker
+                                activePeriodStringe={formState.endPeriod.value}
+                                periodType={formState.periodType.value}
+                                title={formatMessage(MESSAGES.endPeriod)}
+                                onChange={endPeriod =>
+                                    handleFormChange('endPeriod', endPeriod)
+                                }
+                            />
+                        </>
+                    )}
                     <InputComponent
                         keyValue="showDeleted"
                         onChange={handleFormChange}

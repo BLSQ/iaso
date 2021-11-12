@@ -353,6 +353,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',
     },
+    startPeriod: {
+        id: 'iaso.periods.start',
+        defaultMessage: 'Start period',
+    },
+    endPeriod: {
+        id: 'iaso.periods.end',
+        defaultMessage: 'End period',
+    },
 });
 
 export default MESSAGES;

@@ -172,7 +172,7 @@ class InstanceDetails extends Component {
                             router.goBack();
                         } else {
                             redirectToReplace(baseUrls.instances, {
-                                formId: currentInstance.form_id,
+                                formIds: currentInstance.form_id,
                             });
                         }
                     }}

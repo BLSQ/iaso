@@ -11,6 +11,7 @@ import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
+import { isValidPeriod } from '../../periods/utils';
 import getDisplayName from '../../../utils/usersUtils';
 import DatesRange from '../../../components/filters/DatesRange';
 import PeriodPicker from '../../periods/components/PeriodPicker';
@@ -81,14 +82,32 @@ const InstancesFiltersComponent = ({
             if (key) {
                 setFormState(key, value);
                 if (key === 'periodType') {
-                    setFormState('startPeriod', undefined);
-                    setFormState('endPeriod', undefined);
+                    setFormState('startPeriod', null);
+                    setFormState('endPeriod', null);
                 }
             }
             dispatch(setInstancesFilterUpdated(true));
         },
         [setFormState, dispatch],
     );
+    const startPeriodError = useMemo(() => {
+        if (formState.startPeriod?.value && formState.periodType?.value) {
+            return !isValidPeriod(
+                formState.startPeriod.value,
+                formState.periodType.value,
+            );
+        }
+        return false;
+    }, [formState.startPeriod, formState.periodType]);
+    const endPeriodError = useMemo(() => {
+        if (formState.endPeriod?.value && formState.periodType?.value) {
+            return !isValidPeriod(
+                formState.endPeriod.value,
+                formState.periodType.value,
+            );
+        }
+        return false;
+    }, [formState.endPeriod, formState.periodType]);
     const periodError = useMemo(() => {
         if (formState.startPeriod?.value && formState.endPeriod?.value) {
             return !Period.isBefore(
@@ -97,7 +116,7 @@ const InstancesFiltersComponent = ({
             );
         }
         return false;
-    }, [formState.startPeriod?.value, formState.endPeriod?.value]);
+    }, [formState.startPeriod, formState.endPeriod]);
     return (
         <div className={classes.marginBottomBig}>
             <Grid container spacing={4}>
@@ -234,39 +253,36 @@ const InstancesFiltersComponent = ({
                         options={periodTypeOptions}
                         label={MESSAGES.periodType}
                     />
-                    {formState.periodType.value && (
-                        <>
-                            <PeriodPicker
-                                hasError={periodError}
-                                activePeriodString={formState.startPeriod.value}
-                                periodType={formState.periodType.value}
-                                title={formatMessage(MESSAGES.startPeriod)}
-                                onChange={startPeriod =>
-                                    handleFormChange('startPeriod', startPeriod)
-                                }
-                            />
 
-                            <PeriodPicker
-                                hasError={periodError}
-                                activePeriodString={formState.endPeriod.value}
-                                periodType={formState.periodType.value}
-                                title={formatMessage(MESSAGES.endPeriod)}
-                                onChange={endPeriod =>
-                                    handleFormChange('endPeriod', endPeriod)
-                                }
-                            />
-                            {periodError && (
-                                <Box mt={-1}>
-                                    <Typography
-                                        variant="body1"
-                                        color="error"
-                                        fontSize="small"
-                                    >
-                                        {formatMessage(MESSAGES.periodError)}
-                                    </Typography>
-                                </Box>
-                            )}
-                        </>
+                    <PeriodPicker
+                        hasError={periodError || startPeriodError}
+                        activePeriodString={formState.startPeriod.value}
+                        periodType={formState.periodType.value}
+                        title={formatMessage(MESSAGES.startPeriod)}
+                        onChange={startPeriod =>
+                            handleFormChange('startPeriod', startPeriod)
+                        }
+                    />
+
+                    <PeriodPicker
+                        hasError={periodError || endPeriodError}
+                        activePeriodString={formState.endPeriod.value}
+                        periodType={formState.periodType.value}
+                        title={formatMessage(MESSAGES.endPeriod)}
+                        onChange={endPeriod =>
+                            handleFormChange('endPeriod', endPeriod)
+                        }
+                    />
+                    {periodError && (
+                        <Box mt={-1}>
+                            <Typography
+                                variant="body1"
+                                color="error"
+                                fontSize="small"
+                            >
+                                {formatMessage(MESSAGES.periodError)}
+                            </Typography>
+                        </Box>
                     )}
                 </Grid>
             </Grid>
@@ -284,7 +300,12 @@ const InstancesFiltersComponent = ({
                     alignItems="center"
                 >
                     <Button
-                        disabled={!isInstancesFilterUpdated || periodError}
+                        disabled={
+                            !isInstancesFilterUpdated ||
+                            periodError ||
+                            startPeriodError ||
+                            endPeriodError
+                        }
                         variant="contained"
                         className={classes.button}
                         color="primary"

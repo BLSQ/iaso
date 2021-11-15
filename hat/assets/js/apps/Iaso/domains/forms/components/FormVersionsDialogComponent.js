@@ -184,7 +184,7 @@ const FormVersionsDialogComponent = ({
                             }
                         />
                         {startPeriodInvalid && (
-                            <Box mb={2} mt={-3}>
+                            <Box mb={2} mt={-1}>
                                 <Typography
                                     id="start-invalid"
                                     variant="body1"
@@ -211,7 +211,7 @@ const FormVersionsDialogComponent = ({
                             }
                         />
                         {endPeriodInvalid && (
-                            <Box mb={2} mt={-3}>
+                            <Box mb={2} mt={-1}>
                                 <Typography
                                     id="end-invalid"
                                     variant="body1"

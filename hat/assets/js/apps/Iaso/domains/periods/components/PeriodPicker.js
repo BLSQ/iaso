@@ -47,12 +47,14 @@ const PeriodPicker = ({
             ? Period.parse(activePeriodString)[1]
             : null,
     );
+    const [currentPeriodType, setCurrentPeriodType] = useState(periodType);
 
     useEffect(() => {
-        if (!activePeriodString) {
+        if (currentPeriodType !== periodType) {
             setCurrentPeriod(null);
         }
-    }, [activePeriodString]);
+        setCurrentPeriodType(periodType);
+    }, [periodType, currentPeriodType]);
 
     const handleChange = (keyName, value) => {
         const newPeriod = {
@@ -62,19 +64,21 @@ const PeriodPicker = ({
         setCurrentPeriod(newPeriod);
         onChange(getPeriodPickerString(periodType, newPeriod, value));
     };
-
+    if (!periodType) {
+        return null;
+    }
     return (
         <Box
             mt={2}
-            p={periodType === PERIOD_TYPE_DAY ? 0 : 1}
+            p={currentPeriodType === PERIOD_TYPE_DAY ? 0 : 1}
             mb={2}
-            border={periodType === PERIOD_TYPE_DAY ? 0 : 1}
+            border={currentPeriodType === PERIOD_TYPE_DAY ? 0 : 1}
             borderRadius={5}
             borderColor={
                 hasError ? theme.palette.error.main : 'rgba(0,0,0,0.23)'
             }
         >
-            {periodType === PERIOD_TYPE_DAY && (
+            {currentPeriodType === PERIOD_TYPE_DAY && (
                 <DatePicker
                     label={title}
                     clearMessage={MESSAGES.clear}
@@ -88,7 +92,7 @@ const PeriodPicker = ({
                     }
                 />
             )}
-            {periodType !== PERIOD_TYPE_DAY && (
+            {currentPeriodType !== PERIOD_TYPE_DAY && (
                 <>
                     <Typography variant="h6" className={classes.title}>
                         {title}
@@ -96,7 +100,7 @@ const PeriodPicker = ({
                     <Grid container spacing={2}>
                         <Grid
                             item
-                            sm={periodType === PERIOD_TYPE_YEAR ? 12 : 6}
+                            sm={currentPeriodType === PERIOD_TYPE_YEAR ? 12 : 6}
                         >
                             <InputComponent
                                 keyValue="year"
@@ -111,9 +115,9 @@ const PeriodPicker = ({
                                 label={MESSAGES.year}
                             />
                         </Grid>
-                        {periodType !== PERIOD_TYPE_YEAR && (
+                        {currentPeriodType !== PERIOD_TYPE_YEAR && (
                             <Grid item sm={6}>
-                                {periodType === PERIOD_TYPE_MONTH && (
+                                {currentPeriodType === PERIOD_TYPE_MONTH && (
                                     <InputComponent
                                         keyValue="month"
                                         onChange={handleChange}
@@ -131,7 +135,7 @@ const PeriodPicker = ({
                                         label={MESSAGES.month}
                                     />
                                 )}
-                                {periodType === PERIOD_TYPE_QUARTER && (
+                                {currentPeriodType === PERIOD_TYPE_QUARTER && (
                                     <InputComponent
                                         keyValue="quarter"
                                         onChange={handleChange}
@@ -155,7 +159,8 @@ const PeriodPicker = ({
                                     />
                                 )}
 
-                                {periodType === PERIOD_TYPE_SIX_MONTH && (
+                                {currentPeriodType ===
+                                    PERIOD_TYPE_SIX_MONTH && (
                                     <InputComponent
                                         keyValue="semester"
                                         onChange={handleChange}
@@ -189,11 +194,12 @@ const PeriodPicker = ({
 
 PeriodPicker.defaultProps = {
     activePeriodString: undefined,
+    periodType: undefined,
     hasError: false,
 };
 
 PeriodPicker.propTypes = {
-    periodType: PropTypes.string.isRequired,
+    periodType: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     title: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
     activePeriodString: PropTypes.oneOfType([

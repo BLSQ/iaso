@@ -70,9 +70,10 @@ const InstancesTopBar = ({
     useEffect(() => {
         if (reduxPage?.list || tableColumns.length === 0) {
             const enrichedParams = { ...params };
-            const columnsWithLabelKeys = `${params.columns},${labelKeys.join(
-                ',',
-            )}`;
+            const columns =
+                params.columns ||
+                'form__name,updated_at,org_unit__name,created_at,status';
+            const columnsWithLabelKeys = `${columns},${labelKeys.join(',')}`;
             enrichedParams.columns = columnsWithLabelKeys;
             const cols = getInstancesVisibleColumns({
                 formatMessage,

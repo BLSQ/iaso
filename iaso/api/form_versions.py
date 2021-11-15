@@ -1,5 +1,7 @@
 import typing
-from rest_framework import serializers, parsers, permissions
+
+from django.http.response import HttpResponseBadRequest
+from rest_framework import serializers, parsers, permissions, exceptions
 
 from iaso.models import Form, FormVersion
 from django.db.models.functions import Concat
@@ -117,8 +119,11 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     def create(self, validated_data):
         form = validated_data.pop("form")
         survey = validated_data.pop("survey")
-
-        return FormVersion.objects.create_for_form_and_survey(form=form, survey=survey, **validated_data)
+        try:
+            return FormVersion.objects.create_for_form_and_survey(form=form, survey=survey, **validated_data)
+        except Exception as e:
+            # putting the error in an array to prevent front-end crash
+            raise exceptions.ValidationError({"xls_file": [e]})
 
     def update(self, form_version, validated_data):
         form_version.start_period = validated_data.pop("start_period", None)

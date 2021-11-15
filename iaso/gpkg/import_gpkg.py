@@ -156,7 +156,7 @@ def import_gpkg_file(filename, project_id, source_name, version_number, validati
 def import_gpkg_file2(
     filename,
     project: Project,
-    source: SourceVersion,
+    source: DataSource,
     version_number: Optional[int],
     validation_status,
     user: Optional[User],
@@ -165,6 +165,14 @@ def import_gpkg_file2(
         last_version = source.versions.all().order_by("number").last()
         version_number = last_version.number + 1 if last_version else 0
     version, created = SourceVersion.objects.get_or_create(number=version_number, data_source=source)
+    if not source.default_version:
+        source.default_version = version
+        source.save()
+
+    account = source.projects.first().account
+    if not account.default_version:
+        account.default_version = version
+        account.save()
 
     # Create and update all the groups and put them in a dict indexed by ref
     # Do it in sqlite because Fiona is not great with Attributes table (without geom)

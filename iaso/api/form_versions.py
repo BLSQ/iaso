@@ -122,7 +122,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         try:
             return FormVersion.objects.create_for_form_and_survey(form=form, survey=survey, **validated_data)
         except Exception as e:
-            raise exceptions.ValidationError(e)
+            raise exceptions.ValidationError({"xls_file":e})
 
     def update(self, form_version, validated_data):
         form_version.start_period = validated_data.pop("start_period", None)

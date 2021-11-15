@@ -195,22 +195,25 @@ module.exports = {
     externals: [{ './cptable': 'var cptable' }],
 
     resolve: {
-        alias:
-            process.env.LIVE_COMPONENTS === 'true'
-                ? {
-                      'bluesquare-components': path.resolve(
-                          __dirname,
-                          '../../bluesquare-components/src/',
-                      ),
-                  }
-                : undefined,
+        alias: {
+            ...(process.env.LIVE_COMPONENTS === 'true' && {
+                'bluesquare-components': path.resolve(
+                    __dirname,
+                    '../../bluesquare-components/src/',
+                ),
+            }),
+        },
         fallback: {
             fs: false,
         },
         modules:
             process.env.LIVE_COMPONENTS === 'true'
-                ? ['node_modules', '../../bluesquare-components/node_modules/']
-                : ['node_modules'],
+                ? [
+                      'node_modules',
+                      '../../bluesquare-components/node_modules/',
+                      path.resolve(__dirname, 'assets/js/apps/'),
+                  ]
+                : ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
 
         extensions: ['.js'],
     },

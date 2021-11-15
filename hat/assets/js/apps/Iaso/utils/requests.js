@@ -5,8 +5,8 @@ import {
     postRequest,
     putRequest,
     restoreRequest,
-} from '../libs/Api';
-import { useSnackQuery } from '../libs/apiHooks';
+} from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 import { dispatch as storeDispatch } from '../redux/store';

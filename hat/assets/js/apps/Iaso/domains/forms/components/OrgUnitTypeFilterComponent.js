@@ -21,7 +21,7 @@ const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList = []) => {
                 newOrgUnitTypesList.push(fullSubOrgUnit);
             }
             if (
-                fullSubOrgUnit.sub_unit_types &&
+                fullSubOrgUnit?.sub_unit_types &&
                 fullSubOrgUnit.id !== orgUnit.id
             ) {
                 newOrgUnitTypesList = getSubOrgunits(
@@ -90,8 +90,7 @@ const OrgUnitTypeFilterComponent = props => {
         let newOrgUnitTypesList = [];
         orgUnitTypes.forEach(ot => {
             if (
-                currentOrgUnit.org_unit_type &&
-                currentOrgUnit.org_unit_type.sub_unit_types.find(
+                currentOrgUnit?.org_unit_type?.sub_unit_types.find(
                     o => o.id === ot.id,
                 )
             ) {

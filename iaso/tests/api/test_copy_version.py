@@ -1,5 +1,6 @@
 from ...models import OrgUnit, OrgUnitType, Account, Project, SourceVersion, DataSource, Task
 from iaso.test import APITestCase
+from beanstalk_worker.services import TestTaskService
 
 
 class CopyVersionTestCase(APITestCase):
@@ -24,10 +25,6 @@ class CopyVersionTestCase(APITestCase):
         cls.johnny = cls.create_user_with_profile(username="johnny", account=account, permissions=["iaso_sources"])
         cls.miguel = cls.create_user_with_profile(username="miguel", account=account, permissions=[])
 
-        from beanstalk_worker import task_service
-
-        task_service.clear()
-
     def test_copy_version(self):
         """Copying a version through the api"""
 
@@ -47,8 +44,7 @@ class CopyVersionTestCase(APITestCase):
         self.assertHasField(body, "task", object)
         task = body["task"]
         self.assertEqual(task["status"], "QUEUED")
-        from beanstalk_worker import task_service
-
+        task_service = TestTaskService()
         task_service.run_all()
         org_unit_copy = OrgUnit.objects.get(version=self.new_version, name="Myagi")
         self.assertEqual(org_unit_copy.source_ref, "nomercy")
@@ -114,7 +110,7 @@ class CopyVersionTestCase(APITestCase):
         task_model.should_be_killed = True
         task_model.save()
 
-        from beanstalk_worker import task_service
+        task_service = TestTaskService()
 
         task_service.run_all()
 

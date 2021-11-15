@@ -150,12 +150,12 @@ export const mappingDetailPath = {
 
 export const instancesPath = {
     baseUrl: baseUrls.instances,
-    permission: 'iaso_forms',
+    permission: 'iaso_submissions',
     component: props => <Instances {...props} />,
     params: [
         {
-            isRequired: true,
-            key: 'formId',
+            isRequired: false,
+            key: 'formIds',
         },
         ...paginationPathParams,
         {
@@ -209,6 +209,10 @@ export const instancesPath = {
         {
             isRequired: false,
             key: 'showDeleted',
+        },
+        {
+            isRequired: false,
+            key: 'mapResults',
         },
     ],
 };

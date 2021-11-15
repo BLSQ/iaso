@@ -240,7 +240,7 @@ export const ExportToDHIS2Dialog = ({
                                     commaSeparatedIdsToArray(newValue),
                                 );
                             }}
-                            loading={areSourceVersionsLoading}
+                            loading={areOrgUnitTypesLoading}
                             options={orgUnitTypes ?? []}
                             multi
                         />
@@ -289,7 +289,7 @@ export const ExportToDHIS2Dialog = ({
                                 formatMessage,
                                 versions: sourceVersions,
                             })}
-                            loading={areOrgUnitTypesLoading}
+                            loading={areSourceVersionsLoading}
                             required
                         />
                     </Grid>

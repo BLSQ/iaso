@@ -5,6 +5,8 @@ import {
     fetchPeriods,
 } from '../../utils/requests';
 import { setOrgUnitTypes } from '../orgUnits/actions';
+import { getRequest } from '../../libs/Api';
+import { useSnackQuery } from '../../libs/apiHooks';
 import {
     setDevicesList,
     setDevicesOwnershipList,
@@ -48,4 +50,23 @@ export const useInstancesFiltersData = (
     }
 
     useFetchOnMount(promisesArray);
+};
+
+export const useGetForms = () => {
+    const params = {
+        all: true,
+        order: 'name',
+        fields: 'name,period_type,label_keys,id',
+    };
+    const queryString = new URLSearchParams(params);
+
+    return useSnackQuery(
+        ['forms', params],
+        () => getRequest(`/api/forms/?${queryString.toString()}`),
+        undefined,
+        {
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+        },
+    );
 };

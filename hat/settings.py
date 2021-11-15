@@ -205,6 +205,13 @@ DATABASES = {
     }
 }
 
+DATABASES["worker"] = DATABASES["default"].copy()
+DATABASE_ROUTERS = [
+    "hat.common.dbrouter.DbRouter",
+]
+# This database settings which duplicate the main db settings, will be used by the background task worker so that they
+# can have a connexion outside of the transaction to report the progress on a Task. see Comments in services.py
+
 
 def is_superuser(u):
     return u.is_superuser
@@ -332,7 +339,7 @@ BEANSTALK_SQS_URL = os.environ.get(
 BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
 
 if DEBUG:
-    BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.FakeTaskService"
+    BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.PostgresTaskService"
 else:
     BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
 

@@ -103,7 +103,8 @@ class FormVersionAdmin(admin.GeoModelAdmin):
 class InstanceAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_unit",)
     search_fields = ("file_name", "uuid")
-    list_display = ("project", "form", "org_unit", "period", "created_at")
+    list_display = ("id", "project", "form", "org_unit", "period", "created_at", "deleted")
+    list_filter = ("project", "deleted")
 
 
 class InstanceFileAdmin(admin.GeoModelAdmin):
@@ -198,11 +199,16 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
 
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ("name", "account", "status", "created_at", "result")
+    list_display = ("name", "account", "status", "created_at", "launcher", "result_message")
     list_filter = ("account", "status", "name")
     readonly_fields = ("stacktrace", "created_at", "result")
 
+    def result_message(self, task):
+        return task.result and task.result.get("message", "")
+
     def stacktrace(self, task):
+        if not task.result:
+            return
         stack = task.result.get("stack_trace")
         return format_html("<p>{}</p><pre>{}</pre>", task.result.get("message", ""), stack)
 
@@ -241,4 +247,4 @@ admin.site.register(DevicePosition)
 admin.site.register(Page)
 admin.site.register(Task, TaskAdmin)
 admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+# admin.site.register(User, UserAdmin)

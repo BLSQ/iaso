@@ -6,6 +6,7 @@ import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { usePrettyPeriod } from '../periods/utils';
 import { OrgUnitLabel } from '../orgUnits/utils';
 import MESSAGES from './messages';
+import { Link } from 'react-router';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -33,15 +34,26 @@ export const INSTANCE_METAS_FIELDS = [
         type: 'info',
     },
     {
+        key: 'form_name',
+        accessor: 'form__name',
+        tableOrder: 1,
+        type: 'info',
+        Cell: settings => {
+            const data = settings.row.original;
+            const formUrl = `/forms/detail/formId/${data.form_id}`;
+            return <Link to={formUrl}>{data.form_name}</Link>;
+        },
+    },
+    {
         key: 'updated_at',
         render: value => displayDateFromTimestamp(value),
-        tableOrder: 1,
+        tableOrder: 2,
         type: 'info',
     },
     {
         key: 'created_at',
         render: value => displayDateFromTimestamp(value),
-        tableOrder: 4,
+        tableOrder: 5,
         type: 'info',
     },
     {
@@ -65,7 +77,7 @@ export const INSTANCE_METAS_FIELDS = [
                 </OrgUnitTooltip>
             );
         },
-        tableOrder: 2,
+        tableOrder: 3,
         type: 'location',
     },
     {
@@ -93,4 +105,19 @@ export const INSTANCE_METAS_FIELDS = [
         tableOrder: 5,
         type: 'info',
     },
+];
+
+export const filtersKeys = [
+    'formIds',
+    'withLocation',
+    'showDeleted',
+    'orgUnitTypeId',
+    'periods',
+    'status',
+    'deviceId',
+    'deviceOwnershipId',
+    'search',
+    'levels',
+    'dateFrom',
+    'dateTo',
 ];

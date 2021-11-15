@@ -331,11 +331,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Validation status: NEW',
     },
     statusValid: {
-        id: 'iaso.orgUnits.statusNew',
+        id: 'iaso.orgUnits.statusValid',
         defaultMessage: 'Validation status: VALID',
     },
     statusRejected: {
-        id: 'iaso.orgUnits.statusNew',
+        id: 'iaso.orgUnits.statusRejected',
         defaultMessage: 'Validation status: REJECTED',
     },
 });

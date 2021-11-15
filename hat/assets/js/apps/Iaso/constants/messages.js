@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Forms',
         id: 'iaso.forms.title',
     },
+    submissionsTitle: {
+        defaultMessage: 'Submissions',
+        id: 'iaso.instance.title',
+    },
     formsStats: {
         defaultMessage: 'Dashboard',
         id: 'iaso.forms.stats.title',

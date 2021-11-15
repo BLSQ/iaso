@@ -722,3 +722,19 @@ export const formsFilters = () => {
     ];
     return filters;
 };
+
+export const forms = (
+    formsList,
+    urlKey = 'formIds',
+    label = MESSAGES.forms,
+) => ({
+    urlKey,
+    isMultiSelect: true,
+    isClearable: true,
+    options: formsList.map(t => ({
+        label: t.name,
+        value: t.id,
+    })),
+    label,
+    type: 'select',
+});

@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Submissions for the form',
         id: 'iaso.instance.form',
     },
+    titleMulti: {
+        defaultMessage: 'Form submissions',
+        id: 'iaso.forms.hasInstances',
+    },
     forceExport: {
         id: 'iaso.instances.forceExport',
         defaultMessage: 'Force Export',
@@ -158,6 +162,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
     },
+    form_name: {
+        defaultMessage: 'Form',
+        id: 'iaso.instance.formShort',
+    },
     location: {
         defaultMessage: 'Location',
         id: 'iaso.map.location',
@@ -179,20 +187,20 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.instanceStatus',
     },
     ready: {
-        defaultMessage: 'ready',
-        id: 'iaso.label.instanceStatus.readySingle',
+        defaultMessage: 'Ready',
+        id: 'iaso.label.instanceStatus.readyMulti',
     },
     error: {
-        defaultMessage: 'error',
-        id: 'iaso.label.instanceStatus.errorSingle',
+        defaultMessage: 'Error',
+        id: 'iaso.label.instanceStatus.errorMulti',
     },
     duplicated: {
-        defaultMessage: 'duplicated',
-        id: 'iaso.label.instanceStatus.duplicatedSingle',
+        defaultMessage: 'Duplicated',
+        id: 'iaso.label.instanceStatus.duplicatedMulti',
     },
     exported: {
-        defaultMessage: 'exported',
-        id: 'iaso.label.instanceStatus.exportedSingle',
+        defaultMessage: 'Exported',
+        id: 'iaso.label.instanceStatus.exportedMulti',
     },
     exportRequests: {
         defaultMessage: 'Export requests',
@@ -312,6 +320,10 @@ const MESSAGES = defineMessages({
     instanceHeaderTooltip: {
         id: 'iaso.instance.table.label.instanceHeaderTooltip',
         defaultMessage: 'Label: {label} - Name: {key}',
+    },
+    locationLimit: {
+        id: 'iaso.map.locationLimit',
+        defaultMessage: 'Map results limit',
     },
 });
 

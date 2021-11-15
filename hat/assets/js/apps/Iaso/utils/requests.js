@@ -1,14 +1,14 @@
 import {
+    deleteRequest,
     getRequest,
     patchRequest,
     postRequest,
     putRequest,
-    deleteRequest,
     restoreRequest,
 } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
-import { succesfullSnackBar, errorSnackBar } from '../constants/snackBars';
+import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 import { dispatch as storeDispatch } from '../redux/store';
 
 export const fetchOrgUnits = (dispatch, params) =>
@@ -89,35 +89,6 @@ export const fetchDevicesOwnerships = dispatch =>
             );
             console.error(
                 'Error while fetching devices ownership list:',
-                error,
-            );
-            throw error;
-        });
-
-export const fetchInstancesAsDict = (dispatch, url) =>
-    getRequest(url)
-        .then(instances => instances)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchInstanceDictError', null, error),
-                ),
-            );
-            console.error('Error while fetching submissions list:', error);
-            throw error;
-        });
-
-export const fetchInstancesAsSmallDict = (dispatch, url) =>
-    getRequest(`${url}&asSmallDict=true`)
-        .then(instances => instances)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchInstanceLocationError', null, error),
-                ),
-            );
-            console.error(
-                'Error while fetching instances locations list:',
                 error,
             );
             throw error;
@@ -651,7 +622,12 @@ export const useGetComments = params => {
         ? `/api/comments/?object_pk=${orgUnitId}&content_type=iaso-orgunit&limit=${limit}&offset=${offset}`
         : `/api/comments/?object_pk=${orgUnitId}&content_type=iaso-orgunit&limit=${limit}`;
 
-    return useSnackQuery(['comments', params], async () => getRequest(url));
+    return useSnackQuery(
+        ['comments', params],
+        async () => getRequest(url),
+        undefined,
+        { enabled: Boolean(orgUnitId) },
+    );
 };
 
 export const sendComment = async comment =>

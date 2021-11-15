@@ -1,6 +1,7 @@
 def parse_instance_filters(req):
     return {
         "form_id": req.get("form_id", None),
+        "form_ids": req.get("form_ids", None),
         "with_location": req.get("withLocation", None),
         "org_unit_type_id": req.get("orgUnitTypeId", None),
         "device_id": req.get("deviceId", None),

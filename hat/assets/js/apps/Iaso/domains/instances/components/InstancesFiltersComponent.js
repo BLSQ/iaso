@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
@@ -9,7 +9,6 @@ import { Button, makeStyles, Box, Grid } from '@material-ui/core';
 import Search from '@material-ui/icons/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
-
 import {
     search,
     orgUnitType,
@@ -19,14 +18,16 @@ import {
     instanceStatus,
     instanceDeleted,
     useFormatPeriodFilter,
+    forms,
 } from '../../../constants/filters';
+
 import DatesRange from '../../../components/filters/DatesRange';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
-import { redirectTo, redirectToReplace } from '../../../routing/actions';
 
-import { useInstancesFiltersData } from '../hooks';
+import { useInstancesFiltersData, useGetForms } from '../hooks';
+import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
@@ -50,7 +51,7 @@ const extendFilter = (searchParams, filter, onChange) => ({
 
 // TODO make better track of changes (search button activates too easily)
 const InstancesFiltersComponent = ({
-    params: { formId },
+    params: { formIds },
     params,
     onSearch,
     baseUrl,
@@ -60,21 +61,32 @@ const InstancesFiltersComponent = ({
     const classes = useStyles();
     const formatPeriodFilter = useFormatPeriodFilter();
 
-    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
-    const periodsList = useSelector(state => state.periods.list);
     const [fetchingPeriodsList, setFetchingPeriodsList] = useState(false);
-    const devices = useSelector(state => state.devices.list);
     const [fetchingDevices, setFetchingDevices] = useState(false);
-    const devicesOwnerships = useSelector(state => state.devices.ownershipList);
     const [fetchingDevicesOwnerships, setFetchingDevicesOwnerships] =
         useState(false);
 
+    const [formState, setFormState] = useFormState(params);
+
+    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
+    const periodsList = useSelector(state => state.periods.list);
+    const devices = useSelector(state => state.devices.list);
+    const devicesOwnerships = useSelector(state => state.devices.ownershipList);
     const isInstancesFilterUpdated = useSelector(
         state => state.instances.isInstancesFilterUpdated,
     );
+
     const searchParams = [{ search: params.search }];
+
+    const { data, isFetching: fetchingForms } = useGetForms();
+    const formsList = (data && data.forms) || [];
+
     const secondColumnFilters = [
+        {
+            ...forms(formsList),
+            loading: fetchingForms,
+        },
         location(intl.formatMessage),
         {
             ...orgUnitType(orgUnitTypes),
@@ -84,12 +96,13 @@ const InstancesFiltersComponent = ({
     ];
     useInstancesFiltersData(
         periodsList,
-        formId,
+        formIds,
         setFetchingOrgUnitTypes,
         setFetchingDevices,
         setFetchingDevicesOwnerships,
         setFetchingPeriodsList,
     );
+
     if (periodsList.length > 0) {
         secondColumnFilters.unshift({
             ...formatPeriodFilter(periodsList),
@@ -97,42 +110,41 @@ const InstancesFiltersComponent = ({
         });
     }
 
-    const handleSearch = () => {
+    const getFilterParams = useCallback(
+        filterKeys => {
+            const newParams = {};
+            filterKeys.forEach(fk => {
+                const newValue = formState[fk]?.value;
+                if (newValue) {
+                    newParams[fk] = newValue;
+                }
+            });
+            return newParams;
+        },
+        [formState],
+    );
+
+    const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
             dispatch(setInstancesFilterUpdated(false));
-            const tempParams = {
+            onSearch({
                 ...params,
-            };
-            tempParams.page = 1;
-            dispatch(redirectToReplace(baseUrl, tempParams));
+                ...getInstancesFilterValues(formState),
+                page: 1,
+            });
         }
-        onSearch();
-    };
+    }, [params, onSearch, dispatch, formState, isInstancesFilterUpdated]);
 
-    const onSelectOrgUnitFromTree = orgUnit => {
-        if (orgUnit) {
-            const tempParams = { ...params, levels: [orgUnit.id] };
-            dispatch(redirectTo(baseUrl, tempParams));
-            dispatch(setInstancesFilterUpdated(true));
-        } else {
-            const noLevels = { ...params };
-            delete noLevels.levels;
-            dispatch(redirectTo(baseUrl, noLevels));
-            if (params.levels) {
-                dispatch(setInstancesFilterUpdated(true));
+    const handleFormChange = useCallback(
+        (value, key) => {
+            // checking only as value can be null or false
+            if (key) {
+                setFormState(key, value);
             }
-        }
-    };
-
-    const onChange = (value, urlKey) => {
-        dispatch(setInstancesFilterUpdated(true));
-
-        const tempParams = {
-            ...params,
-            [urlKey]: value,
-        };
-        dispatch(redirectToReplace(baseUrl, tempParams));
-    };
+            dispatch(setInstancesFilterUpdated(true));
+        },
+        [setFormState, dispatch],
+    );
 
     return (
         <div className={classes.marginBottomBig}>
@@ -140,29 +152,38 @@ const InstancesFiltersComponent = ({
                 <Grid item xs={8}>
                     <Grid container item xs={12}>
                         <DatesRange
-                            onChangeDate={(key, value) => onChange(value, key)}
-                            dateFrom={params.dateFrom}
-                            dateTo={params.dateTo}
+                            onChangeDate={(key, value) =>
+                                handleFormChange(value, key)
+                            }
+                            dateFrom={formState.dateFrom?.value}
+                            dateTo={formState.dateTo?.value}
                         />
                     </Grid>
                     <Grid container spacing={4}>
                         <Grid item xs={6}>
                             <FiltersComponent
-                                params={params}
-                                baseUrl={baseUrl}
-                                onFilterChanged={() =>
-                                    dispatch(setInstancesFilterUpdated(true))
-                                }
+                                params={getFilterParams([
+                                    'formIds',
+                                    'withLocation',
+                                    'orgUnitTypeId',
+                                    'periods',
+                                    'showDeleted',
+                                ])}
+                                redirectOnChange={false}
+                                onFilterChanged={handleFormChange}
                                 filters={secondColumnFilters}
                             />
                         </Grid>
                         <Grid item xs={6}>
                             <FiltersComponent
-                                params={params}
+                                params={getFilterParams([
+                                    'status',
+                                    'deviceId',
+                                    'deviceOwnershipId',
+                                ])}
                                 baseUrl={baseUrl}
-                                onFilterChanged={() =>
-                                    dispatch(setInstancesFilterUpdated(true))
-                                }
+                                redirectOnChange={false}
+                                onFilterChanged={handleFormChange}
                                 filters={[
                                     instanceStatus(instanceStatusOptions),
                                     {
@@ -181,31 +202,43 @@ const InstancesFiltersComponent = ({
                 <Grid item xs={4}>
                     <Grid container spacing={4}>
                         <Grid item xs={12}>
-                            <FiltersComponent
-                                params={params}
-                                baseUrl={baseUrl}
-                                onFilterChanged={() =>
-                                    dispatch(setInstancesFilterUpdated(true))
-                                }
-                                filters={[
-                                    extendFilter(
-                                        searchParams,
-                                        search(),
-                                        (value, urlKey) =>
-                                            onChange(value, urlKey),
-                                    ),
-                                ]}
-                                onEnterPressed={() => handleSearch()}
-                            />
                             <Box>
                                 <OrgUnitTreeviewModal
                                     toggleOnLabelClick={false}
                                     titleMessage={MESSAGES.search}
-                                    onConfirm={orgUnitId => {
-                                        onSelectOrgUnitFromTree(orgUnitId);
-                                    }}
+                                    onConfirm={orgUnit =>
+                                        handleFormChange(
+                                            orgUnit ? [orgUnit.id] : undefined,
+                                            'levels',
+                                        )
+                                    }
                                 />
                             </Box>
+                            <FiltersComponent
+                                params={getFilterParams([
+                                    'search',
+                                    'mapResults',
+                                ])}
+                                redirectOnChange={false}
+                                onFilterChanged={handleFormChange}
+                                filters={[
+                                    extendFilter(
+                                        searchParams,
+                                        search(),
+                                        handleFormChange,
+                                    ),
+                                    extendFilter(
+                                        params,
+                                        {
+                                            urlKey: 'mapResults',
+                                            label: MESSAGES.locationLimit,
+                                            type: 'number',
+                                        },
+                                        handleFormChange,
+                                    ),
+                                ]}
+                                onEnterPressed={() => handleSearch()}
+                            />
                         </Grid>
                     </Grid>
                 </Grid>

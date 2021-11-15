@@ -1,16 +1,12 @@
 import {
     SET_INSTANCES,
-    SET_INSTANCES_SMALL_DICT,
     SET_INSTANCES_FETCHING,
     SET_CURRENT_INSTANCE,
     SET_INSTANCES_FILTER_UDPATED,
-    RESET_INSTANCES,
     setInstances,
-    setInstancesSmallDict,
     setInstancesFilterUpdated,
     setInstancesFetching,
     setCurrentInstance,
-    resetInstances,
     // fetchEditUrl,
     // fetchInstanceDetail,
     // softDeleteInstance,
@@ -44,15 +40,6 @@ describe('Instances actions', () => {
         const action = setInstances(list, true, 'params', 0, 0);
         expect(action).to.eql(expectedAction);
     });
-    it('should create an action to set instance small dict', () => {
-        const payload = ['HYRULE WARRIORS', 'GANON', 'URBOSA'];
-        const expectedAction = {
-            type: SET_INSTANCES_SMALL_DICT,
-            payload,
-        };
-        const action = setInstancesSmallDict(payload);
-        expect(action).to.eql(expectedAction);
-    });
     it('should create an action to set instance filter update', () => {
         const payload = false;
         const expectedAction = {
@@ -81,13 +68,6 @@ describe('Instances actions', () => {
             payload,
         };
         const action = setCurrentInstance(payload);
-        expect(action).to.eql(expectedAction);
-    });
-    it('should create an action to reset instance reducer', () => {
-        const expectedAction = {
-            type: RESET_INSTANCES,
-        };
-        const action = resetInstances();
         expect(action).to.eql(expectedAction);
     });
     // it('should call getRequest on fetchEditUrl', () => {

@@ -1,3 +1,4 @@
+/* eslint-disable no-else-return */
 import React from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,6 +10,8 @@ import { errorSnackBar } from '../../constants/snackBars';
 import snackBarMessages from '../../components/snackBars/messages';
 import { fetchCurrentUser } from '../users/actions';
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { getValues } from '../../hooks/form';
+
 
 /**
  *
@@ -69,18 +72,42 @@ const getDataSourceVersions = async () => {
     });
 };
 
+// Func to compare version to  order them
+// string.localeCompare allow us to have case insensitive sorting and to take accents into account
+const compareVersions = (a, b) => {
+    const comparison = a.data_source_name.localeCompare(
+        b.data_source_name,
+        undefined,
+        {
+            sensitivity: 'accent',
+        },
+    );
+    if (comparison === 0) {
+        if (a.number < b.number) {
+            return -1;
+        } else if (a.number > b.number) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    return comparison;
+};
+
 export const useDataSourceVersions = () => {
     return useQuery(['dataSourceVersions'], getDataSourceVersions, {
         select: data => {
-            return data.versions.map(version => {
-                return {
-                    id: version.id,
-                    data_source: version.data_source,
-                    data_source_name: version.data_source_name,
-                    is_default: version.is_default,
-                    number: version.number,
-                };
-            });
+            return data.versions
+                .map(version => {
+                    return {
+                        id: version.id.toString(),
+                        data_source: version.data_source,
+                        data_source_name: version.data_source_name,
+                        is_default: version.is_default,
+                        number: version.number,
+                    };
+                })
+                .sort(compareVersions);
         },
     });
 };
@@ -145,7 +172,7 @@ export const csvPreview = async data => {
         });
 };
 
-export const updateDefaultDataSource = (accountId, defaultVersionId) =>
+export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
     putRequest(`/api/accounts/${accountId}/`, {
         default_version: defaultVersionId,
     });
@@ -182,12 +209,7 @@ export const useSaveDataSource = setFieldErrors => {
     const saveDataSource = async form => {
         setIsSaving(true);
         // eslint-disable-next-line camelcase
-        const { is_default_source, ...campaignData } = Object.fromEntries(
-            Object.entries(form).map(([key, valueDict]) => [
-                key,
-                valueDict.value,
-            ]),
-        );
+        const { is_default_source, ...campaignData } = getValues(form);
 
         try {
             if (campaignData.id) {
@@ -210,10 +232,10 @@ export const useSaveDataSource = setFieldErrors => {
 
         // eslint-disable-next-line camelcase
         if (is_default_source && form.default_version_id.value) {
-            await saveDefaultDataSourceMutation.mutateAsync(
+            await saveDefaultDataSourceMutation.mutateAsync([
                 currentUser.account.id,
                 form.default_version_id.value,
-            );
+            ]);
             dispatch(fetchCurrentUser());
         }
         setIsSaving(false);

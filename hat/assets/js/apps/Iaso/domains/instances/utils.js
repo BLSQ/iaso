@@ -2,14 +2,20 @@ import React from 'react';
 import CallMade from '@material-ui/icons/CallMade';
 import moment from 'moment';
 import { Tooltip } from '@material-ui/core';
-import { truncateText } from 'bluesquare-components';
+import { truncateText, getTableUrl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import instancesTableColumns from './config';
 import MESSAGES from './messages';
 import DeleteDialog from './components/DeleteInstanceDialog';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import { getCookie } from '../../utils/cookies';
-import { apiDateTimeFormat, apiDateFormat } from '../../utils/dates';
+import {
+    apiDateTimeFormat,
+    apiDateFormat,
+    getFromDateString,
+    getToDateString,
+} from '../../utils/dates';
+import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
 const NO_VALUE = '/';
 const hasNoValue = value => !value || value === '';
@@ -188,9 +194,9 @@ export const getInstancesVisibleColumns = ({
 
 export const getInstancesFilesList = instances => {
     const filesList = [];
-    instances.forEach(i => {
-        if (i.files.length > 0) {
-            i.files.forEach(path => {
+    instances?.forEach(i => {
+        if (i.files?.length > 0) {
+            i.files?.forEach(path => {
                 const file = {
                     itemId: i.id,
                     createdAt: i.created_at,
@@ -249,4 +255,63 @@ export const getSelectionActions = (
             disabled: false,
         },
     ];
+};
+
+const asBackendStatus = status => {
+    if (status) {
+        return status
+            .split(',')
+            .map(s => (s === 'ERROR' ? 'DUPLICATED' : s))
+            .join(',');
+    }
+    return status;
+};
+
+export const getFilters = params => {
+    const allFilters = {
+        withLocation: params.withLocation,
+        orgUnitTypeId: params.orgUnitTypeId,
+        deviceId: params.deviceId,
+        periods: params.periods,
+        status: asBackendStatus(params.status),
+        deviceOwnershipId: params.deviceOwnershipId,
+        search: params.search,
+        orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
+        dateFrom: getFromDateString(params.dateFrom),
+        dateTo: getToDateString(params.dateTo),
+        showDeleted: params.showDeleted,
+        form_ids: params.formIds,
+    };
+    const filters = {};
+    Object.keys(allFilters).forEach(k => {
+        if (allFilters[k]) {
+            filters[k] = allFilters[k];
+        }
+    });
+    return filters;
+};
+
+const defaultOrder = 'updated_at';
+
+export const getEndpointUrl = (
+    params,
+    toExport,
+    exportType = 'csv',
+    asSmallDict = false,
+) => {
+    const urlParams = {
+        limit: params.pageSize ? params.pageSize : 20,
+        order: params.order ? params.order : `-${defaultOrder}`,
+        page: params.page ? params.page : 1,
+        asSmallDict: true,
+        ...getFilters(params),
+    };
+    return getTableUrl(
+        'instances',
+        urlParams,
+        toExport,
+        exportType,
+        false,
+        asSmallDict,
+    );
 };

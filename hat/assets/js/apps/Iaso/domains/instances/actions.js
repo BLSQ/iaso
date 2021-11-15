@@ -9,11 +9,9 @@ import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
 export const SET_INSTANCES = 'SET_INSTANCES';
-export const SET_INSTANCES_SMALL_DICT = 'SET_INSTANCES_SMALL_DICT';
 export const SET_INSTANCES_FETCHING = 'SET_INSTANCES_FETCHING';
 export const SET_CURRENT_INSTANCE = 'SET_CURRENT_INSTANCE';
 export const SET_INSTANCES_FILTER_UDPATED = 'SET_INSTANCES_FILTER_UDPATED';
-export const RESET_INSTANCES = 'RESET_INSTANCES';
 
 export const setInstances = (list, showPagination, params, count, pages) => ({
     type: SET_INSTANCES,
@@ -24,11 +22,6 @@ export const setInstances = (list, showPagination, params, count, pages) => ({
         count,
         pages,
     },
-});
-
-export const setInstancesSmallDict = instances => ({
-    type: SET_INSTANCES_SMALL_DICT,
-    payload: instances,
 });
 
 export const setInstancesFilterUpdated = isUpdated => ({
@@ -44,10 +37,6 @@ export const setInstancesFetching = isFetching => ({
 export const setCurrentInstance = instance => ({
     type: SET_CURRENT_INSTANCE,
     payload: instance,
-});
-
-export const resetInstances = () => ({
-    type: RESET_INSTANCES,
 });
 
 export const fetchEditUrl = (currentInstance, location) => dispatch => {

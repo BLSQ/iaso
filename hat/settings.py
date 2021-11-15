@@ -202,8 +202,21 @@ DATABASES = {
         "PASSWORD": DB_PASSWORD,
         "HOST": DB_HOST,
         "PORT": DB_PORT,
-    }
+    },
 }
+
+if os.environ.get("DB_READONLY_USERNAME"):
+    DATABASES["dashboard"] = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": DB_NAME,
+        "USER": os.environ.get("DB_READONLY_USERNAME"),
+        "PASSWORD": os.environ.get("DB_READONLY_PASSWORD", None),
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
+        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},
+    }
+
+    INSTALLED_APPS.append("django_sql_dashboard")
 
 DATABASES["worker"] = DATABASES["default"].copy()
 DATABASE_ROUTERS = [

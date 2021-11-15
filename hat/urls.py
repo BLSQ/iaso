@@ -4,6 +4,7 @@ from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 from iaso.views import page, health
+import django_sql_dashboard
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
@@ -51,6 +52,9 @@ urlpatterns = [
 
 if settings.BEANSTALK_WORKER or settings.DEBUG:
     urlpatterns.append(path("tasks/", include("beanstalk_worker.urls")))
+
+if settings.DATABASES.get("dashboard"):
+    urlpatterns.append(path("explore/", include(django_sql_dashboard.urls)))
 
 urlpatterns.append(path("dashboard/", include("hat.dashboard.urls")))
 

@@ -38,6 +38,8 @@ services:
       RDS_DB_NAME:
       RDS_USERNAME: postgres
       RDS_PASSWORD: postgres
+      DB_READONLY_USERNAME: postgres
+      DB_READONLY_PASSWORD: postgres
       DEBUG: "true"
       TEST_PROD:
       SECRET_KEY: secret

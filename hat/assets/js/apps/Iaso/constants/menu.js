@@ -21,6 +21,7 @@ import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
 import { hasFeatureFlag, SHOW_PAGES } from '../utils/featureFlags';
+import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 
 import MESSAGES from './messages';
 
@@ -40,8 +41,7 @@ const menuItems = [
             },
             {
                 label: MESSAGES.submissionsTitle,
-                extraPath:
-                    '/tab/list/columns/form__name,updated_at,org_unit__name,created_at,status',
+                extraPath: `/tab/list/columns/form__name,updated_at,org_unit__name,created_at,status/mapResults/${locationLimitMax}`,
                 permissions: paths.instancesPath.permissions,
                 key: 'submissions',
                 icon: props => <Input {...props} />,

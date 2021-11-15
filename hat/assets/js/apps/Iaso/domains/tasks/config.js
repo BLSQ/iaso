@@ -55,8 +55,9 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         sortable: false,
         align: 'left',
         accessor: 'progress_message',
-        Cell: settings =>
-            settings.value?.length < 40 ? (
+        Cell: settings => {
+            if (!settings.value) return null;
+            return settings.value?.length < 40 ? (
                 settings.value
             ) : (
                 <details>
@@ -64,7 +65,8 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
                     <i>Open for more details</i>
                     <pre>{settings.value}</pre>
                 </details>
-            ),
+            );
+        },
     },
     {
         Header: formatMessage(MESSAGES.launcher),

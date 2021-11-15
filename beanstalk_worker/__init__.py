@@ -38,7 +38,16 @@ def task_decorator(task_name=""):
                 except Exception as e:
                     the_task.status = ERRORED
                     the_task.ended_at = timezone.now()
-                    the_task.result = {"result": ERRORED, "message": str(e), "stack_trace": traceback.format_exc()}
+                    the_task.result = {
+                        "result": ERRORED,
+                        "message": str(e),
+                        "stack_trace": traceback.format_exc(),
+                        "last_progress_message": the_task.progress_message,
+                    }
+                    the_task.progress_message = e.message if hasattr(e, "message") else str(e)
+                    # Extra debug info
+                    if hasattr(e, "extra"):
+                        the_task.result["extra"] = e.extra
                     the_task.save()
                     logger.exception(f"Error when running task {the_task.id}: {the_task}")
                     sentry_sdk.capture_exception(e)

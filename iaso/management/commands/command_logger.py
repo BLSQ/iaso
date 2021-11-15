@@ -14,7 +14,7 @@ class CommandLogger:
 
     def print(self, s, *kwargs):
         message = " ".join(list(map(lambda s: str(s), kwargs)))
-        self.stdout.write(s + message)
+        self.stdout.write(s + message + "\r\n")
 
     def error(self, s, *kwargs):
         self.print(self.colorize("ERROR " + str(s) + " ", CommandLogger.RED), *kwargs)
@@ -27,3 +27,6 @@ class CommandLogger:
 
     def info(self, s, *kwargs):
         self.print(str(s) + " ", *kwargs)
+
+    def flush(self):
+        self.stdout.flush()

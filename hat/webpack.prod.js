@@ -174,7 +174,8 @@ module.exports = {
         fallback: {
             fs: false,
         },
-        modules: ['node_modules'],
+        /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
+        modules: ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
         extensions: ['.js'],
     },
 };

@@ -195,22 +195,27 @@ module.exports = {
     externals: [{ './cptable': 'var cptable' }],
 
     resolve: {
-        alias:
-            process.env.LIVE_COMPONENTS === 'true'
-                ? {
-                      'bluesquare-components': path.resolve(
-                          __dirname,
-                          '../../bluesquare-components/src/',
-                      ),
-                  }
-                : undefined,
+        alias: {
+            // see LIVE_COMPONENTS feature in doc
+            ...(process.env.LIVE_COMPONENTS === 'true' && {
+                'bluesquare-components': path.resolve(
+                    __dirname,
+                    '../../bluesquare-components/src/',
+                ),
+            }),
+        },
         fallback: {
             fs: false,
         },
         modules:
             process.env.LIVE_COMPONENTS === 'true'
-                ? ['node_modules', '../../bluesquare-components/node_modules/']
-                : ['node_modules'],
+                ? [
+                      'node_modules',
+                      '../../bluesquare-components/node_modules/',
+                      path.resolve(__dirname, 'assets/js/apps/'),
+                  ]
+                : /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
+                  ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
 
         extensions: ['.js'],
     },

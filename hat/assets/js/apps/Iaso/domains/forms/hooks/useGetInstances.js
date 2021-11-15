@@ -1,5 +1,5 @@
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
 export const useGetInstances = ({ orgUnitId }) => {
     const params = {

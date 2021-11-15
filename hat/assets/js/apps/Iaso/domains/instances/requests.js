@@ -8,5 +8,4 @@ export const fetchPossibleFields = async formId =>
 
 export const fetchInstancesAsDict = url => getRequest(url);
 
-export const fetchInstancesAsSmallDict = url =>
-    getRequest(`${url}&asSmallDict=true`);
+export const fetchInstancesAsSmallDict = url => getRequest(url);

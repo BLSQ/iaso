@@ -321,6 +321,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.table.label.instanceHeaderTooltip',
         defaultMessage: 'Label: {label} - Name: {key}',
     },
+    locationLimit: {
+        id: 'iaso.map.locationLimit',
+        defaultMessage: 'Map results limit',
+    },
     creationDateFrom: {
         id: 'iaso.label.creationDateFrom',
         defaultMessage: 'Created after',
@@ -360,6 +364,10 @@ const MESSAGES = defineMessages({
     endPeriod: {
         id: 'iaso.periods.end',
         defaultMessage: 'End period',
+    },
+    periodError: {
+        id: 'iaso.formversions.chronologicalPeriodError',
+        defaultMessage: 'Start period should be before end period',
     },
 });
 

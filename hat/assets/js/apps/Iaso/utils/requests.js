@@ -5,8 +5,8 @@ import {
     postRequest,
     putRequest,
     restoreRequest,
-} from '../libs/Api';
-import { useSnackQuery } from '../libs/apiHooks';
+} from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 import { dispatch as storeDispatch } from '../redux/store';
@@ -622,7 +622,12 @@ export const useGetComments = params => {
         ? `/api/comments/?object_pk=${orgUnitId}&content_type=iaso-orgunit&limit=${limit}&offset=${offset}`
         : `/api/comments/?object_pk=${orgUnitId}&content_type=iaso-orgunit&limit=${limit}`;
 
-    return useSnackQuery(['comments', params], async () => getRequest(url));
+    return useSnackQuery(
+        ['comments', params],
+        async () => getRequest(url),
+        undefined,
+        { enabled: Boolean(orgUnitId) },
+    );
 };
 
 export const sendComment = async comment =>

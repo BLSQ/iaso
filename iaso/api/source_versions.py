@@ -38,6 +38,7 @@ class SourceVersionSerializer(serializers.ModelSerializer):
             "updated_at",
             "data_source_name",
             "is_default",
+            "org_units_count",
         ]
 
     def validate_data_source(self, value):
@@ -50,6 +51,11 @@ class SourceVersionSerializer(serializers.ModelSerializer):
         if value not in sources:
             raise serializers.ValidationError("Source does not belong to this account ")
         return value
+
+    org_units_count = serializers.SerializerMethodField()
+
+    def get_org_units_count(self, source_version: SourceVersion):
+        return source_version.orgunit_set.count()
 
 
 class SourceVersionViewSet(ModelViewSet):

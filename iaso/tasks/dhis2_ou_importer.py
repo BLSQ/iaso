@@ -273,6 +273,13 @@ def dhis2_ou_importer(
         version, _created = SourceVersion.objects.get_or_create(number=source_version_number, data_source=source)
     if OrgUnit.objects.filter(version=version).count() > 0 and not update_mode:
         raise Exception(f"Version {SourceVersion} is not Empty")
+    if not source.default_version:
+        source.default_version = version
+        source.save()
+    account = source.projects.first().account
+    if not account.default_version:
+        account.default_version = version
+        account.save()
 
     # name of group to a orgunit type. If a orgunit belong to one of these group it will get that type
     group_type_dict: Dict[str, OrgUnitType] = {}

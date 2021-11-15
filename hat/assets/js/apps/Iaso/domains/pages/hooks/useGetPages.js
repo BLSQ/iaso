@@ -1,5 +1,5 @@
-import { useSnackQuery } from '../../../libs/apiHooks';
-import { getRequest } from '../../../libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { getRequest } from 'Iaso/libs/Api';
 
 export const useGetPages = options => {
     const params = {

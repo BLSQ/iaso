@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Button, makeStyles, Grid, Box } from '@material-ui/core';
+import { Button, makeStyles, Grid, Box, Typography } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -14,12 +14,13 @@ import { periodTypeOptions } from '../../periods/constants';
 import getDisplayName from '../../../utils/usersUtils';
 import DatesRange from '../../../components/filters/DatesRange';
 import PeriodPicker from '../../periods/components/PeriodPicker';
+import { Period } from '../../periods/models';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
 import { useInstancesFiltersData, useGetForms } from '../hooks';
-import { getValues, useFormState } from '../../../hooks/form';
+import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
@@ -55,7 +56,6 @@ const InstancesFiltersComponent = ({
     const isInstancesFilterUpdated = useSelector(
         state => state.instances.isInstancesFilterUpdated,
     );
-
     const { data, isFetching: fetchingForms } = useGetForms();
     const formsList = (data && data.forms) || [];
     useInstancesFiltersData(
@@ -64,28 +64,40 @@ const InstancesFiltersComponent = ({
         setFetchingDevices,
         setFetchingDevicesOwnerships,
     );
-
-    const handleSearch = () => {
+    const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
             dispatch(setInstancesFilterUpdated(false));
             onSearch({
                 ...params,
-                ...getValues(formState),
+                ...getInstancesFilterValues(formState),
                 page: 1,
             });
         }
-    };
+    }, [params, onSearch, dispatch, formState, isInstancesFilterUpdated]);
 
     const handleFormChange = useCallback(
         (key, value) => {
             // checking only as value can be null or false
             if (key) {
                 setFormState(key, value);
+                if (key === 'periodType') {
+                    setFormState('startPeriod', undefined);
+                    setFormState('endPeriod', undefined);
+                }
             }
             dispatch(setInstancesFilterUpdated(true));
         },
         [setFormState, dispatch],
     );
+    const periodError = useMemo(() => {
+        if (formState.startPeriod?.value && formState.endPeriod?.value) {
+            return !Period.isBefore(
+                formState.startPeriod.value,
+                formState.endPeriod.value,
+            );
+        }
+        return false;
+    }, [formState.startPeriod?.value, formState.endPeriod?.value]);
     return (
         <div className={classes.marginBottomBig}>
             <Grid container spacing={4}>
@@ -138,6 +150,13 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.org_unit_type_id}
                         loading={fetchingOrgUnitTypes}
                     />
+                    <InputComponent
+                        keyValue="mapResults"
+                        onChange={handleFormChange}
+                        value={formState.mapResults.value || null}
+                        type="number"
+                        label={MESSAGES.locationLimit}
+                    />
                 </Grid>
                 <Grid item xs={4}>
                     <InputComponent
@@ -186,6 +205,13 @@ const InstancesFiltersComponent = ({
                         }))}
                         label={MESSAGES.deviceOwnership}
                     />
+                    <InputComponent
+                        keyValue="showDeleted"
+                        onChange={handleFormChange}
+                        value={formState.showDeleted.value}
+                        type="checkbox"
+                        label={MESSAGES.showDeleted}
+                    />
                 </Grid>
                 <Grid item xs={4}>
                     <DatesRange
@@ -211,9 +237,8 @@ const InstancesFiltersComponent = ({
                     {formState.periodType.value && (
                         <>
                             <PeriodPicker
-                                activePeriodStringe={
-                                    formState.startPeriod.value
-                                }
+                                hasError={periodError}
+                                activePeriodString={formState.startPeriod.value}
                                 periodType={formState.periodType.value}
                                 title={formatMessage(MESSAGES.startPeriod)}
                                 onChange={startPeriod =>
@@ -222,22 +247,27 @@ const InstancesFiltersComponent = ({
                             />
 
                             <PeriodPicker
-                                activePeriodStringe={formState.endPeriod.value}
+                                hasError={periodError}
+                                activePeriodString={formState.endPeriod.value}
                                 periodType={formState.periodType.value}
                                 title={formatMessage(MESSAGES.endPeriod)}
                                 onChange={endPeriod =>
                                     handleFormChange('endPeriod', endPeriod)
                                 }
                             />
+                            {periodError && (
+                                <Box mt={-1}>
+                                    <Typography
+                                        variant="body1"
+                                        color="error"
+                                        fontSize="small"
+                                    >
+                                        {formatMessage(MESSAGES.periodError)}
+                                    </Typography>
+                                </Box>
+                            )}
                         </>
                     )}
-                    <InputComponent
-                        keyValue="showDeleted"
-                        onChange={handleFormChange}
-                        value={formState.showDeleted.value}
-                        type="checkbox"
-                        label={MESSAGES.showDeleted}
-                    />
                 </Grid>
             </Grid>
             <Grid
@@ -254,7 +284,7 @@ const InstancesFiltersComponent = ({
                     alignItems="center"
                 >
                     <Button
-                        disabled={!isInstancesFilterUpdated}
+                        disabled={!isInstancesFilterUpdated || periodError}
                         variant="contained"
                         className={classes.button}
                         color="primary"

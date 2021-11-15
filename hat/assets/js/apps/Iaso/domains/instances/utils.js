@@ -194,9 +194,9 @@ export const getInstancesVisibleColumns = ({
 
 export const getInstancesFilesList = instances => {
     const filesList = [];
-    instances.forEach(i => {
-        if (i.files.length > 0) {
-            i.files.forEach(path => {
+    instances?.forEach(i => {
+        if (i.files?.length > 0) {
+            i.files?.forEach(path => {
                 const file = {
                     itemId: i.id,
                     createdAt: i.created_at,
@@ -272,7 +272,8 @@ export const getFilters = params => {
         withLocation: params.withLocation,
         orgUnitTypeId: params.orgUnitTypeId,
         deviceId: params.deviceId,
-        periods: params.periods,
+        startPeriod: params.startPeriod,
+        endPeriod: params.endPeriod,
         status: asBackendStatus(params.status),
         deviceOwnershipId: params.deviceOwnershipId,
         search: params.search,

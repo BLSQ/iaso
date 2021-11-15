@@ -10,7 +10,7 @@ import { Box, Typography, makeStyles } from '@material-ui/core';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useGetComments, sendComment } from '../../../../utils/requests';
-import { useSnackMutation } from '../../../../libs/apiHooks';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
 
 import MESSAGES from '../../messages';
 

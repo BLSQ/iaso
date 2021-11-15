@@ -1,6 +1,6 @@
 import { defineMessage } from 'react-intl';
-import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { deleteRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { deleteRequest } from 'Iaso/libs/Api';
 
 export const useRemoveCampaign = () =>
     useSnackMutation(

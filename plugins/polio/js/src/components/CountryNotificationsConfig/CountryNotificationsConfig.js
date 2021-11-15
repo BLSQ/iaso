@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, makeStyles } from '@material-ui/core';
 import { commonStyles } from 'bluesquare-components';
-import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { CountryNotificationsConfigTable } from './Table/CountryNotificationsConfigTable';
 
 const useStyles = makeStyles(theme => ({

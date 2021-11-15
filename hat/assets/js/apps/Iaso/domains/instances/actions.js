@@ -4,7 +4,7 @@ import {
     putRequest,
     patchRequest,
     deleteRequest,
-} from '../../libs/Api';
+} from 'Iaso/libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 

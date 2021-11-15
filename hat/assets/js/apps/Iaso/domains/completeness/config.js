@@ -48,7 +48,7 @@ const getBaseColumns = formatMessage => [
 
 const getFormUrl = (form, status, period) => {
     let url = baseUrls.instances;
-    url += `/formId/${form.id}`;
+    url += `/formIds/${form.id}`;
     url += `/periods/${period.asPeriodType(form.period_type).periodString}`;
     url += `/status/${status.toUpperCase()}`;
     return url;

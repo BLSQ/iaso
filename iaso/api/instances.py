@@ -176,7 +176,12 @@ class InstancesViewSet(viewsets.ViewSet):
             if form and form.latest_version:
                 file_content_template = questions_by_name
                 for title in file_content_template:
-                    sub_columns.append(file_content_template.get(title, {}).get("label", ""))
+                    # some form have dict as label to support MuliLang. So convert to String
+                    # e.g. Vaccine Stock Monitoring {'French': 'fin', 'English': 'end'}
+                    label = file_content_template.get(title, {}).get("label", "")
+                    if isinstance(label, dict):
+                        label = str(label)
+                    sub_columns.append(label)
                     columns.append({"title": title, "width": 50})
             else:
                 file_content_template = queryset.first().as_dict()["file_content"]

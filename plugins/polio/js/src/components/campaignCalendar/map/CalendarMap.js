@@ -14,7 +14,7 @@ import { appId } from '../../../constants/app';
 import { useStyles } from '../Styles';
 
 import 'leaflet/dist/leaflet.css';
-import { getRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { getRequest } from 'Iaso/libs/Api';
 
 const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const classes = useStyles();

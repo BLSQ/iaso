@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -64,13 +64,35 @@ const Instances = ({ params }) => {
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
 
-    // Data for the map, only map tab
+    // Data for the map
     const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
         ['instances', 'small', params],
+        // Ugly fix to limit results displayed on map, IA-904
+        () =>
+            fetchInstancesAsSmallDict(
+                `${getEndpointUrl(params, false, '', true)}&limit=${
+                    params.mapResults || 3000
+                }`,
+            ),
+        snackMessages.fetchInstanceLocationError,
+
+        {
+            enabled: params.tab === 'map',
+            select: result => result.instances,
+        },
+    );
+
+    // Data for the files
+    const { data: instancesFiles, isLoading: loadingFiles } = useSnackQuery(
+        ['instances', 'files', params],
+        // Ugly fix to limit results displayed on map, IA-904
         () =>
             fetchInstancesAsSmallDict(getEndpointUrl(params, false, '', true)),
         snackMessages.fetchInstanceLocationError,
-        { enabled: params.tab === 'map' },
+
+        {
+            enabled: params.tab === 'files',
+        },
     );
 
     const { isLoading: loadingList } = useSnackQuery(
@@ -117,14 +139,17 @@ const Instances = ({ params }) => {
         },
     );
 
-    const handleChangeTab = newTab => {
-        const newParams = {
-            ...params,
-            tab: newTab,
-        };
-        dispatch(redirectToReplace(baseUrl, newParams));
-        setTab(newTab);
-    };
+    const handleChangeTab = useCallback(
+        newTab => {
+            const newParams = {
+                ...params,
+                tab: newTab,
+            };
+            setTab(newTab);
+            dispatch(redirectToReplace(baseUrl, newParams));
+        },
+        [params, dispatch],
+    );
 
     const onSearch = newParams => {
         dispatch(redirectToReplace(baseUrl, newParams));
@@ -242,7 +267,8 @@ const Instances = ({ params }) => {
                 )}
                 {tab === 'files' && (
                     <InstancesFilesList
-                        files={getInstancesFilesList(instancesSmall || [])}
+                        files={getInstancesFilesList(instancesFiles || [])}
+                        fetching={loadingFiles}
                     />
                 )}
             </Box>

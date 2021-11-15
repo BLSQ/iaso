@@ -178,6 +178,7 @@ class SourceVersion(models.Model):
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "org_units_count": self.orgunit_set.count(),
         }
 
     def as_report_dict(self):

@@ -16,7 +16,7 @@ import {
     // bulkDelete,
 } from './actions';
 
-// const Api = require('../../libs/Api');
+// const Api = require('iaso/libs/Api');
 // const snackBarsReducer = require('../../redux/snackBarsReducer');
 // const snackBars = require('../../constants/snackBars');
 

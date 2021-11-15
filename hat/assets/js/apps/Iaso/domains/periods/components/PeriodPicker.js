@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
@@ -47,6 +47,12 @@ const PeriodPicker = ({
             ? Period.parse(activePeriodString)[1]
             : null,
     );
+
+    useEffect(() => {
+        if (!activePeriodString) {
+            setCurrentPeriod(null);
+        }
+    }, [activePeriodString]);
 
     const handleChange = (keyName, value) => {
         const newPeriod = {

@@ -1,5 +1,5 @@
-import { useSnackMutation } from '../../../libs/apiHooks';
-import { postRequest, putRequest } from '../../../libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { postRequest, putRequest } from 'Iaso/libs/Api';
 
 export const useSavePage = () =>
     useSnackMutation(

@@ -1,6 +1,6 @@
 import { defineMessage } from 'react-intl';
-import { useSnackMutation } from '../../../libs/apiHooks';
-import { deleteRequest } from '../../../libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { deleteRequest } from 'Iaso/libs/Api';
 
 export const useRemovePage = () =>
     useSnackMutation(

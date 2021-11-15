@@ -5,7 +5,7 @@ import { Box, makeStyles, Grid } from '@material-ui/core';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useSelector } from 'react-redux';
 
-import TopBar from '../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import TopBar from 'Iaso/components/nav/TopBarComponent';
 
 import { CampaignsCalendar } from '../components/campaignCalendar';
 import { getCampaignColor } from '../constants/campaignsColors';

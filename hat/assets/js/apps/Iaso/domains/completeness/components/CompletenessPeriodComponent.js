@@ -12,9 +12,9 @@ import { useDispatch } from 'react-redux';
 import { getColumns } from '../config';
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
-import { postRequest } from '../../../libs/Api';
+import { postRequest } from 'Iaso/libs/Api';
 import MESSAGES from '../../../components/snackBars/messages';
-import { useSnackMutation } from '../../../libs/apiHooks';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -72,7 +72,7 @@ const CompletenessPeriodComponent = ({
     const onSelectCell = (form, status, selectedPeriod) => {
         dispatch(
             redirectTo(baseUrls.instances, {
-                formId: form.id,
+                formIds: form.id,
                 periods: selectedPeriod.asPeriodType(form.period_type)
                     .periodString,
                 status: status.toUpperCase(),

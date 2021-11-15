@@ -196,6 +196,7 @@ module.exports = {
 
     resolve: {
         alias: {
+            // see LIVE_COMPONENTS feature in doc
             ...(process.env.LIVE_COMPONENTS === 'true' && {
                 'bluesquare-components': path.resolve(
                     __dirname,
@@ -213,7 +214,8 @@ module.exports = {
                       '../../bluesquare-components/node_modules/',
                       path.resolve(__dirname, 'assets/js/apps/'),
                   ]
-                : ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
+                : /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
+                  ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
 
         extensions: ['.js'],
     },

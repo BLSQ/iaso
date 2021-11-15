@@ -18,6 +18,7 @@ class Survey:
         self._xls_file_name = xls_file_name
 
     def to_xml(self):
+        # try:
         xml_file_content = self._survey.to_xml(validate=False)
 
         return xml_file_content.encode("utf-8")

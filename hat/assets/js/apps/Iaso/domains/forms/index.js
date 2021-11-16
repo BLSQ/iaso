@@ -55,6 +55,8 @@ const Forms = ({ params, showOnlyDeleted }) => {
     useEffect(() => {
         dispatch(fetchAllProjects());
         dispatch(fetchAllOrgUnitTypes());
+        // This fix a bug in redux cache when we passed from "archived" to "non-archived" form page and vice versa
+        setForceRefresh(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return (

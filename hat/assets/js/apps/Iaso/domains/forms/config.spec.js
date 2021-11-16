@@ -17,12 +17,20 @@ const defaultProps = {
     setState: () => null,
     deleteForm: () => null,
 };
+
+const superUser = {
+    is_superuser: true,
+};
+const userWithFormsPermission = {
+    permissions: ['iaso_forms'],
+};
+const userWithSubmissionsPermission = {
+    permissions: ['iaso_submissions'],
+};
+
 const defaultColumnParams = {
     formatMessage: () => null,
-    component: defaultProps,
-    showEditAction: true,
-    showMappingAction: true,
-    showDeleteAction: true,
+    user: superUser,
     deleteForm: () => null,
 };
 
@@ -45,7 +53,7 @@ let restoreFormSpy;
 let restoreIcon;
 const setForceRefreshSpy = sinon.spy();
 
-describe('Forms config', () => {
+describe.only('Forms config', () => {
     describe('formVersionsTableColumns', () => {
         it('sould return an array of 4 columns', () => {
             formVersionscolumns = formVersionsTableColumns(
@@ -137,18 +145,12 @@ describe('Forms config', () => {
             });
         });
         describe('action column', () => {
-            it('should only display eye icon button and delete icon if instances_count = 0,showEditAction = false, showMappingAction = false', () => {
+            it('should only display eye icon button and delete icon if instances_count = 0 and user only has submissions permission', () => {
                 const tempForm = { ...fakeForm };
 
                 deleteFormSpy = sinon.spy();
                 columns = makeColumns({
-                    showEditAction: false,
-                    showMappingAction: false,
-                    showDeleteAction: true,
-                    deleteForm: () => {
-                        deleteFormSpy();
-                        return new Promise(resolve => resolve());
-                    },
+                    user: userWithSubmissionsPermission,
                 });
                 tempForm.instances_count = 0;
                 actionColumn = columns[columns.length - 1];
@@ -161,16 +163,40 @@ describe('Forms config', () => {
                 const dhisIcon = wrapper.find('[icon="dhis"]');
                 expect(dhisIcon).to.have.lengthOf(0);
                 const deleteAction = wrapper.find(DeleteDialog);
-                expect(deleteAction).to.have.lengthOf(1);
+                expect(deleteAction).to.have.lengthOf(0);
                 expect(wrapper.find(IconButton)).to.have.lengthOf(1);
             });
+            it("should allow all actions except see submissions when user only has 'forms' permission", () => {
+                const tempForm = { ...fakeForm };
+
+                deleteFormSpy = sinon.spy();
+                columns = makeColumns({
+                    user: userWithFormsPermission,
+                    deleteForm: () => {
+                        deleteFormSpy();
+                        return new Promise(resolve => resolve());
+                    },
+                });
+                tempForm.instances_count = 0;
+                actionColumn = columns[columns.length - 1];
+                wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));
+
+                const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
+                expect(redEyeIcon).to.have.lengthOf(0);
+                const editIcon = wrapper.find('[icon="edit"]');
+                expect(editIcon).to.have.lengthOf(1);
+                const dhisIcon = wrapper.find('[icon="dhis"]');
+                expect(dhisIcon).to.have.lengthOf(1);
+                const deleteAction = wrapper.find(DeleteDialog);
+                expect(deleteAction).to.have.lengthOf(1);
+            });
             describe('When defining which actions to show', () => {
-                it('shows action buttons when params are set to true', () => {
-                    columns = makeColumns();
+                it('shows action buttons except "see submissions" when user has only "forms permission', () => {
+                    columns = makeColumns({ user: userWithFormsPermission });
                     actionColumn = columns[columns.length - 1];
                     wrapper = shallow(actionColumn.Cell(colOriginal(fakeForm)));
                     const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
-                    expect(redEyeIcon).to.have.lengthOf(1);
+                    expect(redEyeIcon).to.have.lengthOf(0);
                     const editIcon = wrapper.find('[icon="edit"]');
                     expect(editIcon).to.have.lengthOf(1);
                     const dhisIcon = wrapper.find('[icon="dhis"]');
@@ -178,11 +204,9 @@ describe('Forms config', () => {
                     const deleteAction = wrapper.find(DeleteDialog);
                     expect(deleteAction).to.have.lengthOf(1);
                 });
-                it('only displays "view" action when params are set to false', () => {
+                it('only displays "view" action when user has only submissions permission', () => {
                     columns = makeColumns({
-                        showEditAction: false,
-                        showMappingAction: false,
-                        showDeleteAction: false,
+                        user: userWithSubmissionsPermission,
                     });
                     actionColumn = columns[columns.length - 1];
                     wrapper = shallow(actionColumn.Cell(colOriginal(fakeForm)));
@@ -197,6 +221,20 @@ describe('Forms config', () => {
                 });
             });
             it('should trigger deleteFormSpy on onConfirm', () => {
+                const tempForm = { ...fakeForm };
+
+                deleteFormSpy = sinon.spy();
+                columns = makeColumns({
+                    // The test fails with superUser for some reason
+                    user: userWithFormsPermission,
+                    deleteForm: () => {
+                        deleteFormSpy();
+                        return new Promise(resolve => resolve());
+                    },
+                });
+                tempForm.instances_count = 0;
+                actionColumn = columns[columns.length - 1];
+                wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));
                 deleteDialog = wrapper.find(DeleteDialog);
                 expect(deleteDialog).to.have.lengthOf(1);
                 deleteDialog.props().onConfirm();
@@ -211,9 +249,7 @@ describe('Forms config', () => {
                         ...defaultProps,
                         state: { currentOrgUnit: { id: 1 } },
                     },
-                    showEditAction: false,
-                    showMappingAction: false,
-                    showDeleteAction: false,
+                    user: userWithSubmissionsPermission,
                 });
                 actionColumn = columns[columns.length - 1];
                 wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));

@@ -47,9 +47,7 @@ const Forms = ({ params, showOnlyDeleted }) => {
           )
         : formsTableColumns({
               formatMessage: intl.formatMessage,
-              showEditAction: userHasFormsPermission,
-              showMappingAction: userHasFormsPermission,
-              showDeleteAction: userHasFormsPermission,
+              user: currentUser,
               deleteForm: handleDeleteForm,
           });
     const reduxPage = useSelector(state => state.forms.formsPage);

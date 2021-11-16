@@ -72,6 +72,7 @@ import {
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
+import { userHasPermission } from '../users/utils';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
@@ -134,9 +135,7 @@ class OrgUnitDetail extends Component {
             tableColumns: formsTableColumns({
                 formatMessage: props.intl.formatMessage,
                 component: this,
-                showEditAction: false,
-                showMappingAction: false,
-                showDeleteAction: true,
+                user: this.props.currentUser,
                 deleteForm: this.handleDeleteForm,
             }),
             forceSingleTableRefresh: false,
@@ -454,7 +453,7 @@ class OrgUnitDetail extends Component {
                 }`;
             }
         }
-        const tabs = [
+        const allTabs = [
             'infos',
             'map',
             'children',
@@ -463,6 +462,10 @@ class OrgUnitDetail extends Component {
             'forms',
             'comments',
         ];
+
+        const tabs = userHasPermission('iaso_forms', this.props.currentUser)
+            ? allTabs
+            : allTabs.filter(t => t !== 'forms');
         return (
             <section className={classes.root}>
                 <TopBar
@@ -735,6 +738,7 @@ OrgUnitDetail.propTypes = {
     algorithms: PropTypes.array.isRequired,
     algorithmRuns: PropTypes.array.isRequired,
     fetchUsersProfiles: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -747,6 +751,7 @@ const MapStateToProps = state => ({
     profiles: state.users.list,
     algorithms: state.links.algorithmsList,
     algorithmRuns: state.links.algorithmRunsList,
+    currentUser: state.users.current,
 });
 
 const MapDispatchToProps = dispatch => ({

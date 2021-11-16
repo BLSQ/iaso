@@ -78,18 +78,18 @@ def _get_scores(worksheet, initial_cell):
 
 def get_national_level_preparedness(sheet: gspread.Spreadsheet):
     for worksheet in sheet.worksheets():
+        cell = None
         try:
             cell = worksheet.find("Summary of National Level Preparedness")
-            print(f"Data found on worksheet: {worksheet.title}")
-            return _get_scores(worksheet, cell)
-
         except gspread.CellNotFound:
             try:
                 cell = worksheet.find("Résumé du niveau de préparation au niveau national ")
-                print(f"Data found on worksheet: {worksheet.title}")
-                return _get_scores(worksheet, cell)
             except gspread.CellNotFound:
                 print(f"No data found on worksheet: {worksheet.title}")
+                continue
+        if cell:
+            print(f"Data found on worksheet: {worksheet.title}")
+            return _get_scores(worksheet, cell)
     raise InvalidFormatError(
         "Summary of National Level Preparedness`or Summary of Regional Level Preparedness was not found in this document"
     )

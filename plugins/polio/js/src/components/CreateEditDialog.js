@@ -45,7 +45,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
                 onClose();
             },
             onError: error => {
-                helpers.setErrors(error);
+                helpers.setErrors(error.details);
             },
         });
     };

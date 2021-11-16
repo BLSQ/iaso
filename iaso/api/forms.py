@@ -20,6 +20,11 @@ class HasFormPermission(permissions.BasePermission):
 
         return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
 
+    def has_object_permission(self, request, view, obj):
+        if not self.has_permission(request, view):
+            return False
+        return obj in Form.objects.filter_for_user_and_app_id(request.user, request.query_params.get("app_id"))
+
 
 class FormSerializer(DynamicFieldsModelSerializer):
     class Meta:

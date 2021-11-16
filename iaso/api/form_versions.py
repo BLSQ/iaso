@@ -83,14 +83,15 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
     def validate(self, data: typing.MutableMapping):
         # TODO: validate start en end period (is a period and start before end)
-        if self.context["request"].method == "PUT":
-            # Skip validation for update, permission in that case is checked via the get_queryset.
-            return data
         form = data["form"]
+
         # validate form (access check)
         permission_checker = HasFormPermission()
         if not permission_checker.has_object_permission(self.context["request"], self.context["view"], form):
             raise serializers.ValidationError({"form_id": "Invalid form id"})
+        if self.context["request"].method == "PUT":
+            # if update skip the rest of check
+            return data
 
         # handle xls to xml conversion
         try:

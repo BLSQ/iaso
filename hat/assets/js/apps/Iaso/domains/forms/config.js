@@ -5,7 +5,6 @@ import { Link } from 'react-router';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import FormVersionsDialog from './components/FormVersionsDialogComponent';
 import { baseUrls } from '../../constants/urls';
-import { getOrgUnitParentsIds } from '../orgUnits/utils';
 import { userHasPermission } from '../users/utils';
 import MESSAGES from './messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';

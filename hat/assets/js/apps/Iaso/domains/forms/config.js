@@ -74,12 +74,7 @@ export const formVersionsTableColumns = (
 
 const formsTableColumns = ({
     formatMessage,
-    component,
     user,
-    // showGoInstancesAction = true,
-    // showEditAction = true,
-    // showMappingAction = true,
-    // showDeleteAction = true,
     deleteForm = () => null,
 }) => [
     {
@@ -167,18 +162,7 @@ const formsTableColumns = ({
         width: 250,
         accessor: 'actions',
         Cell: settings => {
-            let urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}/tab/list/columns/updated_at,org_unit__name,created_at,status`;
-            if (
-                component &&
-                component.state &&
-                component.state.currentOrgUnit !== undefined
-            ) {
-                const parentIds = getOrgUnitParentsIds(
-                    component.state.currentOrgUnit,
-                );
-                parentIds.push(component.state.currentOrgUnit.id);
-                urlToInstances += `/levels/${parentIds.join(',')}`;
-            }
+            const urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}/tab/list/columns/updated_at,org_unit__name,created_at,status`;
 
             return (
                 <section>

@@ -10,14 +10,6 @@ import formVersionsfixture from './fixtures/formVersions.json';
 
 import { colOriginal } from '../../../../test/utils';
 
-const defaultProps = {
-    state: {
-        currentOrgUnit: undefined,
-    },
-    setState: () => null,
-    deleteForm: () => null,
-};
-
 const superUser = {
     is_superuser: true,
 };
@@ -53,7 +45,7 @@ let restoreFormSpy;
 let restoreIcon;
 const setForceRefreshSpy = sinon.spy();
 
-describe.only('Forms config', () => {
+describe('Forms config', () => {
     describe('formVersionsTableColumns', () => {
         it('sould return an array of 4 columns', () => {
             formVersionscolumns = formVersionsTableColumns(
@@ -109,7 +101,6 @@ describe.only('Forms config', () => {
         it('sould return an array of 9 columns', () => {
             columns = formsTableColumns({
                 formatMessage: () => null,
-                component: defaultProps,
             });
             expect(columns).to.have.lengthOf(9);
         });
@@ -239,25 +230,6 @@ describe.only('Forms config', () => {
                 expect(deleteDialog).to.have.lengthOf(1);
                 deleteDialog.props().onConfirm();
                 expect(deleteFormSpy.calledOnce).to.equal(true);
-            });
-            it('should change url if currentOrg unit is defined and display red eye icon', () => {
-                const tempForm = { ...fakeForm };
-                tempForm.instances_count = 5;
-                columns = formsTableColumns({
-                    formatMessage: () => null,
-                    component: {
-                        ...defaultProps,
-                        state: { currentOrgUnit: { id: 1 } },
-                    },
-                    user: userWithSubmissionsPermission,
-                });
-                actionColumn = columns[columns.length - 1];
-                wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));
-                const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
-                expect(redEyeIcon.prop('url')).to.equal(
-                    'forms/submissions/formIds/69/tab/list/columns/updated_at,org_unit__name,created_at,status/levels/1',
-                );
-                expect(redEyeIcon).to.have.lengthOf(1);
             });
         });
     });

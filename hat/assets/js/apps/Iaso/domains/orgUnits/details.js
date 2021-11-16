@@ -134,7 +134,6 @@ class OrgUnitDetail extends Component {
             sourcesSelected: undefined,
             tableColumns: formsTableColumns({
                 formatMessage: props.intl.formatMessage,
-                component: this,
                 user: this.props.currentUser,
                 deleteForm: this.handleDeleteForm,
             }),

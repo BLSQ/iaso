@@ -19,7 +19,7 @@ def open_sheet_by_url(spreadsheet_url):
     return client.open_by_url(spreadsheet_url)
 
 
-# Key  indicator and their positions in the sheet
+# Key  indicator and their positions in the sheets
 NATIONAL_INDICATORS = {
     "operational_fund": "E18",
     "vaccine_and_droppers_received": "E35",
@@ -34,6 +34,24 @@ NATIONAL_INDICATORS = {
     "communication_c4d": "E46",
     "aefi_easi_protocol": "E52",
     "pharamcovigilence_committee": "E51",
+}
+
+
+# Key indicator and their positions in the "REGIONAL" sheets
+REGIONAL_INDICATORS = {
+    "operational_fund": "F8",
+    "vaccine_and_droppers_received": "F34",
+    "vaccine_cold_chain_assessment": "F33",
+    "vaccine_monitors_training_and_deployment": "F35",
+    "ppe_materials_and_others_supply": "F37",
+    "penmarkers_supply": "F36",  # date
+    "sia_training": "F17",
+    "sia_micro_planning": "F26",
+    "communication_sm_fund": "F43",
+    "communication_sm_activities": "F46",
+    "communication_c4d": "F45",  # date
+    "aefi_easi_protocol": "F52",
+    "pharamcovigilence_committee": "F51",
 }
 
 
@@ -148,6 +166,7 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
 
     for worksheet in sheet.worksheets():
         cell = None
+        # detect if we are in a Regional Spreadsheet form the title
         try:
             cell = worksheet.find("Summary of Regional Level Preparedness")
             print(f"Data found on worksheet: {worksheet.title}")
@@ -175,9 +194,9 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
                 last_cell = last_district[0]
 
             regional, *district_values = all_scores
-
+            indicators = get_dict_position(worksheet, REGIONAL_INDICATORS)
             regional_name, regional_score = _get_district_score(regional)
-            regions[regional_name] = regional_score
+            regions[regional_name] = {**indicators, **regional_score}
 
             for district in district_values:
                 district_name, district_scores = _get_district_score(district)

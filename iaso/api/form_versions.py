@@ -1,5 +1,7 @@
 import typing
-from rest_framework import serializers, parsers, permissions
+
+from django.http.response import HttpResponseBadRequest
+from rest_framework import serializers, parsers, permissions, exceptions
 
 from iaso.models import Form, FormVersion
 from django.db.models.functions import Concat
@@ -83,14 +85,15 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
     def validate(self, data: typing.MutableMapping):
         # TODO: validate start en end period (is a period and start before end)
-        if self.context["request"].method == "PUT":
-            # Skip validation for update, permission in that case is checked via the get_queryset.
-            return data
         form = data["form"]
+
         # validate form (access check)
         permission_checker = HasFormPermission()
         if not permission_checker.has_object_permission(self.context["request"], self.context["view"], form):
             raise serializers.ValidationError({"form_id": "Invalid form id"})
+        if self.context["request"].method == "PUT":
+            # if update skip the rest of check
+            return data
 
         # handle xls to xml conversion
         try:
@@ -117,8 +120,11 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     def create(self, validated_data):
         form = validated_data.pop("form")
         survey = validated_data.pop("survey")
-
-        return FormVersion.objects.create_for_form_and_survey(form=form, survey=survey, **validated_data)
+        try:
+            return FormVersion.objects.create_for_form_and_survey(form=form, survey=survey, **validated_data)
+        except Exception as e:
+            # putting the error in an array to prevent front-end crash
+            raise exceptions.ValidationError({"xls_file": [e]})
 
     def update(self, form_version, validated_data):
         form_version.start_period = validated_data.pop("start_period", None)

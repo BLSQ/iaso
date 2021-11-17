@@ -9,7 +9,7 @@ import SidebarMenu from '../../app/components/SidebarMenuComponent';
 import { fetchCurrentUser as fetchCurrentUserAction } from '../actions';
 import { redirectTo as redirectToAction } from '../../../routing/actions';
 
-import { userHasPermission, getFirstAllowedUrl } from '../utils';
+import { userHasOneOfPermissions, getFirstAllowedUrl } from '../utils';
 
 import PageError from '../../../components/errors/PageError';
 import { switchLocale } from '../../app/actions';
@@ -21,15 +21,16 @@ class ProtectedRoute extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { isRootUrl, permission, redirectTo, currentUser, allRoutes } =
+        const { isRootUrl, permissions, redirectTo, currentUser, allRoutes } =
             this.props;
         if (currentUser && currentUser !== prevProps.currentUser) {
-            const isAuthorized = permission
-                ? userHasPermission(permission, currentUser)
-                : true;
+            const isAuthorized =
+                permissions.length > 0
+                    ? userHasOneOfPermissions(permissions, currentUser)
+                    : true;
             if (!isAuthorized && isRootUrl) {
                 const newBaseUrl = getFirstAllowedUrl(
-                    permission,
+                    permissions,
                     currentUser,
                     allRoutes,
                 );
@@ -48,11 +49,12 @@ class ProtectedRoute extends Component {
     }
 
     render() {
-        const { component, currentUser, permission, featureFlag, location } =
+        const { component, currentUser, permissions, featureFlag, location } =
             this.props;
-        let isAuthorized = permission
-            ? userHasPermission(permission, currentUser)
-            : true;
+        let isAuthorized =
+            permissions.length > 0
+                ? userHasOneOfPermissions(permissions, currentUser)
+                : true;
         if (featureFlag && !hasFeatureFlag(currentUser, featureFlag)) {
             isAuthorized = false;
         }
@@ -70,7 +72,7 @@ class ProtectedRoute extends Component {
 }
 ProtectedRoute.defaultProps = {
     currentUser: null,
-    permission: null,
+    permissions: [],
     isRootUrl: false,
     featureFlag: null,
     allRoutes: [],
@@ -80,7 +82,7 @@ ProtectedRoute.propTypes = {
     fetchCurrentUser: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     component: PropTypes.node.isRequired,
-    permission: PropTypes.any,
+    permissions: PropTypes.arrayOf(PropTypes.string),
     currentUser: PropTypes.object,
     isRootUrl: PropTypes.bool,
     dispatch: PropTypes.func.isRequired,

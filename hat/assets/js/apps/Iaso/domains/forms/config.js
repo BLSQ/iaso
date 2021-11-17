@@ -5,8 +5,7 @@ import { Link } from 'react-router';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import FormVersionsDialog from './components/FormVersionsDialogComponent';
 import { baseUrls } from '../../constants/urls';
-import { getOrgUnitParentsIds } from '../orgUnits/utils';
-
+import { userHasPermission } from '../users/utils';
 import MESSAGES from './messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
@@ -72,13 +71,11 @@ export const formVersionsTableColumns = (
     },
 ];
 
-const formsTableColumns = (
+const formsTableColumns = ({
     formatMessage,
-    component,
-    showEditAction = true,
-    showMappingAction = true,
-    deleteForm = null,
-) => [
+    user,
+    deleteForm = () => null,
+}) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
@@ -164,49 +161,42 @@ const formsTableColumns = (
         width: 250,
         accessor: 'actions',
         Cell: settings => {
-            let urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}/tab/list/columns/updated_at,org_unit__name,created_at,status`;
-            if (
-                component &&
-                component.state &&
-                component.state.currentOrgUnit !== undefined
-            ) {
-                const parentIds = getOrgUnitParentsIds(
-                    component.state.currentOrgUnit,
-                );
-                parentIds.push(component.state.currentOrgUnit.id);
-                urlToInstances += `/levels/${parentIds.join(',')}`;
-            }
+            const urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}/tab/list/columns/updated_at,org_unit__name,created_at,status`;
 
             return (
                 <section>
-                    <IconButtonComponent
-                        url={`${urlToInstances}`}
-                        icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.viewInstances}
-                    />
-                    {showEditAction && (
+                    {userHasPermission('iaso_submissions', user) && (
+                        <IconButtonComponent
+                            url={`${urlToInstances}`}
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.viewInstances}
+                        />
+                    )}
+                    {userHasPermission('iaso_forms', user) && (
                         <IconButtonComponent
                             url={`${baseUrls.formDetail}/formId/${settings.row.original.id}`}
                             icon="edit"
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
-                    {showMappingAction && (
+                    {userHasPermission('iaso_forms', user) && (
                         <IconButtonComponent
                             url={`/forms/mappings/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
                             icon="dhis"
                             tooltipMessage={MESSAGES.dhis2Mappings}
                         />
                     )}
-                    <DeleteDialog
-                        titleMessage={MESSAGES.deleteFormTitle}
-                        message={MESSAGES.deleteFormText}
-                        onConfirm={closeDialog =>
-                            deleteForm(settings.row.original.id).then(
-                                closeDialog,
-                            )
-                        }
-                    />
+                    {userHasPermission('iaso_forms', user) && (
+                        <DeleteDialog
+                            titleMessage={MESSAGES.deleteFormTitle}
+                            message={MESSAGES.deleteFormText}
+                            onConfirm={closeDialog =>
+                                deleteForm(settings.row.original.id).then(
+                                    closeDialog,
+                                )
+                            }
+                        />
+                    )}
                 </section>
             );
         },

@@ -38,7 +38,7 @@ const routes = [
     {
         baseUrl: DASHBOARD_BASE_URL,
         component: props => <Dashboard {...props} />,
-        permission: 'iaso_polio',
+        permissions: ['iaso_polio'],
         params: [
             {
                 isRequired: false,
@@ -50,7 +50,7 @@ const routes = [
     {
         baseUrl: CALENDAR_BASE_URL,
         component: props => <Calendar {...props} />,
-        permission: 'iaso_polio',
+        permissions: ['iaso_polio'],
         params: [
             {
                 isRequired: false,
@@ -66,7 +66,7 @@ const routes = [
     {
         baseUrl: CONFIG_BASE_URL,
         component: () => <CountryNotificationsConfig />,
-        permission: 'iaso_polio',
+        permissions: ['iaso_polio'],
         params: [
             {
                 isRequired: false,
@@ -110,19 +110,19 @@ const menu = [
             {
                 label: MESSAGES.campaigns,
                 key: 'list',
-                permission: 'iaso_polio',
+                permissions: ['iaso_polio'],
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
                 label: MESSAGES.calendar,
                 key: 'calendar',
-                permission: 'iaso_polio',
+                permissions: ['iaso_polio'],
                 icon: props => <CalendarToday {...props} />,
             },
             {
                 label: MESSAGES.configuration,
                 key: 'config',
-                permission: 'iaso_polio',
+                permissions: ['iaso_polio'],
                 icon: props => <SettingsIcon {...props} />,
             },
         ],

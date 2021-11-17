@@ -35,38 +35,38 @@ const menuItems = [
         subMenu: [
             {
                 label: MESSAGES.list,
-                permission: paths.formsPath.permission,
+                permissions: paths.formsPath.permissions,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
                 label: MESSAGES.submissionsTitle,
                 extraPath: `/tab/list/columns/form__name,updated_at,org_unit__name,created_at,status/mapResults/${locationLimitMax}`,
-                permission: paths.instancesPath.permission,
+                permissions: paths.instancesPath.permissions,
                 key: 'submissions',
                 icon: props => <Input {...props} />,
             },
             {
                 label: MESSAGES.formsStats,
-                permission: paths.formsStatsPath.permission,
+                permissions: paths.formsStatsPath.permissions,
                 key: 'stats',
                 icon: props => <AssessmentIcon {...props} />,
             },
             {
                 label: MESSAGES.dhis2Mappings,
-                permission: paths.mappingsPath.permission,
+                permissions: paths.mappingsPath.permissions,
                 key: 'mappings',
                 icon: props => <DHIS2Svg {...props} />,
             },
             {
                 label: MESSAGES.completeness,
-                permission: paths.completenessPath.permission,
+                permissions: paths.completenessPath.permissions,
                 key: 'completeness',
                 icon: props => <DoneAll {...props} />,
             },
             {
                 label: MESSAGES.archived,
-                permission: paths.archivedPath.permission,
+                permissions: paths.archivedPath.permissions,
                 key: 'archived',
                 icon: props => <Delete {...props} />,
             },
@@ -79,19 +79,19 @@ const menuItems = [
         subMenu: [
             {
                 label: MESSAGES.list,
-                permission: paths.orgUnitsPath.permission,
+                permissions: paths.orgUnitsPath.permissions,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
                 label: MESSAGES.groups,
-                permission: paths.groupsPath.permission,
+                permissions: paths.groupsPath.permissions,
                 key: 'groups',
                 icon: props => <GroupWork {...props} />,
             },
             {
                 label: MESSAGES.orgUnitType,
-                permission: paths.orgUnitTypesPath.permission,
+                permissions: paths.orgUnitTypesPath.permissions,
                 key: 'types',
                 icon: props => <CategoryIcon {...props} />,
             },
@@ -102,7 +102,7 @@ const menuItems = [
                 subMenu: [
                     {
                         label: MESSAGES.list,
-                        permission: paths.dataSourcesPath.permission,
+                        permissions: paths.dataSourcesPath.permissions,
                         key: 'list',
                         icon: props => <FormatListBulleted {...props} />,
                     },
@@ -113,7 +113,7 @@ const menuItems = [
                         subMenu: [
                             {
                                 label: MESSAGES.list,
-                                permission: paths.linksPath.permission,
+                                permissions: paths.linksPath.permissions,
                                 key: 'list',
                                 icon: props => (
                                     <FormatListBulleted {...props} />
@@ -121,7 +121,7 @@ const menuItems = [
                             },
                             {
                                 label: MESSAGES.algorithmsRuns,
-                                permission: paths.algosPath.permission,
+                                permissions: paths.algosPath.permissions,
                                 key: 'runs',
                                 icon: props => <CompareArrows {...props} />,
                             },
@@ -139,25 +139,25 @@ const menuItems = [
             {
                 label: MESSAGES.tasks,
                 key: 'tasks',
-                permission: paths.tasksPath.permission,
+                permissions: paths.tasksPath.permissions,
                 icon: props => <AssignmentRoundedIcon {...props} />,
             },
             {
                 label: MESSAGES.monitoring,
                 key: 'devices',
-                permission: paths.devicesPath.permission,
+                permissions: paths.devicesPath.permissions,
                 icon: props => <ImportantDevicesRoundedIcon {...props} />,
             },
             {
                 label: MESSAGES.projects,
                 key: 'projects',
-                permission: paths.projectsPath.permission,
+                permissions: paths.projectsPath.permissions,
                 icon: props => <PhonelinkSetupIcon {...props} />,
             },
             {
                 label: MESSAGES.users,
                 key: 'users',
-                permission: paths.usersPath.permission,
+                permissions: paths.usersPath.permissions,
                 icon: props => <SupervisorAccount {...props} />,
             },
         ],
@@ -172,7 +172,7 @@ const getMenuItems = (currentUser, enabledPlugins) => {
             label: MESSAGES.pages,
             key: 'pages',
             icon: props => <BookIcon {...props} />,
-            permission: paths.pagesPath.permission,
+            permissions: paths.pagesPath.permissions,
         });
     }
     return [...basicItems, ...pluginsMenu];

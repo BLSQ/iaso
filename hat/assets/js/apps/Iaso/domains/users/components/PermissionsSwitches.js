@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { FormattedMessage } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import {
     withStyles,
     FormControlLabel,
@@ -19,13 +19,6 @@ const styles = theme => ({
         color: theme.palette.success.main,
     },
 });
-
-const permissionLabel = permissionCodeName =>
-    MESSAGES[permissionCodeName] ? (
-        <FormattedMessage {...MESSAGES[permissionCodeName]} />
-    ) : (
-        permissionCodeName
-    );
 
 class PermissionsSwitches extends Component {
     componentDidMount() {
@@ -47,40 +40,55 @@ class PermissionsSwitches extends Component {
         handleChange(newUserPerms);
     }
 
+    // We need the intl object inside the component to be able to perform sort the strings
+    // as <FormattedMessage/> returns a span, not a string
+    permissionLabel(permissionCodeName) {
+        const { intl } = this.props;
+        return MESSAGES[permissionCodeName]
+            ? intl.formatMessage(MESSAGES[permissionCodeName])
+            : permissionCodeName;
+    }
+
     render() {
         const { classes, permissions, currentUser, isSuperUser } = this.props;
         return (
             <>
                 {isSuperUser && (
                     <Typography variant="body1" className={classes.admin}>
-                        <FormattedMessage {...MESSAGES.isSuperUser} />
+                        {this.props.intl.formatMessage(MESSAGES.isSuperUser)}
                     </Typography>
                 )}
                 {!isSuperUser &&
-                    permissions.map(p => (
-                        <div key={p.id}>
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        checked={Boolean(
-                                            currentUser.permissions.value.find(
-                                                up => up === p.codename,
-                                            ),
-                                        )}
-                                        onChange={e =>
-                                            this.setPermissions(
-                                                p.codename,
-                                                e.target.checked,
-                                            )
-                                        }
-                                        name={p.codename}
-                                        color="primary"
-                                    />
-                                }
-                                label={permissionLabel(p.codename)}
-                            />
-                        </div>
-                    ))}
+                    permissions
+                        .sort((a, b) =>
+                            this.permissionLabel(a.codename).localeCompare(
+                                this.permissionLabel(b.codename),
+                            ),
+                        )
+                        .map(p => (
+                            <div key={p.id}>
+                                <FormControlLabel
+                                    control={
+                                        <Switch
+                                            checked={Boolean(
+                                                currentUser.permissions.value.find(
+                                                    up => up === p.codename,
+                                                ),
+                                            )}
+                                            onChange={e =>
+                                                this.setPermissions(
+                                                    p.codename,
+                                                    e.target.checked,
+                                                )
+                                            }
+                                            name={p.codename}
+                                            color="primary"
+                                        />
+                                    }
+                                    label={this.permissionLabel(p.codename)}
+                                />
+                            </div>
+                        ))}
             </>
         );
     }
@@ -97,6 +105,7 @@ PermissionsSwitches.propTypes = {
     currentUser: PropTypes.object.isRequired,
     handleChange: PropTypes.func.isRequired,
     isSuperUser: PropTypes.bool,
+    intl: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -112,6 +121,8 @@ const mapDispatchToProps = dispatch => ({
     ),
 });
 
-export default withStyles(styles)(
-    connect(MapStateToProps, mapDispatchToProps)(PermissionsSwitches),
+export default injectIntl(
+    withStyles(styles)(
+        connect(MapStateToProps, mapDispatchToProps)(PermissionsSwitches),
+    ),
 );

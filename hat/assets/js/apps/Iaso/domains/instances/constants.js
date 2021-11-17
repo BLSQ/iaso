@@ -7,6 +7,8 @@ import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { usePrettyPeriod } from '../periods/utils';
 import { OrgUnitLabel } from '../orgUnits/utils';
 import MESSAGES from './messages';
+import { useSelector } from 'react-redux';
+import { userHasPermission } from '../users/utils';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -21,6 +23,16 @@ export const INSTANCE_STATUSES = [
 const PrettyPeriod = ({ value }) => {
     const formatPeriod = usePrettyPeriod();
     return formatPeriod(value);
+};
+
+const LinkToForm = ({ formId, formName }) => {
+    const user = 
+          (state => state.users.current);
+    if (userHasPermission('iaso_forms', user)) {
+        const formUrl = `/forms/detail/formId/${formId}`;
+        return <Link to={formUrl}>{formName}</Link>;
+    }
+    return formName;
 };
 
 export const INSTANCE_METAS_FIELDS = [
@@ -40,8 +52,9 @@ export const INSTANCE_METAS_FIELDS = [
         type: 'info',
         Cell: settings => {
             const data = settings.row.original;
-            const formUrl = `/forms/detail/formId/${data.form_id}`;
-            return <Link to={formUrl}>{data.form_name}</Link>;
+            return (
+                <LinkToForm formId={data.form_id} formName={data.form_name} />
+            );
         },
     },
     {

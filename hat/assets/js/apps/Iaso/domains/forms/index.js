@@ -22,11 +22,14 @@ import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
 import { formsFilters } from '../../constants/filters';
+import { userHasPermission } from '../users/utils';
 
 const Forms = ({ params, showOnlyDeleted }) => {
     const baseUrl = showOnlyDeleted ? baseUrls.archived : baseUrls.forms;
     const intl = useSafeIntl();
     const dispatch = useDispatch();
+    const currentUser = useSelector(state => state.users.current);
+    const userHasFormsPermission = userHasPermission('iaso_forms', currentUser);
     const [forceRefresh, setForceRefresh] = useState(false);
     const handleDeleteForm = formId =>
         deleteForm(dispatch, formId).then(() => {
@@ -37,19 +40,23 @@ const Forms = ({ params, showOnlyDeleted }) => {
             setForceRefresh(true);
         });
     const columnsConfig = showOnlyDeleted
-        ? archivedFormsTableColumns(intl.formatMessage, handleRestoreForm)
-        : formsTableColumns(
+        ? archivedFormsTableColumns(
               intl.formatMessage,
-              null,
-              true,
-              true,
-              handleDeleteForm,
-          );
+              handleRestoreForm,
+              userHasFormsPermission,
+          )
+        : formsTableColumns({
+              formatMessage: intl.formatMessage,
+              user: currentUser,
+              deleteForm: handleDeleteForm,
+          });
     const reduxPage = useSelector(state => state.forms.formsPage);
 
     useEffect(() => {
         dispatch(fetchAllProjects());
         dispatch(fetchAllOrgUnitTypes());
+        // This fix a bug in redux cache when we passed from "archived" to "non-archived" form page and vice versa
+        setForceRefresh(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return (
@@ -76,7 +83,8 @@ const Forms = ({ params, showOnlyDeleted }) => {
                 onForceRefreshDone={() => setForceRefresh(false)}
                 results={reduxPage}
                 extraComponent={
-                    !showOnlyDeleted && (
+                    !showOnlyDeleted &&
+                    userHasFormsPermission && (
                         <AddButtonComponent
                             onClick={() => {
                                 dispatch(

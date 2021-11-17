@@ -2,6 +2,7 @@ import React from 'react';
 import nock from 'nock';
 import { AddButton as AddButtonComponent } from 'bluesquare-components';
 
+import { expect } from 'chai';
 import Forms from './index';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -10,7 +11,7 @@ import { mockGetRequestsList } from '../../../../test/utils/requests';
 
 const redirectActions = require('../../routing/actions');
 
-const requests = [
+const baseRequests = [
     {
         url: '/api/projects/',
         body: {
@@ -23,6 +24,10 @@ const requests = [
             orgUnitTypes: [],
         },
     },
+];
+
+const requests = [
+    ...baseRequests,
     {
         url: '/api/forms/?&all=true&limit=10&page=1&order=-created_at',
         body: {
@@ -31,6 +36,33 @@ const requests = [
         },
     },
 ];
+
+const requestsForArchivedForms = [
+    ...baseRequests,
+    {
+        url: '/api/forms/?&all=true&only_deleted=1&limit=10&page=1&order=-created_at',
+        body: {
+            forms: [],
+            pages: 0,
+        },
+    },
+];
+
+const userWithFormPermission = {
+    users: {
+        current: {
+            permissions: ['iaso_forms'],
+        },
+    },
+};
+
+const forms = ({ withPermissions, showOnlyDeleted = false }) =>
+    mount(
+        renderWithStore(
+            <Forms params={{}} showOnlyDeleted={showOnlyDeleted} />,
+            withPermissions ? userWithFormPermission : null,
+        ),
+    );
 
 let connectedWrapper;
 let addButton;
@@ -42,64 +74,87 @@ describe('Forms connected component', () => {
         nock.cleanAll();
         nock.abortPendingRequests();
         mockGetRequestsList(requests);
+        connectedWrapper = forms({ withPermissions: true });
     });
 
-    it('mount properly', () => {
-        connectedWrapper = mount(renderWithStore(<Forms params={{}} />));
+    it('mounts properly', () => {
         expect(connectedWrapper.exists()).to.equal(true);
     });
 
-    it('render TopBar', () => {
+    it('renders TopBar', () => {
         expect(connectedWrapper.find(TopBar)).to.have.lengthOf(1);
     });
 
-    describe('AddButtonComponent', () => {
-        before(() => {
-            addButton = connectedWrapper.find(AddButtonComponent);
-            redirectAction = sinon.stub(redirectActions, 'redirectTo').returns({
-                type: 'LINK',
-            });
-        });
-        after(() => {
-            sinon.restore();
-        });
-        it('should be present', () => {
-            expect(addButton).to.have.lengthOf(1);
-        });
-        it('click should trigger redirect action', () => {
-            expect(addButton).to.have.lengthOf(1);
-            addButton.props().onClick();
-            expect(redirectAction).to.have.been.called;
-        });
-    });
-
-    describe('should connect to api', () => {
-        it('and call forms api', () => {
+    describe('When connecting to API', () => {
+        it('makes all expected calls', () => {
             expect(nock.activeMocks()).to.have.lengthOf(0);
         });
     });
-    describe('singleTable', () => {
-        it('should render', () => {
+    describe('SingleTable', () => {
+        it('renders', () => {
             singleTable = connectedWrapper.find(SingleTable);
-            expect(singleTable).to.have.lengthOf(1);
+            expect(singleTable.exists()).to.equal(true);
         });
-        it(' should update forceRefresh', () => {
+        it('updates forceRefresh', () => {
             singleTable.props().onForceRefreshDone();
             expect(singleTable.props().forceRefresh).to.equal(false);
         });
     });
-    describe('displaying archived forms', () => {
-        it('mount properly', () => {
+
+    describe('Archived Forms', () => {
+        it('mounts properly', () => {
             nock.cleanAll();
             nock.abortPendingRequests();
-            const archivedRequests = [...requests];
-            archivedRequests[2].url =
-                '/api/forms/?&all=true&only_deleted=1&limit=10&page=1&order=-created_at';
-            mockGetRequestsList(requests);
-            connectedWrapper = mount(
-                renderWithStore(<Forms params={{}} showOnlyDeleted />),
-            );
+            mockGetRequestsList(requestsForArchivedForms);
+            connectedWrapper = forms({
+                withPermissions: true,
+                showOnlyDeleted: true,
+            });
             expect(connectedWrapper.exists()).to.equal(true);
+        });
+    });
+    describe('When iaso_forms permission is present', () => {
+        before(() => {
+            nock.cleanAll();
+            nock.abortPendingRequests();
+            mockGetRequestsList(requests);
+            connectedWrapper = forms({ withPermissions: true });
+        });
+        describe('AddButtonComponent', () => {
+            before(() => {
+                addButton = connectedWrapper.find(AddButtonComponent);
+                redirectAction = sinon
+                    .stub(redirectActions, 'redirectTo')
+                    .returns({
+                        type: 'LINK',
+                    });
+            });
+            after(() => {
+                sinon.restore();
+            });
+            it('is present', () => {
+                expect(addButton.exists()).to.equal(true);
+            });
+            it('redirects on click', () => {
+                addButton.props().onClick();
+                expect(redirectAction).to.have.been.called;
+            });
+        });
+    });
+    describe('When iaso_forms permission is not present', () => {
+        before(() => {
+            nock.cleanAll();
+            nock.abortPendingRequests();
+            mockGetRequestsList(requests);
+            connectedWrapper = forms({ withPermissions: false });
+        });
+        describe('AddButtonComponent', () => {
+            before(() => {
+                addButton = connectedWrapper.find(AddButtonComponent);
+            });
+            it('is not present', () => {
+                expect(addButton.exists()).to.equal(false);
+            });
         });
     });
 });

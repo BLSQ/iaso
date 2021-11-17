@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { Component } from 'react';
 import omit from 'lodash/omit';
 import { connect } from 'react-redux';
@@ -44,6 +45,7 @@ import {
     fetchAlgorithmRuns,
     saveLink,
     fetchAssociatedOrgUnits,
+    deleteForm,
 } from '../../utils/requests';
 import {
     getAliasesArrayFromString,
@@ -70,6 +72,7 @@ import {
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
+import { userHasPermission } from '../users/utils';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
@@ -120,18 +123,21 @@ const initialOrgUnit = {
 class OrgUnitDetail extends Component {
     constructor(props) {
         super(props);
+        this.handleDeleteForm = this.handleDeleteForm.bind(this);
+        this.resetSingleTableForceRefresh =
+            this.resetSingleTableForceRefresh.bind(this);
         this.state = {
             tab: props.params.tab ? props.params.tab : 'infos',
             currentOrgUnit: undefined,
             orgUnitModified: false,
             orgUnitLocationModified: false,
             sourcesSelected: undefined,
-            tableColumns: formsTableColumns(
-                props.intl.formatMessage,
-                this,
-                false,
-                false,
-            ),
+            tableColumns: formsTableColumns({
+                formatMessage: props.intl.formatMessage,
+                user: this.props.currentUser,
+                deleteForm: this.handleDeleteForm,
+            }),
+            forceSingleTableRefresh: false,
         };
     }
 
@@ -321,6 +327,12 @@ class OrgUnitDetail extends Component {
         dispatch(setFetchingDetail(false));
     }
 
+    async handleDeleteForm(formId) {
+        const { dispatch } = this.props;
+        await deleteForm(dispatch, formId);
+        this.setState({ forceSingleTableRefresh: true });
+    }
+
     setOrgUnitLocationModified(orgUnitLocationModified = true) {
         this.setState({
             orgUnitLocationModified,
@@ -331,6 +343,10 @@ class OrgUnitDetail extends Component {
         this.setState({
             currentOrgUnit: undefined,
         });
+    }
+
+    resetSingleTableForceRefresh() {
+        this.setState({ forceSingleTableRefresh: false });
     }
 
     fetchDetail() {
@@ -436,7 +452,7 @@ class OrgUnitDetail extends Component {
                 }`;
             }
         }
-        const tabs = [
+        const allTabs = [
             'infos',
             'map',
             'children',
@@ -445,6 +461,10 @@ class OrgUnitDetail extends Component {
             'forms',
             'comments',
         ];
+
+        const tabs = userHasPermission('iaso_forms', this.props.currentUser)
+            ? allTabs
+            : allTabs.filter(t => t !== 'forms');
         return (
             <section className={classes.root}>
                 <TopBar
@@ -575,6 +595,12 @@ class OrgUnitDetail extends Component {
                                         pages,
                                     );
                                 }}
+                                forceRefresh={
+                                    this.state.forceSingleTableRefresh
+                                }
+                                onForceRefreshDone={() =>
+                                    this.resetSingleTableForceRefresh()
+                                }
                             />
                         )}
                         <div
@@ -711,6 +737,7 @@ OrgUnitDetail.propTypes = {
     algorithms: PropTypes.array.isRequired,
     algorithmRuns: PropTypes.array.isRequired,
     fetchUsersProfiles: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -723,6 +750,7 @@ const MapStateToProps = state => ({
     profiles: state.users.list,
     algorithms: state.links.algorithmsList,
     algorithmRuns: state.links.algorithmRunsList,
+    currentUser: state.users.current,
 });
 
 const MapDispatchToProps = dispatch => ({

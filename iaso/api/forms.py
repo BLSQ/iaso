@@ -20,6 +20,13 @@ class HasFormPermission(permissions.BasePermission):
 
         return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
 
+    def has_object_permission(self, request, view, obj):
+        if not self.has_permission(request, view):
+            return False
+        return obj in Form.objects_include_deleted.filter_for_user_and_app_id(
+            request.user, request.query_params.get("app_id")
+        )
+
 
 class FormSerializer(DynamicFieldsModelSerializer):
     class Meta:
@@ -139,7 +146,7 @@ class FormsViewSet(ModelViewSet):
     """Forms API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "menupermissions.iaso_forms" permission.
+    having the "menupermissions.iaso_forms"  permission.
 
     GET /api/forms/
     GET /api/forms/<id>

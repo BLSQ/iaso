@@ -72,7 +72,7 @@ import {
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
-import { userHasPermission } from '../users/utils';
+// import { userHasPermission } from '../users/utils';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
@@ -452,7 +452,7 @@ class OrgUnitDetail extends Component {
                 }`;
             }
         }
-        const allTabs = [
+        const tabs = [
             'infos',
             'map',
             'children',
@@ -462,9 +462,6 @@ class OrgUnitDetail extends Component {
             'comments',
         ];
 
-        const tabs = userHasPermission('iaso_forms', this.props.currentUser)
-            ? allTabs
-            : allTabs.filter(t => t !== 'forms');
         return (
             <section className={classes.root}>
                 <TopBar
@@ -587,13 +584,7 @@ class OrgUnitDetail extends Component {
                                 columns={this.state.tableColumns}
                                 results={reduxPage}
                                 onDataLoaded={({ list, count, pages }) => {
-                                    this.props.setForms(
-                                        list,
-                                        true,
-                                        params,
-                                        count,
-                                        pages,
-                                    );
+                                    this.props.setForms(list, count, pages);
                                 }}
                                 forceRefresh={
                                     this.state.forceSingleTableRefresh

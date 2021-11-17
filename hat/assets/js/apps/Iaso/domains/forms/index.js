@@ -6,7 +6,6 @@ import {
     useSafeIntl,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { setForms } from './actions';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
 import { redirectTo } from '../../routing/actions';
@@ -50,7 +49,6 @@ const Forms = ({ params, showOnlyDeleted }) => {
               user: currentUser,
               deleteForm: handleDeleteForm,
           });
-    const reduxPage = useSelector(state => state.forms.formsPage);
 
     useEffect(() => {
         dispatch(fetchAllProjects());
@@ -76,12 +74,8 @@ const Forms = ({ params, showOnlyDeleted }) => {
                 columns={columnsConfig}
                 hideGpkg
                 defaultPageSize={50}
-                onDataLoaded={({ list, count, pages }) => {
-                    dispatch(setForms(list, count, pages));
-                }}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
-                results={reduxPage}
                 extraComponent={
                     !showOnlyDeleted &&
                     userHasFormsPermission && (

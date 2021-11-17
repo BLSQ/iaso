@@ -52,6 +52,8 @@
     "iaso.polio.form.label.noRegretFund": "No Regret Fund",
     "iaso.polio.form.label.obrName": "OBR Name",
     "iaso.polio.form.label.pleaseSaveCampaign": "Please save the Campaign before selecting scope.",
+    "iaso.polio.form.label.preventive": "Preventive campaign",
+    "iaso.polio.form.label.preventive.short": "Preventive",
     "iaso.polio.form.label.pv2NotificationDate": "PV2 notification date",
     "iaso.polio.form.label.ratioChildrenMissedInAndOutOfHousehold": "% children missed IN+OUT OF household",
     "iaso.polio.form.label.ratioChildrenMissedInHousehold": "% children missed IN household",

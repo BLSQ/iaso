@@ -142,6 +142,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.preventive',
         defaultMessage: 'Preventive campaign',
     },
+    preventiveShort: {
+        id: 'iaso.polio.form.label.preventive.short',
+        defaultMessage: 'Preventive',
+    },
     selectInitialRegion: {
         id: 'iaso.polio.form.label.selectInitialRegion',
         defaultMessage: 'Select initial region',

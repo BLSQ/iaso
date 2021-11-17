@@ -55,6 +55,26 @@ REGIONAL_INDICATORS = {
 }
 
 
+# District indicator row, save a Region instead it's only the line number because the number of district isn't fix
+DISTRICT_INDICATORS = {
+    "operational_fund": 8,
+    "vaccine_and_droppers_received": 34,
+    "vaccine_cold_chain_assessment": 33,
+    "vaccine_monitors_training_and_deployment": 35,
+    "ppe_materials_and_others_supply": 37,
+    "penmarkers_supply": 36,  # date
+    "sia_training": 17,
+    "sia_micro_planning": 26,
+    "communication_sm_fund": 43,
+    "communication_sm_activities": 46,
+    "communication_c4d": 45,  # date
+    "aefi_easi_protocol": 52,
+    "pharamcovigilence_committee": 51,
+}
+DISTRICT_LIST_LINE_NUMBER = 7
+DISTRICT_LIST_START = 7
+
+
 def _process_range(range):
     [
         planning_coordination_financing_score,
@@ -127,16 +147,21 @@ def cache_get_a1(m, a1_pos):
     return _cache_get(m, row - 1, col - 1)
 
 
-def get_dict_position(worksheet: gspread.Worksheet, key_position):
-    cache = worksheet.get_all_values()
+def get_dict_position(cache: dict, key_position):
+    "From {KeyName -> Position name}  return dict of {keyName -> value at position}"
     r = {}
     for key, position in key_position.items():
         r[key] = cache_get_a1(cache, position)
     return r
 
 
+def cache_get_rc(m, row, col):
+    return _cache_get(m, row - 1, col - 1)
+
+
 def get_indicators(worksheet: gspread.Worksheet):
-    return get_dict_position(worksheet, NATIONAL_INDICATORS)
+    cache = worksheet.get_all_values()
+    return get_dict_position(cache, NATIONAL_INDICATORS)
 
 
 def get_national_level_preparedness(sheet: gspread.Spreadsheet):
@@ -158,6 +183,22 @@ def get_national_level_preparedness(sheet: gspread.Spreadsheet):
     raise InvalidFormatError(
         "Summary of National Level Preparedness`or Summary of Regional Level Preparedness was not found in this document"
     )
+
+
+def get_indicator_per_districts(cache):
+    # Detect List of district, and in which colum they are
+    districts = cache[DISTRICT_LIST_LINE_NUMBER - 1][DISTRICT_LIST_START - 1 : -1]
+    district_indicator_colname = {}
+    for i, district_name in enumerate(districts):
+        assert district_name
+        colnum = DISTRICT_LIST_START + i
+        district_indicator_colname[district_name] = colnum
+    districts_indicators = {}
+    for district_name, colnum in district_indicator_colname.items():
+        districts_indicators[district_name] = {}
+        for indicator_key, indicator_row in DISTRICT_INDICATORS.items():
+            districts_indicators[district_name][indicator_key] = cache_get_rc(cache, indicator_row, colnum)
+    return districts_indicators
 
 
 def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
@@ -194,13 +235,25 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
                 last_cell = last_district[0]
 
             regional, *district_values = all_scores
-            indicators = get_dict_position(worksheet, REGIONAL_INDICATORS)
+            cache = worksheet.get_all_values()
+
+            indicators = get_dict_position(cache, REGIONAL_INDICATORS)
             regional_name, regional_score = _get_district_score(regional)
             regions[regional_name] = {**indicators, **regional_score}
+
+            # for indicators
+            district_indicators = get_indicator_per_districts(cache)
 
             for district in district_values:
                 district_name, district_scores = _get_district_score(district)
                 districts[district_name] = {**district_scores, "region": regional_name}
+
+            # merge both dict
+            for district_name, values in district_indicators.items():
+                if district_name in districts:
+                    districts[district_name].update(values)
+                else:
+                    districts[district_name] = values
 
     if not regions:
         raise InvalidFormatError("Summary of Regional Level Preparedness` was not found in this document")

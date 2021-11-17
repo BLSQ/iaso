@@ -1,6 +1,7 @@
 from itertools import groupby
 
 import gspread
+from gspread.utils import a1_to_rowcol
 
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError
@@ -16,6 +17,24 @@ def parse_value(value: str):
 def open_sheet_by_url(spreadsheet_url):
     client = get_client()
     return client.open_by_url(spreadsheet_url)
+
+
+# Key  indicator and their positions in the sheet
+NATIONAL_INDICATORS = {
+    "operational_fund": "E18",
+    "vaccine_and_droppers_received": "E35",
+    "vaccine_cold_chain_assessment": "E34",
+    "vaccine_monitors_training_and_deployment": "E36",
+    "ppe_materials_and_others_supply": "E39",
+    "penmarkers_supply": "E38",
+    "sia_training": "E23",
+    "sia_micro_planning": "E17",
+    "communication_sm_fund": "E45",
+    "communication_sm_activities": "E47",
+    "communication_c4d": "E46",
+    "aefi_easi_protocol": "E52",
+    "pharamcovigilence_committee": "E51",
+}
 
 
 def _process_range(range):
@@ -76,6 +95,32 @@ def _get_scores(worksheet, initial_cell):
     return _process_range(data_range)
 
 
+def _cache_get(m, linenum, colnum):
+    if linenum >= len(m):
+        return None
+    line = m[linenum]
+    if colnum >= len(line):
+        return None
+    return line[colnum]
+
+
+def cache_get_a1(m, a1_pos):
+    row, col = a1_to_rowcol(a1_pos)
+    return _cache_get(m, row - 1, col - 1)
+
+
+def get_dict_position(worksheet: gspread.Worksheet, key_position):
+    cache = worksheet.get_all_values()
+    r = {}
+    for key, position in key_position.items():
+        r[key] = cache_get_a1(cache, position)
+    return r
+
+
+def get_indicators(worksheet: gspread.Worksheet):
+    return get_dict_position(worksheet, NATIONAL_INDICATORS)
+
+
 def get_national_level_preparedness(sheet: gspread.Spreadsheet):
     for worksheet in sheet.worksheets():
         cell = None
@@ -89,7 +134,9 @@ def get_national_level_preparedness(sheet: gspread.Spreadsheet):
                 continue
         if cell:
             print(f"Data found on worksheet: {worksheet.title}")
-            return _get_scores(worksheet, cell)
+            kv = get_indicators(worksheet)
+            score = _get_scores(worksheet, cell)
+            return {**kv, **score}
     raise InvalidFormatError(
         "Summary of National Level Preparedness`or Summary of Regional Level Preparedness was not found in this document"
     )

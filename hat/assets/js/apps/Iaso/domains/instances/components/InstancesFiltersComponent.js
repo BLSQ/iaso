@@ -31,6 +31,7 @@ import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -68,6 +69,9 @@ const InstancesFiltersComponent = ({
         useState(false);
 
     const [formState, setFormState] = useFormState(params);
+
+    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
+    const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
 
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
     const periodsList = useSelector(state => state.periods.list);
@@ -141,6 +145,10 @@ const InstancesFiltersComponent = ({
             if (key) {
                 setFormState(key, value);
             }
+            // saving the selected org unit in state to avoid losing it when navigating back from submission details
+            if (key === 'levels') {
+                setInitialOrgUnitId(value);
+            }
             dispatch(setInstancesFilterUpdated(true));
         },
         [setFormState, dispatch],
@@ -212,6 +220,7 @@ const InstancesFiltersComponent = ({
                                             'levels',
                                         )
                                     }
+                                    initialSelection={initialOrgUnit}
                                 />
                             </Box>
                             <FiltersComponent

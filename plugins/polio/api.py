@@ -562,26 +562,55 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
             return JsonResponse(res, safe=False)
 
 
+def find_district(district_name, region_name, districts, district_dict):
+    district_list = district_dict.get(district_name)
+    if district_list and len(district_list) == 1:
+        return district_list[0]
+    elif district_list and len(district_list) > 1:
+        for di in district_list:
+            if di.parent.name.lower() == region_name.lower() or region_name in di.parent.aliases:
+                return di
+    else:
+        for d in districts:
+            if d.aliases and district_name in d.aliases:
+                district_dict[district_name] = [d]
+                return d
+    return None
+
+
 class IMViewSet2(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
     """
 
     def list(self, request):
-
+        campaigns = Campaign.objects.all()
+        districts_not_found = set()
         slug = request.GET.get("country", None)
         as_csv = request.GET.get("format", None) == "csv"
+        country = OrgUnit.objects.get(pk=2237756)
         config = get_object_or_404(Config, slug=slug)
         res = []
         failure_count = 0
         all_keys = set()
+
+        districts_qs = (
+            OrgUnit.objects.hierarchy(country)
+            .filter(org_unit_type_id__category="DISTRICT")
+            .only("name", "id", "parent", "aliases")
+            .prefetch_related("parent")
+        )
+        district_dict = defaultdict(list)
+        for f in districts_qs:
+            district_dict[f.name].append(f)
+
         for config in config.content:
             keys = config["keys"]
             all_keys = all_keys.union(keys.keys())
             prefix = config["prefix"]
             cached_response, created = URLCache.objects.get_or_create(url=config["url"])
             delta = now() - cached_response.updated_at
-            if created or delta > timedelta(minutes=60):
+            if created or delta > timedelta(minutes=24 * 60 * 10):
                 response = requests.get(config["url"], auth=(config["login"], config["password"]))
                 cached_response.content = response.text
                 cached_response.save()
@@ -590,42 +619,73 @@ class IMViewSet2(viewsets.ViewSet):
                 forms = json.loads(cached_response.content)
 
             form_count = 0
-            country = None
+            base_stats = {"total_child_fmd": 0, "total_child_checked": 0}
+            base_campaign_stats = {"round_1": defaultdict(base_stats.copy), "round_2": defaultdict(base_stats.copy)}
+            campaign_stats = defaultdict(base_campaign_stats.copy)
+            districts = set()
             for form in forms:
-                c = form.get("Country", None)
-                if country is None and c is not None:
-                    print("form", form)
-                    country = c
-                OHH_COUNT = form.get("OHH_count", None)
-                if OHH_COUNT is None:
+                HH_COUNT = form.get("Count_HH", None)
+                if HH_COUNT is None:
                     print("missing OHH_COUNT", form)
 
                 total_Child_FMD = 0
                 total_Child_Checked = 0
-                for OHH in form.get("OHH", []):
-                    type = "OHH"
-                    Child_FMD = OHH.get("OHH/Child_FMD", 0)
-                    Child_Checked = OHH.get("OHH/Child_Checked", 0)
-                    total_Child_FMD += int(Child_FMD)
+                for HH in form.get("Count_HH", []):
+                    type = "HH"
+                    Child_FMD = HH.get("Count_HH/FM_Child", 0)
+                    Child_Checked = HH.get("Count_HH/Child_Checked", 0)
+                    if Child_FMD == "Y":
+                        total_Child_FMD += 1
                     total_Child_Checked += int(Child_Checked)
-                row = [
-                    "OHH",
-                    country,
-                    form.get("Region"),
-                    form.get("District"),
-                    form.get("Response"),
-                    form.get("roundNumber"),
-                    form.get("today"),
-                    total_Child_FMD,
-                    total_Child_Checked,
-                ]
-                res.append(row)
+                district_id = "%s - %s" % (form.get("District"), form.get("Region"))
+                districts.add(district_id)
+
+                today = datetime.strptime(form["today"], "%Y-%m-%d").date()
+                campaign = find_campaign(campaigns, today, country)
+                region_name = form.get("Region")
+                district_name = form.get("District")
+                round_number = form.get("roundNumber")
+
+                if campaign:
+                    campaign_name = campaign.obr_name
+                    row = [
+                        type,
+                        "Niger",
+                        region_name,
+                        district_name,
+                        form.get("Response"),
+                        round_number,
+                        form.get("today"),
+                        total_Child_FMD,
+                        len(form.get("Count_HH", [])),
+                        campaign_name,
+                    ]
+                    res.append(row)
+
+                    round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
+
+                    print(campaign_name, round_key, district_name)
+                    d = campaign_stats[campaign_name][round_key][district_name]
+                    d["total_child_fmd"] = d["total_child_fmd"] + row[7]
+                    d["total_child_checked"] = d["total_child_checked"] + row[7]
+                    region_name = row[2]
+                    district_name = row[3]
+                    district = find_district(district_name, region_name, districts_qs, district_dict)
+                    if not district:
+                        districts_not_found.add("%s - %s" % (district_name, region_name))
+                    else:
+                        d["district"] = district.id
                 form_count += 1
 
         print("parsed:", len(res), "failed:", failure_count)
         # print("all_keys", all_keys)
-
-        return JsonResponse(res, safe=False)
+        print(districts)
+        response = {
+            "stats": campaign_stats,
+            # "districts_not_found": list(districts_not_found),
+            # "rows": res,
+        }
+        return JsonResponse(response, safe=False)
 
 
 router = routers.SimpleRouter()

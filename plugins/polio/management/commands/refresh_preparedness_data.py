@@ -45,13 +45,13 @@ class Command(BaseCommand):
                     regional_score=preparedness_data["totals"]["regional_score"],
                     payload=preparedness_data,
                 )
-                print(f"Campaign {campaign.pk} refreshed")
+                print(f"Campaign {campaign.obr_name} refreshed")
                 print(preparedness)
 
                 campaign.preperadness_sync_status = "FINISHED"
                 campaign.save()
             except Exception as e:
-                logger.error(f"Campaign {campaign.pk} refresh failed")
+                logger.error(f"Campaign {campaign.obr_name} refresh failed")
                 logger.exception(e)
                 campaign.preperadness_sync_status = "FAILURE"
                 campaign.save()

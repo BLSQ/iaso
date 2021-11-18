@@ -210,14 +210,13 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
         # detect if we are in a Regional Spreadsheet form the title
         try:
             cell = worksheet.find("Summary of Regional Level Preparedness")
-            print(f"Data found on worksheet: {worksheet.title}")
         except gspread.CellNotFound:
             try:
                 cell = worksheet.find("Résumé du niveau de préparation")
-                print(f"Data found on worksheet: {worksheet.title}")
             except:
                 print(f"No data found on worksheet: {worksheet.title}")
-
+                continue
+        print(f"Data found on worksheet: {worksheet.title}")
         if cell is not None:
             all_scores = []
             last_cell = cell

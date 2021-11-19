@@ -631,6 +631,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.campaign',
         defaultMessage: 'Campaign',
     },
+    childrenChecked: {
+        id: 'iaso.polio.label.childrenChecked',
+        defaultMessage: 'Children checked',
+    },
+    childrenMarked: {
+        id: 'iaso.polio.label.childrenMarked',
+        defaultMessage: 'Children with mark',
+    },
+    dictrictName: {
+        id: 'iaso.polio.label.dictrictName',
+        defaultMessage: 'Name',
+    },
+    round_1: {
+        id: 'iaso.polio.label.round1',
+        defaultMessage: 'Round 1',
+    },
+    round_2: {
+        id: 'iaso.polio.label.round2',
+        defaultMessage: 'Round 2',
+    },
 });
 
 export default MESSAGES;

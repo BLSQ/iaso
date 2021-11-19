@@ -28,6 +28,7 @@ export const MapComponent = ({
     tooltipLabels,
     height,
     fitToBounds,
+    makePopup,
 }) => {
     const map = useRef();
 
@@ -86,6 +87,7 @@ export const MapComponent = ({
                             style={() => getMainLayerStyle(shape)}
                             onClick={() => onSelectShape(shape)}
                         >
+                            {makePopup && makePopup(shape)}
                             <Tooltip>
                                 {backgroundLayer?.length > 0 && (
                                     <span>
@@ -118,6 +120,7 @@ MapComponent.propTypes = {
     tooltipLabels: objectOf(string),
     height: number,
     fitToBounds: bool,
+    makePopup: func,
 };
 
 MapComponent.defaultProps = {
@@ -129,4 +132,5 @@ MapComponent.defaultProps = {
     getMainLayerStyle: () => null,
     getBackgroundLayerStyle: () => null,
     tooltipLabels: { main: 'District', background: 'Region' },
+    makePopup: () => null,
 };

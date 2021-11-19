@@ -16,7 +16,7 @@ import {
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
-import { Lqas } from './src/pages/Lqas';
+import { Lqas } from './src/pages/LQAS';
 
 const campaignsFilters = [
     {

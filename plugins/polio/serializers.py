@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from gspread.exceptions import APIError
 from rest_framework import exceptions
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from iaso.models import Group, OrgUnit
 from plugins.polio.preparedness.calculator import get_preparedness_score
@@ -372,6 +373,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         read_only=True,
         allow_null=True,
     )
+
+    obr_name = serializers.CharField(validators=[UniqueValidator(queryset=Campaign.objects.all())])
 
     @atomic
     def create(self, validated_data):

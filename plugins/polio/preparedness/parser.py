@@ -190,7 +190,8 @@ def get_indicator_per_districts(cache):
     districts = cache[DISTRICT_LIST_LINE_NUMBER - 1][DISTRICT_LIST_START - 1 : -1]
     district_indicator_colname = {}
     for i, district_name in enumerate(districts):
-        assert district_name
+        if not district_name:
+            continue
         colnum = DISTRICT_LIST_START + i
         district_indicator_colname[district_name] = colnum
     districts_indicators = {}
@@ -245,6 +246,8 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
 
             for district in district_values:
                 district_name, district_scores = _get_district_score(district)
+                if not district_name:
+                    continue
                 districts[district_name] = {**district_scores, "region": regional_name}
 
             # merge both dict

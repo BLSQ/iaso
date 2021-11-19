@@ -35,6 +35,10 @@ class InstanceSerializer(serializers.ModelSerializer):
 
     def validate_org_unit(self, value):
         """Check if user has access to this org_unit."""
+        # Prevent IA-928: Don't revalidate org unit if it's not modified. As the allowed Type on form or the type
+        #  on the org unit can change
+        if self.instance and self.instance.org_unit == value:
+            return value
         if value.org_unit_type in self.instance.form.org_unit_types.all():
             try:
                 return OrgUnit.objects.filter_for_user_and_app_id(self.context["request"].user, None).get(pk=value.pk)

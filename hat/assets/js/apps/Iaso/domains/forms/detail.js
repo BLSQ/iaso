@@ -15,7 +15,6 @@ import {
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
 import { redirectToReplace } from '../../routing/actions';
-import { setForms } from './actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -128,7 +127,6 @@ const FormDetail = ({ router, params }) => {
                 );
                 setForceRefreshVersions(true);
             }
-            dispatch(setForms(null));
         } catch (error) {
             if (error.status === 400) {
                 Object.entries(error.details).forEach(

@@ -5,7 +5,6 @@ import { Provider } from 'react-redux';
 import { Link } from 'react-router';
 import { LinkProvider } from 'bluesquare-components';
 
-import { formsInitialState } from '../../apps/Iaso/domains/forms/reducer';
 import { orgUnitsInitialState } from '../../apps/Iaso/domains/orgUnits/reducer';
 import { projectsInitialState } from '../../apps/Iaso/domains/projects/reducer';
 import { mapInitialState } from '../../apps/Iaso/redux/mapReducer';
@@ -32,7 +31,6 @@ const getMockedStore = storeObject => mockStore(storeObject);
 
 const initialState = {
     sidebar: sidebarMenuInitialState,
-    forms: formsInitialState,
     orgUnits: orgUnitsInitialState,
     instances: instancesInitialState,
     snackBar: snackBarsInitialState,

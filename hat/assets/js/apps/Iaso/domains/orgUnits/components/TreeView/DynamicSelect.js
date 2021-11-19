@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
     withStyles,
@@ -7,14 +7,11 @@ import {
     ListItem,
     ListItemText,
     Typography,
-    IconButton,
     ClickAwayListener,
-    InputBase,
     Divider,
     Button,
 } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
-import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import {
@@ -24,6 +21,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { MESSAGES } from './messages';
+import { useTreeviewSearch } from './requests';
+import { TreeViewResultsCountSelect } from './TreeViewResultsCountSelect';
 
 const styles = theme => ({
     root: {
@@ -77,12 +76,7 @@ const styles = theme => ({
         padding: theme.spacing(0, 4),
     },
     countContainer: {
-        border: `1px solid ${theme.palette.ligthGray.border}`,
-        borderRadius: theme.shape.borderRadius,
-        height: theme.spacing(4),
-        display: 'flex',
-        alignItems: 'center',
-        margin: theme.spacing(0, 1),
+        marginTop: '7px',
     },
     iconButton: {
         height: 25,
@@ -118,37 +112,35 @@ const DynamicSelect = ({
     const { formatMessage } = useSafeIntl();
     const [searchValue, setSearchValue] = useState('');
     const [resultsCount, setResultsCount] = useState(minResultCount);
-    const [resultsCountChanged, setResultsCountChanged] = useState(false);
     const [isSearchActive, setIsSearchActive] = useState(false);
-    const [hasSearched, setHasSearched] = useState(false);
-    const [searchResults, setSearchResults] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [searchSent, setSearchSent] = useState(false);
+    const [selectCountIsFocused, setSelectCountIsFocused] = useState(false);
+    const {
+        data: searchResults,
+        isLoading,
+        isFetching,
+    } = useTreeviewSearch(
+        request,
+        searchValue,
+        resultsCount,
+        isSearchActive && searchSent,
+    );
     const onChangeSearch = newSearchValue => {
         setSearchValue(newSearchValue);
-        setSearchResults([]);
-        setHasSearched(false);
+        setSearchSent(false);
     };
-    const handleSearch = () => {
+    const handleSearch = useCallback(() => {
         if (searchValue !== '') {
-            setIsLoading(true);
-            request(searchValue, resultsCount).then(res => {
-                setIsLoading(false);
-                setSearchResults(res.orgunits);
-                setHasSearched(true);
-            });
+            setSearchSent(true);
         }
-    };
+    }, [searchValue]);
+
     const handleSelect = element => {
         onSelect(element);
         setIsSearchActive(false);
     };
     const handleResultCountChange = newResultCount => {
         setResultsCount(parseInt(newResultCount, 10));
-        setResultsCountChanged(true);
-    };
-    const validateResultCountChange = () => {
-        setResultsCountChanged(false);
-        handleSearch();
     };
 
     const tooltipIcon = (
@@ -159,9 +151,16 @@ const DynamicSelect = ({
             }}
         />
     );
+
     return (
         <Box className={classes.root}>
-            <ClickAwayListener onClickAway={() => setIsSearchActive(false)}>
+            <ClickAwayListener
+                onClickAway={() => {
+                    if (!selectCountIsFocused) {
+                        setIsSearchActive(false);
+                    }
+                }}
+            >
                 <Box
                     className={classes.container}
                     onFocus={() => setIsSearchActive(true)}
@@ -202,7 +201,8 @@ const DynamicSelect = ({
                     )}
                     {searchResults.length === 0 &&
                         isSearchActive &&
-                        hasSearched && (
+                        searchSent &&
+                        !isFetching && (
                             <Typography
                                 variant="body2"
                                 align="center"
@@ -235,50 +235,25 @@ const DynamicSelect = ({
                             </List>
                             <Divider />
                             <Box className={classes.resultInfos}>
-                                <FormattedMessage {...MESSAGES.display} />
-                                <div className={classes.countContainer}>
-                                    <InputBase
-                                        id="search-results-count"
-                                        value={resultsCount}
-                                        type="number"
-                                        min={minResultCount}
-                                        onChange={event =>
-                                            handleResultCountChange(
-                                                event.target.value,
-                                            )
+                                <ClickAwayListener
+                                    onClickAway={() =>
+                                        setSelectCountIsFocused(false)
+                                    }
+                                >
+                                    <div
+                                        className={classes.countContainer}
+                                        onFocus={() =>
+                                            setSelectCountIsFocused(true)
                                         }
-                                        inputProps={{
-                                            className:
-                                                classes.resultsCountInput,
-                                            style: {
-                                                width: `${
-                                                    resultsCount.toString()
-                                                        .length *
-                                                        10 +
-                                                    10
-                                                }px`,
-                                            },
-                                        }}
-                                    />
-                                    <IconButton
-                                        className={classes.iconButton}
-                                        size="small"
-                                        onClick={() =>
-                                            validateResultCountChange()
-                                        }
-                                        disabled={!resultsCountChanged}
                                     >
-                                        <CheckCircleOutlineIcon
-                                            fontSize="small"
-                                            color={
-                                                resultsCountChanged
-                                                    ? 'primary'
-                                                    : 'inherit'
+                                        <TreeViewResultsCountSelect
+                                            handleSelect={
+                                                handleResultCountChange
                                             }
+                                            resultsCount={resultsCount}
                                         />
-                                    </IconButton>
-                                </div>
-                                <FormattedMessage {...MESSAGES.resultsLower} />
+                                    </div>
+                                </ClickAwayListener>
                             </Box>
                         </Box>
                     )}

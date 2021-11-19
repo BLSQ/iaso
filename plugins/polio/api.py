@@ -588,7 +588,7 @@ class IMViewSet2(viewsets.ViewSet):
         districts_not_found = set()
         slug = request.GET.get("country", None)
         as_csv = request.GET.get("format", None) == "csv"
-        country = OrgUnit.objects.get(pk=2237756)
+        country = OrgUnit.objects.get(pk=29709)
         config = get_object_or_404(Config, slug=slug)
         res = []
         failure_count = 0
@@ -682,7 +682,7 @@ class IMViewSet2(viewsets.ViewSet):
         print(districts)
         response = {
             "stats": campaign_stats,
-            # "districts_not_found": list(districts_not_found),
+            "districts_not_found": list(districts_not_found),
             # "rows": res,
         }
         return JsonResponse(response, safe=False)

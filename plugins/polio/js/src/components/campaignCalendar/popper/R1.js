@@ -68,6 +68,16 @@ const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
                         <Grid item sm={6} container justifyContent="flex-start">
                             {campaign.original.vacine}
                         </Grid>
+                        <Grid item sm={6} container justifyContent="flex-end">
+                            <FormattedMessage {...MESSAGES.preventiveShort} />:
+                        </Grid>
+                        <Grid item sm={6} container justifyContent="flex-start">
+                            {campaign.isPreventive ? (
+                                <FormattedMessage {...MESSAGES.yes} />
+                            ) : (
+                                <FormattedMessage {...MESSAGES.no} />
+                            )}
+                        </Grid>
                         <Grid item sm={12} container justifyContent="flex-end">
                             {isLogged && (
                                 <Button

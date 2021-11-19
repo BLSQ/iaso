@@ -106,8 +106,12 @@ const mapCampaigns = allCampaigns => {
             moment(c.round_two.started_at, dateFormat);
         const R2End =
             c.round_two?.ended_at && moment(c.round_two.ended_at, dateFormat);
-        const campaignWeeks = R2Start ? R2Start.diff(R1End, 'weeks') : 6;
-        const campaignDays = R2Start ? R2Start.diff(R1End, 'days') : 6 * 7;
+        let campaignWeeks = R2Start ? R2Start.diff(R1End, 'weeks') : 6;
+        let campaignDays = R2Start ? R2Start.diff(R1End, 'days') : 6 * 7;
+        if (c.is_preventive && !R2Start) {
+            campaignWeeks = 0;
+            campaignDays = 0;
+        }
 
         return {
             id: c.id,
@@ -121,6 +125,7 @@ const mapCampaigns = allCampaigns => {
             campaignWeeks,
             campaignDays,
             original: c,
+            isPreventive: c.is_preventive,
         };
     });
 };
@@ -131,8 +136,13 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
     let colSpan;
     if (R1Start && R1End) {
         const availableDays = lastSunday.diff(R1End, 'days');
-        const availableCampaignDays =
-            campaignDays - 1 > availableDays ? availableDays : campaignDays - 1;
+        let availableCampaignDays = 0;
+        if (campaignDays > 0) {
+            availableCampaignDays =
+                campaignDays - 1 > availableDays
+                    ? availableDays
+                    : campaignDays - 1;
+        }
         if (
             R1Start.isSameOrAfter(firstMonday, 'day') &&
             R1Start.isSameOrBefore(lastSunday, 'day')
@@ -304,10 +314,12 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
                 } else {
                     sunday = fakeR2End.clone();
                 }
-                const extraDays = sunday
-                    .clone()
-                    .add(1, 'day')
-                    .diff(fakeR2End, 'days');
+                let extraDays = sunday.clone();
+                if (campaignDays > 0) {
+                    extraDays = extraDays.add(1, 'day');
+                }
+
+                extraDays = extraDays.diff(fakeR2End, 'days');
                 const fullWeeks = lastSunday.diff(sunday, 'weeks');
 
                 let spans = 0;

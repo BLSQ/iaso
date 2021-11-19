@@ -23,8 +23,7 @@ import { saveMultiEdit as saveMultiEditAction } from '../actions';
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
-
-import { decodeSearch } from '../utils';
+import { compareGroupVersions, decodeSearch } from '../utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -195,10 +194,12 @@ const OrgUnitsMultiActionsDialog = ({
                                             : null
                                     }
                                     type="select"
-                                    options={groups.map(g => ({
-                                        label: g.name,
-                                        value: g.id,
-                                    }))}
+                                    options={groups
+                                        .sort(compareGroupVersions)
+                                        .map(g => ({
+                                            label: `${g.name} - Version: ${g.source_version.number}`,
+                                            value: g.id,
+                                        }))}
                                     label={MESSAGES.addToGroups}
                                 />
                                 <InputComponent
@@ -217,7 +218,7 @@ const OrgUnitsMultiActionsDialog = ({
                                     }
                                     type="select"
                                     options={groupsWithoutAdded.map(g => ({
-                                        label: g.name,
+                                        label: `${g.name} - Version: ${g.source_version.number}`,
                                         value: g.id,
                                     }))}
                                     label={MESSAGES.removeFromGroups}

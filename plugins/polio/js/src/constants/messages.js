@@ -667,6 +667,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.passingWithRatio',
         defaultMessage: 'With 57/60 ratio',
     },
+    districtsNotFound: {
+        id: 'iaso.polio.label.districtsNotFound',
+        defaultMessage: 'Districts not found',
+    },
 });
 
 export default MESSAGES;

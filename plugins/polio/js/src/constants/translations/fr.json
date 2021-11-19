@@ -96,6 +96,7 @@
     "iaso.polio.label.deleteWarning": "Etes-vous sûr(e) de vouloir effacer cette campagne?",
     "iaso.polio.label.dictrictName": "Nom",
     "iaso.polio.label.districtScore": "District",
+    "iaso.polio.label.districtsNotFound": "Districts non-trouvés",
     "iaso.polio.label.enterGoogleSheet": "Entrer l'url de la Google Sheet",
     "iaso.polio.label.enterOrCreateGoogleSheet": "Entrer un url de Google Sheet url ou utiliser le bouton pour générer une nouvelle Google sheet",
     "iaso.polio.label.evaluated": "Evalués",

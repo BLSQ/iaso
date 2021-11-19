@@ -12,8 +12,14 @@ export const LqasMapHeader = ({
     failed,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const percentRatio = data => {
+        if (data && evaluated) {
+            return (100 * (data / evaluated)).toFixed(2);
+        }
+        return 0;
+    };
     return (
-        <Grid container direction="row" spacing={4}>
+        <Grid container direction="row" spacing={2}>
             <Grid item>
                 <Box>
                     <Typography variant="h5">
@@ -33,27 +39,39 @@ export const LqasMapHeader = ({
             <Grid item>
                 <Box>
                     <Typography variant="h6">
-                        {`${formatMessage(MESSAGES.passing)}: ${
-                            passedStrict ?? textPlaceholder
-                        }`}
+                        {`${formatMessage(MESSAGES.passing)}: `}
+                        <span style={{ color: 'green' }}>
+                            {`${passedStrict ?? textPlaceholder} `}
+                        </span>
+                        <span style={{ color: 'green' }}>
+                            {`(${percentRatio(passedStrict)}%)`}
+                        </span>
                     </Typography>
                 </Box>
             </Grid>
             <Grid item>
                 <Box>
                     <Typography variant="h6">
-                        {`${formatMessage(MESSAGES.passingWithRatio)}: ${
-                            passedLax ?? textPlaceholder
-                        }`}
+                        {`${formatMessage(MESSAGES.passingWithRatio)}: `}
+                        <span style={{ color: 'purple' }}>
+                            {`${passedLax ?? textPlaceholder}`}
+                        </span>
+                        <span style={{ color: 'purple' }}>
+                            {`(${percentRatio(passedLax)}%)`}
+                        </span>
                     </Typography>
                 </Box>
             </Grid>
             <Grid item>
                 <Box>
                     <Typography variant="h6">
-                        {`${formatMessage(MESSAGES.failing)}: ${
-                            failed ?? textPlaceholder
-                        }`}
+                        {`${formatMessage(MESSAGES.failing)}: `}
+                        <span style={{ color: 'red' }}>
+                            {`${failed ?? textPlaceholder}`}
+                        </span>
+                        <span style={{ color: 'red' }}>
+                            {`(${percentRatio(failed)}%)`}
+                        </span>
                     </Typography>
                 </Box>
             </Grid>

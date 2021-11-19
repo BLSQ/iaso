@@ -7,7 +7,7 @@ import {
     // commonStyles,
 } from 'bluesquare-components';
 
-import { Grid, Box, makeStyles } from '@material-ui/core';
+import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
@@ -52,7 +52,8 @@ export const Lqas = () => {
             countries: NIGER_ORG_UNIT_ID.toString(),
         }).query;
     // console.log('shapes', shapes);
-    // console.log('LQAS', LQASData);
+    console.log('LQAS', LQASData);
+    const districtsNotFound = LQASData.districts_not_found;
     // if (LQASData) {
     //     const testKeys = Object.keys(LQASData.stats);
     //     const test1 = Object.keys(LQASData.stats[testKeys[0]].round_2);
@@ -190,6 +191,14 @@ export const Lqas = () => {
                             />
                         </Box>
                     )}
+                </Grid>
+                <Grid item xs={12}>
+                    <Box ml={2}>
+                        <Typography variant="h6">
+                            {`${formatMessage(MESSAGES.districtsNotFound)}:`}
+                        </Typography>
+                        {districtsNotFound}
+                    </Box>
                 </Grid>
             </Grid>
         </div>

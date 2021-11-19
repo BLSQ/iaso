@@ -28,10 +28,11 @@ export const determineStatusForDistrict = district => {
         if (marked === 60) return LQAS_STRICT_PASS;
         return LQAS_STRICT_FAIL;
     }
-    if (laxLQASPass(checked, marked)) {
-        return LQAS_LAX_PASS;
+    if (checked > 60) {
+        if (laxLQASPass(checked, marked)) return LQAS_LAX_PASS;
+        return LQAS_LAX_FAIL;
     }
-    return LQAS_LAX_FAIL;
+    return LQAS_STRICT_FAIL;
 };
 
 export const makeCampaignsDropDown = campaigns =>
@@ -59,4 +60,15 @@ export const totalDistrictsEvaluatedPerRound = LQASData => {
     const evaluatedRound1 = new Set(totalEvaluatedRound1);
     const evaluatedRound2 = new Set(totalEvaluatedRound2);
     return { evaluatedRound1, evaluatedRound2 };
+};
+
+export const defaultShapeStyle = {
+    color: 'grey',
+    opacity: '1',
+    fillColor: 'lightGrey',
+    weight: '1',
+};
+
+export const getBackgroundLayerStyle = () => {
+    return defaultShapeStyle;
 };

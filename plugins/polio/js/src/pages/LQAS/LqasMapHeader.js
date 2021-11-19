@@ -53,10 +53,10 @@ export const LqasMapHeader = ({
                 <Box>
                     <Typography variant="h6">
                         {`${formatMessage(MESSAGES.passingWithRatio)}: `}
-                        <span style={{ color: 'purple' }}>
+                        <span style={{ color: 'limegreen' }}>
                             {`${passedLax ?? textPlaceholder}`}
                         </span>
-                        <span style={{ color: 'purple' }}>
+                        <span style={{ color: 'limegreen' }}>
                             {`(${percentRatio(passedLax)}%)`}
                         </span>
                     </Typography>

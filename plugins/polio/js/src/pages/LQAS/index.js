@@ -17,6 +17,8 @@ import {
     makeCampaignsDropDown,
     determineStatusForDistrict,
     totalDistrictsEvaluatedPerRound,
+    getBackgroundLayerStyle,
+    defaultShapeStyle,
 } from './utils';
 import {
     NIGER_ORG_UNIT_ID,
@@ -98,7 +100,8 @@ export const Lqas = () => {
             const status = determineStatusForDistrict(
                 findLQASDataForShape(shape.name, LQASData, 'round_1'),
             );
-            return districtColors[status];
+            if (status) return districtColors[status];
+            return defaultShapeStyle;
         },
         [LQASData],
     );
@@ -107,7 +110,8 @@ export const Lqas = () => {
             const status = determineStatusForDistrict(
                 findLQASDataForShape(shape.name, LQASData, 'round_2'),
             );
-            return districtColors[status];
+            if (status) return districtColors[status];
+            return defaultShapeStyle;
         },
         [LQASData],
     );
@@ -155,6 +159,10 @@ export const Lqas = () => {
                                 name="LQASMapRound1"
                                 mainLayer={shapes}
                                 onSelectShape={() => null}
+                                // backgroundLayer={shapes}
+                                // getBackgroundLayerStyle={
+                                //     getBackgroundLayerStyle
+                                // }
                                 getMainLayerStyle={getShapeStylesRound1}
                                 tooltipLabels={{
                                     main: 'District',
@@ -182,6 +190,9 @@ export const Lqas = () => {
                                 mainLayer={shapes}
                                 onSelectShape={() => null}
                                 getMainLayerStyle={getShapeStylesRound2}
+                                getBackgroundLayerStyle={
+                                    getBackgroundLayerStyle
+                                }
                                 tooltipLabels={{
                                     main: 'District',
                                     background: 'Region',

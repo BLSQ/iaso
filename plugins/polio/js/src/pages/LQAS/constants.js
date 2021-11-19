@@ -7,7 +7,7 @@ export const LQAS_LAX_FAIL = 'lqasLaxFail';
 
 export const districtColors = {
     [LQAS_STRICT_PASS]: {
-        color: 'lime',
+        color: 'green',
         weight: '1',
         opacity: '1',
         zIndex: '1',
@@ -19,7 +19,7 @@ export const districtColors = {
         zIndex: '1',
     },
     [LQAS_LAX_PASS]: {
-        color: 'purple',
+        color: 'limegreen',
         weight: '1',
         opacity: '1',
         zIndex: '1',

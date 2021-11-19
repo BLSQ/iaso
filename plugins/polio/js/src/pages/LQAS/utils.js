@@ -41,3 +41,22 @@ export const makeCampaignsDropDown = campaigns =>
             value: campaign.obr_name,
         };
     });
+export const totalDistrictsEvaluatedPerRound = LQASData => {
+    if (!LQASData) return { evaluatedRound1: [], evaluatedRound2: [] };
+    let totalEvaluatedRound1 = [];
+    let totalEvaluatedRound2 = [];
+    Object.keys(LQASData.stats).forEach(campaignKey => {
+        const districtsRound1 = Object.keys(
+            LQASData.stats[campaignKey].round_1,
+        );
+        const districtsRound2 = Object.keys(
+            LQASData.stats[campaignKey].round_2,
+        );
+        totalEvaluatedRound1 = [...totalEvaluatedRound1, ...districtsRound1];
+        totalEvaluatedRound2 = [...totalEvaluatedRound2, ...districtsRound2];
+    });
+
+    const evaluatedRound1 = new Set(totalEvaluatedRound1);
+    const evaluatedRound2 = new Set(totalEvaluatedRound2);
+    return { evaluatedRound1, evaluatedRound2 };
+};

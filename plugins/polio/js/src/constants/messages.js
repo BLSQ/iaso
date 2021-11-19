@@ -651,6 +651,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.round2',
         defaultMessage: 'Round 2',
     },
+    evaluated: {
+        id: 'iaso.polio.label.evaluated',
+        defaultMessage: 'Evaluated',
+    },
+    passing: {
+        id: 'iaso.polio.label.passing',
+        defaultMessage: 'Passing',
+    },
+    failing: {
+        id: 'iaso.polio.label.failing',
+        defaultMessage: 'Failing',
+    },
+    passingWithRatio: {
+        id: 'iaso.polio.label.passingWithRatio',
+        defaultMessage: 'With 57/60 ratio',
+    },
 });
 
 export default MESSAGES;

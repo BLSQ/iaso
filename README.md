@@ -94,7 +94,8 @@ This is not (yet) the complete Data Model, but here are the main concepts/model 
     * Submission cannot be done via the Iaso UI itself but through Enketo or the Mobile App.
 * `APIImport` are used to log some request from the mobile app so we can replay them in case of error. See [vector_control Readme](hat/vector_control/README.md)
 * `audit.Modification` are used to keep a history of modification on some models (mainly orgunit). See [audit readme](hat/audit/README.md)
-* `Link` are used to match two OrgUnit (in different source or not) that should be the same in the real world, but we don't have an unique identifier for, they have a confidence score.
+* `Link` are used to match two OrgUnit (in different sources or not) that should be the same in the real world. Links have a confidence score indicating how much we trust that the two OrgUnit are actually the same.
+
 They are usually generated via `AlgorithmRun`, or the matching is done in a Notebook and uploaded via the API.
   
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import {
     useSafeIntl,
@@ -16,7 +16,6 @@ import {
     findLQASDataForShape,
     makeCampaignsDropDown,
     determineStatusForDistrict,
-    // totalDistrictsEvaluatedPerRound,
     convertLQASDataToArray,
     getScopeStyle,
     findScope,
@@ -57,12 +56,13 @@ export const Lqas = () => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
-    const { data: LQASData, isLoading } = useLQAS(campaign);
+    const { data: LQASData, isLoading } = useLQAS();
     const { data: shapes = [] } = useGetGeoJson(NIGER_ORG_UNIT_ID, 'DISTRICT');
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({
             countries: NIGER_ORG_UNIT_ID.toString(),
         }).query;
+
     const scope = findScope(campaign, campaigns, shapes);
 
     const districtsNotFound = LQASData.districts_not_found;
@@ -116,6 +116,10 @@ export const Lqas = () => {
         },
         [LQASData, scope],
     );
+    // FIXME pre-select a campaign for the demo. this effect should be removed
+    useEffect(() => {
+        setCampaign('NIG-xxDS-03-2021');
+    }, []);
 
     return (
         <>

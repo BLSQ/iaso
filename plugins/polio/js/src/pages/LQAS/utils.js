@@ -13,7 +13,7 @@ export const convertLQASDataToArray = (LQASData, round) => {
     const campaignKeys = Object.keys(stats);
     const dataForRound = [];
     campaignKeys.forEach(key => {
-        dataForRound.push({ ...stats[key][round] });
+        if (stats[key]) dataForRound.push({ ...stats[key][round] });
     });
     let results = [];
     dataForRound.forEach(districtData => {

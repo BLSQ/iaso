@@ -120,6 +120,11 @@ const PeriodPicker = ({
                                 {currentPeriodType === PERIOD_TYPE_MONTH && (
                                     <InputComponent
                                         keyValue="month"
+                                        disabled={
+                                            !currentPeriod ||
+                                            (currentPeriod &&
+                                                !currentPeriod.year)
+                                        }
                                         onChange={handleChange}
                                         clearable
                                         value={
@@ -139,6 +144,11 @@ const PeriodPicker = ({
                                     <InputComponent
                                         keyValue="quarter"
                                         onChange={handleChange}
+                                        disabled={
+                                            !currentPeriod ||
+                                            (currentPeriod &&
+                                                !currentPeriod.year)
+                                        }
                                         clearable
                                         value={
                                             currentPeriod &&
@@ -165,6 +175,11 @@ const PeriodPicker = ({
                                         keyValue="semester"
                                         onChange={handleChange}
                                         clearable
+                                        disabled={
+                                            !currentPeriod ||
+                                            (currentPeriod &&
+                                                !currentPeriod.year)
+                                        }
                                         value={
                                             currentPeriod &&
                                             currentPeriod.semester

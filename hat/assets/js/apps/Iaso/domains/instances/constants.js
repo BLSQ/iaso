@@ -3,11 +3,11 @@ import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { displayDateFromTimestamp } from 'bluesquare-components';
 import { Link } from 'react-router';
+import { useSelector } from 'react-redux';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { usePrettyPeriod } from '../periods/utils';
 import { OrgUnitLabel } from '../orgUnits/utils';
 import MESSAGES from './messages';
-import { useSelector } from 'react-redux';
 import { userHasPermission } from '../users/utils';
 
 export const INSTANCE_STATUS_READY = 'READY';
@@ -26,8 +26,7 @@ const PrettyPeriod = ({ value }) => {
 };
 
 const LinkToForm = ({ formId, formName }) => {
-    const user = 
-          (state => state.users.current);
+    const user = useSelector(state => state.users.current);
     if (userHasPermission('iaso_forms', user)) {
         const formUrl = `/forms/detail/formId/${formId}`;
         return <Link to={formUrl}>{formName}</Link>;

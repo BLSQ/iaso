@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
@@ -312,7 +311,7 @@ const InstancesFiltersComponent = ({
                         onClick={() => handleSearch()}
                     >
                         <Search className={classes.buttonIcon} />
-                        <FormattedMessage {...MESSAGES.search} />
+                        {formatMessage(MESSAGES.search)}
                     </Button>
                 </Grid>
             </Grid>

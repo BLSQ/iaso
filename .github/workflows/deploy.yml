@@ -37,7 +37,7 @@ jobs:
           SLACK_COLOR: ""
           SLACK_USERNAME: ${{ github.event.inputs.environment }}
           SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_TITLE: Started deployement of  ${{ steps.version.outputs.VERSION_NAME }}  on ${{ github.event.inputs.environment }} ...
+          SLACK_TITLE: Started deployement of  ${{ steps.version.outputs.VERSION_NAME }} on ${{ github.event.inputs.environment }} ...
           SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
           MSG_MINIMAL: true
       - name: Use node.js 14

@@ -14,7 +14,6 @@ import {
 } from 'prop-types';
 
 const findBackgroundShape = (shape, backgroundShapes) => {
-    console.log('backgroundShapes', backgroundShapes);
     return backgroundShapes.filter(
         backgroundShape => backgroundShape.id === shape.parent_id,
     )[0]?.name;

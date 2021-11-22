@@ -21,7 +21,7 @@ export const LqasPopup = ({ shape, LQASData, round }) => {
     const classes = useStyle();
     const { formatMessage } = useSafeIntl();
     const ref = useRef();
-    const dataForShape = findLQASDataForShape(shape.name, LQASData, round);
+    const dataForShape = findLQASDataForShape(shape, LQASData, round);
     return (
         <>
             {dataForShape && (

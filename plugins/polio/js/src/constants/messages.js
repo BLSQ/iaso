@@ -663,6 +663,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.districtsNotFound',
         defaultMessage: 'Districts not found',
     },
+    districtName: {
+        id: 'iaso.polio.label.name',
+        defaultMessage: 'Name',
+    },
+    districtId: {
+        id: 'iaso.polio.label.id',
+        defaultMessage: 'ID',
+    },
 });
 
 export default MESSAGES;

@@ -5,16 +5,45 @@ import {
     LQAS_LAX_FAIL,
 } from './constants';
 
-export const findLQASDataForShape = (shapeName, LQASData, round) => {
-    if (!LQASData) return null;
+import MESSAGES from '../../constants/messages';
+
+export const convertLQASDataToArray = (LQASData, round) => {
+    if (!LQASData) return [];
     const { stats } = LQASData;
     const campaignKeys = Object.keys(stats);
-    let filtered = {};
-    // This will overwrite data if an org unit is part of 2 campaigns
+    const dataForRound = [];
     campaignKeys.forEach(key => {
-        filtered = { ...filtered, ...stats[key][round] };
+        dataForRound.push({ ...stats[key][round] });
     });
-    return filtered[shapeName];
+    let results = [];
+    dataForRound.forEach(districtData => {
+        const keysForCampaign = Object.keys(districtData);
+        const districtDataWithNames = Object.values(districtData).map(
+            (value, index) => ({ ...value, name: keysForCampaign[index] }),
+        );
+        results = [
+            ...results,
+            // eslint-disable-next-line no-unused-vars
+            ...keysForCampaign.map(_district => districtDataWithNames),
+        ];
+    });
+    return results
+        .reduce((uniqueValues, result) => {
+            if (
+                !uniqueValues.some(entry => entry.district === result.district)
+            ) {
+                uniqueValues.push(result);
+            }
+            return uniqueValues;
+        }, [])
+        .flat();
+};
+
+export const findLQASDataForShape = (shape, LQASData, round) => {
+    if (!LQASData) return null;
+    const dataForRound = convertLQASDataToArray(LQASData, round);
+    const result = dataForRound.filter(data => data.district === shape.id)[0];
+    return result;
 };
 
 const laxLQASPass = (checked, marked) => {
@@ -98,4 +127,37 @@ export const findScope = (obrName, campaigns, shapes) => {
         scopeIds = campaigns.map(campaign => campaign.group.org_units).flat();
     }
     return shapes.filter(shape => scopeIds.includes(shape.id));
+};
+
+export const lqasTableColumns = formatMessage => {
+    return [
+        {
+            Header: formatMessage(MESSAGES.districtName),
+            accessor: 'name',
+            sortable: true,
+        },
+        {
+            Header: formatMessage(MESSAGES.districtId),
+            accessor: 'district',
+            sortable: true,
+        },
+        {
+            Header: formatMessage(MESSAGES.childrenMarked),
+            accessor: 'total_child_fmd',
+            sortable: false,
+        },
+        {
+            Header: formatMessage(MESSAGES.childrenChecked),
+            accessor: 'total_child_checked',
+            sortable: false,
+        },
+    ];
+};
+
+export const sortDistrictsByName = districts => {
+    return districts.sort((districtA, districtB) =>
+        districtA.name.localeCompare(districtB.name, undefined, {
+            sensitivity: 'accent',
+        }),
+    );
 };

@@ -1,5 +1,5 @@
 from unittest import TestCase
-from iaso.periods import QuarterPeriod, MonthPeriod, YearPeriod, SemesterPeriod, period_from_string, Period
+from iaso.periods import QuarterPeriod, MonthPeriod, YearPeriod, SemesterPeriod, Period
 
 
 class PeriodTests(TestCase):
@@ -37,4 +37,5 @@ class PeriodTests(TestCase):
     def test_detection(self):
         self.assertEqual(type(Period.from_string("2021Q2")), QuarterPeriod)
         self.assertEqual(type(Period.from_string("2021")), YearPeriod)
-        self.assertEqual(type(Period.from_string("2021")), YearPeriod)
+        self.assertEqual(type(Period.from_string("202102")), MonthPeriod)
+        self.assertRaises(Exception, lambda: Period.from_string("11111sww1"))

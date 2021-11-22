@@ -35,7 +35,7 @@ class Period:
             return QuarterPeriod(period_string)
         elif period_type == PERIOD_TYPE_SIX_MONTH:
             return SemesterPeriod(period_string)
-        raise ValueError("unsuported period type: {period_type}")
+        raise ValueError("unsupported period type: {period_type}")
 
     def __eq__(self, other):
         if isinstance(other, str):

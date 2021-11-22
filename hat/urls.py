@@ -13,6 +13,7 @@ admin.site.index_title = "Administration de Iaso"
 urlpatterns = [
     path("", RedirectView.as_view(pattern_name="dashboard:iaso", permanent=False), name="index"),
     path("_health/", health),
+    path("health/", health),  # alias since current apache config hide _health/
     path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),
     path("api/", include("iaso.urls")),

@@ -3,9 +3,8 @@ import os
 import sys
 
 
-def eb_deploy(env_name):
-    return os.system(f"eb deploy {env_name}")
-
+def eb_deploy(env_name, version_name):
+    return os.system(f"eb deploy {env_name} --staged -l {version_name}")
     # for Action debugging: print(f"eb deploy {env_name}")
 
 
@@ -16,6 +15,9 @@ if __name__ == "__main__":
 
     if sys.argv[1].lower() in [x.lower() for x in eb_envs.keys()]:
         exit(eb_deploy(sys.argv[1]))
+    if "VERSION_NAME" not in os.environ:
+        exit("Mission VERSION environment variable")
+    version = os.environ["VERSION_NAME"]
 
     tag_envs = {}
     target_envs = []
@@ -35,6 +37,6 @@ if __name__ == "__main__":
     else:
         for e in target_envs:
             print("Deploying to", e, flush=True)
-            r = eb_deploy(e)
+            r = eb_deploy(e, version_name=version)
             if r != 0:
                 sys.exit(r)

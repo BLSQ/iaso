@@ -20,8 +20,11 @@ jobs:
     steps:
       - name: Deployment of ${{ github.ref }} on ${{ github.event.inputs.environment }}
         run: |
+          git fetch -t
           export GITHUB_BRANCH=${GITHUB_REF##*heads/}
           echo $GITHUB_BRANCH
+          echo $(github describe --tags)
+          exit 1
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}

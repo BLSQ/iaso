@@ -23,7 +23,7 @@ jobs:
           ref: ${{ github.event.inputs.branch }}
           fetch-depth: 0
       - name: Deployment of ${{ github.ref }} on ${{ github.event.inputs.environment }}
-        id:version
+        id: version
         run: |
           export GITHUB_BRANCH=${GITHUB_REF##*heads/}
           echo $GITHUB_BRANCH

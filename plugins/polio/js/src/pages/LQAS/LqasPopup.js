@@ -59,7 +59,3 @@ LqasPopup.propTypes = {
     LQASData: object.isRequired,
     round: string.isRequired,
 };
-
-// LqasPopup.defaultProps={
-
-// }

@@ -619,14 +619,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.lqas',
         defaultMessage: 'LQAS',
     },
-    response: {
-        id: 'iaso.polio.label.response',
-        defaultMessage: 'Response',
-    },
-    inOutData: {
-        id: 'iaso.polio.label.inOutData',
-        defaultMessage: 'IM IN or OUT Data',
-    },
     campaign: {
         id: 'iaso.polio.label.campaign',
         defaultMessage: 'Campaign',

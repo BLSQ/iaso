@@ -1,11 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import {
-    useSafeIntl,
-    Select,
-    LoadingSpinner,
-    // commonStyles,
-} from 'bluesquare-components';
+import { useSafeIntl, Select, LoadingSpinner } from 'bluesquare-components';
 
 import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
 import MESSAGES from '../../constants/messages';
@@ -17,8 +12,8 @@ import {
     makeCampaignsDropDown,
     determineStatusForDistrict,
     totalDistrictsEvaluatedPerRound,
-    getBackgroundLayerStyle,
-    defaultShapeStyle,
+    getScopeStyle,
+    findScope,
 } from './utils';
 import {
     NIGER_ORG_UNIT_ID,
@@ -32,12 +27,12 @@ import { useLQAS } from './requests';
 import { LqasPopup } from './LqasPopup';
 import { LqasMapHeader } from './LqasMapHeader';
 
+// Don't put it in utils to avoid circular dep
 const makePopup = (LQASData, round) => shape => {
     return <LqasPopup shape={shape} LQASData={LQASData} round={round} />;
 };
 
 const styles = theme => ({
-    // ...commonStyles(theme),
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
 });
 
@@ -48,23 +43,17 @@ export const Lqas = () => {
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
     const { data: LQASData, isLoading } = useLQAS(campaign);
-    const { data: shapes } = useGetGeoJson(NIGER_ORG_UNIT_ID, 'DISTRICT');
+    const { data: shapes = [] } = useGetGeoJson(NIGER_ORG_UNIT_ID, 'DISTRICT');
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({
             countries: NIGER_ORG_UNIT_ID.toString(),
         }).query;
-    // console.log('shapes', shapes);
-    console.log('LQAS', LQASData);
+    const scope = findScope(campaign, campaigns, shapes);
+
     const districtsNotFound = LQASData.districts_not_found;
-    // if (LQASData) {
-    //     const testKeys = Object.keys(LQASData.stats);
-    //     const test1 = Object.keys(LQASData.stats[testKeys[0]].round_2);
-    //     const test2 = Object.keys(LQASData.stats[testKeys[1]].round_2);
-    //     console.log(testKeys, test1, test2);
-    // }
+
     const { evaluatedRound1, evaluatedRound2 } =
         totalDistrictsEvaluatedPerRound(LQASData);
-    // console.log('eval R2', evaluatedRound2);
     const allStatusesRound1 = [...evaluatedRound1].map(districtName =>
         determineStatusForDistrict(
             findLQASDataForShape(districtName, LQASData, 'round_1'),
@@ -101,9 +90,9 @@ export const Lqas = () => {
                 findLQASDataForShape(shape.name, LQASData, 'round_1'),
             );
             if (status) return districtColors[status];
-            return defaultShapeStyle;
+            return getScopeStyle(shape, scope);
         },
-        [LQASData],
+        [LQASData, scope],
     );
     const getShapeStylesRound2 = useCallback(
         shape => {
@@ -111,9 +100,9 @@ export const Lqas = () => {
                 findLQASDataForShape(shape.name, LQASData, 'round_2'),
             );
             if (status) return districtColors[status];
-            return defaultShapeStyle;
+            return getScopeStyle(shape, scope);
         },
-        [LQASData],
+        [LQASData, scope],
     );
 
     return (
@@ -159,10 +148,6 @@ export const Lqas = () => {
                                 name="LQASMapRound1"
                                 mainLayer={shapes}
                                 onSelectShape={() => null}
-                                // backgroundLayer={shapes}
-                                // getBackgroundLayerStyle={
-                                //     getBackgroundLayerStyle
-                                // }
                                 getMainLayerStyle={getShapeStylesRound1}
                                 tooltipLabels={{
                                     main: 'District',
@@ -190,9 +175,6 @@ export const Lqas = () => {
                                 mainLayer={shapes}
                                 onSelectShape={() => null}
                                 getMainLayerStyle={getShapeStylesRound2}
-                                getBackgroundLayerStyle={
-                                    getBackgroundLayerStyle
-                                }
                                 tooltipLabels={{
                                     main: 'District',
                                     background: 'Region',

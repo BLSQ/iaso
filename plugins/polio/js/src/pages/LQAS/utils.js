@@ -72,3 +72,30 @@ export const defaultShapeStyle = {
 export const getBackgroundLayerStyle = () => {
     return defaultShapeStyle;
 };
+
+export const getScopeStyle = (shape, scope) => {
+    const isShapeInScope =
+        scope.filter(shapeInScope => shape.id === shapeInScope.id).length === 1;
+    if (isShapeInScope) {
+        return {
+            color: 'grey',
+            opacity: '1',
+            fillColor: 'grey',
+            weight: '2',
+        };
+    }
+    return defaultShapeStyle;
+};
+
+export const findScope = (obrName, campaigns, shapes) => {
+    let scopeIds = [];
+    if (obrName) {
+        scopeIds = campaigns
+            .filter(campaign => campaign.obr_name === obrName)
+            .map(campaign => campaign.group.org_units)
+            .flat();
+    } else {
+        scopeIds = campaigns.map(campaign => campaign.group.org_units).flat();
+    }
+    return shapes.filter(shape => scopeIds.includes(shape.id));
+};

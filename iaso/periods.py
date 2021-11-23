@@ -37,6 +37,11 @@ class Period:
             return SemesterPeriod(period_string)
         raise ValueError("unsupported period type: {period_type}")
 
+    @staticmethod
+    def range_string(from_string: str, to_string: str):
+        range_period = Period.from_string(from_string).range_period_to(Period.from_string(to_string))
+        return [str(p) for p in range_period]
+
     def __eq__(self, other):
         if isinstance(other, str):
             return self.value == other

@@ -1,4 +1,4 @@
-import ConnectedApp from './index';
+import ConnectedApp from './index.tsx';
 
 describe('Main app component', () => {
     it('mount properly', () => {

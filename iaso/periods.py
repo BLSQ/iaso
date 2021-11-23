@@ -42,6 +42,15 @@ class Period:
         range_period = Period.from_string(from_string).range_period_to(Period.from_string(to_string))
         return [str(p) for p in range_period]
 
+    @staticmethod
+    def range_string_with_sub_periods(from_string: str, to_string: str):
+        range_periods = Period.from_string(from_string).range_period_to(Period.from_string(to_string))
+        sub_periods = []
+        for period in range_periods:
+            sub_periods += period.gen_sub_periods()
+        periods = range_periods + sub_periods
+        return [str(p) for p in periods]
+
     def __eq__(self, other):
         if isinstance(other, str):
             return self.value == other

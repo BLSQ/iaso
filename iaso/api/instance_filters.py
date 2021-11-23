@@ -3,7 +3,7 @@ from iaso.periods import Period
 
 def parse_instance_filters(req):
     if req.get("startPeriod", None) and req.get("endPeriod", None):
-        periods = Period.range_string(req["startPeriod"], req["endPeriod"])
+        periods = Period.range_string_with_sub_periods(req["startPeriod"], req["endPeriod"])
     else:
         periods = req.get("period_ids", req.get("periods", req.get("period", None)))
 

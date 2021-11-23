@@ -39,3 +39,37 @@ class PeriodTests(TestCase):
         self.assertEqual(type(Period.from_string("2021")), YearPeriod)
         self.assertEqual(type(Period.from_string("202102")), MonthPeriod)
         self.assertRaises(Exception, lambda: Period.from_string("11111sww1"))
+
+    def test_gen_sub(self):
+        self.assertEqual(Period.from_string("2021Q2").gen_sub_periods(), ["202104", "202105", "202106"])
+        self.assertEqual(
+            Period.from_string("2021S2").gen_sub_periods(),
+            ["2021Q3", "2021Q4", "202107", "202108", "202109", "202110", "202111", "202112"],
+        )
+        self.assertEqual(
+            Period.from_string("202101").gen_sub_periods(),
+            [],
+        )
+        self.assertEqual(
+            Period.from_string("2021").gen_sub_periods(),
+            [
+                "2021S1",
+                "2021S2",
+                "2021Q1",
+                "2021Q2",
+                "202101",
+                "202102",
+                "202103",
+                "202104",
+                "202105",
+                "202106",
+                "2021Q3",
+                "2021Q4",
+                "202107",
+                "202108",
+                "202109",
+                "202110",
+                "202111",
+                "202112",
+            ],
+        )

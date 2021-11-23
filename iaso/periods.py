@@ -70,6 +70,12 @@ class Period:
     def next_period(self):
         raise NotImplemented()
 
+    def gen_sub_periods(self):
+        """Return this period as smaller periods, recursive.
+        Eg for a semester we will return it expressed as 2 QuarterPeriod and 6 MonthPeriod
+        """
+        raise NotImplemented()
+
     def range_period_to(self, other):
         if not type(self) == type(other):
             raise ValueError(f"{self} not the same type as {other}")
@@ -84,18 +90,31 @@ class Period:
 
 
 class QuarterPeriod(Period):
-    def next_period(self):
-        p = self.value
-        year, quarter = p.split("Q")
+    @staticmethod
+    def from_parts(year, quarter):
+        return QuarterPeriod(f"{year:04}Q{quarter}")
+
+    @property
+    def parts(self):
+        year, quarter = self.value.split("Q")
         quarter = int(quarter)
         year = int(year)
+        return year, quarter
+
+    def next_period(self):
+        year, quarter = self.parts
         if quarter >= 4:
             n_year = year + 1
             n_quarter = 1
         else:
             n_quarter = quarter + 1
             n_year = year
-        return QuarterPeriod(f"{n_year:04}Q{n_quarter}")
+        return QuarterPeriod.from_parts(n_year, n_quarter)
+
+    def gen_sub_periods(self):
+        year, quarter = self.parts
+        quarter_to_months = {1: [1, 2, 3], 2: [4, 5, 6], 3: [7, 8, 9], 4: [10, 11, 12]}
+        return [MonthPeriod.from_parts(year, month) for month in quarter_to_months[quarter]]
 
 
 class YearPeriod(Period):
@@ -103,27 +122,62 @@ class YearPeriod(Period):
         n_p = int(self.value) + 1
         return YearPeriod(f"{n_p:04}")
 
+    def gen_sub_periods(self):
+        year = int(self.value)
+        semesters = [SemesterPeriod.from_parts(year, 1), SemesterPeriod.from_parts(year, 2)]
+        sub_semesters = []
+        for semester in semesters:
+            sub_semesters += semester.gen_sub_periods()
+        return semesters + sub_semesters
+
 
 class SemesterPeriod(Period):
+    @staticmethod
+    def from_parts(year, semester):
+        return SemesterPeriod(f"{year:04}S{semester}")
+
     def next_period(self):
-        p = self.value
-        year, semester = p.split("S")
-        semester = int(semester)
-        year = int(year)
+        year, semester = self.parts
         if semester >= 2:
             n_year = year + 1
             n_semester = 1
         else:
             n_year = year
             n_semester = semester + 1
-        return SemesterPeriod(f"{n_year:04}S{n_semester}")
+        return SemesterPeriod.from_parts(n_year, n_semester)
+
+    @property
+    def parts(self):
+        year, semester = self.value.split("S")
+        return int(year), int(semester)
+
+    def gen_sub_periods(self):
+        year, semester = self.parts
+        semester_to_quarters = {
+            1: [1, 2],
+            2: [3, 4],
+        }
+        quarters = [QuarterPeriod.from_parts(year, quarter) for quarter in semester_to_quarters[semester]]
+        months = []
+        for quarter in quarters:
+            months += quarter.gen_sub_periods()
+        return quarters + months
 
 
 class MonthPeriod(Period):
     "Month start at 1"
 
-    def next_period(self):
+    @staticmethod
+    def from_parts(year, month):
+        return MonthPeriod(f"{year:04}{month:02}")
+
+    @property
+    def parts(self):
         year, month = int(self.value[:4]), int(self.value[4:])
+        return month, year
+
+    def next_period(self):
+        month, year = self.parts
         if month == 12:
             n_month = 1
             n_year = year + 1
@@ -131,4 +185,7 @@ class MonthPeriod(Period):
             n_month = month + 1
             n_year = year
 
-        return MonthPeriod(f"{n_year:04}{n_month:02}")
+        return MonthPeriod.from_parts(n_year, n_month)
+
+    def gen_sub_periods(self):
+        return []

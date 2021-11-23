@@ -29,7 +29,6 @@ import {
 } from './actions';
 import { setAlgorithms, setAlgorithmRuns } from '../links/actions';
 
-import { setForms as setFormsAction } from '../forms/actions';
 import formsTableColumns from '../forms/config';
 
 import {
@@ -72,7 +71,7 @@ import {
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
-import { userHasPermission } from '../users/utils';
+// import { userHasPermission } from '../users/utils';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
@@ -425,7 +424,6 @@ class OrgUnitDetail extends Component {
             router,
             prevPathname,
             redirectToPush,
-            reduxPage,
             sources,
             profiles,
             algorithms,
@@ -452,7 +450,7 @@ class OrgUnitDetail extends Component {
                 }`;
             }
         }
-        const allTabs = [
+        const tabs = [
             'infos',
             'map',
             'children',
@@ -462,9 +460,6 @@ class OrgUnitDetail extends Component {
             'comments',
         ];
 
-        const tabs = userHasPermission('iaso_forms', this.props.currentUser)
-            ? allTabs
-            : allTabs.filter(t => t !== 'forms');
         return (
             <section className={classes.root}>
                 <TopBar
@@ -585,16 +580,6 @@ class OrgUnitDetail extends Component {
                                 propsToWatch={params.tab}
                                 fetchItems={fetchForms}
                                 columns={this.state.tableColumns}
-                                results={reduxPage}
-                                onDataLoaded={({ list, count, pages }) => {
-                                    this.props.setForms(
-                                        list,
-                                        true,
-                                        params,
-                                        count,
-                                        pages,
-                                    );
-                                }}
                                 forceRefresh={
                                     this.state.forceSingleTableRefresh
                                 }
@@ -705,7 +690,6 @@ OrgUnitDetail.defaultProps = {
     currentOrgUnit: undefined,
     sources: [],
     prevPathname: null,
-    reduxPage: undefined,
 };
 
 OrgUnitDetail.propTypes = {
@@ -731,8 +715,6 @@ OrgUnitDetail.propTypes = {
     createOrgUnit: PropTypes.func.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
     setAlgorithmRuns: PropTypes.func.isRequired,
-    setForms: PropTypes.func.isRequired,
-    reduxPage: PropTypes.object,
     profiles: PropTypes.array.isRequired,
     algorithms: PropTypes.array.isRequired,
     algorithmRuns: PropTypes.array.isRequired,
@@ -768,7 +750,6 @@ const MapDispatchToProps = dispatch => ({
     setAlgorithmRuns: algoRunsList => dispatch(setAlgorithmRuns(algoRunsList)),
     ...bindActionCreators(
         {
-            setForms: setFormsAction,
             saveOrgUnit: saveOrgUnitAction,
             createOrgUnit: createOrgUnitAction,
             fetchUsersProfiles: fetchUsersProfilesAction,

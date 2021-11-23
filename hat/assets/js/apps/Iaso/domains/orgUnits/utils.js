@@ -264,3 +264,19 @@ export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
     });
     return sources;
 };
+
+export const compareGroupVersions = (a, b) => {
+    const comparison = a.name.localeCompare(b.name, undefined, {
+        sensitivity: 'accent',
+    });
+    if (comparison === 0) {
+        if (a.source_version.number < b.source_version.number) {
+            return -1;
+        }
+        if (a.source_version.number > b.source_version.number) {
+            return 1;
+        }
+        return 0;
+    }
+    return comparison;
+};

@@ -6,7 +6,6 @@ import { createHistory } from 'history';
 import createStore from './createStore';
 
 import appReducer from '../domains/app/reducer';
-import { formsReducer, formsInitialState } from '../domains/forms/reducer';
 import {
     orgUnitsReducer,
     orgUnitsInitialState,
@@ -44,6 +43,7 @@ import {
 import { localeMiddleware } from '../domains/app/middleware';
 
 // TODO pass baseUrl without hardcoding it
+// eslint-disable-next-line react-hooks/rules-of-hooks
 let storeHistory = useRouterHistory(createHistory)({
     basename: '/dashboard',
 });
@@ -51,7 +51,6 @@ let storeHistory = useRouterHistory(createHistory)({
 const store = createStore(
     {
         sidebar: sidebarMenuInitialState,
-        forms: formsInitialState,
         orgUnits: orgUnitsInitialState,
         instances: instancesInitialState,
         snackBar: snackBarsInitialState,
@@ -68,7 +67,6 @@ const store = createStore(
     {
         app: appReducer,
         sidebar: sidebarMenuReducer,
-        forms: formsReducer,
         orgUnits: orgUnitsReducer,
         instances: instancesReducer,
         snackBar: snackBarsReducer,

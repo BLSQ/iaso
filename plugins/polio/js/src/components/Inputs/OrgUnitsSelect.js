@@ -21,6 +21,8 @@ export const OrgUnitsLevels = ({ field, form, label }) => {
                     setFieldValue(name, orgUnit.id);
                 }}
                 initialSelection={initialOrgUnit}
+                showStatusIconInTree={false}
+                showStatusIconInPicker={false}
             />
         </>
     );

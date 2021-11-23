@@ -12,6 +12,7 @@ const CampaignDurationCell = ({ colSpan, hasR2, campaign }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
+    if (colSpan <= 0) return null;
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.campaign, {

@@ -39,6 +39,8 @@ const OrgUnitTreeviewModal = ({
     disabled,
     version,
     required,
+    showStatusIconInTree,
+    showStatusIconInPicker,
 }) => {
     const classes = useStyles();
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
@@ -164,7 +166,7 @@ const OrgUnitTreeviewModal = ({
                     placeholder={titleMessage}
                     required={required}
                     disabled={disabled}
-                    label={makeTreeviewLabel(classes)}
+                    label={makeTreeviewLabel(classes, showStatusIconInPicker)}
                 />
             )}
             titleMessage={titleMessage}
@@ -178,7 +180,7 @@ const OrgUnitTreeviewModal = ({
             <TreeViewWithSearch
                 getChildrenData={getChildrenData}
                 getRootData={getRootDataWithSource}
-                label={makeTreeviewLabel(classes)}
+                label={makeTreeviewLabel(classes, showStatusIconInTree)}
                 toggleOnLabelClick={toggleOnLabelClick}
                 onSelect={onOrgUnitSelect}
                 request={searchOrgUnitsWithSource}
@@ -209,6 +211,8 @@ OrgUnitTreeviewModal.propTypes = {
     hardReset: bool, // when true, it will clear the selectedOrgUnits on reset, emptying the TreeviewPIcker selection
     disabled: bool,
     required: bool,
+    showStatusIconInTree: bool,
+    showStatusIconInPicker: bool,
 };
 
 OrgUnitTreeviewModal.defaultProps = {
@@ -222,6 +226,8 @@ OrgUnitTreeviewModal.defaultProps = {
     disabled: false,
     required: false,
     hardReset: false,
+    showStatusIconInTree: true,
+    showStatusIconInPicker: true,
 };
 
 export { OrgUnitTreeviewModal };

@@ -1,22 +1,30 @@
+import subprocess
 import boto3
 import os
 import sys
 
 
-def eb_deploy(env_name):
-    return os.system(f"eb deploy {env_name}")
-
+def eb_deploy(env_name, version_name):
+    print("Deploying to", env_name, flush=True)
+    return subprocess.check_call(["eb", "deploy", env_name, "--staged", "-l", version_name])
     # for Action debugging: print(f"eb deploy {env_name}")
 
 
 if __name__ == "__main__":
+    # Connect to aws to get the list of environment linked to the application
     client = boto3.client("elasticbeanstalk")
     desc = client.describe_environments(ApplicationName="Iaso")
     eb_envs = {x["EnvironmentName"]: x for x in desc["Environments"]}
 
-    if sys.argv[1].lower() in [x.lower() for x in eb_envs.keys()]:
-        exit(eb_deploy(sys.argv[1]))
+    if "VERSION_NAME" not in os.environ:
+        exit("Mission VERSION environment variable")
+    version = os.environ["VERSION_NAME"]
 
+    # If the argument correspond to one of the env, deploy to it
+    if sys.argv[1].lower() in [x.lower() for x in eb_envs.keys()]:
+        exit(eb_deploy(sys.argv[1], version_name=version))
+
+    # otherwhise consider it's a tag and update all the environment with the same `env` tag
     tag_envs = {}
     target_envs = []
     for env_name, env_details in eb_envs.items():
@@ -31,10 +39,8 @@ if __name__ == "__main__":
             target_envs.append(env_name)
 
     if len(target_envs) == 0:
-        print("No target env found for", sys.argv[1])
+        exit(f"No target env found for {sys.argv[1]}")
     else:
+        print(f"Will deploy to environemts : {', '.join(target_envs)}")
         for e in target_envs:
-            print("Deploying to", e, flush=True)
-            r = eb_deploy(e)
-            if r != 0:
-                sys.exit(r)
+            r = eb_deploy(e, version_name=version)

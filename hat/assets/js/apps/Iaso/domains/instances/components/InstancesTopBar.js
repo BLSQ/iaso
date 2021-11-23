@@ -11,6 +11,7 @@ import { getInstancesColumns, getInstancesVisibleColumns } from '../utils';
 
 import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
 import MESSAGES from '../messages';
+import { INSTANCE_METAS_FIELDS } from '../constants';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -70,9 +71,13 @@ const InstancesTopBar = ({
     useEffect(() => {
         if (reduxPage?.list || tableColumns.length === 0) {
             const enrichedParams = { ...params };
-            const columns =
-                params.columns ||
-                'form__name,updated_at,org_unit__name,created_at,status';
+            let columns = INSTANCE_METAS_FIELDS.filter(f =>
+                Boolean(f.tableOrder),
+            ).map(f => f.accessor || f.key);
+            if (formIds && formIds.length === 1) {
+                columns = columns.filter(c => c !== 'form__name');
+            }
+            columns = columns.join(',');
             const columnsWithLabelKeys = `${columns},${labelKeys.join(',')}`;
             enrichedParams.columns = columnsWithLabelKeys;
             const cols = getInstancesVisibleColumns({

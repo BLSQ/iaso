@@ -51,17 +51,15 @@ const adaptMap = value => {
         .flat();
 };
 
-export const makeTreeviewLabel = classes => orgUnit => {
-    const { formatMessage } = useIntl();
+const makeOrgUnistStatusIcon = (classes, orgUnit, formatMessage) => {
     const style = {
         display: 'inline-flex',
         alignItems: 'center',
         verticalAlign: 'middle',
     };
-    let icon = null;
     if (orgUnit?.validation_status === 'NEW')
         // The icon has to be wrapped, otherwise Tooltip will crash
-        icon = (
+        return (
             <Tooltip title={formatMessage(MESSAGES.statusNew)} size="small">
                 <div style={style}>
                     <FlareIcon fontSize="small" className={classes.new} />
@@ -69,7 +67,7 @@ export const makeTreeviewLabel = classes => orgUnit => {
             </Tooltip>
         );
     if (orgUnit?.validation_status === 'VALID')
-        icon = (
+        return (
             <Tooltip title={formatMessage(MESSAGES.statusValid)} size="small">
                 <div style={style}>
                     <CheckCircleOutlineIcon
@@ -80,7 +78,7 @@ export const makeTreeviewLabel = classes => orgUnit => {
             </Tooltip>
         );
     if (orgUnit?.validation_status === 'REJECTED')
-        icon = (
+        return (
             <Tooltip
                 title={formatMessage(MESSAGES.statusRejected)}
                 size="small"
@@ -93,6 +91,16 @@ export const makeTreeviewLabel = classes => orgUnit => {
                 </div>
             </Tooltip>
         );
+    return null;
+};
+
+export const makeTreeviewLabel = (classes, withStatusIcon) => orgUnit => {
+    const { formatMessage } = useIntl();
+
+    const icon = withStatusIcon
+        ? makeOrgUnistStatusIcon(classes, orgUnit, formatMessage)
+        : null;
+
     return (
         <>
             {orgUnit.name || `id: ${orgUnit.id}`}

@@ -33,7 +33,7 @@ const tryJson = async response => {
 export const iasoFetch = async (resource, init = undefined) => {
     let response;
     const url = resource.url ?? resource;
-    const method = init?.ignoreMethod ?? 'GET';
+    const method = init?.method ?? 'GET';
     try {
         response = await fetch(resource, init);
     } catch (error) {

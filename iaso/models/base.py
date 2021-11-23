@@ -656,6 +656,7 @@ class InstanceQuerySet(models.QuerySet):
             )
             .annotate(ready_count=models.Count("id", distinct=True, filter=models.Q(status=Instance.STATUS_READY)))
             .exclude(period=None)
+            .exclude(period="")
             .order_by("period", "form__name")
         )
 

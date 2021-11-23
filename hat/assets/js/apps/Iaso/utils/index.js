@@ -21,7 +21,7 @@ export const formatThousand = number => {
 export const getYears = (yearsCount, offset = 0, reverse = false) => {
     const currentYear = new Date().getFullYear() + offset;
     const years = Array(yearsCount)
-        .fill()
+        .fill(null)
         .map((y, i) => currentYear - i);
     if (reverse) {
         return years.reverse();
@@ -71,7 +71,7 @@ export const getPlugins = pluginsKeys => {
     return plugins;
 };
 
-export const PluginsContext = createContext({ plugins: [] });
+export const PluginsContext = createContext({});
 
 // create timeout to simulate async call
 // credit https://stackoverflow.com/questions/51200626/using-a-settimeout-in-a-async-function

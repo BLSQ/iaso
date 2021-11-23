@@ -71,7 +71,7 @@ export const getPlugins = pluginsKeys => {
     return plugins;
 };
 
-export const PluginsContext = createContext({});
+export const PluginsContext = createContext({ plugins: [] });
 
 // create timeout to simulate async call
 // credit https://stackoverflow.com/questions/51200626/using-a-settimeout-in-a-async-function

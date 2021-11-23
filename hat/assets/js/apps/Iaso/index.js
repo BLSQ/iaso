@@ -66,9 +66,4 @@ export default function iasoApp(element, enabledPluginsName) {
 // but it was proken by webbpack-dev-server injecting his code so this a replacement
 // solution
 
-declare global {
-    interface Window {
-        iasoApp: any;
-    }
-}
 window.iasoApp = iasoApp;

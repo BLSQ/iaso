@@ -41,7 +41,7 @@ const menuItems = [
             },
             {
                 label: MESSAGES.submissionsTitle,
-                extraPath: `/tab/list/columns/form__name,updated_at,org_unit__name,created_at,status/mapResults/${locationLimitMax}`,
+                extraPath: `/tab/list/mapResults/${locationLimitMax}`,
                 permissions: paths.instancesPath.permissions,
                 key: 'submissions',
                 icon: props => <Input {...props} />,

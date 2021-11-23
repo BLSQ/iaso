@@ -161,7 +161,7 @@ const formsTableColumns = ({
         width: 250,
         accessor: 'actions',
         Cell: settings => {
-            const urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}/tab/list/columns/updated_at,org_unit__name,created_at,status`;
+            const urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}/tab/list`;
 
             return (
                 <section>

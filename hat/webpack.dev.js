@@ -220,6 +220,7 @@ module.exports = {
                 },
             },
         ],
+        noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },
     externals: [{ './cptable': 'var cptable' }],
 

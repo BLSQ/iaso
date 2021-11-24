@@ -11,7 +11,6 @@ import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
-import { MapComponent } from '../../components/MapComponent/MapComponent';
 import {
     findLQASDataForShape,
     makeCampaignsDropDown,
@@ -24,13 +23,7 @@ import {
 } from './utils';
 import { NIGER_ORG_UNIT_ID, districtColors } from './constants';
 import { useLQAS } from './requests';
-import { LqasPopup } from './LqasPopup';
-import { LqasMapHeader } from './LqasMapHeader';
-
-// Don't put it in utils to avoid circular dep
-const makePopup = (LQASData, round) => shape => {
-    return <LqasPopup shape={shape} LQASData={LQASData} round={round} />;
-};
+import { LqasMap } from './LqasMap';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -58,11 +51,14 @@ export const Lqas = () => {
 
     const scope = findScope(campaign, campaigns, shapes);
 
-    const districtsNotFound = LQASData.districts_not_found;
+    const districtsNotFound = LQASData.districts_not_found?.join(', ');
 
-    const [evaluatedRound1, passedRound1, failedRound1, disqualifiedRound1] =
+    // evaluatedRound1 is still used in the Table
+    // eslint-disable-next-line no-unused-vars
+    const [evaluatedRound1, _passedRound1, _failedRound1, _disqualifiedRound1] =
         getLqasStatsForRound(LQASData, 'round_1');
 
+    // eslint-disable-next-line no-unused-vars
     const [evaluatedRound2, passedRound2, failedRound2, disqualifiedRound2] =
         getLqasStatsForRound(LQASData, 'round_2');
 
@@ -119,7 +115,7 @@ export const Lqas = () => {
                                     MESSAGES.districtsNotFound,
                                 )}:`}
                             </Typography>
-                            {districtsNotFound?.join(', ')}
+                            {districtsNotFound}
                         </Box>
                     </Grid>
                 </Grid>
@@ -128,26 +124,11 @@ export const Lqas = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && (
                             <Box ml={2}>
-                                <LqasMapHeader
+                                <LqasMap
+                                    lqasData={LQASData}
+                                    shapes={shapes}
+                                    getShapeStyles={getShapeStyles('round_1')}
                                     round="round_1"
-                                    evaluated={evaluatedRound1.length}
-                                    passed={passedRound1.length}
-                                    disqualified={disqualifiedRound1.length}
-                                    failed={failedRound1.length}
-                                />
-                                <MapComponent
-                                    name="LQASMapRound1"
-                                    mainLayer={shapes}
-                                    onSelectShape={() => null}
-                                    getMainLayerStyle={getShapeStyles(
-                                        'round_1',
-                                    )}
-                                    tooltipLabels={{
-                                        main: 'District',
-                                        background: 'Region',
-                                    }}
-                                    makePopup={makePopup(LQASData, 'round_1')}
-                                    height={600}
                                 />
                             </Box>
                         )}
@@ -156,26 +137,11 @@ export const Lqas = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && (
                             <Box mr={2}>
-                                <LqasMapHeader
+                                <LqasMap
+                                    lqasData={LQASData}
+                                    shapes={shapes}
+                                    getShapeStyles={getShapeStyles('round_2')}
                                     round="round_2"
-                                    evaluated={evaluatedRound2.length}
-                                    passed={passedRound2.length}
-                                    disqualified={disqualifiedRound2.length}
-                                    failed={failedRound2.length}
-                                />
-                                <MapComponent
-                                    name="LQASMapRound2"
-                                    mainLayer={shapes}
-                                    onSelectShape={() => null}
-                                    getMainLayerStyle={getShapeStyles(
-                                        'round_2',
-                                    )}
-                                    tooltipLabels={{
-                                        main: 'District',
-                                        background: 'Region',
-                                    }}
-                                    makePopup={makePopup(LQASData, 'round_2')}
-                                    height={600}
                                 />
                             </Box>
                         )}

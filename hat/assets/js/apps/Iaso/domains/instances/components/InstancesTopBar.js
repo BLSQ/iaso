@@ -45,14 +45,9 @@ const InstancesTopBar = ({
     const formIds = params.formIds?.split(',');
 
     const handleChangeVisibleColmuns = cols => {
-        const tempVisibleColumns =
-            periodType === null
-                ? cols.filter(column => column.key !== 'period')
-                : cols;
-
         const newParams = {
             ...params,
-            columns: tempVisibleColumns
+            columns: cols
                 .filter(c => c.active)
                 .map(c => c.key)
                 .join(','),
@@ -60,11 +55,11 @@ const InstancesTopBar = ({
         setTableColumns(
             getInstancesColumns(
                 formatMessage,
-                tempVisibleColumns,
+                cols,
                 params.showDeleted === 'true',
             ),
         );
-        setVisibleColumns(tempVisibleColumns);
+        setVisibleColumns(cols);
         dispatch(redirectToReplace(baseUrl, newParams));
     };
 
@@ -76,7 +71,11 @@ const InstancesTopBar = ({
             ).map(f => f.accessor || f.key);
             if (formIds && formIds.length === 1) {
                 columns = columns.filter(c => c !== 'form__name');
+                if (periodType === null) {
+                    columns = columns.filter(c => c !== 'period');
+                }
             }
+
             columns = columns.join(',');
             const columnsWithLabelKeys = `${columns},${labelKeys.join(',')}`;
             enrichedParams.columns = columnsWithLabelKeys;

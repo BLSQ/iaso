@@ -1,4 +1,6 @@
+import datetime
 from unittest import TestCase
+
 from iaso.periods import QuarterPeriod, MonthPeriod, YearPeriod, SemesterPeriod, Period
 
 
@@ -7,6 +9,8 @@ class PeriodTests(TestCase):
         self.assertTrue(QuarterPeriod("2021Q2") < QuarterPeriod("2021Q3"))
         self.assertFalse(QuarterPeriod("2021Q2") < QuarterPeriod("2021Q2"))
         self.assertTrue(QuarterPeriod("2021Q2") <= QuarterPeriod("2021Q2"))
+        self.assertEqual(YearPeriod("2001"), "2001")
+        self.assertEqual([YearPeriod("2001"), YearPeriod("2002")], ["2001", "2002"])
 
     def test_period(self):
         self.assertEqual(repr(QuarterPeriod("2021Q2")), "<QuarterPeriod 2021Q2>", repr(QuarterPeriod("2021Q2")))
@@ -96,3 +100,29 @@ class PeriodTests(TestCase):
                 "202112",
             ],
         )
+
+    def test_bound(self):
+        self.assertEqual(Period.bound_range(None, "2005"), ("2000", "2005"))
+        # should also work with empty string
+        self.assertEqual(Period.bound_range("", "2005"), ("2000", "2005"))
+        self.assertEqual(Period.bound_range("2005", ""), ("2005", "2030"))
+        self.assertEqual(Period.range_string(None, "2005"), ["2000", "2001", "2002", "2003", "2004", "2005"])
+
+        self.assertEqual(Period.bound_range(None, "2005Q2"), ("2000Q1", "2005Q2"))
+        self.assertEqual(Period.bound_range("2005Q2", None), ("2005Q2", "2030Q4"))
+        self.assertEqual(Period.bound_range("2010S1", None), ("2010S1", "2030S2"))
+        self.assertEqual(Period.bound_range("2005S2", None), ("2005S2", "2030S2"))
+        # month
+        self.assertEqual(Period.bound_range(None, "200502"), ("200001", "200502"))
+        self.assertEqual(Period.bound_range("200502", None), ("200502", "203012"))
+
+    def test_bound_sanity(self):
+        # this check is here as a reminder to update the higher bound once we approach the original 2030 bound
+        current = datetime.datetime.now()
+        self.assertLess(current.year + 2, int(YearPeriod.HIGHER_BOUND))
+        year, _ = Period.from_string(MonthPeriod.HIGHER_BOUND).parts
+        self.assertLess(current.year + 2, year)
+        year, _ = Period.from_string(QuarterPeriod.HIGHER_BOUND).parts
+        self.assertLess(current.year + 2, year)
+        year, _ = Period.from_string(SemesterPeriod.HIGHER_BOUND).parts
+        self.assertLess(current.year + 2, year)

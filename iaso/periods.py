@@ -1,3 +1,5 @@
+from typing import Tuple, Optional
+
 PERIOD_TYPE_MONTH = "MONTH"
 PERIOD_TYPE_QUARTER = "QUARTER"
 PERIOD_TYPE_SIX_MONTH = "SIX_MONTH"
@@ -38,13 +40,32 @@ class Period:
         raise ValueError("unsupported period type: {period_type}")
 
     @staticmethod
+    def bound_range(from_string: Optional[str], to_string: Optional[str]) -> Tuple["Period", "Period"]:
+        """convert to period and fill missing bound
+        if we don't have a start or end value, provide one since we cant generate a range from infinity"""
+        if not from_string and not to_string:
+            raise ValueError("Should at least provide one bound")
+        if not to_string:
+            from_period = Period.from_string(from_string)
+            to_period = Period.from_string(from_period.HIGHER_BOUND)
+        elif not from_string:
+            to_period = Period.from_string(to_string)
+            from_period = Period.from_string(to_period.LOWER_BOUND)
+        else:
+            to_period = Period.from_string(to_string)
+            from_period = Period.from_string(from_string)
+        return (from_period, to_period)
+
+    @staticmethod
     def range_string(from_string: str, to_string: str):
-        range_period = Period.from_string(from_string).range_period_to(Period.from_string(to_string))
-        return [str(p) for p in range_period]
+        from_period, to_period = Period.bound_range(from_string, to_string)
+        range_periods = from_period.range_period_to(to_period)
+        return [str(p) for p in range_periods]
 
     @staticmethod
     def range_string_with_sub_periods(from_string: str, to_string: str):
-        range_periods = Period.from_string(from_string).range_period_to(Period.from_string(to_string))
+        from_period, to_period = Period.bound_range(from_string, to_string)
+        range_periods = from_period.range_period_to(to_period)
         sub_periods = []
         for period in range_periods:
             sub_periods += period.gen_sub_periods()
@@ -85,7 +106,7 @@ class Period:
         """
         raise NotImplemented()
 
-    def range_period_to(self, other):
+    def range_period_to(self, other: "Period"):
         if not type(self) == type(other):
             raise ValueError(f"{self} not the same type as {other}")
         if not self <= other:
@@ -99,6 +120,9 @@ class Period:
 
 
 class QuarterPeriod(Period):
+    LOWER_BOUND = "2000Q1"
+    HIGHER_BOUND = "2030Q4"
+
     @staticmethod
     def from_parts(year, quarter):
         return QuarterPeriod(f"{year:04}Q{quarter}")
@@ -127,6 +151,9 @@ class QuarterPeriod(Period):
 
 
 class YearPeriod(Period):
+    LOWER_BOUND = "2000"
+    HIGHER_BOUND = "2030"
+
     def next_period(self):
         n_p = int(self.value) + 1
         return YearPeriod(f"{n_p:04}")
@@ -141,6 +168,9 @@ class YearPeriod(Period):
 
 
 class SemesterPeriod(Period):
+    LOWER_BOUND = "2000S1"
+    HIGHER_BOUND = "2030S2"
+
     @staticmethod
     def from_parts(year, semester):
         return SemesterPeriod(f"{year:04}S{semester}")
@@ -176,6 +206,9 @@ class SemesterPeriod(Period):
 class MonthPeriod(Period):
     "Month start at 1"
 
+    LOWER_BOUND = "200001"
+    HIGHER_BOUND = "203012"
+
     @staticmethod
     def from_parts(year, month):
         return MonthPeriod(f"{year:04}{month:02}")
@@ -183,10 +216,10 @@ class MonthPeriod(Period):
     @property
     def parts(self):
         year, month = int(self.value[:4]), int(self.value[4:])
-        return month, year
+        return year, month
 
     def next_period(self):
-        month, year = self.parts
+        year, month = self.parts
         if month == 12:
             n_month = 1
             n_year = year + 1

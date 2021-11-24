@@ -16,20 +16,13 @@ import {
     findLQASDataForShape,
     makeCampaignsDropDown,
     determineStatusForDistrict,
-    convertLQASDataToArray,
     getScopeStyle,
     findScope,
     sortDistrictsByName,
     lqasTableColumns,
+    getLqasStatsForRound,
 } from './utils';
-import {
-    NIGER_ORG_UNIT_ID,
-    districtColors,
-    LQAS_STRICT_PASS,
-    LQAS_LAX_PASS,
-    LQAS_LAX_FAIL,
-    LQAS_STRICT_FAIL,
-} from './constants';
+import { NIGER_ORG_UNIT_ID, districtColors } from './constants';
 import { useLQAS } from './requests';
 import { LqasPopup } from './LqasPopup';
 import { LqasMapHeader } from './LqasMapHeader';
@@ -67,55 +60,25 @@ export const Lqas = () => {
 
     const districtsNotFound = LQASData.districts_not_found;
 
-    const evaluatedRound1 = convertLQASDataToArray(LQASData, 'round_1');
-    const evaluatedRound2 = convertLQASDataToArray(LQASData, 'round_2');
+    const [evaluatedRound1, passedRound1, failedRound1, disqualifiedRound1] =
+        getLqasStatsForRound(LQASData, 'round_1');
 
-    const allStatusesRound1 = [...evaluatedRound1].map(district =>
-        determineStatusForDistrict(district),
-    );
-    const allStatusesRound2 = [...evaluatedRound2].map(district =>
-        determineStatusForDistrict(district),
-    );
-    const passedLqasStrictInRound1 = allStatusesRound1.filter(
-        status => status === LQAS_STRICT_PASS,
-    );
-    const passedLqasStrictInRound2 = allStatusesRound2.filter(
-        status => status === LQAS_STRICT_PASS,
-    );
-    const passedLqasLaxInRound1 = allStatusesRound1.filter(
-        status => status === LQAS_LAX_PASS,
-    );
-    const passedLqasLaxInRound2 = allStatusesRound2.filter(
-        status => status === LQAS_LAX_PASS,
-    );
-    const failedInRound1 = allStatusesRound1.filter(
-        status => status === LQAS_LAX_FAIL || status === LQAS_STRICT_FAIL,
-    );
-    const failedInRound2 = allStatusesRound2.filter(
-        status => status === LQAS_LAX_FAIL || status === LQAS_STRICT_FAIL,
-    );
+    const [evaluatedRound2, passedRound2, failedRound2, disqualifiedRound2] =
+        getLqasStatsForRound(LQASData, 'round_2');
 
     const dropDownOptions = makeCampaignsDropDown(campaigns);
-    const getShapeStylesRound1 = useCallback(
-        shape => {
+
+    const getShapeStyles = useCallback(
+        round => shape => {
             const status = determineStatusForDistrict(
-                findLQASDataForShape(shape, LQASData, 'round_1'),
+                findLQASDataForShape(shape, LQASData, round),
             );
             if (status) return districtColors[status];
             return getScopeStyle(shape, scope);
         },
         [LQASData, scope],
     );
-    const getShapeStylesRound2 = useCallback(
-        shape => {
-            const status = determineStatusForDistrict(
-                findLQASDataForShape(shape, LQASData, 'round_2'),
-            );
-            if (status) return districtColors[status];
-            return getScopeStyle(shape, scope);
-        },
-        [LQASData, scope],
-    );
+
     // FIXME pre-select a campaign for the demo. this effect should be removed
     useEffect(() => {
         setCampaign('NIG-xxDS-03-2021');
@@ -168,17 +131,17 @@ export const Lqas = () => {
                                 <LqasMapHeader
                                     round="round_1"
                                     evaluated={evaluatedRound1.length}
-                                    passedStrict={
-                                        passedLqasStrictInRound1.length
-                                    }
-                                    passedLax={passedLqasLaxInRound1.length}
-                                    failed={failedInRound1.length}
+                                    passed={passedRound1.length}
+                                    disqualified={disqualifiedRound1.length}
+                                    failed={failedRound1.length}
                                 />
                                 <MapComponent
                                     name="LQASMapRound1"
                                     mainLayer={shapes}
                                     onSelectShape={() => null}
-                                    getMainLayerStyle={getShapeStylesRound1}
+                                    getMainLayerStyle={getShapeStyles(
+                                        'round_1',
+                                    )}
                                     tooltipLabels={{
                                         main: 'District',
                                         background: 'Region',
@@ -196,17 +159,17 @@ export const Lqas = () => {
                                 <LqasMapHeader
                                     round="round_2"
                                     evaluated={evaluatedRound2.length}
-                                    passedStrict={
-                                        passedLqasStrictInRound2.length
-                                    }
-                                    passedLax={passedLqasLaxInRound2.length}
-                                    failed={failedInRound2.length}
+                                    passed={passedRound2.length}
+                                    disqualified={disqualifiedRound2.length}
+                                    failed={failedRound2.length}
                                 />
                                 <MapComponent
                                     name="LQASMapRound2"
                                     mainLayer={shapes}
                                     onSelectShape={() => null}
-                                    getMainLayerStyle={getShapeStylesRound2}
+                                    getMainLayerStyle={getShapeStyles(
+                                        'round_2',
+                                    )}
                                     tooltipLabels={{
                                         main: 'District',
                                         background: 'Region',

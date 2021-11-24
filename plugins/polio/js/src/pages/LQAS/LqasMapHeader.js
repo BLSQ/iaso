@@ -7,8 +7,8 @@ import MESSAGES from '../../constants/messages';
 export const LqasMapHeader = ({
     round,
     evaluated,
-    passedStrict,
-    passedLax,
+    passed,
+    disqualified,
     failed,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -41,10 +41,10 @@ export const LqasMapHeader = ({
                     <Typography variant="h6">
                         {`${formatMessage(MESSAGES.passing)}: `}
                         <span style={{ color: 'green' }}>
-                            {`${passedStrict ?? textPlaceholder} `}
+                            {`${passed ?? textPlaceholder} `}
                         </span>
                         <span style={{ color: 'green' }}>
-                            {`(${percentRatio(passedStrict)}%)`}
+                            {`(${percentRatio(passed)}%)`}
                         </span>
                     </Typography>
                 </Box>
@@ -52,12 +52,12 @@ export const LqasMapHeader = ({
             <Grid item>
                 <Box>
                     <Typography variant="h6">
-                        {`${formatMessage(MESSAGES.passingWithRatio)}: `}
-                        <span style={{ color: 'limegreen' }}>
-                            {`${passedLax ?? textPlaceholder}`}
+                        {`${formatMessage(MESSAGES.disqualified)}: `}
+                        <span style={{ color: 'orange' }}>
+                            {`${disqualified ?? textPlaceholder}`}
                         </span>
-                        <span style={{ color: 'limegreen' }}>
-                            {`(${percentRatio(passedLax)}%)`}
+                        <span style={{ color: 'orange' }}>
+                            {`(${percentRatio(disqualified)}%)`}
                         </span>
                     </Typography>
                 </Box>
@@ -82,13 +82,13 @@ export const LqasMapHeader = ({
 LqasMapHeader.propTypes = {
     round: oneOf(['round_1', 'round_2']).isRequired,
     evaluated: number,
-    passedStrict: number,
-    passedLax: number,
+    passed: number,
+    disqualified: number,
     failed: number,
 };
 LqasMapHeader.defaultProps = {
     evaluated: null,
-    passedStrict: null,
-    passedLax: null,
+    passed: null,
+    disqualified: null,
     failed: null,
 };

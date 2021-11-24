@@ -1,9 +1,4 @@
-import {
-    LQAS_STRICT_PASS,
-    LQAS_STRICT_FAIL,
-    LQAS_LAX_PASS,
-    LQAS_LAX_FAIL,
-} from './constants';
+import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED } from './constants';
 
 import MESSAGES from '../../constants/messages';
 
@@ -46,22 +41,22 @@ export const findLQASDataForShape = (shape, LQASData, round) => {
     return result;
 };
 
-const laxLQASPass = (checked, marked) => {
-    return Math.floor(60 * (marked / checked)) >= 57;
-};
+// const laxLQASPass = (checked, marked) => {
+//     return Math.floor(60 * (marked / checked)) >= 57;
+// };
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
     const { total_child_fmd: marked, total_child_checked: checked } = district;
     if (checked === 60) {
-        if (marked === 60) return LQAS_STRICT_PASS;
-        return LQAS_STRICT_FAIL;
+        if (marked === 60) return LQAS_PASS;
+        return LQAS_FAIL;
     }
-    if (checked > 60) {
-        if (laxLQASPass(checked, marked)) return LQAS_LAX_PASS;
-        return LQAS_LAX_FAIL;
-    }
-    return LQAS_STRICT_FAIL;
+    // if (checked > 60 || checked < 60) {
+    //     // if (laxLQASPass(checked, marked)) return LQAS_LAX_PASS;
+    //     return LQAS_DISQUALIFIED;
+    // }
+    return LQAS_DISQUALIFIED;
 };
 
 export const makeCampaignsDropDown = campaigns =>
@@ -160,4 +155,19 @@ export const sortDistrictsByName = districts => {
             sensitivity: 'accent',
         }),
     );
+};
+
+export const getLqasStatsForRound = (LqasData, round) => {
+    const totalEvaluated = convertLQASDataToArray(LqasData, round);
+    const allStatuses = [...totalEvaluated].map(district =>
+        determineStatusForDistrict(district),
+    );
+    // console.log(totalEvaluated, allStatuses);
+    const passed = allStatuses.filter(status => status === LQAS_PASS);
+    const disqualified = allStatuses.filter(
+        status => status === LQAS_DISQUALIFIED,
+    );
+    const failed = allStatuses.filter(status => status === LQAS_FAIL);
+
+    return [totalEvaluated, passed, failed, disqualified];
 };

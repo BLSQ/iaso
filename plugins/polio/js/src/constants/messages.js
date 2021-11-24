@@ -648,16 +648,16 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Evaluated',
     },
     passing: {
-        id: 'iaso.polio.label.passing',
-        defaultMessage: 'Passing',
+        id: 'iaso.polio.label.passed',
+        defaultMessage: 'Passed',
     },
     failing: {
-        id: 'iaso.polio.label.failing',
-        defaultMessage: 'Failing',
+        id: 'iaso.polio.label.failed',
+        defaultMessage: 'Failed',
     },
-    passingWithRatio: {
-        id: 'iaso.polio.label.passingWithRatio',
-        defaultMessage: 'With 57/60 ratio',
+    disqualified: {
+        id: 'iaso.polio.label.disqualified',
+        defaultMessage: 'Disqualified',
     },
     districtsNotFound: {
         id: 'iaso.polio.label.districtsNotFound',

@@ -117,10 +117,14 @@ const InstancesFiltersComponent = ({
     }, [formState.endPeriod, formState.periodType]);
     const periodError = useMemo(() => {
         if (formState.startPeriod?.value && formState.endPeriod?.value) {
-            return !Period.isBefore(
-                formState.startPeriod.value,
-                formState.endPeriod.value,
-            );
+            try {
+                return !Period.isBefore(
+                    formState.startPeriod.value,
+                    formState.endPeriod.value,
+                );
+            } catch (e) {
+                return true;
+            }
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);

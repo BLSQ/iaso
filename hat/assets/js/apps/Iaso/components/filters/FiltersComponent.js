@@ -150,6 +150,7 @@ class FiltersComponent extends React.Component {
                                         value={filterValue}
                                         type="search"
                                         label={filter.label}
+                                        withMarginTop={filter.withMarginTop}
                                         onEnterPressed={onEnterPressed}
                                     />
                                 )}

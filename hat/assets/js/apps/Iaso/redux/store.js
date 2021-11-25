@@ -33,10 +33,6 @@ import { routerInitialState, routerReducer } from './routerReducer';
 import { linksInitialState, linksReducer } from '../domains/links/reducer';
 import { usersReducer, usersInitialState } from '../domains/users/reducer';
 import {
-    periodsInitialState,
-    periodsReducer,
-} from '../domains/periods/reducer';
-import {
     groupsInitialState,
     reducer as groupsReducer,
 } from '../domains/orgUnits/groups/reducer';
@@ -63,7 +59,6 @@ const store = createStore(
         routerCustom: routerInitialState,
         links: linksInitialState,
         users: usersInitialState,
-        periods: periodsInitialState,
         projects: projectsInitialState,
         mappings: mappingsInitialState,
         groups: groupsInitialState,
@@ -80,7 +75,6 @@ const store = createStore(
         routerCustom: routerReducer,
         links: linksReducer,
         users: usersReducer,
-        periods: periodsReducer,
         projects: projectsReducer,
         mappings: mappingReducer,
         groups: groupsReducer,

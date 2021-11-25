@@ -73,8 +73,9 @@ export const getInstancesColumns = (
     formatMessage,
     visibleColumns,
     showDeleted = false,
+    user,
 ) => {
-    const metasColumns = [...instancesTableColumns(formatMessage)];
+    const metasColumns = [...instancesTableColumns(formatMessage, user)];
     if (showDeleted) {
         metasColumns.shift();
     }
@@ -122,9 +123,6 @@ export const getInstancesColumns = (
     return tableColumns;
 };
 
-export const getMetasColumns = () =>
-    [...instancesTableColumns()].map(c => c.accessor);
-
 const labelLocales = { fr: 'French', en: 'English' };
 
 const localizeLabel = field => {
@@ -160,11 +158,12 @@ export const getInstancesVisibleColumns = ({
     order,
     defaultOrder,
     possibleFields,
+    user,
 }) => {
     const activeOrders = (order || defaultOrder).split(',');
     const columnsNames = columns ? columns.split(',') : [];
     const metasColumns = [
-        ...instancesTableColumns(formatMessage).filter(
+        ...instancesTableColumns(formatMessage, user).filter(
             c => c.accessor !== 'actions',
         ),
     ];
@@ -272,7 +271,8 @@ export const getFilters = params => {
         withLocation: params.withLocation,
         orgUnitTypeId: params.orgUnitTypeId,
         deviceId: params.deviceId,
-        periods: params.periods,
+        startPeriod: params.startPeriod,
+        endPeriod: params.endPeriod,
         status: asBackendStatus(params.status),
         deviceOwnershipId: params.deviceOwnershipId,
         search: params.search,

@@ -6,7 +6,7 @@ import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { expect } from 'chai';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import FormVersionsDialog from './FormVersionsDialogComponent';
-import PeriodPicker from '../../periods/components/PeriodPickerComponent';
+import PeriodPicker from '../../periods/components/PeriodPicker';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { renderWithStore } from '../../../../../test/utils/redux';
 import formVersionFixture from '../fixtures/formVersions.json';

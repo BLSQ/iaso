@@ -29,6 +29,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Re-assign',
         id: 'iaso.label.reAssignInstanceAction',
     },
+    with: {
+        id: 'iaso.label.with',
+        defaultMessage: 'With',
+    },
+    without: {
+        id: 'iaso.label.without',
+        defaultMessage: 'Without',
+    },
     list: {
         defaultMessage: 'List',
         id: 'iaso.label.list',
@@ -324,6 +332,50 @@ const MESSAGES = defineMessages({
     locationLimit: {
         id: 'iaso.map.locationLimit',
         defaultMessage: 'Map results limit',
+    },
+    creationDateFrom: {
+        id: 'iaso.label.creationDateFrom',
+        defaultMessage: 'Created after',
+    },
+    creationDateTo: {
+        id: 'iaso.label.creationDateTo',
+        defaultMessage: 'Created before',
+    },
+    periodType: {
+        id: 'iaso.label.periodType',
+        defaultMessage: 'Period type',
+    },
+    forms: {
+        defaultMessage: 'Forms',
+        id: 'iaso.forms.title',
+    },
+    textSearch: {
+        id: 'iaso.forms.textSearch',
+        defaultMessage: 'Text search',
+    },
+    deviceOwnership: {
+        id: 'iaso.forms.deviceOwnership',
+        defaultMessage: 'Device ownership',
+    },
+    showDeleted: {
+        id: 'iaso.forms.showDeleted',
+        defaultMessage: 'Show deleted',
+    },
+    org_unit_type_id: {
+        id: 'iaso.forms.org_unit_type_id',
+        defaultMessage: 'Org unit type',
+    },
+    startPeriod: {
+        id: 'iaso.periods.start',
+        defaultMessage: 'Start period',
+    },
+    endPeriod: {
+        id: 'iaso.periods.end',
+        defaultMessage: 'End period',
+    },
+    periodError: {
+        id: 'iaso.formversions.chronologicalPeriodError',
+        defaultMessage: 'Start period should be before end period',
     },
 });
 

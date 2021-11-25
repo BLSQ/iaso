@@ -687,7 +687,9 @@ class InstanceQuerySet(models.QuerySet):
             queryset = queryset.filter(created_at__lte=to_date)
 
         if period_ids:
-            queryset = queryset.filter(period__in=period_ids.split(","))
+            if isinstance(period_ids, str):
+                period_ids = period_ids.split(",")
+            queryset = queryset.filter(period__in=period_ids)
 
         if instance_id:
             queryset = queryset.filter(id=instance_id)

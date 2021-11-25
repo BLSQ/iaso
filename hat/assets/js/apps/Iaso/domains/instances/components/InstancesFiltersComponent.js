@@ -1,27 +1,20 @@
-import React, { useState, useCallback } from 'react';
-import { FormattedMessage } from 'react-intl';
+import React, { useState, useCallback, useMemo } from 'react';
 
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Button, makeStyles, Box, Grid } from '@material-ui/core';
+import { Button, makeStyles, Grid, Box, Typography } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import FiltersComponent from '../../../components/filters/FiltersComponent';
-import {
-    search,
-    orgUnitType,
-    location,
-    device,
-    deviceOwnership,
-    instanceStatus,
-    instanceDeleted,
-    useFormatPeriodFilter,
-    forms,
-} from '../../../constants/filters';
+import InputComponent from '../../../components/forms/InputComponent';
 
+import { periodTypeOptions } from '../../periods/constants';
+import { isValidPeriod } from '../../periods/utils';
+import getDisplayName from '../../../utils/usersUtils';
 import DatesRange from '../../../components/filters/DatesRange';
+import PeriodPicker from '../../periods/components/PeriodPicker';
+import { Period } from '../../periods/models';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
@@ -42,28 +35,16 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const extendFilter = (searchParams, filter, onChange) => ({
-    // should be moved from here to a common location
-    ...filter,
-    uid: `${filter.urlKey}`,
-    value: searchParams[filter.urlKey],
-    callback: (value, urlKey) => onChange(value, urlKey),
-});
-
-// TODO make better track of changes (search button activates too easily)
 const InstancesFiltersComponent = ({
     params: { formIds },
     params,
     onSearch,
-    baseUrl,
 }) => {
-    const intl = useSafeIntl();
     const dispatch = useDispatch();
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const formatPeriodFilter = useFormatPeriodFilter();
 
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
-    const [fetchingPeriodsList, setFetchingPeriodsList] = useState(false);
     const [fetchingDevices, setFetchingDevices] = useState(false);
     const [fetchingDevicesOwnerships, setFetchingDevicesOwnerships] =
         useState(false);
@@ -74,60 +55,19 @@ const InstancesFiltersComponent = ({
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
 
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
-    const periodsList = useSelector(state => state.periods.list);
     const devices = useSelector(state => state.devices.list);
     const devicesOwnerships = useSelector(state => state.devices.ownershipList);
     const isInstancesFilterUpdated = useSelector(
         state => state.instances.isInstancesFilterUpdated,
     );
-
-    const searchParams = [{ search: params.search }];
-
     const { data, isFetching: fetchingForms } = useGetForms();
     const formsList = (data && data.forms) || [];
-
-    const secondColumnFilters = [
-        {
-            ...forms(formsList),
-            loading: fetchingForms,
-        },
-        location(intl.formatMessage),
-        {
-            ...orgUnitType(orgUnitTypes),
-            loading: fetchingOrgUnitTypes,
-        },
-        instanceDeleted(),
-    ];
     useInstancesFiltersData(
-        periodsList,
         formIds,
         setFetchingOrgUnitTypes,
         setFetchingDevices,
         setFetchingDevicesOwnerships,
-        setFetchingPeriodsList,
     );
-
-    if (periodsList.length > 0) {
-        secondColumnFilters.unshift({
-            ...formatPeriodFilter(periodsList),
-            loading: fetchingPeriodsList,
-        });
-    }
-
-    const getFilterParams = useCallback(
-        filterKeys => {
-            const newParams = {};
-            filterKeys.forEach(fk => {
-                const newValue = formState[fk]?.value;
-                if (newValue) {
-                    newParams[fk] = newValue;
-                }
-            });
-            return newParams;
-        },
-        [formState],
-    );
-
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
             dispatch(setInstancesFilterUpdated(false));
@@ -140,10 +80,14 @@ const InstancesFiltersComponent = ({
     }, [params, onSearch, dispatch, formState, isInstancesFilterUpdated]);
 
     const handleFormChange = useCallback(
-        (value, key) => {
+        (key, value) => {
             // checking only as value can be null or false
             if (key) {
                 setFormState(key, value);
+                if (key === 'periodType') {
+                    setFormState('startPeriod', null);
+                    setFormState('endPeriod', null);
+                }
             }
             // saving the selected org unit in state to avoid losing it when navigating back from submission details
             if (key === 'levels') {
@@ -153,103 +97,214 @@ const InstancesFiltersComponent = ({
         },
         [setFormState, dispatch],
     );
-
+    const startPeriodError = useMemo(() => {
+        if (formState.startPeriod?.value && formState.periodType?.value) {
+            return !isValidPeriod(
+                formState.startPeriod.value,
+                formState.periodType.value,
+            );
+        }
+        return false;
+    }, [formState.startPeriod, formState.periodType]);
+    const endPeriodError = useMemo(() => {
+        if (formState.endPeriod?.value && formState.periodType?.value) {
+            return !isValidPeriod(
+                formState.endPeriod.value,
+                formState.periodType.value,
+            );
+        }
+        return false;
+    }, [formState.endPeriod, formState.periodType]);
+    const periodError = useMemo(() => {
+        if (formState.startPeriod?.value && formState.endPeriod?.value) {
+            try {
+                return !Period.isBefore(
+                    formState.startPeriod.value,
+                    formState.endPeriod.value,
+                );
+            } catch (e) {
+                return true;
+            }
+        }
+        return false;
+    }, [formState.startPeriod, formState.endPeriod]);
     return (
         <div className={classes.marginBottomBig}>
             <Grid container spacing={4}>
-                <Grid item xs={8}>
-                    <Grid container item xs={12}>
-                        <DatesRange
-                            onChangeDate={(key, value) =>
-                                handleFormChange(value, key)
+                <Grid item xs={4}>
+                    <InputComponent
+                        keyValue="search"
+                        onChange={handleFormChange}
+                        value={formState.search.value || null}
+                        type="search"
+                        label={MESSAGES.textSearch}
+                        onEnterPressed={() => handleSearch()}
+                    />
+                    <InputComponent
+                        keyValue="formIds"
+                        clearable
+                        multi
+                        onChange={handleFormChange}
+                        value={formState.formIds.value || null}
+                        type="select"
+                        options={formsList.map(t => ({
+                            label: t.name,
+                            value: t.id,
+                        }))}
+                        label={MESSAGES.forms}
+                        loading={fetchingForms}
+                    />
+                    <Box mt={-1}>
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.org_unit}
+                            onConfirm={orgUnit =>
+                                handleFormChange(
+                                    'levels',
+                                    orgUnit ? [orgUnit.id] : undefined,
+                                )
                             }
-                            dateFrom={formState.dateFrom?.value}
-                            dateTo={formState.dateTo?.value}
+                            initialSelection={initialOrgUnit}
                         />
-                    </Grid>
-                    <Grid container spacing={4}>
-                        <Grid item xs={6}>
-                            <FiltersComponent
-                                params={getFilterParams([
-                                    'formIds',
-                                    'withLocation',
-                                    'orgUnitTypeId',
-                                    'periods',
-                                    'showDeleted',
-                                ])}
-                                redirectOnChange={false}
-                                onFilterChanged={handleFormChange}
-                                filters={secondColumnFilters}
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <FiltersComponent
-                                params={getFilterParams([
-                                    'status',
-                                    'deviceId',
-                                    'deviceOwnershipId',
-                                ])}
-                                baseUrl={baseUrl}
-                                redirectOnChange={false}
-                                onFilterChanged={handleFormChange}
-                                filters={[
-                                    instanceStatus(instanceStatusOptions),
-                                    {
-                                        ...device(devices),
-                                        loading: fetchingDevices,
-                                    },
-                                    {
-                                        ...deviceOwnership(devicesOwnerships),
-                                        loading: fetchingDevicesOwnerships,
-                                    },
-                                ]}
-                            />
-                        </Grid>
-                    </Grid>
+                    </Box>
+                    <InputComponent
+                        keyValue="orgUnitTypeId"
+                        clearable
+                        multi
+                        onChange={handleFormChange}
+                        value={formState.orgUnitTypeId.value || null}
+                        type="select"
+                        options={orgUnitTypes.map(t => ({
+                            label: t.name,
+                            value: t.id,
+                        }))}
+                        label={MESSAGES.org_unit_type_id}
+                        loading={fetchingOrgUnitTypes}
+                    />
+                    <InputComponent
+                        keyValue="mapResults"
+                        onChange={handleFormChange}
+                        value={formState.mapResults.value || null}
+                        type="number"
+                        label={MESSAGES.locationLimit}
+                    />
                 </Grid>
                 <Grid item xs={4}>
-                    <Grid container spacing={4}>
-                        <Grid item xs={12}>
-                            <Box>
-                                <OrgUnitTreeviewModal
-                                    toggleOnLabelClick={false}
-                                    titleMessage={MESSAGES.search}
-                                    onConfirm={orgUnit =>
-                                        handleFormChange(
-                                            orgUnit ? [orgUnit.id] : undefined,
-                                            'levels',
-                                        )
-                                    }
-                                    initialSelection={initialOrgUnit}
-                                />
-                            </Box>
-                            <FiltersComponent
-                                params={getFilterParams([
-                                    'search',
-                                    'mapResults',
-                                ])}
-                                redirectOnChange={false}
-                                onFilterChanged={handleFormChange}
-                                filters={[
-                                    extendFilter(
-                                        searchParams,
-                                        search(),
-                                        handleFormChange,
-                                    ),
-                                    extendFilter(
-                                        params,
-                                        {
-                                            urlKey: 'mapResults',
-                                            label: MESSAGES.locationLimit,
-                                            type: 'number',
-                                        },
-                                        handleFormChange,
-                                    ),
-                                ]}
-                                onEnterPressed={() => handleSearch()}
-                            />
-                        </Grid>
-                    </Grid>
+                    <InputComponent
+                        keyValue="status"
+                        clearable
+                        onChange={handleFormChange}
+                        value={formState.status.value || null}
+                        type="select"
+                        options={instanceStatusOptions}
+                        label={MESSAGES.exportStatus}
+                    />
+                    <InputComponent
+                        keyValue="withLocation"
+                        clearable
+                        onChange={handleFormChange}
+                        value={formState.withLocation.value || null}
+                        type="select"
+                        options={[
+                            {
+                                label: formatMessage(MESSAGES.with),
+                                value: 'true',
+                            },
+                            {
+                                label: formatMessage(MESSAGES.without),
+                                value: 'false',
+                            },
+                        ]}
+                        label={MESSAGES.location}
+                    />
+                    <InputComponent
+                        keyValue="deviceId"
+                        clearable
+                        onChange={handleFormChange}
+                        value={formState.deviceId.value || null}
+                        type="select"
+                        loading={fetchingDevices}
+                        options={devices.map(d => ({
+                            label: d.imei,
+                            value: d.id,
+                        }))}
+                        label={MESSAGES.device}
+                    />
+                    <InputComponent
+                        keyValue="deviceOwnershipId"
+                        clearable
+                        onChange={handleFormChange}
+                        value={formState.deviceOwnershipId.value || null}
+                        type="select"
+                        loading={fetchingDevicesOwnerships}
+                        options={devicesOwnerships.map(o => ({
+                            label: `${getDisplayName(o.user)} - IMEI:${
+                                o.device.imei
+                            }`,
+                            value: o.id,
+                        }))}
+                        label={MESSAGES.deviceOwnership}
+                    />
+                    <InputComponent
+                        keyValue="showDeleted"
+                        onChange={handleFormChange}
+                        value={formState.showDeleted.value}
+                        type="checkbox"
+                        label={MESSAGES.showDeleted}
+                    />
+                </Grid>
+                <Grid item xs={4}>
+                    <DatesRange
+                        xs={12}
+                        sm={12}
+                        md={12}
+                        lg={6}
+                        onChangeDate={handleFormChange}
+                        dateFrom={formState.dateFrom?.value}
+                        dateTo={formState.dateTo?.value}
+                        labelFrom={MESSAGES.creationDateFrom}
+                        labelTo={MESSAGES.creationDateTo}
+                    />
+                    <InputComponent
+                        keyValue="periodType"
+                        clearable
+                        onChange={handleFormChange}
+                        value={formState.periodType.value}
+                        type="select"
+                        options={periodTypeOptions}
+                        label={MESSAGES.periodType}
+                    />
+
+                    <PeriodPicker
+                        hasError={periodError || startPeriodError}
+                        activePeriodString={formState.startPeriod.value}
+                        periodType={formState.periodType.value}
+                        title={formatMessage(MESSAGES.startPeriod)}
+                        onChange={startPeriod =>
+                            handleFormChange('startPeriod', startPeriod)
+                        }
+                    />
+
+                    <PeriodPicker
+                        hasError={periodError || endPeriodError}
+                        activePeriodString={formState.endPeriod.value}
+                        periodType={formState.periodType.value}
+                        title={formatMessage(MESSAGES.endPeriod)}
+                        onChange={endPeriod =>
+                            handleFormChange('endPeriod', endPeriod)
+                        }
+                    />
+                    {periodError && (
+                        <Box mt={-1}>
+                            <Typography
+                                variant="body1"
+                                color="error"
+                                fontSize="small"
+                            >
+                                {formatMessage(MESSAGES.periodError)}
+                            </Typography>
+                        </Box>
+                    )}
                 </Grid>
             </Grid>
             <Grid
@@ -266,27 +321,28 @@ const InstancesFiltersComponent = ({
                     alignItems="center"
                 >
                     <Button
-                        disabled={!isInstancesFilterUpdated}
+                        disabled={
+                            !isInstancesFilterUpdated ||
+                            periodError ||
+                            startPeriodError ||
+                            endPeriodError
+                        }
                         variant="contained"
                         className={classes.button}
                         color="primary"
                         onClick={() => handleSearch()}
                     >
                         <Search className={classes.buttonIcon} />
-                        <FormattedMessage {...MESSAGES.search} />
+                        {formatMessage(MESSAGES.search)}
                     </Button>
                 </Grid>
             </Grid>
         </div>
     );
 };
-InstancesFiltersComponent.defaultProps = {
-    baseUrl: '',
-};
 
 InstancesFiltersComponent.propTypes = {
     params: PropTypes.object.isRequired,
-    baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
 };
 

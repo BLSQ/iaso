@@ -6,7 +6,7 @@ import { Grid, Typography, Box } from '@material-ui/core';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
-import PeriodPicker from '../../periods/components/PeriodPickerComponent';
+import PeriodPicker from '../../periods/components/PeriodPicker';
 
 import MESSAGES from '../messages';
 import { createFormVersion, updateFormVersion } from '../../../utils/requests';
@@ -162,7 +162,7 @@ const FormVersionsDialogComponent = ({
                                 <a
                                     href="https://getodk.org/xlsform/"
                                     target="_blank"
-                                    rel="noopener"
+                                    rel="noopener noreferrer"
                                 >
                                     {intl.formatMessage(
                                         MESSAGES.validateXLSFormLink,
@@ -184,7 +184,7 @@ const FormVersionsDialogComponent = ({
                             }
                         />
                         {startPeriodInvalid && (
-                            <Box mb={2} mt={-3}>
+                            <Box mb={2} mt={-1}>
                                 <Typography
                                     id="start-invalid"
                                     variant="body1"
@@ -211,7 +211,7 @@ const FormVersionsDialogComponent = ({
                             }
                         />
                         {endPeriodInvalid && (
-                            <Box mb={2} mt={-3}>
+                            <Box mb={2} mt={-1}>
                                 <Typography
                                     id="end-invalid"
                                     variant="body1"

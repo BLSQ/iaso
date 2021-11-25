@@ -1,9 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router';
-import { useSelector } from 'react-redux';
 
 import { FormattedMessage } from 'react-intl';
 import { displayDateFromTimestamp } from 'bluesquare-components';
+import { Link } from 'react-router';
+import { useSelector } from 'react-redux';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { usePrettyPeriod } from '../periods/utils';
 import { OrgUnitLabel } from '../orgUnits/utils';

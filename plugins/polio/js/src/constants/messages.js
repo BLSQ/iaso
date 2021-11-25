@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Campaigns',
         id: 'iaso.polio.label.campaigns',
     },
+    campaign: {
+        defaultMessage: 'Campaign',
+        id: 'iaso.polio.label.campaign',
+    },
     delete: {
         id: 'iaso.label.delete',
         defaultMessage: 'Delete',

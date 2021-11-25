@@ -84,6 +84,7 @@
     "iaso.polio.label.calendar.next": "Semaine suivante",
     "iaso.polio.label.calendar.previous": "Semaine précédente",
     "iaso.polio.label.calendar.selectDate": "Sélectionner une date",
+    "iaso.polio.label.campaign": "Campagne",
     "iaso.polio.label.campaigns": "Campagnes",
     "iaso.polio.label.configEmailNotif": "Configurer le pays: {country}",
     "iaso.polio.label.configuration": "Configuration",

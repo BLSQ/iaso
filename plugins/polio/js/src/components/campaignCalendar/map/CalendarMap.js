@@ -5,6 +5,7 @@ import { FormattedMessage } from 'react-intl';
 import { Box } from '@material-ui/core';
 import { GeoJSON, Map, Pane, TileLayer, Tooltip } from 'react-leaflet';
 import { useQueries } from 'react-query';
+import { getRequest } from 'Iaso/libs/Api';
 import { polioVacines } from '../../../constants/virus';
 
 import { VaccinesLegend } from './VaccinesLegend';
@@ -14,7 +15,6 @@ import { appId } from '../../../constants/app';
 import { useStyles } from '../Styles';
 
 import 'leaflet/dist/leaflet.css';
-import { getRequest } from 'Iaso/libs/Api';
 
 const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const classes = useStyles();
@@ -93,6 +93,12 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                                     }}
                                 >
                                     <Tooltip>
+                                        <div>
+                                            <FormattedMessage
+                                                {...MESSAGES.campaign}
+                                            />
+                                            {`: ${cs.campaign.name}`}
+                                        </div>
                                         <div>
                                             <FormattedMessage
                                                 {...MESSAGES.country}

@@ -57,10 +57,13 @@ const PeriodPicker = ({
     }, [periodType, currentPeriodType]);
 
     const handleChange = (keyName, value) => {
-        const newPeriod = {
+        let newPeriod = {
             ...currentPeriod,
             [keyName]: value,
         };
+        if (keyName === 'year' && !value) {
+            newPeriod = null;
+        }
         setCurrentPeriod(newPeriod);
         onChange(getPeriodPickerString(periodType, newPeriod, value));
     };

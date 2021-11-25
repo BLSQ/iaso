@@ -362,9 +362,9 @@ class IMViewSet(viewsets.ViewSet):
 
 def find_campaign(campaigns, today, country):
     for c in campaigns:
-        if c.country_id == country.id and c.round_one.started_at + timedelta(
-            days=-20
-        ) < today < c.round_one.started_at + timedelta(days=+60):
+        if c.country_id == country.id and c.round_one.started_at <= today < c.round_one.started_at + timedelta(
+            days=+28
+        ):
             return c
     return None
 
@@ -665,6 +665,7 @@ class IMViewSet2(viewsets.ViewSet):
                     round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
 
                     print(campaign_name, round_key, district_name)
+                    # convert to array here
                     d = campaign_stats[campaign_name][round_key][district_name]
                     d["total_child_fmd"] = d["total_child_fmd"] + row[7]
                     d["total_child_checked"] = d["total_child_checked"] + row[7]

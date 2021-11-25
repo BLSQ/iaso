@@ -6,8 +6,9 @@ import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
 import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
+import { userHasPermission } from '../users/utils';
 
-const instancesTableColumns = (formatMessage = () => ({})) => {
+const instancesTableColumns = (formatMessage = () => ({}), user) => {
     const columns = [
         {
             Header: formatMessage(MESSAGES.actions),
@@ -32,13 +33,14 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
                         icon="xml"
                         tooltipMessage={MESSAGES.downloadXml}
                     />
-                    {settings.row.original.org_unit && (
-                        <IconButtonComponent
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.org_unit.id}`}
-                            icon="orgUnit"
-                            tooltipMessage={MESSAGES.viewOrgUnit}
-                        />
-                    )}
+                    {settings.row.original.org_unit &&
+                        userHasPermission('iaso_org_units', user) && (
+                            <IconButtonComponent
+                                url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.org_unit.id}`}
+                                icon="orgUnit"
+                                tooltipMessage={MESSAGES.viewOrgUnit}
+                            />
+                        )}
                 </section>
             ),
         },

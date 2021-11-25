@@ -38,6 +38,7 @@ const InstancesTopBar = ({
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
+    const currentUser = useSelector(state => state.users.current);
     const [visibleColumns, setVisibleColumns] = useState([]);
     const { formatMessage } = useSafeIntl();
     const reduxPage = useSelector(state => state.instances.instancesPage);
@@ -57,6 +58,7 @@ const InstancesTopBar = ({
                 formatMessage,
                 cols,
                 params.showDeleted === 'true',
+                currentUser,
             ),
         );
         setVisibleColumns(cols);

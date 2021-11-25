@@ -29,6 +29,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Re-assign',
         id: 'iaso.label.reAssignInstanceAction',
     },
+    with: {
+        id: 'iaso.label.with',
+        defaultMessage: 'With',
+    },
+    without: {
+        id: 'iaso.label.without',
+        defaultMessage: 'Without',
+    },
     list: {
         defaultMessage: 'List',
         id: 'iaso.label.list',

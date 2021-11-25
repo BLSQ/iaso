@@ -205,7 +205,16 @@ const InstancesFiltersComponent = ({
                         onChange={handleFormChange}
                         value={formState.withLocation.value || null}
                         type="select"
-                        options={instanceStatusOptions}
+                        options={[
+                            {
+                                label: formatMessage(MESSAGES.with),
+                                value: 'true',
+                            },
+                            {
+                                label: formatMessage(MESSAGES.without),
+                                value: 'false',
+                            },
+                        ]}
                         label={MESSAGES.location}
                     />
                     <InputComponent

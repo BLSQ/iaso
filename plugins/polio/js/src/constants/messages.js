@@ -667,9 +667,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.name',
         defaultMessage: 'Name',
     },
-    districtId: {
-        id: 'iaso.polio.label.id',
-        defaultMessage: 'ID',
+    districtFound: {
+        id: 'iaso.polio.label.districtFound',
+        defaultMessage: 'District found',
     },
 });
 

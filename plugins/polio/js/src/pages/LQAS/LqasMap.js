@@ -18,7 +18,7 @@ export const LqasMap = ({ lqasData, shapes, round, getShapeStyles }) => {
     return (
         <>
             <LqasMapHeader
-                round="round_1"
+                round={round}
                 evaluated={evaluated.length}
                 passed={passed.length}
                 disqualified={disqualified.length}

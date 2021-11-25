@@ -1,3 +1,6 @@
+import React from 'react';
+import CheckIcon from '@material-ui/icons/Check';
+import { Box } from '@material-ui/core';
 import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED } from './constants';
 
 import MESSAGES from '../../constants/messages';
@@ -132,11 +135,6 @@ export const lqasTableColumns = formatMessage => {
             sortable: true,
         },
         {
-            Header: formatMessage(MESSAGES.districtId),
-            accessor: 'district',
-            sortable: true,
-        },
-        {
             Header: formatMessage(MESSAGES.childrenMarked),
             accessor: 'total_child_fmd',
             sortable: false,
@@ -145,6 +143,20 @@ export const lqasTableColumns = formatMessage => {
             Header: formatMessage(MESSAGES.childrenChecked),
             accessor: 'total_child_checked',
             sortable: false,
+        },
+        {
+            Header: formatMessage(MESSAGES.districtFound),
+            accessor: 'district',
+            sortable: true,
+            Cell: settings => {
+                if (settings.row.original.district)
+                    return (
+                        <Box>
+                            <CheckIcon />
+                        </Box>
+                    );
+                return null;
+            },
         },
     ];
 };

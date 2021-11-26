@@ -15,6 +15,7 @@ import {
     findLQASDataForShape,
     makeCampaignsDropDown,
     determineStatusForDistrict,
+    findLQASDataForDistrict,
     getScopeStyle,
     findScope,
     sortDistrictsByName,
@@ -54,13 +55,28 @@ export const Lqas = () => {
     const districtsNotFound = LQASData.districts_not_found?.join(', ');
 
     // evaluatedRound1 is still used in the Table
-    // eslint-disable-next-line no-unused-vars
-    const [evaluatedRound1, _passedRound1, _failedRound1, _disqualifiedRound1] =
-        getLqasStatsForRound(LQASData, 'round_1');
+    const evaluatedRound1 = getLqasStatsForRound(LQASData, 'round_1')[0].map(
+        district => {
+            return {
+                ...district,
+                status: determineStatusForDistrict(
+                    findLQASDataForDistrict(district, LQASData, 'round_1'),
+                ),
+            };
+        },
+    );
 
-    // eslint-disable-next-line no-unused-vars
-    const [evaluatedRound2, passedRound2, failedRound2, disqualifiedRound2] =
-        getLqasStatsForRound(LQASData, 'round_2');
+    // evaluatedRound2 is still used in the Table
+    const evaluatedRound2 = getLqasStatsForRound(LQASData, 'round_2')[0].map(
+        district => {
+            return {
+                ...district,
+                status: determineStatusForDistrict(
+                    findLQASDataForDistrict(district, LQASData, 'round_1'),
+                ),
+            };
+        },
+    );
 
     const dropDownOptions = makeCampaignsDropDown(campaigns);
 

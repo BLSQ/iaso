@@ -44,9 +44,14 @@ export const findLQASDataForShape = (shape, LQASData, round) => {
     return result;
 };
 
-// const laxLQASPass = (checked, marked) => {
-//     return Math.floor(60 * (marked / checked)) >= 57;
-// };
+export const findLQASDataForDistrict = (district, LQASData, round) => {
+    if (!LQASData) return null;
+    const dataForRound = convertLQASDataToArray(LQASData, round);
+    const result = dataForRound.filter(
+        data => data.district === district.district,
+    )[0];
+    return result;
+};
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -55,10 +60,6 @@ export const determineStatusForDistrict = district => {
         if (marked === 60) return LQAS_PASS;
         return LQAS_FAIL;
     }
-    // if (checked > 60 || checked < 60) {
-    //     // if (laxLQASPass(checked, marked)) return LQAS_LAX_PASS;
-    //     return LQAS_DISQUALIFIED;
-    // }
     return LQAS_DISQUALIFIED;
 };
 
@@ -127,6 +128,13 @@ export const findScope = (obrName, campaigns, shapes) => {
     return shapes.filter(shape => scopeIds.includes(shape.id));
 };
 
+const applyStatusColor = status => {
+    if (status === LQAS_PASS) return { color: 'green' };
+    if (status === LQAS_FAIL) return { color: 'red' };
+    if (status === LQAS_DISQUALIFIED) return { color: 'orange' };
+    return null;
+};
+
 export const lqasTableColumns = formatMessage => {
     return [
         {
@@ -143,6 +151,16 @@ export const lqasTableColumns = formatMessage => {
             Header: formatMessage(MESSAGES.childrenChecked),
             accessor: 'total_child_checked',
             sortable: false,
+        },
+        {
+            Header: formatMessage(MESSAGES.status),
+            accessor: 'status',
+            sortable: false,
+            Cell: settings => (
+                <span style={applyStatusColor(settings.row.original.status)}>
+                    {formatMessage(MESSAGES[settings.row.original.status])}
+                </span>
+            ),
         },
         {
             Header: formatMessage(MESSAGES.districtFound),

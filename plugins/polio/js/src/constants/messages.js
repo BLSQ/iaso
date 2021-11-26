@@ -651,11 +651,23 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',
     },
+    lqasOK: {
+        id: 'iaso.polio.label.passed',
+        defaultMessage: 'Passed',
+    },
     failing: {
         id: 'iaso.polio.label.failed',
         defaultMessage: 'Failed',
     },
+    lqasFail: {
+        id: 'iaso.polio.label.failed',
+        defaultMessage: 'Failed',
+    },
     disqualified: {
+        id: 'iaso.polio.label.disqualified',
+        defaultMessage: 'Disqualified',
+    },
+    lqasDisqualified: {
         id: 'iaso.polio.label.disqualified',
         defaultMessage: 'Disqualified',
     },

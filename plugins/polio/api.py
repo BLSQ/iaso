@@ -586,32 +586,37 @@ class IMViewSet2(viewsets.ViewSet):
     def list(self, request):
         campaigns = Campaign.objects.all()
         districts_not_found = set()
-        slug = request.GET.get("country", None)
-        as_csv = request.GET.get("format", None) == "csv"
-        country = OrgUnit.objects.get(pk=29709)
-        config = get_object_or_404(Config, slug=slug)
-        res = []
+        # country = request.GET.get("country", None)
+
+        config = get_object_or_404(Config, slug="lqas-config")
+
         failure_count = 0
-        all_keys = set()
+        base_stats = {"total_child_fmd": 0, "total_child_checked": 0}
+        base_campaign_stats = {"round_1": defaultdict(base_stats.copy), "round_2": defaultdict(base_stats.copy)}
+        campaign_stats = defaultdict(base_campaign_stats.copy)
 
-        districts_qs = (
-            OrgUnit.objects.hierarchy(country)
-            .filter(org_unit_type_id__category="DISTRICT")
-            .only("name", "id", "parent", "aliases")
-            .prefetch_related("parent")
-        )
-        district_dict = defaultdict(list)
-        for f in districts_qs:
-            district_dict[f.name].append(f)
+        for country_config in config.content:
+            res = []
+            country = OrgUnit.objects.get(id=country_config["country_id"])
+            print("country", country)
+            districts_qs = (
+                OrgUnit.objects.hierarchy(country)
+                .filter(org_unit_type_id__category="DISTRICT")
+                .only("name", "id", "parent", "aliases")
+                .prefetch_related("parent")
+            )
+            district_dict = defaultdict(list)
+            for f in districts_qs:
+                district_dict[f.name].append(f)
 
-        for config in config.content:
-            keys = config["keys"]
-            all_keys = all_keys.union(keys.keys())
-            prefix = config["prefix"]
-            cached_response, created = URLCache.objects.get_or_create(url=config["url"])
+            cached_response, created = URLCache.objects.get_or_create(url=country_config["url"])
             delta = now() - cached_response.updated_at
-            if created or delta > timedelta(minutes=24 * 60 * 10):
-                response = requests.get(config["url"], auth=(config["login"], config["password"]))
+            print(country_config["url"])
+            if created or delta > timedelta(minutes=60 * 24 * 10):
+                print("fetching")
+                response = requests.get(
+                    country_config["url"], auth=(country_config["login"], country_config["password"])
+                )
                 cached_response.content = response.text
                 cached_response.save()
                 forms = response.json()
@@ -619,9 +624,7 @@ class IMViewSet2(viewsets.ViewSet):
                 forms = json.loads(cached_response.content)
 
             form_count = 0
-            base_stats = {"total_child_fmd": 0, "total_child_checked": 0}
-            base_campaign_stats = {"round_1": defaultdict(base_stats.copy), "round_2": defaultdict(base_stats.copy)}
-            campaign_stats = defaultdict(base_campaign_stats.copy)
+
             districts = set()
             for form in forms:
                 HH_COUNT = form.get("Count_HH", None)
@@ -647,10 +650,12 @@ class IMViewSet2(viewsets.ViewSet):
                 round_number = form.get("roundNumber")
 
                 if campaign:
+
                     campaign_name = campaign.obr_name
+                    campaign_stats[campaign_name]["country_id"] = country.id
                     row = [
                         type,
-                        "Niger",
+                        country.name,
                         region_name,
                         district_name,
                         form.get("Response"),
@@ -664,7 +669,7 @@ class IMViewSet2(viewsets.ViewSet):
 
                     round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
 
-                    print(campaign_name, round_key, district_name)
+                    # print(campaign_name, round_key, district_name)
                     # convert to array here
                     d = campaign_stats[campaign_name][round_key][district_name]
                     d["total_child_fmd"] = d["total_child_fmd"] + row[7]
@@ -678,9 +683,9 @@ class IMViewSet2(viewsets.ViewSet):
                         d["district"] = district.id
                 form_count += 1
 
-        print("parsed:", len(res), "failed:", failure_count)
-        # print("all_keys", all_keys)
-        print(districts)
+            print("parsed:", len(res), "failed:", failure_count)
+
+            print(districts)
         response = {
             "stats": campaign_stats,
             "districts_not_found": list(districts_not_found),

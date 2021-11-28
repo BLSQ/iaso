@@ -21,8 +21,9 @@ import {
     sortDistrictsByName,
     lqasTableColumns,
     getLqasStatsForRound,
+    findCountryIds,
 } from './utils';
-import { NIGER_ORG_UNIT_ID, districtColors } from './constants';
+import { districtColors } from './constants';
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 
@@ -44,12 +45,22 @@ export const Lqas = () => {
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
     const { data: LQASData, isLoading } = useLQAS();
-    const { data: shapes = [] } = useGetGeoJson(NIGER_ORG_UNIT_ID, 'DISTRICT');
+    // console.log('LQAS', LQASData);
+
+    const countryIds = findCountryIds(LQASData);
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({
-            countries: NIGER_ORG_UNIT_ID.toString(),
+            countries: countryIds.toString(),
         }).query;
 
+    const countryOfSelectedCampaign = campaigns.filter(
+        campaignOption => campaignOption.obr_name === campaign,
+    )[0]?.top_level_org_unit_id;
+
+    const { data: shapes = [] } = useGetGeoJson(
+        countryOfSelectedCampaign,
+        'DISTRICT',
+    );
     const scope = findScope(campaign, campaigns, shapes);
 
     const districtsNotFound = LQASData.districts_not_found?.join(', ');

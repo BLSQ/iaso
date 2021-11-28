@@ -201,3 +201,9 @@ export const getLqasStatsForRound = (LqasData, round) => {
 
     return [totalEvaluated, passed, failed, disqualified];
 };
+
+export const findCountryIds = LqasData => {
+    const { stats } = LqasData;
+    const campaignKeys = Object.keys(stats);
+    return campaignKeys.map(campaignKey => stats[campaignKey].country_id);
+};

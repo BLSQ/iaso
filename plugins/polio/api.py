@@ -578,27 +578,29 @@ def find_district(district_name, region_name, districts, district_dict):
     return None
 
 
-class IMViewSet2(viewsets.ViewSet):
+class LQASStatsViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
     """
 
     def list(self, request):
         campaigns = Campaign.objects.all()
-        districts_not_found = set()
-        # country = request.GET.get("country", None)
-
         config = get_object_or_404(Config, slug="lqas-config")
 
-        failure_count = 0
         base_stats = {"total_child_fmd": 0, "total_child_checked": 0}
-        base_campaign_stats = {"round_1": defaultdict(base_stats.copy), "round_2": defaultdict(base_stats.copy)}
-        campaign_stats = defaultdict(base_campaign_stats.copy)
-
+        campaign_stats = defaultdict(
+            lambda: {
+                "round_1": defaultdict(base_stats.copy),
+                "round_2": defaultdict(base_stats.copy),
+                "districts_not_found": [],
+            }
+        )
+        form_count = 0
+        form_campaign_not_found_count = 0
+        day_country_not_found = defaultdict(lambda: defaultdict(int))
         for country_config in config.content:
             res = []
             country = OrgUnit.objects.get(id=country_config["country_id"])
-            print("country", country)
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
                 .filter(org_unit_type_id__category="DISTRICT")
@@ -611,9 +613,7 @@ class IMViewSet2(viewsets.ViewSet):
 
             cached_response, created = URLCache.objects.get_or_create(url=country_config["url"])
             delta = now() - cached_response.updated_at
-            print(country_config["url"])
             if created or delta > timedelta(minutes=60 * 24 * 10):
-                print("fetching")
                 response = requests.get(
                     country_config["url"], auth=(country_config["login"], country_config["password"])
                 )
@@ -622,8 +622,6 @@ class IMViewSet2(viewsets.ViewSet):
                 forms = response.json()
             else:
                 forms = json.loads(cached_response.content)
-
-            form_count = 0
 
             districts = set()
             for form in forms:
@@ -642,15 +640,14 @@ class IMViewSet2(viewsets.ViewSet):
                     total_Child_Checked += int(Child_Checked)
                 district_id = "%s - %s" % (form.get("District"), form.get("Region"))
                 districts.add(district_id)
-
-                today = datetime.strptime(form["today"], "%Y-%m-%d").date()
+                today_string = form["today"]
+                today = datetime.strptime(today_string, "%Y-%m-%d").date()
                 campaign = find_campaign(campaigns, today, country)
                 region_name = form.get("Region")
                 district_name = form.get("District")
                 round_number = form.get("roundNumber")
 
                 if campaign:
-
                     campaign_name = campaign.obr_name
                     campaign_stats[campaign_name]["country_id"] = country.id
                     row = [
@@ -669,27 +666,28 @@ class IMViewSet2(viewsets.ViewSet):
 
                     round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
 
-                    # print(campaign_name, round_key, district_name)
-                    # convert to array here
                     d = campaign_stats[campaign_name][round_key][district_name]
                     d["total_child_fmd"] = d["total_child_fmd"] + row[7]
-                    d["total_child_checked"] = d["total_child_checked"] + row[7]
+                    d["total_child_checked"] = d["total_child_checked"] + row[8]
                     region_name = row[2]
                     district_name = row[3]
                     district = find_district(district_name, region_name, districts_qs, district_dict)
                     if not district:
-                        districts_not_found.add("%s - %s" % (district_name, region_name))
+                        district_long_name = "%s - %s" % (district_name, region_name)
+                        if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
+                            campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
                     else:
                         d["district"] = district.id
+                else:
+                    day_country_not_found[country.name][today_string] += 1
+                    form_campaign_not_found_count += 1
                 form_count += 1
 
-            print("parsed:", len(res), "failed:", failure_count)
-
-            print(districts)
         response = {
             "stats": campaign_stats,
-            "districts_not_found": list(districts_not_found),
-            # "rows": res,
+            "form_count": form_count,
+            "form_campaign_not_found_count": form_campaign_not_found_count,
+            "day_country_not_found": day_country_not_found,
         }
         return JsonResponse(response, safe=False)
 
@@ -699,7 +697,7 @@ router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/preparedness", PreparednessViewSet)
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/im", IMViewSet, basename="IM")
-router.register(r"polio/imstats", IMViewSet2, basename="imstats")
+router.register(r"polio/lqasstats", LQASStatsViewSet, basename="lqasstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
 router.register(r"polio/forma", FormAStocksViewSet, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")

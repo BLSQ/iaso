@@ -37,7 +37,7 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "source_ref", "source_version", "org_unit_count", "created_at", "updated_at"]
         read_only_fields = ["id", "source_version", "org_unit_count", "created_at", "updated_at"]
 
-    source_version = SourceVersionSerializerForGroup()
+    source_version = SourceVersionSerializerForGroup(read_only=True)
     org_unit_count = serializers.IntegerField(read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)

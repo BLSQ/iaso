@@ -24,7 +24,7 @@ if __name__ == "__main__":
     if sys.argv[1].lower() in [x.lower() for x in eb_envs.keys()]:
         exit(eb_deploy(sys.argv[1], version_name=version))
 
-    # otherwhise consider it's a tag and update all the environment with the same `env` tag
+    # otherwise consider it's a tag and update all the environment with the same `env` tag
     tag_envs = {}
     target_envs = []
     for env_name, env_details in eb_envs.items():
@@ -41,6 +41,6 @@ if __name__ == "__main__":
     if len(target_envs) == 0:
         exit(f"No target env found for {sys.argv[1]}")
     else:
-        print(f"Will deploy to environemts : {', '.join(target_envs)}")
+        print(f"Will deploy to environments : {', '.join(target_envs)}")
         for e in target_envs:
             r = eb_deploy(e, version_name=version)

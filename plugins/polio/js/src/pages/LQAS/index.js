@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import {
     useSafeIntl,
@@ -91,11 +91,6 @@ export const Lqas = () => {
 
     const dropDownOptions = makeCampaignsDropDown(campaigns);
 
-    // FIXME pre-select a campaign for the demo. this effect should be removed
-    // useEffect(() => {
-    //     setCampaign('NIG-xxDS-03-2021');
-    // }, []);
-
     return (
         <>
             <TopBar
@@ -122,16 +117,6 @@ export const Lqas = () => {
                                 options={dropDownOptions}
                                 onChange={value => setCampaign(value)}
                             />
-                        </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Box ml={2}>
-                            <Typography variant="h6">
-                                {`${formatMessage(
-                                    MESSAGES.districtsNotFound,
-                                )}:`}
-                            </Typography>
-                            {districtsNotFound}
                         </Box>
                     </Grid>
                     <Grid item xs={6}>

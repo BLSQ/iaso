@@ -43,12 +43,10 @@ export const findLQASDataForDistrict = ({
     campaign,
 }) => {
     if (!LQASData) return null;
-    console.log('LQAS', LQASData);
     const dataForRound = LQASData[campaign][round];
     const result = dataForRound.filter(
         data => data.district === district.district,
     );
-    console.log('BLEH', result);
     return result[0];
 };
 
@@ -67,12 +65,18 @@ export const determineStatusForDistrict = district => {
 };
 
 export const makeCampaignsDropDown = campaigns =>
-    campaigns.map(campaign => {
-        return {
-            label: campaign.obr_name,
-            value: campaign.obr_name,
-        };
-    });
+    campaigns
+        .map(campaign => {
+            return {
+                label: campaign.obr_name,
+                value: campaign.obr_name,
+            };
+        })
+        .sort((a, b) =>
+            a.label.localeCompare(b.label, undefined, {
+                sensitivity: 'accent',
+            }),
+        );
 export const totalDistrictsEvaluatedPerRound = LQASData => {
     if (!LQASData) return { evaluatedRound1: [], evaluatedRound2: [] };
     let totalEvaluatedRound1 = [];

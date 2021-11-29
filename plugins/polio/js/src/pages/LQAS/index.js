@@ -61,7 +61,8 @@ export const Lqas = () => {
     );
     const scope = findScope(campaign, campaigns, shapes);
 
-    const districtsNotFound = LQASData.districts_not_found?.join(', ');
+    const districtsNotFound =
+        LQASData.stats[campaign]?.districts_not_found?.join(', ');
 
     // evaluatedRound1 is still used in the Table
     const round1Stats = getLqasStatsForRound(
@@ -121,6 +122,16 @@ export const Lqas = () => {
                                 options={dropDownOptions}
                                 onChange={value => setCampaign(value)}
                             />
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                        <Box ml={2}>
+                            <Typography variant="h6">
+                                {`${formatMessage(
+                                    MESSAGES.districtsNotFound,
+                                )}:`}
+                            </Typography>
+                            {districtsNotFound}
                         </Box>
                     </Grid>
                     <Grid item xs={6}>

@@ -5,59 +5,62 @@ import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED } from './constants';
 
 import MESSAGES from '../../constants/messages';
 
-export const convertLQASDataToArray = (LQASData, round) => {
-    if (!LQASData) return [];
-    const { stats } = LQASData;
-    const campaignKeys = Object.keys(stats);
-    const dataForRound = [];
-    campaignKeys.forEach(key => {
-        if (stats[key]) dataForRound.push({ ...stats[key][round] });
+const convertRoundDataToArray = roundDataAsDict => {
+    const districtNames = Object.keys(roundDataAsDict);
+    const roundData = Object.values(roundDataAsDict);
+    return roundData.map((value, index) => {
+        return { ...value, name: districtNames[index] };
     });
-    let results = [];
-    dataForRound.forEach(districtData => {
-        const keysForCampaign = Object.keys(districtData);
-        const districtDataWithNames = Object.values(districtData).map(
-            (value, index) => ({ ...value, name: keysForCampaign[index] }),
-        );
-        results = [
-            ...results,
-            // eslint-disable-next-line no-unused-vars
-            ...keysForCampaign.map(_district => districtDataWithNames),
-        ];
-    });
-    return results
-        .reduce((uniqueValues, result) => {
-            if (
-                !uniqueValues.some(entry => entry.district === result.district)
-            ) {
-                uniqueValues.push(result);
-            }
-            return uniqueValues;
-        }, [])
-        .flat();
 };
 
-export const findLQASDataForShape = (shape, LQASData, round) => {
-    if (!LQASData) return null;
-    const dataForRound = convertLQASDataToArray(LQASData, round);
+// TODO rename
+export const convertLQASData = LQASData => {
+    if (!LQASData) return {};
+    const { stats } = LQASData;
+    const campaignKeys = Object.keys(stats);
+    const result = {};
+    campaignKeys.forEach(key => {
+        if (stats[key]) {
+            result[key] = {};
+            result[key].round_1 = convertRoundDataToArray(stats[key].round_1);
+            result[key].round_2 = convertRoundDataToArray(stats[key].round_2);
+        }
+    });
+    return result;
+};
+
+export const findLQASDataForShape = ({ shape, LQASData, round, campaign }) => {
+    if (!LQASData || !LQASData[campaign]) return null;
+    const dataForRound = LQASData[campaign][round];
     const result = dataForRound.filter(data => data.district === shape.id)[0];
     return result;
 };
 
-export const findLQASDataForDistrict = (district, LQASData, round) => {
+export const findLQASDataForDistrict = ({
+    district,
+    LQASData,
+    round,
+    campaign,
+}) => {
     if (!LQASData) return null;
-    const dataForRound = convertLQASDataToArray(LQASData, round);
+    console.log('LQAS', LQASData);
+    const dataForRound = LQASData[campaign][round];
     const result = dataForRound.filter(
         data => data.district === district.district,
-    )[0];
-    return result;
+    );
+    console.log('BLEH', result);
+    return result[0];
 };
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
     const { total_child_fmd: marked, total_child_checked: checked } = district;
+    // console.log('district', district, checked, marked, marked > 56);
+
     if (checked === 60) {
-        if (marked === 60) return LQAS_PASS;
+        if (marked > 56) {
+            return LQAS_PASS;
+        }
         return LQAS_FAIL;
     }
     return LQAS_DISQUALIFIED;
@@ -95,10 +98,7 @@ export const defaultShapeStyle = {
     opacity: '1',
     fillColor: 'lightGrey',
     weight: '1',
-};
-
-export const getBackgroundLayerStyle = () => {
-    return defaultShapeStyle;
+    zIndex: 1,
 };
 
 export const getScopeStyle = (shape, scope) => {
@@ -110,6 +110,7 @@ export const getScopeStyle = (shape, scope) => {
             opacity: '1',
             fillColor: 'grey',
             weight: '2',
+            zIndex: 1,
         };
     }
     return defaultShapeStyle;
@@ -187,12 +188,12 @@ export const sortDistrictsByName = districts => {
     );
 };
 
-export const getLqasStatsForRound = (LqasData, round) => {
-    const totalEvaluated = convertLQASDataToArray(LqasData, round);
-    const allStatuses = [...totalEvaluated].map(district =>
-        determineStatusForDistrict(district),
-    );
-    // console.log(totalEvaluated, allStatuses);
+export const getLqasStatsForRound = (lqasData, campaign, round) => {
+    if (!lqasData[campaign]) return [[], [], [], []];
+    const totalEvaluated = [...lqasData[campaign][round]];
+    const allStatuses = totalEvaluated.map(district => {
+        return determineStatusForDistrict(district);
+    });
     const passed = allStatuses.filter(status => status === LQAS_PASS);
     const disqualified = allStatuses.filter(
         status => status === LQAS_DISQUALIFIED,

@@ -19,7 +19,8 @@ export const LqasMapHeader = ({
         return 0;
     };
     return (
-        <Grid container direction="row" justifyContent="space-between">
+        <Grid container direction="row">
+            {/* <Grid container item justifyContent="flex-start"> */}
             <Grid item>
                 <Box>
                     <Typography variant="h5">
@@ -27,75 +28,61 @@ export const LqasMapHeader = ({
                     </Typography>
                 </Box>
             </Grid>
-            <Grid
-                container
-                item
-                spacing={2}
-                direction="row"
-                justifyContent="space-between"
-                xs={12}
-                lg={10}
-            >
-                <Grid container item justifyContent="flex-start" spacing={4}>
-                    <Grid item xs={6}>
-                        <Box>
-                            <Typography variant="h6">
-                                {`${formatMessage(MESSAGES.evaluated)}: ${
+            {/* <Grid item>
+                    <Box>
+                        <Typography variant="h6">
+                            {`${formatMessage(MESSAGES.evaluated)}: ${
+                                evaluated ?? textPlaceholder
+                            }`}
+                        </Typography>
+                    </Box>
+                </Grid> */}
+            {/* </Grid> */}
+            <Grid container item justifyContent="space-between">
+                <Grid item xs={12} sm={12} lg={4}>
+                    <Box>
+                        <Typography variant="h6">
+                            {`${formatMessage(MESSAGES.passing)}: `}
+                            <span style={{ color: 'green' }}>
+                                {`${passed ?? textPlaceholder}/${
                                     evaluated ?? textPlaceholder
-                                }`}
-                            </Typography>
-                        </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Box>
-                            <Typography variant="h6">
-                                {`${formatMessage(MESSAGES.passing)}: `}
-                                <span style={{ color: 'green' }}>
-                                    {`${passed ?? textPlaceholder} `}
-                                </span>
-                                <span style={{ color: 'green' }}>
-                                    {`(${percentRatio(passed)}%)`}
-                                </span>
-                            </Typography>
-                        </Box>
-                    </Grid>
+                                } `}
+                            </span>
+                            <span style={{ color: 'green' }}>
+                                {`(${percentRatio(passed)}%)`}
+                            </span>
+                        </Typography>
+                    </Box>
                 </Grid>
-                {/* <Grid
-                container
-                item
-                spacing={2}
-                direction="row"
-                // justifyContent="flex-end"
-                xs={12}
-                lg={5}
-            > */}
-                <Grid container item justifyContent="flex-start" spacing={4}>
-                    <Grid item xs={6}>
-                        <Box>
-                            <Typography variant="h6">
-                                {`${formatMessage(MESSAGES.disqualified)}: `}
-                                <span style={{ color: 'orange' }}>
-                                    {`${disqualified ?? textPlaceholder}`}
-                                </span>
-                                <span style={{ color: 'orange' }}>
-                                    {`(${percentRatio(disqualified)}%)`}
-                                </span>
-                            </Typography>
-                        </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Box>
-                            <Typography variant="h6">
-                                {`${formatMessage(MESSAGES.failing)}: `}
-                                <span style={{ color: 'red' }}>
-                                    {`${failed ?? textPlaceholder}`}
-                                </span>
-                                <span style={{ color: 'red' }}>
-                                    {`(${percentRatio(failed)}%)`}
-                                </span>
-                            </Typography>
-                        </Box>
-                    </Grid>
+                <Grid item xs={12} sm={12} lg={5}>
+                    <Box>
+                        <Typography variant="h6">
+                            {`${formatMessage(MESSAGES.disqualified)}: `}
+                            <span style={{ color: 'orange' }}>
+                                {`${disqualified ?? textPlaceholder}/${
+                                    evaluated ?? textPlaceholder
+                                } `}
+                            </span>
+                            <span style={{ color: 'orange' }}>
+                                {`(${percentRatio(disqualified)}%)`}
+                            </span>
+                        </Typography>
+                    </Box>
+                </Grid>
+                <Grid item xs={12} sm={12} lg={3}>
+                    <Box>
+                        <Typography variant="h6">
+                            {`${formatMessage(MESSAGES.failing)}: `}
+                            <span style={{ color: 'red' }}>
+                                {`${failed ?? textPlaceholder}/${
+                                    evaluated ?? textPlaceholder
+                                } `}
+                            </span>
+                            <span style={{ color: 'red' }}>
+                                {`(${percentRatio(failed)}%)`}
+                            </span>
+                        </Typography>
+                    </Box>
                 </Grid>
             </Grid>
         </Grid>

@@ -17,11 +17,16 @@ const style = theme => {
 
 const useStyle = makeStyles(style);
 
-export const LqasPopup = ({ shape, LQASData, round }) => {
+export const LqasPopup = ({ shape, LQASData, round, campaign }) => {
     const classes = useStyle();
     const { formatMessage } = useSafeIntl();
     const ref = useRef();
-    const dataForShape = findLQASDataForShape(shape, LQASData, round);
+    const dataForShape = findLQASDataForShape({
+        shape,
+        LQASData,
+        round,
+        campaign,
+    });
     return (
         <>
             {dataForShape && (
@@ -58,4 +63,9 @@ LqasPopup.propTypes = {
     shape: object.isRequired,
     LQASData: object.isRequired,
     round: string.isRequired,
+    campaign: string,
+};
+
+LqasPopup.defaultProps = {
+    campaign: '',
 };

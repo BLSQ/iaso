@@ -1,4 +1,4 @@
-export const NIGER_POC_URL = '/api/polio/imstats/?country=niger-im';
+export const NIGER_POC_URL = '/api/polio/lqasstats/';
 // NIGER
 // export const NIGER_ORG_UNIT_ID = 29709;
 // Mali
@@ -18,18 +18,18 @@ export const districtColors = {
         color: 'green',
         weight: '2',
         opacity: '1',
-        zIndex: '1',
+        zIndex: 999,
     },
     [LQAS_DISQUALIFIED]: {
         color: 'orange',
         weight: '2',
         opacity: '1',
-        zIndex: '1',
+        zIndex: 999,
     },
     [LQAS_FAIL]: {
         color: 'red',
         weight: '2',
         opacity: '1',
-        zIndex: '1',
+        zIndex: 999,
     },
 };

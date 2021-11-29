@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import {
     useSafeIntl,
@@ -12,18 +12,15 @@ import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import {
-    findLQASDataForShape,
     makeCampaignsDropDown,
     determineStatusForDistrict,
-    findLQASDataForDistrict,
-    getScopeStyle,
     findScope,
     sortDistrictsByName,
     lqasTableColumns,
     getLqasStatsForRound,
     findCountryIds,
+    convertLQASData,
 } from './utils';
-import { districtColors } from './constants';
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 
@@ -46,6 +43,7 @@ export const Lqas = () => {
     const [campaign, setCampaign] = useState();
     const { data: LQASData, isLoading } = useLQAS();
     // console.log('LQAS', LQASData);
+    const convertedData = convertLQASData(LQASData);
 
     const countryIds = findCountryIds(LQASData);
     const { data: campaigns = [], isLoading: campaignsLoading } =
@@ -66,46 +64,36 @@ export const Lqas = () => {
     const districtsNotFound = LQASData.districts_not_found?.join(', ');
 
     // evaluatedRound1 is still used in the Table
-    const evaluatedRound1 = getLqasStatsForRound(LQASData, 'round_1')[0].map(
-        district => {
-            return {
-                ...district,
-                status: determineStatusForDistrict(
-                    findLQASDataForDistrict(district, LQASData, 'round_1'),
-                ),
-            };
-        },
+    const round1Stats = getLqasStatsForRound(
+        convertedData,
+        campaign,
+        'round_1',
     );
+    const round2Stats = getLqasStatsForRound(
+        convertedData,
+        campaign,
+        'round_2',
+    );
+    const tableDataRound1 = round1Stats[0].map(district => {
+        return {
+            ...district,
+            status: determineStatusForDistrict(district),
+        };
+    });
 
-    // evaluatedRound2 is still used in the Table
-    const evaluatedRound2 = getLqasStatsForRound(LQASData, 'round_2')[0].map(
-        district => {
-            return {
-                ...district,
-                status: determineStatusForDistrict(
-                    findLQASDataForDistrict(district, LQASData, 'round_1'),
-                ),
-            };
-        },
-    );
+    const tableDataRound2 = round2Stats[0].map(district => {
+        return {
+            ...district,
+            status: determineStatusForDistrict(district),
+        };
+    });
 
     const dropDownOptions = makeCampaignsDropDown(campaigns);
 
-    const getShapeStyles = useCallback(
-        round => shape => {
-            const status = determineStatusForDistrict(
-                findLQASDataForShape(shape, LQASData, round),
-            );
-            if (status) return districtColors[status];
-            return getScopeStyle(shape, scope);
-        },
-        [LQASData, scope],
-    );
-
     // FIXME pre-select a campaign for the demo. this effect should be removed
-    useEffect(() => {
-        setCampaign('NIG-xxDS-03-2021');
-    }, []);
+    // useEffect(() => {
+    //     setCampaign('NIG-xxDS-03-2021');
+    // }, []);
 
     return (
         <>
@@ -152,10 +140,12 @@ export const Lqas = () => {
                         {!isLoading && (
                             <Box ml={2}>
                                 <LqasMap
-                                    lqasData={LQASData}
+                                    lqasData={convertedData}
                                     shapes={shapes}
-                                    getShapeStyles={getShapeStyles('round_1')}
+                                    // getShapeStyles={getShapeStyles('round_1')}
                                     round="round_1"
+                                    campaign={campaign}
+                                    scope={scope}
                                 />
                             </Box>
                         )}
@@ -165,10 +155,12 @@ export const Lqas = () => {
                         {!isLoading && (
                             <Box mr={2}>
                                 <LqasMap
-                                    lqasData={LQASData}
+                                    lqasData={convertedData}
                                     shapes={shapes}
-                                    getShapeStyles={getShapeStyles('round_2')}
+                                    // getShapeStyles={getShapeStyles('round_2')}
                                     round="round_2"
+                                    campaign={campaign}
+                                    scope={scope}
                                 />
                             </Box>
                         )}
@@ -180,7 +172,7 @@ export const Lqas = () => {
                         {!isLoading && (
                             <Box ml={2}>
                                 <Table
-                                    data={sortDistrictsByName(evaluatedRound1)}
+                                    data={sortDistrictsByName(tableDataRound1)}
                                     baseUrl=""
                                     columns={lqasTableColumns(formatMessage)}
                                     redirectTo={() => {}}
@@ -195,7 +187,7 @@ export const Lqas = () => {
                         {!isLoading && (
                             <Box mr={2}>
                                 <Table
-                                    data={sortDistrictsByName(evaluatedRound2)}
+                                    data={sortDistrictsByName(tableDataRound2)}
                                     baseUrl=""
                                     columns={lqasTableColumns(formatMessage)}
                                     redirectTo={() => {}}

@@ -1,7 +1,7 @@
 from rest_framework import permissions, serializers
 from django.db.models import Count
 
-from iaso.models import Group
+from iaso.models import Group, SourceVersion, DataSource
 from .common import ModelViewSet, TimestampField, HasPermission
 
 
@@ -17,19 +17,30 @@ class HasGroupPermission(permissions.BasePermission):
         return user_account.id in account_ids
 
 
+class DataSourceSerializerForGroup(serializers.ModelSerializer):
+    class Meta:
+        model = DataSource
+        fields = ["id", "name"]
+
+
+class SourceVersionSerializerForGroup(serializers.ModelSerializer):
+    class Meta:
+        model = SourceVersion
+        fields = ["id", "number", "data_source"]
+
+    data_source = DataSourceSerializerForGroup()
+
+
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ["id", "name", "source_ref", "source_version", "org_unit_count", "created_at", "updated_at"]
         read_only_fields = ["id", "source_version", "org_unit_count", "created_at", "updated_at"]
 
-    source_version = serializers.SerializerMethodField(read_only=True)  # TODO: use serializer
+    source_version = SourceVersionSerializerForGroup()
     org_unit_count = serializers.IntegerField(read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
-
-    def get_source_version(self, group: Group):
-        return group.source_version.as_dict()
 
     def create(self, validated_data):
         profile = self.context["request"].user.iaso_profile
@@ -68,6 +79,8 @@ class GroupsViewSet(ModelViewSet):
         light = self.request.GET.get("light", False)
         profile = self.request.user.iaso_profile
         queryset = Group.objects.filter(source_version__data_source__projects__in=profile.account.project_set.all())
+        queryset = queryset.prefetch_related("source_version")
+        queryset = queryset.prefetch_related("source_version__data_source")
         if not light:
             queryset = queryset.annotate(org_unit_count=Count("org_units"))
 

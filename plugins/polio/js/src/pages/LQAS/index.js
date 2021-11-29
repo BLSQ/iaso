@@ -64,7 +64,12 @@ export const Lqas = () => {
     const districtsNotFound =
         LQASData.stats[campaign]?.districts_not_found?.join(', ');
 
-    // evaluatedRound1 is still used in the Table
+    const currentCountryName = LQASData.stats[campaign]?.country_name;
+
+    const datesIgnored = LQASData.day_country_not_found
+        ? LQASData.day_country_not_found[currentCountryName]
+        : {};
+
     const round1Stats = getLqasStatsForRound(
         convertedData,
         campaign,
@@ -119,7 +124,7 @@ export const Lqas = () => {
                             />
                         </Box>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={4}>
                         <Box ml={2}>
                             <Typography variant="h6">
                                 {`${formatMessage(
@@ -127,6 +132,14 @@ export const Lqas = () => {
                                 )}:`}
                             </Typography>
                             {districtsNotFound}
+                        </Box>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Box ml={2}>
+                            <Typography variant="h6">
+                                {`${formatMessage(MESSAGES.datesIgnored)}:`}
+                            </Typography>
+                            {Object.keys(datesIgnored ?? {}).join(', ')}
                         </Box>
                     </Grid>
                 </Grid>
@@ -138,7 +151,6 @@ export const Lqas = () => {
                                 <LqasMap
                                     lqasData={convertedData}
                                     shapes={shapes}
-                                    // getShapeStyles={getShapeStyles('round_1')}
                                     round="round_1"
                                     campaign={campaign}
                                     scope={scope}
@@ -153,7 +165,6 @@ export const Lqas = () => {
                                 <LqasMap
                                     lqasData={convertedData}
                                     shapes={shapes}
-                                    // getShapeStyles={getShapeStyles('round_2')}
                                     round="round_2"
                                     campaign={campaign}
                                     scope={scope}

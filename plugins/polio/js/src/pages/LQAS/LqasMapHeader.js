@@ -20,7 +20,6 @@ export const LqasMapHeader = ({
     };
     return (
         <Grid container direction="row">
-            {/* <Grid container item justifyContent="flex-start"> */}
             <Grid item>
                 <Box>
                     <Typography variant="h5">
@@ -28,16 +27,6 @@ export const LqasMapHeader = ({
                     </Typography>
                 </Box>
             </Grid>
-            {/* <Grid item>
-                    <Box>
-                        <Typography variant="h6">
-                            {`${formatMessage(MESSAGES.evaluated)}: ${
-                                evaluated ?? textPlaceholder
-                            }`}
-                        </Typography>
-                    </Box>
-                </Grid> */}
-            {/* </Grid> */}
             <Grid container item justifyContent="space-between">
                 <Grid item xs={12} sm={12} lg={4}>
                     <Box>

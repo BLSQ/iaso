@@ -683,6 +683,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.districtFound',
         defaultMessage: 'District found',
     },
+    datesIgnored: {
+        id: 'iaso.polio.label.datesIgnored',
+        defaultMessage: 'Dates ignored',
+    },
 });
 
 export default MESSAGES;

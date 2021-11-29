@@ -601,6 +601,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
         for country_config in config.content:
             res = []
             country = OrgUnit.objects.get(id=country_config["country_id"])
+
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
                 .filter(org_unit_type_id__category="DISTRICT")
@@ -650,6 +651,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 if campaign:
                     campaign_name = campaign.obr_name
                     campaign_stats[campaign_name]["country_id"] = country.id
+                    campaign_stats[campaign_name]["country_name"] = country.name
                     row = [
                         type,
                         country.name,

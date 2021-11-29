@@ -53,7 +53,6 @@ export const findLQASDataForDistrict = ({
 export const determineStatusForDistrict = district => {
     if (!district) return null;
     const { total_child_fmd: marked, total_child_checked: checked } = district;
-    // console.log('district', district, checked, marked, marked > 56);
 
     if (checked === 60) {
         if (marked > 56) {

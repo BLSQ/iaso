@@ -93,6 +93,7 @@
     "iaso.polio.label.countryNameInSheet": "Nom du pays dans la feuille",
     "iaso.polio.label.create": "Créer",
     "iaso.polio.label.csv": "CSV",
+    "iaso.polio.label.datesIgnored": "Dates ignorées",
     "iaso.polio.label.deleteWarning": "Etes-vous sûr(e) de vouloir effacer cette campagne?",
     "iaso.polio.label.dictrictName": "Nom",
     "iaso.polio.label.disqualified": "Disqualifiés",

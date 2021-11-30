@@ -1,8 +1,17 @@
 /* eslint-disable camelcase */
-import { Button, CircularProgress, Grid, Typography } from '@material-ui/core';
+import {
+    Button,
+    CircularProgress,
+    Grid,
+    IconButton,
+    Tooltip,
+    Typography,
+} from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import React, { useMemo, useState } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
+import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import {
@@ -11,14 +20,13 @@ import {
     useSurgeData,
 } from '../hooks/useGetPreparednessData';
 import MESSAGES from '../constants/messages';
-import moment from 'moment';
 
 export const PreparednessForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const [preparednessDataTotals, setPreparednessDataTotals] = useState();
     const [surgeDataTotals, setSurgeDataTotals] = useState();
-    const { values, setFieldValue } = useFormikContext();
+    const { values, setFieldValue, dirty } = useFormikContext();
     const { last_preparedness: lastPreparedness, last_surge: lastSurge } =
         values;
     const totalSummary = useMemo(
@@ -110,16 +118,14 @@ export const PreparednessForm = () => {
     return (
         <>
             <Grid container spacing={2}>
+                <Grid item>
+                    Configure the Google Sheets that will be used to import the
+                    preparedness data about campaign.
+                </Grid>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={8} item>
                         <Field
-                            placeholder={
-                                values.id
-                                    ? formatMessage(
-                                          MESSAGES.enterOrCreateGoogleSheet,
-                                      )
-                                    : formatMessage(MESSAGES.enterGoogleSheet)
-                            }
+                            placeholder={MESSAGES.enterOrCreateGoogleSheet}
                             label={formatMessage(
                                 MESSAGES.preparednessGoogleSheetUrl,
                             )}
@@ -130,24 +136,17 @@ export const PreparednessForm = () => {
                         />
                     </Grid>
                     {preperadness_spreadsheet_url?.trim().length > 0 && (
-                        <Grid
-                            xs={12}
-                            md={4}
-                            item
-                            container
-                            direction="row"
-                            alignContent="space-between"
-                        >
-                            <Grid item md={6}>
-                                <Button
+                        <>
+                            <Grid item md={1}>
+                                <IconButton
                                     target="_blank"
                                     href={preperadness_spreadsheet_url}
                                     color="primary"
                                 >
-                                    Access data
-                                </Button>
+                                    <OpenInNewIcon />
+                                </IconButton>
                             </Grid>
-                            <Grid item md={6}>
+                            <Grid item md={3}>
                                 <Button
                                     variant="contained"
                                     color="primary"
@@ -159,9 +158,9 @@ export const PreparednessForm = () => {
                                     )}
                                 </Button>
                             </Grid>
-                        </Grid>
+                        </>
                     )}
-                    {values.id && !preperadness_spreadsheet_url?.trim().length && (
+                    {!preperadness_spreadsheet_url?.trim().length && (
                         <Grid
                             xs={12}
                             md={4}
@@ -170,15 +169,31 @@ export const PreparednessForm = () => {
                             container
                             alignContent="space-between"
                         >
-                            <Button
-                                fullWidth
-                                variant="contained"
-                                color="primary"
-                                disabled={isGeneratingSpreadsheet}
-                                onClick={generateSpreadsheet}
+                            <Tooltip
+                                title={
+                                    dirty || !values.id
+                                        ? 'Please save modification before generating a sheet'
+                                        : 'Generate a google sheet'
+                                }
                             >
-                                {formatMessage(MESSAGES.generateSpreadsheet)}
-                            </Button>
+                                <span>
+                                    <Button
+                                        fullWidth
+                                        variant="contained"
+                                        color="primary"
+                                        disabled={
+                                            isGeneratingSpreadsheet ||
+                                            dirty ||
+                                            !values.id
+                                        }
+                                        onClick={generateSpreadsheet}
+                                    >
+                                        {formatMessage(
+                                            MESSAGES.generateSpreadsheet,
+                                        )}
+                                    </Button>
+                                </span>
+                            </Tooltip>
                         </Grid>
                     )}
                     {/* the padding bottom is a horrible quick fix to remove */}
@@ -224,7 +239,7 @@ export const PreparednessForm = () => {
                                         </Typography>
                                         <Typography variant="caption">
                                             {`${formatMessage(
-                                                MESSAGES.status,
+                                                MESSAGES.sync_status,
                                             )}: ${
                                                 values.preperadness_sync_status
                                             }. 
@@ -269,16 +284,16 @@ export const PreparednessForm = () => {
                             className={classes.input}
                         />
                     </Grid>
-                    <Grid xs={6} md={2} item>
-                        <Button
+                    <Grid xs={6} md={1} item>
+                        <IconButton
                             target="_blank"
                             href={values.surge_spreadsheet_url}
                             color="primary"
                         >
-                            Access data
-                        </Button>
+                            <OpenInNewIcon />
+                        </IconButton>
                     </Grid>
-                    <Grid xs={6} md={2} item>
+                    <Grid xs={6} md={3} item>
                         <Button
                             variant="contained"
                             color="primary"

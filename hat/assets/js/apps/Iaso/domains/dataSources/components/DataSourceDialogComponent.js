@@ -219,7 +219,11 @@ export const DataSourceDialogComponent = ({
                         <Box>
                             <InputComponent
                                 keyValue="is_default_source"
-                                disabled={initialData.is_default_source}
+                                // Only disable if it already is default source
+                                disabled={
+                                    initialData.id ===
+                                    defaultSourceVersion?.source?.id
+                                }
                                 onChange={setFieldValue}
                                 value={form.is_default_source.value}
                                 errors={form.is_default_source.errors}

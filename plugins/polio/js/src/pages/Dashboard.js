@@ -70,7 +70,7 @@ const Dashboard = ({ router }) => {
             const url = genUrl(router, {
                 campaignId,
             });
-            dispatch(replace(url));
+            dispatch(push(url));
         },
         [setIsCreateEditDialogOpen, router, dispatch],
     );
@@ -81,7 +81,7 @@ const Dashboard = ({ router }) => {
         const url = genUrl(router, {
             campaignId: undefined,
         });
-        dispatch(replace(url));
+        dispatch(push(url));
     };
 
     const openDeleteConfirmDialog = useCallback(() => {

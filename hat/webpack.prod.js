@@ -12,9 +12,9 @@ module.exports = {
     bail: true,
     context: __dirname,
     mode: 'production',
-    target: ['web', 'es2017'],
+    target: ['web', 'es2020'],
     entry: {
-        common: ['react', 'react-dom', 'react-intl'],
+        common: ['react', 'react-dom', 'react-intl','typescript'],
         styles: './assets/css/index.scss',
         iaso: './assets/js/apps/Iaso/index',
     },
@@ -53,7 +53,7 @@ module.exports = {
         // XLSX
         new webpack.IgnorePlugin(/cptable/),
         new webpack.WatchIgnorePlugin({
-            paths: [/cptable/, /\.d\.ts$/],
+            paths: [/\.d\.ts$/],
         }),
     ],
 

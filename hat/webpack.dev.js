@@ -91,7 +91,7 @@ module.exports = {
         // XLSX
         new webpack.IgnorePlugin(/cptable/),
         new webpack.WatchIgnorePlugin({
-            paths: [/cptable/, /\.d\.ts$/],
+            paths: [/\.d\.ts$/],
         }),
     ],
 
@@ -116,13 +116,14 @@ module.exports = {
                                     '@babel/preset-env',
                                     { targets: { node: '14' } },
                                 ],
+                                '@babel/preset-react',
                                 [
                                     '@babel/preset-typescript',
                                     { isTSX: true, allExtensions: true },
                                 ],
-                                '@babel/preset-react',
                             ],
                             plugins: ['@babel/transform-runtime', 'formatjs'],
+                            // include: ['../plugins/polio/js/']
                         },
                     },
                 ],
@@ -139,6 +140,7 @@ module.exports = {
                                 '@babel/preset-react',
                             ],
                             plugins: ['@babel/transform-runtime', 'formatjs'],
+                            // include: ['../plugins/polio/js/']
                         },
                     },
                 ],

@@ -83,6 +83,7 @@
         "recharts": "^2.1.2",
         "redux": "^4.0.5",
         "redux-thunk": "^2.3.0",
+        "typescript": "^4.5.2",
         "use-debounce": "^7.0.0",
         "video.js": "^7.10.2",
         "yup": "^0.32.9"
@@ -134,7 +135,6 @@
         "sinon-chai": "^3.5.0",
         "source-map-loader": "^3.0.0",
         "style-loader": "^0.23.1",
-        "typescript": "^4.5.2",
         "url-loader": "^4.1.1",
         "webpack": "^5.50.0",
         "webpack-bundle-tracker": "^0.4.3",

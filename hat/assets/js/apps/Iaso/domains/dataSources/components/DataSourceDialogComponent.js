@@ -96,7 +96,7 @@ const initialForm = (defaultSourceVersion, initialData, sourceCredentials) => {
 const formIsValid = form => {
     return (
         form.project_ids?.value.length > 0 &&
-        !(form.default_version_id.value && !form.is_default_source.value)
+        !(form.is_default_source.value && !form.default_version_id.value)
     );
 };
 
@@ -219,7 +219,7 @@ export const DataSourceDialogComponent = ({
                         <Box>
                             <InputComponent
                                 keyValue="is_default_source"
-                                disabled={form.is_default_source.value}
+                                disabled={initialData.is_default_source}
                                 onChange={setFieldValue}
                                 value={form.is_default_source.value}
                                 errors={form.is_default_source.errors}

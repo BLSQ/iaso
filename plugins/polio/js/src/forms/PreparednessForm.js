@@ -11,6 +11,7 @@ import {
     useSurgeData,
 } from '../hooks/useGetPreparednessData';
 import MESSAGES from '../constants/messages';
+import moment from 'moment';
 
 export const PreparednessForm = () => {
     const classes = useStyles();
@@ -202,13 +203,6 @@ export const PreparednessForm = () => {
                                     <>
                                         <Typography>
                                             {`${formatMessage(
-                                                MESSAGES.status,
-                                            )}: ${
-                                                values.preperadness_sync_status
-                                            }`}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
                                                 MESSAGES.national,
                                             )}: ${
                                                 totalSummary.national_score
@@ -230,13 +224,25 @@ export const PreparednessForm = () => {
                                         </Typography>
                                         <Typography variant="caption">
                                             {`${formatMessage(
+                                                MESSAGES.status,
+                                            )}: ${
+                                                values.preperadness_sync_status
+                                            }. 
+                                            ${formatMessage(
                                                 MESSAGES.refreshedAt,
-                                            )}: ${(totalSummary.created_at
-                                                ? new Date(
-                                                      totalSummary.created_at,
-                                                  )
-                                                : new Date()
-                                            ).toUTCString()}`}
+                                            )}: ${
+                                                totalSummary.created_at
+                                                    ? moment(
+                                                          totalSummary.created_at,
+                                                      ).format('LTS')
+                                                    : ''
+                                            } ( ${
+                                                totalSummary.created_at
+                                                    ? moment(
+                                                          totalSummary.created_at,
+                                                      ).fromNow()
+                                                    : ''
+                                            })`}
                                         </Typography>
                                     </>
                                 )}

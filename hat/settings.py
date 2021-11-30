@@ -340,8 +340,17 @@ WEBPACK_LOADER = {
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 
+try:
+    from hat.__version__ import VERSION
+except Exception as e:
+    print("error importing hat.__version", e)
+    VERSION = "undetected_version"
+
+
 if SENTRY_URL:
-    sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0, integrations=[DjangoIntegration()], send_default_pii=True)
+    sentry_sdk.init(
+        SENTRY_URL, traces_sample_rate=1.0, integrations=[DjangoIntegration()], send_default_pii=True, version=VERSION
+    )
 
 # Workers configuration
 

@@ -691,6 +691,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.datesIgnored',
         defaultMessage: 'Dates ignored',
     },
+    lqasResults: {
+        id: 'iaso.polio.label.lqasResults',
+        defaultMessage: 'LQAS results',
+    },
 });
 
 export default MESSAGES;

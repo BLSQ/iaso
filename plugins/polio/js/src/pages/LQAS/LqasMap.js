@@ -98,7 +98,7 @@ export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
             <Box position="relative">
                 <MapLegendContainer>
                     <MapLegend
-                        title={formatMessage(MESSAGES.district)}
+                        title={formatMessage(MESSAGES.lqasResults)}
                         legendItems={[
                             passedLegendItem,
                             disqualifiedLegendItem,

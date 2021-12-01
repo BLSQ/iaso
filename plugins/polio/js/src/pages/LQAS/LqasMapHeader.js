@@ -1,8 +1,9 @@
 import React from 'react';
 import { oneOf, number } from 'prop-types';
 import { Typography, Box, Grid } from '@material-ui/core';
-import { useSafeIntl, textPlaceholder } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
+import { LqasStatsBar } from './LqasStatsBar';
 
 export const LqasMapHeader = ({
     round,
@@ -12,69 +13,39 @@ export const LqasMapHeader = ({
     failed,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const percentRatio = data => {
-        if (data && evaluated) {
-            return (100 * (data / evaluated)).toFixed(2);
-        }
-        return 0;
-    };
+
     return (
-        <Grid container direction="row">
-            <Grid item>
-                <Box>
-                    <Typography variant="h5">
-                        {`${formatMessage(MESSAGES[round])}:`}
-                    </Typography>
-                </Box>
+        <>
+            {/* <Grid container direction="row" justifyContent="flex-start" spacing={2}>
+             <Grid item xs={3} lg={2}> */}
+            <Box>
+                <Typography variant="h5">
+                    {`${formatMessage(MESSAGES[round])}:`}
+                </Typography>
+            </Box>
+            {/* </Grid> */}
+            <Grid container direction="column">
+                <LqasStatsBar
+                    message={formatMessage(MESSAGES.passing)}
+                    data={passed}
+                    total={evaluated}
+                    color="green"
+                />
+                <LqasStatsBar
+                    message={formatMessage(MESSAGES.disqualified)}
+                    data={disqualified}
+                    total={evaluated}
+                    color="orange"
+                />
+                <LqasStatsBar
+                    message={formatMessage(MESSAGES.failing)}
+                    data={failed}
+                    total={evaluated}
+                    color="red"
+                />
             </Grid>
-            <Grid container item justifyContent="space-between">
-                <Grid item xs={12} sm={12} lg={4}>
-                    <Box>
-                        <Typography variant="h6">
-                            {`${formatMessage(MESSAGES.passing)}: `}
-                            <span style={{ color: 'green' }}>
-                                {`${passed ?? textPlaceholder}/${
-                                    evaluated ?? textPlaceholder
-                                } `}
-                            </span>
-                            <span style={{ color: 'green' }}>
-                                {`(${percentRatio(passed)}%)`}
-                            </span>
-                        </Typography>
-                    </Box>
-                </Grid>
-                <Grid item xs={12} sm={12} lg={5}>
-                    <Box>
-                        <Typography variant="h6">
-                            {`${formatMessage(MESSAGES.disqualified)}: `}
-                            <span style={{ color: 'orange' }}>
-                                {`${disqualified ?? textPlaceholder}/${
-                                    evaluated ?? textPlaceholder
-                                } `}
-                            </span>
-                            <span style={{ color: 'orange' }}>
-                                {`(${percentRatio(disqualified)}%)`}
-                            </span>
-                        </Typography>
-                    </Box>
-                </Grid>
-                <Grid item xs={12} sm={12} lg={3}>
-                    <Box>
-                        <Typography variant="h6">
-                            {`${formatMessage(MESSAGES.failing)}: `}
-                            <span style={{ color: 'red' }}>
-                                {`${failed ?? textPlaceholder}/${
-                                    evaluated ?? textPlaceholder
-                                } `}
-                            </span>
-                            <span style={{ color: 'red' }}>
-                                {`(${percentRatio(failed)}%)`}
-                            </span>
-                        </Typography>
-                    </Box>
-                </Grid>
-            </Grid>
-        </Grid>
+            {/* </Grid> */}
+        </>
     );
 };
 

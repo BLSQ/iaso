@@ -1,6 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { object, oneOf, array, string } from 'prop-types';
+import { Box } from '@material-ui/core';
+import { useSafeIntl } from 'bluesquare-components';
 import { MapComponent } from '../../components/MapComponent/MapComponent';
+import { MapLegend } from '../../components/MapComponent/MapLegend';
+import { MapLegendContainer } from '../../components/MapComponent/MapLegendContainer';
 import { LqasMapHeader } from './LqasMapHeader';
 import { LqasPopup } from './LqasPopup';
 import {
@@ -10,6 +14,7 @@ import {
     getLqasStatsForRound,
 } from './utils';
 import { districtColors } from './constants';
+import MESSAGES from '../../constants/messages';
 
 // Don't put it in utils to avoid circular dep
 const makePopup =
@@ -25,13 +30,42 @@ const makePopup =
         );
     };
 
+const makeLegendItem = ({ message, value, color }) => {
+    return {
+        label: `${message}: ${value}`,
+        value: `${message}: ${value}`,
+        color,
+    };
+};
+
 export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
+    const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
     const [evaluated, passed, failed, disqualified] = getLqasStatsForRound(
         lqasData,
         campaign,
         round,
     );
+    const passedLegendItem = makeLegendItem({
+        color: 'green',
+        value: passed?.length,
+        message: formatMessage(MESSAGES.passing),
+    });
+    const failedLegendItem = makeLegendItem({
+        color: 'red',
+        value: failed?.length,
+        message: formatMessage(MESSAGES.failing),
+    });
+    const disqualifiedLegendItem = makeLegendItem({
+        color: 'orange',
+        value: disqualified?.length,
+        message: formatMessage(MESSAGES.disqualified),
+    });
+    // const notCheckedLegendItem = makeLegendItem({
+    //     color: 'grey',
+    //     value: scope.length - evaluated.length,
+    //     message: formatMessage(MESSAGES.failing),
+    // });
     const getShapeStyles = useCallback(
         shape => {
             const status = determineStatusForDistrict(
@@ -61,19 +95,33 @@ export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
                 disqualified={disqualified.length}
                 failed={failed.length}
             />
-            <MapComponent
-                key={`LQASMapRound1${renderCount}`}
-                name="LQASMapRound1"
-                mainLayer={shapes}
-                onSelectShape={() => null}
-                getMainLayerStyle={getShapeStyles}
-                tooltipLabels={{
-                    main: 'District',
-                    background: 'Region',
-                }}
-                makePopup={makePopup(lqasData, round, campaign)}
-                height={600}
-            />
+            <Box position="relative">
+                <MapLegendContainer>
+                    <MapLegend
+                        title={formatMessage(MESSAGES.district)}
+                        legendItems={[
+                            passedLegendItem,
+                            disqualifiedLegendItem,
+                            failedLegendItem,
+                            // notCheckedLegendItem,
+                        ]}
+                        width="md"
+                    />
+                </MapLegendContainer>
+                <MapComponent
+                    key={`LQASMapRound1${renderCount}`}
+                    name="LQASMapRound1"
+                    mainLayer={shapes}
+                    onSelectShape={() => null}
+                    getMainLayerStyle={getShapeStyles}
+                    tooltipLabels={{
+                        main: 'District',
+                        background: 'Region',
+                    }}
+                    makePopup={makePopup(lqasData, round, campaign)}
+                    height={600}
+                />
+            </Box>
         </>
     );
 };

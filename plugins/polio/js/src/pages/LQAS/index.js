@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import {
     useSafeIntl,
@@ -95,6 +95,10 @@ export const Lqas = () => {
     });
 
     const dropDownOptions = makeCampaignsDropDown(campaigns);
+
+    useEffect(() => {
+        setCampaign('CON-52DS-01-2021');
+    }, []);
 
     return (
         <>

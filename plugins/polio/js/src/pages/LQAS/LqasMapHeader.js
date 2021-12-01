@@ -13,17 +13,31 @@ export const LqasMapHeader = ({
     failed,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const district = evaluated > 1 ? MESSAGES.districts : MESSAGES.district;
 
     return (
         <>
-            {/* <Grid container direction="row" justifyContent="flex-start" spacing={2}>
-             <Grid item xs={3} lg={2}> */}
-            <Box>
-                <Typography variant="h5">
-                    {`${formatMessage(MESSAGES[round])}:`}
-                </Typography>
-            </Box>
-            {/* </Grid> */}
+            <Grid
+                container
+                direction="row"
+                justifyContent="flex-start"
+                spacing={2}
+            >
+                <Grid item xs={3} lg={2}>
+                    <Box>
+                        <Typography variant="h5">
+                            {`${formatMessage(MESSAGES[round])}: `}
+                        </Typography>
+                    </Box>
+                </Grid>
+                <Grid item xs={9} lg={10}>
+                    <Box>
+                        <Typography variant="h6">
+                            {`${evaluated} ${formatMessage(district)}`}
+                        </Typography>
+                    </Box>
+                </Grid>
+            </Grid>
             <Grid container direction="column">
                 <LqasStatsBar
                     message={formatMessage(MESSAGES.passing)}

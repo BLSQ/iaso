@@ -218,6 +218,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.district',
         defaultMessage: 'District',
     },
+    districts: {
+        id: 'iaso.polio.districts',
+        defaultMessage: 'Districts',
+    },
     selectRegion: {
         id: 'iaso.polio.table.label.selectRegion',
         defaultMessage: 'Select region',

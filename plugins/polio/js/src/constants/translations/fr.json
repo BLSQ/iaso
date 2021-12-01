@@ -17,6 +17,7 @@
     "iaso.polio.campaign.deleteSuccess": "Campagne supprimé",
     "iaso.polio.createCampaign": "Créer une campagne",
     "iaso.polio.district": "District",
+    "iaso.polio.districts": "Districts",
     "iaso.polio.editCampaign": "Editer une campagne",
     "iaso.polio.form.label.agNopvGroup": "Groupe AG/nOPV",
     "iaso.polio.form.label.awarenessCampaignPlanning": "Planification de la campagne d'information (%)",

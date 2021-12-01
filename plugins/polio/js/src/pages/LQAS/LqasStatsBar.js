@@ -27,6 +27,7 @@ export const LqasStatsBar = ({ data, total, message, color }) => {
                         style={{
                             minHeight: '20px',
                             backgroundColor: color,
+                            opacity: 0.7,
                             minWidth: '1px',
                             height: '70%',
                             width: `calc((100% - 100px) * (${ratio} /100))`,

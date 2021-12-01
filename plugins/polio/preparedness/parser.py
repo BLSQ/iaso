@@ -166,15 +166,12 @@ def get_indicators(worksheet: gspread.Worksheet):
 
 def get_national_level_preparedness(sheet: gspread.Spreadsheet):
     for worksheet in sheet.worksheets():
-        cell = None
-        try:
-            cell = worksheet.find("Summary of National Level Preparedness")
-        except gspread.CellNotFound:
-            try:
-                cell = worksheet.find("Résumé du niveau de préparation au niveau national ")
-            except gspread.CellNotFound:
-                print(f"No data found on worksheet: {worksheet.title}")
-                continue
+        cell = worksheet.find("Summary of National Level Preparedness")
+        if not cell:
+            cell = worksheet.find("Résumé du niveau de préparation au niveau national ")
+        if not cell:
+            print(f"No data found on worksheet: {worksheet.title}")
+            continue
         if cell:
             print(f"Data found on worksheet: {worksheet.title}")
             kv = get_indicators(worksheet)
@@ -207,17 +204,14 @@ def get_regional_level_preparedness(sheet: gspread.Spreadsheet):
     districts = {}
 
     for worksheet in sheet.worksheets():
-        cell = None
         # detect if we are in a Regional Spreadsheet form the title
-        try:
-            cell = worksheet.find("Summary of Regional Level Preparedness")
-        except gspread.CellNotFound:
-            try:
-                cell = worksheet.find("Résumé du niveau de préparation")
-            except:
-                print(f"No data found on worksheet: {worksheet.title}")
-                continue
-        print(f"Data found on worksheet: {worksheet.title}")
+        cell = worksheet.find("Summary of Regional Level Preparedness")
+        if not cell:
+            cell = worksheet.find("Résumé du niveau de préparation")
+        if not cell:
+            print(f"No regional data found on worksheet: {worksheet.title}")
+            continue
+        print(f"Regional Data found on worksheet: {worksheet.title}")
         if cell is not None:
             all_scores = []
             last_cell = cell

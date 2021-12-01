@@ -220,6 +220,8 @@ class SurgePreviewSerializer(serializers.Serializer):
             sheet = open_sheet_by_url(attrs.get("google_sheet_url")).worksheets()[0]
 
             cell = sheet.find(surge_country_name)
+            if not cell:
+                raise Exception("Country not found in spreadsheet")
 
             first_row = cell.row
             first_col = cell.col + 1

@@ -19,6 +19,7 @@ import 'leaflet/dist/leaflet.css';
 const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const classes = useStyles();
     const map = useRef();
+    console.log('campaigns', campaigns);
     const shapesQueries = useQueries(
         campaigns
             .filter(c => Boolean(c.original.group?.id))
@@ -46,11 +47,40 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                 };
             }),
     );
+
+    const regions = useQueries(
+        campaigns
+            .filter(c => Boolean(c.original.group?.id))
+            .map(campaign => {
+                const baseParams = {
+                    order: 'id',
+                    page: 1,
+                    searchTabIndex: 0,
+                    limit: 1000,
+                    // eslint-disable-next-line max-len
+                    searches: `[{"validation_status":"all","color":"f4511e","source":2,"levels":${campaign.country_id.toString()},"orgUnitTypeId":"6","orgUnitParentId":${campaign.country_id.toString()},"dateFrom":null,"dateTo":null}]`,
+                };
+                const queryString = new URLSearchParams(baseParams);
+                console.log('queryString', queryString);
+                return {
+                    queryKey: ['campaignRegion', queryString],
+                    queryFn: () =>
+                        getRequest(`/api/orgunits/?${queryString.toString()}`),
+                    select: data => ({
+                        campaign_id: campaign.id,
+                        campaign_country: campaign.country,
+                        campaign_country_id: campaign.country_id,
+                        regions: data,
+                    }),
+                };
+            }),
+    );
+    console.log(regions);
     const loadingShapes = shapesQueries.some(q => q.isLoading);
     const campaignsShapes = shapesQueries
         .filter(sq => sq.data)
         .map(sq => sq.data);
-
+    console.log('campaignShapes', campaignsShapes);
     return (
         <Box position="relative">
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}

@@ -613,7 +613,6 @@ export const requestHandler = dispatch => request => params => {
  * const putHandler = genericHandler(putRequest);
  * const result = await putHandler(params);
  */
-export const iasoGetRequest = requestHandler(storeDispatch)(getRequest);
 export const iasoPostRequest = requestHandler(storeDispatch)(postRequest);
 
 export const useGetComments = params => {
@@ -634,10 +633,14 @@ export const sendComment = async comment =>
     postRequest('/api/comments/', comment);
 
 export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') =>
-    iasoGetRequest({
-        disableSuccessSnackBar: true,
-        errorKeyMessage: 'fetchAlgorithmsError',
-        requestParams: {
-            url,
-        },
-    });
+    getRequest(url)
+        .then(data => data)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('fetchAlgorithmsError', null, error),
+                ),
+            );
+            console.error(`Error while fetching alogrithms:`, error);
+            throw error;
+        });

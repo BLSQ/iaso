@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import nock from 'nock';
 
 import sinon from 'sinon';
-import { mockRequest, mockRequestError } from '../../../test/utils/requests';
 import {
     deleteRequest,
     getRequest,
@@ -11,6 +10,7 @@ import {
     putRequest,
     restoreRequest,
 } from 'Iaso/libs/Api';
+import { mockRequest, mockRequestError } from '../../../test/utils/requests';
 import { requestHandler } from './requests';
 
 const URL = '/api/test';

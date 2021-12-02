@@ -2,10 +2,10 @@ import React, { useCallback, useRef, useEffect, useState } from 'react';
 import { string, number, object, arrayOf, func } from 'prop-types';
 import { Grid, Box, Divider, Typography, makeStyles } from '@material-ui/core';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { useMutation } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFormState } from '../../../hooks/form';
+import snackBarMessages from '../../../components/snackBars/messages';
 import MESSAGES from '../messages';
 import {
     useDataSourceVersions,
@@ -28,6 +28,7 @@ import {
     dataSourceVersionsAsOptions,
     versionsAsOptionsWithSourceName,
 } from '../utils';
+import { useSnackMutation } from '../../../libs/apiHooks';
 
 const style = theme => ({
     noCreds: {
@@ -72,7 +73,11 @@ export const ExportToDHIS2Dialog = ({
     const { data: sourceVersions, isLoading: areSourceVersionsLoading } =
         useDataSourceVersions();
 
-    const { mutate: exportToDHIS2 } = useMutation(postToDHIS2);
+    const { mutate: exportToDHIS2 } = useSnackMutation(
+        postToDHIS2,
+        undefined,
+        snackBarMessages.exportToDHIS2Error,
+    );
 
     const [isCSVLoading, setIsCsvLoading] = useState(false);
 

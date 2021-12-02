@@ -559,62 +559,6 @@ export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
             throw error;
         });
 
-/**
- * @typedef {Object} handlerParams
- * @property {queryParams} requestParams - params that will be passed to the API caller
- * @property {string} errorKeyMessage - The message displayed in the error snackbar
- * @property {string} consoleError - the message to embed in the console's error message
- * @property {boolean=} disableSuccessSnackBar - will not display snack bar if true
- */
-
-/**
- * @typedef {Object} queryParams
- * @property {string} url - endpoint's url
- * @property {Object=} body - request's body
- * @property {object=} fileData - object to pass when using multipart mode
- */
-
-/**
- *
- * @param {function} dispatch - a redux dispatch function
- *
- */
-// currying to allow testing calls to dispatch
-// TODO figure out how to document currying with JSDocs
-export const requestHandler = dispatch => request => params => {
-    const { url, body, fileData } = params.requestParams;
-    return request(url, body, fileData)
-        .then(data => {
-            if (!params.disableSuccessSnackBar) {
-                dispatch(enqueueSnackbar(succesfullSnackBar()));
-            }
-            return data;
-        })
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar(
-                        params.errorKeyMessage,
-                        params.errorMessageObject ?? null,
-                        // null,
-                        error,
-                    ),
-                ),
-            );
-            console.error(
-                `Error with API call ${params.consoleError} :`,
-                error,
-            );
-            throw error;
-        });
-};
-/**
- * @example const genericHandler = requestHandler(dispatch);
- * const putHandler = genericHandler(putRequest);
- * const result = await putHandler(params);
- */
-export const iasoPostRequest = requestHandler(storeDispatch)(postRequest);
-
 export const useGetComments = params => {
     const { orgUnitId, offset, limit } = params;
     const url = offset

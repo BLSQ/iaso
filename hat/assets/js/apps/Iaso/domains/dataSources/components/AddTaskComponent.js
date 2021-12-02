@@ -4,7 +4,6 @@ import { FormattedMessage } from 'react-intl';
 import { LoadingSpinner } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { useMutation } from 'react-query';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
@@ -13,6 +12,7 @@ import { redirectTo } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
 import { sendDhisOuImporterRequest } from '../requests';
 import { useFormState } from '../../../hooks/form';
+import { useSnackMutation } from '../../../libs/apiHooks';
 
 const initialFormState = sourceCredentials => {
     return {
@@ -38,7 +38,7 @@ const AddTask = ({
         sourceCredentials.is_valid,
     );
     const dispatch = useDispatch();
-    const mutation = useMutation(sendDhisOuImporterRequest);
+    const mutation = useSnackMutation(sendDhisOuImporterRequest);
 
     const reset = () => {
         setFormState(initialFormState(sourceCredentials));

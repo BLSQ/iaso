@@ -1,15 +1,16 @@
 import React, { useCallback } from 'react';
 import { Grid } from '@material-ui/core';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { useMutation, useQueryClient } from 'react-query';
+import { useQueryClient } from 'react-query';
 import { defineMessages } from 'react-intl';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useFormState } from 'Iaso/hooks/form';
 import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
-import { iasoPostRequest } from 'Iaso/utils/requests';
 import FileInputComponent from 'Iaso/components/forms/FileInputComponent';
 import { enqueueSnackbar } from 'Iaso/redux/snackBarsReducer';
+import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { postRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 const initialFormState = () => ({
     file: null,
@@ -31,14 +32,7 @@ const MESSAGES = defineMessages({
 });
 
 const postLineListFile = async content =>
-    iasoPostRequest({
-        requestParams: {
-            url: '/api/polio/linelistimport/',
-            body: {},
-            fileData: { file: content.file },
-        },
-        disableSuccessSnackBar: true,
-    });
+    postRequest('/api/polio/linelistimport/', {}, { file: content.file });
 
 const ImportLineListDialog = ({ renderTrigger }) => {
     const [form, setFormField, setFieldErrors, setFormState] = useFormState(
@@ -46,7 +40,7 @@ const ImportLineListDialog = ({ renderTrigger }) => {
     );
     const { formatMessage } = useSafeIntl();
 
-    const { mutateAsync, isLoading } = useMutation(postLineListFile);
+    const { mutateAsync, isLoading } = useSnackMutation(postLineListFile);
     const queryClient = useQueryClient();
     const dispatch = useDispatch();
 

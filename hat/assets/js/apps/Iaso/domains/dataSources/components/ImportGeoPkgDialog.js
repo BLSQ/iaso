@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { Grid, Typography } from '@material-ui/core';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
-import { useMutation } from 'react-query';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { baseUrls } from '../../../constants/urls';
@@ -13,6 +12,7 @@ import FileInputComponent from '../../../components/forms/FileInputComponent';
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
 import { postGeoPkg } from '../requests';
+import { useSnackMutation } from '../../../libs/apiHooks';
 
 const initialFormState = () => ({
     file: null,
@@ -32,7 +32,7 @@ const ImportGeoPkgDialog = ({
     );
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const mutation = useMutation(postGeoPkg);
+    const mutation = useSnackMutation(postGeoPkg);
     const reset = () => {
         setFormState(initialFormState());
     };

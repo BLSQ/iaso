@@ -154,8 +154,6 @@ def get_regional_level_preparedness(spread: CachedSpread):
 
     sheet: CachedSheet
     for sheet in spread.worksheets():
-        if sheet.title != "MBARARA":
-            continue
         # detect if we are in a Regional Spreadsheet form the title
         # and find position of the total score box
         cell = sheet.find("Summary of Regional Level Preparedness")

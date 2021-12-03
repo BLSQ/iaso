@@ -160,6 +160,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
         cell = sheet.find_one_of(
             "Summary of Regional Level Preparedness",
             "Résumé du niveau de préparation",
+            "Résumé du niveau de préparation Lomé Commune",
         )
         if not cell:
             print(f"No regional data found on worksheet: {sheet.title}")

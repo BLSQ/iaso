@@ -407,10 +407,14 @@ class SpreadSheetImport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     url = models.URLField()
     content = models.JSONField()
-    spread_id = models.CharField(unique=True, max_length=60, db_index=True)
+    spread_id = models.CharField(max_length=60, db_index=True)
 
     @staticmethod
     def create_for_url(spreadsheet_url: str):
         spread = open_sheet_by_url(spreadsheet_url)
         cached_spread = CachedSpread.from_spread(spread)
         return SpreadSheetImport.objects.create(content=cached_spread.c, url=spreadsheet_url, spread_id=spread.id)
+
+    @property
+    def cached_spreadhseet(self):
+        return CachedSpread(self.content)

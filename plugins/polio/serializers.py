@@ -26,6 +26,7 @@ from .models import (
     ROUND1DONE,
     ROUND2START,
     ROUND2DONE,
+    SpreadSheetImport,
 )
 from .preparedness.parser import (
     open_sheet_by_url,
@@ -33,6 +34,7 @@ from .preparedness.parser import (
     get_national_level_preparedness,
     InvalidFormatError,
     parse_value,
+    get_preparedness,
 )
 from .preparedness.spreadsheet_manager import *
 from logging import getLogger
@@ -194,13 +196,10 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         try:
-            sheet = open_sheet_by_url(attrs.get("google_sheet_url"))
-            response = {
-                "national": get_national_level_preparedness(sheet),
-                **get_regional_level_preparedness(sheet),
-            }
-            response["totals"] = get_preparedness_score(response)
-            return response
+            ssi = SpreadSheetImport.create_for_url(attrs.get("google_sheet_url"))
+            cs = ssi.cached_spreadhseet
+            preparedness_data = get_preparedness(cs)
+            return preparedness_data
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])
         except APIError as e:

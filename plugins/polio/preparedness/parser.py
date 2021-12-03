@@ -1,5 +1,6 @@
 from typing import Optional
 
+from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError
 from plugins.polio.preparedness.spread_cache import CachedSpread, CachedSheet
@@ -192,3 +193,12 @@ def get_regional_level_preparedness(spread: CachedSpread):
     if not regions:
         raise InvalidFormatError("Summary of Regional Level Preparedness` was not found in this document")
     return {"regions": regions, "districts": districts}
+
+
+def get_preparedness(spread: CachedSpread):
+    preparedness_data = {
+        "national": get_national_level_preparedness(spread),
+        **get_regional_level_preparedness(spread),
+    }
+    preparedness_data["totals"] = get_preparedness_score(preparedness_data)
+    return preparedness_data

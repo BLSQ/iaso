@@ -75,6 +75,13 @@ class CachedSheet:
                     return row_num + 1, col_num + 1
         return None
 
+    def find_one_of(self, *queries: str):
+        for query in queries:
+            cell = self.find(query)
+            if cell:
+                return cell
+        return None
+
     def get_line_start(self, row_num, col_start):
         "get cell in a line starting from a value to the end"
         row = self.values[row_num - 1]

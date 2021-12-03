@@ -110,17 +110,17 @@ def _get_scores(sheet: CachedSheet, cell_pos):
 
 def get_national_level_preparedness(spread: CachedSpread):
     for worksheet in spread.worksheets():
-        cell = worksheet.find("Summary of National Level Preparedness")
+        cell = worksheet.find_one_of(
+            "Summary of National Level Preparedness", "Résumé du niveau de préparation au niveau national "
+        )
         if not cell:
-            cell = worksheet.find("Résumé du niveau de préparation au niveau national ")
-        if not cell:
-            print(f"No data found on worksheet: {worksheet.title}")
+            print(f"No national data found on worksheet: {worksheet.title}")
             continue
-        if cell:
-            print(f"Data found on worksheet: {worksheet.title}")
-            kv = worksheet.get_dict_position(NATIONAL_INDICATORS)
-            score = _get_scores(worksheet, cell)
-            return {**kv, **score}
+
+        print(f"Data found on worksheet: {worksheet.title}")
+        kv = worksheet.get_dict_position(NATIONAL_INDICATORS)
+        score = _get_scores(worksheet, cell)
+        return {**kv, **score}
     raise Exception(
         "Summary of National Level Preparedness`or Summary of Regional Level Preparedness was not found in this document"
     )
@@ -157,9 +157,10 @@ def get_regional_level_preparedness(spread: CachedSpread):
     for sheet in spread.worksheets():
         # detect if we are in a Regional Spreadsheet form the title
         # and find position of the total score box
-        cell = sheet.find("Summary of Regional Level Preparedness")
-        if not cell:
-            cell = sheet.find("Résumé du niveau de préparation")
+        cell = sheet.find_one_of(
+            "Summary of Regional Level Preparedness",
+            "Résumé du niveau de préparation",
+        )
         if not cell:
             print(f"No regional data found on worksheet: {sheet.title}")
             continue

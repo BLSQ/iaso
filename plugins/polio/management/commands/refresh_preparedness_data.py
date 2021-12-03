@@ -14,11 +14,16 @@ logger = getLogger(__name__)
 class Command(BaseCommand):
     help = ""
 
-    def handle(self, *args, **options):
+    def add_arguments(self, parser):
+        parser.add_argument("campaign", type=str)
+
+    def handle(self, *args, campaign, **options):
         started_at = datetime.now()
         campaigns_with_spreadsheet = Campaign.objects.only("id", "preperadness_spreadsheet_url").filter(
             preperadness_spreadsheet_url__isnull=False
         )
+        if campaign:
+            campaigns_with_spreadsheet = campaigns_with_spreadsheet.filter(obr_name=campaign)
         campaigns_with_spreadsheet.update(preperadness_sync_status="QUEUED")
         logger.info(campaigns_with_spreadsheet)
         for campaign in campaigns_with_spreadsheet:

@@ -15,15 +15,15 @@ class Command(BaseCommand):
     help = ""
 
     def add_arguments(self, parser):
-        parser.add_argument("campaign", type=str)
+        parser.add_argument("campaigns", type=str, nargs="*")
 
-    def handle(self, *args, campaign, **options):
+    def handle(self, campaigns, **options):
         started_at = datetime.now()
         campaigns_with_spreadsheet = Campaign.objects.only("id", "preperadness_spreadsheet_url").filter(
             preperadness_spreadsheet_url__isnull=False
         )
-        if campaign:
-            campaigns_with_spreadsheet = campaigns_with_spreadsheet.filter(obr_name=campaign)
+        if campaigns:
+            campaigns_with_spreadsheet = campaigns_with_spreadsheet.filter(obr_name__in=campaigns)
         campaigns_with_spreadsheet.update(preperadness_sync_status="QUEUED")
         logger.info(campaigns_with_spreadsheet)
         for campaign in campaigns_with_spreadsheet:

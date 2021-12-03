@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext as _
 from iaso.models import Group, OrgUnit
+from plugins.polio.preparedness.parser import open_sheet_by_url
+from plugins.polio.preparedness.spread_cache import CachedSpread
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -393,3 +395,22 @@ class URLCache(models.Model):
 
     def __str__(self):
         return self.url
+
+
+class SpreadSheetImport(models.Model):
+    """A copy of a Google Spreadsheet in the DB, in JSON format
+
+    This allow us to separate the parsing of the datasheet from it's retrieval
+    and to keep a history.
+    """
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    url = models.URLField()
+    content = models.JSONField()
+    spread_id = models.CharField(unique=True, max_length=60, db_index=True)
+
+    @staticmethod
+    def create_for_url(spreadsheet_url: str):
+        spread = open_sheet_by_url(spreadsheet_url)
+        cached_spread = CachedSpread.from_spread(spread)
+        return SpreadSheetImport.objects.create(content=cached_spread.c, url=spreadsheet_url, spread_id=spread.id)

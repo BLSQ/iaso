@@ -182,7 +182,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
         for row_num, col_num, district_name in col_district:
             if not district_name:
                 continue
-            district_scores = _get_scores(sheet, (row_num, col_num))
+            district_scores = _get_scores(sheet, (row_num, col_num - 1))
             districts[district_name] = {**district_scores, "region": regional_name}
 
         # merge both dict

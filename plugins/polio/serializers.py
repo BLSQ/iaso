@@ -12,7 +12,6 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from iaso.models import Group, OrgUnit
-from plugins.polio.preparedness.calculator import get_preparedness_score
 from .models import (
     Preparedness,
     Round,
@@ -30,8 +29,6 @@ from .models import (
 )
 from .preparedness.parser import (
     open_sheet_by_url,
-    get_regional_level_preparedness,
-    get_national_level_preparedness,
     InvalidFormatError,
     parse_value,
     get_preparedness,

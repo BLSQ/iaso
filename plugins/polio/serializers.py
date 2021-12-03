@@ -97,7 +97,7 @@ def campaign_from_files(file):
         c, created = Campaign.objects.get_or_create(epid=epid)
         if not created:
             skipped_campaigns.append(epid)
-            print("Skipping existing campaign {c.epid}")
+            print(f"Skipping existing campaign {c.epid}")
             continue
 
         c.obr_name = epid

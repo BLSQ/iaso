@@ -360,6 +360,153 @@ class IMViewSet(viewsets.ViewSet):
             return response
 
 
+class IMStatsViewSet(viewsets.ViewSet):
+    """
+           Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA. Very custom to the polio project.
+
+    sample Config:
+
+    configs = [
+           {
+               "keys": {"roundNumber": "roundNumber",
+                       "Response": "Response",
+                },
+               "prefix": "OHH",
+               "url": 'https://brol.com/api/v1/data/5888',
+               "login": "qmsdkljf",
+               "password": "qmsdlfj"
+           },
+           {
+               "keys": {'roundNumber': "roundNumber",
+                       "Response": "Response",
+                },
+               "prefix": "HH",
+               "url":  'https://brol.com/api/v1/data/5887',
+               "login": "qmsldkjf",
+               "password": "qsdfmlkj"
+           }
+       ]
+    """
+
+    def list(self, request):
+        campaigns = Campaign.objects.all()
+        slug = request.GET.get("country", None)
+        as_csv = request.GET.get("format", None) == "csv"
+        config = get_object_or_404(Config, slug=slug)
+        res = []
+        form_count = 0
+        fully_mapped_form_count = 0
+        base_stats = {"total_child_fmd": 0, "total_child_checked": 0}
+        campaign_stats = defaultdict(
+            lambda: {
+                "round_1": defaultdict(base_stats.copy),
+                "round_2": defaultdict(base_stats.copy),
+                "districts_not_found": [],
+            }
+        )
+        day_country_not_found = defaultdict(lambda: defaultdict(int))
+        form_campaign_not_found_count = 0
+        for country_config in config.content:
+            country = OrgUnit.objects.get(id=country_config["country_id"])
+
+            districts_qs = (
+                OrgUnit.objects.hierarchy(country)
+                .filter(org_unit_type_id__category="DISTRICT")
+                .only("name", "id", "parent", "aliases")
+                .prefetch_related("parent")
+            )
+            district_dict = defaultdict(list)
+            for f in districts_qs:
+                district_dict[f.name].append(f)
+
+            districts = set()
+
+            cached_response, created = URLCache.objects.get_or_create(url=country_config["url"])
+            delta = now() - cached_response.updated_at
+            if created or delta > timedelta(minutes=60 * 24 * 10):
+                print("fetching", country_config["url"])
+                response = requests.get(
+                    country_config["url"], auth=(country_config["login"], country_config["password"])
+                )
+                print("fetched")
+                print(len(response.text))
+                cached_response.content = response.text
+
+                cached_response.save()
+                forms = response.json()
+            else:
+                print("already cached", country_config["url"])
+                forms = json.loads(cached_response.content)
+
+            for form in forms:
+                total_Child_FMD = 0
+                total_Child_Checked = 0
+
+                for kid in form.get("OHH", []):
+                    type = "OHH"
+                    Child_FMD = kid.get("OHH/Child_FMD", 0)
+                    Child_Checked = kid.get("OHH/Child_Checked", 0)
+
+                    total_Child_FMD += int(Child_FMD)
+                    total_Child_Checked += int(Child_Checked)
+                district_id = "%s - %s" % (form.get("District"), form.get("Region"))
+                districts.add(district_id)
+                today_string = form["today"]
+                today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                campaign = find_campaign(campaigns, today, country)
+                region_name = form.get("Region")
+                district_name = form.get("District")
+                round_number = form.get("roundNumber")
+
+                if campaign:
+                    campaign_name = campaign.obr_name
+                    campaign_stats[campaign_name]["country_id"] = country.id
+                    campaign_stats[campaign_name]["country_name"] = country.name
+                    row = [
+                        type,
+                        country.name,
+                        region_name,
+                        district_name,
+                        form.get("Response"),
+                        round_number,
+                        form.get("today"),
+                        total_Child_FMD,
+                        total_Child_Checked,
+                        campaign_name,
+                    ]
+                    res.append(row)
+
+                    round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
+
+                    d = campaign_stats[campaign_name][round_key][district_name]
+                    d["total_child_fmd"] = d["total_child_fmd"] + row[7]
+                    d["total_child_checked"] = d["total_child_checked"] + row[8]
+                    region_name = row[2]
+                    district_name = row[3]
+                    district = find_district(district_name, region_name, districts_qs, district_dict)
+                    if not district:
+                        district_long_name = "%s - %s" % (district_name, region_name)
+                        if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
+                            campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
+                    else:
+                        d["district"] = district.id
+                        fully_mapped_form_count += 1
+                else:
+                    day_country_not_found[country.name][today_string] += 1
+                    form_campaign_not_found_count += 1
+                form_count += 1
+
+        response = {
+            "stats": campaign_stats,
+            "form_count": form_count,
+            "form_campaign_not_found_count": form_campaign_not_found_count,
+            "day_country_not_found": day_country_not_found,
+            "form_count": form_count,
+            "fully_mapped_form_count": fully_mapped_form_count,
+        }
+        return JsonResponse(response, safe=False)
+
+
 def find_campaign(campaigns, today, country):
     for c in campaigns:
         if c.country_id == country.id and c.round_one.started_at <= today < c.round_one.started_at + timedelta(
@@ -699,6 +846,7 @@ router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/preparedness", PreparednessViewSet)
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/im", IMViewSet, basename="IM")
+router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")
 router.register(r"polio/lqasstats", LQASStatsViewSet, basename="lqasstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
 router.register(r"polio/forma", FormAStocksViewSet, basename="forma")

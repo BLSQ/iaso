@@ -390,9 +390,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         campaigns = Campaign.objects.all()
-        slug = request.GET.get("country", None)
-        as_csv = request.GET.get("format", None) == "csv"
-        config = get_object_or_404(Config, slug=slug)
+        config = get_object_or_404(Config, slug="im-config")
         res = []
         form_count = 0
         fully_mapped_form_count = 0

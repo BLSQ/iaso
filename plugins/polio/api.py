@@ -454,10 +454,10 @@ class IMStatsViewSet(viewsets.ViewSet):
                 campaign = find_campaign(campaigns, today, country)
                 region_name = form.get("Region")
                 district_name = form.get("District")
-                #FIXME dirty workaround to prevent crash
+                # FIXME dirty workaround to prevent crash
                 round_number = form.get("roundNumber", "Rnd1")
-                if round_number == 'Rnd0':
-                    round_number='Rnd1'
+                if round_number == "Rnd0":
+                    round_number = "Rnd1"
 
                 if campaign:
                     campaign_name = campaign.obr_name

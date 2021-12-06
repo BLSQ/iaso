@@ -695,6 +695,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.lqasResults',
         defaultMessage: 'LQAS results',
     },
+    im: {
+        id: 'iaso.polio.label.im',
+        defaultMessage: 'IM',
+    },
+    imOK: {
+        id: 'iaso.polio.label.imOK',
+        defaultMessage: '>95%',
+    },
+    imWarning: {
+        id: 'iaso.polio.label.imWarning',
+        defaultMessage: '90%-94%',
+    },
+    imFail: {
+        id: 'iaso.polio.label.imFail',
+        defaultMessage: '<90%',
+    },
+    imResults: {
+        id: 'iaso.polio.label.imResults',
+        defaultMessage: 'IM Results',
+    },
 });
 
 export default MESSAGES;

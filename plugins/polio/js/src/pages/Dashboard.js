@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
-    Table,
-    LoadingSpinner,
     IconButton as IconButtonComponent,
+    LoadingSpinner,
+    Table,
     useSafeIntl,
 } from 'bluesquare-components';
 import { withRouter } from 'react-router';

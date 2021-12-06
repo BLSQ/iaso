@@ -1,6 +1,3 @@
-from itertools import accumulate
-
-
 def get_preparedness_score(data):
     get_status_score = lambda region: region.get("status_score", 0.0)
 

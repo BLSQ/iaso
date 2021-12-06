@@ -416,5 +416,5 @@ class SpreadSheetImport(models.Model):
         return SpreadSheetImport.objects.create(content=cached_spread.c, url=spreadsheet_url, spread_id=spread.id)
 
     @property
-    def cached_spreadhseet(self):
+    def cached_spreadsheet(self):
         return CachedSpread(self.content)

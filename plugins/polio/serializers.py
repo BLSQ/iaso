@@ -194,7 +194,7 @@ class PreparednessPreviewSerializer(serializers.Serializer):
     def validate(self, attrs):
         try:
             ssi = SpreadSheetImport.create_for_url(attrs.get("google_sheet_url"))
-            cs = ssi.cached_spreadhseet
+            cs = ssi.cached_spreadsheet
             preparedness_data = get_preparedness(cs)
             return preparedness_data
         except InvalidFormatError as e:

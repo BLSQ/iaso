@@ -34,7 +34,7 @@ class Command(BaseCommand):
             try:
                 # Separate import from parsing
                 ssi = SpreadSheetImport.create_for_url(campaign.preperadness_spreadsheet_url)
-                cs = ssi.cached_spreadhseet
+                cs = ssi.cached_spreadsheet
                 logger.info(f"using spread: {cs.title}")
 
                 try:

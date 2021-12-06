@@ -9,7 +9,7 @@ import {
 } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
-import { replace } from 'react-router-redux';
+import { push } from 'react-router-redux';
 import { Box } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';

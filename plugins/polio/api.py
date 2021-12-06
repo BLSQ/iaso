@@ -124,7 +124,7 @@ class CampaignViewSet(ModelViewSet):
 This is an automated email.
 
 Following the newly confirmed virus {virus_type} reported from {initial_orgunit_name} with date of onset/sample collection {onset_date}. \
-A new outbreak {obr_name} has been created on the timeline tracker, to visualize the campaign visit: {url}
+A new outbreak {obr_name} has been created on the timeline tracker, to visualize the campaign visit: {url_campaign}
 
 Some campaign details are missing at this stage. It is important to update the outbreak response information on this link {url}, \
 to ensure optimal coordination of activities. The information should be updated at least weekly. Details for log in will be provided.
@@ -153,6 +153,7 @@ Timeline tracker Automated message
             initial_orgunit_name=campaign.initial_org_unit.name
             + (", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
             url=f"https://{domain}/dashboard/polio/list",
+            url_campaign=f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}",
         )
 
         try:

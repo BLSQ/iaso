@@ -125,7 +125,9 @@ export const PreparednessForm = () => {
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={8} item>
                         <Field
-                            placeholder={MESSAGES.enterOrCreateGoogleSheet}
+                            placeholder={formatMessage(
+                                MESSAGES.enterOrCreateGoogleSheet,
+                            )}
                             label={formatMessage(
                                 MESSAGES.preparednessGoogleSheetUrl,
                             )}

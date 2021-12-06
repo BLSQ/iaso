@@ -23,7 +23,7 @@ export const ImPopup = ({ shape, imData, round, campaign }) => {
     const ref = useRef();
     const dataForShape = findLQASDataForShape({
         shape,
-        imData,
+        LQASData: imData,
         round,
         campaign,
     });

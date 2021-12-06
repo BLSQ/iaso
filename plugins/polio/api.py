@@ -246,7 +246,7 @@ indicators = [
     (10, "communication_sm_activities", "SM activities  ", "number"),
     (11, "communication_c4d", "C4d", "date"),
     (12, "aefi_easi_protocol", "Safety documents: AESI Protocol  ", "number"),
-    (13, "pharamcovigilence_committee", "Pharmacovigilance Committee  ", "number"),
+    (13, "pharmacovigilance_committee", "Pharmacovigilance Committee  ", "number"),
     (0, "status_score", "status_score", "number"),
     # not used atm
     # (0, "training_score", "training_score", "number"),

@@ -36,7 +36,7 @@ NATIONAL_INDICATORS = {
     "communication_sm_activities": "E47",
     "communication_c4d": "E46",
     "aefi_easi_protocol": "E52",
-    "pharamcovigilence_committee": "E51",
+    "pharmacovigilance_committee": "E51",
 }
 
 
@@ -54,7 +54,7 @@ REGIONAL_INDICATORS = {
     "communication_sm_activities": "F46",
     "communication_c4d": "F45",  # date
     "aefi_easi_protocol": "F52",
-    "pharamcovigilence_committee": "F51",
+    "pharmacovigilance_committee": "F51",
 }
 
 
@@ -72,7 +72,7 @@ DISTRICT_INDICATORS = {
     "communication_sm_activities": 46,
     "communication_c4d": 45,  # date
     "aefi_easi_protocol": 52,
-    "pharamcovigilence_committee": 51,
+    "pharmacovigilance_committee": 51,
 }
 
 DISTRICT_LIST_LINE_NUMBER = 7

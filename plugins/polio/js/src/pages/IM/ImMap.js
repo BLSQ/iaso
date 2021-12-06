@@ -6,14 +6,14 @@ import { MapComponent } from '../../components/MapComponent/MapComponent';
 import { MapLegend } from '../../components/MapComponent/MapLegend';
 import { MapLegendContainer } from '../../components/MapComponent/MapLegendContainer';
 import { ImMapHeader } from './ImMapHeader';
-import { ImPopup } from './ImPopup';
-import {
-    findLQASDataForShape,
-    determineStatusForDistrict,
-    getScopeStyle,
-    getLqasStatsForRound,
-} from './utils';
+import { LqasImPopup } from '../../components/LQAS-IM/LqasImPopUp';
+import { determineStatusForDistrict, getImStatsForRound } from './utils';
 import { districtColors } from './constants';
+import {
+    getScopeStyle,
+    findDataForShape,
+    makeLegendItem,
+} from '../../utils/LqasIm';
 import MESSAGES from '../../constants/messages';
 
 // Don't put it in utils to avoid circular dep
@@ -21,28 +21,20 @@ const makePopup =
     (imData, round, campaign = '') =>
     shape => {
         return (
-            <ImPopup
+            <LqasImPopup
                 shape={shape}
-                imData={imData}
+                data={imData}
                 round={round}
                 campaign={campaign}
             />
         );
     };
 
-const makeLegendItem = ({ message, value, color }) => {
-    return {
-        label: `${message}: ${value}`,
-        value: `${message}: ${value}`,
-        color,
-    };
-};
-
 export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
     // eslint-disable-next-line no-unused-vars
-    const [_evaluated, passed, failed, disqualified] = getLqasStatsForRound(
+    const [_evaluated, passed, failed, disqualified] = getImStatsForRound(
         imData,
         campaign,
         round,
@@ -70,9 +62,9 @@ export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
     const getShapeStyles = useCallback(
         shape => {
             const status = determineStatusForDistrict(
-                findLQASDataForShape({
+                findDataForShape({
                     shape,
-                    LQASData: imData,
+                    data: imData,
                     round,
                     campaign,
                 }),
@@ -104,8 +96,8 @@ export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
                     />
                 </MapLegendContainer>
                 <MapComponent
-                    key={`LQASMapRound1${renderCount}`}
-                    name="LQASMapRound1"
+                    key={`IMMapRound${round}${renderCount}`}
+                    name={`IMMapRound${round}`}
                     mainLayer={shapes}
                     onSelectShape={() => null}
                     getMainLayerStyle={getShapeStyles}

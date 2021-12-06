@@ -1,14 +1,4 @@
 export const IM_POC_URL = '/api/polio/imstats/';
-// NIGER
-// export const NIGER_ORG_UNIT_ID = 29709;
-// Mali
-// export const NIGER_ORG_UNIT_ID = 29702;
-// Congo Brazzaville
-// export const NIGER_ORG_UNIT_ID = 29728;
-// Sierra Leone
-// export const NIGER_ORG_UNIT_ID = 29715;
-// Guinea
-// export const NIGER_ORG_UNIT_ID = 29694;
 export const IM_PASS = 'imOK';
 export const IM_WARNING = 'imWarning';
 export const IM_FAIL = 'imFail';

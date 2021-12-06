@@ -1,8 +1,8 @@
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getRequest } from 'Iaso/libs/Api';
-import { NIGER_POC_URL } from './constants';
+import { LQAS_POC_URL } from './constants';
 
-const getLQAS = async () => getRequest(NIGER_POC_URL);
+const getLQAS = async () => getRequest(LQAS_POC_URL);
 
 export const useLQAS = campaign => {
     return useSnackQuery(['LQAS', getLQAS, campaign], getLQAS, undefined, {

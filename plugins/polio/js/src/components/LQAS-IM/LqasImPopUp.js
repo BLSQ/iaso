@@ -9,7 +9,7 @@ import PopupItemComponent from 'Iaso/components/maps/popups/PopupItemComponent';
 import { makeStyles, Card, CardContent } from '@material-ui/core';
 import { object, string } from 'prop-types';
 import MESSAGES from '../../constants/messages';
-import { findLQASDataForShape } from './utils';
+import { findDataForShape } from '../../utils/LqasIm';
 
 const style = theme => {
     return { ...commonStyles(theme), ...mapPopupStyles(theme) };
@@ -17,13 +17,13 @@ const style = theme => {
 
 const useStyle = makeStyles(style);
 
-export const LqasPopup = ({ shape, LQASData, round, campaign }) => {
+export const LqasImPopup = ({ shape, data, round, campaign }) => {
     const classes = useStyle();
     const { formatMessage } = useSafeIntl();
     const ref = useRef();
-    const dataForShape = findLQASDataForShape({
+    const dataForShape = findDataForShape({
         shape,
-        LQASData,
+        data,
         round,
         campaign,
     });
@@ -59,13 +59,13 @@ export const LqasPopup = ({ shape, LQASData, round, campaign }) => {
     );
 };
 
-LqasPopup.propTypes = {
+LqasImPopup.propTypes = {
     shape: object.isRequired,
-    LQASData: object.isRequired,
+    data: object.isRequired,
     round: string.isRequired,
     campaign: string,
 };
 
-LqasPopup.defaultProps = {
+LqasImPopup.defaultProps = {
     campaign: '',
 };

@@ -1,14 +1,4 @@
-export const NIGER_POC_URL = '/api/polio/lqasstats/';
-// NIGER
-// export const NIGER_ORG_UNIT_ID = 29709;
-// Mali
-// export const NIGER_ORG_UNIT_ID = 29702;
-// Congo Brazzaville
-// export const NIGER_ORG_UNIT_ID = 29728;
-// Sierra Leone
-// export const NIGER_ORG_UNIT_ID = 29715;
-// Guinea
-// export const NIGER_ORG_UNIT_ID = 29694;
+export const LQAS_POC_URL = '/api/polio/lqasstats/';
 export const LQAS_PASS = 'lqasOK';
 export const LQAS_DISQUALIFIED = 'lqasDisqualified';
 export const LQAS_FAIL = 'lqasFail';

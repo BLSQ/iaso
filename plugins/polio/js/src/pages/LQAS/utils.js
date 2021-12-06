@@ -5,51 +5,6 @@ import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED } from './constants';
 
 import MESSAGES from '../../constants/messages';
 
-const convertRoundDataToArray = roundDataAsDict => {
-    const districtNames = Object.keys(roundDataAsDict);
-    const roundData = Object.values(roundDataAsDict);
-    return roundData.map((value, index) => {
-        return { ...value, name: districtNames[index] };
-    });
-};
-
-// TODO rename
-export const convertLQASData = LQASData => {
-    if (!LQASData) return {};
-    const { stats } = LQASData;
-    const campaignKeys = Object.keys(stats);
-    const result = {};
-    campaignKeys.forEach(key => {
-        if (stats[key]) {
-            result[key] = {};
-            result[key].round_1 = convertRoundDataToArray(stats[key].round_1);
-            result[key].round_2 = convertRoundDataToArray(stats[key].round_2);
-        }
-    });
-    return result;
-};
-
-export const findLQASDataForShape = ({ shape, LQASData, round, campaign }) => {
-    if (!LQASData || !LQASData[campaign]) return null;
-    const dataForRound = LQASData[campaign][round];
-    const result = dataForRound.filter(data => data.district === shape.id)[0];
-    return result;
-};
-
-export const findLQASDataForDistrict = ({
-    district,
-    LQASData,
-    round,
-    campaign,
-}) => {
-    if (!LQASData) return null;
-    const dataForRound = LQASData[campaign][round];
-    const result = dataForRound.filter(
-        data => data.district === district.district,
-    );
-    return result[0];
-};
-
 export const determineStatusForDistrict = district => {
     if (!district) return null;
     const { total_child_fmd: marked, total_child_checked: checked } = district;
@@ -63,93 +18,26 @@ export const determineStatusForDistrict = district => {
     return LQAS_DISQUALIFIED;
 };
 
-// TODO have exhaustive sorting function
-const sortCampaignNames = (nameA, nameB) => {
-    const [countryCodeA, referenceA] = nameA?.label.split('-');
-    const [countryCodeB, referenceB] = nameB?.label.split('-');
-    const comparison = countryCodeA.localeCompare(countryCodeB, undefined, {
-        sensitivity: 'accent',
-    });
-    if (comparison === 0) {
-        const refA = parseInt(referenceA, 10);
-        const refB = parseInt(referenceB, 10);
-        if (refA < refB) return -1;
-        if (refA > refB) return 1;
-        return 0;
-    }
-    return comparison;
-};
-
-export const makeCampaignsDropDown = campaigns =>
-    campaigns
-        .map(campaign => {
-            return {
-                label: campaign.obr_name,
-                value: campaign.obr_name,
-            };
-        })
-        .sort(sortCampaignNames);
-export const totalDistrictsEvaluatedPerRound = LQASData => {
-    if (!LQASData) return { evaluatedRound1: [], evaluatedRound2: [] };
-    let totalEvaluatedRound1 = [];
-    let totalEvaluatedRound2 = [];
-    Object.keys(LQASData.stats).forEach(campaignKey => {
-        const districtsRound1 = Object.keys(
-            LQASData.stats[campaignKey].round_1,
-        );
-        const districtsRound2 = Object.keys(
-            LQASData.stats[campaignKey].round_2,
-        );
-        totalEvaluatedRound1 = [...totalEvaluatedRound1, ...districtsRound1];
-        totalEvaluatedRound2 = [...totalEvaluatedRound2, ...districtsRound2];
-    });
-
-    const evaluatedRound1 = new Set(totalEvaluatedRound1);
-    const evaluatedRound2 = new Set(totalEvaluatedRound2);
-    return { evaluatedRound1, evaluatedRound2 };
-};
-
-export const defaultShapeStyle = {
-    color: 'grey',
-    opacity: '1',
-    fillColor: 'lightGrey',
-    weight: '1',
-    zIndex: 1,
-};
-
-export const getScopeStyle = (shape, scope) => {
-    const isShapeInScope =
-        scope.filter(shapeInScope => shape.id === shapeInScope.id).length === 1;
-    if (isShapeInScope) {
-        return {
-            color: 'grey',
-            opacity: '1',
-            fillColor: 'grey',
-            weight: '2',
-            zIndex: 1,
-        };
-    }
-    return defaultShapeStyle;
-};
-
-export const findScope = (obrName, campaigns, shapes) => {
-    let scopeIds = [];
-    if (obrName) {
-        scopeIds = campaigns
-            .filter(campaign => campaign.obr_name === obrName)
-            .map(campaign => campaign.group.org_units)
-            .flat();
-    } else {
-        scopeIds = campaigns.map(campaign => campaign.group.org_units).flat();
-    }
-    return shapes.filter(shape => scopeIds.includes(shape.id));
-};
-
 const applyStatusColor = status => {
     if (status === LQAS_PASS) return { color: 'green' };
     if (status === LQAS_FAIL) return { color: 'red' };
     if (status === LQAS_DISQUALIFIED) return { color: 'orange' };
     return null;
+};
+
+export const getLqasStatsForRound = (lqasData, campaign, round) => {
+    if (!lqasData[campaign]) return [[], [], [], []];
+    const totalEvaluated = [...lqasData[campaign][round]];
+    const allStatuses = totalEvaluated.map(district => {
+        return determineStatusForDistrict(district);
+    });
+    const passed = allStatuses.filter(status => status === LQAS_PASS);
+    const disqualified = allStatuses.filter(
+        status => status === LQAS_DISQUALIFIED,
+    );
+    const failed = allStatuses.filter(status => status === LQAS_FAIL);
+
+    return [totalEvaluated, passed, failed, disqualified];
 };
 
 export const lqasTableColumns = formatMessage => {
@@ -194,33 +82,4 @@ export const lqasTableColumns = formatMessage => {
             },
         },
     ];
-};
-
-export const sortDistrictsByName = districts => {
-    return districts.sort((districtA, districtB) =>
-        districtA.name.localeCompare(districtB.name, undefined, {
-            sensitivity: 'accent',
-        }),
-    );
-};
-
-export const getLqasStatsForRound = (lqasData, campaign, round) => {
-    if (!lqasData[campaign]) return [[], [], [], []];
-    const totalEvaluated = [...lqasData[campaign][round]];
-    const allStatuses = totalEvaluated.map(district => {
-        return determineStatusForDistrict(district);
-    });
-    const passed = allStatuses.filter(status => status === LQAS_PASS);
-    const disqualified = allStatuses.filter(
-        status => status === LQAS_DISQUALIFIED,
-    );
-    const failed = allStatuses.filter(status => status === LQAS_FAIL);
-
-    return [totalEvaluated, passed, failed, disqualified];
-};
-
-export const findCountryIds = LqasData => {
-    const { stats } = LqasData;
-    const campaignKeys = Object.keys(stats);
-    return campaignKeys.map(campaignKey => stats[campaignKey].country_id);
 };

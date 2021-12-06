@@ -12,15 +12,17 @@ import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import {
-    makeCampaignsDropDown,
     determineStatusForDistrict,
-    findScope,
-    sortDistrictsByName,
     lqasTableColumns,
     getLqasStatsForRound,
-    findCountryIds,
-    convertLQASData,
 } from './utils';
+import {
+    makeCampaignsDropDown,
+    findCountryIds,
+    sortDistrictsByName,
+    findScope,
+    convertAPIData,
+} from '../../utils/LqasIm';
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 
@@ -43,7 +45,7 @@ export const Lqas = () => {
     const [campaign, setCampaign] = useState();
     const { data: LQASData, isLoading } = useLQAS();
     // console.log('LQAS', LQASData);
-    const convertedData = convertLQASData(LQASData);
+    const convertedData = convertAPIData(LQASData);
 
     const countryIds = findCountryIds(LQASData);
     const { data: campaigns = [], isLoading: campaignsLoading } =

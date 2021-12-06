@@ -12,17 +12,19 @@ import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import {
-    makeCampaignsDropDown,
     determineStatusForDistrict,
-    findScope,
-    sortDistrictsByName,
-    lqasTableColumns,
-    getLqasStatsForRound,
-    findCountryIds,
-    convertLQASData,
+    imTableColumns,
+    getImStatsForRound,
 } from './utils';
 import { useIM } from './requests';
 import { ImMap } from './ImMap';
+import {
+    makeCampaignsDropDown,
+    findCountryIds,
+    sortDistrictsByName,
+    findScope,
+    convertAPIData,
+} from '../../utils/LqasIm';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -43,7 +45,7 @@ export const ImStats = () => {
     const [campaign, setCampaign] = useState();
     const { data: imData, isLoading } = useIM();
     // console.log('LQAS', imData);
-    const convertedData = convertLQASData(imData);
+    const convertedData = convertAPIData(imData);
 
     const countryIds = findCountryIds(imData);
     const { data: campaigns = [], isLoading: campaignsLoading } =
@@ -70,16 +72,8 @@ export const ImStats = () => {
         ? imData.day_country_not_found[currentCountryName]
         : {};
 
-    const round1Stats = getLqasStatsForRound(
-        convertedData,
-        campaign,
-        'round_1',
-    );
-    const round2Stats = getLqasStatsForRound(
-        convertedData,
-        campaign,
-        'round_2',
-    );
+    const round1Stats = getImStatsForRound(convertedData, campaign, 'round_1');
+    const round2Stats = getImStatsForRound(convertedData, campaign, 'round_2');
     const tableDataRound1 = round1Stats[0].map(district => {
         return {
             ...district,
@@ -99,7 +93,6 @@ export const ImStats = () => {
     useEffect(() => {
         setCampaign('CON-52DS-01-2021');
     }, []);
-    // console.log(parseInt(campaign?.split('-')[1], 10));
     return (
         <>
             <TopBar
@@ -185,7 +178,7 @@ export const ImStats = () => {
                                 <Table
                                     data={sortDistrictsByName(tableDataRound1)}
                                     baseUrl=""
-                                    columns={lqasTableColumns(formatMessage)}
+                                    columns={imTableColumns(formatMessage)}
                                     redirectTo={() => {}}
                                     params={{ page: 1, pageSize: 40 }}
                                     pages={1}
@@ -200,7 +193,7 @@ export const ImStats = () => {
                                 <Table
                                     data={sortDistrictsByName(tableDataRound2)}
                                     baseUrl=""
-                                    columns={lqasTableColumns(formatMessage)}
+                                    columns={imTableColumns(formatMessage)}
                                     redirectTo={() => {}}
                                     pages={1}
                                     params={{ page: 1, pageSize: 10 }}

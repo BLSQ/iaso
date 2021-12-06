@@ -6,13 +6,13 @@ import { MapComponent } from '../../components/MapComponent/MapComponent';
 import { MapLegend } from '../../components/MapComponent/MapLegend';
 import { MapLegendContainer } from '../../components/MapComponent/MapLegendContainer';
 import { LqasMapHeader } from './LqasMapHeader';
-import { LqasPopup } from './LqasPopup';
+import { LqasImPopup } from '../../components/LQAS-IM/LqasImPopUp';
+import { determineStatusForDistrict, getLqasStatsForRound } from './utils';
 import {
-    findLQASDataForShape,
-    determineStatusForDistrict,
     getScopeStyle,
-    getLqasStatsForRound,
-} from './utils';
+    findDataForShape,
+    makeLegendItem,
+} from '../../utils/LqasIm';
 import { districtColors } from './constants';
 import MESSAGES from '../../constants/messages';
 
@@ -21,22 +21,14 @@ const makePopup =
     (LQASData, round, campaign = '') =>
     shape => {
         return (
-            <LqasPopup
+            <LqasImPopup
                 shape={shape}
-                LQASData={LQASData}
+                data={LQASData}
                 round={round}
                 campaign={campaign}
             />
         );
     };
-
-const makeLegendItem = ({ message, value, color }) => {
-    return {
-        label: `${message}: ${value}`,
-        value: `${message}: ${value}`,
-        color,
-    };
-};
 
 export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
     const { formatMessage } = useSafeIntl();
@@ -69,9 +61,9 @@ export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
     const getShapeStyles = useCallback(
         shape => {
             const status = determineStatusForDistrict(
-                findLQASDataForShape({
+                findDataForShape({
                     shape,
-                    LQASData: lqasData,
+                    data: lqasData,
                     round,
                     campaign,
                 }),
@@ -109,8 +101,8 @@ export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
                     />
                 </MapLegendContainer>
                 <MapComponent
-                    key={`LQASMapRound1${renderCount}`}
-                    name="LQASMapRound1"
+                    key={`LQASMapRound${round}${renderCount}`}
+                    name={`LQASMapRound${round}`}
                     mainLayer={shapes}
                     onSelectShape={() => null}
                     getMainLayerStyle={getShapeStyles}

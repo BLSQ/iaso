@@ -63,6 +63,23 @@ export const determineStatusForDistrict = district => {
     return LQAS_DISQUALIFIED;
 };
 
+// TODO have exhaustive sorting function
+const sortCampaignNames = (nameA, nameB) => {
+    const [countryCodeA, referenceA] = nameA?.label.split('-');
+    const [countryCodeB, referenceB] = nameB?.label.split('-');
+    const comparison = countryCodeA.localeCompare(countryCodeB, undefined, {
+        sensitivity: 'accent',
+    });
+    if (comparison === 0) {
+        const refA = parseInt(referenceA, 10);
+        const refB = parseInt(referenceB, 10);
+        if (refA < refB) return -1;
+        if (refA > refB) return 1;
+        return 0;
+    }
+    return comparison;
+};
+
 export const makeCampaignsDropDown = campaigns =>
     campaigns
         .map(campaign => {
@@ -71,11 +88,7 @@ export const makeCampaignsDropDown = campaigns =>
                 value: campaign.obr_name,
             };
         })
-        .sort((a, b) =>
-            a.label.localeCompare(b.label, undefined, {
-                sensitivity: 'accent',
-            }),
-        );
+        .sort(sortCampaignNames);
 export const totalDistrictsEvaluatedPerRound = LQASData => {
     if (!LQASData) return { evaluatedRound1: [], evaluatedRound2: [] };
     let totalEvaluatedRound1 = [];

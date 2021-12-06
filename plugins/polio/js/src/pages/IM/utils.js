@@ -53,12 +53,28 @@ export const findLQASDataForDistrict = ({
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
-    // const { total_child_fmd: marked, total_child_checked: checked } = district;
     const ratio =
         (district.total_child_fmd / district.total_child_checked) * 100;
     if (ratio >= 95) return IM_PASS;
     if (ratio > 89 && ratio < 95) return IM_WARNING;
     return IM_FAIL;
+};
+
+// TODO have exhaustive sorting function
+const sortCampaignNames = (nameA, nameB) => {
+    const [countryCodeA, referenceA] = nameA?.label.split('-');
+    const [countryCodeB, referenceB] = nameB?.label.split('-');
+    const comparison = countryCodeA.localeCompare(countryCodeB, undefined, {
+        sensitivity: 'accent',
+    });
+    if (comparison === 0) {
+        const refA = parseInt(referenceA, 10);
+        const refB = parseInt(referenceB, 10);
+        if (refA < refB) return -1;
+        if (refA > refB) return 1;
+        return 0;
+    }
+    return comparison;
 };
 
 export const makeCampaignsDropDown = campaigns =>
@@ -69,30 +85,7 @@ export const makeCampaignsDropDown = campaigns =>
                 value: campaign.obr_name,
             };
         })
-        .sort((a, b) =>
-            a.label.localeCompare(b.label, undefined, {
-                sensitivity: 'accent',
-            }),
-        );
-// export const totalDistrictsEvaluatedPerRound = LQASData => {
-//     if (!LQASData) return { evaluatedRound1: [], evaluatedRound2: [] };
-//     let totalEvaluatedRound1 = [];
-//     let totalEvaluatedRound2 = [];
-//     Object.keys(LQASData.stats).forEach(campaignKey => {
-//         const districtsRound1 = Object.keys(
-//             LQASData.stats[campaignKey].round_1,
-//         );
-//         const districtsRound2 = Object.keys(
-//             LQASData.stats[campaignKey].round_2,
-//         );
-//         totalEvaluatedRound1 = [...totalEvaluatedRound1, ...districtsRound1];
-//         totalEvaluatedRound2 = [...totalEvaluatedRound2, ...districtsRound2];
-//     });
-
-//     const evaluatedRound1 = new Set(totalEvaluatedRound1);
-//     const evaluatedRound2 = new Set(totalEvaluatedRound2);
-//     return { evaluatedRound1, evaluatedRound2 };
-// };
+        .sort(sortCampaignNames);
 
 export const defaultShapeStyle = {
     color: 'grey',

@@ -168,7 +168,10 @@ export const ImStats = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && (
                             <Box ml={2}>
-                                <LqasImTable data={tableDataRound1} />
+                                <LqasImTable
+                                    data={tableDataRound1}
+                                    tableKey="IM-Round1"
+                                />
                             </Box>
                         )}
                     </Grid>
@@ -176,7 +179,10 @@ export const ImStats = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && (
                             <Box mr={2}>
-                                <LqasImTable data={tableDataRound2} />
+                                <LqasImTable
+                                    data={tableDataRound2}
+                                    tableKey="IM-Round2"
+                                />
                             </Box>
                         )}
                     </Grid>

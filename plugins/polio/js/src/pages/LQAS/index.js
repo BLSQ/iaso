@@ -176,7 +176,10 @@ export const Lqas = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && (
                             <Box ml={2}>
-                                <LqasImTable data={tableDataRound1} />
+                                <LqasImTable
+                                    data={tableDataRound1}
+                                    tableKey="LQAS-Round1"
+                                />
                             </Box>
                         )}
                     </Grid>
@@ -184,7 +187,10 @@ export const Lqas = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && (
                             <Box mr={2}>
-                                <LqasImTable data={tableDataRound2} />
+                                <LqasImTable
+                                    data={tableDataRound2}
+                                    tableKey="LQAS-Round2"
+                                />
                             </Box>
                         )}
                     </Grid>

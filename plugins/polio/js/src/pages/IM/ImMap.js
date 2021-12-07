@@ -42,17 +42,17 @@ export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
     const passedLegendItem = makeLegendItem({
         color: 'green',
         value: passed?.length,
-        message: formatMessage(MESSAGES.imOK),
-    });
-    const failedLegendItem = makeLegendItem({
-        color: 'red',
-        value: failed?.length,
-        message: formatMessage(MESSAGES.imFail),
+        message: formatMessage(MESSAGES['1imOK']),
     });
     const disqualifiedLegendItem = makeLegendItem({
         color: 'orange',
         value: disqualified?.length,
-        message: formatMessage(MESSAGES.imWarning),
+        message: formatMessage(MESSAGES['2imWarning']),
+    });
+    const failedLegendItem = makeLegendItem({
+        color: 'red',
+        value: failed?.length,
+        message: formatMessage(MESSAGES['3imFail']),
     });
     // const notCheckedLegendItem = makeLegendItem({
     //     color: 'grey',

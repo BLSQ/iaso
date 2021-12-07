@@ -23,8 +23,12 @@ export const MapLegend = ({ title, legendItems, width }) => {
                 >
                     {title}
                 </Typography>
-                {legendItems.map(legendItem => (
-                    <Grid container spacing={1} key={legendItem.value}>
+                {legendItems.map((legendItem, i) => (
+                    <Grid
+                        container
+                        spacing={1}
+                        key={`${title}${i}${legendItem.value}`}
+                    >
                         <Grid
                             item
                             sm={width === 'xs' ? 6 : 4}

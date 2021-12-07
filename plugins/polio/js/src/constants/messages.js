@@ -699,7 +699,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.im',
         defaultMessage: 'IM',
     },
-    '1imOK1': {
+    '1imOK': {
         id: 'iaso.polio.label.imOK',
         defaultMessage: '>95%',
     },

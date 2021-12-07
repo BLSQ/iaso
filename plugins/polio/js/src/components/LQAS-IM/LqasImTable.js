@@ -12,7 +12,7 @@ import {
     Box,
     Paper,
 } from '@material-ui/core';
-import { array, bool } from 'prop-types';
+import { array, bool, string } from 'prop-types';
 import { useSafeIntl } from 'bluesquare-components';
 import CheckIcon from '@material-ui/icons/Check';
 import MESSAGES from '../../constants/messages';
@@ -62,7 +62,7 @@ const sortByFoundDesc = (a, b) => {
     return valueA < valueB;
 };
 
-export const LqasImTable = ({ data, marginTop }) => {
+export const LqasImTable = ({ data, marginTop, tableKey }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [page, setPage] = useState(0);
@@ -183,88 +183,90 @@ export const LqasImTable = ({ data, marginTop }) => {
                                     const statusColor = determineStatusColor(
                                         district.status,
                                     );
-                                    return (
-                                        <TableRow
-                                            key={
-                                                `${district.district}${i}` ??
-                                                `${district.name}${i}`
-                                            }
-                                            className={
-                                                i % 2 > 0
-                                                    ? ''
-                                                    : classes.districtListRow
-                                            }
-                                        >
-                                            <TableCell
-                                                style={{
-                                                    cursor: 'default',
-                                                }}
-                                                align="center"
+                                    if (district) {
+                                        return (
+                                            <TableRow
+                                                key={`${tableKey}${district.name}${i}`}
                                                 className={
-                                                    classes.lqasImTableCell
+                                                    i % 2 > 0
+                                                        ? ''
+                                                        : classes.districtListRow
                                                 }
                                             >
-                                                {makeTableText(district.name)}
-                                            </TableCell>
-                                            <TableCell
-                                                style={{
-                                                    cursor: 'default',
-                                                }}
-                                                align="center"
-                                                className={
-                                                    classes.lqasImTableCell
-                                                }
-                                            >
-                                                {makeTableText(
-                                                    district.total_child_fmd,
-                                                )}
-                                            </TableCell>
-                                            <TableCell
-                                                style={{
-                                                    cursor: 'pointer',
-                                                }}
-                                                align="center"
-                                                className={
-                                                    classes.lqasImTableCell
-                                                }
-                                            >
-                                                {makeTableText(
-                                                    district.total_child_checked,
-                                                )}
-                                            </TableCell>
-                                            <TableCell
-                                                style={{
-                                                    cursor: 'pointer',
-                                                    color: statusColor,
-                                                }}
-                                                align="center"
-                                                className={
-                                                    classes.lqasImTableCell
-                                                }
-                                            >
-                                                {makeTableText(
-                                                    formatMessage(
-                                                        MESSAGES[
-                                                            district.status
-                                                        ],
-                                                    ),
-                                                )}
-                                            </TableCell>
-                                            <TableCell
-                                                style={{
-                                                    cursor: 'pointer',
-                                                }}
-                                                align="center"
-                                                className={
-                                                    classes.lqasImTableCell
-                                                }
-                                            >
-                                                {district.district && (
-                                                    <CheckIcon />
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
+                                                <TableCell
+                                                    style={{
+                                                        cursor: 'default',
+                                                    }}
+                                                    align="center"
+                                                    className={
+                                                        classes.lqasImTableCell
+                                                    }
+                                                >
+                                                    {makeTableText(
+                                                        district.name,
+                                                    )}
+                                                </TableCell>
+                                                <TableCell
+                                                    style={{
+                                                        cursor: 'default',
+                                                    }}
+                                                    align="center"
+                                                    className={
+                                                        classes.lqasImTableCell
+                                                    }
+                                                >
+                                                    {makeTableText(
+                                                        district.total_child_fmd,
+                                                    )}
+                                                </TableCell>
+                                                <TableCell
+                                                    style={{
+                                                        cursor: 'default',
+                                                    }}
+                                                    align="center"
+                                                    className={
+                                                        classes.lqasImTableCell
+                                                    }
+                                                >
+                                                    {makeTableText(
+                                                        district.total_child_checked,
+                                                    )}
+                                                </TableCell>
+                                                <TableCell
+                                                    style={{
+                                                        cursor: 'default',
+                                                        color: statusColor,
+                                                    }}
+                                                    align="center"
+                                                    className={
+                                                        classes.lqasImTableCell
+                                                    }
+                                                >
+                                                    {makeTableText(
+                                                        formatMessage(
+                                                            MESSAGES[
+                                                                district.status
+                                                            ],
+                                                        ),
+                                                    )}
+                                                </TableCell>
+                                                <TableCell
+                                                    style={{
+                                                        cursor: 'default',
+                                                    }}
+                                                    align="center"
+                                                    className={
+                                                        classes.lqasImTableCell
+                                                    }
+                                                >
+                                                    {district.district && (
+                                                        <CheckIcon />
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    }
+                                    return null;
                                 })}
                         </TableBody>
                     </MuiTable>
@@ -288,6 +290,7 @@ export const LqasImTable = ({ data, marginTop }) => {
 LqasImTable.propTypes = {
     data: array,
     marginTop: bool,
+    tableKey: string.isRequired,
 };
 LqasImTable.defaultProps = {
     data: [],

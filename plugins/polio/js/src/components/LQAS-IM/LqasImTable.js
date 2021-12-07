@@ -197,7 +197,6 @@ export const LqasImTable = ({ data, marginTop }) => {
                                         >
                                             <TableCell
                                                 style={{
-                                                    // width: '20%',
                                                     cursor: 'default',
                                                 }}
                                                 align="center"
@@ -209,7 +208,6 @@ export const LqasImTable = ({ data, marginTop }) => {
                                             </TableCell>
                                             <TableCell
                                                 style={{
-                                                    // width: '20%',
                                                     cursor: 'default',
                                                 }}
                                                 align="center"
@@ -223,7 +221,6 @@ export const LqasImTable = ({ data, marginTop }) => {
                                             </TableCell>
                                             <TableCell
                                                 style={{
-                                                    // minWidth: '20%',
                                                     cursor: 'pointer',
                                                 }}
                                                 align="center"
@@ -237,7 +234,6 @@ export const LqasImTable = ({ data, marginTop }) => {
                                             </TableCell>
                                             <TableCell
                                                 style={{
-                                                    // minWidth: '20%',
                                                     cursor: 'pointer',
                                                     color: statusColor,
                                                 }}
@@ -256,7 +252,6 @@ export const LqasImTable = ({ data, marginTop }) => {
                                             </TableCell>
                                             <TableCell
                                                 style={{
-                                                    // minWidth: '20%',
                                                     cursor: 'pointer',
                                                 }}
                                                 align="center"

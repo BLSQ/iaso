@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import {
     useSafeIntl,
@@ -11,15 +11,10 @@ import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
-import {
-    determineStatusForDistrict,
-    // lqasTableColumns,
-    getLqasStatsForRound,
-} from './utils';
+import { determineStatusForDistrict, getLqasStatsForRound } from './utils';
 import {
     makeCampaignsDropDown,
     findCountryIds,
-    // sortDistrictsByName,
     findScope,
     convertAPIData,
 } from '../../utils/LqasIm';
@@ -98,10 +93,6 @@ export const Lqas = () => {
     });
 
     const dropDownOptions = makeCampaignsDropDown(campaigns);
-
-    useEffect(() => {
-        setCampaign('CON-52DS-01-2021');
-    }, []);
 
     return (
         <>
@@ -185,14 +176,6 @@ export const Lqas = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && (
                             <Box ml={2}>
-                                {/* <Table
-                                    data={sortDistrictsByName(tableDataRound1)}
-                                    baseUrl=""
-                                    columns={lqasTableColumns(formatMessage)}
-                                    redirectTo={() => {}}
-                                    params={{ page: 1, pageSize: 40 }}
-                                    pages={1}
-                                /> */}
                                 <LqasImTable data={tableDataRound1} />
                             </Box>
                         )}
@@ -201,14 +184,6 @@ export const Lqas = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && (
                             <Box mr={2}>
-                                {/* <Table
-                                    data={sortDistrictsByName(tableDataRound2)}
-                                    baseUrl=""
-                                    columns={lqasTableColumns(formatMessage)}
-                                    redirectTo={() => {}}
-                                    pages={1}
-                                    params={{ page: 1, pageSize: 10 }}
-                                /> */}
                                 <LqasImTable data={tableDataRound2} />
                             </Box>
                         )}

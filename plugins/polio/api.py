@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from django.db.models import Value, IntegerField, TextField, UUIDField
 from collections import defaultdict
 
+
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
@@ -35,7 +36,12 @@ from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparedne
 from .models import Campaign, Config, LineListImport, SpreadSheetImport
 from .models import CountryUsersGroup
 from .models import URLCache, Preparedness
+from .preparedness.calculator import preparedness_summary
 from .preparedness.parser import get_preparedness
+
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -208,90 +214,32 @@ class LineListImportViewSet(ModelViewSet):
         return LineListImport.objects.all()
 
 
-def avg(l):
-    if not l:
-        return None
-    filtered = filter(lambda x: isinstance(x, int), l)
-    return sum(filtered) / len(l)
-
-
-def get_summary(zones):
-    r = {}
-    for _, i, _, kind in indicators:
-        if kind == "number":
-            r[i] = avg([d.get(i) for d in zones.values()])
-        elif kind == "date":
-            values = [d.get(i) for dn, d in zones.items() if d.get(i)]
-            if values:
-                # need to parse to date so we sort appropriately
-                r[i] = min(values), max(values)
-            else:
-                r[i] = "", ""
-        else:
-            assert "error"
-    return r
-
-
-# sn, key, title, type
-indicators = [
-    (1, "operational_fund", "Operational funds", "number"),
-    (2, "vaccine_and_droppers_received", "vaccine_and_droppers_received", "number"),
-    (3, "vaccine_cold_chain_assessment", "Vaccine cold chain assessment  ", "number"),
-    (4, "vaccine_monitors_training_and_deployment", "Vaccine monitors training & deployment  ", "number"),
-    (5, "ppe_materials_and_others_supply", "PPE Materials and other supplies  ", "number"),
-    (6, "penmarkers_supply", "Penmarkers  ", "date"),
-    (7, "sia_training", "Supervisor training & deployment  ", "number"),
-    (8, "sia_micro_planning", "Micro/Macro plan  ", "number"),
-    (9, "communication_sm_fund", "SM funds --> 2 weeks  ", "number"),
-    (10, "communication_sm_activities", "SM activities  ", "number"),
-    (11, "communication_c4d", "C4d", "date"),
-    (12, "aefi_easi_protocol", "Safety documents: AESI Protocol  ", "number"),
-    (13, "pharmacovigilance_committee", "Pharmacovigilance Committee  ", "number"),
-    (0, "status_score", "status_score", "number"),
-    # not used atm
-    # (0, "training_score", "training_score", "number"),
-    # (0, "monitoring_score", "monitoring_score", "number"),
-    # (3, "vaccine_score", "vaccine_score", "number"),
-    # (4, "advocacy_score", "advocacy_score", "number"),
-    # (5, "adverse_score", "adverse_score", "number"),
-    # (7, "region", "region", "number"),
-]
-
-
 class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
-        c = Campaign.objects.get(obr_name="prep_gambia")
-        ssi = SpreadSheetImport.objects.filter(spread_id=extract_id_from_url(c.preperadness_spreadsheet_url))
-        last_p = get_preparedness(ssi.last().cached_spreadsheet)
-
-        r = {
-            "campaign_id": c.id,
-            "campaign_obr_name": c.obr_name,
-            "indicators": {},
-        }
-        indicators_per_zone = {
-            "national": last_p["national"],
-            "regions": get_summary(last_p["regions"]),
-            "districts": get_summary(last_p["districts"]),
-        }
-        # get average
-        r["overall_status_score"] = avg(
-            [
-                indicators_per_zone["national"]["status_score"],
-                indicators_per_zone["national"]["status_score"],
-                indicators_per_zone["districts"]["status_score"],
-            ]
-        )
-        # pivot
-        for sn, key, title, kind in indicators:
-            r["indicators"][key] = {
-                "sn": sn,
-                "title": title,
-                "national": indicators_per_zone["national"][key],
-                "regions": indicators_per_zone["regions"][key],
-                "districts": indicators_per_zone["districts"][key],
+        r = []
+        qs = Campaign.objects.filter(preperadness_spreadsheet_url__isnull=False)
+        for c in qs:
+            campaign_prep = {
+                "campaign_id": c.id,
+                "campaign_obr_name": c.obr_name,
+                "indicators": {},
             }
+            try:
+                ssi = SpreadSheetImport.objects.filter(spread_id=extract_id_from_url(c.preperadness_spreadsheet_url))
 
+                if not ssi:
+                    # No import yet
+                    campaign_prep["status"] = "not_sync"
+                    continue
+                campaign_prep["date"]: ssi.last().created_at
+                last_p = get_preparedness(ssi.last().cached_spreadsheet)
+                campaign_prep.update(preparedness_summary(last_p))
+            except Exception as e:
+                campaign_prep["status"] = "error"
+                campaign_prep["details"] = str(e)
+                logger.exception(e)
+
+            r.append(campaign_prep)
         return Response(r)
 
 

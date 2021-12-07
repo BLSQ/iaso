@@ -34,7 +34,10 @@ def get_summary(zones):
         elif kind == "date":
             for n, v in name_values:
                 if v and not isinstance(v, (str, type(None))):
-                    raise Exception(f"Value `{repr(v)}` for {n} is not correct type, expected a date")
+                    raise Exception(
+                        f"Value `{  repr(v)}` for {n} {zones[n]} is not correct type, expected a date. "
+                        f"Other values: {name_values} "
+                    )
             values = [v for v in values if v]
             if values:
                 # need to parse to date so we sort appropriately

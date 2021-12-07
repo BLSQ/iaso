@@ -9,12 +9,12 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
+import { postRequest } from 'Iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { getColumns } from '../config';
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
-import { postRequest } from 'Iaso/libs/Api';
 import MESSAGES from '../../../components/snackBars/messages';
-import { useSnackMutation } from 'Iaso/libs/apiHooks';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -69,11 +69,13 @@ const CompletenessPeriodComponent = ({
 
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+    // FIXME: doesn't seem to be actually used
     const onSelectCell = (form, status, selectedPeriod) => {
         dispatch(
             redirectTo(baseUrls.instances, {
                 formIds: form.id,
-                periods: selectedPeriod.asPeriodType(form.period_type)
+                periodType: form.period_type.toUpperCase(),
+                startPeriod: selectedPeriod.asPeriodType(form.period_type)
                     .periodString,
                 status: status.toUpperCase(),
             }),
@@ -92,6 +94,7 @@ const CompletenessPeriodComponent = ({
         period.monthRange,
         classes,
         activeInstanceStatuses,
+        // FIXME: this call back is not called
         (form, status, p) => onSelectCell(form, status, p),
         arg => onClick(arg),
         activePeriodType,

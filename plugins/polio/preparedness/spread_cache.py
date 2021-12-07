@@ -20,7 +20,7 @@ class CachedSpread:
                 "formula": sheet.get(value_render_option=gspread.utils.ValueRenderOption.formula),
                 "values": sheet.get(
                     value_render_option=gspread.utils.ValueRenderOption.unformatted,
-                    date_time_render_option="FORMATTED_STRING",
+                    date_time_render_option="SERIAL_NUMBER",
                 ),
             }
             sheets.append(dict_sheet)

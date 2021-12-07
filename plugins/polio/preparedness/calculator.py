@@ -1,3 +1,15 @@
+import datetime
+
+
+_BASE_GSHEET_DATE = datetime.date(1899, 12, 30)
+
+
+def convert_date_from_gsheet(num_days: int) -> datetime.date:
+    # Ref: https://stackoverflow.com/a/66738817/
+    assert isinstance(num_days, int)
+    return _BASE_GSHEET_DATE + datetime.timedelta(num_days)
+
+
 def avg(l):
     if not l:
         return None
@@ -32,16 +44,10 @@ def get_summary(zones):
         if kind == "number":
             r[i] = avg(values)
         elif kind == "date":
-            for n, v in name_values:
-                if v and not isinstance(v, (str, type(None))):
-                    raise Exception(
-                        f"Value `{  repr(v)}` for {n} {zones[n]} is not correct type, expected a date. "
-                        f"Other values: {name_values} "
-                    )
             values = [v for v in values if v]
             if values:
-                # need to parse to date so we sort appropriately
-                r[i] = min(values), max(values)
+                start, end = min(values), max(values)
+                r[i] = convert_date_from_gsheet(start), convert_date_from_gsheet(end)
             else:
                 r[i] = "", ""
         else:

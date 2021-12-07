@@ -88,7 +88,7 @@ export const MapComponent = ({
                             onClick={() => onSelectShape(shape)}
                         >
                             {makePopup && makePopup(shape)}
-                            <Tooltip>
+                            <Tooltip title={shape.name}>
                                 {backgroundLayer?.length > 0 && (
                                     <span>
                                         {`${

@@ -655,25 +655,25 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',
     },
-    lqasOK: {
+    '1lqasOK': {
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',
-    },
-    failing: {
-        id: 'iaso.polio.label.failed',
-        defaultMessage: 'Failed',
-    },
-    lqasFail: {
-        id: 'iaso.polio.label.failed',
-        defaultMessage: 'Failed',
     },
     disqualified: {
         id: 'iaso.polio.label.disqualified',
         defaultMessage: 'Disqualified',
     },
-    lqasDisqualified: {
+    '2lqasDisqualified': {
         id: 'iaso.polio.label.disqualified',
         defaultMessage: 'Disqualified',
+    },
+    failing: {
+        id: 'iaso.polio.label.failed',
+        defaultMessage: 'Failed',
+    },
+    '3lqasFail': {
+        id: 'iaso.polio.label.failed',
+        defaultMessage: 'Failed',
     },
     districtsNotFound: {
         id: 'iaso.polio.label.districtsNotFound',
@@ -699,15 +699,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.im',
         defaultMessage: 'IM',
     },
-    imOK: {
+    '1imOK1': {
         id: 'iaso.polio.label.imOK',
         defaultMessage: '>95%',
     },
-    imWarning: {
+    '2imWarning': {
         id: 'iaso.polio.label.imWarning',
         defaultMessage: '90%-94%',
     },
-    imFail: {
+    '3imFail': {
         id: 'iaso.polio.label.imFail',
         defaultMessage: '<90%',
     },

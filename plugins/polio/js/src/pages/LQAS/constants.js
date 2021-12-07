@@ -1,7 +1,7 @@
 export const LQAS_POC_URL = '/api/polio/lqasstats/';
-export const LQAS_PASS = 'lqasOK';
-export const LQAS_DISQUALIFIED = 'lqasDisqualified';
-export const LQAS_FAIL = 'lqasFail';
+export const LQAS_PASS = '1lqasOK';
+export const LQAS_DISQUALIFIED = '2lqasDisqualified';
+export const LQAS_FAIL = '3lqasFail';
 
 export const districtColors = {
     [LQAS_PASS]: {

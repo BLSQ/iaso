@@ -4,7 +4,7 @@ import {
     useSafeIntl,
     Select,
     LoadingSpinner,
-    Table,
+    // Table,
 } from 'bluesquare-components';
 
 import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
@@ -13,7 +13,7 @@ import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import {
     determineStatusForDistrict,
-    imTableColumns,
+    // imTableColumns,
     getImStatsForRound,
 } from './utils';
 import { useIM } from './requests';
@@ -21,10 +21,11 @@ import { ImMap } from './ImMap';
 import {
     makeCampaignsDropDown,
     findCountryIds,
-    sortDistrictsByName,
+    // sortDistrictsByName,
     findScope,
     convertAPIData,
 } from '../../utils/LqasIm';
+import { LqasImTable } from '../../components/LQAS-IM/LqasImTable';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -175,14 +176,15 @@ export const ImStats = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && (
                             <Box ml={2}>
-                                <Table
+                                {/* <Table
                                     data={sortDistrictsByName(tableDataRound1)}
                                     baseUrl=""
                                     columns={imTableColumns(formatMessage)}
                                     redirectTo={() => {}}
                                     params={{ page: 1, pageSize: 40 }}
                                     pages={1}
-                                />
+                                /> */}
+                                <LqasImTable data={tableDataRound1} />
                             </Box>
                         )}
                     </Grid>
@@ -190,14 +192,15 @@ export const ImStats = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && (
                             <Box mr={2}>
-                                <Table
+                                {/* <Table
                                     data={sortDistrictsByName(tableDataRound2)}
                                     baseUrl=""
                                     columns={imTableColumns(formatMessage)}
                                     redirectTo={() => {}}
                                     pages={1}
                                     params={{ page: 1, pageSize: 10 }}
-                                />
+                                /> */}
+                                <LqasImTable data={tableDataRound2} />
                             </Box>
                         )}
                     </Grid>

@@ -66,7 +66,7 @@ export const LqasImTable = ({ data, marginTop }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(50);
     const [sortBy, setSortBy] = useState('asc');
     const [sortFocus, setSortFocus] = useState('DISTRICT');
 
@@ -271,7 +271,7 @@ export const LqasImTable = ({ data, marginTop }) => {
                 </TableContainer>
                 <TablePagination
                     className={classes.tablePagination}
-                    rowsPerPageOptions={[5, 10, 25]}
+                    rowsPerPageOptions={[5, 10, 25, 50]}
                     component="div"
                     count={dataForTable?.length ?? 0}
                     rowsPerPage={rowsPerPage}

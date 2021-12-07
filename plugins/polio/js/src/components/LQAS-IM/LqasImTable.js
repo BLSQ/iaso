@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import {
-    Typography,
     TableContainer,
     Table as MuiTable,
     TableHead,
@@ -8,7 +7,6 @@ import {
     TableRow,
     TableCell,
     TablePagination,
-    Tooltip,
     Box,
     Paper,
 } from '@material-ui/core';
@@ -17,50 +15,15 @@ import { useSafeIntl } from 'bluesquare-components';
 import CheckIcon from '@material-ui/icons/Check';
 import MESSAGES from '../../constants/messages';
 import { useStyles } from '../../styles/theme';
-
-const makeTableText = text => {
-    return (
-        <Tooltip placement="bottom" title={text ?? 'no text'}>
-            <Typography
-                variant="body2"
-                style={{
-                    maxWidth: '100px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                }}
-            >
-                {text}
-            </Typography>
-        </Tooltip>
-    );
-};
-
-const sortbyDistrictNameAsc = (a, b) =>
-    a.name.localeCompare(b.name, undefined, {
-        sensitivity: 'accent',
-    });
-
-const sortbyDistrictNameDesc = (a, b) =>
-    b.name.localeCompare(a.name, undefined, {
-        sensitivity: 'accent',
-    });
-
-// Assuming status is either a number, or can be resolved to one by parseInt
-const sortbyStatusAsc = (a, b) =>
-    parseInt(a.status, 10) > parseInt(b.status, 10);
-const sortbyStatusDesc = (a, b) =>
-    parseInt(a.status, 10) < parseInt(b.status, 10);
-
-const sortByFoundAsc = (a, b) => {
-    const valueA = a.district ? 1 : 0;
-    const valueB = b.district ? 1 : 0;
-    return valueA > valueB;
-};
-const sortByFoundDesc = (a, b) => {
-    const valueA = a.district ? 1 : 0;
-    const valueB = b.district ? 1 : 0;
-    return valueA < valueB;
-};
+import {
+    makeTableText,
+    sortbyDistrictNameAsc,
+    sortbyDistrictNameDesc,
+    sortbyStatusAsc,
+    sortbyStatusDesc,
+    sortByFoundAsc,
+    sortByFoundDesc,
+} from './tableUtils';
 
 export const LqasImTable = ({ data, marginTop, tableKey }) => {
     const { formatMessage } = useSafeIntl();

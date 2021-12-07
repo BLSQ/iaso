@@ -45,8 +45,14 @@ def get_summary(zones):
             r[i] = avg(values)
         elif kind == "date":
             values = [v for v in values if v]
+            for n, v in name_values:
+                if v and not isinstance(v, (int)):
+                    raise ValueError(f"Value `{ repr(v)}` for {n} is not correct date")
             if values:
-                start, end = min(values), max(values)
+                try:
+                    start, end = min(values), max(values)
+                except TypeError as e:
+                    raise ValueError(f"Invalid dates in {name_values} ")
                 r[i] = convert_date_from_gsheet(start), convert_date_from_gsheet(end)
             else:
                 r[i] = "", ""

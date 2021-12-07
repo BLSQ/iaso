@@ -22,7 +22,7 @@ def from_percent(x: Optional[float]):
     return x * 100 if (x is not None and isinstance(x, (int, float))) else None
 
 
-# Key  indicator and their positions in the sheets
+# Key indicator and their positions in the sheets
 NATIONAL_INDICATORS = {
     "operational_fund": "E18",
     "vaccine_and_droppers_received": "E35",
@@ -39,27 +39,8 @@ NATIONAL_INDICATORS = {
     "pharmacovigilance_committee": "E51",
 }
 
-
-# Key indicator and their positions in the "REGIONAL" sheets
-REGIONAL_INDICATORS = {
-    "operational_fund": "F8",
-    "vaccine_and_droppers_received": "F34",
-    "vaccine_cold_chain_assessment": "F33",
-    "vaccine_monitors_training_and_deployment": "F35",
-    "ppe_materials_and_others_supply": "F37",
-    "penmarkers_supply": "F36",  # date
-    "sia_training": "F17",
-    "sia_micro_planning": "F26",
-    "communication_sm_fund": "F43",
-    "communication_sm_activities": "F46",
-    "communication_c4d": "F45",  # date
-    "aefi_easi_protocol": "F52",
-    "pharmacovigilance_committee": "F51",
-}
-
-
-# District indicator row, save a Region instead it's only the line number because the number of district isn't fix
-DISTRICT_INDICATORS = {
+# indicator row in Region sheet, sometime it can be shifted because of an extra empty row but we get the correction later
+REGIONAL_DISTRICT_INDICATORS = {
     "operational_fund": 8,
     "vaccine_and_droppers_received": 34,
     "vaccine_cold_chain_assessment": 33,
@@ -74,9 +55,6 @@ DISTRICT_INDICATORS = {
     "aefi_easi_protocol": 52,
     "pharmacovigilance_committee": 51,
 }
-
-DISTRICT_LIST_LINE_NUMBER = 7
-DISTRICT_LIST_START = 7
 
 
 def _get_scores(sheet: CachedSheet, cell_pos):
@@ -124,23 +102,8 @@ def get_national_level_preparedness(spread: CachedSpread):
         score = _get_scores(worksheet, cell)
         return {**kv, **score}
     raise Exception(
-        "Summary of National Level Preparedness`or Summary of Regional Level Preparedness was not found in this document"
+        "Summary of National Level Preparedness or Summary of Regional Level Preparedness was not found in this document"
     )
-
-
-def get_indicator_per_districts(sheet: CachedSheet):
-    # Detect List of districts, and in which colum they are
-    districts = sheet.get_line_start(DISTRICT_LIST_LINE_NUMBER, DISTRICT_LIST_START)
-    # ignore last column since it the comments
-    districts = districts[:-1]
-    districts_indicators = {}
-    for rownum, colnum, district_name in districts:
-        if not district_name:
-            continue
-        districts_indicators[district_name] = {}
-        for indicator_key, indicator_row in DISTRICT_INDICATORS.items():
-            districts_indicators[district_name][indicator_key] = sheet.get_rc(indicator_row, colnum)
-    return districts_indicators
 
 
 def get_regional_level_preparedness(spread: CachedSpread):
@@ -170,15 +133,38 @@ def get_regional_level_preparedness(spread: CachedSpread):
             continue
         print(f"Regional Data found on worksheet: {sheet.title}")
 
-        indicators = sheet.get_dict_position(REGIONAL_INDICATORS)
-        indicators["communication_sm_activities"] = from_percent(indicators["communication_sm_activities"])
-        regional_name = sheet.get_rc(cell[0], cell[1] + 1)
-        regional_score = _get_scores(sheet, cell)
-        regions[regional_name] = {**indicators, **regional_score}
+        start_region = sheet.find_formula("=C4")
+        if not start_region:
+            start_region = sheet.find_formula("=C5")
+        if not start_region:
+            print(f"start of data for region not found in {sheet.title}")
+            start_region = (7, 5)
+        regional_name = sheet.get_rc(*start_region)
 
         # for indicators
-        district_indicators = get_indicator_per_districts(sheet)
+        # Detect List of districts, and in which columm they are
+        region_districts = sheet.get_line_start(start_region[0], start_region[1])
+        # ignore last column since it the comments
+        region_districts = region_districts[:-1]
+        districts_indicators = {}
 
+        for rownum, colnum, name in region_districts:
+            if not name:
+                continue
+            districts_indicators[name] = {}
+            for indicator_key, indicator_row in REGIONAL_DISTRICT_INDICATORS.items():
+                shift = 0
+                # some sheet have an extra empty row
+                if sheet.get_a1("B14") == 0 and indicator_row >= 14:
+                    shift = 1
+                value = sheet.get_rc(indicator_row + shift, colnum)
+                if indicator_key == "communication_sm_activities":
+                    value = from_percent(value)
+                districts_indicators[name][indicator_key] = value
+
+        region_indicators = districts_indicators.pop(regional_name)
+        regional_score = _get_scores(sheet, cell)
+        regions[regional_name] = {**region_indicators, **regional_score}
         # Find district box
         # start juste after the region
         col_district = sheet.get_line_start(cell[0], cell[1] + 2)
@@ -189,7 +175,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
             districts[district_name] = {**district_scores, "region": regional_name}
 
         # merge both dict
-        for district_name, values in district_indicators.items():
+        for district_name, values in districts_indicators.items():
             if district_name in districts:
                 districts[district_name].update(values)
             else:

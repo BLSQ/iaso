@@ -17,7 +17,7 @@ class CachedSpread:
             dict_sheet = {
                 "title": sheet.title,
                 "id": sheet.id,
-                "formula": sheet.get(value_render_option=gspread.utils.ValueRenderOption.formula),
+                "formulas": sheet.get(value_render_option=gspread.utils.ValueRenderOption.formula),
                 "values": sheet.get(
                     value_render_option=gspread.utils.ValueRenderOption.unformatted,
                     date_time_render_option="SERIAL_NUMBER",
@@ -38,6 +38,7 @@ class CachedSheet:
     def __init__(self, cache_dict: dict):
         self.c = cache_dict
         self.values = cache_dict["values"]
+        self.formulas = cache_dict["formulas"]
 
     def _cache_get(self, linenum, colnum):
         if linenum >= len(self.values):
@@ -51,7 +52,7 @@ class CachedSheet:
         row, col = gspread.utils.a1_to_rowcol(a1_pos)
         return self._cache_get(row - 1, col - 1)
 
-    def get_rc(self, row, col):
+    def get_rc(self, row: int, col: int):
         return self._cache_get(row - 1, col - 1)
 
     def get_dict_position(self, key_position):
@@ -69,7 +70,15 @@ class CachedSheet:
         return f'<CachedSheet title="{self.c["title"]}">'
 
     def find(self, query: str):
+        "Return first cell for sprint, searching right down"
         for row_num, row in enumerate(self.values):
+            for col_num, cell in enumerate(row):
+                if cell == query:
+                    return row_num + 1, col_num + 1
+        return None
+
+    def find_formula(self, query: str):
+        for row_num, row in enumerate(self.formulas):
             for col_num, cell in enumerate(row):
                 if cell == query:
                     return row_num + 1, col_num + 1

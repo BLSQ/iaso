@@ -17,7 +17,7 @@ class CachedSpread:
             dict_sheet = {
                 "title": sheet.title,
                 "id": sheet.id,
-                # "formula": sheet.get(value_render_option=gspread.utils.ValueRenderOption.formula),
+                "formula": sheet.get(value_render_option=gspread.utils.ValueRenderOption.formula),
                 "values": sheet.get(
                     value_render_option=gspread.utils.ValueRenderOption.unformatted,
                     date_time_render_option="FORMATTED_STRING",

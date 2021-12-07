@@ -216,8 +216,12 @@ class LineListImportViewSet(ModelViewSet):
 
 class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
+
         r = []
         qs = Campaign.objects.filter(preperadness_spreadsheet_url__isnull=False)
+        if request.query_params.get("campaign"):
+            qs = qs.filter(obr_name=request.query_params.get("campaign"))
+
         for c in qs:
             campaign_prep = {
                 "campaign_id": c.id,

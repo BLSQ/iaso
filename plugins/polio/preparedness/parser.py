@@ -111,7 +111,9 @@ def _get_scores(sheet: CachedSheet, cell_pos):
 def get_national_level_preparedness(spread: CachedSpread):
     for worksheet in spread.worksheets():
         cell = worksheet.find_one_of(
-            "Summary of National Level Preparedness", "Résumé du niveau de préparation au niveau national "
+            "Summary of National Level Preparedness",
+            "Résumé du niveau de préparation au niveau national ",
+            "Résumé de la préparation au niveau national",
         )
         if not cell:
             print(f"No national data found on worksheet: {worksheet.title}")
@@ -161,6 +163,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
             "Summary of Regional Level Preparedness",
             "Résumé du niveau de préparation",
             "Résumé du niveau de préparation Lomé Commune",
+            "Résumé de la préparation au niveau régional",
         )
         if not cell:
             print(f"No regional data found on worksheet: {sheet.title}")

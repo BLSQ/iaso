@@ -40,7 +40,7 @@ def send_notification_email(campaign):
         else ""
     )
     c = campaign
-    url = f"https://{domain}/dashboard/polio/list"
+    url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
     # format thousand
     target_population = f"{c.round_one.target_population:,}" if c.round_one and c.round_one.target_population else ""
 

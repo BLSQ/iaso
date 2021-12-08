@@ -262,8 +262,8 @@ const InstancesFiltersComponent = ({
                         onChangeDate={handleFormChange}
                         dateFrom={formState.dateFrom?.value}
                         dateTo={formState.dateTo?.value}
-                        labelFrom={MESSAGES.creationDateFrom} // here
-                        labelTo={MESSAGES.creationDateTo} // here
+                        labelFrom={MESSAGES.creationDateFrom}
+                        labelTo={MESSAGES.creationDateTo}
                     />
                     <InputComponent
                         keyValue="periodType"

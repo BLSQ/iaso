@@ -24,4 +24,5 @@ Since the format of the spread is prone to change and human mistake, there is a 
 
 The Polio Campaign app has integration with the Google Sheet API used to populate the preparedness data. This integration requires a JSON API Key with the Sheet API Enabled, the details of how to create an API key and enable the Sheet API can be found on the [Google Sheet API documentation](https://developers.google.com/sheets/api).
 
-The app expects an environment variable `GOOGLE_API_KEY_BASE64` containing the JSON API Key decoded to base64. On Unix distributions, you can use the output of command `base64 credential.json` as the env variable.
+Then set the json content of the file inside a polio.Config object with the slug google_api_key.
+For the generation of template you will also need a Config `preparedness_template_id` with keys `fr` and `en` 

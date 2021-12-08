@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import List
 
@@ -10,7 +11,7 @@ from gspread_formatting import (
     format_cell_ranges,
 )
 
-from plugins.polio.preparedness.client import get_client
+from plugins.polio.preparedness.client import get_client, get_google_config
 from plugins.polio.preparedness.conditional_formatting import (
     DARK_YELLOW,
     LIGHT_YELLOW,
@@ -23,18 +24,17 @@ from plugins.polio.preparedness.conditional_formatting import (
     TEXT_CENTERED,
 )
 
-PREPAREDNESS_TEMPLATE_ID = os.environ.get("PREPAREDNESS_TEMPLATE_ID", None)
-PREPAREDNESS_TEMPLATE_FR_ID = os.environ.get("PREPAREDNESS_TEMPLATE_FR_ID", None)
+# you need to create an polio.config object with this keey in the DB
+PREPAREDNESS_TEMPLATE_CONFIG_KEY = "preparedness_template_id"
 
 
 def create_spreadsheet(title: str, lang: str):
     client = get_client()
-    if lang == "EN":
-        template = PREPAREDNESS_TEMPLATE_ID
-    elif lang == "FR":
-        template = PREPAREDNESS_TEMPLATE_FR_ID
-    else:
-        raise Exception(f"Template for {lang} not found")
+    config = get_google_config(PREPAREDNESS_TEMPLATE_CONFIG_KEY)
+    if lang not in ("EN", "FR"):
+        # We allow it for future dev but display an error to avoid carelessly adding lang
+        logging.error("Unsupported lang for preparedness template")
+    template = config.get(lang.lower())
 
     if not template:
         raise Exception(f"Template for {lang} not found")

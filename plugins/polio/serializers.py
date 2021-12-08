@@ -281,11 +281,6 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
     campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all(), write_only=True)
     url = serializers.URLField(read_only=True)
 
-    def validate(self, attrs):
-        if not PREPAREDNESS_TEMPLATE_ID:
-            raise exceptions.ValidationError({"message": _("Preparedness template not configured")})
-        return attrs
-
     def create(self, validated_data):
         campaign = validated_data.get("campaign")
 

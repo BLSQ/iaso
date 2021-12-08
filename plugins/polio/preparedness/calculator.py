@@ -98,7 +98,7 @@ def preparedness_summary(prep_dict):
     r["overall_status_score"] = avg(
         [
             indicators_per_zone["national"]["status_score"],
-            indicators_per_zone["national"]["status_score"],
+            indicators_per_zone["regional"]["status_score"],
             indicators_per_zone["districts"]["status_score"],
         ]
     )

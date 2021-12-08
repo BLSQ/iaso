@@ -118,7 +118,7 @@ const InstancesFiltersComponent = ({
     const periodError = useMemo(() => {
         if (formState.startPeriod?.value && formState.endPeriod?.value) {
             try {
-                return !Period.isBefore(
+                return !Period.isBeforeOrEqual(
                     formState.startPeriod.value,
                     formState.endPeriod.value,
                 );

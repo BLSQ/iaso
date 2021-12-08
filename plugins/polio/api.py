@@ -499,7 +499,6 @@ class IMStatsViewSet(viewsets.ViewSet):
 
         response = {
             "stats": campaign_stats,
-            "form_count": form_count,
             "form_campaign_not_found_count": form_campaign_not_found_count,
             "day_country_not_found": day_country_not_found,
             "form_count": form_count,

@@ -37,11 +37,6 @@ export const ImStatsBar = ({ data, total, message, color }) => {
                     <div style={{ width: '100px' }}>{`${data} ${message}`}</div>
                 </div>
             </Grid>
-            {/* <Grid container item xs={3} alignItems="center">
-                <Grid item>
-                    <span>{`${data} ${message}`}</span>
-                </Grid>
-            </Grid> */}
         </Grid>
     );
 };

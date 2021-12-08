@@ -16,8 +16,8 @@ import {
     makeCampaignsDropDown,
     findCountryIds,
     findScope,
-    convertAPIData,
-} from '../../utils/LqasIm';
+} from '../../utils/index';
+import { convertAPIData } from '../../utils/LqasIm';
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 import { LqasImTable } from '../../components/LQAS-IM/LqasImTable';

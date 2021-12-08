@@ -9,7 +9,7 @@ import PopupItemComponent from 'Iaso/components/maps/popups/PopupItemComponent';
 import { makeStyles, Card, CardContent } from '@material-ui/core';
 import { object, string } from 'prop-types';
 import MESSAGES from '../../constants/messages';
-import { findDataForShape } from '../../utils/LqasIm';
+import { findDataForShape } from '../../utils/index';
 
 const style = theme => {
     return { ...commonStyles(theme), ...mapPopupStyles(theme) };

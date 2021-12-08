@@ -12,7 +12,7 @@ import {
     getScopeStyle,
     findDataForShape,
     makeLegendItem,
-} from '../../utils/LqasIm';
+} from '../../utils/index';
 import { districtColors } from './constants';
 import MESSAGES from '../../constants/messages';
 
@@ -53,11 +53,6 @@ export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
         value: disqualified?.length,
         message: formatMessage(MESSAGES.disqualified),
     });
-    // const notCheckedLegendItem = makeLegendItem({
-    //     color: 'grey',
-    //     value: scope.length - evaluated.length,
-    //     message: formatMessage(MESSAGES.failing),
-    // });
     const getShapeStyles = useCallback(
         shape => {
             const status = determineStatusForDistrict(

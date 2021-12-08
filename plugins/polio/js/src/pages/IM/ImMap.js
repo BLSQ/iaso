@@ -13,7 +13,7 @@ import {
     getScopeStyle,
     findDataForShape,
     makeLegendItem,
-} from '../../utils/LqasIm';
+} from '../../utils/index';
 import MESSAGES from '../../constants/messages';
 
 // Don't put it in utils to avoid circular dep
@@ -54,11 +54,6 @@ export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
         value: failed?.length,
         message: formatMessage(MESSAGES['3imFail']),
     });
-    // const notCheckedLegendItem = makeLegendItem({
-    //     color: 'grey',
-    //     value: scope.length - evaluated.length,
-    //     message: formatMessage(MESSAGES.failing),
-    // });
     const getShapeStyles = useCallback(
         shape => {
             const status = determineStatusForDistrict(

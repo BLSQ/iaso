@@ -18,8 +18,8 @@ import {
     makeCampaignsDropDown,
     findCountryIds,
     findScope,
-    convertAPIData,
-} from '../../utils/LqasIm';
+} from '../../utils/index';
+import { convertAPIData } from '../../utils/LqasIm';
 import { LqasImTable } from '../../components/LQAS-IM/LqasImTable';
 
 const styles = theme => ({

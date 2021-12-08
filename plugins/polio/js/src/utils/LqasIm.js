@@ -82,10 +82,14 @@ export const findScope = (obrName, campaigns, shapes) => {
     if (obrName) {
         scopeIds = campaigns
             .filter(campaign => campaign.obr_name === obrName)
+            .filter(campaign => campaign.group)
             .map(campaign => campaign.group.org_units)
             .flat();
     } else {
-        scopeIds = campaigns.map(campaign => campaign.group.org_units).flat();
+        scopeIds = campaigns
+            .filter(campaign => campaign.group)
+            .map(campaign => campaign.group.org_units)
+            .flat();
     }
     return shapes.filter(shape => scopeIds.includes(shape.id));
 };

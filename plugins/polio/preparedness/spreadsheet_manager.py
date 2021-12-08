@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import List
 
 import gspread
@@ -24,7 +23,7 @@ from plugins.polio.preparedness.conditional_formatting import (
     TEXT_CENTERED,
 )
 
-# you need to create an polio.config object with this keey in the DB
+# you need to create a polio.Config object with this key in the DB
 PREPAREDNESS_TEMPLATE_CONFIG_KEY = "preparedness_template_id"
 
 

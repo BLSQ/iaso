@@ -46,7 +46,6 @@ const sortCampaignNames = (nameA, nameB) => {
 };
 export const makeCampaignsDropDown = campaigns =>
     campaigns
-        .filter(campaign => campaign.obr_name !== 'MLI-19DS-12-2020')
         .map(campaign => {
             return {
                 label: campaign.obr_name,

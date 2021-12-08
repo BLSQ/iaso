@@ -70,6 +70,7 @@ export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
         [scope, campaign, round, imData],
     );
 
+    // force Map render when campaign changes, otherwise, shape colors are off
     useEffect(() => {
         setRenderCount(count => count + 1);
     }, [campaign]);
@@ -85,12 +86,12 @@ export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
                             passedLegendItem,
                             disqualifiedLegendItem,
                             failedLegendItem,
-                            // notCheckedLegendItem,
                         ]}
                         width="md"
                     />
                 </MapLegendContainer>
                 <MapComponent
+                    // Use the key to force render
                     key={`IMMapRound${round}${renderCount}`}
                     name={`IMMapRound${round}`}
                     mainLayer={shapes}

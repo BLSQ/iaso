@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
     TableContainer,
     Table as MuiTable,
@@ -55,7 +55,7 @@ export const LqasImTable = ({ data, marginTop, tableKey }) => {
         setPage(0);
     };
 
-    const sortDataForTable = useCallback(() => {
+    const dataForTable = useMemo(() => {
         if (sortFocus === 'DISTRICT' && sortBy === 'asc') {
             return data.sort(sortbyDistrictNameAsc);
         }
@@ -79,8 +79,6 @@ export const LqasImTable = ({ data, marginTop, tableKey }) => {
         );
         return null;
     }, [sortBy, sortFocus, data]);
-
-    const dataForTable = sortDataForTable();
 
     const determineStatusColor = status => {
         if (parseInt(status, 10) === 1) return 'green';

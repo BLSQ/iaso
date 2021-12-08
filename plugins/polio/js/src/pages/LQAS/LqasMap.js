@@ -69,6 +69,7 @@ export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
         [scope, campaign, round, lqasData],
     );
 
+    // force Map render when campaign changes, otherwise, shape colors are off
     useEffect(() => {
         setRenderCount(count => count + 1);
     }, [campaign]);
@@ -90,12 +91,12 @@ export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
                             passedLegendItem,
                             disqualifiedLegendItem,
                             failedLegendItem,
-                            // notCheckedLegendItem,
                         ]}
                         width="md"
                     />
                 </MapLegendContainer>
                 <MapComponent
+                    // Use the key to force render
                     key={`LQASMapRound${round}${renderCount}`}
                     name={`LQASMapRound${round}`}
                     mainLayer={shapes}

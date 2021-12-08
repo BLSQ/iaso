@@ -118,7 +118,7 @@ const InstancesFiltersComponent = ({
     const periodError = useMemo(() => {
         if (formState.startPeriod?.value && formState.endPeriod?.value) {
             try {
-                return !Period.isBefore(
+                return !Period.isBeforeOrEqual(
                     formState.startPeriod.value,
                     formState.endPeriod.value,
                 );
@@ -262,8 +262,8 @@ const InstancesFiltersComponent = ({
                         onChangeDate={handleFormChange}
                         dateFrom={formState.dateFrom?.value}
                         dateTo={formState.dateTo?.value}
-                        labelFrom={MESSAGES.creationDateFrom}
-                        labelTo={MESSAGES.creationDateTo}
+                        labelFrom={MESSAGES.creationDateFrom} // here
+                        labelTo={MESSAGES.creationDateTo} // here
                     />
                     <InputComponent
                         keyValue="periodType"

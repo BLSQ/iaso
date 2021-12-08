@@ -11,11 +11,13 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
+from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Value, IntegerField, TextField, UUIDField
 from collections import defaultdict
+
 
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
@@ -31,9 +33,15 @@ from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
 )
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
-from .models import Campaign, Config, LineListImport
+from .models import Campaign, Config, LineListImport, SpreadSheetImport
 from .models import CountryUsersGroup
 from .models import URLCache, Preparedness
+from .preparedness.calculator import preparedness_summary
+from .preparedness.parser import get_preparedness
+
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -204,6 +212,39 @@ class LineListImportViewSet(ModelViewSet):
 
     def get_queryset(self):
         return LineListImport.objects.all()
+
+
+class PreparednessDashboardViewSet(viewsets.ViewSet):
+    def list(self, request):
+
+        r = []
+        qs = Campaign.objects.filter(preperadness_spreadsheet_url__isnull=False)
+        if request.query_params.get("campaign"):
+            qs = qs.filter(obr_name=request.query_params.get("campaign"))
+
+        for c in qs:
+            campaign_prep = {
+                "campaign_id": c.id,
+                "campaign_obr_name": c.obr_name,
+                "indicators": {},
+            }
+            try:
+                ssi = SpreadSheetImport.objects.filter(spread_id=extract_id_from_url(c.preperadness_spreadsheet_url))
+
+                if not ssi:
+                    # No import yet
+                    campaign_prep["status"] = "not_sync"
+                    continue
+                campaign_prep["date"]: ssi.last().created_at
+                last_p = get_preparedness(ssi.last().cached_spreadsheet)
+                campaign_prep.update(preparedness_summary(last_p))
+            except Exception as e:
+                campaign_prep["status"] = "error"
+                campaign_prep["details"] = str(e)
+                logger.exception(e)
+
+            r.append(campaign_prep)
+        return Response(r)
 
 
 class PreparednessViewSet(viewsets.ReadOnlyModelViewSet):
@@ -590,6 +631,7 @@ class IMViewSet2(viewsets.ViewSet):
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/preparedness", PreparednessViewSet)
+router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/im", IMViewSet, basename="IM")
 router.register(r"polio/imstats", IMViewSet2, basename="imstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")

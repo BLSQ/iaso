@@ -410,6 +410,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.table.label.status',
         defaultMessage: 'Status',
     },
+    sync_status: {
+        id: 'iaso.polio.table.label.status',
+        defaultMessage: 'Synchronisation',
+    },
     import: {
         id: 'iaso.polio.button.label.import',
         defaultMessage: 'Import',

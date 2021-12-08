@@ -218,6 +218,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.district',
         defaultMessage: 'District',
     },
+    districts: {
+        id: 'iaso.polio.districts',
+        defaultMessage: 'Districts',
+    },
     selectRegion: {
         id: 'iaso.polio.table.label.selectRegion',
         defaultMessage: 'Select region',
@@ -614,6 +618,102 @@ const MESSAGES = defineMessages({
     clear: {
         id: 'iaso.polio.label.clear',
         defaultMessage: 'Clear',
+    },
+    lqas: {
+        id: 'iaso.polio.label.lqas',
+        defaultMessage: 'LQAS',
+    },
+    campaign: {
+        id: 'iaso.polio.label.campaign',
+        defaultMessage: 'Campaign',
+    },
+    childrenChecked: {
+        id: 'iaso.polio.label.childrenChecked',
+        defaultMessage: 'Children checked',
+    },
+    childrenMarked: {
+        id: 'iaso.polio.label.childrenMarked',
+        defaultMessage: 'Children with mark',
+    },
+    dictrictName: {
+        id: 'iaso.polio.label.dictrictName',
+        defaultMessage: 'Name',
+    },
+    round_1: {
+        id: 'iaso.polio.label.round1',
+        defaultMessage: 'Round 1',
+    },
+    round_2: {
+        id: 'iaso.polio.label.round2',
+        defaultMessage: 'Round 2',
+    },
+    evaluated: {
+        id: 'iaso.polio.label.evaluated',
+        defaultMessage: 'Evaluated',
+    },
+    passing: {
+        id: 'iaso.polio.label.passed',
+        defaultMessage: 'Passed',
+    },
+    '1lqasOK': {
+        id: 'iaso.polio.label.passed',
+        defaultMessage: 'Passed',
+    },
+    disqualified: {
+        id: 'iaso.polio.label.disqualified',
+        defaultMessage: 'Disqualified',
+    },
+    '2lqasDisqualified': {
+        id: 'iaso.polio.label.disqualified',
+        defaultMessage: 'Disqualified',
+    },
+    failing: {
+        id: 'iaso.polio.label.failed',
+        defaultMessage: 'Failed',
+    },
+    '3lqasFail': {
+        id: 'iaso.polio.label.failed',
+        defaultMessage: 'Failed',
+    },
+    districtsNotFound: {
+        id: 'iaso.polio.label.districtsNotFound',
+        defaultMessage: 'Districts not found',
+    },
+    districtName: {
+        id: 'iaso.polio.label.name',
+        defaultMessage: 'Name',
+    },
+    districtFound: {
+        id: 'iaso.polio.label.districtFound',
+        defaultMessage: 'District found',
+    },
+    datesIgnored: {
+        id: 'iaso.polio.label.datesIgnored',
+        defaultMessage: 'Dates ignored',
+    },
+    lqasResults: {
+        id: 'iaso.polio.label.lqasResults',
+        defaultMessage: 'LQAS results',
+    },
+    im: {
+        id: 'iaso.polio.label.im',
+        defaultMessage: 'IM',
+    },
+    '1imOK': {
+        id: 'iaso.polio.label.imOK',
+        defaultMessage: '>95%',
+    },
+    '2imWarning': {
+        id: 'iaso.polio.label.imWarning',
+        defaultMessage: '90%-94%',
+    },
+    '3imFail': {
+        id: 'iaso.polio.label.imFail',
+        defaultMessage: '<90%',
+    },
+    imResults: {
+        id: 'iaso.polio.label.imResults',
+        defaultMessage: 'IM Results',
     },
 });
 

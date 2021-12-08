@@ -12,9 +12,9 @@ import {
 } from 'recharts';
 import { Typography } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
-import { getChipColors } from '../constants/chipColors';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { getChipColors } from '../constants/chipColors';
 
 export const InstancesPerFormGraph = () => {
     const { data, isLoading } = useSnackQuery(['instances', 'stats'], () =>

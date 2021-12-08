@@ -3,6 +3,8 @@ import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import SettingsIcon from '@material-ui/icons/Settings';
 import CalendarToday from '@material-ui/icons/CalendarToday';
+import AssessmentIcon from '@material-ui/icons/Assessment';
+import DonutSmallIcon from '@material-ui/icons/DonutSmall';
 import { Dashboard } from './src/pages/Dashboard';
 import { Calendar } from './src/pages/Calendar';
 import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
@@ -11,9 +13,13 @@ import {
     DASHBOARD_BASE_URL,
     CALENDAR_BASE_URL,
     CONFIG_BASE_URL,
+    LQAS_BASE_URL,
+    IM_BASE_URL,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
+import { Lqas } from './src/pages/LQAS';
+import { ImStats } from './src/pages/IM';
 
 const campaignsFilters = [
     {
@@ -62,6 +68,18 @@ const routes = [
             },
             ...campaignsFilters,
         ],
+    },
+    {
+        baseUrl: LQAS_BASE_URL,
+        component: props => <Lqas {...props} />,
+        permissions: ['iaso_polio'],
+        params: [],
+    },
+    {
+        baseUrl: IM_BASE_URL,
+        component: props => <ImStats {...props} />,
+        permissions: ['iaso_polio'],
+        params: [],
     },
     {
         baseUrl: CONFIG_BASE_URL,
@@ -118,6 +136,18 @@ const menu = [
                 key: 'calendar',
                 permissions: ['iaso_polio'],
                 icon: props => <CalendarToday {...props} />,
+            },
+            {
+                label: MESSAGES.lqas,
+                key: 'lqas',
+                permissions: ['iaso_polio'],
+                icon: props => <AssessmentIcon {...props} />,
+            },
+            {
+                label: MESSAGES.im,
+                key: 'im',
+                permissions: ['iaso_polio'],
+                icon: props => <DonutSmallIcon {...props} />,
             },
             {
                 label: MESSAGES.configuration,

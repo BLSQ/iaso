@@ -31,7 +31,7 @@ def create_spreadsheet(title: str, lang: str):
         raise Exception(f"Template for {lang} and version {TEMPLATE_VERSION} not found")
     logger.info(f"Creating spreadsheet {title} from {template}")
 
-    spreadsheet = client.copy(template, title, copy_permissions=True)
+    spreadsheet = client.copy(template, title)
     spreadsheet.share(None, perm_type="anyone", role="writer")
     return spreadsheet
 

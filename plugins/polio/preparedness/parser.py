@@ -71,10 +71,18 @@ def _get_scores(sheet: CachedSheet, cell_pos):
     4. Vaccine, cold chain and logistics
     5. Advocacy, social mobilization and communication
     6. Adverse Event Following Immunization (AEFI)
+    7. Security score (not present in all sheet)
     Status of preparedness
     """
-
     row, col = cell_pos
+    # check if we have the security row as it is not present in all row
+    tentative_status_score_cell = sheet.get_rc(row + 8, col + 1)
+    if tentative_status_score_cell is None:
+        security_score = None
+        status_score = from_percent(sheet.get_rc(row + 7, col + 1))
+    else:
+        security_score = from_percent(sheet.get_rc(row + 7, col + 1))
+        status_score = from_percent(sheet.get_rc(row + 8, col + 1))
     return {
         "planning_score": from_percent(sheet.get_rc(row + 1, col + 1)),
         "training_score": from_percent(sheet.get_rc(row + 2, col + 1)),
@@ -82,7 +90,8 @@ def _get_scores(sheet: CachedSheet, cell_pos):
         "vaccine_score": from_percent(sheet.get_rc(row + 4, col + 1)),
         "advocacy_score": from_percent(sheet.get_rc(row + 5, col + 1)),
         "adverse_score": from_percent(sheet.get_rc(row + 6, col + 1)),
-        "status_score": from_percent(sheet.get_rc(row + 7, col + 1)),
+        "security_score": security_score,
+        "status_score": status_score,
     }
 
 

@@ -3,8 +3,11 @@
 Use a template configured in polio.Config preparedness_template_id
 """
 import gspread
+from django.utils.translation import gettext_lazy as _
 from gspread.utils import rowcol_to_a1, Dimension, a1_range_to_grid_range
+from rest_framework import exceptions
 
+from plugins.polio.models import CountryUsersGroup, Campaign
 from plugins.polio.preparedness.client import get_client, get_google_config
 
 from logging import getLogger
@@ -97,3 +100,34 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     duplicate_cells(sheet, "C64:C72", num_district)
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
+
+
+def generate_spreadsheet_for_campaign(campaign: Campaign):
+    lang = "EN"
+    try:
+        country = campaign.country
+        if not country:
+            exceptions.ValidationError({"message": _("No country found for campaign")})
+        cug = CountryUsersGroup.objects.get(country=country)
+        lang = cug.language
+    except Exception as e:
+        logger.exception(e)
+        logger.error(f"Could not find template language for {campaign}")
+    spreadsheet = create_spreadsheet(campaign.obr_name, lang)
+    update_national_worksheet(
+        spreadsheet.worksheet("National"),
+        vacine=campaign.vacine,
+        payment_mode=campaign.payment_mode,
+        country=campaign.country,
+    )
+    regional_template_worksheet = spreadsheet.worksheet("Regional")
+    districts = campaign.get_districts()
+    regions = campaign.get_regions()
+    current_index = 2
+    for index, region in enumerate(regions):
+        regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)
+        region_districts = districts.filter(parent=region)
+        update_regional_worksheet(regional_worksheet, region.name, region_districts)
+        current_index += 1
+    spreadsheet.del_worksheet(regional_template_worksheet)
+    return spreadsheet

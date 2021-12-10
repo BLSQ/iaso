@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useFormikContext } from 'formik';
 import {
     useSafeIntl,
@@ -73,6 +73,8 @@ export const ScopeForm = () => {
     const { values, setFieldValue } = useFormikContext();
     // Group contains selected orgunits
     const { group = { org_units: [] } } = values;
+    // Below var to avoid crash when group is null, as the default value will only be considered if group is undefined
+    const nullSafeGroup = useMemo(() => group ?? { org_units: [] }, [group]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [sortBy, setSortBy] = useState('asc');
@@ -98,11 +100,12 @@ export const ScopeForm = () => {
 
     const getShapeStyle = useCallback(
         shape => {
-            if (group.org_units.includes(shape.id)) return selectedPathOptions;
+            if (nullSafeGroup.org_units.includes(shape.id))
+                return selectedPathOptions;
             if (values.org_unit?.id === shape.id) return initialDistrict;
             return unselectedPathOptions;
         },
-        [group, values.org_unit?.id],
+        [nullSafeGroup, values.org_unit?.id],
     );
 
     const getBackgroundLayerStyle = () => {
@@ -139,7 +142,7 @@ export const ScopeForm = () => {
 
     const onSelectOrgUnit = useCallback(
         shape => {
-            const { org_units } = group;
+            const { org_units } = nullSafeGroup;
             let newOrgUnits;
             if (selectRegion) {
                 newOrgUnits = toggleRegion(shape, districtShapes, org_units);
@@ -148,29 +151,30 @@ export const ScopeForm = () => {
             }
 
             setFieldValue('group', {
-                ...group,
+                ...nullSafeGroup,
                 org_units: newOrgUnits,
             });
         },
-        [group, setFieldValue, selectRegion, districtShapes],
+        [nullSafeGroup, setFieldValue, selectRegion, districtShapes],
     );
 
     const removeDistrictFromTable = useCallback(
         shape => {
-            const { org_units } = group;
+            const { org_units } = nullSafeGroup;
             const newOrgUnits = org_units.filter(
                 orgUnit => orgUnit !== shape.id,
             );
             setFieldValue('group', {
-                ...group,
+                ...nullSafeGroup,
                 org_units: newOrgUnits,
             });
         },
-        [group, setFieldValue],
+        [nullSafeGroup, setFieldValue],
     );
     const removeRegionFromTable = useCallback(
         shape => {
-            const { org_units } = group;
+            const { org_units } = nullSafeGroup;
+
             const parentRegionShapes = districtShapes
                 .filter(s => s.parent_id === shape.parent_id)
                 .map(s => s.id);
@@ -180,11 +184,11 @@ export const ScopeForm = () => {
             );
 
             setFieldValue('group', {
-                ...group,
+                ...nullSafeGroup,
                 org_units: newOrgUnits,
             });
         },
-        [group, setFieldValue, districtShapes],
+        [nullSafeGroup, setFieldValue, districtShapes],
     );
 
     const handleSort = useCallback(
@@ -215,17 +219,17 @@ export const ScopeForm = () => {
         }
         if (sortFocus === 'DISTRICT' && sortBy === 'asc') {
             return districtShapes?.filter(shape =>
-                group.org_units.includes(shape.id),
+                nullSafeGroup.org_units.includes(shape.id),
             );
         }
         if (sortFocus === 'DISTRICT' && sortBy === 'desc') {
             return districtShapes
-                ?.filter(shape => group.org_units.includes(shape.id))
+                ?.filter(shape => nullSafeGroup.org_units.includes(shape.id))
                 .reverse();
         }
         if (sortFocus === 'REGION' && sortBy === 'asc') {
             return districtShapes
-                ?.filter(shape => group.org_units.includes(shape.id))
+                ?.filter(shape => nullSafeGroup.org_units.includes(shape.id))
                 .sort(
                     (shapeA, shapeB) =>
                         findRegion(shapeA, regionShapes) >
@@ -234,7 +238,7 @@ export const ScopeForm = () => {
         }
         if (sortFocus === 'REGION' && sortBy === 'desc') {
             return districtShapes
-                ?.filter(shape => group.org_units.includes(shape.id))
+                ?.filter(shape => nullSafeGroup.org_units.includes(shape.id))
                 .sort(
                     (shapeA, shapeB) =>
                         findRegion(shapeA, regionShapes) <
@@ -245,7 +249,13 @@ export const ScopeForm = () => {
             `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and DISTRICT|REGION`,
         );
         return null;
-    }, [sortBy, sortFocus, districtShapes, group.org_units, regionShapes]);
+    }, [
+        sortBy,
+        sortFocus,
+        districtShapes,
+        nullSafeGroup.org_units,
+        regionShapes,
+    ]);
 
     const shapesForTable = sortShapesForTable();
 

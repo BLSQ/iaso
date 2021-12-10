@@ -15,7 +15,7 @@ from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Value, IntegerField, TextField, UUIDField
+from django.db.models import Value, TextField, UUIDField
 from collections import defaultdict
 
 
@@ -215,6 +215,56 @@ class LineListImportViewSet(ModelViewSet):
         return LineListImport.objects.all()
 
 
+DAYS_EVOLUTION = [
+    # day before, target in percent
+    (1, 90),
+    (3, 85),
+    (7, 80),
+    (14, 60),
+    (21, 40),
+    (28, 20),
+]
+
+
+def score_for_x_day_before(ssi_for_campaign, ref_date: datetime.date, n_day: int):
+    day = ref_date - timedelta(days=n_day)
+    try:
+        ssi = ssi_for_campaign.filter(created_at__date=day).last()
+    except SpreadSheetImport.DoesNotExist:
+        return None, day, None
+    try:
+        preparedness = get_preparedness(ssi.cached_spreadsheet)
+        summary = preparedness_summary(preparedness)
+        score = summary["overall_status_score"]
+    except Exception as e:
+        return None, day, None
+    return ssi.created_at, day, score
+
+
+def history_for_campaign(c):
+    spread_id = extract_id_from_url(c.preperadness_spreadsheet_url)
+    ssi = SpreadSheetImport.objects.filter(spread_id=spread_id)
+    if c.round_two and c.round_two.started_at:
+        ref_date = c.round_two.started_at
+    elif c.round_one and c.round_one.started_at:
+        ref_date = c.round_one.started_at
+    else:
+        return {"error": "No round start found"}
+    r = []
+    for n_day, target in DAYS_EVOLUTION:
+        sync_time, day, score = score_for_x_day_before(ssi, ref_date, n_day)
+        r.append(
+            {
+                "days_before": n_day,
+                "expected_score": target,
+                "preparedness_score": score,
+                "date": day,
+                "sync_time": sync_time,
+            }
+        )
+    return r
+
+
 class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
 
@@ -230,7 +280,8 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
                 "indicators": {},
             }
             try:
-                ssi = SpreadSheetImport.objects.filter(spread_id=extract_id_from_url(c.preperadness_spreadsheet_url))
+                spread_id = extract_id_from_url(c.preperadness_spreadsheet_url)
+                ssi = SpreadSheetImport.objects.filter(spread_id=spread_id)
 
                 if not ssi:
                     # No import yet
@@ -243,6 +294,8 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
                 campaign_prep["status"] = "error"
                 campaign_prep["details"] = str(e)
                 logger.exception(e)
+
+            campaign_prep["history"] = history_for_campaign(c)
 
             r.append(campaign_prep)
         return Response(r)

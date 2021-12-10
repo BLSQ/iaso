@@ -344,7 +344,6 @@ class CampaignSerializer(serializers.ModelSerializer):
         read_only=True,
         allow_null=True,
     )
-    surge_data = SurgeSerializer(required=False)
     last_surge = SurgeSerializer(
         required=False,
         read_only=True,
@@ -368,7 +367,6 @@ class CampaignSerializer(serializers.ModelSerializer):
             campaign_group = None
 
         preparedness_data = validated_data.pop("preparedness_data", None)
-        surge_data = validated_data.pop("surge_data", None)
         campaign = Campaign.objects.create(
             **validated_data,
             round_one=Round.objects.create(**round_one_data),
@@ -378,8 +376,6 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         if preparedness_data is not None:
             Preparedness.objects.create(campaign=campaign, **preparedness_data)
-        if surge_data is not None:
-            Surge.objects.create(campaign=campaign, **surge_data)
 
         return campaign
 
@@ -408,8 +404,6 @@ class CampaignSerializer(serializers.ModelSerializer):
         # we want to create a new preparedness and surge data object each time
         if "preparedness_data" in validated_data:
             Preparedness.objects.create(campaign=instance, **validated_data.pop("preparedness_data"))
-        if "surge_data" in validated_data:
-            Surge.objects.create(campaign=instance, **validated_data.pop("surge_data"))
         return super().update(instance, validated_data)
 
     class Meta:

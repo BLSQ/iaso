@@ -354,6 +354,7 @@ class Preparedness(models.Model):
         return f"{self.campaign} - {self.created_at}"
 
 
+# Deprecated
 class Surge(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)

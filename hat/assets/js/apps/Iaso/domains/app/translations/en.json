@@ -50,6 +50,7 @@
     "iaso.datasources.gpkg.tooltip": "Import from a GeoPackage file",
     "iaso.datasources.label.credentials": "Credentials",
     "iaso.datasources.label.datasourceRef": "Reference data source",
+    "iaso.datasources.label.datasourceSource": "Version",
     "iaso.datasources.label.fieldsToExport": "Fields to export",
     "iaso.datasources.label.geoPkgTitle": "Import from GeoPackage",
     "iaso.datasources.label.gpkgFormFile": "Choose file",

@@ -49,6 +49,7 @@
     "iaso.datasources.gpkg.tooltip": "Importer depuis un fichier GeoPackage",
     "iaso.datasources.label.credentials": "Identifiants",
     "iaso.datasources.label.datasourceRef": "Source de référence",
+    "iaso.datasources.label.datasourceSource": "Version",
     "iaso.datasources.label.fieldsToExport": "Champs à exporter",
     "iaso.datasources.label.orgUnitTypes": "Types d'unité d'organisation",
     "iaso.datasources.label.project": "Project",

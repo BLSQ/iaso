@@ -1,10 +1,9 @@
 /* eslint-disable no-else-return */
 import React from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { getRequest, iasoFetch, postRequest, putRequest } from 'Iaso/libs/Api';
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
-import { iasoGetRequest, iasoPostRequest } from '../../utils/requests';
 import { dispatch as storeDispatch } from '../../redux/store';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../constants/snackBars';
@@ -28,34 +27,21 @@ import { getValues } from '../../hooks/form';
  */
 
 export const sendDhisOuImporterRequest = async requestBody =>
-    iasoPostRequest({
-        requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
-        errorKeyMessage: 'dhisouimporterError',
-        consoleError: 'DHIS OU Importer',
-    });
+    postRequest('/api/dhis2ouimporter/', requestBody);
 
 export const postGeoPkg = async request => {
     const file = { file: request.file };
     const body = { ...request };
     delete body.file;
-    return iasoPostRequest({
-        requestParams: {
-            url: '/api/tasks/create/importgpkg/',
-            body,
-            fileData: file,
-        },
-    });
+    return postRequest('/api/tasks/create/importgpkg/', body, file);
 };
 
 const getOrgUnitTypes = async () => {
-    return iasoGetRequest({
-        requestParams: { url: '/api/orgunittypes/' },
-        disableSuccessSnackBar: true,
-    });
+    return getRequest('/api/orgunittypes/');
 };
 
 export const useOrgUnitTypes = () => {
-    return useQuery(['orgUnitTypes'], getOrgUnitTypes, {
+    return useSnackQuery(['orgUnitTypes'], getOrgUnitTypes, undefined, {
         select: data =>
             data.orgUnitTypes.map(orgUnitType => ({
                 value: orgUnitType.id,
@@ -65,10 +51,7 @@ export const useOrgUnitTypes = () => {
 };
 
 const getDataSourceVersions = async () => {
-    return iasoGetRequest({
-        requestParams: { url: '/api/sourceversions/' },
-        disableSuccessSnackBar: true,
-    });
+    return getRequest('/api/sourceversions/');
 };
 
 // Func to compare version to  order them
@@ -94,21 +77,26 @@ const compareVersions = (a, b) => {
 };
 
 export const useDataSourceVersions = () => {
-    return useQuery(['dataSourceVersions'], getDataSourceVersions, {
-        select: data => {
-            return data.versions
-                .map(version => {
-                    return {
-                        id: version.id.toString(),
-                        data_source: version.data_source,
-                        data_source_name: version.data_source_name,
-                        is_default: version.is_default,
-                        number: version.number,
-                    };
-                })
-                .sort(compareVersions);
+    return useSnackQuery(
+        ['dataSourceVersions'],
+        getDataSourceVersions,
+        undefined,
+        {
+            select: data => {
+                return data.versions
+                    .map(version => {
+                        return {
+                            id: version.id.toString(),
+                            data_source: version.data_source,
+                            data_source_name: version.data_source_name,
+                            is_default: version.is_default,
+                            number: version.number,
+                        };
+                    })
+                    .sort(compareVersions);
+            },
         },
-    });
+    );
 };
 
 const adaptForApi = data => {
@@ -121,15 +109,7 @@ const adaptForApi = data => {
 
 export const postToDHIS2 = async data => {
     const adaptedData = adaptForApi(data);
-    return iasoPostRequest({
-        requestParams: {
-            url: '/api/sourceversions/export_dhis2/',
-            body: adaptedData,
-        },
-        errorKeyMessage: 'iaso.snackBar.exportToDHIS2Error',
-        errorMessageObject: snackBarMessages.exportToDHIS2Error,
-        consoleError: 'exportdatasource',
-    });
+    return postRequest('/api/sourceversions/export_dhis2/', adaptedData);
 };
 
 export const convertExportDataToURL = data => {

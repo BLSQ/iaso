@@ -3,12 +3,14 @@ import React from 'react';
 import moment from 'moment';
 import { defineMessage } from 'react-intl';
 import { useFormikContext } from 'formik';
-import { Button, Grid, Typography, Tooltip } from '@material-ui/core';
-import { LoadingSpinner } from 'bluesquare-components';
+import { Button, Grid, Tooltip, Typography } from '@material-ui/core';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import MESSAGES from '../../constants/messages';
 
 export const SendEmailButton = () => {
+    const { formatMessage } = useSafeIntl();
     const mutation = useSnackMutation(
         campaignId =>
             postRequest(
@@ -56,7 +58,7 @@ export const SendEmailButton = () => {
                         onClick={async () => mutation.mutate(values.id)}
                     >
                         {mutation.isLoading && <LoadingSpinner absolute />}
-                        Notify coordinators by e-mail
+                        {formatMessage(MESSAGES.emailNotifyButton)}
                     </Button>
                     {mutation?.error?.details?.map((error_msg, i) => (
                         <Typography key={i} color="error">

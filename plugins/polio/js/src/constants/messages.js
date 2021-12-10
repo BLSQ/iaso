@@ -727,6 +727,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.emailListLabel',
         defaultMessage: 'Configured emails :',
     },
+    emailNotifyButton: {
+        id: 'iaso.polio.label.emailNotifyButton',
+        defaultMessage: 'Notify coordinators by e-mail',
+    },
 });
 
 export default MESSAGES;

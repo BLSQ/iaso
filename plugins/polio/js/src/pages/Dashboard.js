@@ -1,19 +1,21 @@
 /* eslint-disable camelcase */
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
-    Table,
-    LoadingSpinner,
     IconButton as IconButtonComponent,
+    LoadingSpinner,
+    Table,
     useSafeIntl,
 } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
-import { replace } from 'react-router-redux';
+import { push } from 'react-router-redux';
 import { Box } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import TopBar from 'Iaso/components/nav/TopBarComponent';
+import { getApiParamDateString } from 'Iaso/utils/dates';
 import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateEditDialog';
 import { PageAction } from '../components/Buttons/PageAction';
 import { PageActions } from '../components/Buttons/PageActions';
@@ -24,10 +26,8 @@ import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 
-import TopBar from 'Iaso/components/nav/TopBarComponent';
 import ImportLineListDialog from '../components/ImportLineListDialog';
 import { genUrl } from '../utils/routing';
-import { getApiParamDateString } from 'Iaso/utils/dates';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
@@ -70,7 +70,7 @@ const Dashboard = ({ router }) => {
             const url = genUrl(router, {
                 campaignId,
             });
-            dispatch(replace(url));
+            dispatch(push(url));
         },
         [setIsCreateEditDialogOpen, router, dispatch],
     );
@@ -81,7 +81,7 @@ const Dashboard = ({ router }) => {
         const url = genUrl(router, {
             campaignId: undefined,
         });
-        dispatch(replace(url));
+        dispatch(push(url));
     };
 
     const openDeleteConfirmDialog = useCallback(() => {

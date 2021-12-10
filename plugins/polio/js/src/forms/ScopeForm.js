@@ -251,7 +251,7 @@ export const ScopeForm = () => {
 
     const makeTableText = text => {
         return (
-            <Tooltip placement="bottom" title={text}>
+            <Tooltip placement="bottom" title={text ?? 'no text'}>
                 <Typography
                     variant="overline"
                     style={{

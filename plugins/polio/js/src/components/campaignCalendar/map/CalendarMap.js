@@ -16,6 +16,10 @@ import { useStyles } from '../Styles';
 
 import 'leaflet/dist/leaflet.css';
 
+const findRegion = (shape, regions) => {
+    return regions?.filter(region => region.id === shape.parent_id)[0]?.name;
+};
+
 const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const classes = useStyles();
     const map = useRef();
@@ -46,10 +50,46 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                 };
             }),
     );
-    const loadingShapes = shapesQueries.some(q => q.isLoading);
+
+    const regionsQueries = useQueries(
+        campaigns
+            .filter(c => Boolean(c.original.group?.id))
+            .map(campaign => {
+                const baseParams = {
+                    order: 'id',
+                    page: 1,
+                    limit: 1000,
+                    // eslint-disable-next-line max-len
+                    searches: `[{"validation_status":"all","color":"f4511e","source":2,"levels":${campaign.country_id.toString()},"orgUnitTypeId":"6","orgUnitParentId":${campaign.country_id.toString()},"dateFrom":null,"dateTo":null}]`,
+                };
+                const queryString = new URLSearchParams(baseParams);
+                return {
+                    queryKey: ['campaignRegion', baseParams],
+                    queryFn: () =>
+                        getRequest(`/api/orgunits/?${queryString.toString()}`),
+                    select: data => {
+                        return data.orgunits.map(orgUnit => ({
+                            id: orgUnit.id,
+                            name: orgUnit.name,
+                        }));
+                    },
+                    enabled: !loadingCampaigns,
+                };
+            }),
+    );
+
+    const loadingShapes =
+        shapesQueries.some(q => q.isLoading) ||
+        regionsQueries.some(q => q.isLoading);
+
     const campaignsShapes = shapesQueries
         .filter(sq => sq.data)
         .map(sq => sq.data);
+
+    const regions = regionsQueries
+        .filter(sq => sq.data)
+        .map(sq => sq.data)
+        .flat();
 
     return (
         <Box position="relative">
@@ -104,6 +144,12 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                                                 {...MESSAGES.country}
                                             />
                                             {`: ${cs.campaign.country}`}
+                                        </div>
+                                        <div>
+                                            <FormattedMessage
+                                                {...MESSAGES.region}
+                                            />
+                                            {`: ${findRegion(shape, regions)}`}
                                         </div>
                                         <div>
                                             <FormattedMessage

@@ -16,7 +16,7 @@ import {
 const findBackgroundShape = (shape, backgroundShapes) => {
     return backgroundShapes.filter(
         backgroundShape => backgroundShape.id === shape.parent_id,
-    )[0].name;
+    )[0]?.name;
 };
 export const MapComponent = ({
     name,
@@ -28,6 +28,7 @@ export const MapComponent = ({
     tooltipLabels,
     height,
     fitToBounds,
+    makePopup,
 }) => {
     const map = useRef();
 
@@ -86,7 +87,8 @@ export const MapComponent = ({
                             style={() => getMainLayerStyle(shape)}
                             onClick={() => onSelectShape(shape)}
                         >
-                            <Tooltip>
+                            {makePopup && makePopup(shape)}
+                            <Tooltip title={shape.name}>
                                 {backgroundLayer?.length > 0 && (
                                     <span>
                                         {`${
@@ -118,6 +120,7 @@ MapComponent.propTypes = {
     tooltipLabels: objectOf(string),
     height: number,
     fitToBounds: bool,
+    makePopup: func,
 };
 
 MapComponent.defaultProps = {
@@ -129,4 +132,5 @@ MapComponent.defaultProps = {
     getMainLayerStyle: () => null,
     getBackgroundLayerStyle: () => null,
     tooltipLabels: { main: 'District', background: 'Region' },
+    makePopup: () => null,
 };

@@ -145,3 +145,5 @@ docker/enketo/redis_main_data/
 docker/enketo/secrets/
 docker/enketo/redis-enketo-main.conf
 docker/enketo/start.sh
+
+temp.json

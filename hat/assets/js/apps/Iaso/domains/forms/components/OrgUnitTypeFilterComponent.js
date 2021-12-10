@@ -17,18 +17,20 @@ const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList = []) => {
             const fullSubOrgUnit = orgUnitTypes.find(
                 o => o.id === subOrgUnit.id,
             );
-            if (!newOrgUnitTypesList.find(o => o.id === subOrgUnit.id)) {
-                newOrgUnitTypesList.push(fullSubOrgUnit);
-            }
-            if (
-                fullSubOrgUnit?.sub_unit_types &&
-                fullSubOrgUnit.id !== orgUnit.id
-            ) {
-                newOrgUnitTypesList = getSubOrgunits(
-                    fullSubOrgUnit,
-                    orgUnitTypes,
-                    newOrgUnitTypesList,
-                );
+            if (fullSubOrgUnit) {
+                if (!newOrgUnitTypesList.find(o => o.id === subOrgUnit.id)) {
+                    newOrgUnitTypesList.push(fullSubOrgUnit);
+                }
+                if (
+                    fullSubOrgUnit?.sub_unit_types &&
+                    fullSubOrgUnit.id !== orgUnit.id
+                ) {
+                    newOrgUnitTypesList = getSubOrgunits(
+                        fullSubOrgUnit,
+                        orgUnitTypes,
+                        newOrgUnitTypesList,
+                    );
+                }
             }
         });
         return newOrgUnitTypesList;

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { Popup } from 'react-leaflet';
@@ -28,7 +28,6 @@ import PopupItemComponent from '../../../components/maps/popups/PopupItemCompone
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 
 import { baseUrls } from '../../../constants/urls';
-import { getDisplayedDateHourFormat } from '../../../utils/dates';
 
 import MESSAGES from '../messages';
 

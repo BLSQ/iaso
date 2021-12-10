@@ -12,7 +12,6 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from iaso.models import Group, OrgUnit
-from plugins.polio.preparedness.calculator import get_preparedness_score
 from .models import (
     Preparedness,
     Round,
@@ -26,13 +25,13 @@ from .models import (
     ROUND1DONE,
     ROUND2START,
     ROUND2DONE,
+    SpreadSheetImport,
 )
 from .preparedness.parser import (
     open_sheet_by_url,
-    get_regional_level_preparedness,
-    get_national_level_preparedness,
     InvalidFormatError,
     parse_value,
+    get_preparedness,
 )
 from .preparedness.spreadsheet_manager import *
 from logging import getLogger
@@ -97,7 +96,7 @@ def campaign_from_files(file):
         c, created = Campaign.objects.get_or_create(epid=epid)
         if not created:
             skipped_campaigns.append(epid)
-            print("Skipping existing campaign {c.epid}")
+            print(f"Skipping existing campaign {c.epid}")
             continue
 
         c.obr_name = epid
@@ -194,13 +193,10 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         try:
-            sheet = open_sheet_by_url(attrs.get("google_sheet_url"))
-            response = {
-                "national": get_national_level_preparedness(sheet),
-                **get_regional_level_preparedness(sheet),
-            }
-            response["totals"] = get_preparedness_score(response)
-            return response
+            ssi = SpreadSheetImport.create_for_url(attrs.get("google_sheet_url"))
+            cs = ssi.cached_spreadsheet
+            preparedness_data = get_preparedness(cs)
+            return preparedness_data
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
@@ -220,6 +216,8 @@ class SurgePreviewSerializer(serializers.Serializer):
             sheet = open_sheet_by_url(attrs.get("google_sheet_url")).worksheets()[0]
 
             cell = sheet.find(surge_country_name)
+            if not cell:
+                raise Exception("Country not found in spreadsheet")
 
             first_row = cell.row
             first_col = cell.col + 1

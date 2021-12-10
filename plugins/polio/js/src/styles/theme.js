@@ -68,12 +68,30 @@ export const useStyles = makeStyles(() => ({
     },
     districtListRow: {
         '& td': {
-            backgroundColor: theme.palette.ligthGray.main,
+            backgroundColor: theme.palette.gray.background,
         },
     },
     tablePagination: {
         '& .MuiTablePagination-toolbar': {
             overflowX: 'auto',
         },
+    },
+    tableHeadCell: {
+        borderRight: `2px solid ${theme.palette.ligthGray.border}`,
+        position: 'relative',
+        overflow: 'hidden',
+        textAlign: 'center',
+        backgroundColor: 'white',
+    },
+    sortableTableHeadCell: {
+        borderRight: `2px solid ${theme.palette.ligthGray.border}`,
+        position: 'relative',
+        overflow: 'hidden',
+        textAlign: 'center',
+        backgroundColor: 'white',
+        cursor: 'pointer',
+    },
+    lqasImTableCell: {
+        padding: theme.spacing(1, 2),
     },
 }));

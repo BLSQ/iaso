@@ -32,6 +32,7 @@ from .preparedness.parser import (
     InvalidFormatError,
     parse_value,
     get_preparedness,
+    surge_indicator_for_country,
 )
 from .preparedness.spreadsheet_manager import *
 from logging import getLogger
@@ -213,36 +214,12 @@ class SurgePreviewSerializer(serializers.Serializer):
     def validate(self, attrs):
         try:
             surge_country_name = attrs.get("surge_country_name")
-            sheet = open_sheet_by_url(attrs.get("google_sheet_url")).worksheets()[0]
+            spreadsheet_url = attrs.get("google_sheet_url")
 
-            cell = sheet.find(surge_country_name)
-            if not cell:
-                raise Exception("Country not found in spreadsheet")
+            ssi = SpreadSheetImport.create_for_url(spreadsheet_url)
+            cs = ssi.cached_spreadsheet
 
-            first_row = cell.row
-            first_col = cell.col + 1
-            last_row = cell.row
-            last_col = cell.col + 8
-
-            data = sheet.range(first_row, first_col, last_row, last_col)
-
-            [
-                who_recruitment,
-                who_completed_recruitment,
-                _,
-                _,
-                unicef_recruitment,
-                unicef_completed_recruitment,
-                _,
-                _,
-            ] = data
-
-            response = {
-                "who_recruitment": parse_value(who_recruitment.value),
-                "who_completed_recruitment": parse_value(who_completed_recruitment.value),
-                "unicef_recruitment": parse_value(unicef_recruitment.value),
-                "unicef_completed_recruitment": parse_value(unicef_completed_recruitment.value),
-            }
+            response = surge_indicator_for_country(cs, surge_country_name)
             return response
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])

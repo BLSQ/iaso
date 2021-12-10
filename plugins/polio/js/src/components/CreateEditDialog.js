@@ -58,6 +58,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
             org_units: [],
         },
         is_preventive: false,
+        enable_send_weekly_email: true,
     };
 
     // Merge inplace default values with the one we get from the campaign.

@@ -86,6 +86,12 @@ export const BaseInfoForm = () => {
                         component={BooleanInput}
                     />
                     <SendEmailButton />
+                    <Field
+                        className={classes.input}
+                        label={formatMessage(MESSAGES.enableSendWeeklyEmail)}
+                        name="enable_send_weekly_email"
+                        component={BooleanInput}
+                    />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>

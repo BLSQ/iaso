@@ -85,7 +85,9 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        campaigns = Campaign.objects.filter(Q(round_two__ended_at__lt=now()) | Q(round_two__ended_at__isnull=True))
+        campaigns = Campaign.objects.exclude(enable_send_weekly_email=False).filter(
+            Q(round_two__ended_at__lt=now()) | Q(round_two__ended_at__isnull=True)
+        )
 
         for campaign in campaigns:
             logger.info(f"Email for {campaign.obr_name}")

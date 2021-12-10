@@ -623,10 +623,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.lqas',
         defaultMessage: 'LQAS',
     },
-    campaign: {
-        id: 'iaso.polio.label.campaign',
-        defaultMessage: 'Campaign',
-    },
     childrenChecked: {
         id: 'iaso.polio.label.childrenChecked',
         defaultMessage: 'Children checked',
@@ -714,6 +710,10 @@ const MESSAGES = defineMessages({
     imResults: {
         id: 'iaso.polio.label.imResults',
         defaultMessage: 'IM Results',
+    },
+    enableSendWeeklyEmail: {
+        id: 'iaso.polio.label.enableSendWeeklyEmail',
+        defaultMessage: 'Send a weekly e-mail reminder',
     },
 });
 

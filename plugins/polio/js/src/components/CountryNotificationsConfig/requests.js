@@ -40,3 +40,18 @@ export const useGetProfiles = () =>
     useSnackQuery(['polio', 'profiles'], async () =>
         getRequest('/api/profiles'),
     );
+
+export const useCountryUsersGroup = countryId => {
+    return useSnackQuery(
+        ['countryusersgroup'],
+        async () => getRequest(`/api/polio/countryusersgroup/`),
+        undefined,
+        {
+            select: data =>
+                data.country_users_group.filter(
+                    cug => cug.country === countryId,
+                )[0],
+            enabled: Boolean(countryId),
+        },
+    );
+};

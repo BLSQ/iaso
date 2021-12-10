@@ -715,6 +715,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.enableSendWeeklyEmail',
         defaultMessage: 'Send a weekly e-mail reminder',
     },
+    emailListTooltip: {
+        id: 'iaso.polio.label.emailListTooltip',
+        defaultMessage: 'Change email list via country configuration',
+    },
+    emailListEmpty: {
+        id: 'iaso.polio.label.emailListEmpty',
+        defaultMessage: 'No email configured for this country',
+    },
+    emailListLabel: {
+        id: 'iaso.polio.label.emailListLabel',
+        defaultMessage: 'Configured emails :',
+    },
 });
 
 export default MESSAGES;

@@ -182,11 +182,12 @@ class LastPreparednessSerializer(PreparednessSerializer):
         extra_kwargs = {"payload": {"write_only": True}}
 
 
-class SurgeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Surge
-        exclude = ["campaign"]
-        extra_kwargs = {"payload": {"write_only": True}}
+class SurgeSerializer(serializers.Serializer):
+    surge_country_name = (serializers.CharField(),)
+    who_recruitment = serializers.IntegerField()
+    who_completed_recruitment = serializers.IntegerField()
+    unicef_recruitment = serializers.IntegerField()
+    unicef_completed_recruitment = serializers.IntegerField()
 
 
 class PreparednessPreviewSerializer(serializers.Serializer):
@@ -220,6 +221,7 @@ class SurgePreviewSerializer(serializers.Serializer):
             cs = ssi.cached_spreadsheet
 
             response = surge_indicator_for_country(cs, surge_country_name)
+            response["created_at"] = ssi.created_at
             return response
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])

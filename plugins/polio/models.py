@@ -3,8 +3,10 @@ from uuid import uuid4
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext as _
+from gspread.utils import extract_id_from_url
+
 from iaso.models import Group, OrgUnit
-from plugins.polio.preparedness.parser import open_sheet_by_url
+from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 VIRUSES = [
@@ -308,7 +310,21 @@ class Campaign(models.Model):
         )
 
     def last_surge(self):
-        return self.surge_set.filter(spreadsheet_url=self.surge_spreadsheet_url).order_by("-created_at").first()
+        if not self.surge_spreadsheet_url:
+            return None
+        spread_id = extract_id_from_url(self.surge_spreadsheet_url)
+        ssis = SpreadSheetImport.objects.filter(spread_id=spread_id)
+        if not ssis:
+            return None
+        ssi = ssis.latest("created_at")
+        cs = ssi.cached_spreadsheet
+
+        surge_country_name = self.country_name_in_surge_spreadsheet
+        if not surge_country_name:
+            return None
+        response = surge_indicator_for_country(cs, surge_country_name)
+        response["created_at"] = ssi.created_at
+        return response
 
     def save(self, *args, **kwargs):
         if self.initial_org_unit is not None:

@@ -623,10 +623,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.lqas',
         defaultMessage: 'LQAS',
     },
-    campaign: {
-        id: 'iaso.polio.label.campaign',
-        defaultMessage: 'Campaign',
-    },
     childrenChecked: {
         id: 'iaso.polio.label.childrenChecked',
         defaultMessage: 'Children checked',
@@ -714,6 +710,26 @@ const MESSAGES = defineMessages({
     imResults: {
         id: 'iaso.polio.label.imResults',
         defaultMessage: 'IM Results',
+    },
+    enableSendWeeklyEmail: {
+        id: 'iaso.polio.label.enableSendWeeklyEmail',
+        defaultMessage: 'Send a weekly e-mail reminder',
+    },
+    emailListTooltip: {
+        id: 'iaso.polio.label.emailListTooltip',
+        defaultMessage: 'Change email list via country configuration',
+    },
+    emailListEmpty: {
+        id: 'iaso.polio.label.emailListEmpty',
+        defaultMessage: 'No email configured for this country',
+    },
+    emailListLabel: {
+        id: 'iaso.polio.label.emailListLabel',
+        defaultMessage: 'Configured emails :',
+    },
+    emailNotifyButton: {
+        id: 'iaso.polio.label.emailNotifyButton',
+        defaultMessage: 'Notify coordinators by e-mail',
     },
 });
 

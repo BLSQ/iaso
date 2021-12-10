@@ -1,6 +1,7 @@
+/* eslint-disable camelcase */
 import React from 'react';
 import { Grid, Typography } from '@material-ui/core';
-import { Field } from 'formik';
+import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import { SendEmailButton } from '../components/Buttons/SendEmailButton';
@@ -13,10 +14,14 @@ import {
     TextInput,
 } from '../components/Inputs';
 import MESSAGES from '../constants/messages';
+import { EmailListForCountry } from '../components/EmailListForCountry/EmailListForCountry';
 
 export const BaseInfoForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+
+    const { values } = useFormikContext();
+    const { top_level_org_unit_id } = values;
 
     return (
         <>
@@ -86,6 +91,13 @@ export const BaseInfoForm = () => {
                         component={BooleanInput}
                     />
                     <SendEmailButton />
+                    <Field
+                        className={classes.input}
+                        label={formatMessage(MESSAGES.enableSendWeeklyEmail)}
+                        name="enable_send_weekly_email"
+                        component={BooleanInput}
+                    />
+                    <EmailListForCountry countryId={top_level_org_unit_id} />
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>

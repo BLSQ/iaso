@@ -285,6 +285,9 @@ class Campaign(models.Model):
     )
 
     is_preventive = models.BooleanField(default=False, help_text="Preventive campaign")
+    enable_send_weekly_email = models.BooleanField(
+        default=False, help_text="Activate the sending of a remainder email every week."
+    )
 
     def __str__(self):
         return f"{self.epid} {self.obr_name}"

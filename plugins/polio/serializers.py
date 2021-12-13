@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.transaction import atomic
 from django.utils.translation import gettext_lazy as _
-from gspread.exceptions import APIError
+from gspread.exceptions import APIError, NoValidUrlKeyFound
 from rest_framework import exceptions
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -208,13 +208,13 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
 
 class SurgePreviewSerializer(serializers.Serializer):
-    google_sheet_url = serializers.URLField()
-    surge_country_name = serializers.CharField(max_length=200)
+    surge_spreadsheet_url = serializers.URLField()
+    country_name_in_surge_spreadsheet = serializers.CharField(max_length=200)
 
     def validate(self, attrs):
         try:
-            surge_country_name = attrs.get("surge_country_name")
-            spreadsheet_url = attrs.get("google_sheet_url")
+            spreadsheet_url = attrs.get("surge_spreadsheet_url")
+            surge_country_name = attrs.get("country_name_in_surge_spreadsheet")
 
             ssi = SpreadSheetImport.create_for_url(spreadsheet_url)
             cs = ssi.cached_spreadsheet
@@ -226,6 +226,10 @@ class SurgePreviewSerializer(serializers.Serializer):
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
             raise serializers.ValidationError(e.args[0].get("message"))
+        except NoValidUrlKeyFound as e:
+            raise serializers.ValidationError({"surge_spreadsheet_url": ["Invalid URL"]})
+        except Exception as e:
+            raise serializers.ValidationError(f"{type(e)}: {str(e)}")
 
     def to_representation(self, instance):
         return instance

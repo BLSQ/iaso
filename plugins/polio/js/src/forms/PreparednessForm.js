@@ -138,21 +138,18 @@ export const PreparednessForm = () => {
     const refreshSurgeData = () => {
         surgeMutation.mutate(
             {
-                google_sheet_url: values.surge_spreadsheet_url,
-                surge_country_name: values.country_name_in_surge_spreadsheet,
+                surge_spreadsheet_url: values.surge_spreadsheet_url,
+                country_name_in_surge_spreadsheet:
+                    values.country_name_in_surge_spreadsheet,
             },
             {
                 onSuccess: counters => {
-                    setFieldValue('last_surge', {
-                        counters,
-                    });
-                    setFieldValue(
-                        'country_name_in_surge_spreadsheet',
-                        values.surge_country_name,
-                    );
+                    setFieldValue('last_surge', counters);
                 },
                 onError: error => {
-                    setErrors(error.details);
+                    if (error.details) {
+                        setErrors(error.details);
+                    }
                 },
             },
         );
@@ -324,57 +321,40 @@ export const PreparednessForm = () => {
                     </Grid>
 
                     <Grid xd={12} item>
-                        {surgeMutation.isLoading ? (
-                            <CircularProgress />
-                        ) : (
+                        {surgeMutation.isLoading && <CircularProgress />}
+                        {lastSurge && (
                             <>
-                                {surgeMutation.isError && (
-                                    <Typography color="error">
-                                        {surgeMutation.error.non_field_errors}
-                                    </Typography>
-                                )}
-                                {lastSurge && (
-                                    <>
-                                        <Typography>
-                                            {lastSurge.title}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.whoToRecruit,
-                                            )}: ${lastSurge.who_recruitment}`}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.whoCompletedRecruitement,
-                                            )}: ${lastSurge.who_recruitment}`}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.unicefToRecruit,
-                                            )}: ${
-                                                lastSurge.unicef_recruitment
-                                            }`}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.unicefCompletedRecruitement,
-                                            )}: ${
-                                                lastSurge.unicef_completed_recruitment
-                                            }`}
-                                        </Typography>
-                                        <Typography variant="caption">
-                                            {formatMessage(
-                                                MESSAGES.refreshedAt,
-                                            )}{' '}
-                                            :
-                                            {lastSurge.created_at
-                                                ? moment(
-                                                      lastSurge.created_at,
-                                                  ).format('LTS')
-                                                : ''}
-                                        </Typography>
-                                    </>
-                                )}
+                                <Typography>{lastSurge.title}</Typography>
+                                <Typography>
+                                    {`${formatMessage(
+                                        MESSAGES.whoToRecruit,
+                                    )}: ${lastSurge.who_recruitment}`}
+                                </Typography>
+                                <Typography>
+                                    {`${formatMessage(
+                                        MESSAGES.whoCompletedRecruitement,
+                                    )}: ${lastSurge.who_recruitment}`}
+                                </Typography>
+                                <Typography>
+                                    {`${formatMessage(
+                                        MESSAGES.unicefToRecruit,
+                                    )}: ${lastSurge.unicef_recruitment}`}
+                                </Typography>
+                                <Typography>
+                                    {`${formatMessage(
+                                        MESSAGES.unicefCompletedRecruitement,
+                                    )}: ${
+                                        lastSurge.unicef_completed_recruitment
+                                    }`}
+                                </Typography>
+                                <Typography variant="caption">
+                                    {formatMessage(MESSAGES.refreshedAt)} :
+                                    {lastSurge.created_at
+                                        ? moment(lastSurge.created_at).format(
+                                              'LTS',
+                                          )
+                                        : ''}
+                                </Typography>
                             </>
                         )}
                     </Grid>

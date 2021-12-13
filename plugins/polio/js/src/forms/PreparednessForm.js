@@ -21,6 +21,43 @@ import {
 } from '../hooks/useGetPreparednessData';
 import MESSAGES from '../constants/messages';
 
+const PreparednessSummary = ({ preparedness, preperadness_sync_status }) => {
+    const { formatMessage } = useSafeIntl();
+    if (!preparedness) return null;
+    if (preparedness.error)
+        return (
+            <Typography>
+                Error: {preparedness.error}: {preparedness.details}
+            </Typography>
+        );
+
+    const createdAt = moment(preparedness.created_at);
+    return (
+        <>
+            <Typography>
+                {`${formatMessage(MESSAGES.national)}: ${
+                    preparedness.national_score
+                }%`}
+            </Typography>
+            <Typography>
+                {`${formatMessage(MESSAGES.regional)}: ${
+                    preparedness.regional_score
+                }%`}
+            </Typography>
+            <Typography>
+                {`${formatMessage(MESSAGES.districtScore)}: ${
+                    preparedness.district_score
+                }%`}
+            </Typography>
+            <Typography variant="caption">
+                {formatMessage(MESSAGES.sync_status)}:{' '}
+                {preperadness_sync_status}.{formatMessage(MESSAGES.refreshedAt)}
+                : {createdAt.format('LTS')} ({createdAt.fromNow()})
+            </Typography>
+        </>
+    );
+};
+
 export const PreparednessForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -216,53 +253,12 @@ export const PreparednessForm = () => {
                                         )}: ${generationError.message}`}
                                     </Typography>
                                 )}
-                                {totalSummary && (
-                                    <>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.national,
-                                            )}: ${
-                                                totalSummary.national_score
-                                            }%`}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.regional,
-                                            )}: ${
-                                                totalSummary.regional_score
-                                            }%`}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.districtScore,
-                                            )}: ${
-                                                totalSummary.district_score
-                                            }%`}
-                                        </Typography>
-                                        <Typography variant="caption">
-                                            {`${formatMessage(
-                                                MESSAGES.sync_status,
-                                            )}: ${
-                                                values.preperadness_sync_status
-                                            }. 
-                                            ${formatMessage(
-                                                MESSAGES.refreshedAt,
-                                            )}: ${
-                                                totalSummary.created_at
-                                                    ? moment(
-                                                          totalSummary.created_at,
-                                                      ).format('LTS')
-                                                    : ''
-                                            } ( ${
-                                                totalSummary.created_at
-                                                    ? moment(
-                                                          totalSummary.created_at,
-                                                      ).fromNow()
-                                                    : ''
-                                            })`}
-                                        </Typography>
-                                    </>
-                                )}
+                                <PreparednessSummary
+                                    preparedness={totalSummary}
+                                    preperadness_sync_status={
+                                        values.preperadness_sync_status
+                                    }
+                                />
                             </>
                         )}
                     </Grid>

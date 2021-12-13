@@ -188,10 +188,16 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         try:
-            ssi = SpreadSheetImport.create_for_url(attrs.get("google_sheet_url"))
+            # ssi = SpreadSheetImport.create_for_url(attrs.get("google_sheet_url"))
+            ssi = SpreadSheetImport.last_for_url(attrs.get("google_sheet_url"))
             cs = ssi.cached_spreadsheet
+            r = {}
             preparedness_data = get_preparedness(cs)
-            return preparedness_data
+            r.update(preparedness_data)
+            r["created_at"] = ssi.created_at
+            r.update(get_preparedness_score(preparedness_data))
+            r.update(preparedness_summary(preparedness_data))
+            return r
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
@@ -336,11 +342,12 @@ class CampaignSerializer(serializers.ModelSerializer):
     def get_last_preparedness(self, campaign):
         # summary
         r = {}
+        return None
         try:
             spreadsheet_url = campaign.preperadness_spreadsheet_url
             last_ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
             if not last_ssi:
-                return r
+                return None
 
             r["created_at"] = last_ssi.created_at
             last_p = get_preparedness(last_ssi.cached_spreadsheet)

@@ -45,7 +45,8 @@ def get_summary(zones):
             r[i] = avg(values)
         elif kind == "percent":
             # it's stored as percent * 100 atm
-            r[i] = avg(values) / 10
+            average = avg(values)
+            r[i] = average / 10 if average is not None else None
         elif kind == "date":
             values = [v for v in values if v]
             invalids_dates = [(n, v) for n, v in name_values if v and not isinstance(v, int)]

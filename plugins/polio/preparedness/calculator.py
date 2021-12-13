@@ -43,6 +43,9 @@ def get_summary(zones):
         values = [value for _, value in name_values]
         if kind == "number":
             r[i] = avg(values)
+        elif kind == "percent":
+            # it's stored as percent * 100 atm
+            r[i] = avg(values) / 10
         elif kind == "date":
             values = [v for v in values if v]
             invalids_dates = [(n, v) for n, v in name_values if v and not isinstance(v, int)]
@@ -74,11 +77,11 @@ indicators = [
     (7, "sia_training", "Supervisor training & deployment  ", "number"),
     (8, "sia_micro_planning", "Micro/Macro plan  ", "number"),
     (9, "communication_sm_fund", "SM funds --> 2 weeks  ", "number"),
-    (10, "communication_sm_activities", "SM activities  ", "number"),
+    (10, "communication_sm_activities", "SM activities  ", "percent"),
     (11, "communication_c4d", "C4d", "date"),
     (12, "aefi_easi_protocol", "Safety documents: AESI Protocol  ", "number"),
     (13, "pharmacovigilance_committee", "Pharmacovigilance Committee  ", "number"),
-    (0, "status_score", "Total score", "number"),  # percentage
+    (0, "status_score", "Total score", "percent"),
     # not used atm
     # (0, "training_score", "training_score", "number"),
     # (0, "monitoring_score", "monitoring_score", "number"),

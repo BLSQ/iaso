@@ -99,6 +99,8 @@ def get_national_level_preparedness(spread: CachedSpread):
 
         print(f"Data found on worksheet: {worksheet.title}")
         kv = worksheet.get_dict_position(NATIONAL_INDICATORS)
+        if kv.get("communication_sm_activities"):
+            kv["communication_sm_activities"] = from_percent(kv["communication_sm_activities"])
         score = _get_scores(worksheet, cell)
         return {**kv, **score}
     raise Exception(

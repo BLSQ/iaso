@@ -92,7 +92,7 @@ export const LqasImTable = ({ data, marginTop, tableKey }) => {
         );
     };
     return (
-        <Box mt={marginTop ? 8 : 0} mb={4}>
+        <Box mt={marginTop ? 4 : 0} mb={4}>
             <Paper elevation={3}>
                 <TableContainer>
                     <MuiTable stickyHeader size="small">

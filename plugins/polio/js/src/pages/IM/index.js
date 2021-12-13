@@ -114,24 +114,6 @@ export const ImStats = () => {
                             />
                         </Box>
                     </Grid>
-                    <Grid item xs={4}>
-                        <Box ml={2}>
-                            <Typography variant="h6">
-                                {`${formatMessage(
-                                    MESSAGES.districtsNotFound,
-                                )}:`}
-                            </Typography>
-                            {districtsNotFound}
-                        </Box>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Box ml={2}>
-                            <Typography variant="h6">
-                                {`${formatMessage(MESSAGES.datesIgnored)}:`}
-                            </Typography>
-                            {Object.keys(datesIgnored ?? {}).join(', ')}
-                        </Box>
-                    </Grid>
                 </Grid>
                 <Grid container item spacing={2} direction="row">
                     <Grid item xs={6}>
@@ -185,6 +167,26 @@ export const ImStats = () => {
                                 />
                             </Box>
                         )}
+                    </Grid>
+                </Grid>
+                <Grid container item>
+                    <Grid item xs={4}>
+                        <Box ml={2}>
+                            <Typography variant="h6">
+                                {`${formatMessage(
+                                    MESSAGES.districtsNotFound,
+                                )}:`}
+                            </Typography>
+                            {districtsNotFound}
+                        </Box>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Box ml={2}>
+                            <Typography variant="h6">
+                                {`${formatMessage(MESSAGES.datesIgnored)}:`}
+                            </Typography>
+                            {Object.keys(datesIgnored ?? {}).join(', ')}
+                        </Box>
                     </Grid>
                 </Grid>
             </Grid>

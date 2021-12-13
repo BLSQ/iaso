@@ -183,7 +183,9 @@ class LastPreparednessSerializer(PreparednessSerializer):
 
 
 class SurgeSerializer(serializers.Serializer):
+    created_at = serializers.DateTimeField()
     # surge_country_name = serializers.CharField()
+    title = serializers.CharField()  # title of the Google spreadsheet
     who_recruitment = serializers.IntegerField()
     who_completed_recruitment = serializers.IntegerField()
     unicef_recruitment = serializers.IntegerField()

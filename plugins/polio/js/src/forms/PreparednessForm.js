@@ -319,6 +319,9 @@ export const PreparednessForm = () => {
                                 {surgeSummary && (
                                     <>
                                         <Typography>
+                                            {surgeSummary.title}
+                                        </Typography>
+                                        <Typography>
                                             {`${formatMessage(
                                                 MESSAGES.whoToRecruit,
                                             )}: ${
@@ -347,14 +350,15 @@ export const PreparednessForm = () => {
                                             }`}
                                         </Typography>
                                         <Typography variant="caption">
-                                            {`${formatMessage(
+                                            {formatMessage(
                                                 MESSAGES.refreshedAt,
-                                            )}: ${(surgeSummary.created_at
-                                                ? new Date(
+                                            )}{' '}
+                                            :
+                                            {surgeSummary.created_at
+                                                ? moment(
                                                       surgeSummary.created_at,
-                                                  )
-                                                : new Date()
-                                            ).toUTCString()}`}
+                                                  ).format('LTS')
+                                                : ''}
                                         </Typography>
                                     </>
                                 )}

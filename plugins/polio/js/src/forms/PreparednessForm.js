@@ -40,21 +40,29 @@ const PreparednessSummary = ({ preparedness, preperadness_sync_status }) => {
     const createdAt = moment(preparedness.created_at);
     return (
         <>
-            <Typography>
-                {`${formatMessage(MESSAGES.national)}: ${
-                    preparedness.national_score
-                }%`}
-            </Typography>
-            <Typography>
-                {`${formatMessage(MESSAGES.regional)}: ${
-                    preparedness.regional_score
-                }%`}
-            </Typography>
-            <Typography>
-                {`${formatMessage(MESSAGES.districtScore)}: ${
-                    preparedness.district_score
-                }%`}
-            </Typography>
+            <Grid container direction="row">
+                <Grid item md={4}>
+                    <Typography>
+                        {`${formatMessage(MESSAGES.national)}: ${
+                            preparedness.national_score
+                        }%`}
+                    </Typography>
+                </Grid>
+                <Grid item md={4}>
+                    <Typography>
+                        {`${formatMessage(MESSAGES.regional)}: ${
+                            preparedness.regional_score
+                        }%`}
+                    </Typography>
+                </Grid>
+                <Grid item md={4}>
+                    <Typography>
+                        {`${formatMessage(MESSAGES.districtScore)}: ${
+                            preparedness.district_score
+                        }%`}
+                    </Typography>
+                </Grid>
+            </Grid>
 
             <Typography>
                 <table>

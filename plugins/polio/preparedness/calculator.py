@@ -64,7 +64,7 @@ def get_summary(zones):
 # sn, key, title, type
 indicators = [
     (1, "operational_fund", "Operational funds", "number"),
-    (2, "vaccine_and_droppers_received", "vaccine_and_droppers_received", "number"),
+    (2, "vaccine_and_droppers_received", "Vaccines and droppers received", "number"),
     (3, "vaccine_cold_chain_assessment", "Vaccine cold chain assessment  ", "number"),
     (4, "vaccine_monitors_training_and_deployment", "Vaccine monitors training & deployment  ", "number"),
     (5, "ppe_materials_and_others_supply", "PPE Materials and other supplies  ", "number"),

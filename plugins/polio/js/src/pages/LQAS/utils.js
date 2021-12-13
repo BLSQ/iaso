@@ -15,7 +15,10 @@ export const determineStatusForDistrict = district => {
 
 export const getLqasStatsForRound = (lqasData, campaign, round) => {
     if (!lqasData[campaign]) return [[], [], [], []];
-    const totalEvaluated = [...lqasData[campaign][round]];
+    const totalEvaluated = lqasData[campaign][round].map(district => ({
+        ...district,
+        id: district.district,
+    }));
     const allStatuses = totalEvaluated.map(district => {
         return determineStatusForDistrict(district);
     });
@@ -26,4 +29,15 @@ export const getLqasStatsForRound = (lqasData, campaign, round) => {
     const failed = allStatuses.filter(status => status === LQAS_FAIL);
 
     return [totalEvaluated, passed, failed, disqualified];
+};
+
+export const getLqasStatsWithRegion = ({ data, campaign, round, shapes }) => {
+    if (!data[campaign]) return [];
+    return [...data[campaign][round]].map(district => ({
+        ...district,
+        region: shapes
+            .filter(shape => shape.id === district.district)
+            .map(shape => shape.parent_id)[0],
+        status: determineStatusForDistrict(district),
+    }));
 };

@@ -45,10 +45,12 @@ def get_summary(zones):
             r[i] = avg(values)
         elif kind == "date":
             values = [v for v in values if v]
-            for n, v in name_values:
-                if v and not isinstance(v, (int)):
-                    raise ValueError(f"Value `{ repr(v)}` for {n} is not correct date")
-            if values:
+            invalids_dates = [(n, v) for n, v in name_values if v and not isinstance(v, int)]
+            if invalids_dates:
+                r[i] = "error", "Invalid date format for zone: " + ", ".join(
+                    ["{}: `{}`".format(n, v) for n, v in invalids_dates]
+                )
+            elif values:
                 try:
                     start, end = min(values), max(values)
                 except TypeError as e:

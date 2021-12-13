@@ -183,7 +183,7 @@ class LastPreparednessSerializer(PreparednessSerializer):
 
 
 class SurgeSerializer(serializers.Serializer):
-    surge_country_name = (serializers.CharField(),)
+    # surge_country_name = serializers.CharField()
     who_recruitment = serializers.IntegerField()
     who_completed_recruitment = serializers.IntegerField()
     unicef_recruitment = serializers.IntegerField()

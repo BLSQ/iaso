@@ -346,7 +346,6 @@ class CampaignSerializer(serializers.ModelSerializer):
     def get_last_preparedness(self, campaign):
         # summary
         r = {}
-        return None
         try:
             spreadsheet_url = campaign.preperadness_spreadsheet_url
             last_ssi = SpreadSheetImport.last_for_url(spreadsheet_url)

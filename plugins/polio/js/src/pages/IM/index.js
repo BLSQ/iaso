@@ -171,7 +171,7 @@ export const ImStats = () => {
                 </Grid>
                 <Grid container item>
                     <Grid item xs={4}>
-                        <Box ml={2}>
+                        <Box ml={2} mb={4}>
                             <Typography variant="h6">
                                 {`${formatMessage(
                                     MESSAGES.districtsNotFound,
@@ -181,7 +181,7 @@ export const ImStats = () => {
                         </Box>
                     </Grid>
                     <Grid item xs={4}>
-                        <Box ml={2}>
+                        <Box ml={2} mb={4}>
                             <Typography variant="h6">
                                 {`${formatMessage(MESSAGES.datesIgnored)}:`}
                             </Typography>

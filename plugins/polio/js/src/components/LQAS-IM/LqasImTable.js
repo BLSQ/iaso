@@ -11,7 +11,7 @@ import {
     Paper,
 } from '@material-ui/core';
 import { array, bool, string } from 'prop-types';
-import { useSafeIntl, Table } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import CheckIcon from '@material-ui/icons/Check';
 import MESSAGES from '../../constants/messages';
 import { useStyles } from '../../styles/theme';
@@ -25,13 +25,13 @@ import {
     sortByFoundDesc,
 } from './tableUtils';
 
-export const LqasImTable = ({ data, marginTop, tableKey, columns }) => {
+export const LqasImTable = ({ data, marginTop, tableKey }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(50);
     const [sortBy, setSortBy] = useState('asc');
-    const [sortFocus, setSortFocus] = useState('name');
+    const [sortFocus, setSortFocus] = useState('DISTRICT');
 
     const handleSort = useCallback(
         orgUnitType => {
@@ -55,90 +55,45 @@ export const LqasImTable = ({ data, marginTop, tableKey, columns }) => {
         setPage(0);
     };
 
-    const handleParamsChange = newParams => {
-        console.log('newParams', newParams);
-        setPage(newParams.page);
-        setSortFocus(newParams.order);
-        setRowsPerPage(newParams.pageSize);
-    };
-
     const dataForTable = useMemo(() => {
-        console.log(sortFocus);
-        if (sortFocus === 'name') {
+        if (sortFocus === 'DISTRICT' && sortBy === 'asc') {
             return data.sort(sortbyDistrictNameAsc);
         }
-        if (sortFocus === '-name') {
+        if (sortFocus === 'DISTRICT' && sortBy === 'desc') {
             return data.sort(sortbyDistrictNameDesc);
         }
-        if (sortFocus === 'status') {
+        if (sortFocus === 'STATUS' && sortBy === 'asc') {
             return data.sort(sortbyStatusAsc);
         }
-        if (sortFocus === '-status') {
+        if (sortFocus === 'STATUS' && sortBy === 'desc') {
             return data.sort(sortbyStatusDesc);
         }
-        if (sortFocus === 'district') {
+        if (sortFocus === 'FOUND' && sortBy === 'asc') {
             return data.sort(sortByFoundAsc);
         }
-        if (sortFocus === '-district') {
+        if (sortFocus === 'FOUND' && sortBy === 'desc') {
             return data.sort(sortByFoundDesc);
         }
         console.warn(
-            `Sort error, there must be a wrong parameter. Received: ${sortFocus}. Expected DISTRICT|STATUS|FOUND|-DISTRICT|-STATUS|-FOUND`,
+            `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and DISTRICT|STATUS|FOUND`,
         );
         return null;
-    }, [sortFocus, data]);
-    // const dataForTable = useMemo(() => {
-    //     if (sortFocus === 'DISTRICT' && sortBy === 'asc') {
-    //         return data.sort(sortbyDistrictNameAsc);
-    //     }
-    //     if (sortFocus === 'DISTRICT' && sortBy === 'desc') {
-    //         return data.sort(sortbyDistrictNameDesc);
-    //     }
-    //     if (sortFocus === 'STATUS' && sortBy === 'asc') {
-    //         return data.sort(sortbyStatusAsc);
-    //     }
-    //     if (sortFocus === 'STATUS' && sortBy === 'desc') {
-    //         return data.sort(sortbyStatusDesc);
-    //     }
-    //     if (sortFocus === 'FOUND' && sortBy === 'asc') {
-    //         return data.sort(sortByFoundAsc);
-    //     }
-    //     if (sortFocus === 'FOUND' && sortBy === 'desc') {
-    //         return data.sort(sortByFoundDesc);
-    //     }
-    //     console.warn(
-    //         `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and DISTRICT|STATUS|FOUND`,
-    //     );
-    //     return null;
-    // }, [sortBy, sortFocus, data]);
+    }, [sortBy, sortFocus, data]);
 
-    // const determineStatusColor = status => {
-    //     if (parseInt(status, 10) === 1) return 'green';
-    //     if (parseInt(status, 10) === 2) return 'orange';
-    //     if (parseInt(status, 10) === 3) return 'red';
-    //     throw new Error(
-    //         `Expected to status value to be parsed to int value of 1,2 or 3, got ${parseInt(
-    //             status,
-    //             10,
-    //         )}`,
-    //     );
-    // };
-    const count = dataForTable?.length ?? 123;
-    console.log('count', count);
-    const pages = Math.ceil(count / rowsPerPage);
-    console.log('pages', pages);
+    const determineStatusColor = status => {
+        if (parseInt(status, 10) === 1) return 'green';
+        if (parseInt(status, 10) === 2) return '#FFD835';
+        if (parseInt(status, 10) === 3) return 'red';
+        throw new Error(
+            `Expected to status value to be parsed to int value of 1,2 or 3, got ${parseInt(
+                status,
+                10,
+            )}`,
+        );
+    };
     return (
         <Box mt={marginTop ? 8 : 0} mb={4}>
-            <Table
-                data={dataForTable}
-                columns={columns}
-                params={{ order: sortFocus, page, pageSize: rowsPerPage }}
-                onTableParamsChange={handleParamsChange}
-                count={count}
-                page={page}
-                pages={pages}
-            />
-            {/* <Paper elevation={3}>
+            <Paper elevation={3}>
                 <TableContainer>
                     <MuiTable stickyHeader size="small">
                         <TableHead>
@@ -287,7 +242,7 @@ export const LqasImTable = ({ data, marginTop, tableKey, columns }) => {
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
                 />
-            </Paper> */}
+            </Paper>
         </Box>
     );
 };
@@ -296,10 +251,8 @@ LqasImTable.propTypes = {
     data: array,
     marginTop: bool,
     tableKey: string.isRequired,
-    columns: array,
 };
 LqasImTable.defaultProps = {
     data: [],
     marginTop: true,
-    columns: [],
 };

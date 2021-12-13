@@ -194,6 +194,7 @@ class PreparednessPreviewSerializer(serializers.Serializer):
             r = {}
             preparedness_data = get_preparedness(cs)
             r.update(preparedness_data)
+            r["title"] = cs.title
             r["created_at"] = ssi.created_at
             r.update(get_preparedness_score(preparedness_data))
             r.update(preparedness_summary(preparedness_data))
@@ -353,7 +354,9 @@ class CampaignSerializer(serializers.ModelSerializer):
                 return None
 
             r["created_at"] = last_ssi.created_at
-            last_p = get_preparedness(last_ssi.cached_spreadsheet)
+            cached_spreadsheet = last_ssi.cached_spreadsheet
+            r["title"] = cached_spreadsheet.title
+            last_p = get_preparedness(cached_spreadsheet)
             r.update(get_preparedness_score(last_p))
             r.update(preparedness_summary(last_p))
         except Exception as e:

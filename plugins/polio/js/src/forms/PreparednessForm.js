@@ -30,12 +30,8 @@ const formatIndicator = indicatorValue => {
 const PreparednessSummary = ({ preparedness, preperadness_sync_status }) => {
     const { formatMessage } = useSafeIntl();
     if (!preparedness) return null;
-    if (preparedness.error)
-        return (
-            <Typography>
-                Error: {preparedness.error}: {preparedness.details}
-            </Typography>
-        );
+    if (preparedness.status === 'error')
+        return <Typography>Error: {preparedness.details}</Typography>;
 
     const createdAt = moment(preparedness.created_at);
     return (
@@ -103,7 +99,8 @@ const PreparednessSummary = ({ preparedness, preperadness_sync_status }) => {
                 <Typography variant="caption">
                     {formatMessage(MESSAGES.sync_status)}:{' '}
                     {preperadness_sync_status}.
-                    {formatMessage(MESSAGES.refreshedAt)}:{' '}
+                    {formatMessage(MESSAGES.spreadsheetImportTitle)}{' '}
+                    {preparedness.title}. {formatMessage(MESSAGES.refreshedAt)}:{' '}
                     {createdAt.format('LTS')} ({createdAt.fromNow()})
                 </Typography>
             </Typography>

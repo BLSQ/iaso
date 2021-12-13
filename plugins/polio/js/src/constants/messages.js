@@ -731,6 +731,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.emailNotifyButton',
         defaultMessage: 'Notify coordinators by e-mail',
     },
+    spreadsheetImportTitle: {
+        id: 'iaso.polio.label.spreadsheetImportTitle',
+        defaultMessage: 'Imported from SpreadSheet : ',
+    },
 });
 
 export default MESSAGES;

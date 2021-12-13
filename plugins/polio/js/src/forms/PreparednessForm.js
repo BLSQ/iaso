@@ -22,6 +22,8 @@ import {
 import MESSAGES from '../constants/messages';
 
 const formatIndicator = indicatorValue => {
+    if (indicatorValue === null || indicatorValue === undefined)
+        return indicatorValue;
     if (typeof indicatorValue === 'number') return indicatorValue.toFixed(0);
     if (typeof indicatorValue === 'string') return indicatorValue;
     if (indicatorValue.length) return indicatorValue.join(' -- ');

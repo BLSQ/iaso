@@ -6,7 +6,8 @@ from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url
 
 from iaso.models import Group, OrgUnit
-from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
+from plugins.polio.preparedness.calculator import preparedness_summary, get_preparedness_score
+from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country, get_preparedness
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 VIRUSES = [
@@ -302,21 +303,11 @@ class Campaign(models.Model):
     def get_regions(self):
         return OrgUnit.objects.filter(id__in=self.get_districts().values_list("parent_id", flat=True).distinct())
 
-    def last_preparedness(self):
-        return (
-            self.preparedness_set.filter(spreadsheet_url=self.preperadness_spreadsheet_url)
-            .order_by("-created_at")
-            .first()
-        )
-
     def last_surge(self):
-        if not self.surge_spreadsheet_url:
+        spreadsheet_url = self.surge_spreadsheet_url
+        ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
+        if not ssi:
             return None
-        spread_id = extract_id_from_url(self.surge_spreadsheet_url)
-        ssis = SpreadSheetImport.objects.filter(spread_id=spread_id)
-        if not ssis:
-            return None
-        ssi = ssis.latest("created_at")
         cs = ssi.cached_spreadsheet
 
         surge_country_name = self.country_name_in_surge_spreadsheet
@@ -438,3 +429,16 @@ class SpreadSheetImport(models.Model):
     @property
     def cached_spreadsheet(self):
         return CachedSpread(self.content)
+
+    @staticmethod
+    def last_for_url(spreadsheet_url: str):
+        if not spreadsheet_url:
+            return None
+        spread_id = extract_id_from_url(spreadsheet_url)
+
+        ssis = SpreadSheetImport.objects.filter(spread_id=spread_id)
+
+        if not ssis:
+            # No import yet
+            return None
+        return ssis.latest("created_at")

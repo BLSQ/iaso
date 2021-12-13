@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timezone
+from logging import getLogger
 
 import pandas as pd
 from django.contrib.auth.models import User
@@ -16,7 +17,6 @@ from .models import (
     Preparedness,
     Round,
     Campaign,
-    Surge,
     CountryUsersGroup,
     LineListImport,
     VIRUSES,
@@ -27,15 +27,13 @@ from .models import (
     ROUND2DONE,
     SpreadSheetImport,
 )
+from .preparedness.calculator import get_preparedness_score, preparedness_summary
 from .preparedness.parser import (
-    open_sheet_by_url,
     InvalidFormatError,
-    parse_value,
     get_preparedness,
     surge_indicator_for_country,
 )
 from .preparedness.spreadsheet_manager import *
-from logging import getLogger
 
 logger = getLogger(__name__)
 
@@ -173,13 +171,6 @@ class PreparednessSerializer(serializers.ModelSerializer):
     class Meta:
         model = Preparedness
         exclude = ["spreadsheet_url"]
-
-
-class LastPreparednessSerializer(PreparednessSerializer):
-    class Meta:
-        model = Preparedness
-        exclude = ["campaign"]
-        extra_kwargs = {"payload": {"write_only": True}}
 
 
 class SurgeSerializer(serializers.Serializer):
@@ -340,12 +331,27 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     group = GroupSerializer(required=False, allow_null=True)
 
-    preparedness_data = LastPreparednessSerializer(required=False)
-    last_preparedness = LastPreparednessSerializer(
-        required=False,
-        read_only=True,
-        allow_null=True,
-    )
+    last_preparedness = serializers.SerializerMethodField()
+
+    def get_last_preparedness(self, campaign):
+        # summary
+        r = {}
+        try:
+            spreadsheet_url = campaign.preperadness_spreadsheet_url
+            last_ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
+            if not last_ssi:
+                return r
+
+            r["created_at"] = last_ssi.created_at
+            last_p = get_preparedness(last_ssi.cached_spreadsheet)
+            r.update(get_preparedness_score(last_p))
+            r.update(preparedness_summary(last_p))
+        except Exception as e:
+            r["status"] = "error"
+            r["details"] = str(e)
+            logger.exception(e)
+        return r
+
     last_surge = SurgeSerializer(
         required=False,
         read_only=True,
@@ -368,16 +374,12 @@ class CampaignSerializer(serializers.ModelSerializer):
         else:
             campaign_group = None
 
-        preparedness_data = validated_data.pop("preparedness_data", None)
         campaign = Campaign.objects.create(
             **validated_data,
             round_one=Round.objects.create(**round_one_data),
             round_two=Round.objects.create(**round_two_data),
             group=campaign_group,
         )
-
-        if preparedness_data is not None:
-            Preparedness.objects.create(campaign=campaign, **preparedness_data)
 
         return campaign
 
@@ -403,16 +405,12 @@ class CampaignSerializer(serializers.ModelSerializer):
             campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
             instance.group = campaign_group
 
-        # we want to create a new preparedness and surge data object each time
-        if "preparedness_data" in validated_data:
-            Preparedness.objects.create(campaign=instance, **validated_data.pop("preparedness_data"))
         return super().update(instance, validated_data)
 
     class Meta:
         model = Campaign
         fields = "__all__"
         read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status", "creation_email_send_at"]
-        extra_kwargs = {"preparedness_data": {"write_only": True}}
 
 
 class AnonymousCampaignSerializer(CampaignSerializer):

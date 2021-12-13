@@ -50,7 +50,7 @@ REGIONAL_DISTRICT_INDICATORS = {
     "sia_training": 17,
     "sia_micro_planning": 26,
     "communication_sm_fund": 43,
-    "communication_sm_activities": 46,  # percent (total score)
+    "communication_sm_activities": 46,  # percent (score for section)
     "communication_c4d": 45,  # date
     "aefi_easi_protocol": 51,
     "pharmacovigilance_committee": 50,

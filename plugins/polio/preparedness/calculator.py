@@ -78,7 +78,7 @@ indicators = [
     (11, "communication_c4d", "C4d", "date"),
     (12, "aefi_easi_protocol", "Safety documents: AESI Protocol  ", "number"),
     (13, "pharmacovigilance_committee", "Pharmacovigilance Committee  ", "number"),
-    (0, "status_score", "status_score", "number"),
+    (0, "status_score", "Total score", "number"),
     # not used atm
     # (0, "training_score", "training_score", "number"),
     # (0, "monitoring_score", "monitoring_score", "number"),

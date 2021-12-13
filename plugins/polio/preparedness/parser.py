@@ -50,10 +50,10 @@ REGIONAL_DISTRICT_INDICATORS = {
     "sia_training": 17,
     "sia_micro_planning": 26,
     "communication_sm_fund": 43,
-    "communication_sm_activities": 46,
+    "communication_sm_activities": 46,  # percent (score for section)
     "communication_c4d": 45,  # date
-    "aefi_easi_protocol": 52,
-    "pharmacovigilance_committee": 51,
+    "aefi_easi_protocol": 51,
+    "pharmacovigilance_committee": 50,
 }
 
 
@@ -155,7 +155,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
             for indicator_key, indicator_row in REGIONAL_DISTRICT_INDICATORS.items():
                 shift = 0
                 # some sheet have an extra empty row
-                if sheet.get_a1("B14") == 0 and indicator_row >= 14:
+                if sheet.get_a1("B14") == None and indicator_row >= 14:
                     shift = 1
                 value = sheet.get_rc(indicator_row + shift, colnum)
                 if indicator_key == "communication_sm_activities":

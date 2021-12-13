@@ -45,10 +45,12 @@ def get_summary(zones):
             r[i] = avg(values)
         elif kind == "date":
             values = [v for v in values if v]
-            for n, v in name_values:
-                if v and not isinstance(v, (int)):
-                    raise ValueError(f"Value `{ repr(v)}` for {n} is not correct date")
-            if values:
+            invalids_dates = [(n, v) for n, v in name_values if v and not isinstance(v, int)]
+            if invalids_dates:
+                r[i] = "error", "Invalid date format for zone: " + ", ".join(
+                    ["{}: `{}`".format(n, v) for n, v in invalids_dates]
+                )
+            elif values:
                 try:
                     start, end = min(values), max(values)
                 except TypeError as e:
@@ -64,7 +66,7 @@ def get_summary(zones):
 # sn, key, title, type
 indicators = [
     (1, "operational_fund", "Operational funds", "number"),
-    (2, "vaccine_and_droppers_received", "vaccine_and_droppers_received", "number"),
+    (2, "vaccine_and_droppers_received", "Vaccines and droppers received", "number"),
     (3, "vaccine_cold_chain_assessment", "Vaccine cold chain assessment  ", "number"),
     (4, "vaccine_monitors_training_and_deployment", "Vaccine monitors training & deployment  ", "number"),
     (5, "ppe_materials_and_others_supply", "PPE Materials and other supplies  ", "number"),
@@ -76,7 +78,7 @@ indicators = [
     (11, "communication_c4d", "C4d", "date"),
     (12, "aefi_easi_protocol", "Safety documents: AESI Protocol  ", "number"),
     (13, "pharmacovigilance_committee", "Pharmacovigilance Committee  ", "number"),
-    (0, "status_score", "status_score", "number"),
+    (0, "status_score", "Total score", "number"),  # percentage
     # not used atm
     # (0, "training_score", "training_score", "number"),
     # (0, "monitoring_score", "monitoring_score", "number"),

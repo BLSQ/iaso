@@ -118,6 +118,7 @@
     "iaso.polio.label.imResults": "Résultats IM",
     "iaso.polio.label.imWarning": "90%-94%",
     "iaso.polio.label.lqas": "LQAS",
+    "iaso.polio.label.lqasPerRegion": "Districts ayant réussi LQAS par région (sur base des districts trouvés)",
     "iaso.polio.label.lqasResults": "Résultats LQAS",
     "iaso.polio.label.moh": "MOH",
     "iaso.polio.label.name": "Nom",

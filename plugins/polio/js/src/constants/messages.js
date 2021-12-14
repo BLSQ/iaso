@@ -731,6 +731,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.emailNotifyButton',
         defaultMessage: 'Notify coordinators by e-mail',
     },
+    lqasPerRegion: {
+        id: 'iaso.polio.label.lqasPerRegion',
+        defaultMessage:
+            'Districts passing LQAS per region (based on districts found)',
+    },
 });
 
 export default MESSAGES;

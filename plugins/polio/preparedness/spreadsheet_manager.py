@@ -2,6 +2,8 @@
 
 Use a template configured in polio.Config preparedness_template_id
 """
+import copy
+
 import gspread
 from django.utils.translation import gettext_lazy as _
 from gspread.utils import rowcol_to_a1, Dimension, a1_range_to_grid_range
@@ -35,6 +37,7 @@ def create_spreadsheet(title: str, lang: str):
     logger.info(f"Creating spreadsheet {title} from {template}")
 
     spreadsheet = client.copy(template, title)
+    logger.info(f"Created spreadsheet {spreadsheet.url}")
     spreadsheet.share(None, perm_type="anyone", role="writer")
     return spreadsheet
 
@@ -91,7 +94,6 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     district_names = [d.name for d in region_districts]
     num_district = len(district_names)
     district_name_range = f"{rowcol_to_a1(7, 6)}:{rowcol_to_a1(7, 6 + num_district)}"
-    print("district_name_range")
     updates = [{"range": "c4", "values": [[region_name]]}, {"range": district_name_range, "values": [district_names]}]
     # Make the column for district
     # General
@@ -100,6 +102,27 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     duplicate_cells(sheet, "C64:C72", num_district)
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
+
+
+# Google Sheet don't automatically copy the protected ranges when duplicating a sheet so we do it by hand
+def copy_protected_range_to_sheet(template_protected_ranges, new_sheet):
+    new_sheet_id = new_sheet.id
+    new_protected_ranges = []
+    for template_protected_range in template_protected_ranges:
+        new_protected_range = copy.deepcopy(template_protected_range)
+        del new_protected_range["protectedRangeId"]
+        # skip those as they are added when copy the file but don't work because of permissions issue.
+        if "requestingUserCanEdit" in new_protected_range:
+            del new_protected_range["requestingUserCanEdit"]
+        if "editors" in new_protected_range:
+            del new_protected_range["editors"]
+        new_protected_range["range"]["sheetId"] = new_sheet_id
+        new_protected_ranges.append(new_protected_range)
+    # Return request don't execute them so we can do all of them at the end
+    requests = []
+    for pr in new_protected_ranges:
+        requests.append({"addProtectedRange": {"protectedRange": pr}})
+    return requests
 
 
 def generate_spreadsheet_for_campaign(campaign: Campaign):
@@ -121,13 +144,18 @@ def generate_spreadsheet_for_campaign(campaign: Campaign):
         country=campaign.country,
     )
     regional_template_worksheet = spreadsheet.worksheet("Regional")
+    meta = spreadsheet.fetch_sheet_metadata()
+    template_range = meta["sheets"][regional_template_worksheet.index]["protectedRanges"]  # regional_template_worksheet
+    batched_requests = []
     districts = campaign.get_districts()
     regions = campaign.get_regions()
     current_index = 2
     for index, region in enumerate(regions):
         regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)
+        batched_requests += copy_protected_range_to_sheet(template_range, regional_worksheet)
         region_districts = districts.filter(parent=region)
         update_regional_worksheet(regional_worksheet, region.name, region_districts)
         current_index += 1
+    spreadsheet.batch_update({"requests": batched_requests})
     spreadsheet.del_worksheet(regional_template_worksheet)
     return spreadsheet

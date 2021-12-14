@@ -41,12 +41,8 @@ def get_summary(zones):
     for _, i, _, kind in indicators:
         name_values = [(dn, d.get(i)) for dn, d in zones.items()]
         values = [value for _, value in name_values]
-        if kind == "number":
+        if kind == "number" or kind == "percent":
             r[i] = avg(values)
-        elif kind == "percent":
-            # it's stored as percent * 100 atm
-            average = avg(values)
-            r[i] = average / 10 if average is not None else None
         elif kind == "date":
             values = [v for v in values if v]
             invalids_dates = [(n, v) for n, v in name_values if v and not isinstance(v, int)]
@@ -108,6 +104,12 @@ def preparedness_summary(prep_dict):
             indicators_per_zone["districts"]["status_score"],
         ]
     )
+
+    def format_indicator(value, kind):
+        if kind == "percent":
+            return value / 10 if value else value
+        return value
+
     # pivot
     r["indicators"] = {}
     for sn, key, title, kind in indicators:
@@ -115,8 +117,8 @@ def preparedness_summary(prep_dict):
             "sn": sn,
             "key": key,
             "title": title,
-            "national": indicators_per_zone["national"][key],
-            "regions": indicators_per_zone["regions"][key],
-            "districts": indicators_per_zone["districts"][key],
+            "national": format_indicator(indicators_per_zone["national"][key], kind),
+            "regions": format_indicator(indicators_per_zone["regions"][key], kind),
+            "districts": format_indicator(indicators_per_zone["districts"][key], kind),
         }
     return r

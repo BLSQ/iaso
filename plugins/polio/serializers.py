@@ -188,8 +188,8 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         try:
-            # ssi = SpreadSheetImport.create_for_url(attrs.get("google_sheet_url"))
-            ssi = SpreadSheetImport.last_for_url(attrs.get("google_sheet_url"))
+            ssi = SpreadSheetImport.create_for_url(attrs.get("google_sheet_url"))
+            # ssi = SpreadSheetImport.last_for_url(attrs.get("google_sheet_url"))
             cs = ssi.cached_spreadsheet
             r = {}
             preparedness_data = get_preparedness(cs)

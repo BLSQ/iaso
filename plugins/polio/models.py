@@ -6,8 +6,7 @@ from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url
 
 from iaso.models import Group, OrgUnit
-from plugins.polio.preparedness.calculator import preparedness_summary, get_preparedness_score
-from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country, get_preparedness
+from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 VIRUSES = [
@@ -328,6 +327,7 @@ class Campaign(models.Model):
         super().save(*args, **kwargs)
 
 
+# Deprecated
 class Preparedness(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)

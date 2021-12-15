@@ -82,7 +82,7 @@ export const LqasImTable = ({ data, marginTop, tableKey }) => {
 
     const determineStatusColor = status => {
         if (parseInt(status, 10) === 1) return 'green';
-        if (parseInt(status, 10) === 2) return 'orange';
+        if (parseInt(status, 10) === 2) return '#FFD835';
         if (parseInt(status, 10) === 3) return 'red';
         throw new Error(
             `Expected to status value to be parsed to int value of 1,2 or 3, got ${parseInt(
@@ -91,9 +91,8 @@ export const LqasImTable = ({ data, marginTop, tableKey }) => {
             )}`,
         );
     };
-
     return (
-        <Box mt={marginTop ? 8 : 0} mb={4}>
+        <Box mt={marginTop ? 4 : 0} mb={4}>
             <Paper elevation={3}>
                 <TableContainer>
                     <MuiTable stickyHeader size="small">

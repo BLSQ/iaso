@@ -49,7 +49,7 @@ export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
         message: formatMessage(MESSAGES.failing),
     });
     const disqualifiedLegendItem = makeLegendItem({
-        color: 'orange',
+        color: '#FFD835',
         value: disqualified?.length,
         message: formatMessage(MESSAGES.disqualified),
     });

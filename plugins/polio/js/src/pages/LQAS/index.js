@@ -21,6 +21,7 @@ import { convertAPIData } from '../../utils/LqasIm';
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 import { LqasImTable } from '../../components/LQAS-IM/LqasImTable';
+import { lqasTableColumns } from './lqasTableConfig';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -122,24 +123,6 @@ export const Lqas = () => {
                             />
                         </Box>
                     </Grid>
-                    <Grid item xs={4}>
-                        <Box ml={2}>
-                            <Typography variant="h6">
-                                {`${formatMessage(
-                                    MESSAGES.districtsNotFound,
-                                )}:`}
-                            </Typography>
-                            {districtsNotFound}
-                        </Box>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Box ml={2}>
-                            <Typography variant="h6">
-                                {`${formatMessage(MESSAGES.datesIgnored)}:`}
-                            </Typography>
-                            {Object.keys(datesIgnored ?? {}).join(', ')}
-                        </Box>
-                    </Grid>
                 </Grid>
                 <Grid container item spacing={2} direction="row">
                     <Grid item xs={6}>
@@ -179,6 +162,7 @@ export const Lqas = () => {
                                 <LqasImTable
                                     data={tableDataRound1}
                                     tableKey="LQAS-Round1"
+                                    columns={lqasTableColumns(formatMessage)}
                                 />
                             </Box>
                         )}
@@ -193,6 +177,26 @@ export const Lqas = () => {
                                 />
                             </Box>
                         )}
+                    </Grid>
+                </Grid>
+                <Grid container item>
+                    <Grid item xs={4}>
+                        <Box ml={2} mb={4}>
+                            <Typography variant="h6">
+                                {`${formatMessage(
+                                    MESSAGES.districtsNotFound,
+                                )}:`}
+                            </Typography>
+                            {districtsNotFound}
+                        </Box>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Box ml={2} mb={4}>
+                            <Typography variant="h6">
+                                {`${formatMessage(MESSAGES.datesIgnored)}:`}
+                            </Typography>
+                            {Object.keys(datesIgnored ?? {}).join(', ')}
+                        </Box>
                     </Grid>
                 </Grid>
             </Grid>

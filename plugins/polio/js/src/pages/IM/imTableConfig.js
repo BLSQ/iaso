@@ -7,7 +7,7 @@ import MESSAGES from '../../constants/messages';
 const applyStatusColor = status => {
     if (status === IM_PASS) return { color: 'green' };
     if (status === IM_FAIL) return { color: 'red' };
-    if (status === IM_WARNING) return { color: 'orange' };
+    if (status === IM_WARNING) return { color: '#FFD835' };
     return null;
 };
 

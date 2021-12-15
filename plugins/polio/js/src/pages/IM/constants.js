@@ -1,3 +1,5 @@
+import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
+
 export const IM_POC_URL = '/api/polio/imstats/';
 // Including number in the name so it can be used with parseInt for Table sorting.
 // FIXME there should be a cleaner way to do this
@@ -7,19 +9,19 @@ export const IM_FAIL = '3imFail';
 
 export const districtColors = {
     [IM_PASS]: {
-        color: 'green',
+        color: OK_COLOR,
         weight: '2',
         opacity: '1',
         zIndex: 999,
     },
     [IM_WARNING]: {
-        color: '#FFD835',
+        color: WARNING_COLOR,
         weight: '2',
         opacity: '1',
         zIndex: 999,
     },
     [IM_FAIL]: {
-        color: 'red',
+        color: FAIL_COLOR,
         weight: '2',
         opacity: '1',
         zIndex: 999,

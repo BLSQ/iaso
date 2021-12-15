@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { oneOf, array } from 'prop-types';
+import { array, func, string } from 'prop-types';
 import {
     Bar,
     BarChart,
@@ -10,8 +10,6 @@ import {
     LabelList,
 } from 'recharts';
 import { Box, Typography } from '@material-ui/core';
-import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../../constants/messages';
 
 const BAR_HEIGHT = 40;
 const customLabel = ({ x, y, width, height, value }) => {
@@ -47,44 +45,24 @@ const customLabel = ({ x, y, width, height, value }) => {
     );
 };
 
-export const LqasChart = ({ data, regions, round }) => {
+export const PercentageBarChart = ({
+    data,
+    tooltipFormatter,
+    fillColor,
+    chartKey,
+}) => {
     const [renderCount, setRenderCount] = useState(0);
-    const { formatMessage } = useSafeIntl();
-    const barChartData = regions.map(region => {
-        const regionData = data.filter(
-            district => district.region === region.id,
-        );
-        const passing = regionData.filter(
-            district => parseInt(district.status, 10) === 1,
-        ).length;
-        const percentSuccess =
-            // fallback to 1 to avoid dividing by zero
-            (passing / (regionData.length || 1)) * 100;
-        const roundedPercentSuccess = Number.isSafeInteger(percentSuccess)
-            ? percentSuccess
-            : percentSuccess.toFixed(2);
-        return {
-            name: region.name,
-            value: roundedPercentSuccess,
-            found: regionData.length,
-            passing,
-        };
-    });
-    const chartHeight = BAR_HEIGHT * barChartData.length + 100;
+
+    const chartHeight = BAR_HEIGHT * data.length + 100;
     // Force render to avoid visual bug when data has length of 0
     useEffect(() => {
         setRenderCount(count => count + 1);
-    }, [data, regions]);
+    }, [data]);
     return (
-        <Box key={`${round}${renderCount}`}>
-            <Box>
-                <Typography variant="h6">
-                    {formatMessage(MESSAGES[round])}
-                </Typography>{' '}
-            </Box>
+        <Box key={`${chartKey}${renderCount}`}>
             <ResponsiveContainer height={chartHeight} width="90%">
                 <BarChart
-                    data={barChartData}
+                    data={data}
                     layout="vertical"
                     margin={{ left: 50 }}
                     barSize={BAR_HEIGHT}
@@ -96,16 +74,11 @@ export const LqasChart = ({ data, regions, round }) => {
                     />
                     <YAxis dataKey="name" type="category" />
                     <Tooltip
-                        payload={barChartData}
-                        formatter={(value, name, props) => {
-                            // eslint-disable-next-line react/prop-types
-                            const ratio = `${props.payload.passing}/${props.payload.found}`;
-                            return [ratio, 'passing'];
-                        }}
+                        payload={data}
+                        formatter={tooltipFormatter ?? undefined}
                         itemStyle={{ color: 'black' }}
                     />
-                    {/* <Legend /> */}
-                    <Bar dataKey="value" fill="green" minPointSize={3}>
+                    <Bar dataKey="value" fill={fillColor} minPointSize={3}>
                         <LabelList dataKey="value" content={customLabel} />
                     </Bar>
                 </BarChart>
@@ -114,12 +87,14 @@ export const LqasChart = ({ data, regions, round }) => {
     );
 };
 
-LqasChart.propTypes = {
-    round: oneOf(['round_1', 'round_2']).isRequired,
+PercentageBarChart.propTypes = {
     data: array,
-    regions: array,
+    fillColor: string,
+    tooltipFormatter: func,
+    chartKey: string.isRequired,
 };
-LqasChart.defaultProps = {
+PercentageBarChart.defaultProps = {
     data: [],
-    regions: [],
+    fillColor: 'green',
+    tooltipFormatter: null,
 };

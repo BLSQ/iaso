@@ -15,6 +15,7 @@ import {
 } from '../../utils/index';
 import { districtColors } from './constants';
 import MESSAGES from '../../constants/messages';
+import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 
 // Don't put it in utils to avoid circular dep
 const makePopup =
@@ -39,17 +40,17 @@ export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
         round,
     );
     const passedLegendItem = makeLegendItem({
-        color: 'green',
+        color: OK_COLOR,
         value: passed?.length,
         message: formatMessage(MESSAGES.passing),
     });
     const failedLegendItem = makeLegendItem({
-        color: 'red',
+        color: FAIL_COLOR,
         value: failed?.length,
         message: formatMessage(MESSAGES.failing),
     });
     const disqualifiedLegendItem = makeLegendItem({
-        color: '#FFD835',
+        color: WARNING_COLOR,
         value: disqualified?.length,
         message: formatMessage(MESSAGES.disqualified),
     });

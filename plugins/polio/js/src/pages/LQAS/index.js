@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import {
     useSafeIntl,
@@ -12,7 +12,7 @@ import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import { useGetRegions } from '../../hooks/useGetRegions';
-import { getLqasStatsWithRegion } from './utils';
+import { formatLqasDataForChart, lqasChartTooltipFormatter } from './utils';
 import {
     makeCampaignsDropDown,
     findCountryIds,
@@ -21,7 +21,9 @@ import {
 import { convertAPIData } from '../../utils/LqasIm';
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
-import { LqasChart } from './LqasChart';
+import { PercentageBarChart } from '../../components/PercentageBarChart';
+import { OK_COLOR } from '../../styles/constants';
+// import { LqasChart } from './LqasChart';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -71,18 +73,28 @@ export const Lqas = () => {
         ? LQASData.day_country_not_found[currentCountryName]
         : {};
 
-    const barChartDataRound1 = getLqasStatsWithRegion({
-        data: convertedData,
-        campaign,
-        round: 'round_1',
-        shapes,
-    });
-    const barChartDataRound2 = getLqasStatsWithRegion({
-        data: convertedData,
-        campaign,
-        round: 'round_2',
-        shapes,
-    });
+    const barChartDataRound1 = useMemo(
+        () =>
+            formatLqasDataForChart({
+                data: convertedData,
+                campaign,
+                round: 'round_1',
+                shapes,
+                regions,
+            }),
+        [convertedData, campaign, shapes, regions],
+    );
+    const barChartDataRound2 = useMemo(
+        () =>
+            formatLqasDataForChart({
+                data: convertedData,
+                campaign,
+                round: 'round_2',
+                shapes,
+                regions,
+            }),
+        [convertedData, campaign, shapes, regions],
+    );
 
     const dropDownOptions = makeCampaignsDropDown(campaigns);
     return (
@@ -158,10 +170,16 @@ export const Lqas = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && campaign && (
                             <Box ml={2} mt={2}>
-                                <LqasChart
+                                <Box>
+                                    <Typography variant="h6">
+                                        {formatMessage(MESSAGES.round_1)}
+                                    </Typography>{' '}
+                                </Box>
+                                <PercentageBarChart
                                     data={barChartDataRound1}
-                                    regions={regions}
-                                    round="round_1"
+                                    fillColor={OK_COLOR}
+                                    tooltipFormatter={lqasChartTooltipFormatter}
+                                    chartKey="LQASChartRound1"
                                 />
                             </Box>
                         )}
@@ -170,10 +188,16 @@ export const Lqas = () => {
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && campaign && (
                             <Box mr={2} mt={2}>
-                                <LqasChart
+                                <Box>
+                                    <Typography variant="h6">
+                                        {formatMessage(MESSAGES.round_2)}
+                                    </Typography>{' '}
+                                </Box>
+                                <PercentageBarChart
                                     data={barChartDataRound2}
-                                    regions={regions}
-                                    round="round_2"
+                                    fillColor={OK_COLOR}
+                                    tooltipFormatter={lqasChartTooltipFormatter}
+                                    chartKey="LQASChartRound1"
                                 />
                             </Box>
                         )}

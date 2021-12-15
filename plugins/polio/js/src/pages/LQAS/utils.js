@@ -31,7 +31,7 @@ export const getLqasStatsForRound = (lqasData, campaign, round) => {
     return [totalEvaluated, passed, failed, disqualified];
 };
 
-export const getLqasStatsWithRegion = ({ data, campaign, round, shapes }) => {
+const getLqasStatsWithRegion = ({ data, campaign, round, shapes }) => {
     if (!data[campaign]) return [];
     return [...data[campaign][round]].map(district => ({
         ...district,
@@ -40,4 +40,45 @@ export const getLqasStatsWithRegion = ({ data, campaign, round, shapes }) => {
             .map(shape => shape.parent_id)[0],
         status: determineStatusForDistrict(district),
     }));
+};
+
+export const formatLqasDataForChart = ({
+    data,
+    campaign,
+    round,
+    shapes,
+    regions,
+}) => {
+    const dataForRound = getLqasStatsWithRegion({
+        data,
+        campaign,
+        round,
+        shapes,
+    });
+    return regions.map(region => {
+        const regionData = dataForRound.filter(
+            district => district.region === region.id,
+        );
+        const passing = regionData.filter(
+            district => parseInt(district.status, 10) === 1,
+        ).length;
+        const percentSuccess =
+            // fallback to 1 to avoid dividing by zero
+            (passing / (regionData.length || 1)) * 100;
+        const roundedPercentSuccess = Number.isSafeInteger(percentSuccess)
+            ? percentSuccess
+            : percentSuccess.toFixed(2);
+        return {
+            name: region.name,
+            value: roundedPercentSuccess,
+            found: regionData.length,
+            passing,
+        };
+    });
+};
+
+export const lqasChartTooltipFormatter = (value, name, props) => {
+    // eslint-disable-next-line react/prop-types
+    const ratio = `${props.payload.passing}/${props.payload.found}`;
+    return [ratio, 'passing'];
 };

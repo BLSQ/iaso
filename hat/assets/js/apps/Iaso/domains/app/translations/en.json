@@ -382,6 +382,7 @@
     "iaso.map.catchment": "Catchment",
     "iaso.map.location": "Location",
     "iaso.map.locationLimit": "Map results limit",
+    "iaso.map.locationLimit.error": "Please enter a correct value",
     "iaso.map.marker.delete": "Delete marker",
     "iaso.map.shape.addLocation": "Add a location",
     "iaso.map.shape.editCatchmentDisabled": "Catchment edition is disabled on this account",

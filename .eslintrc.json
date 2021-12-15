@@ -30,7 +30,7 @@
           "plugin:@typescript-eslint/recommended", // Uses the recommended rules from the @typescript-eslint/eslint-plugin
           "prettier/@typescript-eslint",
           "prettier"
-        ], 
+        ],
         "parser": "@typescript-eslint/parser",
         "parserOptions": {
           "ecmaFeatures": {
@@ -86,7 +86,7 @@
           "react/button-has-type": "off",
           "react/destructuring-assignment": "off",
           "import/extensions":"off",
-          "import/no-unresolved":["error", { "ignores": ["modules"] }],
+          "import/no-unresolved": "warn",
           "react/forbid-prop-types": [
             1
           ],
@@ -137,7 +137,7 @@
         }
     }
   ],
-  
+
     "rules": {
       "no-tabs": "off",
       "no-console":["error",{"allow":["warn","error"]}],

@@ -101,12 +101,11 @@ class CampaignViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-
         if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-            return Campaign.objects.filter(initial_org_unit__in=org_units)
+            return Campaign.objects.filter(initial_org_unit__in=org_units, deleted_at__isnull=True)
         else:
-            return Campaign.objects.all()
+            return Campaign.objects.filter(deleted_at__isnull=True)
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):

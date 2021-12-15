@@ -1,28 +1,16 @@
-import logging
-from typing import List
+"""Generation of the Preparedness Google Sheet
+
+Use a template configured in polio.Config preparedness_template_id
+"""
+import copy
 
 import gspread
-from gspread.utils import rowcol_to_a1
-from gspread_formatting import (
-    get_conditional_format_rules,
-    ConditionalFormatRule,
-    GridRange,
-    format_cell_ranges,
-)
+from django.utils.translation import gettext_lazy as _
+from gspread.utils import rowcol_to_a1, Dimension, a1_range_to_grid_range
+from rest_framework import exceptions
 
+from plugins.polio.models import CountryUsersGroup, Campaign
 from plugins.polio.preparedness.client import get_client, get_google_config
-from plugins.polio.preparedness.conditional_formatting import (
-    DARK_YELLOW,
-    LIGHT_YELLOW,
-    LIGHT_GREEN,
-    DARK_GREEN,
-    get_between_rule,
-    NOT_BLANK,
-    IS_BLANK,
-    PERCENT_FORMAT,
-    TEXT_CENTERED,
-)
-
 
 from logging import getLogger
 
@@ -30,7 +18,7 @@ logger = getLogger(__name__)
 
 # you need to create a polio.Config object with this key in the DB
 PREPAREDNESS_TEMPLATE_CONFIG_KEY = "preparedness_template_id"
-TEMPLATE_VERSION = "v2"
+TEMPLATE_VERSION = "v3"
 
 
 def create_spreadsheet(title: str, lang: str):
@@ -48,7 +36,8 @@ def create_spreadsheet(title: str, lang: str):
         raise Exception(f"Template for {lang} and version {TEMPLATE_VERSION} not found")
     logger.info(f"Creating spreadsheet {title} from {template}")
 
-    spreadsheet = client.copy(template, title, copy_permissions=True)
+    spreadsheet = client.copy(template, title)
+    logger.info(f"Created spreadsheet {spreadsheet.url}")
     spreadsheet.share(None, perm_type="anyone", role="writer")
     return spreadsheet
 
@@ -64,233 +53,109 @@ def update_national_worksheet(sheet: gspread.Worksheet, country=None, payment_mo
     sheet.batch_update(updates)
 
 
-def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region_districts):
-    updates = [
-        {"range": "c4", "values": [[region_name]]},
-    ]
-    sheet.insert_cols([[]] * region_districts.count(), 7)
+def duplicate_cells(sheet, template_range, num_time):
+    """Duplicate cells vertically to the right"""
+    copy_range = a1_range_to_grid_range(template_range)
 
-    rules = get_conditional_format_rules(sheet)
-    rules.clear()
+    if not copy_range["startColumnIndex"] == copy_range["endColumnIndex"] - 1:
+        raise Exception("Not only we support a vertical range on the same col")
 
-    for idx, district in enumerate(region_districts):
-        col_index = 7 + idx
-        first_district_cell = rowcol_to_a1(7, col_index)
-        district_name_cell = f"={first_district_cell}"
-
-        updates += [
-            generate_planning_coord_funding_section(col_index, district),
-            generate_training_section(col_index, district_name_cell),
-            generate_monitoring_section(col_index, district_name_cell),
-            generate_vaccine_logistics_section(col_index, district_name_cell),
-            generate_advocacy_section(col_index, district_name_cell),
-            generate_adverse_section(col_index, district_name_cell),
+    copy_range["sheetId"] = sheet.id
+    paste_range = {
+        "sheetId": sheet.id,
+        "startRowIndex": copy_range["startRowIndex"],
+        "endRowIndex": copy_range["endRowIndex"],
+        "startColumnIndex": copy_range["startColumnIndex"] + 1,
+        "endColumnIndex": copy_range["endColumnIndex"] + num_time,
+    }
+    body = {
+        "requests": [
+            {
+                "insertRange": {
+                    "range": paste_range,
+                    "shiftDimension": Dimension.cols,
+                },
+            },
+            {
+                "copyPaste": {
+                    "source": copy_range,
+                    "destination": paste_range,
+                    "pasteType": "PASTE_NORMAL",
+                    "pasteOrientation": "NORMAL",
+                },
+            },
         ]
+    }
 
-    final_column = 6 + region_districts.count()
-    summary_range_a1 = [
-        f"F11:{rowcol_to_a1(11, final_column)}",
-        f"F22:{rowcol_to_a1(22, final_column)}",
-        f"F28:{rowcol_to_a1(28, final_column)}",
-        f"F38:{rowcol_to_a1(38, final_column)}",
-        f"F46:{rowcol_to_a1(46, final_column)}",
-        f"F54:{rowcol_to_a1(54, final_column)}",
-    ]
-    # FIXME should better categorize what is date and what is value
-    district_data_range = [
-        f"F7:{rowcol_to_a1(10, final_column)}",
-        f"F17:{rowcol_to_a1(17, final_column)}",
-        f"F26:{rowcol_to_a1(27, final_column)}",
-        f"F33:{rowcol_to_a1(37, final_column)}",
-        f"F42:{rowcol_to_a1(43, final_column)}",
-        f"F51:{rowcol_to_a1(52, final_column)}",
-    ]
+    sheet.spreadsheet.batch_update(body)
 
-    ranges = [GridRange.from_a1_range(data, sheet) for data in district_data_range]
 
-    summary_ranges = [GridRange.from_a1_range(range_cell, sheet) for range_cell in summary_range_a1]
-
-    non_blank_ranges = [
-        GridRange.from_a1_range(f"F16:{rowcol_to_a1(21, final_column)}", sheet),
-        GridRange.from_a1_range(f"F36:{rowcol_to_a1(36, final_column)}", sheet),
-        GridRange.from_a1_range(f"F53:{rowcol_to_a1(53, final_column)}", sheet),
-    ]
-
-    custom_rules = (
-        get_conditional_rules(ranges)
-        + get_summary_conditional_rules(summary_ranges)
-        + get_non_blank_rules(non_blank_ranges)
-    )
-
-    [rules.append(rule) for rule in custom_rules]
-
-    format_cell_ranges(
-        worksheet=sheet,
-        ranges=[(range_cells, PERCENT_FORMAT) for range_cells in summary_range_a1]
-        + [(range_cells, TEXT_CENTERED) for range_cells in summary_range_a1 + district_data_range],
-    )
+def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region_districts):
+    district_names = [d.name for d in region_districts]
+    num_district = len(district_names)
+    district_name_range = f"{rowcol_to_a1(7, 6)}:{rowcol_to_a1(7, 6 + num_district)}"
+    updates = [{"range": "c4", "values": [[region_name]]}, {"range": district_name_range, "values": [district_names]}]
+    # Make the column for district
+    # General
+    duplicate_cells(sheet, "E6:E54", num_district)
+    # Summary
+    duplicate_cells(sheet, "C64:C72", num_district)
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
-    rules.save()
 
 
-def generate_planning_coord_funding_section(col_index: int, district):
-    return {
-        "range": get_range(col_index, 7, 11),
-        "values": map_to_column_value(
-            [
-                district.name,
-                "0",
-                "0",
-                "0",
-                get_average_of_range(col_index, 7, 10),
-            ]
-        ),
-    }
+# Google Sheet don't automatically copy the protected ranges when duplicating a sheet so we do it by hand
+def copy_protected_range_to_sheet(template_protected_ranges, new_sheet):
+    new_sheet_id = new_sheet.id
+    new_protected_ranges = []
+    for template_protected_range in template_protected_ranges:
+        new_protected_range = copy.deepcopy(template_protected_range)
+        del new_protected_range["protectedRangeId"]
+        # skip those as they are added when copy the file but don't work because of permissions issue.
+        if "requestingUserCanEdit" in new_protected_range:
+            del new_protected_range["requestingUserCanEdit"]
+        if "editors" in new_protected_range:
+            del new_protected_range["editors"]
+        new_protected_range["range"]["sheetId"] = new_sheet_id
+        new_protected_ranges.append(new_protected_range)
+    # Return request don't execute them so we can do all of them at the end
+    requests = []
+    for pr in new_protected_ranges:
+        requests.append({"addProtectedRange": {"protectedRange": pr}})
+    return requests
 
 
-def generate_training_section(col_index: int, district_name: str):
-    return {
-        "range": get_range(col_index, 15, 22),
-        "values": map_to_column_value(
-            [
-                district_name,
-                None,
-                "0",
-                None,
-                None,
-                None,
-                None,
-                f"={rowcol_to_a1(17, col_index)}*0.1",
-            ]
-        ),
-    }
-
-
-def generate_monitoring_section(col_index: int, district_name):
-    return {
-        "range": get_range(col_index, 25, 28),
-        "values": map_to_column_value(
-            [
-                district_name,
-                "0",
-                "0",
-                get_average_of_range(col_index, 26, 27),
-            ]
-        ),
-    }
-
-
-def generate_advocacy_section(col_index: int, district_name):
-    return {
-        "range": get_range(col_index, 41, 46),
-        "values": map_to_column_value(
-            [
-                district_name,
-                "0",
-                "0",
-                "",
-                "",
-                get_average_of_range(col_index, 42, 45),
-            ]
-        ),
-    }
-
-
-def generate_adverse_section(col_index: int, district_name):
-    return {
-        "range": get_range(col_index, 50, 54),
-        "values": map_to_column_value(
-            [
-                district_name,
-                "0",
-                "0",
-                "",
-                get_average_of_range(col_index, 51, 53),
-            ]
-        ),
-    }
-
-
-def generate_vaccine_logistics_section(col_index: int, district_name):
-    return {
-        "range": get_range(col_index, 32, 38),
-        "values": map_to_column_value(
-            [
-                district_name,
-                "0",
-                "0",
-                "0",
-                "",
-                "0",
-                f"=AVERAGE({get_range(col_index, 35, 37)}, {rowcol_to_a1(39, col_index)})*0.1",
-            ]
-        ),
-    }
-
-
-def get_average_from(range: str) -> str:
-    return f'=AVERAGEIF({range},"<>NA")*0.1'
-
-
-def get_average_of_range(col_index: int, initial_row: int, final_row: int):
-    return get_average_from(get_range(col_index, initial_row, final_row))
-
-
-def get_conditional_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
-    return [
-        ConditionalFormatRule(ranges=ranges, booleanRule=get_between_rule(["0", "4"])),
-        ConditionalFormatRule(
-            ranges=ranges,
-            booleanRule=get_between_rule(
-                ["5", "8"],
-                text_foreground_color=DARK_YELLOW,
-                background_color=LIGHT_YELLOW,
-            ),
-        ),
-        ConditionalFormatRule(
-            ranges=ranges,
-            booleanRule=get_between_rule(
-                ["9", "10"],
-                text_foreground_color=DARK_GREEN,
-                background_color=LIGHT_GREEN,
-            ),
-        ),
-    ]
-
-
-def get_non_blank_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
-    return [
-        ConditionalFormatRule(ranges=ranges, booleanRule=NOT_BLANK),
-        ConditionalFormatRule(ranges=ranges, booleanRule=IS_BLANK),
-    ]
-
-
-def get_summary_conditional_rules(ranges: List[str]) -> List[ConditionalFormatRule]:
-    return [
-        ConditionalFormatRule(ranges=ranges, booleanRule=get_between_rule(["0", "0.49"])),
-        ConditionalFormatRule(
-            ranges=ranges,
-            booleanRule=get_between_rule(
-                ["0.5", "0.79"],
-                text_foreground_color=DARK_YELLOW,
-                background_color=LIGHT_YELLOW,
-            ),
-        ),
-        ConditionalFormatRule(
-            ranges=ranges,
-            booleanRule=get_between_rule(
-                ["0.8", "1.0"],
-                text_foreground_color=DARK_GREEN,
-                background_color=LIGHT_GREEN,
-            ),
-        ),
-    ]
-
-
-def map_to_column_value(data: List[str]) -> List[List[str]]:
-    return [[value] for value in data]
-
-
-def get_range(column, initial_row, final_row):
-    return f"{rowcol_to_a1(initial_row, column)}:{rowcol_to_a1(final_row, column)}"
+def generate_spreadsheet_for_campaign(campaign: Campaign):
+    lang = "EN"
+    try:
+        country = campaign.country
+        if not country:
+            exceptions.ValidationError({"message": _("No country found for campaign")})
+        cug = CountryUsersGroup.objects.get(country=country)
+        lang = cug.language
+    except Exception as e:
+        logger.exception(e)
+        logger.error(f"Could not find template language for {campaign}")
+    spreadsheet = create_spreadsheet(campaign.obr_name, lang)
+    update_national_worksheet(
+        spreadsheet.worksheet("National"),
+        vacine=campaign.vacine,
+        payment_mode=campaign.payment_mode,
+        country=campaign.country,
+    )
+    regional_template_worksheet = spreadsheet.worksheet("Regional")
+    meta = spreadsheet.fetch_sheet_metadata()
+    template_range = meta["sheets"][regional_template_worksheet.index]["protectedRanges"]  # regional_template_worksheet
+    batched_requests = []
+    districts = campaign.get_districts()
+    regions = campaign.get_regions()
+    current_index = 2
+    for index, region in enumerate(regions):
+        regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)
+        batched_requests += copy_protected_range_to_sheet(template_range, regional_worksheet)
+        region_districts = districts.filter(parent=region)
+        update_regional_worksheet(regional_worksheet, region.name, region_districts)
+        current_index += 1
+    spreadsheet.batch_update({"requests": batched_requests})
+    spreadsheet.del_worksheet(regional_template_worksheet)
+    return spreadsheet

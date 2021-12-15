@@ -42,7 +42,10 @@ const ImportGeoPkgDialog = ({
             file: form.file.value,
             project: form.project.value,
             data_source: sourceId,
-            version_number: versionNumber ? versionNumber.toString() : '',
+            version_number:
+                versionNumber !== null && versionNumber !== undefined
+                    ? versionNumber.toString()
+                    : '',
         };
         await mutation.mutateAsync(body);
         closeDialogCallBack();

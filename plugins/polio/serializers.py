@@ -5,9 +5,7 @@ import pandas as pd
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.transaction import atomic
-from django.utils.translation import gettext_lazy as _
 from gspread.exceptions import APIError
-from rest_framework import exceptions
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -15,9 +13,7 @@ from iaso.models import Group, OrgUnit
 from .models import (
     Preparedness,
     Round,
-    Campaign,
     Surge,
-    CountryUsersGroup,
     LineListImport,
     VIRUSES,
     PREPARING,
@@ -35,6 +31,8 @@ from .preparedness.parser import (
 )
 from .preparedness.spreadsheet_manager import *
 from logging import getLogger
+
+from .preparedness.spreadsheet_manager import generate_spreadsheet_for_campaign
 
 logger = getLogger(__name__)
 
@@ -284,37 +282,7 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
     def create(self, validated_data):
         campaign = validated_data.get("campaign")
 
-        lang = "EN"
-        try:
-            country = campaign.country
-            if not country:
-                exceptions.ValidationError({"message": _("No country found for campaign")})
-            cug = CountryUsersGroup.objects.get(country=country)
-            lang = cug.language
-        except Exception as e:
-            logger.exception(e)
-            logger.error(f"Could not find template language for {campaign}")
-        spreadsheet = create_spreadsheet(campaign.obr_name, lang)
-
-        update_national_worksheet(
-            spreadsheet.worksheet("National"),
-            vacine=campaign.vacine,
-            payment_mode=campaign.payment_mode,
-            country=campaign.country,
-        )
-
-        regional_template_worksheet = spreadsheet.worksheet("Regional")
-
-        districts = campaign.get_districts()
-        regions = campaign.get_regions()
-        current_index = 2
-        for index, region in enumerate(regions):
-            regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)
-            region_districts = districts.filter(parent=region)
-            update_regional_worksheet(regional_worksheet, region.name, region_districts)
-            current_index += 1
-
-        spreadsheet.del_worksheet(regional_template_worksheet)
+        spreadsheet = generate_spreadsheet_for_campaign(campaign)
 
         return {"url": spreadsheet.url}
 

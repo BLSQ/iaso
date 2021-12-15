@@ -24,8 +24,6 @@ import {
 import { convertAPIData } from '../../utils/LqasIm';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
 
-import { OK_COLOR } from '../../styles/constants';
-
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
     // TODO use styling from commonStyles. overflow-x issue needs to be delat with though
@@ -158,9 +156,18 @@ export const ImStats = () => {
                     </Grid>
                 </Grid>
                 <Grid container item spacing={2} direction="row">
+                    {campaign && (
+                        <Grid item xs={12}>
+                            <Box ml={2} mt={2}>
+                                <Typography variant="h5">
+                                    {formatMessage(MESSAGES.imPerRegion)}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                    )}
                     <Grid item xs={6} mr={2}>
                         {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
+                        {!isLoading && campaign && (
                             <Box ml={2} mt={2}>
                                 <Box>
                                     <Typography variant="h6">
@@ -169,8 +176,9 @@ export const ImStats = () => {
                                 </Box>
                                 <PercentageBarChart
                                     data={imDataRound1}
-                                    fillColor={OK_COLOR}
-                                    tooltipFormatter={imTooltipFormatter}
+                                    tooltipFormatter={imTooltipFormatter(
+                                        formatMessage,
+                                    )}
                                     chartKey="LQASChartRound1"
                                 />
                             </Box>
@@ -178,7 +186,7 @@ export const ImStats = () => {
                     </Grid>
                     <Grid item xs={6} mr={2}>
                         {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
+                        {!isLoading && campaign && (
                             <Box mr={2} mt={2}>
                                 <Box>
                                     <Typography variant="h6">
@@ -187,8 +195,9 @@ export const ImStats = () => {
                                 </Box>
                                 <PercentageBarChart
                                     data={imDataRound2}
-                                    fillColor={OK_COLOR}
-                                    tooltipFormatter={imTooltipFormatter}
+                                    tooltipFormatter={imTooltipFormatter(
+                                        formatMessage,
+                                    )}
                                     chartKey="LQASChartRound1"
                                 />
                             </Box>

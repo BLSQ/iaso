@@ -22,8 +22,6 @@ import { convertAPIData } from '../../utils/LqasIm';
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
-import { OK_COLOR } from '../../styles/constants';
-// import { LqasChart } from './LqasChart';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -177,8 +175,9 @@ export const Lqas = () => {
                                 </Box>
                                 <PercentageBarChart
                                     data={barChartDataRound1}
-                                    fillColor={OK_COLOR}
-                                    tooltipFormatter={lqasChartTooltipFormatter}
+                                    tooltipFormatter={lqasChartTooltipFormatter(
+                                        formatMessage,
+                                    )}
                                     chartKey="LQASChartRound1"
                                 />
                             </Box>
@@ -195,8 +194,9 @@ export const Lqas = () => {
                                 </Box>
                                 <PercentageBarChart
                                     data={barChartDataRound2}
-                                    fillColor={OK_COLOR}
-                                    tooltipFormatter={lqasChartTooltipFormatter}
+                                    tooltipFormatter={lqasChartTooltipFormatter(
+                                        formatMessage,
+                                    )}
                                     chartKey="LQASChartRound1"
                                 />
                             </Box>

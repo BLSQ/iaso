@@ -736,6 +736,15 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Districts passing LQAS per region (based on districts found)',
     },
+    imPerRegion: {
+        id: 'iaso.polio.label.imPerRegion',
+        defaultMessage:
+            'Vaccination ratio per region (based on districts found)',
+    },
+    vaccinated: {
+        id: 'iaso.polio.label.vaccinated',
+        defaultMessage: 'Vaccinated',
+    },
 });
 
 export default MESSAGES;

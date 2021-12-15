@@ -1,3 +1,4 @@
+import MESSAGES from '../../constants/messages';
 import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED } from './constants';
 
 export const determineStatusForDistrict = district => {
@@ -55,30 +56,33 @@ export const formatLqasDataForChart = ({
         round,
         shapes,
     });
-    return regions.map(region => {
-        const regionData = dataForRound.filter(
-            district => district.region === region.id,
-        );
-        const passing = regionData.filter(
-            district => parseInt(district.status, 10) === 1,
-        ).length;
-        const percentSuccess =
-            // fallback to 1 to avoid dividing by zero
-            (passing / (regionData.length || 1)) * 100;
-        const roundedPercentSuccess = Number.isSafeInteger(percentSuccess)
-            ? percentSuccess
-            : percentSuccess.toFixed(2);
-        return {
-            name: region.name,
-            value: roundedPercentSuccess,
-            found: regionData.length,
-            passing,
-        };
-    });
+    return regions
+        .map(region => {
+            const regionData = dataForRound.filter(
+                district => district.region === region.id,
+            );
+            const passing = regionData.filter(
+                district => parseInt(district.status, 10) === 1,
+            ).length;
+            const percentSuccess =
+                // fallback to 1 to avoid dividing by zero
+                (passing / (regionData.length || 1)) * 100;
+            const roundedPercentSuccess = Number.isSafeInteger(percentSuccess)
+                ? percentSuccess
+                : percentSuccess.toFixed(2);
+            return {
+                name: region.name,
+                value: roundedPercentSuccess,
+                found: regionData.length,
+                passing,
+            };
+        })
+        .sort((a, b) => a.value < b.value);
 };
 
-export const lqasChartTooltipFormatter = (value, name, props) => {
-    // eslint-disable-next-line react/prop-types
-    const ratio = `${props.payload.passing}/${props.payload.found}`;
-    return [ratio, 'passing'];
-};
+export const lqasChartTooltipFormatter =
+    formatMessage => (value, name, props) => {
+        // eslint-disable-next-line react/prop-types
+        const ratio = `${props.payload.passing}/${props.payload.found}`;
+        return [ratio, formatMessage(MESSAGES.passing)];
+    };

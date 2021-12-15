@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { array, func, string } from 'prop-types';
+import { array, func, object, string } from 'prop-types';
 import {
     Bar,
     BarChart,
@@ -8,47 +8,18 @@ import {
     Tooltip,
     ResponsiveContainer,
     LabelList,
+    Cell,
 } from 'recharts';
-import { Box, Typography } from '@material-ui/core';
-
-const BAR_HEIGHT = 40;
-const customLabel = ({ x, y, width, height, value }) => {
-    const labelPosition = value > 20 ? x : x + width;
-    const alignment = value > 20 ? 'end' : 'start';
-    const color = value > 20 ? 'white' : 'black';
-    // using BAR_HEIGHT here is arbitrary. We just need a value that ensures all text can be displayed, as small widths will crop
-    const adjustedWidth = width > 55 ? width : 55;
-    return (
-        <g>
-            <foreignObject
-                x={labelPosition}
-                y={y}
-                width={adjustedWidth}
-                height={height}
-            >
-                <Box
-                    alignContent="start"
-                    alignItems="center"
-                    justifyContent={alignment}
-                    height={BAR_HEIGHT}
-                    width={width}
-                    display="flex"
-                    ml={1}
-                    mr={1}
-                    pr={2}
-                    style={{ color }}
-                >
-                    <Typography>{`${value}%`}</Typography>
-                </Box>
-            </foreignObject>
-        </g>
-    );
-};
+import { Box } from '@material-ui/core';
+import { FAIL_COLOR, OK_COLOR, WARNING_COLOR } from '../../styles/constants';
+import { determineColor, customLabel } from './utils';
+import { BAR_HEIGHT } from './constants';
 
 export const PercentageBarChart = ({
     data,
     tooltipFormatter,
-    fillColor,
+    colorPalette,
+    colorTresholds,
     chartKey,
 }) => {
     const [renderCount, setRenderCount] = useState(0);
@@ -78,7 +49,19 @@ export const PercentageBarChart = ({
                         formatter={tooltipFormatter ?? undefined}
                         itemStyle={{ color: 'black' }}
                     />
-                    <Bar dataKey="value" fill={fillColor} minPointSize={3}>
+                    <Bar dataKey="value" minPointSize={3}>
+                        {data.map((entry, index) => {
+                            return (
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={determineColor(
+                                        entry,
+                                        colorPalette,
+                                        colorTresholds,
+                                    )}
+                                />
+                            );
+                        })}
                         <LabelList dataKey="value" content={customLabel} />
                     </Bar>
                 </BarChart>
@@ -89,12 +72,21 @@ export const PercentageBarChart = ({
 
 PercentageBarChart.propTypes = {
     data: array,
-    fillColor: string,
     tooltipFormatter: func,
     chartKey: string.isRequired,
+    colorPalette: object,
+    colorTresholds: object,
 };
 PercentageBarChart.defaultProps = {
     data: [],
-    fillColor: 'green',
+    colorPalette: {
+        ok: OK_COLOR,
+        warning: WARNING_COLOR,
+        fail: FAIL_COLOR,
+    },
+    colorTresholds: {
+        ok: 95,
+        warning: 90,
+    },
     tooltipFormatter: null,
 };

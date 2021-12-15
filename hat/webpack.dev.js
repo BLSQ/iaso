@@ -29,6 +29,7 @@ module.exports = {
             'leaflet-draw',
             'react-redux',
             'prop-types',
+            'typescript',
             'video.js',
         ],
         styles: ['./assets/css/index.scss'],
@@ -89,14 +90,43 @@ module.exports = {
         }),
         // XLSX
         new webpack.IgnorePlugin(/cptable/),
+        new webpack.WatchIgnorePlugin({
+            paths: [/\.d\.ts$/],
+        }),
     ],
 
     module: {
         rules: [
             {
-                test: /\.js$/,
+                test: /\.(js|ts|tsx)$/,
                 enforce: 'pre',
                 use: ['source-map-loader'],
+                exclude: /node_modules/,
+            },
+            {
+                test: /\.(ts|tsx)?$/,
+                exclude: /node_modules/,
+                use: [
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            cacheDirectory: true,
+                            presets: [
+                                [
+                                    '@babel/preset-env',
+                                    { targets: { node: '14' } },
+                                ],
+                                '@babel/preset-react',
+                                [
+                                    '@babel/preset-typescript',
+                                    { isTSX: true, allExtensions: true },
+                                ],
+                            ],
+                            plugins: ['@babel/transform-runtime', 'formatjs'],
+                            // include: ['../plugins/polio/js/']
+                        },
+                    },
+                ],
             },
             {
                 test: /\.js?$/,
@@ -110,6 +140,7 @@ module.exports = {
                                 '@babel/preset-react',
                             ],
                             plugins: ['@babel/transform-runtime', 'formatjs'],
+                            // include: ['../plugins/polio/js/']
                         },
                     },
                 ],
@@ -191,6 +222,7 @@ module.exports = {
                 },
             },
         ],
+        noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },
     externals: [{ './cptable': 'var cptable' }],
 
@@ -217,6 +249,6 @@ module.exports = {
                 : /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
                   ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
 
-        extensions: ['.js'],
+        extensions: ['.js', '.tsx', '.ts'],
     },
 };

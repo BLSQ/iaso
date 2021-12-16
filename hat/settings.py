@@ -83,7 +83,7 @@ LOGGING = {
         "rq": {"level": LOGGING_LEVEL},
         "hat": {"level": LOGGING_LEVEL},
         "iaso": {"level": LOGGING_LEVEL},
-        "plugins": {"level": "DEBUG"},
+        "plugins": {"level": LOGGING_LEVEL},
         "beanstalk_worker": {"level": LOGGING_LEVEL},
         #  Uncomment to print all sql query
         # 'django.db.backends': {'level': 'DEBUG'},

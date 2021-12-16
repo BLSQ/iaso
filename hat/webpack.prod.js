@@ -12,9 +12,9 @@ module.exports = {
     bail: true,
     context: __dirname,
     mode: 'production',
-    target: ['web', 'es2017'],
+    target: ['web', 'es2020'],
     entry: {
-        common: ['react', 'react-dom', 'react-intl'],
+        common: ['react', 'react-dom', 'react-intl','typescript'],
         styles: './assets/css/index.scss',
         iaso: './assets/js/apps/Iaso/index',
     },
@@ -52,6 +52,9 @@ module.exports = {
         new webpack.LoaderOptionsPlugin({ minimize: true }),
         // XLSX
         new webpack.IgnorePlugin(/cptable/),
+        new webpack.WatchIgnorePlugin({
+            paths: [/\.d\.ts$/],
+        }),
     ],
 
     optimization: {
@@ -94,6 +97,41 @@ module.exports = {
                                         ),
                                     },
                                 ],
+                            ],
+                        },
+                    },
+                ],
+            },
+            {
+                test: /\.(ts|tsx)?$/,
+                exclude: /node_modules/,
+                use: [
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            cacheDirectory: true,
+                            presets: [
+                                [
+                                    '@babel/preset-env',
+                                    { targets: { node: '14' } },
+                                ],
+                                [
+                                    '@babel/preset-typescript',
+                                    { isTSX: true, allExtensions: true },
+                                ],
+                                '@babel/preset-react',
+                            ],
+                            plugins: [
+                                ['@babel/transform-runtime'], 
+                                [
+                                    'formatjs',
+                                    {
+                                        messagesDir: path.join(
+                                            __dirname,
+                                            '/assets/messages',
+                                        ),
+                                    },
+                                ]
                             ],
                         },
                     },
@@ -164,6 +202,7 @@ module.exports = {
                 },
             },
         ],
+        noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },
 
     // https://github.com/SheetJS/js-xlsx/issues/285
@@ -176,6 +215,6 @@ module.exports = {
         },
         /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
         modules: ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
-        extensions: ['.js'],
+        extensions: ['.js', '.tsx', '.ts'],
     },
 };

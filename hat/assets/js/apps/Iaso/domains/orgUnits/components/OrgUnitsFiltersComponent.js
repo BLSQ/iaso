@@ -25,7 +25,6 @@ import {
     source,
     group,
     geography,
-    locationsLimit,
 } from '../../../constants/filters';
 import {
     setFiltersUpdated,
@@ -42,6 +41,8 @@ import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from './TreeView/requests';
+
+import { LocationLimit } from '../../../utils/map/LocationLimit';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -69,13 +70,15 @@ const OrgUnitsFiltersComponent = ({
 }) => {
     const initalSearches = [...decodeSearch(params.searches)];
     const searchParams = initalSearches[searchIndex];
+
+    const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
+    const [fetchingGroups, setFetchingGroups] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(
         searchParams?.levels,
     );
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const intl = useSafeIntl();
     const classes = useStyles();
-    const [fetchingGroups, setFetchingGroups] = useState(false);
     const filtersUpdated = useSelector(state => state.orgUnits.filtersUpdated);
     const groups = useSelector(state => state.orgUnits.groups) || [];
     const orgUnitsLocations = useSelector(
@@ -87,6 +90,7 @@ const OrgUnitsFiltersComponent = ({
     const fetchingOrgUnitTypes = useSelector(
         state => state.orgUnits.fetchingOrgUnitTypes,
     );
+
     const dispatch = useDispatch();
 
     useOrgUnitsFiltersData(
@@ -161,6 +165,14 @@ const OrgUnitsFiltersComponent = ({
         onSearch();
     };
 
+    const handleLocationLimitChange = locationLimit => {
+        dispatch(setFiltersUpdated(true));
+        const tempParams = {
+            ...params,
+            locationLimit,
+        };
+        dispatch(redirectTo(baseUrl, tempParams));
+    };
     const currentColor = searchParams.color
         ? `#${searchParams.color}`
         : getChipColors(searchIndex);
@@ -236,13 +248,13 @@ const OrgUnitsFiltersComponent = ({
                         <>
                             <Divider />
                             <Box mt={2}>
-                                <FiltersComponent
-                                    params={params}
-                                    baseUrl={baseUrl}
-                                    onFilterChanged={() =>
-                                        dispatch(setFiltersUpdated(true))
-                                    }
-                                    filters={[locationsLimit()]}
+                                <LocationLimit
+                                    keyValue="locationLimit"
+                                    onChange={(urlKey, value) => {
+                                        handleLocationLimitChange(value);
+                                    }}
+                                    value={params.locationLimit}
+                                    setHasError={setHasLocationLimitError}
                                 />
                             </Box>
                         </>
@@ -338,7 +350,8 @@ const OrgUnitsFiltersComponent = ({
                     </Button>
                     <Button
                         disabled={
-                            !filtersUpdated && Boolean(params.searchActive)
+                            (!filtersUpdated && Boolean(params.searchActive)) ||
+                            hasLocationLimitError
                         }
                         variant="contained"
                         className={classes.button}

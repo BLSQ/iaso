@@ -13,7 +13,7 @@ export const districtColors = {
         zIndex: 999,
     },
     [IM_WARNING]: {
-        color: 'orange',
+        color: '#FFD835',
         weight: '2',
         opacity: '1',
         zIndex: 999,

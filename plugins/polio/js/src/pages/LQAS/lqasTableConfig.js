@@ -7,7 +7,7 @@ import MESSAGES from '../../constants/messages';
 const applyStatusColor = status => {
     if (status === LQAS_PASS) return { color: 'green' };
     if (status === LQAS_FAIL) return { color: 'red' };
-    if (status === LQAS_DISQUALIFIED) return { color: 'orange' };
+    if (status === LQAS_DISQUALIFIED) return { color: '#FFD835' };
     return null;
 };
 export const lqasTableColumns = formatMessage => {
@@ -40,7 +40,7 @@ export const lqasTableColumns = formatMessage => {
         {
             Header: formatMessage(MESSAGES.districtFound),
             accessor: 'district',
-            sortable: true,
+            sortable: false,
             Cell: settings => {
                 if (settings.row.original.district)
                     return (

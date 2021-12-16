@@ -26,6 +26,8 @@ import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 
+import { LocationLimit } from '../../../utils/map/LocationLimit';
+
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
     label: MESSAGES[status.toLowerCase()],
@@ -44,6 +46,7 @@ const InstancesFiltersComponent = ({
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
 
+    const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
     const [fetchingDevices, setFetchingDevices] = useState(false);
     const [fetchingDevicesOwnerships, setFetchingDevicesOwnerships] =
@@ -181,12 +184,10 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.org_unit_type_id}
                         loading={fetchingOrgUnitTypes}
                     />
-                    <InputComponent
-                        keyValue="mapResults"
+                    <LocationLimit
                         onChange={handleFormChange}
-                        value={formState.mapResults.value || null}
-                        type="number"
-                        label={MESSAGES.locationLimit}
+                        value={formState.mapResults.value}
+                        setHasError={setHasLocationLimitError}
                     />
                 </Grid>
                 <Grid item xs={4}>
@@ -325,7 +326,8 @@ const InstancesFiltersComponent = ({
                             !isInstancesFilterUpdated ||
                             periodError ||
                             startPeriodError ||
-                            endPeriodError
+                            endPeriodError ||
+                            hasLocationLimitError
                         }
                         variant="contained"
                         className={classes.button}

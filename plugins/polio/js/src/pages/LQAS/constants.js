@@ -11,7 +11,7 @@ export const districtColors = {
         zIndex: 999,
     },
     [LQAS_DISQUALIFIED]: {
-        color: 'orange',
+        color: '#FFD835',
         weight: '2',
         opacity: '1',
         zIndex: 999,

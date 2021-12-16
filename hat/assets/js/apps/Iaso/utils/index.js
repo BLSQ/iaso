@@ -21,7 +21,7 @@ export const formatThousand = number => {
 export const getYears = (yearsCount, offset = 0, reverse = false) => {
     const currentYear = new Date().getFullYear() + offset;
     const years = Array(yearsCount)
-        .fill()
+        .fill(null)
         .map((y, i) => currentYear - i);
     if (reverse) {
         return years.reverse();

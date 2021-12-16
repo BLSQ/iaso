@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase, TestCase
-from .models import Campaign, Preparedness, Round
+from .models import Preparedness, Round
 from .preparedness.calculator import get_preparedness_score
 from .preparedness.exceptions import InvalidFormatError
 from .preparedness.spreadsheet_manager import *
@@ -198,17 +198,3 @@ class CampaignCalculatorTestCase(TestCase):
     def test_district_score(self):
         result = get_preparedness_score(self.preparedness_preview)
         self.assertAlmostEqual(result["district_score"], 56.25)
-
-
-class PreparednessSpreadsheetTestCase(TestCase):
-    def test_get_range(self):
-        self.assertEqual("A1:A5", get_range(1, 1, 5))
-        self.assertEqual("A21:A25", get_range(1, 21, 25))
-        self.assertEqual("C20:C50", get_range(3, 20, 50))
-        self.assertEqual("G100:G150", get_range(7, 100, 150))
-
-    def test_average_get_range(self):
-        self.assertEqual('=AVERAGEIF(A1:A5,"<>NA")*0.1', get_average_of_range(1, 1, 5))
-        self.assertEqual('=AVERAGEIF(A21:A25,"<>NA")*0.1', get_average_of_range(1, 21, 25))
-        self.assertEqual('=AVERAGEIF(C20:C50,"<>NA")*0.1', get_average_of_range(3, 20, 50))
-        self.assertEqual('=AVERAGEIF(G100:G150,"<>NA")*0.1', get_average_of_range(7, 100, 150))

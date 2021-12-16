@@ -45,7 +45,7 @@ export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
         message: formatMessage(MESSAGES['1imOK']),
     });
     const disqualifiedLegendItem = makeLegendItem({
-        color: 'orange',
+        color: '#FFD835',
         value: disqualified?.length,
         message: formatMessage(MESSAGES['2imWarning']),
     });

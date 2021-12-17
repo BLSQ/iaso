@@ -247,7 +247,11 @@ module.exports = {
                       path.resolve(__dirname, 'assets/js/apps/'),
                   ]
                 : /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
-                  ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
+                  [
+                      'node_modules',
+                      '../../bluesquare-components/node_modules/',
+                      path.resolve(__dirname, 'assets/js/apps/'),
+                  ],
 
         extensions: ['.js', '.tsx', '.ts'],
     },

@@ -315,3 +315,13 @@ export const getEndpointUrl = (
         asSmallDict,
     );
 };
+
+export const getFileUrl = (params, rowsPerPage, page) => {
+    const urlParams = {
+        limit: rowsPerPage,
+        // Django pagination start at 1 but Material UI at 0
+        page: page + 1,
+        ...getFilters(params),
+    };
+    return getTableUrl('instances/attachments', urlParams);
+};

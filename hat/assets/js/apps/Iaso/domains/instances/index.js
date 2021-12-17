@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -21,17 +21,11 @@ import {
     fetchPossibleFields,
 } from './requests';
 
-import {
-    getEndpointUrl,
-    getFilters,
-    getInstancesFilesList,
-    getSelectionActions,
-} from './utils';
+import { getEndpointUrl, getFilters, getSelectionActions } from './utils';
 
 import { InstancesTopBar as TopBar } from './components/InstancesTopBar';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
-import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -41,6 +35,7 @@ import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { useSnackQuery } from '../../libs/apiHooks';
 import snackMessages from '../../components/snackBars/messages';
+import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
 
 const baseUrl = baseUrls.instances;
 
@@ -79,19 +74,6 @@ const Instances = ({ params }) => {
         {
             enabled: params.tab === 'map',
             select: result => result.instances,
-        },
-    );
-
-    // Data for the files
-    const { data: instancesFiles, isLoading: loadingFiles } = useSnackQuery(
-        ['instances', 'files', params],
-        // Ugly fix to limit results displayed on map, IA-904
-        () =>
-            fetchInstancesAsSmallDict(getEndpointUrl(params, false, '', true)),
-        snackMessages.fetchInstanceLocationError,
-
-        {
-            enabled: params.tab === 'files',
         },
     );
 
@@ -266,9 +248,9 @@ const Instances = ({ params }) => {
                     </div>
                 )}
                 {tab === 'files' && (
-                    <InstancesFilesList
-                        files={getInstancesFilesList(instancesFiles || [])}
-                        fetching={loadingFiles}
+                    <PaginatedInstanceFiles
+                        params={params}
+                        updateParams={onSearch}
                     />
                 )}
             </Box>

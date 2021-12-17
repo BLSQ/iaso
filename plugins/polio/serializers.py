@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.transaction import atomic
 from gspread.exceptions import APIError
+from gspread.exceptions import NoValidUrlKeyFound
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -13,7 +14,6 @@ from iaso.models import Group, OrgUnit
 from .models import (
     Preparedness,
     Round,
-    Surge,
     LineListImport,
     VIRUSES,
     PREPARING,
@@ -23,15 +23,13 @@ from .models import (
     ROUND2DONE,
     SpreadSheetImport,
 )
+from .preparedness.calculator import get_preparedness_score, preparedness_summary
 from .preparedness.parser import (
-    open_sheet_by_url,
     InvalidFormatError,
-    parse_value,
     get_preparedness,
+    surge_indicator_for_country,
 )
 from .preparedness.spreadsheet_manager import *
-from logging import getLogger
-
 from .preparedness.spreadsheet_manager import generate_spreadsheet_for_campaign
 
 logger = getLogger(__name__)
@@ -172,18 +170,14 @@ class PreparednessSerializer(serializers.ModelSerializer):
         exclude = ["spreadsheet_url"]
 
 
-class LastPreparednessSerializer(PreparednessSerializer):
-    class Meta:
-        model = Preparedness
-        exclude = ["campaign"]
-        extra_kwargs = {"payload": {"write_only": True}}
-
-
-class SurgeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Surge
-        exclude = ["campaign"]
-        extra_kwargs = {"payload": {"write_only": True}}
+class SurgeSerializer(serializers.Serializer):
+    created_at = serializers.DateTimeField()
+    # surge_country_name = serializers.CharField()
+    title = serializers.CharField()  # title of the Google spreadsheet
+    who_recruitment = serializers.IntegerField()
+    who_completed_recruitment = serializers.IntegerField()
+    unicef_recruitment = serializers.IntegerField()
+    unicef_completed_recruitment = serializers.IntegerField()
 
 
 class PreparednessPreviewSerializer(serializers.Serializer):
@@ -192,9 +186,16 @@ class PreparednessPreviewSerializer(serializers.Serializer):
     def validate(self, attrs):
         try:
             ssi = SpreadSheetImport.create_for_url(attrs.get("google_sheet_url"))
+            # ssi = SpreadSheetImport.last_for_url(attrs.get("google_sheet_url"))
             cs = ssi.cached_spreadsheet
+            r = {}
             preparedness_data = get_preparedness(cs)
-            return preparedness_data
+            r.update(preparedness_data)
+            r["title"] = cs.title
+            r["created_at"] = ssi.created_at
+            r.update(get_preparedness_score(preparedness_data))
+            r.update(preparedness_summary(preparedness_data))
+            return r
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
@@ -205,47 +206,28 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
 
 class SurgePreviewSerializer(serializers.Serializer):
-    google_sheet_url = serializers.URLField()
-    surge_country_name = serializers.CharField(max_length=200)
+    surge_spreadsheet_url = serializers.URLField()
+    country_name_in_surge_spreadsheet = serializers.CharField(max_length=200)
 
     def validate(self, attrs):
         try:
-            surge_country_name = attrs.get("surge_country_name")
-            sheet = open_sheet_by_url(attrs.get("google_sheet_url")).worksheets()[0]
+            spreadsheet_url = attrs.get("surge_spreadsheet_url")
+            surge_country_name = attrs.get("country_name_in_surge_spreadsheet")
 
-            cell = sheet.find(surge_country_name)
-            if not cell:
-                raise Exception("Country not found in spreadsheet")
+            ssi = SpreadSheetImport.create_for_url(spreadsheet_url)
+            cs = ssi.cached_spreadsheet
 
-            first_row = cell.row
-            first_col = cell.col + 1
-            last_row = cell.row
-            last_col = cell.col + 8
-
-            data = sheet.range(first_row, first_col, last_row, last_col)
-
-            [
-                who_recruitment,
-                who_completed_recruitment,
-                _,
-                _,
-                unicef_recruitment,
-                unicef_completed_recruitment,
-                _,
-                _,
-            ] = data
-
-            response = {
-                "who_recruitment": parse_value(who_recruitment.value),
-                "who_completed_recruitment": parse_value(who_completed_recruitment.value),
-                "unicef_recruitment": parse_value(unicef_recruitment.value),
-                "unicef_completed_recruitment": parse_value(unicef_completed_recruitment.value),
-            }
+            response = surge_indicator_for_country(cs, surge_country_name)
+            response["created_at"] = ssi.created_at
             return response
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
             raise serializers.ValidationError(e.args[0].get("message"))
+        except NoValidUrlKeyFound as e:
+            raise serializers.ValidationError({"surge_spreadsheet_url": ["Invalid URL"]})
+        except Exception as e:
+            raise serializers.ValidationError(f"{type(e)}: {str(e)}")
 
     def to_representation(self, instance):
         return instance
@@ -322,13 +304,29 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     group = GroupSerializer(required=False, allow_null=True)
 
-    preparedness_data = LastPreparednessSerializer(required=False)
-    last_preparedness = LastPreparednessSerializer(
-        required=False,
-        read_only=True,
-        allow_null=True,
-    )
-    surge_data = SurgeSerializer(required=False)
+    last_preparedness = serializers.SerializerMethodField()
+
+    def get_last_preparedness(self, campaign):
+        # summary
+        r = {}
+        try:
+            spreadsheet_url = campaign.preperadness_spreadsheet_url
+            last_ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
+            if not last_ssi:
+                return None
+
+            r["created_at"] = last_ssi.created_at
+            cached_spreadsheet = last_ssi.cached_spreadsheet
+            r["title"] = cached_spreadsheet.title
+            last_p = get_preparedness(cached_spreadsheet)
+            r.update(get_preparedness_score(last_p))
+            r.update(preparedness_summary(last_p))
+        except Exception as e:
+            r["status"] = "error"
+            r["details"] = str(e)
+            logger.exception(e)
+        return r
+
     last_surge = SurgeSerializer(
         required=False,
         read_only=True,
@@ -351,19 +349,12 @@ class CampaignSerializer(serializers.ModelSerializer):
         else:
             campaign_group = None
 
-        preparedness_data = validated_data.pop("preparedness_data", None)
-        surge_data = validated_data.pop("surge_data", None)
         campaign = Campaign.objects.create(
             **validated_data,
             round_one=Round.objects.create(**round_one_data),
             round_two=Round.objects.create(**round_two_data),
             group=campaign_group,
         )
-
-        if preparedness_data is not None:
-            Preparedness.objects.create(campaign=campaign, **preparedness_data)
-        if surge_data is not None:
-            Surge.objects.create(campaign=campaign, **surge_data)
 
         return campaign
 
@@ -389,18 +380,12 @@ class CampaignSerializer(serializers.ModelSerializer):
             campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
             instance.group = campaign_group
 
-        # we want to create a new preparedness and surge data object each time
-        if "preparedness_data" in validated_data:
-            Preparedness.objects.create(campaign=instance, **validated_data.pop("preparedness_data"))
-        if "surge_data" in validated_data:
-            Surge.objects.create(campaign=instance, **validated_data.pop("surge_data"))
         return super().update(instance, validated_data)
 
     class Meta:
         model = Campaign
         fields = "__all__"
         read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status", "creation_email_send_at"]
-        extra_kwargs = {"preparedness_data": {"write_only": True}}
 
 
 class AnonymousCampaignSerializer(CampaignSerializer):

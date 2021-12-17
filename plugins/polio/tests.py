@@ -65,14 +65,6 @@ class PolioAPITestCase(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(self.yoda)
 
-    @mock.patch("plugins.polio.serializers.get_preparedness", return_value={})
-    @mock.patch("plugins.polio.serializers.SpreadSheetImport")
-    def test_preview_preparedness(self, mock_SpreadSheetImport, *_):
-        mock_SpreadSheetImport.create_for_url.return_value = mock.MagicMock()
-        url = "https://docs.google.com/spreadsheets/d/1"
-        response = self.client.post("/api/polio/campaigns/preview_preparedness/", {"google_sheet_url": url})
-        self.assertEqual(response.status_code, 200)
-
     @mock.patch("plugins.polio.serializers.SpreadSheetImport")
     def test_preview_invalid_document(self, mock_SpreadSheetImport, *_):
         mock_SpreadSheetImport.create_for_url.return_value = mock.MagicMock()
@@ -97,56 +89,6 @@ class PolioAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Campaign.objects.count(), 1)
-
-    def test_create_campaign_with_preparedness_data(self):
-        self.assertEqual(Preparedness.objects.count(), 0)
-        preparedness = {
-            "spreadsheet_url": "https://docs.google.com/spreadsheets/d/1",
-            "national_score": 10,
-            "regional_score": 80,
-            "district_score": 70,
-            "payload": json.dumps({}),
-        }
-
-        payload = {
-            "obr_name": "obr_name",
-            "detection_status": "PENDING",
-            "preparedness_data": preparedness,
-            "round_one": {},
-            "round_two": {},
-        }
-        response = self.client.post("/api/polio/campaigns/", payload, format="json")
-
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(Preparedness.objects.count(), 1)
-
-    def test_refresh_preparedness_data(self):
-        self.assertEqual(Preparedness.objects.count(), 0)
-        campaign = Campaign.objects.create(
-            obr_name="obr_name",
-            detection_status="PENDING",
-            round_one=Round.objects.create(),
-            round_two=Round.objects.create(),
-        )
-
-        preparedness = {
-            "spreadsheet_url": "https://docs.google.com/spreadsheets/d/1",
-            "national_score": 10,
-            "regional_score": 80,
-            "district_score": 70,
-            "payload": json.dumps({}),
-        }
-
-        payload = {
-            "obr_name": "obr_name",
-            "detection_status": "PENDING",
-            "preparedness_data": preparedness,
-            "round_one": {},
-            "round_two": {},
-        }
-        response = self.client.put(f"/api/polio/campaigns/{campaign.pk}/", payload, format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(campaign.preparedness_set.count(), 1)
 
     def test_add_group_to_existing_campaign_without_group(self):
         """

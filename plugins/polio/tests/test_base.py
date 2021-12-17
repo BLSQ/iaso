@@ -242,10 +242,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(response.json()[0]["initial_org_unit"], self.child_org_unit.pk)
 
     def test_polio_campaign_soft_delete(self):
-        campaign = Campaign(
-            obr_name="test_soft_delete",
-            detection_status="PENDING"
-        )
+        campaign = Campaign(obr_name="test_soft_delete", detection_status="PENDING")
         campaign.save()
         campaign.delete()
         last_campaign = Campaign.objects.last()
@@ -253,24 +250,14 @@ class PolioAPITestCase(APITestCase):
 
     def test_soft_deleted_campaign_weekly_mail(self):
         campaign_deleted = Campaign(
-            obr_name="deleted_campaign",
-            detection_status="PENDING",
-            virus="ABC",
-            country=self.org_unit,
-            onset_at=now()
+            obr_name="deleted_campaign", detection_status="PENDING", virus="ABC", country=self.org_unit, onset_at=now()
         )
 
         campaign_active = Campaign(
-            obr_name="active campaign",
-            detection_status="PENDING",
-            virus="ABC",
-            country=self.org_unit,
-            onset_at=now()
+            obr_name="active campaign", detection_status="PENDING", virus="ABC", country=self.org_unit, onset_at=now()
         )
 
-        country_user_grp = CountryUsersGroup(
-            country=self.org_unit
-        )
+        country_user_grp = CountryUsersGroup(country=self.org_unit)
         country_user_grp.save()
 
         users = User.objects.all()

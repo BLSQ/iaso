@@ -21,6 +21,7 @@ import {
 } from '../../utils/index';
 import { convertAPIData } from '../../utils/LqasIm';
 import { LqasImTable } from '../../components/LQAS-IM/LqasImTable';
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -169,26 +170,28 @@ export const ImStats = () => {
                         )}
                     </Grid>
                 </Grid>
-                <Grid container item>
-                    <Grid item xs={4}>
-                        <Box ml={2} mb={4}>
-                            <Typography variant="h6">
-                                {`${formatMessage(
-                                    MESSAGES.districtsNotFound,
-                                )}:`}
-                            </Typography>
-                            {districtsNotFound}
-                        </Box>
+                <DisplayIfUserHasPerm permission="iaso_polio_config">
+                    <Grid container item>
+                        <Grid item xs={4}>
+                            <Box ml={2} mb={4}>
+                                <Typography variant="h6">
+                                    {`${formatMessage(
+                                        MESSAGES.districtsNotFound,
+                                    )}:`}
+                                </Typography>
+                                {districtsNotFound}
+                            </Box>
+                        </Grid>
+                        <Grid item xs={4}>
+                            <Box ml={2} mb={4}>
+                                <Typography variant="h6">
+                                    {`${formatMessage(MESSAGES.datesIgnored)}:`}
+                                </Typography>
+                                {Object.keys(datesIgnored ?? {}).join(', ')}
+                            </Box>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={4}>
-                        <Box ml={2} mb={4}>
-                            <Typography variant="h6">
-                                {`${formatMessage(MESSAGES.datesIgnored)}:`}
-                            </Typography>
-                            {Object.keys(datesIgnored ?? {}).join(', ')}
-                        </Box>
-                    </Grid>
-                </Grid>
+                </DisplayIfUserHasPerm>
             </Grid>
         </>
     );

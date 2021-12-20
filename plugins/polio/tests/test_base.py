@@ -4,6 +4,7 @@ from unittest import mock
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 from rest_framework import status
+from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APIClient
 
 from iaso import models as m
@@ -14,6 +15,7 @@ from plugins.polio.models import Campaign, Preparedness, Round, CountryUsersGrou
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.exceptions import InvalidFormatError
 from plugins.polio.preparedness.spreadsheet_manager import *
+from plugins.polio.serializers import CampaignSerializer
 
 
 class PolioAPITestCase(APITestCase):
@@ -272,6 +274,44 @@ class PolioAPITestCase(APITestCase):
 
         self.assertEqual(send_notification_email(campaign_deleted), False)
         self.assertIsNone(send_notification_email(campaign_active))
+
+    def create_multiple_campaigns(self, count: int):
+        for n in range(count):
+            payload = {
+                "obr_name": "campaign_{0}".format(n),
+                "detection_status": "PENDING",
+                "round_one": {},
+                "round_two": {},
+            }
+            self.client.post("/api/polio/campaigns/", payload, format="json")
+
+    def test_return_only_deleted_campaigns(self):
+
+        self.create_multiple_campaigns(10)
+
+        campaigns = Campaign.objects.all()
+
+        for c in campaigns[:8]:
+            c.delete()
+
+        response = self.client.get("/api/polio/campaigns/?campaigns=deleted", format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 8)
+
+    def test_return_only_active_campaigns(self):
+
+        self.create_multiple_campaigns(25)
+
+        campaigns = Campaign.objects.all()
+
+        for c in campaigns[:13]:
+            c.delete()
+
+        response = self.client.get("/api/polio/campaigns/?campaigns=active", format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 12)
 
 
 class CampaignCalculatorTestCase(TestCase):

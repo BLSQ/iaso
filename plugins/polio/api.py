@@ -4,6 +4,7 @@ from datetime import timedelta, datetime
 
 import requests
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import HttpResponse
@@ -64,11 +65,26 @@ class CustomFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class CampaignFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        query_param = request.query_params.get("campaigns")
+
+        if query_param == "deleted":
+            query = Q(deleted_at__isnull=False)
+            return queryset.filter(query)
+
+        if query_param == "active":
+            query = Q(deleted_at__isnull=True)
+            return queryset.filter(query)
+
+        return queryset
+
+
 class CampaignViewSet(ModelViewSet):
 
     results_key = "campaigns"
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend, CampaignFilterBackend]
     ordering_fields = [
         "obr_name",
         "cvdpv2_notified_at",
@@ -103,9 +119,9 @@ class CampaignViewSet(ModelViewSet):
         user = self.request.user
         if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-            return Campaign.objects.filter(initial_org_unit__in=org_units, deleted_at__isnull=True)
+            return Campaign.objects.filter(initial_org_unit__in=org_units)
         else:
-            return Campaign.objects.filter(deleted_at__isnull=True)
+            return Campaign.objects.filter()
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):

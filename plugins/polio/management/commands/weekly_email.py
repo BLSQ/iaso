@@ -68,7 +68,7 @@ For guidance on updating: contact RRT team
 Timeline tracker Automated message.
     """
 
-    print(email_text)
+    # print(email_text)
     logger.info(f"Sending to {len(emails)} recipients")
 
     send_mail(

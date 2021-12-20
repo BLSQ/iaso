@@ -202,7 +202,11 @@ Timeline tracker Automated message
 
         return Response({"message": "email sent"})
 
-    @action(detail=False, methods=['get'], url_path="restorecampaigns/(?P<campaign_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})")
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="restorecampaigns/(?P<campaign_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})",
+    )
     def restore_deleted_campaigns(self, request, campaign_id):
         try:
             campaign = Campaign.objects.get(pk=campaign_id)

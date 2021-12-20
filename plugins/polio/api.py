@@ -5,6 +5,7 @@ from datetime import timedelta, datetime
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import HttpResponse
@@ -13,7 +14,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from gspread.utils import extract_id_from_url
-from rest_framework import routers, filters, viewsets, serializers, permissions
+from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Value, TextField, UUIDField
@@ -200,6 +201,19 @@ Timeline tracker Automated message
         campaign.save()
 
         return Response({"message": "email sent"})
+
+    @action(detail=False, methods=['get'], url_path="restorecampaigns/(?P<campaign_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})")
+    def restore_deleted_campaigns(self, request, campaign_id):
+        try:
+            campaign = Campaign.objects.get(pk=campaign_id)
+            if campaign.deleted_at is not None:
+                campaign.deleted_at = None
+                campaign.save()
+                return Response("Campaign {0} restored".format(campaign), status=status.HTTP_200_OK)
+            else:
+                return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
+        except ObjectDoesNotExist:
+            return Response("Campaign does not exist.", status=status.HTTP_404_NOT_FOUND)
 
 
 class CountryUsersGroupViewSet(ModelViewSet):

@@ -313,6 +313,29 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 12)
 
+    def test_restore_deleted_campaign(self):
+        self.create_multiple_campaigns(1)
+        campaign = Campaign.objects.get()
+
+        if campaign.deleted_at is None:
+            campaign.delete()
+            self.client.get("/api/polio/campaigns/restorecampaigns/{0}/".format(campaign.id))
+
+        restored_campaign = Campaign.objects.get(id=campaign.id)
+        self.assertIsNone(restored_campaign.deleted_at)
+
+    def test_handle_restore_active_campaign(self):
+        self.create_multiple_campaigns(1)
+        campaign = Campaign.objects.get()
+
+        response = self.client.get("/api/polio/campaigns/restorecampaigns/{0}/".format(campaign.id))
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_handle_non_existant_campaign(self):
+        response = self.client.get("/api/polio/campaigns/restorecampaigns/kdhsgf_/")
+        self.assertEqual(response.status_code, 404)
+
 
 class CampaignCalculatorTestCase(TestCase):
     def setUp(self) -> None:

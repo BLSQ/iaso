@@ -273,7 +273,7 @@ class PolioAPITestCase(APITestCase):
         campaign_active.save()
 
         self.assertEqual(send_notification_email(campaign_deleted), False)
-        self.assertIsNone(send_notification_email(campaign_active))
+        self.assertEqual(send_notification_email(campaign_active), True)
 
     def create_multiple_campaigns(self, count: int):
         for n in range(count):
@@ -292,7 +292,7 @@ class PolioAPITestCase(APITestCase):
         campaigns = Campaign.objects.all()
 
         for c in campaigns[:8]:
-            c.delete()
+            self.client.delete("/api/polio/campaigns/{0}/".format(c.id))
 
         response = self.client.get("/api/polio/campaigns/?campaigns=deleted", format="json")
 
@@ -301,25 +301,27 @@ class PolioAPITestCase(APITestCase):
 
     def test_return_only_active_campaigns(self):
 
-        self.create_multiple_campaigns(25)
+        self.create_multiple_campaigns(3)
 
         campaigns = Campaign.objects.all()
 
-        for c in campaigns[:13]:
-            c.delete()
+        for c in campaigns[:2]:
+            self.client.delete("/api/polio/campaigns/{0}/".format(c.id))
 
         response = self.client.get("/api/polio/campaigns/?campaigns=active", format="json")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 12)
+        self.assertEqual(len(response.json()), 1)
 
     def test_restore_deleted_campaign(self):
         self.create_multiple_campaigns(1)
         campaign = Campaign.objects.get()
 
+        payload = {"id": campaign.id}
+
         if campaign.deleted_at is None:
-            campaign.delete()
-            self.client.get("/api/polio/campaigns/restorecampaigns/{0}/".format(campaign.id))
+            self.client.delete("/api/polio/campaigns/{0}/".format(campaign.id))
+            self.client.patch("/api/polio/campaigns/restore_deleted_campaigns/", payload, format="json")
 
         restored_campaign = Campaign.objects.get(id=campaign.id)
         self.assertIsNone(restored_campaign.deleted_at)
@@ -328,12 +330,16 @@ class PolioAPITestCase(APITestCase):
         self.create_multiple_campaigns(1)
         campaign = Campaign.objects.get()
 
-        response = self.client.get("/api/polio/campaigns/restorecampaigns/{0}/".format(campaign.id))
+        payload = {"id": campaign.id}
+
+        response = self.client.patch("/api/polio/campaigns/restore_deleted_campaigns/", payload, format="json")
 
         self.assertEqual(response.status_code, 400)
 
     def test_handle_non_existant_campaign(self):
-        response = self.client.get("/api/polio/campaigns/restorecampaigns/kdhsgf_/")
+
+        payload = {"id": "bd656a6b-f67e-4a1e-95ee-1bef8f36239a"}
+        response = self.client.patch("/api/polio/campaigns/restore_deleted_campaigns/", payload, format="json")
         self.assertEqual(response.status_code, 404)
 
 

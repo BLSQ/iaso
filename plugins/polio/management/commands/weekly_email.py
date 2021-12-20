@@ -68,7 +68,6 @@ For guidance on updating: contact RRT team
 Timeline tracker Automated message.
     """
 
-    # print(email_text)
     logger.info(f"Sending to {len(emails)} recipients")
 
     send_mail(
@@ -77,6 +76,8 @@ Timeline tracker Automated message.
         "no-reply@%s" % domain,
         emails,
     )
+
+    return True
 
 
 class Command(BaseCommand):

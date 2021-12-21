@@ -204,16 +204,13 @@ Timeline tracker Automated message
 
     @action(methods=["PATCH"], detail=False)
     def restore_deleted_campaigns(self, request):
-        try:
-            campaign = Campaign.objects.get(pk=request.data["id"])
-            if campaign.deleted_at is not None:
-                campaign.deleted_at = None
-                campaign.save()
-                return Response("Campaign {0} restored".format(campaign), status=status.HTTP_200_OK)
-            else:
-                return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
-        except ObjectDoesNotExist:
-            return Response("Campaign does not exist.", status=status.HTTP_404_NOT_FOUND)
+        campaign = get_object_or_404(Campaign, pk=request.data["id"])
+        if campaign.deleted_at is not None:
+            campaign.deleted_at = None
+            campaign.save()
+            return Response(campaign.id, status=status.HTTP_200_OK)
+        else:
+            return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
 
 
 class CountryUsersGroupViewSet(ModelViewSet):

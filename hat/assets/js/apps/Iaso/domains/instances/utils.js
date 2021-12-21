@@ -300,7 +300,7 @@ export const getEndpointUrl = (
     asSmallDict = false,
 ) => {
     const urlParams = {
-        limit: params.pageSize ? params.pageSize : 20,
+        limit: params.pageSize ? params.pageSize : 10,
         order: params.order ? params.order : `-${defaultOrder}`,
         page: params.page ? params.page : 1,
         asSmallDict: true,

@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { Box, Button, Grid, makeStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
-import { commonStyles } from 'bluesquare-components';
+import { commonStyles, getParamsKey } from 'bluesquare-components';
 import FiltersComponent from '../filters/FiltersComponent';
 
 const MESSAGES = defineMessages({
@@ -38,6 +38,7 @@ const Filters = ({
     defaultFiltersUpdated,
     toggleActiveSearch,
     extraComponent,
+    paramsPrefix,
 }) => {
     const [filtersUpdated, setFiltersUpdated] = React.useState(
         !defaultFiltersUpdated,
@@ -45,18 +46,20 @@ const Filters = ({
 
     const classes = useStyles();
     const handleSearch = () => {
+        let tempParams = null;
         if (filtersUpdated) {
             setFiltersUpdated(false);
-            const tempParams = {
+            tempParams = {
                 ...params,
                 page: 1,
+                [getParamsKey(paramsPrefix, 'page')]: 1,
             };
             if (!tempParams.searchActive && toggleActiveSearch) {
                 tempParams.searchActive = true;
             }
             redirectTo(baseUrl, tempParams);
         }
-        onSearch();
+        onSearch(tempParams);
     };
     return (
         <>
@@ -108,6 +111,7 @@ Filters.defaultProps = {
     defaultFiltersUpdated: false,
     toggleActiveSearch: false,
     extraComponent: <></>,
+    paramsPrefix: null,
 };
 
 Filters.propTypes = {
@@ -119,6 +123,7 @@ Filters.propTypes = {
     defaultFiltersUpdated: PropTypes.bool,
     toggleActiveSearch: PropTypes.bool,
     extraComponent: PropTypes.node,
+    paramsPrefix: PropTypes.string,
 };
 
 export default Filters;

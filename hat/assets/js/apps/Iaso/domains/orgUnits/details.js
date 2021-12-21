@@ -135,6 +135,7 @@ class OrgUnitDetail extends Component {
                 formatMessage: props.intl.formatMessage,
                 user: this.props.currentUser,
                 deleteForm: this.handleDeleteForm,
+                orgUnitId: props.params.orgUnitId,
             }),
             forceSingleTableRefresh: false,
         };

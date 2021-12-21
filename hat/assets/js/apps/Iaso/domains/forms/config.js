@@ -75,6 +75,7 @@ const formsTableColumns = ({
     formatMessage,
     user,
     deleteForm = () => null,
+    orgUnitId,
 }) => [
     {
         Header: formatMessage(MESSAGES.name),
@@ -161,17 +162,21 @@ const formsTableColumns = ({
         width: 250,
         accessor: 'actions',
         Cell: settings => {
-            const urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}/tab/list`;
-
+            let urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}`;
+            if (orgUnitId) {
+                urlToInstances = `${urlToInstances}/levels/${orgUnitId}`;
+            }
+            urlToInstances = `${urlToInstances}/tab/list`;
             return (
                 <section>
-                    {userHasPermission('iaso_submissions', user) && (
-                        <IconButtonComponent
-                            url={`${urlToInstances}`}
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.viewInstances}
-                        />
-                    )}
+                    {userHasPermission('iaso_submissions', user) &&
+                        settings.row.original.instances_count > 0 && (
+                            <IconButtonComponent
+                                url={`${urlToInstances}`}
+                                icon="remove-red-eye"
+                                tooltipMessage={MESSAGES.viewInstances}
+                            />
+                        )}
                     {userHasPermission('iaso_forms', user) && (
                         <IconButtonComponent
                             url={`${baseUrls.formDetail}/formId/${settings.row.original.id}`}

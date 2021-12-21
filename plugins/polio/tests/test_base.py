@@ -10,12 +10,17 @@ from rest_framework.test import APIClient
 from iaso import models as m
 from iaso.models import Account, OrgUnit
 from iaso.test import APITestCase, TestCase
+
 from plugins.polio.management.commands.weekly_email import send_notification_email
 from plugins.polio.models import Campaign, Preparedness, Round, CountryUsersGroup
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.exceptions import InvalidFormatError
 from plugins.polio.preparedness.spreadsheet_manager import *
 from plugins.polio.serializers import CampaignSerializer
+from .models import Preparedness, Round
+from .preparedness.calculator import get_preparedness_score
+from .preparedness.exceptions import InvalidFormatError
+from .preparedness.spreadsheet_manager import *
 
 
 class PolioAPITestCase(APITestCase):
@@ -69,14 +74,6 @@ class PolioAPITestCase(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(self.yoda)
 
-    @mock.patch("plugins.polio.serializers.get_preparedness", return_value={})
-    @mock.patch("plugins.polio.serializers.SpreadSheetImport")
-    def test_preview_preparedness(self, mock_SpreadSheetImport, *_):
-        mock_SpreadSheetImport.create_for_url.return_value = mock.MagicMock()
-        url = "https://docs.google.com/spreadsheets/d/1"
-        response = self.client.post("/api/polio/campaigns/preview_preparedness/", {"google_sheet_url": url})
-        self.assertEqual(response.status_code, 200)
-
     @mock.patch("plugins.polio.serializers.SpreadSheetImport")
     def test_preview_invalid_document(self, mock_SpreadSheetImport, *_):
         mock_SpreadSheetImport.create_for_url.return_value = mock.MagicMock()
@@ -101,56 +98,6 @@ class PolioAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Campaign.objects.count(), 1)
-
-    def test_create_campaign_with_preparedness_data(self):
-        self.assertEqual(Preparedness.objects.count(), 0)
-        preparedness = {
-            "spreadsheet_url": "https://docs.google.com/spreadsheets/d/1",
-            "national_score": 10,
-            "regional_score": 80,
-            "district_score": 70,
-            "payload": json.dumps({}),
-        }
-
-        payload = {
-            "obr_name": "obr_name",
-            "detection_status": "PENDING",
-            "preparedness_data": preparedness,
-            "round_one": {},
-            "round_two": {},
-        }
-        response = self.client.post("/api/polio/campaigns/", payload, format="json")
-
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(Preparedness.objects.count(), 1)
-
-    def test_refresh_preparedness_data(self):
-        self.assertEqual(Preparedness.objects.count(), 0)
-        campaign = Campaign.objects.create(
-            obr_name="obr_name",
-            detection_status="PENDING",
-            round_one=Round.objects.create(),
-            round_two=Round.objects.create(),
-        )
-
-        preparedness = {
-            "spreadsheet_url": "https://docs.google.com/spreadsheets/d/1",
-            "national_score": 10,
-            "regional_score": 80,
-            "district_score": 70,
-            "payload": json.dumps({}),
-        }
-
-        payload = {
-            "obr_name": "obr_name",
-            "detection_status": "PENDING",
-            "preparedness_data": preparedness,
-            "round_one": {},
-            "round_two": {},
-        }
-        response = self.client.put(f"/api/polio/campaigns/{campaign.pk}/", payload, format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(campaign.preparedness_set.count(), 1)
 
     def test_add_group_to_existing_campaign_without_group(self):
         """
@@ -359,17 +306,3 @@ class CampaignCalculatorTestCase(TestCase):
     def test_district_score(self):
         result = get_preparedness_score(self.preparedness_preview)
         self.assertAlmostEqual(result["district_score"], 56.25)
-
-
-class PreparednessSpreadsheetTestCase(TestCase):
-    def test_get_range(self):
-        self.assertEqual("A1:A5", get_range(1, 1, 5))
-        self.assertEqual("A21:A25", get_range(1, 21, 25))
-        self.assertEqual("C20:C50", get_range(3, 20, 50))
-        self.assertEqual("G100:G150", get_range(7, 100, 150))
-
-    def test_average_get_range(self):
-        self.assertEqual('=AVERAGEIF(A1:A5,"<>NA")*0.1', get_average_of_range(1, 1, 5))
-        self.assertEqual('=AVERAGEIF(A21:A25,"<>NA")*0.1', get_average_of_range(1, 21, 25))
-        self.assertEqual('=AVERAGEIF(C20:C50,"<>NA")*0.1', get_average_of_range(3, 20, 50))
-        self.assertEqual('=AVERAGEIF(G100:G150,"<>NA")*0.1', get_average_of_range(7, 100, 150))

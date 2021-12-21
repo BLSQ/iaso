@@ -313,7 +313,7 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
                     # No import yet
                     campaign_prep["status"] = "not_sync"
                     continue
-                campaign_prep["date"]: ssi.last().created_at
+                campaign_prep["date"] = ssi.last().created_at
                 last_p = get_preparedness(ssi.last().cached_spreadsheet)
                 campaign_prep.update(preparedness_summary(last_p))
             except Exception as e:

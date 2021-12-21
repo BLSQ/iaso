@@ -37,6 +37,11 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
+const filterDefault = params => ({
+    ...params,
+    mapResults: params.mapResults === undefined ? 3000 : params.mapResults,
+});
+
 const InstancesFiltersComponent = ({
     params: { formIds },
     params,
@@ -52,7 +57,7 @@ const InstancesFiltersComponent = ({
     const [fetchingDevicesOwnerships, setFetchingDevicesOwnerships] =
         useState(false);
 
-    const [formState, setFormState] = useFormState(params);
+    const [formState, setFormState] = useFormState(filterDefault(params));
 
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);

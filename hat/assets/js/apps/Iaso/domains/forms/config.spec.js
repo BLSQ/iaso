@@ -136,7 +136,7 @@ describe('Forms config', () => {
             });
         });
         describe('action column', () => {
-            it('should only display eye icon button and delete icon if instances_count = 0 and user only has submissions permission', () => {
+            it('should not display action button if instances_count = 0 and user only has submissions permission', () => {
                 const tempForm = { ...fakeForm };
 
                 deleteFormSpy = sinon.spy();
@@ -148,14 +148,14 @@ describe('Forms config', () => {
                 wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));
 
                 const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
-                expect(redEyeIcon).to.have.lengthOf(1);
+                expect(redEyeIcon).to.have.lengthOf(0);
                 const editIcon = wrapper.find('[icon="edit"]');
                 expect(editIcon).to.have.lengthOf(0);
                 const dhisIcon = wrapper.find('[icon="dhis"]');
                 expect(dhisIcon).to.have.lengthOf(0);
                 const deleteAction = wrapper.find(DeleteDialog);
                 expect(deleteAction).to.have.lengthOf(0);
-                expect(wrapper.find(IconButton)).to.have.lengthOf(1);
+                expect(wrapper.find(IconButton)).to.have.lengthOf(0);
             });
             it("should allow all actions except see submissions when user only has 'forms' permission", () => {
                 const tempForm = { ...fakeForm };
@@ -202,7 +202,7 @@ describe('Forms config', () => {
                     actionColumn = columns[columns.length - 1];
                     wrapper = shallow(actionColumn.Cell(colOriginal(fakeForm)));
                     const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
-                    expect(redEyeIcon).to.have.lengthOf(1);
+                    expect(redEyeIcon).to.have.lengthOf(0);
                     const editIcon = wrapper.find('[icon="edit"]');
                     expect(editIcon).to.have.lengthOf(0);
                     const dhisIcon = wrapper.find('[icon="dhis"]');

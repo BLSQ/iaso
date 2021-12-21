@@ -493,6 +493,7 @@
     "iaso.permissions.orgUnits": "Unités d'org.",
     "iaso.permissions.pages": "Pages",
     "iaso.permissions.polio": "Gestion campagnes vaccination Polio",
+    "iaso.permissions.polio_config": "Gestion campagnes vaccination Polio - configuration",
     "iaso.permissions.projects": "Projets",
     "iaso.permissions.sources": "Sources",
     "iaso.permissions.submissions": "Soumissions de formulaire",

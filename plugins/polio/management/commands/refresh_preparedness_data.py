@@ -59,6 +59,15 @@ class Command(BaseCommand):
                 campaign.preperadness_sync_status = "FAILURE"
                 campaign.save()
 
+        campaigns_with_surge = Campaign.objects.exclude(surge_spreadsheet_url__isnull=True)
+        surge_urls = [c.surge_spreadsheet_url for c in campaigns_with_surge]
+        surge_urls = set(surge_urls)
+        for url in surge_urls:
+            try:
+                logger.info(f"Importing surge file {url}")
+                SpreadSheetImport.create_for_url(url)
+            except Exception as e:
+                logger.exception(e)
         finished_at = datetime.now()
 
         print(

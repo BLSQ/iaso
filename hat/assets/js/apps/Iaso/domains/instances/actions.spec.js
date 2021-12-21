@@ -1,11 +1,7 @@
 import {
-    SET_INSTANCES,
-    SET_INSTANCES_FETCHING,
     SET_CURRENT_INSTANCE,
     SET_INSTANCES_FILTER_UDPATED,
-    setInstances,
     setInstancesFilterUpdated,
-    setInstancesFetching,
     setCurrentInstance,
     // fetchEditUrl,
     // fetchInstanceDetail,
@@ -24,22 +20,6 @@ import {
 
 // let actionStub;
 describe('Instances actions', () => {
-    it('should create an action to set instances list', () => {
-        const list = ['HYRULE WARRIORS'];
-        const payload = {
-            list,
-            count: 0,
-            pages: 0,
-            params: 'params',
-            showPagination: true,
-        };
-        const expectedAction = {
-            type: SET_INSTANCES,
-            payload,
-        };
-        const action = setInstances(list, true, 'params', 0, 0);
-        expect(action).to.eql(expectedAction);
-    });
     it('should create an action to set instance filter update', () => {
         const payload = false;
         const expectedAction = {
@@ -47,15 +27,6 @@ describe('Instances actions', () => {
             payload,
         };
         const action = setInstancesFilterUpdated(payload);
-        expect(action).to.eql(expectedAction);
-    });
-    it('should create an action to set is fetching', () => {
-        const payload = false;
-        const expectedAction = {
-            type: SET_INSTANCES_FETCHING,
-            payload,
-        };
-        const action = setInstancesFetching(payload);
         expect(action).to.eql(expectedAction);
     });
     it('should create an action to set current instance', () => {

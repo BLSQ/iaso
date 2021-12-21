@@ -3,9 +3,12 @@ from uuid import uuid4
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext as _
+from gspread.utils import extract_id_from_url
+
 from iaso.models import Group, OrgUnit
 from iaso.utils.models.soft_deletable import SoftDeletableModel
-from plugins.polio.preparedness.parser import open_sheet_by_url
+from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
+
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 VIRUSES = [
@@ -301,15 +304,19 @@ class Campaign(SoftDeletableModel):
     def get_regions(self):
         return OrgUnit.objects.filter(id__in=self.get_districts().values_list("parent_id", flat=True).distinct())
 
-    def last_preparedness(self):
-        return (
-            self.preparedness_set.filter(spreadsheet_url=self.preperadness_spreadsheet_url)
-            .order_by("-created_at")
-            .first()
-        )
-
     def last_surge(self):
-        return self.surge_set.filter(spreadsheet_url=self.surge_spreadsheet_url).order_by("-created_at").first()
+        spreadsheet_url = self.surge_spreadsheet_url
+        ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
+        if not ssi:
+            return None
+        cs = ssi.cached_spreadsheet
+
+        surge_country_name = self.country_name_in_surge_spreadsheet
+        if not surge_country_name:
+            return None
+        response = surge_indicator_for_country(cs, surge_country_name)
+        response["created_at"] = ssi.created_at
+        return response
 
     def save(self, *args, **kwargs):
         if self.initial_org_unit is not None:
@@ -322,6 +329,7 @@ class Campaign(SoftDeletableModel):
         super().save(*args, **kwargs)
 
 
+# Deprecated
 class Preparedness(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
@@ -339,6 +347,7 @@ class Preparedness(models.Model):
         return f"{self.campaign} - {self.created_at}"
 
 
+# Deprecated
 class Surge(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
@@ -422,3 +431,16 @@ class SpreadSheetImport(models.Model):
     @property
     def cached_spreadsheet(self):
         return CachedSpread(self.content)
+
+    @staticmethod
+    def last_for_url(spreadsheet_url: str):
+        if not spreadsheet_url:
+            return None
+        spread_id = extract_id_from_url(spreadsheet_url)
+
+        ssis = SpreadSheetImport.objects.filter(spread_id=spread_id)
+
+        if not ssis:
+            # No import yet
+            return None
+        return ssis.latest("created_at")

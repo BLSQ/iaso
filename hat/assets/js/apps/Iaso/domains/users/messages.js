@@ -113,6 +113,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.polio',
         defaultMessage: 'Polio campaign management',
     },
+    iaso_polio_config: {
+        id: 'iaso.permissions.polio_config',
+        defaultMessage: 'Polio campaign admin',
+    },
     iaso_links: {
         id: 'iaso.permissions.links',
         defaultMessage: 'Sources matching',

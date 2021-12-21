@@ -60,6 +60,6 @@ class CustomPermissionSupport(models.Model):
             ("iaso_sources", SOURCES),
             ("iaso_data_tasks", TASKS),
             ("iaso_polio", POLIO),
-            ("iaso_polio_config", POLIO),
+            ("iaso_polio_config", POLIO_CONFIG),
             ("iaso_submissions", SUBMISSIONS),
         )

@@ -111,11 +111,11 @@ const MESSAGES = defineMessages({
     },
     iaso_polio: {
         id: 'iaso.permissions.polio',
-        defaultMessage: 'Polio Campaign management',
+        defaultMessage: 'Polio campaign management',
     },
     iaso_polio_config: {
         id: 'iaso.permissions.polio_config',
-        defaultMessage: 'Polio Campaign admin',
+        defaultMessage: 'Polio campaign admin',
     },
     iaso_links: {
         id: 'iaso.permissions.links',

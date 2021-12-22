@@ -8,21 +8,9 @@ import {
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
-export const SET_INSTANCES = 'SET_INSTANCES';
 export const SET_INSTANCES_FETCHING = 'SET_INSTANCES_FETCHING';
 export const SET_CURRENT_INSTANCE = 'SET_CURRENT_INSTANCE';
 export const SET_INSTANCES_FILTER_UDPATED = 'SET_INSTANCES_FILTER_UDPATED';
-
-export const setInstances = (list, showPagination, params, count, pages) => ({
-    type: SET_INSTANCES,
-    payload: {
-        list,
-        showPagination,
-        params,
-        count,
-        pages,
-    },
-});
 
 export const setInstancesFilterUpdated = isUpdated => ({
     type: SET_INSTANCES_FILTER_UDPATED,

@@ -350,12 +350,6 @@ export const location = (formatMessage, urlKey = 'withLocation') => ({
     type: 'select',
 });
 
-export const locationsLimit = () => ({
-    urlKey: 'locationLimit',
-    label: MESSAGES.locationLimit,
-    type: 'number',
-});
-
 export const group = (groupList, urlKey = 'group') => ({
     urlKey,
     isMultiSelect: true,

@@ -162,7 +162,7 @@ class TimestampField(serializers.Field):
 class Paginator(pagination.PageNumberPagination):
     page_size_query_param = "limit"
 
-    def __init__(self, results_key):
+    def __init__(self, results_key="results"):
         self.results_key = results_key
 
     def get_paginated_response(self, data):
@@ -194,7 +194,7 @@ class ModelViewSet(BaseModelViewSet):
         Example: if your resource is CarManufacturer, use "car_manufacturers", so that the list responses look like
         {
             "car_manufacturers": [
-                {"id": 1, name: "Honda"},
+                {"id": 1, name  : "Honda"},
                 {"id": 2, name: "Toyota"},
             ]
         }

@@ -5,7 +5,9 @@ export const dateFormat = 'DD-MM-YYYY';
 /**
  * @param {String} date - date as a string
  */
-export const getUrlParamDateObject = date => {
+export const getUrlParamDateObject = (
+    date: moment.MomentInput,
+): moment.Moment => {
     return moment(date, dateFormat);
 };
 
@@ -18,7 +20,7 @@ export const apiDateFormat = 'YYYY-MM-DD';
 /**
  * @param {Object} date - date as a moment object
  */
-export const getApiParamDateTimeString = date => {
+export const getApiParamDateTimeString = (date: moment.Moment): string => {
     return date.format(apiDateTimeFormat);
 };
 
@@ -26,7 +28,9 @@ export const getApiParamDateTimeString = date => {
  * Convert a date string from a router params to a Date for the API
  * @param {Object} date - date as a moment object
  */
-export const getApiParamDateString = date => {
+export const getApiParamDateString = (
+    date: moment.MomentInput,
+): string | undefined => {
     return date ? getUrlParamDateObject(date).format(apiDateFormat) : undefined;
 };
 
@@ -35,7 +39,9 @@ export const getApiParamDateString = date => {
  * since it's the lower bound force it to the start of the day
  * @param  {String} dateFrom - date as string
  */
-export const getFromDateString = dateFrom =>
+export const getFromDateString = (
+    dateFrom: moment.MomentInput,
+): string | null =>
     dateFrom
         ? getApiParamDateTimeString(
               getUrlParamDateObject(dateFrom).startOf('day'),
@@ -46,7 +52,7 @@ export const getFromDateString = dateFrom =>
  * since it's the *higher bound* force it to the *end of the day*
  * @param  {String} dateTo - date as string
  */
-export const getToDateString = dateTo =>
+export const getToDateString = (dateTo: moment.MomentInput): string | null =>
     dateTo
         ? getApiParamDateTimeString(getUrlParamDateObject(dateTo).endOf('day'))
         : null;
@@ -74,7 +80,7 @@ const longDateFormats = {
  * Configure the local for time displayed to the user.
  * @param {"en"|"fr"} code - Language code string
  */
-export const setLocale = code => {
+export const setLocale = (code: 'en' | 'fr') => {
     moment.locale(code);
     moment.updateLocale(code, {
         longDateFormat: longDateFormats[code],

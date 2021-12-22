@@ -222,6 +222,14 @@ export const instancesPath = {
             isRequired: false,
             key: 'mapResults',
         },
+        {
+            isRequired: false,
+            key: 'filePage',
+        },
+        {
+            isRequired: false,
+            key: 'fileRowsPerPage',
+        },
     ],
 };
 

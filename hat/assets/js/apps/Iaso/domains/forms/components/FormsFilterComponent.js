@@ -51,7 +51,7 @@ export const FormsFilterComponent = ({ setFormsSelected, formsSelected }) => {
             </Box>
             <Select
                 keyValue="forms"
-                label={formatMessage(MESSAGES.forms)}
+                label={formatMessage(MESSAGES.defaultMessage)}
                 disabled={forms.length === 0}
                 loading={isLoading}
                 clearable

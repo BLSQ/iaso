@@ -84,7 +84,7 @@ const routes = [
     {
         baseUrl: CONFIG_BASE_URL,
         component: () => <CountryNotificationsConfig />,
-        permissions: ['iaso_polio'],
+        permissions: ['iaso_polio_config'],
         params: [
             {
                 isRequired: false,
@@ -152,7 +152,7 @@ const menu = [
             {
                 label: MESSAGES.configuration,
                 key: 'config',
-                permissions: ['iaso_polio'],
+                permissions: ['iaso_polio_config'],
                 icon: props => <SettingsIcon {...props} />,
             },
         ],

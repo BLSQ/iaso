@@ -300,7 +300,7 @@ export const getEndpointUrl = (
     asSmallDict = false,
 ) => {
     const urlParams = {
-        limit: params.pageSize ? params.pageSize : 20,
+        limit: params.pageSize ? params.pageSize : 10,
         order: params.order ? params.order : `-${defaultOrder}`,
         page: params.page ? params.page : 1,
         asSmallDict: true,
@@ -314,4 +314,14 @@ export const getEndpointUrl = (
         false,
         asSmallDict,
     );
+};
+
+export const getFileUrl = (params, rowsPerPage, page) => {
+    const urlParams = {
+        limit: rowsPerPage,
+        // Django pagination start at 1 but Material UI at 0
+        page: page + 1,
+        ...getFilters(params),
+    };
+    return getTableUrl('instances/attachments', urlParams);
 };

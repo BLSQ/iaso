@@ -8,7 +8,7 @@ import {
     Typography,
 } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
@@ -21,23 +21,102 @@ import {
 } from '../hooks/useGetPreparednessData';
 import MESSAGES from '../constants/messages';
 
+const formatIndicator = indicatorValue => {
+    if (indicatorValue === null || indicatorValue === undefined)
+        return indicatorValue;
+    if (typeof indicatorValue === 'number') return indicatorValue.toFixed(0);
+    if (typeof indicatorValue === 'string') return indicatorValue;
+    if (indicatorValue.length) return indicatorValue.join(' -- ');
+    return indicatorValue;
+};
+const PreparednessSummary = ({ preparedness, preperadness_sync_status }) => {
+    const { formatMessage } = useSafeIntl();
+    if (!preparedness) return null;
+    if (preparedness.status === 'error')
+        return <Typography>Error: {preparedness.details}</Typography>;
+
+    const createdAt = moment(preparedness.created_at);
+    return (
+        <>
+            <Grid container direction="row">
+                <Grid item md={4}>
+                    <Typography>
+                        {`${formatMessage(MESSAGES.national)}: ${
+                            preparedness.national_score
+                        }%`}
+                    </Typography>
+                </Grid>
+                <Grid item md={4}>
+                    <Typography>
+                        {`${formatMessage(MESSAGES.regional)}: ${
+                            preparedness.regional_score
+                        }%`}
+                    </Typography>
+                </Grid>
+                <Grid item md={4}>
+                    <Typography>
+                        {`${formatMessage(MESSAGES.districtScore)}: ${
+                            preparedness.district_score
+                        }%`}
+                    </Typography>
+                </Grid>
+            </Grid>
+
+            <Typography>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>Indicator</th>
+                            <th>National</th>
+                            <th>Regions</th>
+                            <th>Districts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {preparedness.indicators &&
+                            Object.values(preparedness.indicators).map(
+                                indicator => (
+                                    <tr key={indicator.key}>
+                                        <td>{indicator.sn}</td>
+                                        <td>{indicator.title}</td>
+                                        <td>
+                                            {formatIndicator(
+                                                indicator.national,
+                                            )}
+                                        </td>
+                                        <td>
+                                            {formatIndicator(indicator.regions)}
+                                        </td>
+                                        <td>
+                                            {formatIndicator(
+                                                indicator.districts,
+                                            )}
+                                        </td>
+                                    </tr>
+                                ),
+                            )}
+                    </tbody>
+                </table>
+                <Typography variant="caption">
+                    {formatMessage(MESSAGES.sync_status)}:{' '}
+                    {preperadness_sync_status}.
+                    {formatMessage(MESSAGES.spreadsheetImportTitle)}{' '}
+                    {preparedness.title}. {formatMessage(MESSAGES.refreshedAt)}:{' '}
+                    {createdAt.format('LTS')} ({createdAt.fromNow()})
+                </Typography>
+            </Typography>
+        </>
+    );
+};
+
 export const PreparednessForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const [preparednessDataTotals, setPreparednessDataTotals] = useState();
-    const [surgeDataTotals, setSurgeDataTotals] = useState();
-    const { values, setFieldValue, dirty } = useFormikContext();
+    const { values, setFieldValue, dirty, setErrors } = useFormikContext();
     const { last_preparedness: lastPreparedness, last_surge: lastSurge } =
         values;
-    const totalSummary = useMemo(
-        () => preparednessDataTotals || lastPreparedness,
-        [preparednessDataTotals, lastPreparedness],
-    );
-    const surgeSummary = useMemo(
-        () => surgeDataTotals || lastSurge,
-        [surgeDataTotals, lastSurge],
-    );
-    const { mutate, isLoading, isError, error } = useGetPreparednessData();
+    const preparednessMutation = useGetPreparednessData();
     const {
         mutate: generateSpreadsheetMutation,
         isLoading: isGeneratingSpreadsheet,
@@ -47,61 +126,29 @@ export const PreparednessForm = () => {
     const { preperadness_spreadsheet_url = '' } = values;
 
     const refreshData = () => {
-        mutate(preperadness_spreadsheet_url, {
+        preparednessMutation.mutate(preperadness_spreadsheet_url, {
             onSuccess: data => {
-                const { totals, ...payload } = data;
-
-                setPreparednessDataTotals(totals);
-                const { national_score, regional_score, district_score } =
-                    totals;
-                setFieldValue('preparedness_data', {
-                    spreadsheet_url: preperadness_spreadsheet_url,
-                    national_score,
-                    district_score,
-                    regional_score,
-                    payload,
-                });
+                setFieldValue('last_preparedness', data);
             },
         });
     };
 
-    const isProcessingData = ['QUEUED', 'ONGOING'].includes(
-        values.preperadness_sync_status,
-    );
-
-    const {
-        mutate: surgeMutate,
-        isLoading: surgeIsLoading,
-        isError: surgeIsError,
-        error: surgeError,
-    } = useSurgeData();
+    const surgeMutation = useSurgeData();
     const refreshSurgeData = () => {
-        surgeMutate(
+        surgeMutation.mutate(
             {
-                google_sheet_url: values.surge_spreadsheet_url,
-                surge_country_name: values.country_name_in_surge_spreadsheet,
+                surge_spreadsheet_url: values.surge_spreadsheet_url,
+                country_name_in_surge_spreadsheet:
+                    values.country_name_in_surge_spreadsheet,
             },
             {
                 onSuccess: counters => {
-                    setSurgeDataTotals(counters);
-                    const {
-                        unicef_completed_recruitment,
-                        unicef_recruitment,
-                        who_completed_recruitment,
-                        who_recruitment,
-                    } = counters;
-                    setFieldValue('surge_data', {
-                        spreadsheet_url: values.surge_spreadsheet_url,
-                        unicef_completed_recruitment,
-                        unicef_recruitment,
-                        who_completed_recruitment,
-                        who_recruitment,
-                        payload: counters,
-                    });
-                    setFieldValue(
-                        'country_name_in_surge_spreadsheet',
-                        values.surge_country_name,
-                    );
+                    setFieldValue('last_surge', counters);
+                },
+                onError: error => {
+                    if (error.details) {
+                        setErrors(error.details);
+                    }
                 },
             },
         );
@@ -133,7 +180,10 @@ export const PreparednessForm = () => {
                             )}
                             name="preperadness_spreadsheet_url"
                             component={TextInput}
-                            disabled={isLoading || isGeneratingSpreadsheet}
+                            disabled={
+                                preparednessMutation.isLoading ||
+                                isGeneratingSpreadsheet
+                            }
                             className={classes.input}
                         />
                     </Grid>
@@ -152,7 +202,7 @@ export const PreparednessForm = () => {
                                 <Button
                                     variant="contained"
                                     color="primary"
-                                    disabled={isLoading || isProcessingData}
+                                    disabled={preparednessMutation.isLoading}
                                     onClick={refreshData}
                                 >
                                     {formatMessage(
@@ -200,13 +250,17 @@ export const PreparednessForm = () => {
                     )}
                     {/* the padding bottom is a horrible quick fix to remove */}
                     <Grid xd={12} item style={{ paddingBottom: 20 }}>
-                        {isLoading || isGeneratingSpreadsheet ? (
+                        {preparednessMutation.isLoading ||
+                        isGeneratingSpreadsheet ? (
                             <CircularProgress />
                         ) : (
                             <>
-                                {isError && (
+                                {preparednessMutation.isError && (
                                     <Typography color="error">
-                                        {error.non_field_errors}
+                                        {
+                                            preparednessMutation.error
+                                                .non_field_errors
+                                        }
                                     </Typography>
                                 )}
                                 {generationError && (
@@ -216,53 +270,12 @@ export const PreparednessForm = () => {
                                         )}: ${generationError.message}`}
                                     </Typography>
                                 )}
-                                {totalSummary && (
-                                    <>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.national,
-                                            )}: ${
-                                                totalSummary.national_score
-                                            }%`}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.regional,
-                                            )}: ${
-                                                totalSummary.regional_score
-                                            }%`}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.districtScore,
-                                            )}: ${
-                                                totalSummary.district_score
-                                            }%`}
-                                        </Typography>
-                                        <Typography variant="caption">
-                                            {`${formatMessage(
-                                                MESSAGES.sync_status,
-                                            )}: ${
-                                                values.preperadness_sync_status
-                                            }. 
-                                            ${formatMessage(
-                                                MESSAGES.refreshedAt,
-                                            )}: ${
-                                                totalSummary.created_at
-                                                    ? moment(
-                                                          totalSummary.created_at,
-                                                      ).format('LTS')
-                                                    : ''
-                                            } ( ${
-                                                totalSummary.created_at
-                                                    ? moment(
-                                                          totalSummary.created_at,
-                                                      ).fromNow()
-                                                    : ''
-                                            })`}
-                                        </Typography>
-                                    </>
-                                )}
+                                <PreparednessSummary
+                                    preparedness={lastPreparedness}
+                                    preperadness_sync_status={
+                                        values.preperadness_sync_status
+                                    }
+                                />
                             </>
                         )}
                     </Grid>
@@ -275,14 +288,14 @@ export const PreparednessForm = () => {
                             label={formatMessage(MESSAGES.recruitmentSurgeUrl)}
                             name="surge_spreadsheet_url"
                             component={TextInput}
-                            disabled={isLoading}
+                            disabled={preparednessMutation.isLoading}
                             className={classes.input}
                         />
                         <Field
                             label={formatMessage(MESSAGES.countryNameInSheet)}
                             name="country_name_in_surge_spreadsheet"
                             component={TextInput}
-                            disabled={isLoading}
+                            disabled={preparednessMutation.isLoading}
                             className={classes.input}
                         />
                     </Grid>
@@ -299,7 +312,7 @@ export const PreparednessForm = () => {
                         <Button
                             variant="contained"
                             color="primary"
-                            disabled={surgeIsLoading}
+                            disabled={surgeMutation.isLoading}
                             onClick={refreshSurgeData}
                         >
                             {formatMessage(MESSAGES.refreshRecruitmentData)}
@@ -307,57 +320,40 @@ export const PreparednessForm = () => {
                     </Grid>
 
                     <Grid xd={12} item>
-                        {surgeIsLoading ? (
-                            <CircularProgress />
-                        ) : (
+                        {surgeMutation.isLoading && <CircularProgress />}
+                        {lastSurge && (
                             <>
-                                {surgeIsError && (
-                                    <Typography color="error">
-                                        {surgeError.non_field_errors}
-                                    </Typography>
-                                )}
-                                {surgeSummary && (
-                                    <>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.whoToRecruit,
-                                            )}: ${
-                                                surgeSummary.who_recruitment
-                                            }`}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.whoCompletedRecruitement,
-                                            )}: ${
-                                                surgeSummary.who_recruitment
-                                            }`}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.unicefToRecruit,
-                                            )}: ${
-                                                surgeSummary.unicef_recruitment
-                                            }`}
-                                        </Typography>
-                                        <Typography>
-                                            {`${formatMessage(
-                                                MESSAGES.unicefCompletedRecruitement,
-                                            )}: ${
-                                                surgeSummary.unicef_completed_recruitment
-                                            }`}
-                                        </Typography>
-                                        <Typography variant="caption">
-                                            {`${formatMessage(
-                                                MESSAGES.refreshedAt,
-                                            )}: ${(surgeSummary.created_at
-                                                ? new Date(
-                                                      surgeSummary.created_at,
-                                                  )
-                                                : new Date()
-                                            ).toUTCString()}`}
-                                        </Typography>
-                                    </>
-                                )}
+                                <Typography>{lastSurge.title}</Typography>
+                                <Typography>
+                                    {`${formatMessage(
+                                        MESSAGES.whoToRecruit,
+                                    )}: ${lastSurge.who_recruitment}`}
+                                </Typography>
+                                <Typography>
+                                    {`${formatMessage(
+                                        MESSAGES.whoCompletedRecruitement,
+                                    )}: ${lastSurge.who_recruitment}`}
+                                </Typography>
+                                <Typography>
+                                    {`${formatMessage(
+                                        MESSAGES.unicefToRecruit,
+                                    )}: ${lastSurge.unicef_recruitment}`}
+                                </Typography>
+                                <Typography>
+                                    {`${formatMessage(
+                                        MESSAGES.unicefCompletedRecruitement,
+                                    )}: ${
+                                        lastSurge.unicef_completed_recruitment
+                                    }`}
+                                </Typography>
+                                <Typography variant="caption">
+                                    {formatMessage(MESSAGES.refreshedAt)} :
+                                    {lastSurge.created_at
+                                        ? moment(lastSurge.created_at).format(
+                                              'LTS',
+                                          )
+                                        : ''}
+                                </Typography>
                             </>
                         )}
                     </Grid>

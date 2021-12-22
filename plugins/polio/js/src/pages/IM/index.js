@@ -8,6 +8,7 @@ import {
 } from 'bluesquare-components';
 
 import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
@@ -204,26 +205,28 @@ export const ImStats = () => {
                         )}
                     </Grid>
                 </Grid>
-                <Grid container item>
-                    <Grid item xs={4}>
-                        <Box ml={2} mb={4}>
-                            <Typography variant="h6">
-                                {`${formatMessage(
-                                    MESSAGES.districtsNotFound,
-                                )}:`}
-                            </Typography>
-                            {districtsNotFound}
-                        </Box>
+                <DisplayIfUserHasPerm permission="iaso_polio_config">
+                    <Grid container item>
+                        <Grid item xs={4}>
+                            <Box ml={2} mb={4}>
+                                <Typography variant="h6">
+                                    {`${formatMessage(
+                                        MESSAGES.districtsNotFound,
+                                    )}:`}
+                                </Typography>
+                                {districtsNotFound}
+                            </Box>
+                        </Grid>
+                        <Grid item xs={4}>
+                            <Box ml={2} mb={4}>
+                                <Typography variant="h6">
+                                    {`${formatMessage(MESSAGES.datesIgnored)}:`}
+                                </Typography>
+                                {Object.keys(datesIgnored ?? {}).join(', ')}
+                            </Box>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={4}>
-                        <Box ml={2} mb={4}>
-                            <Typography variant="h6">
-                                {`${formatMessage(MESSAGES.datesIgnored)}:`}
-                            </Typography>
-                            {Object.keys(datesIgnored ?? {}).join(', ')}
-                        </Box>
-                    </Grid>
-                </Grid>
+                </DisplayIfUserHasPerm>
             </Grid>
         </>
     );

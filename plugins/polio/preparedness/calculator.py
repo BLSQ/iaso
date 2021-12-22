@@ -41,30 +41,19 @@ def get_summary(zones):
     for _, i, _, kind in indicators:
         name_values = [(dn, d.get(i)) for dn, d in zones.items()]
         values = [value for _, value in name_values]
-        if kind == "number":
+        if kind == "number" or kind == "percent":
             r[i] = avg(values)
         elif kind == "date":
             values = [v for v in values if v]
-            for n, v in name_values:
-                if v and not isinstance(v, (int)):
-                    raise ValueError(f"Value `{ repr(v)}` for {n} is not correct date")
-            if values:
-                try:
-                    start, end = min(values), max(values)
-                except TypeError as e:
-                    raise ValueError(f"Invalid dates in {name_values} ")
-                r[i] = convert_date_from_gsheet(start), convert_date_from_gsheet(end)
-            else:
-                r[i] = "", ""
-        else:
-            assert "error"
+
+            r[i] = (len(values) / len(zones) * 10) if zones else None
     return r
 
 
 # sn, key, title, type
 indicators = [
     (1, "operational_fund", "Operational funds", "number"),
-    (2, "vaccine_and_droppers_received", "vaccine_and_droppers_received", "number"),
+    (2, "vaccine_and_droppers_received", "Vaccines and droppers received", "number"),
     (3, "vaccine_cold_chain_assessment", "Vaccine cold chain assessment  ", "number"),
     (4, "vaccine_monitors_training_and_deployment", "Vaccine monitors training & deployment  ", "number"),
     (5, "ppe_materials_and_others_supply", "PPE Materials and other supplies  ", "number"),
@@ -72,11 +61,11 @@ indicators = [
     (7, "sia_training", "Supervisor training & deployment  ", "number"),
     (8, "sia_micro_planning", "Micro/Macro plan  ", "number"),
     (9, "communication_sm_fund", "SM funds --> 2 weeks  ", "number"),
-    (10, "communication_sm_activities", "SM activities  ", "number"),
+    (10, "communication_sm_activities", "SM activities  ", "percent"),
     (11, "communication_c4d", "C4d", "date"),
     (12, "aefi_easi_protocol", "Safety documents: AESI Protocol  ", "number"),
     (13, "pharmacovigilance_committee", "Pharmacovigilance Committee  ", "number"),
-    (0, "status_score", "status_score", "number"),
+    (0, "status_score", "Total score", "percent"),
     # not used atm
     # (0, "training_score", "training_score", "number"),
     # (0, "monitoring_score", "monitoring_score", "number"),
@@ -102,6 +91,12 @@ def preparedness_summary(prep_dict):
             indicators_per_zone["districts"]["status_score"],
         ]
     )
+
+    def format_indicator(value, kind):
+        if kind == "percent":
+            return value / 10 if value else value
+        return value
+
     # pivot
     r["indicators"] = {}
     for sn, key, title, kind in indicators:
@@ -109,8 +104,8 @@ def preparedness_summary(prep_dict):
             "sn": sn,
             "key": key,
             "title": title,
-            "national": indicators_per_zone["national"][key],
-            "regions": indicators_per_zone["regions"][key],
-            "districts": indicators_per_zone["districts"][key],
+            "national": format_indicator(indicators_per_zone["national"][key], kind),
+            "regions": format_indicator(indicators_per_zone["regions"][key], kind),
+            "districts": format_indicator(indicators_per_zone["districts"][key], kind),
         }
     return r

@@ -19,9 +19,10 @@ import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.common.utils import queryset_iterator
-from iaso.models import Instance, OrgUnit, Form, Project
+from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile
 from iaso.utils import timestamp_to_datetime
-from .common import safe_api_import
+from . import common
+from .common import safe_api_import, TimestampField
 from .instance_filters import parse_instance_filters
 
 
@@ -71,6 +72,12 @@ class HasInstancePermission(permissions.BasePermission):
         return request.user.iaso_profile.account in [p.account for p in obj.form.projects.all()]
 
 
+class InstanceFileSerializer(serializers.Serializer):
+    instance_id = serializers.IntegerField()
+    file = serializers.FileField(use_url=True)
+    created_at = TimestampField(read_only=True)
+
+
 class InstancesViewSet(viewsets.ViewSet):
     """Instances API
 
@@ -84,6 +91,25 @@ class InstancesViewSet(viewsets.ViewSet):
     """
 
     permission_classes = [HasInstancePermission]
+
+    @action(["GET"], detail=False)
+    def attachments(self, request):
+        instances = Instance.objects.order_by("-id")
+        profile = request.user.iaso_profile
+        instances = instances.filter(project__account=profile.account)
+
+        filters = parse_instance_filters(request.GET)
+        instances = instances.for_filters(**filters)
+        queryset = InstanceFile.objects.filter(instance__in=instances)
+
+        paginator = common.Paginator()
+        page = paginator.paginate_queryset(queryset, request)
+        if page is not None:
+            serializer = InstanceFileSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = InstanceFileSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     def list(self, request):
         limit = request.GET.get("limit", None)
@@ -144,6 +170,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 {"title": "Export id", "width": 20},
                 {"title": "Latitude", "width": 40},
                 {"title": "Longitude", "width": 20},
+                {"title": "Période", "width": 20},
                 {"title": "Date de création", "width": 20},
                 {"title": "Date de modification", "width": 20},
                 {"title": "Org unit", "width": 20},
@@ -204,6 +231,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     idict.get("export_id"),
                     idict.get("latitude"),
                     idict.get("longitude"),
+                    idict.get("period"),
                     created_at,
                     updated_at,
                     org_unit.get("name") if org_unit else None,

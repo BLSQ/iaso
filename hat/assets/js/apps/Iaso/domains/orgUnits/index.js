@@ -37,7 +37,7 @@ import {
     encodeUriParams,
     encodeUriSearches,
 } from './utils';
-import { getFromDateString, getToDateString } from '../../utils/dates';
+import { getFromDateString, getToDateString } from '../../utils/dates.ts';
 
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -55,6 +55,7 @@ import {
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { locationLimitMax } from './constants/orgUnitConstants';
+import { convertObjectToString } from '../../utils';
 
 const baseUrl = baseUrls.orgUnits;
 let warningDisplayed = false;
@@ -104,6 +105,7 @@ class OrgUnits extends Component {
             multiActionPopupOpen: false,
             selection: selectionInitialState,
             shouldRenderFilters: false,
+            resetTablePage: convertObjectToString(props.params),
         };
     }
 
@@ -244,6 +246,10 @@ class OrgUnits extends Component {
             ...params,
             page: 1,
         };
+        this.setState({
+            ...this.state,
+            resetTablePage: convertObjectToString(newParams),
+        });
         redirectTo(baseUrl, newParams);
         this.fetchOrgUnits(withLocations);
     }
@@ -503,6 +509,9 @@ class OrgUnits extends Component {
                                                     items,
                                                     totalCount,
                                                 )
+                                            }
+                                            resetPageToOne={
+                                                this.state.resetTablePage
                                             }
                                         />
                                     )}

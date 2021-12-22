@@ -1,5 +1,3 @@
-import base64
-import json
 import os
 import time
 from datetime import datetime, timedelta
@@ -11,7 +9,6 @@ from gspread.exceptions import APIError
 from oauth2client.service_account import ServiceAccountCredentials
 
 logger = getLogger(__name__)
-
 
 DIRNAME = os.path.dirname(__file__)
 SCOPES = [
@@ -86,9 +83,16 @@ class IasoClient(Client):
                     time.sleep(10)
 
 
+def get_google_config(slug):
+    from plugins.polio.models import Config
+
+    try:
+        return Config.objects.get(slug=slug).content
+    except Config.DoesNotExist:
+        raise Exception(f"Google Api is not configured, please add config with key {slug}")
+
+
 def get_client():
-    encoded_config = os.environ.get("GOOGLE_API_KEY_BASE64")
-    decoded_config = base64.b64decode(encoded_config)
-    data = json.loads(decoded_config)
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(data, SCOPES)
+    keyfile_dict = get_google_config("google_api_key")
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(keyfile_dict, SCOPES)
     return gspread.authorize(creds, IasoClient)

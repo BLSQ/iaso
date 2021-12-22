@@ -50,10 +50,10 @@ REGIONAL_DISTRICT_INDICATORS = {
     "sia_training": 17,
     "sia_micro_planning": 26,
     "communication_sm_fund": 43,
-    "communication_sm_activities": 46,
+    "communication_sm_activities": 46,  # percent (score for section)
     "communication_c4d": 45,  # date
-    "aefi_easi_protocol": 52,
-    "pharmacovigilance_committee": 51,
+    "aefi_easi_protocol": 51,
+    "pharmacovigilance_committee": 50,
 }
 
 
@@ -71,10 +71,18 @@ def _get_scores(sheet: CachedSheet, cell_pos):
     4. Vaccine, cold chain and logistics
     5. Advocacy, social mobilization and communication
     6. Adverse Event Following Immunization (AEFI)
+    7. Security score (not present in all sheet)
     Status of preparedness
     """
-
     row, col = cell_pos
+    # check if we have the security row as it is not present in all row
+    tentative_status_score_cell = sheet.get_rc(row + 8, col + 1)
+    if tentative_status_score_cell is None:
+        security_score = None
+        status_score = from_percent(sheet.get_rc(row + 7, col + 1))
+    else:
+        security_score = from_percent(sheet.get_rc(row + 7, col + 1))
+        status_score = from_percent(sheet.get_rc(row + 8, col + 1))
     return {
         "planning_score": from_percent(sheet.get_rc(row + 1, col + 1)),
         "training_score": from_percent(sheet.get_rc(row + 2, col + 1)),
@@ -82,7 +90,8 @@ def _get_scores(sheet: CachedSheet, cell_pos):
         "vaccine_score": from_percent(sheet.get_rc(row + 4, col + 1)),
         "advocacy_score": from_percent(sheet.get_rc(row + 5, col + 1)),
         "adverse_score": from_percent(sheet.get_rc(row + 6, col + 1)),
-        "status_score": from_percent(sheet.get_rc(row + 7, col + 1)),
+        "security_score": security_score,
+        "status_score": status_score,
     }
 
 
@@ -99,6 +108,8 @@ def get_national_level_preparedness(spread: CachedSpread):
 
         print(f"Data found on worksheet: {worksheet.title}")
         kv = worksheet.get_dict_position(NATIONAL_INDICATORS)
+        if kv.get("communication_sm_activities"):
+            kv["communication_sm_activities"] = from_percent(kv["communication_sm_activities"])
         score = _get_scores(worksheet, cell)
         return {**kv, **score}
     raise Exception(
@@ -155,7 +166,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
             for indicator_key, indicator_row in REGIONAL_DISTRICT_INDICATORS.items():
                 shift = 0
                 # some sheet have an extra empty row
-                if sheet.get_a1("B14") == 0 and indicator_row >= 14:
+                if sheet.get_a1("B14") == None and indicator_row >= 14:
                     shift = 1
                 value = sheet.get_rc(indicator_row + shift, colnum)
                 if indicator_key == "communication_sm_activities":
@@ -193,3 +204,31 @@ def get_preparedness(spread: CachedSpread):
     }
     preparedness_data["totals"] = get_preparedness_score(preparedness_data)
     return preparedness_data
+
+
+# Layout of surge spreadsheet, there is only one worksheet
+# one row per country and one indicator per column: e.g
+# country name | Total surge approved - WHO | Total Surge Recruited -WHO
+# ALGERIA      | 5                          | 3
+# In surge spreadsheet. Which indicator is on which column
+SURGE_KEY_COL = {
+    "who_recruitment": 2,  # Total Surge Approved -WHO
+    "who_completed_recruitment": 3,  # Total Surge Recruited -WHO
+    "unicef_recruitment": 6,  # Total Surge Approved -UNICEF
+    "unicef_completed_recruitment": 7,  # Total Surge Recruited -UNICEF
+}
+
+
+def surge_indicator_for_country(cs: CachedSpread, country_name):
+    r = {"title": cs.title}
+
+    sheet = cs.worksheets()[0]
+    cell = sheet.find(country_name)
+    if not cell:
+        raise Exception("Country not found in spreadsheet")
+    row_num = cell[0]
+
+    for key, col_num in SURGE_KEY_COL.items():
+        value = sheet.get_rc(row_num, col_num)
+        r[key] = value
+    return r

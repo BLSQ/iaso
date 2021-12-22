@@ -224,7 +224,7 @@ class InstancesFilesList extends Component {
 InstancesFilesList.defaultProps = {
     fetchDetails: true,
     instanceDetail: null,
-    files: null,
+    files: [],
 };
 
 InstancesFilesList.propTypes = {

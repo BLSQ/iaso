@@ -21,7 +21,7 @@ export const formatThousand = number => {
 export const getYears = (yearsCount, offset = 0, reverse = false) => {
     const currentYear = new Date().getFullYear() + offset;
     const years = Array(yearsCount)
-        .fill()
+        .fill(null)
         .map((y, i) => currentYear - i);
     if (reverse) {
         return years.reverse();
@@ -86,3 +86,9 @@ export const fakeResponse =
         await waitFor(200);
         return response;
     };
+
+// Will not work with nested objects as their value will be "[object Object]"
+export const convertObjectToString = value =>
+    Object.entries(value)
+        .map(([key, entry]) => `${key}-${String(entry)}`)
+        .toString();

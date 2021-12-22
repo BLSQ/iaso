@@ -35,13 +35,13 @@ const InstancesTopBar = ({
     baseUrl,
     labelKeys,
     possibleFields,
+    instances,
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
     const currentUser = useSelector(state => state.users.current);
     const [visibleColumns, setVisibleColumns] = useState([]);
     const { formatMessage } = useSafeIntl();
-    const reduxPage = useSelector(state => state.instances.instancesPage);
 
     const formIds = params.formIds?.split(',');
 
@@ -66,7 +66,7 @@ const InstancesTopBar = ({
     };
 
     useEffect(() => {
-        if (reduxPage?.list || tableColumns.length === 0) {
+        if (instances || tableColumns.length === 0) {
             const enrichedParams = { ...params };
             let columns = INSTANCE_METAS_FIELDS.filter(f =>
                 Boolean(f.tableOrder),
@@ -83,7 +83,7 @@ const InstancesTopBar = ({
             enrichedParams.columns = columnsWithLabelKeys;
             const cols = getInstancesVisibleColumns({
                 formatMessage,
-                instance: reduxPage && reduxPage.list && reduxPage.list[0],
+                instance: instances && instances[0],
                 columns: enrichedParams.columns,
                 order: enrichedParams.order,
                 defaultOrder,
@@ -91,7 +91,7 @@ const InstancesTopBar = ({
             });
             handleChangeVisibleColmuns(cols);
         }
-    }, [reduxPage]);
+    }, [instances]);
 
     let title = formatMessage(MESSAGES.titleMulti);
     if (formIds?.length === 1) {
@@ -114,12 +114,10 @@ const InstancesTopBar = ({
                             label={formatMessage(MESSAGES.list)}
                         />
                         <Tab value="map" label={formatMessage(MESSAGES.map)} />
-                        {formIds?.length === 1 && (
-                            <Tab
-                                value="files"
-                                label={formatMessage(MESSAGES.files)}
-                            />
-                        )}
+                        <Tab
+                            value="files"
+                            label={formatMessage(MESSAGES.files)}
+                        />
                     </Tabs>
                 </Grid>
                 <Grid
@@ -145,6 +143,7 @@ InstancesTopBar.defaultProps = {
     possibleFields: null,
     tableColumns: [],
     labelKeys: [],
+    instances: undefined,
 };
 
 InstancesTopBar.propTypes = {
@@ -158,6 +157,7 @@ InstancesTopBar.propTypes = {
     baseUrl: PropTypes.string.isRequired,
     possibleFields: PropTypes.any,
     labelKeys: PropTypes.array,
+    instances: PropTypes.array,
 };
 
 export { InstancesTopBar };

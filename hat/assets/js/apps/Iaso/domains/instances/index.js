@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Box, Grid, makeStyles } from '@material-ui/core';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import PropTypes from 'prop-types';
 
@@ -8,11 +8,13 @@ import {
     AddButton as AddButtonComponent,
     commonStyles,
     LoadingSpinner,
+    selectionInitialState,
+    setTableSelection,
     useSafeIntl,
 } from 'bluesquare-components';
 
 import { useQueryClient } from 'react-query';
-import { createInstance, setInstances } from './actions';
+import { createInstance } from './actions';
 import { redirectToReplace } from '../../routing/actions';
 import {
     fetchFormDetailsForInstance,
@@ -21,26 +23,22 @@ import {
     fetchPossibleFields,
 } from './requests';
 
-import {
-    getEndpointUrl,
-    getFilters,
-    getInstancesFilesList,
-    getSelectionActions,
-} from './utils';
+import { getEndpointUrl, getFilters, getSelectionActions } from './utils';
 
 import { InstancesTopBar as TopBar } from './components/InstancesTopBar';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
-import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
-import SingleTable from '../../components/tables/SingleTable';
 
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
 import { useSnackQuery } from '../../libs/apiHooks';
 import snackMessages from '../../components/snackBars/messages';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
+import { convertObjectToString } from '../../utils';
 
 const baseUrl = baseUrls.instances;
 
@@ -59,10 +57,13 @@ const Instances = ({ params }) => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
 
-    const reduxPage = useSelector(state => state.instances.instancesPage);
-
+    const [selection, setSelection] = useState(selectionInitialState);
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
+
+    const [resetPageToOne, setResetPageToOne] = useState(
+        convertObjectToString(params),
+    );
 
     // Data for the map
     const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
@@ -82,36 +83,15 @@ const Instances = ({ params }) => {
         },
     );
 
-    // Data for the files
-    const { data: instancesFiles, isLoading: loadingFiles } = useSnackQuery(
-        ['instances', 'files', params],
-        // Ugly fix to limit results displayed on map, IA-904
-        () =>
-            fetchInstancesAsSmallDict(getEndpointUrl(params, false, '', true)),
-        snackMessages.fetchInstanceLocationError,
-
-        {
-            enabled: params.tab === 'files',
-        },
-    );
-
-    const { isLoading: loadingList } = useSnackQuery(
+    const {
+        data,
+        isLoading: loadingList,
+        isFetching: fetchingList,
+    } = useSnackQuery(
         ['instances', params],
         () => fetchInstancesAsDict(getEndpointUrl(params)),
         snackMessages.fetchInstanceDictError,
-        {
-            // Temporary  solution till we port the table out of redux
-            onSuccess: instancesData =>
-                dispatch(
-                    setInstances(
-                        instancesData.instances,
-                        true,
-                        params,
-                        instancesData.count,
-                        instancesData.pages,
-                    ),
-                ),
-        },
+        { keepPreviousData: true },
     );
     // Move to delete when we port dialog to react-query
     const refetchInstances = () => queryClient.invalidateQueries(['instances']);
@@ -151,9 +131,13 @@ const Instances = ({ params }) => {
         [params, dispatch],
     );
 
-    const onSearch = newParams => {
-        dispatch(redirectToReplace(baseUrl, newParams));
-    };
+    const onSearch = useCallback(
+        newParams => {
+            setResetPageToOne(convertObjectToString(newParams));
+            dispatch(redirectToReplace(baseUrl, newParams));
+        },
+        [dispatch],
+    );
 
     const fetching = loadingMap || loadingList;
     return (
@@ -233,20 +217,13 @@ const Instances = ({ params }) => {
                     </Grid>
                 )}
                 {tab === 'list' && tableColumns.length > 0 && (
-                    <SingleTable
-                        apiParams={{
-                            ...params,
-                        }}
-                        setIsLoading={false}
-                        baseUrl={baseUrl}
-                        results={reduxPage}
-                        endPointPath="instances"
-                        dataKey="list"
+                    <TableWithDeepLink
+                        data={data?.instances ?? []}
+                        pages={data?.pages}
+                        count={data?.count}
+                        params={params}
                         columns={tableColumns}
-                        defaultPageSize={20}
-                        hideGpkg
-                        exportButtons={false}
-                        isFullHeight={false}
+                        baseUrl={baseUrl}
                         multiSelect
                         selectionActions={getSelectionActions(
                             formatMessage,
@@ -255,6 +232,25 @@ const Instances = ({ params }) => {
                             params.showDeleted === 'true',
                             classes,
                         )}
+                        selection={selection}
+                        setTableSelection={(
+                            selectionType,
+                            items,
+                            totalCount,
+                        ) => {
+                            setSelection(
+                                setTableSelection(
+                                    selection,
+                                    selectionType,
+                                    items,
+                                    totalCount,
+                                ),
+                            );
+                        }}
+                        extraProps={{
+                            loading: fetchingList,
+                        }}
+                        resetPageToOne={resetPageToOne}
                     />
                 )}
                 {tab === 'map' && (
@@ -266,9 +262,9 @@ const Instances = ({ params }) => {
                     </div>
                 )}
                 {tab === 'files' && (
-                    <InstancesFilesList
-                        files={getInstancesFilesList(instancesFiles || [])}
-                        fetching={loadingFiles}
+                    <PaginatedInstanceFiles
+                        params={params}
+                        updateParams={onSearch}
                     />
                 )}
             </Box>

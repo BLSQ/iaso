@@ -745,6 +745,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.vaccinated',
         defaultMessage: 'Vaccinated',
     },
+    spreadsheetImportTitle: {
+        id: 'iaso.polio.label.spreadsheetImportTitle',
+        defaultMessage: 'Imported from SpreadSheet : ',
+    },
 });
 
 export default MESSAGES;

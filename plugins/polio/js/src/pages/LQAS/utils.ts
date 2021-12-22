@@ -120,7 +120,10 @@ export const formatLqasDataForNFMChart = ({
         const [name, value] = entry;
         return { name: formatMessage(MESSAGES[name]), value, nfmKey: name };
     });
-    if (convertedEntries.length === nfmKeys.length) return convertedEntries;
+    if (convertedEntries.length === nfmKeys.length)
+        return convertedEntries.sort((a, b) =>
+            a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }),
+        );
     const dataKeys = Object.keys(campaignData);
     const missingEntries = nfmKeys
         .filter(nfmKey => !dataKeys.includes(nfmKey))
@@ -129,5 +132,7 @@ export const formatLqasDataForNFMChart = ({
             value: 0,
             nfmKey,
         }));
-    return [...convertedEntries, ...missingEntries];
+    return [...convertedEntries, ...missingEntries].sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }),
+    );
 };

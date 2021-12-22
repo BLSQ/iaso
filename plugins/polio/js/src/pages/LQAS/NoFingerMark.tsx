@@ -7,7 +7,6 @@ import {
     YAxis,
     Tooltip,
     ResponsiveContainer,
-    // LabelList,
     Cell,
 } from 'recharts';
 import { BarChartData } from './types';
@@ -58,7 +57,7 @@ export const NoFingerMark: FunctionComponent<Props> = ({ data, chartKey }) => {
     }, [data]);
     return (
         <Box key={`${chartKey}${renderCount}`}>
-            <ResponsiveContainer height={550} width="90%">
+            <ResponsiveContainer height={450} width="90%">
                 <BarChart
                     data={data}
                     // layout="vertical"

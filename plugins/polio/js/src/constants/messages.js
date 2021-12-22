@@ -777,6 +777,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.child_is_a_visitor',
         defaultMessage: 'Child is a visitor',
     },
+    reasonsNoFingerMarked: {
+        id: 'iaso.polio.label.reasonsNoFingerMarked',
+        defaultMessage: 'Reasons finger not marked',
+    },
+    childrenNoMark: {
+        id: 'iaso.polio.label.childrenNoMark',
+        defaultMessage: 'Children not marked',
+    },
 });
 
 export default MESSAGES;

@@ -113,6 +113,14 @@ export const Lqas = () => {
         formatMessage,
     });
 
+    const childrenNotMarkedRound1 = nfmDataRound1
+        .map(nfmData => nfmData.value)
+        .reduce((total, current) => total + current, 0);
+
+    const childrenNotMarkedRound2 = nfmDataRound2
+        .map(nfmData => nfmData.value)
+        .reduce((total, current) => total + current, 0);
+
     const dropDownOptions = makeCampaignsDropDown(campaigns);
     return (
         <>
@@ -223,21 +231,50 @@ export const Lqas = () => {
                     </Grid>
                 </Grid>
                 <Grid container item spacing={2} direction="row">
+                    {campaign && (
+                        <Grid item xs={12}>
+                            <Box ml={2} mt={2}>
+                                <Typography variant="h5">
+                                    {formatMessage(
+                                        MESSAGES.reasonsNoFingerMarked,
+                                    )}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                    )}
                     <Grid item xs={6}>
-                        <Box ml={2} mt={2}>
-                            <NoFingerMark
-                                data={nfmDataRound1}
-                                chartKey="nfmRound1"
-                            />
-                        </Box>
+                        {!isLoading && campaign && (
+                            <Box ml={2} mt={2}>
+                                <Box>
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.childrenNoMark,
+                                        )}, round 1: ${childrenNotMarkedRound1}`}
+                                    </Typography>
+                                </Box>
+                                <NoFingerMark
+                                    data={nfmDataRound1}
+                                    chartKey="nfmRound1"
+                                />
+                            </Box>
+                        )}
                     </Grid>
                     <Grid item xs={6}>
-                        <Box mr={2} mt={2}>
-                            <NoFingerMark
-                                data={nfmDataRound2}
-                                chartKey="nfmRound2"
-                            />
-                        </Box>
+                        {!isLoading && campaign && (
+                            <Box mr={2} mt={2}>
+                                <Box>
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.childrenNoMark,
+                                        )}, round 2: ${childrenNotMarkedRound2}`}
+                                    </Typography>
+                                </Box>
+                                <NoFingerMark
+                                    data={nfmDataRound2}
+                                    chartKey="nfmRound2"
+                                />
+                            </Box>
+                        )}
                     </Grid>
                 </Grid>
                 <DisplayIfUserHasPerm permission="iaso_polio_config">

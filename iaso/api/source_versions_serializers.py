@@ -74,7 +74,6 @@ class DiffSerializer(serializers.Serializer):
 
     def generate_csv(self):
         data = self.validated_data
-        print("Validated data", data)
         iaso_logger = CommandLogger(sys.stdout)
         if "groups" in data["fields_to_export"]:
             data["fields_to_export"].remove("groups")

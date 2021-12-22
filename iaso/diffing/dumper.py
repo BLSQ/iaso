@@ -95,13 +95,15 @@ class Dumper:
                     results.append(str(comparison.before))
                     results.append(str(comparison.after))
                 else:
-                    results.append(str(comparison.before)[:40])
-                    results.append(str(comparison.after)[:40])
-
+                    if "MULTIPOLYGON" in str(comparison.before):
+                        results.append(str(comparison.before)[:40])
+                        results.append(str(comparison.after)[:40])
+                    else:
+                        results.append(str(comparison.before))
+                        results.append(str(comparison.after))
                     """ Give the distance between two points """
                     if "POINT Z" in str(comparison.before):
                         if str(comparison.before)[:40] != str(comparison.after)[:40]:
-
                             results.append(
                                 "{:.3f}".format(
                                     GEOSGeometry(comparison.before).distance(GEOSGeometry(str(comparison.after))) * 100

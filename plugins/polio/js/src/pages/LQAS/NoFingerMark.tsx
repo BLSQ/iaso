@@ -61,7 +61,6 @@ export const NoFingerMark: FunctionComponent<Props> = ({ data, chartKey }) => {
             <ResponsiveContainer height={450} width="90%">
                 <BarChart
                     data={data}
-                    // layout="vertical"
                     layout="horizontal"
                     margin={{ left: 50 }}
                     barSize={BAR_HEIGHT}
@@ -70,8 +69,6 @@ export const NoFingerMark: FunctionComponent<Props> = ({ data, chartKey }) => {
                     <XAxis
                         type="category"
                         dataKey="name"
-                        // angle={90}
-                        // tickMargin={50}
                         interval={0}
                         height={110}
                         tick={<NfmCustomTick />}
@@ -87,7 +84,6 @@ export const NoFingerMark: FunctionComponent<Props> = ({ data, chartKey }) => {
                                 <Cell key={`cell-${index}`} fill={blue[500]} />
                             );
                         })}
-                        {/* <LabelList dataKey="name"  /> */}
                     </Bar>
                 </BarChart>
             </ResponsiveContainer>

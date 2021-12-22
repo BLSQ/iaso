@@ -25,3 +25,14 @@ export const districtColors = {
         zIndex: 999,
     },
 };
+
+// keys of reasons for children not fingermarked in LQAS
+export const nfmKeys = [
+    'childabsent',
+    'House_not_visited',
+    'Other',
+    'Vaccinated_but_not_FM',
+    'Non_Compliance',
+    'Child_was_asleep',
+    'Child_is_a_visitor',
+];

@@ -749,6 +749,34 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.spreadsheetImportTitle',
         defaultMessage: 'Imported from SpreadSheet : ',
     },
+    childabsent: {
+        id: 'iaso.polio.label.childabsent',
+        defaultMessage: 'Child absent',
+    },
+    House_not_visited: {
+        id: 'iaso.polio.label.house_not_visited',
+        defaultMessage: 'House not visited',
+    },
+    Other: {
+        id: 'iaso.polio.label.other',
+        defaultMessage: 'Other',
+    },
+    Vaccinated_but_not_FM: {
+        id: 'iaso.polio.label.vaccinated_but_not_fm',
+        defaultMessage: 'Vaccinated but not marked',
+    },
+    Non_Compliance: {
+        id: 'iaso.polio.label.non_compliance',
+        defaultMessage: 'Non compliance',
+    },
+    Child_was_asleep: {
+        id: 'iaso.polio.label.child_was_asleep',
+        defaultMessage: 'Child asleep',
+    },
+    Child_is_a_visitor: {
+        id: 'iaso.polio.label.child_is_a_visitor',
+        defaultMessage: 'Child is a visitor',
+    },
 });
 
 export default MESSAGES;

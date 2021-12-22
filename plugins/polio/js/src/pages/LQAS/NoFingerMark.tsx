@@ -9,6 +9,7 @@ import {
     ResponsiveContainer,
     Cell,
 } from 'recharts';
+import { blue } from '@material-ui/core/colors';
 import { BarChartData } from './types';
 import { BAR_HEIGHT } from '../../components/PercentageBarChart/constants';
 import { lqasNfmTooltipFormatter } from './utils';
@@ -82,7 +83,9 @@ export const NoFingerMark: FunctionComponent<Props> = ({ data, chartKey }) => {
                     />
                     <Bar dataKey="value" minPointSize={3}>
                         {data.map((_entry, index) => {
-                            return <Cell key={`cell-${index}`} fill="bisque" />;
+                            return (
+                                <Cell key={`cell-${index}`} fill={blue[500]} />
+                            );
                         })}
                         {/* <LabelList dataKey="name"  /> */}
                     </Bar>

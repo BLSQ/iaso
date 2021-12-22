@@ -7,7 +7,7 @@ import {
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import { fetchAllProjects } from '../projects/actions';
-import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
+import { fetchAllOrgUnitTypes } from '../orgUnits/orgUnitTypes/actions';
 import { redirectTo } from '../../routing/actions';
 
 import formsTableColumns from './config';

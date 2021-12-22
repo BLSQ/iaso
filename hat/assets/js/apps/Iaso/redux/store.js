@@ -39,7 +39,7 @@ import {
 import {
     orgUnitsTypesInitialState,
     reducer as orgUnitsTypesReducer,
-} from '../domains/orgUnits/types/reducer';
+} from '../domains/orgUnits/orgUnitTypes/reducer';
 import { localeMiddleware } from '../domains/app/middleware';
 
 // TODO pass baseUrl without hardcoding it

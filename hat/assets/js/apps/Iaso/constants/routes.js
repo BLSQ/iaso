@@ -8,6 +8,7 @@ import Runs from '../domains/links/Runs';
 import OrgUnitDetail from '../domains/orgUnits/details';
 import Completeness from '../domains/completeness';
 import Instances from '../domains/instances';
+import DuplicateInstances from '../domains/instances/duplicates/index.tsx';
 import InstanceDetail from '../domains/instances/details';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
@@ -17,7 +18,7 @@ import DataSources from '../domains/dataSources';
 import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import Groups from '../domains/orgUnits/groups';
-import Types from '../domains/orgUnits/types';
+import Types from '../domains/orgUnits/orgUnitTypes';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
@@ -45,6 +46,18 @@ const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
         ...p,
         key: `${prefix}${capitalize(p.key, true)}`,
+    }));
+
+const orgUnitsFiltersPathParamsWithPrefix = (prefix, withChildren) =>
+    orgUnitFiltersWithPrefix(prefix, withChildren).map(f => ({
+        isRequired: false,
+        key: f.urlKey,
+    }));
+
+const linksFiltersPathParamsWithPrefix = prefix =>
+    linksFiltersWithPrefix(prefix).map(f => ({
+        isRequired: false,
+        key: f.urlKey,
     }));
 
 export const getPath = path => {
@@ -75,14 +88,6 @@ export const formsPath = {
     ],
     component: props => <Forms {...props} />,
     isRootUrl: true,
-};
-
-export const pagesPath = {
-    baseUrl: baseUrls.pages,
-    permissions: ['iaso_pages'],
-    featureFlag: SHOW_PAGES,
-    params: [],
-    component: props => <Pages {...props} />,
 };
 
 export const archivedPath = {
@@ -116,36 +121,11 @@ export const formDetailPath = {
     ],
 };
 
-export const mappingsPath = {
-    baseUrl: baseUrls.mappings,
-    permissions: ['iaso_mappings'],
-    component: props => <Mappings {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'formId',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
-};
-
-export const mappingDetailPath = {
-    baseUrl: baseUrls.mappingDetail,
-    permissions: ['iaso_mappings'],
-    component: props => <MappingDetails {...props} />,
-    params: [
-        {
-            isRequired: true,
-            key: 'mappingVersionId',
-        },
-        {
-            isRequired: false,
-            key: 'questionName',
-        },
-    ],
+export const formsStatsPath = {
+    baseUrl: baseUrls.formsStats,
+    permissions: ['iaso_forms'],
+    component: () => <FormsStats />,
+    params: [],
 };
 
 export const instancesPath = {
@@ -245,11 +225,52 @@ export const instanceDetailPath = {
     ],
 };
 
-export const formsStatsPath = {
-    baseUrl: baseUrls.formsStats,
-    permissions: ['iaso_forms'],
-    component: () => <FormsStats />,
-    params: [],
+export const duplicateInstancesPath = {
+    baseUrl: baseUrls.duplicateInstances,
+    permissions: ['iaso_forms', 'iaso_submissions'],
+    component: props => <DuplicateInstances {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'instanceId',
+        },
+        {
+            isRequired: true,
+            key: 'duplicateInstanceId',
+        },
+    ],
+};
+
+export const mappingsPath = {
+    baseUrl: baseUrls.mappings,
+    permissions: ['iaso_mappings'],
+    component: props => <Mappings {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'formId',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+
+export const mappingDetailPath = {
+    baseUrl: baseUrls.mappingDetail,
+    permissions: ['iaso_mappings'],
+    component: props => <MappingDetails {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'mappingVersionId',
+        },
+        {
+            isRequired: false,
+            key: 'questionName',
+        },
+    ],
 };
 
 export const orgUnitsPath = {
@@ -283,17 +304,6 @@ export const orgUnitsPath = {
         },
     ],
 };
-const orgUnitsFiltersPathParamsWithPrefix = (prefix, withChildren) =>
-    orgUnitFiltersWithPrefix(prefix, withChildren).map(f => ({
-        isRequired: false,
-        key: f.urlKey,
-    }));
-
-const linksFiltersPathParamsWithPrefix = prefix =>
-    linksFiltersWithPrefix(prefix).map(f => ({
-        isRequired: false,
-        key: f.urlKey,
-    }));
 
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
@@ -490,6 +500,7 @@ export const groupsPath = {
         })),
     ],
 };
+
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
     permissions: ['iaso_org_units'],
@@ -504,6 +515,14 @@ export const orgUnitTypesPath = {
             isRequired: true,
         })),
     ],
+};
+
+export const pagesPath = {
+    baseUrl: baseUrls.pages,
+    permissions: ['iaso_pages'],
+    featureFlag: SHOW_PAGES,
+    params: [],
+    component: props => <Pages {...props} />,
 };
 
 export const page401 = {
@@ -533,6 +552,7 @@ export const routeConfigs = [
     mappingDetailPath,
     instancesPath,
     instanceDetailPath,
+    duplicateInstancesPath,
     orgUnitsPath,
     orgUnitsDetailsPath,
     linksPath,

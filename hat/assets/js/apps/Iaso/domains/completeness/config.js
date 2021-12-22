@@ -151,8 +151,8 @@ export const getColumns = (
             {
                 Header: '',
                 accessor: 'actions-1',
-                Cell: settings =>
-                    settings.row.original.generate_derived ? (
+                Cell: settings => {
+                    return settings.row.original.generate_derived ? (
                         <IconButtonComponent
                             onClick={() =>
                                 onGenerateDerivedInstances(
@@ -164,10 +164,12 @@ export const getColumns = (
                         />
                     ) : (
                         ''
-                    ),
+                    );
+                },
             },
         ],
         resizable: false,
+        sortable: false,
     });
 
     return columns;

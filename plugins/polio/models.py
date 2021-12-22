@@ -6,7 +6,9 @@ from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url
 
 from iaso.models import Group, OrgUnit
+from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
+
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 VIRUSES = [
@@ -104,7 +106,7 @@ class Round(models.Model):
     lqas_district_failing = models.IntegerField(null=True, blank=True)
 
 
-class Campaign(models.Model):
+class Campaign(SoftDeletableModel):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255, unique=True)

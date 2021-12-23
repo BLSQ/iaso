@@ -788,12 +788,12 @@ class LQASStatsViewSet(viewsets.ViewSet):
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="lqas-config")
 
-        base_stats = {"total_child_fmd": 0, "total_child_checked": 0, "care_giver_stats": defaultdict(int)}
+        base_stats = lambda: {"total_child_fmd": 0, "total_child_checked": 0, "care_giver_stats": defaultdict(int)}
         campaign_stats = defaultdict(
             lambda: {
-                "round_1": defaultdict(base_stats.copy),
+                "round_1": defaultdict(base_stats),
                 "round_1_nfm_stats": defaultdict(int),
-                "round_2": defaultdict(base_stats.copy),
+                "round_2": defaultdict(base_stats),
                 "round_2_nfm_stats": defaultdict(int),
                 "districts_not_found": [],
             }
@@ -920,7 +920,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
                     d = campaign_stats[campaign_name][round_key][district_name]
                     for key in caregiver_counts_dict[district_name]:
-                        d["care_giver_stats"][key] = caregiver_counts_dict[district_name][key]
+                        d["care_giver_stats"][key] += caregiver_counts_dict[district_name][key]
 
                     d["total_child_fmd"] = d["total_child_fmd"] + row[7]
                     d["total_child_checked"] = d["total_child_checked"] + row[8]

@@ -845,12 +845,12 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 HH_COUNT = form.get("Count_HH", None)
                 if HH_COUNT is None:
                     print("missing OHH_COUNT", form)
-                
+
                 district_name = form.get("District")
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
-                caregiver_counts_dict = defaultdict(lambda:defaultdict(int))
+                caregiver_counts_dict = defaultdict(lambda: defaultdict(int))
                 for HH in form.get("Count_HH", []):
                     # check finger
                     type = "HH"
@@ -867,17 +867,23 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     caregiver_informed = HH.get("Count_HH/Care_Giver_Informed_SIA", 0)
                     caregiver_source_info = HH.get("Count_HH/Caregiver_Source_Info", None)
                     if caregiver_informed == "Y":
-                        caregiver_counts_dict[district_name]["caregivers_informed"] = caregiver_counts_dict[district_name]["caregivers_informed"] + 1
+                        caregiver_counts_dict[district_name]["caregivers_informed"] = (
+                            caregiver_counts_dict[district_name]["caregivers_informed"] + 1
+                        )
 
                     if isinstance(caregiver_source_info, str):
                         source_keys = caregiver_source_info.split()
                         for source_key in source_keys:
-                            caregiver_counts_dict[district_name][source_key] = caregiver_counts_dict[district_name][source_key] + 1
+                            caregiver_counts_dict[district_name][source_key] = (
+                                caregiver_counts_dict[district_name][source_key] + 1
+                            )
                     else:
                         for source_info_key in caregiver_source_info_keys:
                             source_info = HH.get("Count_HH/Caregiver_Source_Info/" + source_info_key)
                             if source_info == "True":
-                                caregiver_counts_dict[district_name][source_info_key] = caregiver_counts_dict[district_name][source_info_key] + 1
+                                caregiver_counts_dict[district_name][source_info_key] = (
+                                    caregiver_counts_dict[district_name][source_info_key] + 1
+                                )
 
                 district_id = "%s - %s" % (district_name, form.get("Region"))
                 districts.add(district_id)
@@ -910,12 +916,12 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     for key in nfm_counts_dict:
                         campaign_stats[campaign_name][round_stats_key][key] = (
                             campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
-                            )
-                        
+                        )
+
                     d = campaign_stats[campaign_name][round_key][district_name]
                     for key in caregiver_counts_dict[district_name]:
                         d["care_giver_stats"][key] = caregiver_counts_dict[district_name][key]
-                        
+
                     d["total_child_fmd"] = d["total_child_fmd"] + row[7]
                     d["total_child_checked"] = d["total_child_checked"] + row[8]
                     region_name = row[2]

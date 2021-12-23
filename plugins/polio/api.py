@@ -793,14 +793,29 @@ class LQASStatsViewSet(viewsets.ViewSet):
             lambda: {
                 "round_1": defaultdict(base_stats.copy),
                 "round_1_nfm_stats": defaultdict(int),
+                "round_1_caregiver_stats": defaultdict(int),
                 "round_2": defaultdict(base_stats.copy),
                 "round_2_nfm_stats": defaultdict(int),
+                "round_2_caregiver_stats": defaultdict(int),
                 "districts_not_found": [],
             }
         )
         form_count = 0
         form_campaign_not_found_count = 0
         day_country_not_found = defaultdict(lambda: defaultdict(int))
+        caregiver_source_info_keys = [
+            "TV",
+            "Radio",
+            "Others",
+            "Gong_gong",
+            "Mob_VanPA",
+            "Volunteers",
+            "Health_worker",
+            "Opinion_leader",
+            "Com_Info_centre",
+            "Religious_leader",
+            "MobileMessaging_SocialMedia",
+        ]
         for country_config in config.content:
             res = []
             country = OrgUnit.objects.get(id=country_config["country_id"])
@@ -836,7 +851,9 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
+                caregiver_counts_dict = defaultdict(int)
                 for HH in form.get("Count_HH", []):
+                    # check finger
                     type = "HH"
                     Child_FMD = HH.get("Count_HH/FM_Child", 0)
                     Child_Checked = HH.get("Count_HH/Child_Checked", 0)
@@ -847,6 +864,21 @@ class LQASStatsViewSet(viewsets.ViewSet):
                         if reason:
                             nfm_counts_dict[reason] = nfm_counts_dict[reason] + 1
                     total_Child_Checked += int(Child_Checked)
+                    # gather caregiver stats
+                    caregiver_informed = HH.get("Count_HH/Care_Giver_Informed_SIA", 0)
+                    caregiver_source_info = HH.get("Count_HH/Caregiver_Source_Info", None)
+                    if caregiver_informed == "Y":
+                        caregiver_counts_dict["caregivers_informed"] = caregiver_counts_dict["caregivers_informed"] + 1
+
+                    if isinstance(caregiver_source_info, str):
+                        source_keys = caregiver_source_info.split()
+                        for source_key in source_keys:
+                            caregiver_counts_dict[source_key] = caregiver_counts_dict[source_key] + 1
+                    else:
+                        for source_info_key in caregiver_source_info_keys:
+                            source_info = HH.get("Count_HH/Caregiver_Source_Info/" + source_info_key)
+                            if source_info == "True":
+                                caregiver_counts_dict[source_info_key] = caregiver_counts_dict[source_info_key] + 1
 
                 district_id = "%s - %s" % (form.get("District"), form.get("Region"))
                 districts.add(district_id)
@@ -877,9 +909,14 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
                     round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
                     round_stats_key = round_key + "_nfm_stats"
+                    caregiver_stats_key = round_key + "_caregiver_stats"
                     for key in nfm_counts_dict:
                         campaign_stats[campaign_name][round_stats_key][key] = (
                             campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
+                        )
+                    for key in caregiver_counts_dict:
+                        campaign_stats[campaign_name][caregiver_stats_key][key] = (
+                            campaign_stats[campaign_name][caregiver_stats_key][key] + caregiver_counts_dict[key]
                         )
                     d = campaign_stats[campaign_name][round_key][district_name]
                     d["total_child_fmd"] = d["total_child_fmd"] + row[7]

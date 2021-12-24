@@ -849,6 +849,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.ratioCaregiversInformed',
         defaultMessage: 'caregivers informed',
     },
+    imGlobal: {
+        id: 'iaso.polio.label.imGlobal',
+        defaultMessage: 'Global IM',
+    },
+    imIHH: {
+        id: 'iaso.polio.label.imIHH',
+        defaultMessage: 'IM in household',
+    },
+    imOHH: {
+        id: 'iaso.polio.label.imOHH',
+        defaultMessage: 'IM out of household',
+    },
 });
 
 export default MESSAGES;

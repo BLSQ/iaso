@@ -1,5 +1,10 @@
 /* eslint-disable react/require-default-props */
-import React, { FunctionComponent, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useCallback,
+    useMemo,
+} from 'react';
 import {
     TableContainer,
     Table as MuiTable,
@@ -13,11 +18,20 @@ import {
 } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { ClassNameMap } from '@material-ui/core/styles/withStyles';
-// import { makeTableText } from '../../components/LQAS-IM/tableUtils';
 import MESSAGES from '../../constants/messages';
 import { useStyles } from '../../styles/theme';
-import { LqasImCampaignDataWithNameAndRegion } from './types';
+import {
+    IntlFormatMessage,
+    LqasImCampaignDataWithNameAndRegion,
+} from './types';
 import { caregiverSourceInfoKeys } from './constants';
+import { convertStatToPercent } from './utils';
+import {
+    sortbyDistrictNameAsc,
+    sortbyDistrictNameDesc,
+    sortbyRegionNameAsc,
+    sortbyRegionNameDesc,
+} from '../../components/LQAS-IM/tableUtils';
 
 type Props = {
     data: LqasImCampaignDataWithNameAndRegion[];
@@ -25,6 +39,18 @@ type Props = {
     tableKey: string;
 };
 
+const sortSourceKeys =
+    (formatMessage: IntlFormatMessage, messages: any) => (a, b) => {
+        if (a === 'caregivers_informed') return 0;
+        if (a === 'Others') return 1;
+        if (b === 'Others') return 0;
+        return formatMessage(messages[a]).localeCompare(
+            formatMessage(messages[b]),
+            undefined,
+            { sensitivity: 'accent' },
+        );
+    };
+type SortValues = 'DISTRICT' | 'REGION';
 export const CaregiversTable: FunctionComponent<Props> = ({
     data,
     marginTop = true,
@@ -34,28 +60,26 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     const classes: ClassNameMap<any> = useStyles();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(50);
-    // const [sortBy, setSortBy] = useState('asc');
-    // const [sortFocus, setSortFocus] = useState('DISTRICT');
+    const [sortBy, setSortBy] = useState('asc');
+    const [sortFocus, setSortFocus] = useState<SortValues>('REGION');
 
     // TODO modify sort function to sort translated messages
-    const orderedSourceInfoKeys = caregiverSourceInfoKeys.sort((a, b) => {
-        if (a === 'caregivers_informed') return 0;
-        if (b === 'Others') return 0;
-        return b.localeCompare(a, undefined, { sensitivity: 'accent' });
-    });
+    const orderedSourceInfoKeys = caregiverSourceInfoKeys.sort(
+        sortSourceKeys(formatMessage, MESSAGES),
+    );
 
-    // const handleSort = useCallback(
-    //     focus => {
-    //         if (sortFocus !== focus) {
-    //             setSortFocus(focus);
-    //         } else if (sortBy === 'asc') {
-    //             setSortBy('desc');
-    //         } else {
-    //             setSortBy('asc');
-    //         }
-    //     },
-    //     [sortBy, sortFocus],
-    // );
+    const handleSort = useCallback(
+        focus => {
+            if (sortFocus !== focus) {
+                setSortFocus(focus);
+            } else if (sortBy === 'asc') {
+                setSortBy('desc');
+            } else {
+                setSortBy('asc');
+            }
+        },
+        [sortBy, sortFocus],
+    );
 
     const handleChangePage = (_event, newPage) => {
         setPage(newPage);
@@ -66,6 +90,25 @@ export const CaregiversTable: FunctionComponent<Props> = ({
         setPage(0);
     };
 
+    const dataForTable = useMemo(() => {
+        if (sortFocus === 'DISTRICT' && sortBy === 'asc') {
+            return data.sort(sortbyDistrictNameAsc);
+        }
+        if (sortFocus === 'DISTRICT' && sortBy === 'desc') {
+            return data.sort(sortbyDistrictNameDesc);
+        }
+        if (sortFocus === 'REGION' && sortBy === 'asc') {
+            return data.sort(sortbyRegionNameAsc);
+        }
+        if (sortFocus === 'REGION' && sortBy === 'desc') {
+            return data.sort(sortbyRegionNameDesc);
+        }
+        console.warn(
+            `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and DISTRICT|REGION`,
+        );
+        return null;
+    }, [sortBy, sortFocus, data]);
+
     return (
         <Box mt={marginTop ? 4 : 0} mb={4}>
             <Paper elevation={3}>
@@ -74,12 +117,14 @@ export const CaregiversTable: FunctionComponent<Props> = ({
                         <TableHead>
                             <TableRow>
                                 <TableCell
+                                    onClick={() => handleSort('REGION')}
                                     variant="head"
                                     className={classes.sortableTableHeadCell}
                                 >
                                     {formatMessage(MESSAGES.region)}
                                 </TableCell>
                                 <TableCell
+                                    onClick={() => handleSort('DISTRICT')}
                                     variant="head"
                                     className={classes.sortableTableHeadCell}
                                 >
@@ -105,7 +150,7 @@ export const CaregiversTable: FunctionComponent<Props> = ({
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {data
+                            {dataForTable
                                 ?.slice(
                                     page * rowsPerPage,
                                     page * rowsPerPage + rowsPerPage,
@@ -156,12 +201,23 @@ export const CaregiversTable: FunctionComponent<Props> = ({
                                                                     classes.lqasImTableCell
                                                                 }
                                                             >
-                                                                {
-                                                                    district
-                                                                        .care_giver_stats[
-                                                                        sourceInfoKey
-                                                                    ]
-                                                                }
+                                                                {sourceInfoKey ===
+                                                                'caregivers_informed'
+                                                                    ? convertStatToPercent(
+                                                                          district
+                                                                              .care_giver_stats
+                                                                              .caregivers_informed,
+                                                                          district.total_child_checked,
+                                                                      )
+                                                                    : convertStatToPercent(
+                                                                          district
+                                                                              .care_giver_stats[
+                                                                              sourceInfoKey
+                                                                          ],
+                                                                          district
+                                                                              .care_giver_stats
+                                                                              .caregivers_informed,
+                                                                      )}
                                                             </TableCell>
                                                         );
                                                     },

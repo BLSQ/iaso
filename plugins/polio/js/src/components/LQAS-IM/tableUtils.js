@@ -27,6 +27,23 @@ export const sortbyDistrictNameDesc = (a, b) =>
     b.name.localeCompare(a.name, undefined, {
         sensitivity: 'accent',
     });
+export const sortbyRegionNameAsc = (a, b) => {
+    // taking undefined regions into account. Using z as value, so undefined will come on bottom
+    const valueA = a.region ?? 'z';
+    const valueB = b.region ?? 'z';
+    return valueA.localeCompare(valueB, undefined, {
+        sensitivity: 'accent',
+    });
+};
+
+export const sortbyRegionNameDesc = (a, b) => {
+    // taking undefined regions into account
+    const valueA = a.region ?? 'z';
+    const valueB = b.region ?? 'z';
+    return valueB.localeCompare(valueA, undefined, {
+        sensitivity: 'accent',
+    });
+};
 
 // Assuming status is either a number, or can be resolved to one by parseInt
 export const sortbyStatusAsc = (a, b) =>

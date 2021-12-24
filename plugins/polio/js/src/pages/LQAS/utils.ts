@@ -144,7 +144,19 @@ export const makeDataForTable = (
     round: RoundString,
 ): LqasImCampaignDataWithNameAndRegion[] => {
     if (!data || !campaign || !data[campaign]) return [];
-    return data[campaign][round].filter(roundData =>
-        Boolean(roundData.district),
-    );
+    return data[campaign][round];
+
+    // removed the filter so that the table reflects the total numbers of its title/header
+    // we should probably filter the not found everywhere, but we would have inconsistencies anyway because of the urrent backend implementation of nfm
+    // return data[campaign][round].filter(roundData =>
+    //     Boolean(roundData.district),
+    // );
+};
+
+export const convertStatToPercent = (data = 0, total = 1): string => {
+    // using safeTotal, because 0 can still be passed as arg and override default value
+    const safeTotal = total || 1;
+    const ratio = (100 * data) / safeTotal;
+    if (Number.isSafeInteger(ratio)) return `${ratio}%`;
+    return `${ratio.toFixed(2)}%`;
 };

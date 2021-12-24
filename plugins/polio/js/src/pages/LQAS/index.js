@@ -18,6 +18,7 @@ import {
     lqasChartTooltipFormatter,
     formatLqasDataForNFMChart,
     makeDataForTable,
+    convertStatToPercent,
 } from './utils.ts';
 import {
     makeCampaignsDropDown,
@@ -41,6 +42,18 @@ const styles = theme => ({
         maxWidth: '100vw',
     },
 });
+
+const totalCaregiversInformed = (roundData = []) => {
+    return roundData
+        .map(data => data.care_giver_stats.caregivers_informed)
+        .reduce((total, current) => total + current, 0);
+};
+
+const totalCaregivers = (roundData = []) => {
+    return roundData
+        .map(data => data.total_child_checked)
+        .reduce((total, current) => total + current, 0);
+};
 
 const useStyles = makeStyles(styles);
 
@@ -82,6 +95,7 @@ export const Lqas = () => {
         [LQASData, regionsDict],
     );
     // console.log('convertedData', convertedData);
+
     const scope = findScope(campaign, campaigns, shapes);
 
     const districtsNotFound =
@@ -307,8 +321,31 @@ export const Lqas = () => {
                     <Grid item xs={6}>
                         {!isLoading && campaign && (
                             <Box ml={2} mt={2}>
-                                <Box>
-                                    <Typography variant="h6">PULL</Typography>
+                                <Box
+                                    display="flex"
+                                    justifyContent="space-between"
+                                >
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.numberCaregiversInformed,
+                                        )}: ${totalCaregiversInformed(
+                                            convertedData[campaign]?.round_1,
+                                        )}`}
+                                    </Typography>
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.ratioCaregiversInformed,
+                                        )}: ${convertStatToPercent(
+                                            totalCaregiversInformed(
+                                                convertedData[campaign]
+                                                    ?.round_1,
+                                            ),
+                                            totalCaregivers(
+                                                convertedData[campaign]
+                                                    ?.round_1,
+                                            ),
+                                        )}`}
+                                    </Typography>
                                 </Box>
                                 <CaregiversTable
                                     data={makeDataForTable(
@@ -324,9 +361,30 @@ export const Lqas = () => {
                     <Grid item xs={6}>
                         {!isLoading && campaign && (
                             <Box mr={2} mt={2}>
-                                <Box>
+                                <Box
+                                    display="flex"
+                                    justifyContent="space-between"
+                                >
                                     <Typography variant="h6">
-                                        MY FINGER
+                                        {`${formatMessage(
+                                            MESSAGES.numberCaregiversInformed,
+                                        )}: ${totalCaregiversInformed(
+                                            convertedData[campaign]?.round_2,
+                                        )}`}
+                                    </Typography>
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.ratioCaregiversInformed,
+                                        )}: ${convertStatToPercent(
+                                            totalCaregiversInformed(
+                                                convertedData[campaign]
+                                                    ?.round_2,
+                                            ),
+                                            totalCaregivers(
+                                                convertedData[campaign]
+                                                    ?.round_2,
+                                            ),
+                                        )}`}
                                     </Typography>
                                 </Box>
                                 <CaregiversTable

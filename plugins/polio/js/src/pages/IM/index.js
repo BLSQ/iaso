@@ -4,6 +4,7 @@ import { useSafeIntl, Select, LoadingSpinner } from 'bluesquare-components';
 
 import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { oneOf } from 'prop-types';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
@@ -33,11 +34,11 @@ const styles = theme => ({
 
 const useStyles = makeStyles(styles);
 
-export const ImStats = () => {
+export const ImStats = ({ imType }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
-    const { data: imData, isLoading } = useIM();
+    const { data: imData, isLoading } = useIM(imType);
     const convertedData = convertAPIData(imData);
 
     const countryIds = findCountryIds(imData);
@@ -94,7 +95,7 @@ export const ImStats = () => {
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.im)}
+                title={formatMessage(MESSAGES[imType])}
                 displayBackButton={false}
             />
             <Grid container className={classes.container}>
@@ -174,7 +175,7 @@ export const ImStats = () => {
                                     tooltipFormatter={imTooltipFormatter(
                                         formatMessage,
                                     )}
-                                    chartKey="LQASChartRound1"
+                                    chartKey="IMChartRound1"
                                 />
                             </Box>
                         )}
@@ -193,7 +194,7 @@ export const ImStats = () => {
                                     tooltipFormatter={imTooltipFormatter(
                                         formatMessage,
                                     )}
-                                    chartKey="LQASChartRound1"
+                                    chartKey="IMChartRound1"
                                 />
                             </Box>
                         )}
@@ -225,3 +226,8 @@ export const ImStats = () => {
         </>
     );
 };
+ImStats.defaultProps = {
+    imType: 'imGlobal',
+};
+
+ImStats.propTypes = { imType: oneOf[('imGlobal', 'imIHH', 'imOHH')] };

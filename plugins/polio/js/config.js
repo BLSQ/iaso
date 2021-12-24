@@ -82,19 +82,24 @@ const routes = [
     },
     {
         baseUrl: IM_OHH,
-        component: props => <ImStats {...props} />,
+        component: props => <ImStats {...props} imType="imOHH" />,
         permissions: ['iaso_polio'],
-        params: [],
+        params: [
+            {
+                isRequired: false,
+                key: 'imType',
+            },
+        ],
     },
     {
         baseUrl: IM_IHH,
-        component: props => <ImStats {...props} />,
+        component: props => <ImStats {...props} imType="imIHH" />,
         permissions: ['iaso_polio'],
         params: [],
     },
     {
         baseUrl: IM_GLOBAL,
-        component: props => <ImStats {...props} />,
+        component: props => <ImStats {...props} imType="imGlobal" />,
         permissions: ['iaso_polio'],
         params: [],
     },
@@ -180,7 +185,7 @@ const menu = [
                     },
                     {
                         label: MESSAGES.imIHH,
-                        key: 'ohh',
+                        key: 'ihh',
                         permissions: ['iaso_polio'],
                         icon: props => <HomeIcon {...props} />,
                     },

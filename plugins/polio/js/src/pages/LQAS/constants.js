@@ -36,3 +36,20 @@ export const nfmKeys = [
     'Child_was_asleep',
     'Child_is_a_visitor',
 ];
+
+export const caregiverSourceInfoKeys = [
+    'caregivers_informed',
+    'TV',
+    'Radio',
+    'Others',
+    'Gong_gong',
+    'Mob_VanPA',
+    'H2H_Mobilizer',
+    'IEC_Materials',
+    'Volunteers',
+    'Health_worker',
+    'Opinion_leader',
+    'Com_Info_centre',
+    'Religious_leader',
+    'MobileMessaging_SocialMedia',
+];

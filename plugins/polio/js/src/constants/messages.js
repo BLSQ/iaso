@@ -785,6 +785,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.childrenNoMark',
         defaultMessage: 'Children not marked',
     },
+    caregivers_informed: {
+        id: 'iaso.polio.label.caregivers_informed',
+        defaultMessage: '% caregivers informed',
+    },
+    Others: {
+        id: 'iaso.polio.label.others',
+        defaultMessage: 'Others',
+    },
 });
 
 export default MESSAGES;

@@ -807,6 +807,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
             "Others",
             "Gong_gong",
             "Mob_VanPA",
+            "H2H_Mobilizer",
+            "IEC_Materials",
             "Volunteers",
             "Health_worker",
             "Opinion_leader",

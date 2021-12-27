@@ -493,14 +493,24 @@ class IMStatsViewSet(viewsets.ViewSet):
             for form in forms:
                 total_Child_FMD = 0
                 total_Child_Checked = 0
+                if form.get("HH", None):
+                    if "HH" in stats_types:
+                        for kid in form.get("HH", []):
+                            type = "HH"
+                            Child_FMD = kid.get("HH/U5_Vac_FM_HH", 0)
+                            Child_Checked = kid.get("HH/Total_U5_Present_HH", 0)
 
-                for kid in form.get("OHH", []):
-                    type = "OHH"
-                    Child_FMD = kid.get("OHH/Child_FMD", 0)
-                    Child_Checked = kid.get("OHH/Child_Checked", 0)
+                            total_Child_FMD += int(Child_FMD)
+                            total_Child_Checked += int(Child_Checked)
+                else:
+                    if "OHH" in stats_types:
+                        for kid in form.get("OHH", []):
+                            type = "OHH"
+                            Child_FMD = kid.get("OHH/Child_FMD", 0)
+                            Child_Checked = kid.get("OHH/Child_Checked", 0)
 
-                    total_Child_FMD += int(Child_FMD)
-                    total_Child_Checked += int(Child_Checked)
+                            total_Child_FMD += int(Child_FMD)
+                            total_Child_Checked += int(Child_Checked)
                 district_id = "%s - %s" % (form.get("District"), form.get("Region"))
                 districts.add(district_id)
                 today_string = form["today"]

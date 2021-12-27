@@ -101,7 +101,11 @@ def enketo_public_create_url(request):
     else:
         profile = None
 
-    instances = Instance.objects.filter(form_id=form.id, period=period, org_unit_id=org_unit.id).exclude(file="")
+    instances = (
+        Instance.objects.filter(form_id=form.id, period=period, org_unit_id=org_unit.id)
+        .exclude(file="")
+        .exclude(deleted=True)
+    )
     if instances.count() > 1:
         return JsonResponse(
             {

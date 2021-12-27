@@ -18,7 +18,7 @@ logger = getLogger(__name__)
 def send_notification_email(campaign):
     country = campaign.country
     domain = settings.DNS_DOMAIN
-    if not (campaign.obr_name and campaign.virus and country and campaign.onset_at):
+    if not (campaign.obr_name and campaign.virus and country and campaign.onset_at and campaign.deleted_at is None):
         return False
     try:
         cug = CountryUsersGroup.objects.get(country=country)
@@ -68,7 +68,6 @@ For guidance on updating: contact RRT team
 Timeline tracker Automated message.
     """
 
-    print(email_text)
     logger.info(f"Sending to {len(emails)} recipients")
 
     send_mail(
@@ -77,6 +76,8 @@ Timeline tracker Automated message.
         "no-reply@%s" % domain,
         emails,
     )
+
+    return True
 
 
 class Command(BaseCommand):

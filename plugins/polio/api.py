@@ -557,6 +557,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                             campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
                     else:
                         d["district"] = district.id
+                        d["region"] = region_name
                         fully_mapped_form_count += 1
                 else:
                     day_country_not_found[country.name][today_string] += 1

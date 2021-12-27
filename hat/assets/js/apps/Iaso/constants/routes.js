@@ -232,11 +232,7 @@ export const duplicateInstancesPath = {
     params: [
         {
             isRequired: true,
-            key: 'instanceId',
-        },
-        {
-            isRequired: true,
-            key: 'duplicateInstanceId',
+            key: 'instanceIds',
         },
     ],
 };

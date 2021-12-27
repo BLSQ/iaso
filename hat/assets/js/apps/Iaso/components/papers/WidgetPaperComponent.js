@@ -67,7 +67,11 @@ const WidgetPaper = ({
                 <Grid xs={IconButton ? 10 : 12} item>
                     <Box
                         onClick={handleClick}
-                        className={expandable && classes.clickable}
+                        className={
+                            expandable && classes.clickable
+                                ? classes.clickable
+                                : ''
+                        }
                     >
                         <Typography color="primary" variant="h5">
                             {title}

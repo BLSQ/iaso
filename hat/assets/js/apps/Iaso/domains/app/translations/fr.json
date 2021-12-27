@@ -147,6 +147,7 @@
     "iaso.instance.deleteCount": "Effacer {count} soumission(s)",
     "iaso.instance.deleteInstanceWarning": "Cette opération peut toujours être annulée.",
     "iaso.instance.device": "IMEI appareil",
+    "iaso.instance.error": "Aucune soumission trouvée",
     "iaso.instance.file": "Fichier",
     "iaso.instance.files": "Fichiers",
     "iaso.instance.form": "Soumissions pour le formulaire",

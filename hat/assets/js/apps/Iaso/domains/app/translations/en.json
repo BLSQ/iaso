@@ -151,6 +151,7 @@
     "iaso.instance.deleteInstanceWarning": "This operation can still be undone",
     "iaso.instance.device": "IMEI device",
     "iaso.instance.duplicate": "Compare submissions",
+    "iaso.instance.error": "Cannot find a submission with this Id",
     "iaso.instance.file": "File",
     "iaso.instance.files": "Files",
     "iaso.instance.form": "Submissions for the form",

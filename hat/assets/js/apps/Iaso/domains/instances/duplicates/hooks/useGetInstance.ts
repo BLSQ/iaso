@@ -10,6 +10,7 @@ export const useGetInstance = (
         () => getRequest(`/api/instances/${instanceId}`),
         {
             enabled: Boolean(instanceId),
+            retry: false,
         },
     );
 };

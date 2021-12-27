@@ -17,6 +17,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Location',
         id: 'iaso.map.location',
     },
+    form: {
+        defaultMessage: 'Form',
+        id: 'iaso.instance.formShort',
+    },
+    downloadXml: {
+        id: 'iaso.label.downloadXml',
+        defaultMessage: 'Download XML',
+    },
+    error: {
+        id: 'iaso.instance.error',
+        defaultMessage: 'Cannot find a submission with this Id',
+    },
 });
 
 export default MESSAGES;

@@ -499,8 +499,10 @@ class IMStatsViewSet(viewsets.ViewSet):
                 forms = json.loads(cached_response.content)
 
             for form in forms:
+                form_count += 1
                 total_Child_FMD = 0
                 total_Child_Checked = 0
+                done_something = False
                 if form.get("HH", None):
                     if "HH" in stats_types:
                         for kid in form.get("HH", []):
@@ -510,6 +512,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
                             total_Child_FMD += int(Child_FMD)
                             total_Child_Checked += int(Child_Checked)
+                            done_something = True
                 else:
                     if "OHH" in stats_types:
                         for kid in form.get("OHH", []):
@@ -519,6 +522,9 @@ class IMStatsViewSet(viewsets.ViewSet):
 
                             total_Child_FMD += int(Child_FMD)
                             total_Child_Checked += int(Child_Checked)
+                            done_something = True
+                if not done_something:
+                    continue
                 district_id = "%s - %s" % (form.get("District"), form.get("Region"))
                 districts.add(district_id)
                 today_string = form["today"]
@@ -568,7 +574,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
-                form_count += 1
 
         response = {
             "stats": campaign_stats,

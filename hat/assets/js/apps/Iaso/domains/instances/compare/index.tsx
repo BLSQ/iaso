@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 
-const DuplicatesSubmissions: FunctionComponent<IProps> = ({ params }) => {
+const CompareSubmissions: FunctionComponent<IProps> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const classes: any = useStyles();
 
@@ -52,4 +52,4 @@ const DuplicatesSubmissions: FunctionComponent<IProps> = ({ params }) => {
     );
 };
 
-export default DuplicatesSubmissions;
+export default CompareSubmissions;

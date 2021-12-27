@@ -8,7 +8,7 @@ import Runs from '../domains/links/Runs';
 import OrgUnitDetail from '../domains/orgUnits/details';
 import Completeness from '../domains/completeness';
 import Instances from '../domains/instances';
-import DuplicateInstances from '../domains/instances/duplicates/index.tsx';
+import CompareSubmissions from '../domains/instances/compare/index.tsx';
 import InstanceDetail from '../domains/instances/details';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
@@ -225,10 +225,10 @@ export const instanceDetailPath = {
     ],
 };
 
-export const duplicateInstancesPath = {
-    baseUrl: baseUrls.duplicateInstances,
+export const compareInstancesPath = {
+    baseUrl: baseUrls.compareInstances,
     permissions: ['iaso_forms', 'iaso_submissions'],
-    component: props => <DuplicateInstances {...props} />,
+    component: props => <CompareSubmissions {...props} />,
     params: [
         {
             isRequired: true,
@@ -548,7 +548,7 @@ export const routeConfigs = [
     mappingDetailPath,
     instancesPath,
     instanceDetailPath,
-    duplicateInstancesPath,
+    compareInstancesPath,
     orgUnitsPath,
     orgUnitsDetailsPath,
     linksPath,

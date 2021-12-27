@@ -460,9 +460,15 @@ class IMStatsViewSet(viewsets.ViewSet):
         )
         day_country_not_found = defaultdict(lambda: defaultdict(int))
         form_campaign_not_found_count = 0
+        if request.user.iaso_profile.org_units.count() == 0:
+            authorized_countries = OrgUnit.objects.filter(org_unit_type_id__category="COUNTRY")
+        else:
+            authorized_countries = request.user.iaso_profile.org_units.filter(org_unit_type_id__category="COUNTRY")
+
         for country_config in config.content:
             country = OrgUnit.objects.get(id=country_config["country_id"])
-
+            if country not in authorized_countries:
+                continue
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
                 .filter(org_unit_type_id__category="DISTRICT")

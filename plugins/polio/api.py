@@ -443,6 +443,8 @@ class IMStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
+        stats_types = request.GET.get("type", "HH,OHH")
+        stats_types = stats_types.split(",")
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="im-config")
         res = []

@@ -15,9 +15,21 @@ import { redirectToReplace } from '../../../routing/actions';
 import MESSAGES from './messages';
 import { baseUrls } from '../../../constants/urls';
 
+interface IRouterCustom {
+    prevPathname: string | undefined;
+}
+interface IState {
+    routerCustom: IRouterCustom;
+}
+interface IParams {
+    instanceIds: string;
+}
+interface IRouter {
+    goBack: () => void;
+}
 interface IProps {
-    params: any;
-    router: any;
+    params: IParams;
+    router: IRouter;
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -28,11 +40,12 @@ const CompareSubmissions: FunctionComponent<IProps> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const classes: any = useStyles();
+
     const prevPathname: string | undefined = useSelector(
-        (state: any) => state.routerCustom.prevPathname,
+        (state: IState) => state.routerCustom.prevPathname,
     );
 
-    const instanceIds = params.instanceIds.split(',');
+    const instanceIds: Array<string> = params.instanceIds.split(',');
     const colSize: number = useMemo(() => {
         if (instanceIds.length < 12 && instanceIds.length > 0) {
             return 12 / instanceIds.length;

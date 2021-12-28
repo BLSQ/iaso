@@ -236,7 +236,7 @@ export const getSelectionActions = (
                 return (
                     <Link
                         style={{ color: 'inherit', display: 'flex' }}
-                        href={`/dashboard/${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
+                        to={`${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
                     >
                         <CompareArrowsIcon />
                     </Link>

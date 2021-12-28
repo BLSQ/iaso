@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
 
+import { useSelector, useDispatch } from 'react-redux';
 import { Box, Grid, Theme, GridSize } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -9,19 +10,27 @@ import TopBar from '../../../components/nav/TopBarComponent';
 
 import InstanceDetail from './components/InstanceDetail';
 
+import { redirectToReplace } from '../../../routing/actions';
+
 import MESSAGES from './messages';
+import { baseUrls } from '../../../constants/urls';
 
 interface IProps {
     params: any;
+    router: any;
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 
-const CompareSubmissions: FunctionComponent<IProps> = ({ params }) => {
+const CompareSubmissions: FunctionComponent<IProps> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
+    const dispatch = useDispatch();
     const classes: any = useStyles();
+    const prevPathname: string | undefined = useSelector(
+        (state: any) => state.routerCustom.prevPathname,
+    );
 
     const instanceIds = params.instanceIds.split(',');
     const colSize: number = useMemo(() => {
@@ -30,10 +39,19 @@ const CompareSubmissions: FunctionComponent<IProps> = ({ params }) => {
         }
         return 12;
     }, [instanceIds]);
-
     return (
         <>
-            <TopBar title={formatMessage(MESSAGES.title)} />
+            <TopBar
+                title={formatMessage(MESSAGES.title)}
+                displayBackButton
+                goBack={() => {
+                    if (prevPathname) {
+                        router.goBack();
+                    } else {
+                        dispatch(redirectToReplace(baseUrls.instances, {}));
+                    }
+                }}
+            />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container spacing={4}>
                     {instanceIds.map((instanceId: string) => (

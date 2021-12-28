@@ -1,9 +1,12 @@
 import React from 'react';
 import CallMade from '@material-ui/icons/CallMade';
+import { Link } from 'react-router';
 import moment from 'moment';
 import { Tooltip } from '@material-ui/core';
 import { truncateText, getTableUrl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
+
 import instancesTableColumns from './config';
 import MESSAGES from './messages';
 import DeleteDialog from './components/DeleteInstanceDialog';
@@ -16,6 +19,7 @@ import {
     getToDateString,
 } from '../../utils/dates';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
+import { baseUrls } from '../../constants/urls';
 
 const NO_VALUE = '/';
 const hasNoValue = value => !value || value === '';
@@ -219,6 +223,28 @@ export const getSelectionActions = (
         isUnDeleteAction ? MESSAGES.unDeleteInstance : MESSAGES.deleteInstance,
     );
     return [
+        {
+            icon: newSelection => {
+                const isDisabled =
+                    newSelection.selectCount <= 1 || newSelection.selectAll;
+                if (isDisabled) {
+                    return <CompareArrowsIcon color="disabled" />;
+                }
+                const instancesIds = newSelection.selectedItems
+                    .map(s => s.id)
+                    .join(',');
+                return (
+                    <Link
+                        style={{ color: 'inherit', display: 'flex' }}
+                        href={`/dashboard/${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
+                    >
+                        <CompareArrowsIcon />
+                    </Link>
+                );
+            },
+            label: formatMessage(MESSAGES.compare),
+            disabled: false,
+        },
         {
             icon: newSelection => (
                 <ExportInstancesDialogComponent

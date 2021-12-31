@@ -4,8 +4,8 @@ import { IM_POC_URL } from './constants';
 
 const getIM = async imType => {
     // Adapt url when endpoints are ready
-    if (imType === 'imOHH') return getRequest(IM_POC_URL);
-    if (imType === 'imIHH') return getRequest(IM_POC_URL);
+    if (imType === 'imOHH') return getRequest(IM_POC_URL+ '?type=OHH');
+    if (imType === 'imIHH') return getRequest(IM_POC_URL+ '?type=HH');
     return getRequest(IM_POC_URL);
 };
 

@@ -1,5 +1,10 @@
 import MESSAGES from '../../constants/messages';
-import { IM_PASS, IM_FAIL, IM_WARNING } from './constants';
+import {
+    BarChartData,
+    FormatForNFMArgs,
+    NfmRoundString,
+} from '../../constants/types';
+import { IM_PASS, IM_FAIL, IM_WARNING, ImNfmKeys } from './constants';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -88,4 +93,42 @@ export const imTooltipFormatter = formatMessage => (value, name, props) => {
     // eslint-disable-next-line react/prop-types
     const ratio = `${props.payload.checked}/${props.payload.marked}`;
     return [ratio, formatMessage(MESSAGES.vaccinated)];
+};
+
+const sortImNfmKeys = (a, b) => {
+    if (a.nfmKey === 'Tot_child_Others_HH') return 1;
+    if (b.nfmKey === 'Tot_child_Others_HH') return 0;
+
+    return a.name.localeCompare(b.name, undefined, {
+        sensitivity: 'accent',
+    });
+};
+
+// TODO move to IM folder and convert to ts
+export const formatImDataForNFMChart = ({
+    data,
+    campaign,
+    round,
+    formatMessage,
+}: FormatForNFMArgs): BarChartData[] => {
+    if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
+    const roundString: string = NfmRoundString[round];
+    const campaignData: Record<string, number> = data[campaign][roundString];
+    const entries: [string, number][] = Object.entries(campaignData);
+    const convertedEntries = entries.map(entry => {
+        const [name, value] = entry;
+        return { name: formatMessage(MESSAGES[name]), value, nfmKey: name };
+    });
+    if (convertedEntries.length === ImNfmKeys.length)
+        return convertedEntries.sort(sortImNfmKeys);
+
+    const dataKeys = Object.keys(campaignData);
+    const missingEntries = ImNfmKeys.filter(
+        nfmKey => !dataKeys.includes(nfmKey),
+    ).map(nfmKey => ({
+        name: formatMessage(MESSAGES[nfmKey]),
+        value: 0,
+        nfmKey,
+    }));
+    return [...convertedEntries, ...missingEntries].sort(sortImNfmKeys);
 };

@@ -29,7 +29,7 @@ import { convertAPIData } from '../../utils/LqasIm.ts';
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
-import { NoFingerMark } from './NoFingerMark.tsx';
+import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 import { CaregiversTable } from './CaregiversTable.tsx';
 
 const styles = theme => ({

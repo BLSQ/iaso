@@ -2,15 +2,13 @@ import MESSAGES from '../../constants/messages';
 import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED, nfmKeys } from './constants';
 import {
     BarChartData,
-    LqasCampaign,
+    LqasImCampaign,
     NfmRoundString,
     RoundString,
     IntlFormatMessage,
     LqasImCampaignDataWithNameAndRegion,
     ConvertedLqasImData,
-} from './types';
-
-import { ImNfmKeys } from '../IM/constants';
+} from '../../constants/types';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -104,10 +102,19 @@ export const lqasNfmTooltipFormatter = (value, _name, props) => {
 };
 
 type FormatForNFMArgs = {
-    data: Record<string, LqasCampaign>;
+    data: Record<string, LqasImCampaign>;
     campaign: string;
     round: RoundString;
     formatMessage: IntlFormatMessage;
+};
+
+const sortLqasNfmKeys = (a, b) => {
+    if (a.nfmKey === 'Other') return 1;
+    if (b.nfmKey === 'Other') return 0;
+
+    return a.name.localeCompare(b.name, undefined, {
+        sensitivity: 'accent',
+    });
 };
 export const formatLqasDataForNFMChart = ({
     data,
@@ -124,9 +131,7 @@ export const formatLqasDataForNFMChart = ({
         return { name: formatMessage(MESSAGES[name]), value, nfmKey: name };
     });
     if (convertedEntries.length === nfmKeys.length)
-        return convertedEntries.sort((a, b) =>
-            a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }),
-        );
+        return convertedEntries.sort(sortLqasNfmKeys);
     const dataKeys = Object.keys(campaignData);
     const missingEntries = nfmKeys
         .filter(nfmKey => !dataKeys.includes(nfmKey))
@@ -135,47 +140,7 @@ export const formatLqasDataForNFMChart = ({
             value: 0,
             nfmKey,
         }));
-    return [...convertedEntries, ...missingEntries].sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }),
-    );
-};
-
-const sortImNfmKeys = (a, b) => {
-    if (a.nfmKey === 'Tot_child_Others_HH') return 1;
-    if (b.nfmKey === 'Tot_child_Others_HH') return 0;
-
-    return a.name.localeCompare(b.name, undefined, {
-        sensitivity: 'accent',
-    });
-};
-
-// TODO move to IM folder and convert to ts
-export const formatImDataForNFMChart = ({
-    data,
-    campaign,
-    round,
-    formatMessage,
-}: FormatForNFMArgs): BarChartData[] => {
-    if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
-    const roundString: string = NfmRoundString[round];
-    const campaignData: Record<string, number> = data[campaign][roundString];
-    const entries: [string, number][] = Object.entries(campaignData);
-    const convertedEntries = entries.map(entry => {
-        const [name, value] = entry;
-        return { name: formatMessage(MESSAGES[name]), value, nfmKey: name };
-    });
-    if (convertedEntries.length === ImNfmKeys.length)
-        return convertedEntries.sort(sortImNfmKeys);
-
-    const dataKeys = Object.keys(campaignData);
-    const missingEntries = ImNfmKeys.filter(
-        nfmKey => !dataKeys.includes(nfmKey),
-    ).map(nfmKey => ({
-        name: formatMessage(MESSAGES[nfmKey]),
-        value: 0,
-        nfmKey,
-    }));
-    return [...convertedEntries, ...missingEntries].sort(sortImNfmKeys);
+    return [...convertedEntries, ...missingEntries].sort(sortLqasNfmKeys);
 };
 
 export const makeDataForTable = (

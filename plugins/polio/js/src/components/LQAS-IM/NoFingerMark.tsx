@@ -10,9 +10,9 @@ import {
     Cell,
 } from 'recharts';
 import { blue } from '@material-ui/core/colors';
-import { BarChartData } from './types';
-import { BAR_HEIGHT } from '../../components/PercentageBarChart/constants';
-import { lqasNfmTooltipFormatter } from './utils';
+import { BarChartData } from '../../constants/types';
+import { BAR_HEIGHT } from '../PercentageBarChart/constants';
+import { lqasNfmTooltipFormatter } from '../../pages/LQAS/utils';
 
 type Props = {
     data: BarChartData[];

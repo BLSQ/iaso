@@ -10,7 +10,11 @@ import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import { useGetRegions } from '../../hooks/useGetRegions';
 
-import { formatImDataForChart, imTooltipFormatter } from './utils';
+import {
+    formatImDataForChart,
+    imTooltipFormatter,
+    formatImDataForNFMChart,
+} from './utils.ts';
 import { useIM } from './requests';
 import { ImMap } from './ImMap';
 import {
@@ -20,8 +24,7 @@ import {
 } from '../../utils/index';
 import { convertAPIData } from '../../utils/LqasIm.ts';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
-import { NoFingerMark } from '../LQAS/NoFingerMark.tsx';
-import { formatImDataForNFMChart } from '../LQAS/utils.ts';
+import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -226,17 +229,19 @@ export const ImStats = ({ imType }) => {
                     </Grid>
                 </Grid>
                 <Grid container item spacing={2} direction="row">
-                    {campaign && (
-                        <Grid item xs={12}>
-                            <Box ml={2} mt={2}>
-                                <Typography variant="h5">
-                                    {formatMessage(
-                                        MESSAGES.reasonsNoFingerMarked,
-                                    )}
-                                </Typography>
-                            </Box>
-                        </Grid>
-                    )}
+                    {campaign &&
+                        imType ===
+                            'imIHH'(
+                                <Grid item xs={12}>
+                                    <Box ml={2} mt={2}>
+                                        <Typography variant="h5">
+                                            {formatMessage(
+                                                MESSAGES.reasonsNoFingerMarked,
+                                            )}
+                                        </Typography>
+                                    </Box>
+                                </Grid>,
+                            )}
                     <Grid item xs={6} mr={2}>
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && campaign && (

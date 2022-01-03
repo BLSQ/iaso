@@ -1,11 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import {
-    useSafeIntl,
-    Select,
-    LoadingSpinner,
-    // Table,
-} from 'bluesquare-components';
+import { useSafeIntl, Select, LoadingSpinner } from 'bluesquare-components';
 
 import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
@@ -22,7 +17,7 @@ import {
     findCountryIds,
     findScope,
 } from '../../utils/index';
-import { convertAPIData } from '../../utils/LqasIm';
+import { convertAPIData } from '../../utils/LqasIm.ts';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
 
 const styles = theme => ({
@@ -43,7 +38,6 @@ export const ImStats = () => {
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
     const { data: imData, isLoading } = useIM();
-    // console.log('LQAS', imData);
     const convertedData = convertAPIData(imData);
 
     const countryIds = findCountryIds(imData);

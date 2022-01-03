@@ -6,6 +6,8 @@ import {
     NfmRoundString,
     RoundString,
     IntlFormatMessage,
+    LqasImCampaignDataWithNameAndRegion,
+    ConvertedLqasImData,
 } from './types';
 
 export const determineStatusForDistrict = district => {
@@ -39,7 +41,7 @@ export const getLqasStatsForRound = (lqasData, campaign, round) => {
     return [totalEvaluated, passed, failed, disqualified];
 };
 
-const getLqasStatsWithRegion = ({ data, campaign, round, shapes }) => {
+export const getLqasStatsWithRegion = ({ data, campaign, round, shapes }) => {
     if (!data[campaign]) return [];
     return [...data[campaign][round]].map(district => ({
         ...district,
@@ -94,24 +96,23 @@ export const lqasChartTooltipFormatter =
         return [ratio, formatMessage(MESSAGES.passing)];
     };
 
-type FormatForNFMParams = {
-    data: Record<string, LqasCampaign>;
-    campaign: string;
-    round: RoundString;
-    formatMessage: IntlFormatMessage;
-};
-
 export const lqasNfmTooltipFormatter = (value, _name, props) => {
     // eslint-disable-next-line react/prop-types
     return [value, props.payload.nfmKey];
 };
 
+type FormatForNFMArgs = {
+    data: Record<string, LqasCampaign>;
+    campaign: string;
+    round: RoundString;
+    formatMessage: IntlFormatMessage;
+};
 export const formatLqasDataForNFMChart = ({
     data,
     campaign,
     round,
     formatMessage,
-}: FormatForNFMParams): BarChartData[] => {
+}: FormatForNFMArgs): BarChartData[] => {
     if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
     const roundString: string = NfmRoundString[round];
     const campaignData: Record<string, number> = data[campaign][roundString];
@@ -135,4 +136,27 @@ export const formatLqasDataForNFMChart = ({
     return [...convertedEntries, ...missingEntries].sort((a, b) =>
         a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }),
     );
+};
+
+export const makeDataForTable = (
+    data: Record<string, ConvertedLqasImData>,
+    campaign: string,
+    round: RoundString,
+): LqasImCampaignDataWithNameAndRegion[] => {
+    if (!data || !campaign || !data[campaign]) return [];
+    return data[campaign][round];
+
+    // removed the filter so that the table reflects the total numbers of its title/header
+    // we should probably filter the not found everywhere, but we would have inconsistencies anyway because of the urrent backend implementation of nfm
+    // return data[campaign][round].filter(roundData =>
+    //     Boolean(roundData.district),
+    // );
+};
+
+export const convertStatToPercent = (data = 0, total = 1): string => {
+    // using safeTotal, because 0 can still be passed as arg and override default value
+    const safeTotal = total || 1;
+    const ratio = (100 * data) / safeTotal;
+    if (Number.isSafeInteger(ratio)) return `${ratio}%`;
+    return `${ratio.toFixed(2)}%`;
 };

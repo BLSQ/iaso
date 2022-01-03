@@ -785,6 +785,70 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.childrenNoMark',
         defaultMessage: 'Children not marked',
     },
+    caregivers_informed: {
+        id: 'iaso.polio.label.caregivers_informed',
+        defaultMessage: 'Caregivers informed',
+    },
+    Others: {
+        id: 'iaso.polio.label.others',
+        defaultMessage: 'Others',
+    },
+    TV: {
+        id: 'iaso.polio.label.TV',
+        defaultMessage: 'TV',
+    },
+    Radio: {
+        id: 'iaso.polio.label.Radio',
+        defaultMessage: 'Radio',
+    },
+    Gong_gong: {
+        id: 'iaso.polio.label.Gong_gong',
+        defaultMessage: 'Gong gong',
+    },
+    Mob_VanPA: {
+        id: 'iaso.polio.label.Mob_VanPA',
+        defaultMessage: 'Mob_VanPA',
+    },
+    H2H_Mobilizer: {
+        id: 'iaso.polio.label.H2H_Mobilizer',
+        defaultMessage: 'H2H_Mobilizer',
+    },
+    IEC_Materials: {
+        id: 'iaso.polio.label.IEC_Materials',
+        defaultMessage: 'IEC_Materials',
+    },
+    Volunteers: {
+        id: 'iaso.polio.label.Volunteers',
+        defaultMessage: 'Volunteers',
+    },
+    Health_worker: {
+        id: 'iaso.polio.label.Health_worker',
+        defaultMessage: 'Health worker',
+    },
+    Opinion_leader: {
+        id: 'iaso.polio.label.Opinion_leader',
+        defaultMessage: 'Opinion leader',
+    },
+    Com_Info_centre: {
+        id: 'iaso.polio.label.Com_Info_centre',
+        defaultMessage: 'Com_Info_centre',
+    },
+    Religious_leader: {
+        id: 'iaso.polio.label.Religious_leader',
+        defaultMessage: 'Religious leader',
+    },
+    MobileMessaging_SocialMedia: {
+        id: 'iaso.polio.label.MobileMessaging_SocialMedia',
+        defaultMessage: 'Mobile messaging or social media',
+    },
+    numberCaregiversInformed: {
+        id: 'iaso.polio.label.numberCaregiversInformed',
+        defaultMessage: 'Number of caregivers informed',
+    },
+    ratioCaregiversInformed: {
+        id: 'iaso.polio.label.ratioCaregiversInformed',
+        defaultMessage: 'caregivers informed',
+    },
 });
 
 export default MESSAGES;

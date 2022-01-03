@@ -17,6 +17,8 @@ import {
     formatLqasDataForChart,
     lqasChartTooltipFormatter,
     formatLqasDataForNFMChart,
+    makeDataForTable,
+    convertStatToPercent,
 } from './utils.ts';
 import {
     makeCampaignsDropDown,
@@ -28,6 +30,7 @@ import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
 import { NoFingerMark } from './NoFingerMark.tsx';
+import { CaregiversTable } from './CaregiversTable.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -40,6 +43,18 @@ const styles = theme => ({
     },
 });
 
+const totalCaregiversInformed = (roundData = []) => {
+    return roundData
+        .map(data => data.care_giver_stats.caregivers_informed)
+        .reduce((total, current) => total + current, 0);
+};
+
+const totalCaregivers = (roundData = []) => {
+    return roundData
+        .map(data => data.total_child_checked)
+        .reduce((total, current) => total + current, 0);
+};
+
 const useStyles = makeStyles(styles);
 
 export const Lqas = () => {
@@ -47,8 +62,6 @@ export const Lqas = () => {
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
     const { data: LQASData, isLoading } = useLQAS();
-    const convertedData = convertAPIData(LQASData);
-    // console.log(convertedData)
 
     const countryIds = findCountryIds(LQASData);
     const { data: campaigns = [], isLoading: campaignsLoading } =
@@ -66,6 +79,22 @@ export const Lqas = () => {
     );
 
     const { data: regions = [] } = useGetRegions(countryOfSelectedCampaign);
+    // TODO use this dict i.o looping through regions in older functions
+    const regionsDict = useMemo(() => {
+        const dict = {};
+        shapes.forEach(shape => {
+            dict[shape.id] = regions.filter(
+                region => shape.parent_id === region.id,
+            )[0]?.name;
+        });
+        return dict;
+    }, [regions, shapes]);
+
+    const convertedData = useMemo(
+        () => convertAPIData(LQASData, regionsDict),
+        [LQASData, regionsDict],
+    );
+    // console.log('convertedData', convertedData);
 
     const scope = findScope(campaign, campaigns, shapes);
 
@@ -272,6 +301,99 @@ export const Lqas = () => {
                                 <NoFingerMark
                                     data={nfmDataRound2}
                                     chartKey="nfmRound2"
+                                />
+                            </Box>
+                        )}
+                    </Grid>
+                </Grid>
+                <Grid container item spacing={2} direction="row">
+                    {campaign && (
+                        <Grid item xs={12}>
+                            <Box ml={2} mt={2}>
+                                <Typography variant="h5">
+                                    {formatMessage(
+                                        MESSAGES.reasonsNoFingerMarked,
+                                    )}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                    )}
+                    <Grid item xs={6}>
+                        {!isLoading && campaign && (
+                            <Box ml={2} mt={2}>
+                                <Box
+                                    display="flex"
+                                    justifyContent="space-between"
+                                >
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.numberCaregiversInformed,
+                                        )}: ${totalCaregiversInformed(
+                                            convertedData[campaign]?.round_1,
+                                        )}`}
+                                    </Typography>
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.ratioCaregiversInformed,
+                                        )}: ${convertStatToPercent(
+                                            totalCaregiversInformed(
+                                                convertedData[campaign]
+                                                    ?.round_1,
+                                            ),
+                                            totalCaregivers(
+                                                convertedData[campaign]
+                                                    ?.round_1,
+                                            ),
+                                        )}`}
+                                    </Typography>
+                                </Box>
+                                <CaregiversTable
+                                    data={makeDataForTable(
+                                        convertedData,
+                                        campaign,
+                                        'round_1',
+                                    )}
+                                    chartKey="CGTable1"
+                                />
+                            </Box>
+                        )}
+                    </Grid>
+                    <Grid item xs={6}>
+                        {!isLoading && campaign && (
+                            <Box mr={2} mt={2}>
+                                <Box
+                                    display="flex"
+                                    justifyContent="space-between"
+                                >
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.numberCaregiversInformed,
+                                        )}: ${totalCaregiversInformed(
+                                            convertedData[campaign]?.round_2,
+                                        )}`}
+                                    </Typography>
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.ratioCaregiversInformed,
+                                        )}: ${convertStatToPercent(
+                                            totalCaregiversInformed(
+                                                convertedData[campaign]
+                                                    ?.round_2,
+                                            ),
+                                            totalCaregivers(
+                                                convertedData[campaign]
+                                                    ?.round_2,
+                                            ),
+                                        )}`}
+                                    </Typography>
+                                </Box>
+                                <CaregiversTable
+                                    data={makeDataForTable(
+                                        convertedData,
+                                        campaign,
+                                        'round_2',
+                                    )}
+                                    chartKey="CGTable2"
                                 />
                             </Box>
                         )}

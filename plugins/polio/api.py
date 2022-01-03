@@ -814,12 +814,12 @@ class LQASStatsViewSet(viewsets.ViewSet):
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="lqas-config")
 
-        base_stats = {"total_child_fmd": 0, "total_child_checked": 0}
+        base_stats = lambda: {"total_child_fmd": 0, "total_child_checked": 0, "care_giver_stats": defaultdict(int)}
         campaign_stats = defaultdict(
             lambda: {
-                "round_1": defaultdict(base_stats.copy),
+                "round_1": defaultdict(base_stats),
                 "round_1_nfm_stats": defaultdict(int),
-                "round_2": defaultdict(base_stats.copy),
+                "round_2": defaultdict(base_stats),
                 "round_2_nfm_stats": defaultdict(int),
                 "districts_not_found": [],
             }
@@ -827,6 +827,21 @@ class LQASStatsViewSet(viewsets.ViewSet):
         form_count = 0
         form_campaign_not_found_count = 0
         day_country_not_found = defaultdict(lambda: defaultdict(int))
+        caregiver_source_info_keys = [
+            "TV",
+            "Radio",
+            "Others",
+            "Gong_gong",
+            "Mob_VanPA",
+            "H2H_Mobilizer",
+            "IEC_Materials",
+            "Volunteers",
+            "Health_worker",
+            "Opinion_leader",
+            "Com_Info_centre",
+            "Religious_leader",
+            "MobileMessaging_SocialMedia",
+        ]
         for country_config in config.content:
             res = []
             country = OrgUnit.objects.get(id=country_config["country_id"])
@@ -859,11 +874,14 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 if HH_COUNT is None:
                     print("missing OHH_COUNT", form)
 
+                district_name = form.get("District")
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
                 type = "HH"
+                caregiver_counts_dict = defaultdict(lambda: defaultdict(int))
                 for HH in form.get("Count_HH", []):
+                    # check finger
                     Child_FMD = HH.get("Count_HH/FM_Child", 0)
                     Child_Checked = HH.get("Count_HH/Child_Checked", 0)
                     if Child_FMD == "Y":
@@ -873,14 +891,34 @@ class LQASStatsViewSet(viewsets.ViewSet):
                         if reason:
                             nfm_counts_dict[reason] = nfm_counts_dict[reason] + 1
                     total_Child_Checked += int(Child_Checked)
+                    # gather caregiver stats
+                    caregiver_informed = HH.get("Count_HH/Care_Giver_Informed_SIA", 0)
+                    caregiver_source_info = HH.get("Count_HH/Caregiver_Source_Info", None)
+                    if caregiver_informed == "Y":
+                        caregiver_counts_dict[district_name]["caregivers_informed"] = (
+                            caregiver_counts_dict[district_name]["caregivers_informed"] + 1
+                        )
 
-                district_id = "%s - %s" % (form.get("District"), form.get("Region"))
+                    if isinstance(caregiver_source_info, str):
+                        source_keys = caregiver_source_info.split()
+                        for source_key in source_keys:
+                            caregiver_counts_dict[district_name][source_key] = (
+                                caregiver_counts_dict[district_name][source_key] + 1
+                            )
+                    else:
+                        for source_info_key in caregiver_source_info_keys:
+                            source_info = HH.get("Count_HH/Caregiver_Source_Info/" + source_info_key)
+                            if source_info == "True":
+                                caregiver_counts_dict[district_name][source_info_key] = (
+                                    caregiver_counts_dict[district_name][source_info_key] + 1
+                                )
+
+                district_id = "%s - %s" % (district_name, form.get("Region"))
                 districts.add(district_id)
                 today_string = form["today"]
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
                 campaign = find_campaign(campaigns, today, country)
                 region_name = form.get("Region")
-                district_name = form.get("District")
                 round_number = form.get("roundNumber")
 
                 if campaign:
@@ -907,7 +945,11 @@ class LQASStatsViewSet(viewsets.ViewSet):
                         campaign_stats[campaign_name][round_stats_key][key] = (
                             campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
                         )
+
                     d = campaign_stats[campaign_name][round_key][district_name]
+                    for key in caregiver_counts_dict[district_name]:
+                        d["care_giver_stats"][key] += caregiver_counts_dict[district_name][key]
+
                     d["total_child_fmd"] = d["total_child_fmd"] + row[7]
                     d["total_child_checked"] = d["total_child_checked"] + row[8]
                     region_name = row[2]

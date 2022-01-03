@@ -19,18 +19,20 @@ export type LqasCampaign = LqasImCampaign & {
     round_2_nfm_stats: Record<string, number>;
 };
 
-type LqasImCampaignData = {
+export type LqasImCampaignData = {
     total_child_fmd: number;
     total_child_checked: number;
+    care_giver_stats: Record<string,number>;
     district?: number;
 };
 
-type LqasImCampaignDataWithName = LqasImCampaignData & {
+export type LqasImCampaignDataWithNameAndRegion = LqasImCampaignData & {
     name: string;
+    region: string | null
 };
 export type ConvertedLqasImData = {
-    round_1: LqasImCampaignDataWithName[];
-    round_2: LqasImCampaignDataWithName[];
+    round_1: LqasImCampaignDataWithNameAndRegion[];
+    round_2: LqasImCampaignDataWithNameAndRegion[];
 };
 
 export type RoundString = 'round_1' | 'round_2';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import {
     useSafeIntl,
@@ -12,7 +12,8 @@ import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
-import { determineStatusForDistrict, getLqasStatsForRound } from './utils';
+import { useGetRegions } from '../../hooks/useGetRegions';
+import { formatLqasDataForChart, lqasChartTooltipFormatter } from './utils';
 import {
     makeCampaignsDropDown,
     findCountryIds,
@@ -21,8 +22,7 @@ import {
 import { convertAPIData } from '../../utils/LqasIm';
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
-import { LqasImTable } from '../../components/LQAS-IM/LqasImTable';
-import { lqasTableColumns } from './lqasTableConfig';
+import { PercentageBarChart } from '../../components/PercentageBarChart';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -43,7 +43,6 @@ export const Lqas = () => {
     const [campaign, setCampaign] = useState();
     const { data: LQASData, isLoading } = useLQAS();
     const convertedData = convertAPIData(LQASData);
-    // console.log('LQAS', convertedData);
 
     const countryIds = findCountryIds(LQASData);
     const { data: campaigns = [], isLoading: campaignsLoading } =
@@ -59,6 +58,9 @@ export const Lqas = () => {
         countryOfSelectedCampaign,
         'DISTRICT',
     );
+
+    const { data: regions = [] } = useGetRegions(countryOfSelectedCampaign);
+
     const scope = findScope(campaign, campaigns, shapes);
 
     const districtsNotFound =
@@ -70,32 +72,30 @@ export const Lqas = () => {
         ? LQASData.day_country_not_found[currentCountryName]
         : {};
 
-    const round1Stats = getLqasStatsForRound(
-        convertedData,
-        campaign,
-        'round_1',
+    const barChartDataRound1 = useMemo(
+        () =>
+            formatLqasDataForChart({
+                data: convertedData,
+                campaign,
+                round: 'round_1',
+                shapes,
+                regions,
+            }),
+        [convertedData, campaign, shapes, regions],
     );
-    const round2Stats = getLqasStatsForRound(
-        convertedData,
-        campaign,
-        'round_2',
+    const barChartDataRound2 = useMemo(
+        () =>
+            formatLqasDataForChart({
+                data: convertedData,
+                campaign,
+                round: 'round_2',
+                shapes,
+                regions,
+            }),
+        [convertedData, campaign, shapes, regions],
     );
-    const tableDataRound1 = round1Stats[0].map(district => {
-        return {
-            ...district,
-            status: determineStatusForDistrict(district),
-        };
-    });
-
-    const tableDataRound2 = round2Stats[0].map(district => {
-        return {
-            ...district,
-            status: determineStatusForDistrict(district),
-        };
-    });
 
     const dropDownOptions = makeCampaignsDropDown(campaigns);
-
     return (
         <>
             <TopBar
@@ -156,25 +156,49 @@ export const Lqas = () => {
                     </Grid>
                 </Grid>
                 <Grid container item spacing={2} direction="row">
-                    <Grid item xs={6} mr={2}>
+                    {campaign && (
+                        <Grid item xs={12}>
+                            <Box ml={2} mt={2}>
+                                <Typography variant="h5">
+                                    {formatMessage(MESSAGES.lqasPerRegion)}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                    )}
+                    <Grid item xs={6}>
                         {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box ml={2}>
-                                <LqasImTable
-                                    data={tableDataRound1}
-                                    tableKey="LQAS-Round1"
-                                    columns={lqasTableColumns(formatMessage)}
+                        {!isLoading && campaign && (
+                            <Box ml={2} mt={2}>
+                                <Box>
+                                    <Typography variant="h6">
+                                        {formatMessage(MESSAGES.round_1)}
+                                    </Typography>{' '}
+                                </Box>
+                                <PercentageBarChart
+                                    data={barChartDataRound1}
+                                    tooltipFormatter={lqasChartTooltipFormatter(
+                                        formatMessage,
+                                    )}
+                                    chartKey="LQASChartRound1"
                                 />
                             </Box>
                         )}
                     </Grid>
                     <Grid item xs={6} mr={2}>
                         {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box mr={2}>
-                                <LqasImTable
-                                    data={tableDataRound2}
-                                    tableKey="LQAS-Round2"
+                        {!isLoading && campaign && (
+                            <Box mr={2} mt={2}>
+                                <Box>
+                                    <Typography variant="h6">
+                                        {formatMessage(MESSAGES.round_2)}
+                                    </Typography>{' '}
+                                </Box>
+                                <PercentageBarChart
+                                    data={barChartDataRound2}
+                                    tooltipFormatter={lqasChartTooltipFormatter(
+                                        formatMessage,
+                                    )}
+                                    chartKey="LQASChartRound1"
                                 />
                             </Box>
                         )}

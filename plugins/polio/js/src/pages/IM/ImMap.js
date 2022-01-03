@@ -15,6 +15,7 @@ import {
     makeLegendItem,
 } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
+import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 
 // Don't put it in utils to avoid circular dep
 const makePopup =
@@ -40,17 +41,17 @@ export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
         round,
     );
     const passedLegendItem = makeLegendItem({
-        color: 'green',
+        color: OK_COLOR,
         value: passed?.length,
         message: formatMessage(MESSAGES['1imOK']),
     });
     const disqualifiedLegendItem = makeLegendItem({
-        color: '#FFD835',
+        color: WARNING_COLOR,
         value: disqualified?.length,
         message: formatMessage(MESSAGES['2imWarning']),
     });
     const failedLegendItem = makeLegendItem({
-        color: 'red',
+        color: FAIL_COLOR,
         value: failed?.length,
         message: formatMessage(MESSAGES['3imFail']),
     });

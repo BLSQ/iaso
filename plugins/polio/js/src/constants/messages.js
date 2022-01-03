@@ -731,6 +731,20 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.emailNotifyButton',
         defaultMessage: 'Notify coordinators by e-mail',
     },
+    lqasPerRegion: {
+        id: 'iaso.polio.label.lqasPerRegion',
+        defaultMessage:
+            'Districts passing LQAS per region (based on districts found)',
+    },
+    imPerRegion: {
+        id: 'iaso.polio.label.imPerRegion',
+        defaultMessage:
+            'Vaccination ratio per region (based on districts found)',
+    },
+    vaccinated: {
+        id: 'iaso.polio.label.vaccinated',
+        defaultMessage: 'Vaccinated',
+    },
     spreadsheetImportTitle: {
         id: 'iaso.polio.label.spreadsheetImportTitle',
         defaultMessage: 'Imported from SpreadSheet : ',

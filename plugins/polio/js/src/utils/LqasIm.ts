@@ -1,8 +1,8 @@
 import {
     ConvertedLqasImData,
     LqasImCampaignData,
-    LqasData,
-} from '../pages/LQAS/types';
+    LqasImData,
+} from '../constants/types';
 
 const findRegion = (
     roundData: LqasImCampaignData,
@@ -26,7 +26,7 @@ const convertRoundDataToArray = (roundDataAsDict, regions) => {
 };
 
 export const convertAPIData = (
-    data: LqasData,
+    data: LqasImData,
     regions: Record<number, string> = {},
 ): Record<string, ConvertedLqasImData> => {
     if (!data) return {};

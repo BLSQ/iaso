@@ -849,6 +849,46 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.ratioCaregiversInformed',
         defaultMessage: 'caregivers informed',
     },
+    imGlobal: {
+        id: 'iaso.polio.label.imGlobal',
+        defaultMessage: 'Global IM',
+    },
+    imIHH: {
+        id: 'iaso.polio.label.imIHH',
+        defaultMessage: 'IM in household',
+    },
+    imOHH: {
+        id: 'iaso.polio.label.imOHH',
+        defaultMessage: 'IM out of household',
+    },
+    Tot_child_Absent_HH: {
+        id: 'iaso.polio.label.Tot_child_Absent_HH',
+        defaultMessage: 'Child absent',
+    },
+    Tot_child_Asleep_HH: {
+        id: 'iaso.polio.label.Tot_child_Asleep_HH',
+        defaultMessage: 'Child asleep',
+    },
+    Tot_child_NC_HH: {
+        id: 'iaso.polio.label.Tot_child_NC_HH',
+        defaultMessage: 'Refusal',
+    },
+    Tot_child_NotVisited_HH: {
+        id: 'iaso.polio.label.Tot_child_NotVisited_HH',
+        defaultMessage: 'Not visited',
+    },
+    Tot_child_NotRevisited_HH: {
+        id: 'iaso.polio.label.Tot_child_NotRevisited_HH',
+        defaultMessage: 'Not revisited',
+    },
+    Tot_child_Others_HH: {
+        id: 'iaso.polio.label.Tot_child_Others_HH',
+        defaultMessage: 'Other',
+    },
+    Tot_child_VaccinatedRoutine: {
+        id: 'iaso.polio.label.Tot_child_VaccinatedRoutine',
+        defaultMessage: 'Child vaccinated in routine',
+    },
 });
 
 export default MESSAGES;

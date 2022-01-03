@@ -469,6 +469,8 @@ class IMStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
+        stats_types = request.GET.get("type", "HH,OHH")
+        stats_types = stats_types.split(",")
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="im-config")
         res = []
@@ -479,14 +481,31 @@ class IMStatsViewSet(viewsets.ViewSet):
             lambda: {
                 "round_1": defaultdict(base_stats.copy),
                 "round_2": defaultdict(base_stats.copy),
+                "round_1_nfm_stats": defaultdict(int),
+                "round_2_nfm_stats": defaultdict(int),
                 "districts_not_found": [],
             }
         )
         day_country_not_found = defaultdict(lambda: defaultdict(int))
         form_campaign_not_found_count = 0
+        nfm_reason_keys = [
+            "Tot_child_Absent_HH",
+            "Tot_child_NC_HH",
+            "Tot_child_NotVisited_HH",
+            "Tot_child_NotRevisited_HH",
+            "Tot_child_Asleep_HH",
+            "Tot_child_Others_HH",
+            "Tot_child_VaccinatedRoutine",
+        ]
+        if request.user.iaso_profile.org_units.count() == 0:
+            authorized_countries = OrgUnit.objects.filter(org_unit_type_id__category="COUNTRY")
+        else:
+            authorized_countries = request.user.iaso_profile.org_units.filter(org_unit_type_id__category="COUNTRY")
+
         for country_config in config.content:
             country = OrgUnit.objects.get(id=country_config["country_id"])
-
+            if country not in authorized_countries:
+                continue
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
                 .filter(org_unit_type_id__category="DISTRICT")
@@ -517,16 +536,37 @@ class IMStatsViewSet(viewsets.ViewSet):
                 forms = json.loads(cached_response.content)
 
             for form in forms:
+                form_count += 1
                 total_Child_FMD = 0
                 total_Child_Checked = 0
+                nfm_counts_dict = defaultdict(int)
+                done_something = False
+                if form.get("HH", None):
+                    if "HH" in stats_types:
+                        for kid in form.get("HH", []):
+                            type = "HH"
+                            Child_FMD = kid.get("HH/U5_Vac_FM_HH", 0)
+                            Child_Checked = kid.get("HH/Total_U5_Present_HH", 0)
 
-                for kid in form.get("OHH", []):
-                    type = "OHH"
-                    Child_FMD = kid.get("OHH/Child_FMD", 0)
-                    Child_Checked = kid.get("OHH/Child_Checked", 0)
+                            total_Child_FMD += int(Child_FMD)
+                            total_Child_Checked += int(Child_Checked)
+                            for reason in nfm_reason_keys:
+                                nfm_counts_dict[reason] = nfm_counts_dict[reason] + int(
+                                    kid.get("HH/group1/" + reason, "0")
+                                )
+                            done_something = True
+                else:
+                    if "OHH" in stats_types:
+                        for kid in form.get("OHH", []):
+                            type = "OHH"
+                            Child_FMD = kid.get("OHH/Child_FMD", 0)
+                            Child_Checked = kid.get("OHH/Child_Checked", 0)
 
-                    total_Child_FMD += int(Child_FMD)
-                    total_Child_Checked += int(Child_Checked)
+                            total_Child_FMD += int(Child_FMD)
+                            total_Child_Checked += int(Child_Checked)
+                            done_something = True
+                if not done_something:
+                    continue
                 district_id = "%s - %s" % (form.get("District"), form.get("Region"))
                 districts.add(district_id)
                 today_string = form["today"]
@@ -558,7 +598,11 @@ class IMStatsViewSet(viewsets.ViewSet):
                     res.append(row)
 
                     round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
-
+                    round_stats_key = round_key + "_nfm_stats"
+                    for key in nfm_counts_dict:
+                        campaign_stats[campaign_name][round_stats_key][key] = (
+                            campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
+                        )
                     d = campaign_stats[campaign_name][round_key][district_name]
                     d["total_child_fmd"] = d["total_child_fmd"] + row[7]
                     d["total_child_checked"] = d["total_child_checked"] + row[8]
@@ -571,11 +615,11 @@ class IMStatsViewSet(viewsets.ViewSet):
                             campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
                     else:
                         d["district"] = district.id
+                        d["region"] = region_name
                         fully_mapped_form_count += 1
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
-                form_count += 1
 
         response = {
             "stats": campaign_stats,

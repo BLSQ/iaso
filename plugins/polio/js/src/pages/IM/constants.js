@@ -27,3 +27,14 @@ export const districtColors = {
         zIndex: 999,
     },
 };
+
+// keys of reasons for children not fingermarked in IM
+export const ImNfmKeys = [
+    'Tot_child_Absent_HH',
+    'Tot_child_NC_HH',
+    'Tot_child_NotVisited_HH',
+    'Tot_child_NotRevisited_HH',
+    'Tot_child_Asleep_HH',
+    'Tot_child_Others_HH',
+    'Tot_child_VaccinatedRoutine',
+];

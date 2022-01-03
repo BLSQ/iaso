@@ -23,7 +23,7 @@ import { useStyles } from '../../styles/theme';
 import {
     IntlFormatMessage,
     LqasImCampaignDataWithNameAndRegion,
-} from './types';
+} from '../../constants/types';
 import { caregiverSourceInfoKeys } from './constants';
 import { convertStatToPercent } from './utils';
 import {

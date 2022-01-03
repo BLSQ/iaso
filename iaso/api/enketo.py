@@ -1,4 +1,6 @@
 from bs4 import BeautifulSoup as Soup
+from django.db import models
+from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
@@ -261,6 +263,7 @@ class EnketoSubmissionAPIView(APIView):
         return resp
 
     def post(self, request, format=None):
+
         """UPDATE"""
         if request.FILES:
             main_file = request.FILES["xml_submission_file"]
@@ -306,6 +309,7 @@ class EnketoSubmissionAPIView(APIView):
             log_modification(original, instance, source=INSTANCE_API, user=user)
             if instance.to_export:
                 instance.export(force_export=True)
+
             return Response({"result": "success"}, status=status.HTTP_201_CREATED)
 
         return Response()

@@ -783,6 +783,7 @@ class Instance(models.Model):
     STATUS_EXPORTED = "EXPORTED"
 
     created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
     uuid = models.TextField(null=True, blank=True)
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)

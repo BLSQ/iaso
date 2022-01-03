@@ -1,11 +1,16 @@
+import jwt
+from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
+from jwt import DecodeError
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
 
+
 import logging
 
+from hat.settings import SECRET_KEY
 from iaso.models import Instance, InstanceFile, FeatureFlag
 
 logger = logging.getLogger(__name__)
@@ -18,6 +23,7 @@ logger = logging.getLogger(__name__)
 @permission_classes([])
 def form_upload(request: HttpRequest) -> HttpResponse:
     main_file = request.FILES["xml_submission_file"]
+
     instances = Instance.objects.filter(file_name=main_file.name)
     if instances:
         i = instances.first()
@@ -25,6 +31,15 @@ def form_upload(request: HttpRequest) -> HttpResponse:
         i = Instance(file_name=main_file.name)
 
     i.file = request.FILES["xml_submission_file"]
+
+    try:
+        user = User.objects.get(pk=jwt.decode(request.headers["Authorization"][7:]
+                                              , SECRET_KEY, algorithms=['HS256'])["user_id"])
+        i.user = user
+    except DecodeError:
+        print("decode error")
+        pass
+
     i.save()
 
     try:

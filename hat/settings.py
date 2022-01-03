@@ -18,6 +18,8 @@ from django.utils.translation import ugettext_lazy as _
 from sentry_sdk.integrations.django import DjangoIntegration
 
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
+FILE_SERVER_URL = os.environ.get("FILE_SERVER_URL", "https://1d1c-188-189-138-13.ngrok.io")
+print("FILE_SERVER_URL", FILE_SERVER_URL)
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
 
@@ -313,6 +315,7 @@ if USE_S3:
     MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME  # subdirectories will depend on field
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 else:
+
     MEDIA_URL = "/media/"
     STATIC_URL = "/static/"
     STATIC_ROOT = os.path.join(BASE_DIR, "static")

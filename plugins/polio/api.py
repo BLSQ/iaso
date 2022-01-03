@@ -4,6 +4,8 @@ from datetime import timedelta, datetime
 
 import requests
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import HttpResponse
@@ -12,7 +14,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from gspread.utils import extract_id_from_url
-from rest_framework import routers, filters, viewsets, serializers, permissions
+from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Value, TextField, UUIDField
@@ -64,11 +66,26 @@ class CustomFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class CampaignFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        query_param = request.query_params.get("campaigns")
+
+        if query_param == "deleted":
+            query = Q(deleted_at__isnull=False)
+            return queryset.filter(query)
+
+        if query_param == "active":
+            query = Q(deleted_at__isnull=True)
+            return queryset.filter(query)
+
+        return queryset
+
+
 class CampaignViewSet(ModelViewSet):
 
     results_key = "campaigns"
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend, CampaignFilterBackend]
     ordering_fields = [
         "obr_name",
         "cvdpv2_notified_at",
@@ -101,12 +118,11 @@ class CampaignViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-
         if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
             return Campaign.objects.filter(initial_org_unit__in=org_units)
         else:
-            return Campaign.objects.all()
+            return Campaign.objects.filter()
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):
@@ -185,6 +201,16 @@ Timeline tracker Automated message
         campaign.save()
 
         return Response({"message": "email sent"})
+
+    @action(methods=["PATCH"], detail=False)
+    def restore_deleted_campaigns(self, request):
+        campaign = get_object_or_404(Campaign, pk=request.data["id"])
+        if campaign.deleted_at is not None:
+            campaign.deleted_at = None
+            campaign.save()
+            return Response(campaign.id, status=status.HTTP_200_OK)
+        else:
+            return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
 
 
 class CountryUsersGroupViewSet(ModelViewSet):
@@ -896,10 +922,10 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
+                type = "HH"
                 caregiver_counts_dict = defaultdict(lambda: defaultdict(int))
                 for HH in form.get("Count_HH", []):
                     # check finger
-                    type = "HH"
                     Child_FMD = HH.get("Count_HH/FM_Child", 0)
                     Child_Checked = HH.get("Count_HH/Child_Checked", 0)
                     if Child_FMD == "Y":

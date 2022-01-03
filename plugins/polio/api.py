@@ -836,8 +836,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
+                type = "HH"
                 for HH in form.get("Count_HH", []):
-                    type = "HH"
                     Child_FMD = HH.get("Count_HH/FM_Child", 0)
                     Child_Checked = HH.get("Count_HH/Child_Checked", 0)
                     if Child_FMD == "Y":

@@ -112,7 +112,7 @@ export const formatLqasDataForNFMChart = ({
     round,
     formatMessage,
 }: FormatForNFMParams): BarChartData[] => {
-    if (!data || !campaign) return [] as BarChartData[];
+    if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
     const roundString: string = NfmRoundString[round];
     const campaignData: Record<string, number> = data[campaign][roundString];
     const entries: [string, number][] = Object.entries(campaignData);

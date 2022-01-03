@@ -229,19 +229,17 @@ export const ImStats = ({ imType }) => {
                     </Grid>
                 </Grid>
                 <Grid container item spacing={2} direction="row">
-                    {campaign &&
-                        imType ===
-                            'imIHH'(
-                                <Grid item xs={12}>
-                                    <Box ml={2} mt={2}>
-                                        <Typography variant="h5">
-                                            {formatMessage(
-                                                MESSAGES.reasonsNoFingerMarked,
-                                            )}
-                                        </Typography>
-                                    </Box>
-                                </Grid>,
-                            )}
+                    {campaign && imType === 'imIHH' && (
+                        <Grid item xs={12}>
+                            <Box ml={2} mt={2}>
+                                <Typography variant="h5">
+                                    {formatMessage(
+                                        MESSAGES.reasonsNoFingerMarked,
+                                    )}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                    )}
                     <Grid item xs={6} mr={2}>
                         {isLoading && <LoadingSpinner />}
                         {!isLoading && campaign && (

@@ -23,10 +23,15 @@ const NfmCustomTick: FunctionComponent<any> = ({ x, y, payload }) => {
     if (typeof payload.value === 'string') {
         const allWords = payload?.value?.split(' ') ?? [];
         const firstWord = allWords.shift();
-        const valueAsWords = [firstWord, allWords.join(' ')];
+        const valuesAsWords = [firstWord];
+        if (allWords.join(' ').length >= 10) {
+            valuesAsWords.push(allWords.shift());
+        }
+        valuesAsWords.push(allWords.join(' '));
+        // const valueAsWords = [firstWord, allWords.join(' ')];
         return (
             <g transform={`translate(${x},${y})`}>
-                {valueAsWords.map((word, index) => (
+                {valuesAsWords.map((word, index) => (
                     <text
                         key={word + index}
                         x={0}

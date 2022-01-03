@@ -20,6 +20,8 @@ import {
 } from '../../utils/index';
 import { convertAPIData } from '../../utils/LqasIm.ts';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
+import { NoFingerMark } from '../LQAS/NoFingerMark.tsx';
+import { formatImDataForNFMChart } from '../LQAS/utils.ts';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -42,9 +44,11 @@ export const ImStats = ({ imType }) => {
     const convertedData = convertAPIData(imData);
 
     const countryIds = findCountryIds(imData);
+
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({
             countries: countryIds.toString(),
+            enabled: countryIds.length,
         }).query;
 
     const countryOfSelectedCampaign = campaigns.filter(
@@ -89,6 +93,27 @@ export const ImStats = ({ imType }) => {
             }),
         [convertedData, campaign, shapes, regions],
     );
+
+    const nfmDataRound1 = formatImDataForNFMChart({
+        data: imData.stats,
+        campaign,
+        round: 'round_1',
+        formatMessage,
+    });
+    const nfmDataRound2 = formatImDataForNFMChart({
+        data: imData.stats,
+        campaign,
+        round: 'round_2',
+        formatMessage,
+    });
+
+    const childrenNotMarkedRound1 = nfmDataRound1
+        .map(nfmData => nfmData.value)
+        .reduce((total, current) => total + current, 0);
+
+    const childrenNotMarkedRound2 = nfmDataRound2
+        .map(nfmData => nfmData.value)
+        .reduce((total, current) => total + current, 0);
 
     const dropDownOptions = makeCampaignsDropDown(campaigns);
 
@@ -200,6 +225,55 @@ export const ImStats = ({ imType }) => {
                         )}
                     </Grid>
                 </Grid>
+                <Grid container item spacing={2} direction="row">
+                    {campaign && (
+                        <Grid item xs={12}>
+                            <Box ml={2} mt={2}>
+                                <Typography variant="h5">
+                                    {formatMessage(
+                                        MESSAGES.reasonsNoFingerMarked,
+                                    )}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                    )}
+                    <Grid item xs={6} mr={2}>
+                        {isLoading && <LoadingSpinner />}
+                        {!isLoading && campaign && (
+                            <Box ml={2} mt={2}>
+                                <Box>
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.childrenNoMark,
+                                        )}, round 1: ${childrenNotMarkedRound1}`}
+                                    </Typography>
+                                </Box>
+                                <NoFingerMark
+                                    data={nfmDataRound1}
+                                    chartKey="nfmRound1"
+                                />
+                            </Box>
+                        )}
+                    </Grid>
+                    <Grid item xs={6} mr={2}>
+                        {isLoading && <LoadingSpinner />}
+                        {!isLoading && campaign && (
+                            <Box mr={2} mt={2}>
+                                <Box>
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.childrenNoMark,
+                                        )}, round 2: ${childrenNotMarkedRound2}`}
+                                    </Typography>
+                                </Box>
+                                <NoFingerMark
+                                    data={nfmDataRound2}
+                                    chartKey="nfmRound2"
+                                />
+                            </Box>
+                        )}
+                    </Grid>
+                </Grid>
                 <DisplayIfUserHasPerm permission="iaso_polio_config">
                     <Grid container item>
                         <Grid item xs={4}>
@@ -230,4 +304,4 @@ ImStats.defaultProps = {
     imType: 'imGlobal',
 };
 
-ImStats.propTypes = { imType: oneOf[('imGlobal', 'imIHH', 'imOHH')] };
+ImStats.propTypes = { imType: oneOf(['imGlobal', 'imIHH', 'imOHH']) };

@@ -67,6 +67,7 @@ export const Lqas = () => {
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({
             countries: countryIds.toString(),
+            enabled: countryIds.length,
         }).query;
 
     const countryOfSelectedCampaign = campaigns.filter(

@@ -455,11 +455,22 @@ class IMStatsViewSet(viewsets.ViewSet):
             lambda: {
                 "round_1": defaultdict(base_stats.copy),
                 "round_2": defaultdict(base_stats.copy),
+                "round_1_nfm_stats": defaultdict(int),
+                "round_2_nfm_stats": defaultdict(int),
                 "districts_not_found": [],
             }
         )
         day_country_not_found = defaultdict(lambda: defaultdict(int))
         form_campaign_not_found_count = 0
+        nfm_reason_keys = [
+            "Tot_child_Absent_HH",
+            "Tot_child_NC_HH",
+            "Tot_child_NotVisited_HH",
+            "Tot_child_NotRevisited_HH",
+            "Tot_child_Asleep_HH",
+            "Tot_child_Others_HH",
+            "Tot_child_VaccinatedRoutine",
+        ]
         if request.user.iaso_profile.org_units.count() == 0:
             authorized_countries = OrgUnit.objects.filter(org_unit_type_id__category="COUNTRY")
         else:
@@ -502,6 +513,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 form_count += 1
                 total_Child_FMD = 0
                 total_Child_Checked = 0
+                nfm_counts_dict = defaultdict(int)
                 done_something = False
                 if form.get("HH", None):
                     if "HH" in stats_types:
@@ -512,6 +524,10 @@ class IMStatsViewSet(viewsets.ViewSet):
 
                             total_Child_FMD += int(Child_FMD)
                             total_Child_Checked += int(Child_Checked)
+                            for reason in nfm_reason_keys:
+                                nfm_counts_dict[reason] = nfm_counts_dict[reason] + int(
+                                    kid.get("HH/group1/" + reason, "0")
+                                )
                             done_something = True
                 else:
                     if "OHH" in stats_types:
@@ -556,7 +572,11 @@ class IMStatsViewSet(viewsets.ViewSet):
                     res.append(row)
 
                     round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
-
+                    round_stats_key = round_key + "_nfm_stats"
+                    for key in nfm_counts_dict:
+                        campaign_stats[campaign_name][round_stats_key][key] = (
+                            campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
+                        )
                     d = campaign_stats[campaign_name][round_key][district_name]
                     d["total_child_fmd"] = d["total_child_fmd"] + row[7]
                     d["total_child_checked"] = d["total_child_checked"] + row[8]

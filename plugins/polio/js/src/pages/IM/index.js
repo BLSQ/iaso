@@ -228,55 +228,57 @@ export const ImStats = ({ imType }) => {
                         )}
                     </Grid>
                 </Grid>
-                <Grid container item spacing={2} direction="row">
-                    {campaign && imType === 'imIHH' && (
-                        <Grid item xs={12}>
-                            <Box ml={2} mt={2}>
-                                <Typography variant="h5">
-                                    {formatMessage(
-                                        MESSAGES.reasonsNoFingerMarked,
-                                    )}
-                                </Typography>
-                            </Box>
+                {imType === 'imIHH' && (
+                    <Grid container item spacing={2} direction="row">
+                        {campaign && (
+                            <Grid item xs={12}>
+                                <Box ml={2} mt={2}>
+                                    <Typography variant="h5">
+                                        {formatMessage(
+                                            MESSAGES.reasonsNoFingerMarked,
+                                        )}
+                                    </Typography>
+                                </Box>
+                            </Grid>
+                        )}
+                        <Grid item xs={6} mr={2}>
+                            {isLoading && <LoadingSpinner />}
+                            {!isLoading && campaign && (
+                                <Box ml={2} mt={2}>
+                                    <Box>
+                                        <Typography variant="h6">
+                                            {`${formatMessage(
+                                                MESSAGES.childrenNoMark,
+                                            )}, round 1: ${childrenNotMarkedRound1}`}
+                                        </Typography>
+                                    </Box>
+                                    <NoFingerMark
+                                        data={nfmDataRound1}
+                                        chartKey="nfmRound1"
+                                    />
+                                </Box>
+                            )}
                         </Grid>
-                    )}
-                    <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && campaign && (
-                            <Box ml={2} mt={2}>
-                                <Box>
-                                    <Typography variant="h6">
-                                        {`${formatMessage(
-                                            MESSAGES.childrenNoMark,
-                                        )}, round 1: ${childrenNotMarkedRound1}`}
-                                    </Typography>
+                        <Grid item xs={6} mr={2}>
+                            {isLoading && <LoadingSpinner />}
+                            {!isLoading && campaign && (
+                                <Box mr={2} mt={2}>
+                                    <Box>
+                                        <Typography variant="h6">
+                                            {`${formatMessage(
+                                                MESSAGES.childrenNoMark,
+                                            )}, round 2: ${childrenNotMarkedRound2}`}
+                                        </Typography>
+                                    </Box>
+                                    <NoFingerMark
+                                        data={nfmDataRound2}
+                                        chartKey="nfmRound2"
+                                    />
                                 </Box>
-                                <NoFingerMark
-                                    data={nfmDataRound1}
-                                    chartKey="nfmRound1"
-                                />
-                            </Box>
-                        )}
+                            )}
+                        </Grid>
                     </Grid>
-                    <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && campaign && (
-                            <Box mr={2} mt={2}>
-                                <Box>
-                                    <Typography variant="h6">
-                                        {`${formatMessage(
-                                            MESSAGES.childrenNoMark,
-                                        )}, round 2: ${childrenNotMarkedRound2}`}
-                                    </Typography>
-                                </Box>
-                                <NoFingerMark
-                                    data={nfmDataRound2}
-                                    chartKey="nfmRound2"
-                                />
-                            </Box>
-                        )}
-                    </Grid>
-                </Grid>
+                )}
                 <DisplayIfUserHasPerm permission="iaso_polio_config">
                     <Grid container item>
                         <Grid item xs={4}>

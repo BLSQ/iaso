@@ -113,6 +113,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.updated_at',
         defaultMessage: 'Updated',
     },
+    last_modified_by: {
+        id: 'iaso.instance.last_modified_by',
+        defaultMessage: 'Modified By',
+    },
     files: {
         id: 'iaso.instance.files',
         defaultMessage: 'Files',

@@ -19,7 +19,6 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
 FILE_SERVER_URL = os.environ.get("FILE_SERVER_URL", "https://1d1c-188-189-138-13.ngrok.io")
-print("FILE_SERVER_URL", FILE_SERVER_URL)
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
 

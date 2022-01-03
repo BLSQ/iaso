@@ -1,6 +1,11 @@
+import filecmp
+import os
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.conf import settings
+
 from bs4 import BeautifulSoup as Soup
-from django.db import models
-from django.forms import model_to_dict
+
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
@@ -282,6 +287,18 @@ class EnketoSubmissionAPIView(APIView):
                 user = None
             original = Instance.objects.get(id=instanceid)
             instance = Instance.objects.get(id=instanceid)
+
+            if instance.file:
+                path = default_storage.save("{0}.xml".format(instance), ContentFile(xml))
+                xml_to_compare = os.path.join(settings.MEDIA_ROOT, path)
+                if not filecmp.cmp(instance.file.path, xml_to_compare):
+                    try:
+                        instance.last_modified_by = request.user
+                        os.remove(xml_to_compare)
+                    except ValueError:
+                        pass
+            else:
+                instance.user = request.user
 
             instance.file = main_file
             instance.json = {}

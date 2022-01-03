@@ -10,6 +10,7 @@ from django.http import JsonResponse
 
 import logging
 
+from hat.audit.models import log_modification, INSTANCE_API
 from hat.settings import SECRET_KEY
 from iaso.models import Instance, InstanceFile, FeatureFlag
 
@@ -36,11 +37,10 @@ def form_upload(request: HttpRequest) -> HttpResponse:
         user = User.objects.get(pk=jwt.decode(request.headers["Authorization"][7:]
                                               , SECRET_KEY, algorithms=['HS256'])["user_id"])
         i.user = user
-    except DecodeError:
-        print("decode error")
-        pass
-
-    i.save()
+        i.save()
+    except (KeyError, DecodeError):
+        user = None
+        i.save()
 
     try:
         i.get_and_save_json_of_xml()
@@ -63,5 +63,7 @@ def form_upload(request: HttpRequest) -> HttpResponse:
 
     if i.project and i.project.has_feature(FeatureFlag.INSTANT_EXPORT):
         i.export()
+
+    log_modification(i, i, source=INSTANCE_API, user=user)
 
     return JsonResponse({"result": "success"}, status=201)

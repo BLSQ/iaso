@@ -154,5 +154,4 @@ class Differ:
                     distance=0 if same else field.distance(dhis2_value, ref_value),
                 )
             )
-
         return comparisons

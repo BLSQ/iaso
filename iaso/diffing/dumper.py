@@ -1,5 +1,7 @@
 import json
 
+from django.contrib.gis.geos import GEOSGeometry
+
 from iaso.management.commands.command_logger import CommandLogger
 import csv
 
@@ -74,6 +76,8 @@ class Dumper:
                 diffable_fields.append(field)
         for field in diffable_fields:
             header.extend((field, field + " before", field + " after"))
+            if field == "geometry":
+                header.append("distance diff (KM)")
         for i in range(1, number_of_parents + 1):
             header.extend(["parent %d name before" % i, "parent %d name after" % i])
         res.append(header)
@@ -84,17 +88,32 @@ class Dumper:
                 diff.status,
                 diff.org_unit.org_unit_type.name if diff.org_unit and diff.org_unit.org_unit_type else "",
             ]
-
             for field in fields:
-
                 comparison = list(filter(lambda x: x.field == field, diff.comparisons))[0]
                 results.append(comparison.status)
                 if field != "geometry":
                     results.append(str(comparison.before))
                     results.append(str(comparison.after))
                 else:
-                    results.append(str(comparison.before)[:40])
-                    results.append(str(comparison.after)[:40])
+                    if "MULTIPOLYGON" in str(comparison.before):
+                        results.append(str(comparison.before)[:40])
+                        results.append(str(comparison.after)[:40])
+                    else:
+                        results.append(str(comparison.before))
+                        results.append(str(comparison.after))
+                    """ Give the distance between two points """
+                    if "POINT Z" in str(comparison.before):
+                        if str(comparison.before)[:40] != str(comparison.after)[:40]:
+                            results.append(
+                                "{:.3f}".format(
+                                    GEOSGeometry(comparison.before).distance(GEOSGeometry(str(comparison.after))) * 100
+                                )
+                            )
+                        else:
+                            results.append(0)
+                    else:
+                        results.append(0)
+
             current_dhis2 = diff.orgunit_dhis2
             current_ref = diff.orgunit_ref
             for i in range(number_of_parents):

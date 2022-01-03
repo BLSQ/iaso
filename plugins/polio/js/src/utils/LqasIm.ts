@@ -1,12 +1,16 @@
+import { ConvertedLqasImData, LqasData } from '../pages/LQAS/types';
+
 const convertRoundDataToArray = roundDataAsDict => {
     const districtNames = Object.keys(roundDataAsDict);
     const roundData = Object.values(roundDataAsDict);
-    return roundData.map((value, index) => {
+    return roundData.map((value: any[], index) => {
         return { ...value, name: districtNames[index] };
     });
 };
 
-export const convertAPIData = data => {
+export const convertAPIData = (
+    data: LqasData,
+): Record<string, ConvertedLqasImData> => {
     if (!data) return {};
     const { stats } = data;
     const campaignKeys = Object.keys(stats);

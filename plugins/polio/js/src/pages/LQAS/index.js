@@ -13,16 +13,21 @@ import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import { useGetRegions } from '../../hooks/useGetRegions';
-import { formatLqasDataForChart, lqasChartTooltipFormatter } from './utils';
+import {
+    formatLqasDataForChart,
+    lqasChartTooltipFormatter,
+    formatLqasDataForNFMChart,
+} from './utils.ts';
 import {
     makeCampaignsDropDown,
     findCountryIds,
     findScope,
 } from '../../utils/index';
-import { convertAPIData } from '../../utils/LqasIm';
+import { convertAPIData } from '../../utils/LqasIm.ts';
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
+import { NoFingerMark } from './NoFingerMark.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -43,6 +48,7 @@ export const Lqas = () => {
     const [campaign, setCampaign] = useState();
     const { data: LQASData, isLoading } = useLQAS();
     const convertedData = convertAPIData(LQASData);
+    // console.log(convertedData)
 
     const countryIds = findCountryIds(LQASData);
     const { data: campaigns = [], isLoading: campaignsLoading } =
@@ -94,6 +100,26 @@ export const Lqas = () => {
             }),
         [convertedData, campaign, shapes, regions],
     );
+    const nfmDataRound1 = formatLqasDataForNFMChart({
+        data: LQASData.stats,
+        campaign,
+        round: 'round_1',
+        formatMessage,
+    });
+    const nfmDataRound2 = formatLqasDataForNFMChart({
+        data: LQASData.stats,
+        campaign,
+        round: 'round_2',
+        formatMessage,
+    });
+
+    const childrenNotMarkedRound1 = nfmDataRound1
+        .map(nfmData => nfmData.value)
+        .reduce((total, current) => total + current, 0);
+
+    const childrenNotMarkedRound2 = nfmDataRound2
+        .map(nfmData => nfmData.value)
+        .reduce((total, current) => total + current, 0);
 
     const dropDownOptions = makeCampaignsDropDown(campaigns);
     return (
@@ -198,7 +224,54 @@ export const Lqas = () => {
                                     tooltipFormatter={lqasChartTooltipFormatter(
                                         formatMessage,
                                     )}
-                                    chartKey="LQASChartRound1"
+                                    chartKey="LQASChartRound2"
+                                />
+                            </Box>
+                        )}
+                    </Grid>
+                </Grid>
+                <Grid container item spacing={2} direction="row">
+                    {campaign && (
+                        <Grid item xs={12}>
+                            <Box ml={2} mt={2}>
+                                <Typography variant="h5">
+                                    {formatMessage(
+                                        MESSAGES.reasonsNoFingerMarked,
+                                    )}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                    )}
+                    <Grid item xs={6}>
+                        {!isLoading && campaign && (
+                            <Box ml={2} mt={2}>
+                                <Box>
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.childrenNoMark,
+                                        )}, round 1: ${childrenNotMarkedRound1}`}
+                                    </Typography>
+                                </Box>
+                                <NoFingerMark
+                                    data={nfmDataRound1}
+                                    chartKey="nfmRound1"
+                                />
+                            </Box>
+                        )}
+                    </Grid>
+                    <Grid item xs={6}>
+                        {!isLoading && campaign && (
+                            <Box mr={2} mt={2}>
+                                <Box>
+                                    <Typography variant="h6">
+                                        {`${formatMessage(
+                                            MESSAGES.childrenNoMark,
+                                        )}, round 2: ${childrenNotMarkedRound2}`}
+                                    </Typography>
+                                </Box>
+                                <NoFingerMark
+                                    data={nfmDataRound2}
+                                    chartKey="nfmRound2"
                                 />
                             </Box>
                         )}

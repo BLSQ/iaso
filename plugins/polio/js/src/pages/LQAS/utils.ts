@@ -1,5 +1,12 @@
 import MESSAGES from '../../constants/messages';
-import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED } from './constants';
+import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED, nfmKeys } from './constants';
+import {
+    BarChartData,
+    LqasCampaign,
+    NfmRoundString,
+    RoundString,
+    IntlFormatMessage,
+} from './types';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -81,8 +88,51 @@ export const formatLqasDataForChart = ({
 };
 
 export const lqasChartTooltipFormatter =
-    formatMessage => (value, name, props) => {
+    formatMessage => (_value, _name, props) => {
         // eslint-disable-next-line react/prop-types
         const ratio = `${props.payload.passing}/${props.payload.found}`;
         return [ratio, formatMessage(MESSAGES.passing)];
     };
+
+type FormatForNFMParams = {
+    data: Record<string, LqasCampaign>;
+    campaign: string;
+    round: RoundString;
+    formatMessage: IntlFormatMessage;
+};
+
+export const lqasNfmTooltipFormatter = (value, _name, props) => {
+    // eslint-disable-next-line react/prop-types
+    return [value, props.payload.nfmKey];
+};
+
+export const formatLqasDataForNFMChart = ({
+    data,
+    campaign,
+    round,
+    formatMessage,
+}: FormatForNFMParams): BarChartData[] => {
+    if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
+    const roundString: string = NfmRoundString[round];
+    const campaignData: Record<string, number> = data[campaign][roundString];
+    const entries: [string, number][] = Object.entries(campaignData);
+    const convertedEntries = entries.map(entry => {
+        const [name, value] = entry;
+        return { name: formatMessage(MESSAGES[name]), value, nfmKey: name };
+    });
+    if (convertedEntries.length === nfmKeys.length)
+        return convertedEntries.sort((a, b) =>
+            a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }),
+        );
+    const dataKeys = Object.keys(campaignData);
+    const missingEntries = nfmKeys
+        .filter(nfmKey => !dataKeys.includes(nfmKey))
+        .map(nfmKey => ({
+            name: formatMessage(MESSAGES[nfmKey]),
+            value: 0,
+            nfmKey,
+        }));
+    return [...convertedEntries, ...missingEntries].sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }),
+    );
+};

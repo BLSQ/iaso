@@ -818,7 +818,9 @@ class LQASStatsViewSet(viewsets.ViewSet):
         campaign_stats = defaultdict(
             lambda: {
                 "round_1": defaultdict(base_stats.copy),
+                "round_1_nfm_stats": defaultdict(int),
                 "round_2": defaultdict(base_stats.copy),
+                "round_2_nfm_stats": defaultdict(int),
                 "districts_not_found": [],
             }
         )
@@ -859,13 +861,19 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
                 total_Child_FMD = 0
                 total_Child_Checked = 0
+                nfm_counts_dict = defaultdict(int)
+                type = "HH"
                 for HH in form.get("Count_HH", []):
-                    type = "HH"
                     Child_FMD = HH.get("Count_HH/FM_Child", 0)
                     Child_Checked = HH.get("Count_HH/Child_Checked", 0)
                     if Child_FMD == "Y":
                         total_Child_FMD += 1
+                    else:
+                        reason = HH.get("Count_HH/Reason_Not_FM")
+                        if reason:
+                            nfm_counts_dict[reason] = nfm_counts_dict[reason] + 1
                     total_Child_Checked += int(Child_Checked)
+
                 district_id = "%s - %s" % (form.get("District"), form.get("Region"))
                 districts.add(district_id)
                 today_string = form["today"]
@@ -894,7 +902,11 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     res.append(row)
 
                     round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
-
+                    round_stats_key = round_key + "_nfm_stats"
+                    for key in nfm_counts_dict:
+                        campaign_stats[campaign_name][round_stats_key][key] = (
+                            campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
+                        )
                     d = campaign_stats[campaign_name][round_key][district_name]
                     d["total_child_fmd"] = d["total_child_fmd"] + row[7]
                     d["total_child_checked"] = d["total_child_checked"] + row[8]

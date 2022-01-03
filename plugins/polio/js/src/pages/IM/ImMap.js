@@ -7,7 +7,7 @@ import { MapLegend } from '../../components/MapComponent/MapLegend';
 import { MapLegendContainer } from '../../components/MapComponent/MapLegendContainer';
 import { ImMapHeader } from './ImMapHeader';
 import { LqasImPopup } from '../../components/LQAS-IM/LqasImPopUp';
-import { determineStatusForDistrict, getImStatsForRound } from './utils';
+import { determineStatusForDistrict, getImStatsForRound } from './utils.ts';
 import { districtColors } from './constants';
 import {
     getScopeStyle,
@@ -88,7 +88,7 @@ export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
                             disqualifiedLegendItem,
                             failedLegendItem,
                         ]}
-                        width="md"
+                        width="lg"
                     />
                 </MapLegendContainer>
                 <MapComponent

@@ -16,16 +16,15 @@ export const determineStatusForDistrict = district => {
 };
 
 export const getImStatsForRound = (imData, campaign, round) => {
-    if (!imData[campaign]) return [[], [], [], []];
-    const totalEvaluated = [...imData[campaign][round]];
-    const allStatuses = totalEvaluated.map(district => {
+    if (!imData[campaign]) return [[], [], []];
+    const allStatuses = [...imData[campaign][round]].map(district => {
         return determineStatusForDistrict(district);
     });
     const passed = allStatuses.filter(status => status === IM_PASS);
     const disqualified = allStatuses.filter(status => status === IM_WARNING);
     const failed = allStatuses.filter(status => status === IM_FAIL);
 
-    return [totalEvaluated, passed, failed, disqualified];
+    return [passed, failed, disqualified];
 };
 
 // FIXME duplicate with lqas
@@ -36,9 +35,6 @@ const getImStatsWithRegion = ({ data, campaign, round, shapes }) => {
         region: shapes
             .filter(shape => shape.id === district.district)
             .map(shape => shape.parent_id)[0],
-        // status: determineStatusForDistrict(district),
-        // childrenWithMark: district.total_child_fmd,
-        // childrenChecked: district.total_child_checked,
     }));
 };
 
@@ -89,7 +85,7 @@ export const formatImDataForChart = ({
         .sort((a, b) => a.value < b.value);
 };
 
-export const imTooltipFormatter = formatMessage => (value, name, props) => {
+export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
     // eslint-disable-next-line react/prop-types
     const ratio = `${props.payload.checked}/${props.payload.marked}`;
     return [ratio, formatMessage(MESSAGES.vaccinated)];
@@ -104,7 +100,6 @@ const sortImNfmKeys = (a, b) => {
     });
 };
 
-// TODO move to IM folder and convert to ts
 export const formatImDataForNFMChart = ({
     data,
     campaign,

@@ -24,14 +24,14 @@ import {
     IntlFormatMessage,
     LqasImCampaignDataWithNameAndRegion,
 } from '../../constants/types';
-import { caregiverSourceInfoKeys } from './constants';
-import { convertStatToPercent } from './utils';
+import { caregiverSourceInfoKeys } from '../../pages/LQAS/constants';
+import { convertStatToPercent } from '../../pages/LQAS/utils';
 import {
     sortbyDistrictNameAsc,
     sortbyDistrictNameDesc,
     sortbyRegionNameAsc,
     sortbyRegionNameDesc,
-} from '../../components/LQAS-IM/tableUtils';
+} from './tableUtils';
 
 type Props = {
     data: LqasImCampaignDataWithNameAndRegion[];

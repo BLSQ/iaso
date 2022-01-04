@@ -30,7 +30,7 @@ import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
-import { CaregiversTable } from './CaregiversTable.tsx';
+import { CaregiversTable } from '../../components/LQAS-IM/CaregiversTable.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },

@@ -5,8 +5,8 @@ import { useSafeIntl } from 'bluesquare-components';
 import { MapComponent } from '../../components/MapComponent/MapComponent';
 import { MapLegend } from '../../components/MapComponent/MapLegend';
 import { MapLegendContainer } from '../../components/MapComponent/MapLegendContainer';
-import { ImMapHeader } from './ImMapHeader';
 import { LqasImPopup } from '../../components/LQAS-IM/LqasImPopUp';
+import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
 import { determineStatusForDistrict, getImStatsForRound } from './utils.ts';
 import { districtColors } from './constants';
 import {
@@ -34,8 +34,7 @@ const makePopup =
 export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
-    // eslint-disable-next-line no-unused-vars
-    const [_evaluated, passed, failed, disqualified] = getImStatsForRound(
+    const [passed, failed, disqualified] = getImStatsForRound(
         imData,
         campaign,
         round,
@@ -78,7 +77,7 @@ export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
 
     return (
         <>
-            <ImMapHeader round={round} />
+            <LqasImMapHeader round={round} />
             <Box position="relative">
                 <MapLegendContainer>
                     <MapLegend

@@ -1,12 +1,15 @@
-import React from 'react';
-import { oneOf } from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { Typography, Box } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
+import { RoundString } from '../../constants/types';
 
-export const LqasMapHeader = ({ round }) => {
+type Props = {
+    round: RoundString;
+};
+
+export const LqasImMapHeader: FunctionComponent<Props> = ({ round }) => {
     const { formatMessage } = useSafeIntl();
-
     return (
         <Box>
             <Typography variant="h5">
@@ -14,8 +17,4 @@ export const LqasMapHeader = ({ round }) => {
             </Typography>
         </Box>
     );
-};
-
-LqasMapHeader.propTypes = {
-    round: oneOf(['round_1', 'round_2']).isRequired,
 };

@@ -38,7 +38,7 @@ export const getLqasStatsForRound = (lqasData, campaign, round) => {
     );
     const failed = allStatuses.filter(status => status === LQAS_FAIL);
 
-    return [totalEvaluated, passed, failed, disqualified];
+    return [passed, failed, disqualified];
 };
 
 export const getLqasStatsWithRegion = ({ data, campaign, round, shapes }) => {
@@ -152,7 +152,7 @@ export const makeDataForTable = (
     return data[campaign][round];
 
     // removed the filter so that the table reflects the total numbers of its title/header
-    // we should probably filter the not found everywhere, but we would have inconsistencies anyway because of the urrent backend implementation of nfm
+    // we should probably filter the not found everywhere, but we would have inconsistencies anyway because of the current backend implementation of nfm
     // return data[campaign][round].filter(roundData =>
     //     Boolean(roundData.district),
     // );

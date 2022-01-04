@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid, Paper, Box, Typography } from '@material-ui/core';
-import { array, string } from 'prop-types';
+import { array, oneOf, string } from 'prop-types';
 import { useStyles } from './styles';
 
 const convertWidth = width => {
@@ -12,6 +12,7 @@ const convertWidth = width => {
     return '100px';
 };
 
+// TODO pass font size as props
 export const MapLegend = ({ title, legendItems, width }) => {
     const classes = useStyles();
     return (
@@ -31,7 +32,7 @@ export const MapLegend = ({ title, legendItems, width }) => {
                     >
                         <Grid
                             item
-                            sm={width === 'xs' ? 6 : 4}
+                            sm={width === 'xs' ? 6 : 3}
                             container
                             justifyContent="flex-start"
                         >
@@ -42,12 +43,16 @@ export const MapLegend = ({ title, legendItems, width }) => {
                         </Grid>
                         <Grid
                             item
-                            sm={width === 'xs' ? 6 : 8}
+                            sm={width === 'xs' ? 6 : 9}
                             container
                             justifyContent="flex-end"
                             alignItems="center"
                         >
-                            {legendItem.label}
+                            {/* <Typography variant="subtitle2"> */}
+                            <div style={{ fontSize: '14px' }}>
+                                {legendItem.label}
+                            </div>
+                            {/* </Typography> */}
                         </Grid>
                     </Grid>
                 ))}
@@ -59,8 +64,8 @@ export const MapLegend = ({ title, legendItems, width }) => {
 MapLegend.propTypes = {
     title: string.isRequired,
     legendItems: array.isRequired,
-    width: string,
+    width: oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
 };
 MapLegend.defaultProps = {
-    width: 'small',
+    width: 'sm',
 };

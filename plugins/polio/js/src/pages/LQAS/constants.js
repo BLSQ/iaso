@@ -25,3 +25,31 @@ export const districtColors = {
         zIndex: 999,
     },
 };
+
+// keys of reasons for children not fingermarked in LQAS
+export const nfmKeys = [
+    'childabsent',
+    'House_not_visited',
+    'Other',
+    'Vaccinated_but_not_FM',
+    'Non_Compliance',
+    'Child_was_asleep',
+    'Child_is_a_visitor',
+];
+
+export const caregiverSourceInfoKeys = [
+    'caregivers_informed',
+    'TV',
+    'Radio',
+    'Others',
+    'Gong_gong',
+    'Mob_VanPA',
+    'H2H_Mobilizer',
+    'IEC_Materials',
+    'Volunteers',
+    'Health_worker',
+    'Opinion_leader',
+    'Com_Info_centre',
+    'Religious_leader',
+    'MobileMessaging_SocialMedia',
+];

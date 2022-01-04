@@ -23,7 +23,6 @@ export const PercentageBarChart = ({
     chartKey,
 }) => {
     const [renderCount, setRenderCount] = useState(0);
-
     const chartHeight = BAR_HEIGHT * data.length + 100;
     // Force render to avoid visual bug when data has length of 0
     useEffect(() => {

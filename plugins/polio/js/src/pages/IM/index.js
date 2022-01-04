@@ -1,20 +1,20 @@
 import React, { useState, useMemo } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import {
-    useSafeIntl,
-    Select,
-    LoadingSpinner,
-    // Table,
-} from 'bluesquare-components';
+import { useSafeIntl, Select, LoadingSpinner } from 'bluesquare-components';
 
 import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { oneOf } from 'prop-types';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import { useGetRegions } from '../../hooks/useGetRegions';
 
-import { formatImDataForChart, imTooltipFormatter } from './utils';
+import {
+    formatImDataForChart,
+    imTooltipFormatter,
+    formatImDataForNFMChart,
+} from './utils.ts';
 import { useIM } from './requests';
 import { ImMap } from './ImMap';
 import {
@@ -22,8 +22,9 @@ import {
     findCountryIds,
     findScope,
 } from '../../utils/index';
-import { convertAPIData } from '../../utils/LqasIm';
+import { convertAPIData } from '../../utils/LqasIm.ts';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
+import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -38,18 +39,19 @@ const styles = theme => ({
 
 const useStyles = makeStyles(styles);
 
-export const ImStats = () => {
+export const ImStats = ({ imType }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
-    const { data: imData, isLoading } = useIM();
-    // console.log('LQAS', imData);
+    const { data: imData, isLoading } = useIM(imType);
     const convertedData = convertAPIData(imData);
 
     const countryIds = findCountryIds(imData);
+
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({
             countries: countryIds.toString(),
+            enabled: countryIds.length,
         }).query;
 
     const countryOfSelectedCampaign = campaigns.filter(
@@ -95,12 +97,33 @@ export const ImStats = () => {
         [convertedData, campaign, shapes, regions],
     );
 
+    const nfmDataRound1 = formatImDataForNFMChart({
+        data: imData.stats,
+        campaign,
+        round: 'round_1',
+        formatMessage,
+    });
+    const nfmDataRound2 = formatImDataForNFMChart({
+        data: imData.stats,
+        campaign,
+        round: 'round_2',
+        formatMessage,
+    });
+
+    const childrenNotMarkedRound1 = nfmDataRound1
+        .map(nfmData => nfmData.value)
+        .reduce((total, current) => total + current, 0);
+
+    const childrenNotMarkedRound2 = nfmDataRound2
+        .map(nfmData => nfmData.value)
+        .reduce((total, current) => total + current, 0);
+
     const dropDownOptions = makeCampaignsDropDown(campaigns);
 
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.im)}
+                title={formatMessage(MESSAGES[imType])}
                 displayBackButton={false}
             />
             <Grid container className={classes.container}>
@@ -180,7 +203,7 @@ export const ImStats = () => {
                                     tooltipFormatter={imTooltipFormatter(
                                         formatMessage,
                                     )}
-                                    chartKey="LQASChartRound1"
+                                    chartKey="IMChartRound1"
                                 />
                             </Box>
                         )}
@@ -199,12 +222,63 @@ export const ImStats = () => {
                                     tooltipFormatter={imTooltipFormatter(
                                         formatMessage,
                                     )}
-                                    chartKey="LQASChartRound1"
+                                    chartKey="IMChartRound1"
                                 />
                             </Box>
                         )}
                     </Grid>
                 </Grid>
+                {imType === 'imIHH' && (
+                    <Grid container item spacing={2} direction="row">
+                        {campaign && (
+                            <Grid item xs={12}>
+                                <Box ml={2} mt={2}>
+                                    <Typography variant="h5">
+                                        {formatMessage(
+                                            MESSAGES.reasonsNoFingerMarked,
+                                        )}
+                                    </Typography>
+                                </Box>
+                            </Grid>
+                        )}
+                        <Grid item xs={6} mr={2}>
+                            {isLoading && <LoadingSpinner />}
+                            {!isLoading && campaign && (
+                                <Box ml={2} mt={2}>
+                                    <Box>
+                                        <Typography variant="h6">
+                                            {`${formatMessage(
+                                                MESSAGES.childrenNoMark,
+                                            )}, round 1: ${childrenNotMarkedRound1}`}
+                                        </Typography>
+                                    </Box>
+                                    <NoFingerMark
+                                        data={nfmDataRound1}
+                                        chartKey="nfmRound1"
+                                    />
+                                </Box>
+                            )}
+                        </Grid>
+                        <Grid item xs={6} mr={2}>
+                            {isLoading && <LoadingSpinner />}
+                            {!isLoading && campaign && (
+                                <Box mr={2} mt={2}>
+                                    <Box>
+                                        <Typography variant="h6">
+                                            {`${formatMessage(
+                                                MESSAGES.childrenNoMark,
+                                            )}, round 2: ${childrenNotMarkedRound2}`}
+                                        </Typography>
+                                    </Box>
+                                    <NoFingerMark
+                                        data={nfmDataRound2}
+                                        chartKey="nfmRound2"
+                                    />
+                                </Box>
+                            )}
+                        </Grid>
+                    </Grid>
+                )}
                 <DisplayIfUserHasPerm permission="iaso_polio_config">
                     <Grid container item>
                         <Grid item xs={4}>
@@ -231,3 +305,8 @@ export const ImStats = () => {
         </>
     );
 };
+ImStats.defaultProps = {
+    imType: 'imGlobal',
+};
+
+ImStats.propTypes = { imType: oneOf(['imGlobal', 'imIHH', 'imOHH']) };

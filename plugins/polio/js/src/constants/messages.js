@@ -749,6 +749,146 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.spreadsheetImportTitle',
         defaultMessage: 'Imported from SpreadSheet : ',
     },
+    childabsent: {
+        id: 'iaso.polio.label.childabsent',
+        defaultMessage: 'Child absent',
+    },
+    House_not_visited: {
+        id: 'iaso.polio.label.house_not_visited',
+        defaultMessage: 'House not visited',
+    },
+    Other: {
+        id: 'iaso.polio.label.other',
+        defaultMessage: 'Other',
+    },
+    Vaccinated_but_not_FM: {
+        id: 'iaso.polio.label.vaccinated_but_not_fm',
+        defaultMessage: 'Vaccinated but not marked',
+    },
+    Non_Compliance: {
+        id: 'iaso.polio.label.non_compliance',
+        defaultMessage: 'Non compliance',
+    },
+    Child_was_asleep: {
+        id: 'iaso.polio.label.child_was_asleep',
+        defaultMessage: 'Child asleep',
+    },
+    Child_is_a_visitor: {
+        id: 'iaso.polio.label.child_is_a_visitor',
+        defaultMessage: 'Child is a visitor',
+    },
+    reasonsNoFingerMarked: {
+        id: 'iaso.polio.label.reasonsNoFingerMarked',
+        defaultMessage: 'Reasons finger not marked',
+    },
+    childrenNoMark: {
+        id: 'iaso.polio.label.childrenNoMark',
+        defaultMessage: 'Children not marked',
+    },
+    caregivers_informed: {
+        id: 'iaso.polio.label.caregivers_informed',
+        defaultMessage: 'Caregivers informed',
+    },
+    Others: {
+        id: 'iaso.polio.label.others',
+        defaultMessage: 'Others',
+    },
+    TV: {
+        id: 'iaso.polio.label.TV',
+        defaultMessage: 'TV',
+    },
+    Radio: {
+        id: 'iaso.polio.label.Radio',
+        defaultMessage: 'Radio',
+    },
+    Gong_gong: {
+        id: 'iaso.polio.label.Gong_gong',
+        defaultMessage: 'Gong gong',
+    },
+    Mob_VanPA: {
+        id: 'iaso.polio.label.Mob_VanPA',
+        defaultMessage: 'Mob_VanPA',
+    },
+    H2H_Mobilizer: {
+        id: 'iaso.polio.label.H2H_Mobilizer',
+        defaultMessage: 'H2H_Mobilizer',
+    },
+    IEC_Materials: {
+        id: 'iaso.polio.label.IEC_Materials',
+        defaultMessage: 'IEC_Materials',
+    },
+    Volunteers: {
+        id: 'iaso.polio.label.Volunteers',
+        defaultMessage: 'Volunteers',
+    },
+    Health_worker: {
+        id: 'iaso.polio.label.Health_worker',
+        defaultMessage: 'Health worker',
+    },
+    Opinion_leader: {
+        id: 'iaso.polio.label.Opinion_leader',
+        defaultMessage: 'Opinion leader',
+    },
+    Com_Info_centre: {
+        id: 'iaso.polio.label.Com_Info_centre',
+        defaultMessage: 'Com_Info_centre',
+    },
+    Religious_leader: {
+        id: 'iaso.polio.label.Religious_leader',
+        defaultMessage: 'Religious leader',
+    },
+    MobileMessaging_SocialMedia: {
+        id: 'iaso.polio.label.MobileMessaging_SocialMedia',
+        defaultMessage: 'Mobile messaging or social media',
+    },
+    numberCaregiversInformed: {
+        id: 'iaso.polio.label.numberCaregiversInformed',
+        defaultMessage: 'Number of caregivers informed',
+    },
+    ratioCaregiversInformed: {
+        id: 'iaso.polio.label.ratioCaregiversInformed',
+        defaultMessage: 'caregivers informed',
+    },
+    imGlobal: {
+        id: 'iaso.polio.label.imGlobal',
+        defaultMessage: 'Global IM',
+    },
+    imIHH: {
+        id: 'iaso.polio.label.imIHH',
+        defaultMessage: 'IM in household',
+    },
+    imOHH: {
+        id: 'iaso.polio.label.imOHH',
+        defaultMessage: 'IM out of household',
+    },
+    Tot_child_Absent_HH: {
+        id: 'iaso.polio.label.Tot_child_Absent_HH',
+        defaultMessage: 'Child absent',
+    },
+    Tot_child_Asleep_HH: {
+        id: 'iaso.polio.label.Tot_child_Asleep_HH',
+        defaultMessage: 'Child asleep',
+    },
+    Tot_child_NC_HH: {
+        id: 'iaso.polio.label.Tot_child_NC_HH',
+        defaultMessage: 'Refusal',
+    },
+    Tot_child_NotVisited_HH: {
+        id: 'iaso.polio.label.Tot_child_NotVisited_HH',
+        defaultMessage: 'Not visited',
+    },
+    Tot_child_NotRevisited_HH: {
+        id: 'iaso.polio.label.Tot_child_NotRevisited_HH',
+        defaultMessage: 'Not revisited',
+    },
+    Tot_child_Others_HH: {
+        id: 'iaso.polio.label.Tot_child_Others_HH',
+        defaultMessage: 'Other',
+    },
+    Tot_child_VaccinatedRoutine: {
+        id: 'iaso.polio.label.Tot_child_VaccinatedRoutine',
+        defaultMessage: 'Child vaccinated in routine',
+    },
 });
 
 export default MESSAGES;

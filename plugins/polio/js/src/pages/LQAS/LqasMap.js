@@ -7,7 +7,7 @@ import { MapLegend } from '../../components/MapComponent/MapLegend';
 import { MapLegendContainer } from '../../components/MapComponent/MapLegendContainer';
 import { LqasMapHeader } from './LqasMapHeader';
 import { LqasImPopup } from '../../components/LQAS-IM/LqasImPopUp';
-import { determineStatusForDistrict, getLqasStatsForRound } from './utils';
+import { determineStatusForDistrict, getLqasStatsForRound } from './utils.ts';
 import {
     getScopeStyle,
     findDataForShape,
@@ -93,7 +93,7 @@ export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
                             disqualifiedLegendItem,
                             failedLegendItem,
                         ]}
-                        width="md"
+                        width="lg"
                     />
                 </MapLegendContainer>
                 <MapComponent

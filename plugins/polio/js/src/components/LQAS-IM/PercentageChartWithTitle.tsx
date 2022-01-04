@@ -7,7 +7,7 @@ type Props = {
     title: string;
     data: any[];
     // eslint-disable-next-line no-unused-vars
-    tooltipFormatter: (args: any) => any;
+    tooltipFormatter: (...args: any) => any;
     isLoading: boolean;
     chartKey: string;
     showChart: boolean;

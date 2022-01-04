@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { useSafeIntl, Select, LoadingSpinner } from 'bluesquare-components';
+import { useSafeIntl, Select } from 'bluesquare-components';
 
 import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
@@ -8,23 +8,15 @@ import { oneOf } from 'prop-types';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
-import { useGetRegions } from '../../hooks/useGetRegions';
 
-import {
-    formatImDataForChart,
-    imTooltipFormatter,
-    formatImDataForNFMChart,
-} from './utils.ts';
+import { formatImDataForNFMChart } from './utils.ts';
 import { useConvertedIMData, useIM } from './requests';
 import { ImMap } from './ImMap';
-import {
-    makeCampaignsDropDown,
-    findCountryIds,
-    findScope,
-} from '../../utils/index';
+import { makeCampaignsDropDown, findScope } from '../../utils/index';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
-import { PercentageChartWithTitle } from '../../components/LQAS-IM/PercentageChartWithTitle.tsx';
+import { ImPercentageChart } from './ImPercentageChart.tsx';
+import { findCountryIds } from '../../utils/LqasIm.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -47,12 +39,12 @@ export const ImStats = ({ imType }) => {
 
     const { data: imData, isLoading } = useIM(imType);
     const { data: convertedData } = useConvertedIMData(imType);
-    const countryIds = findCountryIds(imData);
+    const countryIds = findCountryIds(imData).toString();
 
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({
-            countries: countryIds.toString(),
-            enabled: countryIds.length,
+            countries: countryIds,
+            enabled: Boolean(countryIds),
         }).query;
 
     const countryOfSelectedCampaign = campaigns.filter(
@@ -63,7 +55,6 @@ export const ImStats = ({ imType }) => {
         countryOfSelectedCampaign,
         'DISTRICT',
     );
-    const { data: regions = [] } = useGetRegions(countryOfSelectedCampaign);
     const scope = findScope(campaign, campaigns, shapes);
 
     const districtsNotFound =
@@ -74,29 +65,6 @@ export const ImStats = ({ imType }) => {
     const datesIgnored = imData.day_country_not_found
         ? imData.day_country_not_found[currentCountryName]
         : {};
-
-    const imDataRound1 = useMemo(
-        () =>
-            formatImDataForChart({
-                data: convertedData,
-                campaign,
-                round: 'round_1',
-                shapes,
-                regions,
-            }),
-        [convertedData, campaign, shapes, regions],
-    );
-    const imDataRound2 = useMemo(
-        () =>
-            formatImDataForChart({
-                data: convertedData,
-                campaign,
-                round: 'round_2',
-                shapes,
-                regions,
-            }),
-        [convertedData, campaign, shapes, regions],
-    );
 
     const nfmDataRound1 = formatImDataForNFMChart({
         data: imData.stats,
@@ -140,7 +108,7 @@ export const ImStats = ({ imType }) => {
                             <Select
                                 keyValue="campaigns"
                                 label={formatMessage(MESSAGES.campaign)}
-                                loading={!countryIds.length || campaignsLoading}
+                                loading={!countryIds || campaignsLoading}
                                 clearable
                                 multi={false}
                                 value={campaign}
@@ -162,7 +130,6 @@ export const ImStats = ({ imType }) => {
                                 isLoading={isLoading}
                             />
                         </Box>
-                        )
                     </Grid>
                     <Grid item xs={6} mr={2}>
                         <Box mr={2}>
@@ -175,7 +142,6 @@ export const ImStats = ({ imType }) => {
                                 isLoading={isLoading}
                             />
                         </Box>
-                        )
                     </Grid>
                 </Grid>
                 <Grid container item spacing={2} direction="row">
@@ -189,29 +155,21 @@ export const ImStats = ({ imType }) => {
                     </Grid>
                     <Grid item xs={6} mr={2}>
                         <Box ml={2} mt={2}>
-                            <PercentageChartWithTitle
-                                title={formatMessage(MESSAGES.round_1)}
-                                data={imDataRound1}
-                                tooltipFormatter={imTooltipFormatter(
-                                    formatMessage,
-                                )}
-                                chartKey="IMChartRound1"
-                                isLoading={isLoading}
-                                showChart={Boolean(campaign)}
+                            <ImPercentageChart
+                                imType={imType}
+                                round="round_1"
+                                campaign={campaign}
+                                countryId={countryOfSelectedCampaign}
                             />
                         </Box>
                     </Grid>
                     <Grid item xs={6} mr={2}>
                         <Box mr={2} mt={2}>
-                            <PercentageChartWithTitle
-                                title={formatMessage(MESSAGES.round_2)}
-                                data={imDataRound2}
-                                tooltipFormatter={imTooltipFormatter(
-                                    formatMessage,
-                                )}
-                                chartKey="IMChartRound2"
-                                isLoading={isLoading}
-                                showChart={Boolean(campaign)}
+                            <ImPercentageChart
+                                imType={imType}
+                                round="round_2"
+                                campaign={campaign}
+                                countryId={countryOfSelectedCampaign}
                             />
                         </Box>
                     </Grid>
@@ -229,40 +187,30 @@ export const ImStats = ({ imType }) => {
                             </Box>
                         </Grid>
                         <Grid item xs={6} mr={2}>
-                            {isLoading && <LoadingSpinner />}
-                            {!isLoading && campaign && (
-                                <Box ml={2} mt={2}>
-                                    <Box>
-                                        <Typography variant="h6">
-                                            {`${formatMessage(
-                                                MESSAGES.childrenNoMark,
-                                            )}, round 1: ${childrenNotMarkedRound1}`}
-                                        </Typography>
-                                    </Box>
-                                    <NoFingerMark
-                                        data={nfmDataRound1}
-                                        chartKey="nfmRound1"
-                                    />
-                                </Box>
-                            )}
+                            <Box ml={2} mt={2}>
+                                <NoFingerMark
+                                    data={nfmDataRound1}
+                                    chartKey="nfmRound1"
+                                    title={`${formatMessage(
+                                        MESSAGES.childrenNoMark,
+                                    )}, round 1: ${childrenNotMarkedRound1}`}
+                                    isLoading={isLoading}
+                                    showChart={Boolean(campaign)}
+                                />
+                            </Box>
                         </Grid>
                         <Grid item xs={6} mr={2}>
-                            {isLoading && <LoadingSpinner />}
-                            {!isLoading && campaign && (
-                                <Box mr={2} mt={2}>
-                                    <Box>
-                                        <Typography variant="h6">
-                                            {`${formatMessage(
-                                                MESSAGES.childrenNoMark,
-                                            )}, round 2: ${childrenNotMarkedRound2}`}
-                                        </Typography>
-                                    </Box>
-                                    <NoFingerMark
-                                        data={nfmDataRound2}
-                                        chartKey="nfmRound2"
-                                    />
-                                </Box>
-                            )}
+                            <Box mr={2} mt={2}>
+                                <NoFingerMark
+                                    data={nfmDataRound2}
+                                    chartKey="nfmRound2"
+                                    titel={`${formatMessage(
+                                        MESSAGES.childrenNoMark,
+                                    )}, round 2: ${childrenNotMarkedRound2}`}
+                                    isLoading={isLoading}
+                                    showChart={Boolean(campaign)}
+                                />
+                            </Box>
                         </Grid>
                     </Grid>
                 )}

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
-import { Box } from '@material-ui/core';
+import { Box, Typography } from '@material-ui/core';
 import {
     Bar,
     BarChart,
@@ -10,6 +10,7 @@ import {
     Cell,
 } from 'recharts';
 import { blue } from '@material-ui/core/colors';
+import { LoadingSpinner } from 'bluesquare-components';
 import { BarChartData } from '../../constants/types';
 import { BAR_HEIGHT } from '../PercentageBarChart/constants';
 import { lqasNfmTooltipFormatter } from '../../pages/LQAS/utils';
@@ -17,6 +18,9 @@ import { lqasNfmTooltipFormatter } from '../../pages/LQAS/utils';
 type Props = {
     data: BarChartData[];
     chartKey: string;
+    title: string;
+    isLoading: boolean;
+    showChart: boolean;
 };
 
 const NfmCustomTick: FunctionComponent<any> = ({ x, y, payload }) => {
@@ -50,7 +54,13 @@ const NfmCustomTick: FunctionComponent<any> = ({ x, y, payload }) => {
     return null;
 };
 
-export const NoFingerMark: FunctionComponent<Props> = ({ data, chartKey }) => {
+export const NoFingerMark: FunctionComponent<Props> = ({
+    data,
+    chartKey,
+    title,
+    isLoading,
+    showChart,
+}) => {
     const [renderCount, setRenderCount] = useState(0);
     const yAxisLimit: number =
         Object.values(data)
@@ -62,36 +72,49 @@ export const NoFingerMark: FunctionComponent<Props> = ({ data, chartKey }) => {
         setRenderCount(count => count + 1);
     }, [data]);
     return (
-        <Box key={`${chartKey}${renderCount}`}>
-            <ResponsiveContainer height={450} width="90%">
-                <BarChart
-                    data={data}
-                    layout="horizontal"
-                    margin={{ left: 50 }}
-                    barSize={BAR_HEIGHT}
-                >
-                    <YAxis domain={[0, yAxisLimit]} type="number" />
-                    <XAxis
-                        type="category"
-                        dataKey="name"
-                        interval={0}
-                        height={110}
-                        tick={<NfmCustomTick />}
-                    />
-                    <Tooltip
-                        payload={data}
-                        formatter={lqasNfmTooltipFormatter}
-                        itemStyle={{ color: 'black' }}
-                    />
-                    <Bar dataKey="value" minPointSize={3}>
-                        {data.map((_entry, index) => {
-                            return (
-                                <Cell key={`cell-${index}`} fill={blue[500]} />
-                            );
-                        })}
-                    </Bar>
-                </BarChart>
-            </ResponsiveContainer>
-        </Box>
+        <>
+            {isLoading && <LoadingSpinner />}
+            {!isLoading && showChart && (
+                <>
+                    <Box>
+                        <Typography variant="h6">{title}</Typography>
+                    </Box>
+                    <Box key={`${chartKey}${renderCount}`}>
+                        <ResponsiveContainer height={450} width="90%">
+                            <BarChart
+                                data={data}
+                                layout="horizontal"
+                                margin={{ left: 50 }}
+                                barSize={BAR_HEIGHT}
+                            >
+                                <YAxis domain={[0, yAxisLimit]} type="number" />
+                                <XAxis
+                                    type="category"
+                                    dataKey="name"
+                                    interval={0}
+                                    height={110}
+                                    tick={<NfmCustomTick />}
+                                />
+                                <Tooltip
+                                    payload={data}
+                                    formatter={lqasNfmTooltipFormatter}
+                                    itemStyle={{ color: 'black' }}
+                                />
+                                <Bar dataKey="value" minPointSize={3}>
+                                    {data.map((_entry, index) => {
+                                        return (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={blue[500]}
+                                            />
+                                        );
+                                    })}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </Box>
+                </>
+            )}
+        </>
     );
 };

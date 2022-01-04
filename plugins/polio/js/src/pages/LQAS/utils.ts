@@ -9,6 +9,8 @@ import {
     LqasImCampaignDataWithNameAndRegion,
     ConvertedLqasImData,
 } from '../../constants/types';
+import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
+import { makeLegendItem } from '../../utils';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -40,6 +42,32 @@ export const getLqasStatsForRound = (lqasData, campaign, round) => {
 
     return [passed, failed, disqualified];
 };
+
+export const makeLqasMapLengendItems =
+    formatMessage => (lqasData, campaign, round) => {
+        const [passed, failed, disqualified] = getLqasStatsForRound(
+            lqasData,
+            campaign,
+            round,
+        );
+        const passedLegendItem = makeLegendItem({
+            color: OK_COLOR,
+            value: passed?.length,
+            message: formatMessage(MESSAGES.passing),
+        });
+        const failedLegendItem = makeLegendItem({
+            color: FAIL_COLOR,
+            value: failed?.length,
+            message: formatMessage(MESSAGES.failing),
+        });
+        const disqualifiedLegendItem = makeLegendItem({
+            color: WARNING_COLOR,
+            value: disqualified?.length,
+            message: formatMessage(MESSAGES.disqualified),
+        });
+
+        return [passedLegendItem, disqualifiedLegendItem, failedLegendItem];
+    };
 
 export const getLqasStatsWithRegion = ({ data, campaign, round, shapes }) => {
     if (!data[campaign]) return [];

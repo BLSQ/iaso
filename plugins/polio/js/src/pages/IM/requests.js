@@ -8,7 +8,6 @@ const getIM = async imType => {
     return getRequest(IM_POC_URL);
 };
 
-// campaign is never passed at the moment
 export const useIM = imType => {
     return useSnackQuery(
         ['IMStats', getIM, imType],

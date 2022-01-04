@@ -6,55 +6,23 @@ import { MapComponent } from '../../components/MapComponent/MapComponent';
 import { MapLegend } from '../../components/MapComponent/MapLegend';
 import { MapLegendContainer } from '../../components/MapComponent/MapLegendContainer';
 import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
-
-import { LqasImPopup } from '../../components/LQAS-IM/LqasImPopUp';
-import { determineStatusForDistrict, getLqasStatsForRound } from './utils.ts';
+import { makePopup } from '../../utils/LqasIm.tsx';
 import {
-    getScopeStyle,
-    findDataForShape,
-    makeLegendItem,
-} from '../../utils/index';
+    determineStatusForDistrict,
+    makeLqasMapLengendItems,
+} from './utils.ts';
+import { getScopeStyle, findDataForShape } from '../../utils/index';
 import { districtColors } from './constants';
 import MESSAGES from '../../constants/messages';
-import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
-
-// Don't put it in utils to avoid circular dep
-const makePopup =
-    (LQASData, round, campaign = '') =>
-    shape => {
-        return (
-            <LqasImPopup
-                shape={shape}
-                data={LQASData}
-                round={round}
-                campaign={campaign}
-            />
-        );
-    };
 
 export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
-    const [passed, failed, disqualified] = getLqasStatsForRound(
+    const legendItems = makeLqasMapLengendItems(formatMessage)(
         lqasData,
         campaign,
         round,
     );
-    const passedLegendItem = makeLegendItem({
-        color: OK_COLOR,
-        value: passed?.length,
-        message: formatMessage(MESSAGES.passing),
-    });
-    const failedLegendItem = makeLegendItem({
-        color: FAIL_COLOR,
-        value: failed?.length,
-        message: formatMessage(MESSAGES.failing),
-    });
-    const disqualifiedLegendItem = makeLegendItem({
-        color: WARNING_COLOR,
-        value: disqualified?.length,
-        message: formatMessage(MESSAGES.disqualified),
-    });
     const getShapeStyles = useCallback(
         shape => {
             const status = determineStatusForDistrict(
@@ -83,11 +51,7 @@ export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
                 <MapLegendContainer>
                     <MapLegend
                         title={formatMessage(MESSAGES.lqasResults)}
-                        legendItems={[
-                            passedLegendItem,
-                            disqualifiedLegendItem,
-                            failedLegendItem,
-                        ]}
+                        legendItems={legendItems}
                         width="lg"
                     />
                 </MapLegendContainer>

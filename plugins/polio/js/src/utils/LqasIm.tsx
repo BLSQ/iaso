@@ -1,8 +1,10 @@
+import React from 'react';
 import {
     ConvertedLqasImData,
     LqasImCampaignData,
     LqasImData,
 } from '../constants/types';
+import { LqasImPopup } from '../components/LQAS-IM/LqasImPopUp';
 
 const findRegion = (
     roundData: LqasImCampaignData,
@@ -48,3 +50,16 @@ export const convertAPIData = (
     });
     return result;
 };
+
+export const makePopup =
+    (LQASData, round, campaign = '') =>
+    shape => {
+        return (
+            <LqasImPopup
+                shape={shape}
+                data={LQASData}
+                round={round}
+                campaign={campaign}
+            />
+        );
+    };

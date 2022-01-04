@@ -25,7 +25,7 @@ import {
     findCountryIds,
     findScope,
 } from '../../utils/index';
-import { convertAPIData } from '../../utils/LqasIm.ts';
+import { convertAPIData } from '../../utils/LqasIm.tsx';
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 import { PercentageBarChart } from '../../components/PercentageBarChart';

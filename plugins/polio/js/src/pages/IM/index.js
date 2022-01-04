@@ -22,7 +22,7 @@ import {
     findCountryIds,
     findScope,
 } from '../../utils/index';
-import { convertAPIData } from '../../utils/LqasIm.ts';
+import { convertAPIData } from '../../utils/LqasIm.tsx';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 
@@ -42,10 +42,11 @@ const useStyles = makeStyles(styles);
 export const ImStats = ({ imType }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+
     const [campaign, setCampaign] = useState();
+
     const { data: imData, isLoading } = useIM(imType);
     const convertedData = convertAPIData(imData);
-
     const countryIds = findCountryIds(imData);
 
     const { data: campaigns = [], isLoading: campaignsLoading } =

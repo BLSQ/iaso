@@ -5,6 +5,8 @@ import {
     NfmRoundString,
 } from '../../constants/types';
 import { IM_PASS, IM_FAIL, IM_WARNING, ImNfmKeys } from './constants';
+import { makeLegendItem } from '../../utils';
+import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -26,6 +28,32 @@ export const getImStatsForRound = (imData, campaign, round) => {
 
     return [passed, failed, disqualified];
 };
+
+export const makeImMapLegendItems =
+    formatMessage => (imData, campaign, round) => {
+        const [passed, failed, disqualified] = getImStatsForRound(
+            imData,
+            campaign,
+            round,
+        );
+        const passedLegendItem = makeLegendItem({
+            color: OK_COLOR,
+            value: passed?.length,
+            message: formatMessage(MESSAGES['1imOK']),
+        });
+        const disqualifiedLegendItem = makeLegendItem({
+            color: WARNING_COLOR,
+            value: disqualified?.length,
+            message: formatMessage(MESSAGES['2imWarning']),
+        });
+        const failedLegendItem = makeLegendItem({
+            color: FAIL_COLOR,
+            value: failed?.length,
+            message: formatMessage(MESSAGES['3imFail']),
+        });
+
+        return [passedLegendItem, disqualifiedLegendItem, failedLegendItem];
+    };
 
 // FIXME duplicate with lqas
 const getImStatsWithRegion = ({ data, campaign, round, shapes }) => {

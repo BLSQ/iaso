@@ -50,7 +50,8 @@ const IasoSearchComponent = props => {
     );
     React.useEffect(() => {
         setInputValue(defaultValue);
-    }, [setInputValue]);
+    }, [setInputValue, defaultValue]);
+
     React.useEffect(() => {
         let active = true;
         if (inputValue === '') {

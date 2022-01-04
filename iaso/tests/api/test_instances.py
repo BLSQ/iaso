@@ -16,18 +16,18 @@ class InstancesAPITestCase(APITestCase):
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
 
-        sw_source = m.DataSource.objects.create(name="Evil Empire")
+        sw_source = m.DataSource.objects.create(name="Galactic Empire")
         cls.sw_source = sw_source
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         star_wars.default_version = sw_version
         star_wars.save()
         cls.sw_version = sw_version
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Corruscant Jedi Council")
+        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
 
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
@@ -350,6 +350,46 @@ class InstancesAPITestCase(APITestCase):
 
         self.assertValidInstanceListData(response.json(), 2)
 
+    def test_instance_list_duplicate(self):
+        """Regression test for IA-771
+        Make duplicate instance, delete them. Check status for delete instance
+        """
+        self.client.force_authenticate(self.yoda)
+        form = m.Form.objects.create(name="test", period_type=m.MONTH, single_per_period=True)
+        form.projects.add(self.project)
+
+        # create first submission, validate status is ready
+        self.create_form_instance(
+            form=form, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
+        )
+
+        response = self.client.get(f"/api/instances/", {"form_id": form.id})
+        res = self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(res, 1)
+        self.assertEqual(res["instances"][0]["status"], "READY")
+        # Create second submission, check status is duplicate
+        dup = self.create_form_instance(
+            form=form, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
+        )
+        response = self.client.get(f"/api/instances/", {"form_id": form.id})
+        res = self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(res, 2)
+        self.assertEqual(res["instances"][0]["status"], "DUPLICATED")
+        self.assertEqual(res["instances"][1]["status"], "DUPLICATED")
+        # soft delete instance
+        response = self.client.delete(f"/api/instances/{dup.id}/")
+        self.assertEqual(response.status_code, 200)
+        dup.refresh_from_db()
+        self.assertEqual(True, dup.deleted)
+        self.assertEqual(1, Modification.objects.count())
+        # check status is ready again
+        response = self.client.get(f"/api/instances/", {"form_id": form.id})
+
+        response = self.client.get(f"/api/instances/", {"form_id": form.id})
+        res = self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(res, 1)
+        self.assertEqual(res["instances"][0]["status"], "READY")
+
     def assertValidInstanceListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
             list_data=list_data, expected_length=expected_length, results_key="instances", paginated=paginated
@@ -367,7 +407,7 @@ class InstancesAPITestCase(APITestCase):
         """PATCH /instances/:pk"""
         self.client.force_authenticate(self.yoda)
         new_org_unit = m.OrgUnit.objects.create(
-            name="Corruscant Jedi Council New New", version=self.sw_version, org_unit_type=self.jedi_council
+            name="Coruscant Jedi Council New New", version=self.sw_version, org_unit_type=self.jedi_council
         )
         instance_to_patch = self.form_2.instances.first()
 
@@ -397,7 +437,7 @@ class InstancesAPITestCase(APITestCase):
         """PATCH /instances/:pk"""
         self.client.force_authenticate(self.yoda)
         new_org_unit = m.OrgUnit.objects.create(
-            name="Corruscant Jedi Council Hospital", version=self.sw_version, org_unit_type=self.jedi_council
+            name="Coruscant Jedi Council Hospital", version=self.sw_version, org_unit_type=self.jedi_council
         )
         instance_to_patch = self.form_3.instances.first()
 

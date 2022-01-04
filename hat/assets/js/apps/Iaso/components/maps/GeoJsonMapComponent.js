@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
 import { injectIntl, commonStyles } from 'bluesquare-components';
-import { customZoomBar } from '../../utils/mapUtils';
+import { ZoomControl } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
 
@@ -34,14 +34,6 @@ class GeoJsonMap extends Component {
         this.state = {
             bounds,
         };
-    }
-
-    componentDidMount() {
-        const {
-            intl: { formatMessage },
-        } = this.props;
-        const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
-        zoomBar.addTo(this.map.leafletElement);
     }
 
     fitToBounds() {
@@ -71,6 +63,7 @@ class GeoJsonMap extends Component {
                     zoomControl={false}
                     zoomSnap={0.1}
                 >
+                    <ZoomControl fitToBounds={() => this.fitToBounds()} />
                     <ScaleControl imperial={false} />
                     <TileLayer
                         attribution={

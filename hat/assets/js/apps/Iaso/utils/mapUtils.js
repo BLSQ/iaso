@@ -1,39 +1,22 @@
 import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
-import { theme } from 'bluesquare-components';
+import { injectIntl, theme } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
+import { MapControl, withLeaflet } from 'react-leaflet';
+import { ZoomBar } from '../components/leaflet/zoom-bar';
 
-export const isCoordInsidePolygon = ([x, y], poly) => {
-    let inside = false;
-    for (let ii = 0; ii < poly.getLatLngs().length; ii += 1) {
-        const polyPoints = poly.getLatLngs()[ii];
-        // console.log('polyPoints', polyPoints);
-        for (
-            let i = 0, j = polyPoints.length - 1;
-            i < polyPoints.length;
-            // TODO replace unary with  j = i, i += 1
-            // j = i++
-            j = i, i += 1
-        ) {
-            const xi = polyPoints[i].lat;
-            const yi = polyPoints[i].lng;
-            const xj = polyPoints[j].lat;
-            const yj = polyPoints[j].lng;
+export const defaultCenter = [5, 20];
+export const defaultZoom = 4;
 
-            const intersect =
-                yi > y !== yj > y &&
-                x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-            if (intersect) inside = !inside;
-        }
-    }
-
-    return inside;
-};
+export const orderOrgUnitsByDepth = orgUnits =>
+    orderBy(orgUnits, [o => o.org_unit_type_depth], ['asc']);
+export const orderOrgUnitTypeByDepth = orgUnitTypes =>
+    orderBy(orgUnitTypes, [o => o.depth], ['asc']);
 
 export const MESSAGES = defineMessages({
     'fit-to-bounds': {
-        defaultMessage: 'Center to relevant villages',
+        defaultMessage: 'Center the map',
         id: 'map.label.fitToBounds',
     },
     'box-zoom-title': {
@@ -91,12 +74,12 @@ export const getShapesBounds = shapes => {
 export const clusterCustomMarker = (cluster, color = 'primary') =>
     L.divIcon({
         html: `<div><span>${cluster.getChildCount()}</span></div>`,
-        className: `marker-cluster ${color}`,
-        iconSize: L.point(40, 40, true),
-        iconAnchor: [20, 30],
+        className: `marker-cluster ${color} default`,
+        iconSize: L.point(34, 34, true),
+        iconAnchor: [17, 17],
     });
 
-export const colorClusterCustomMarker = (cluster, backgroundColor) =>
+export const colorClusterCustomMarker = (cluster, backgroundColor, size = 34) =>
     L.divIcon({
         html:
             `<div style="background-color: ${backgroundColor};" >` +
@@ -106,8 +89,8 @@ export const colorClusterCustomMarker = (cluster, backgroundColor) =>
             `<span>${cluster.getChildCount()}</span>` +
             '</div>',
         className: 'marker-cluster color',
-        iconSize: L.point(34, 34, true),
-        iconAnchor: [17, 17],
+        iconSize: L.point(size, size, true),
+        iconAnchor: [size / 2, size / 2],
         style: () => ({
             backgroundColor,
         }),
@@ -138,14 +121,19 @@ export const circleColorMarkerOptions = color => ({
     radius: 5,
 });
 
-export const customZoomBar = (formatMessage, fitToBounds) =>
-    L.control.zoombar({
-        zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
-        zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
-        fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
-        fitToBounds: () => fitToBounds(),
-        position: 'topleft',
-    });
+class ZoomControl_ extends MapControl {
+    createLeafletElement({ fitToBounds, intl: { formatMessage } }) {
+        return new ZoomBar({
+            zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
+            zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
+            fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
+            fitToBounds,
+            position: 'topleft',
+        });
+    }
+}
+
+export const ZoomControl = injectIntl(withLeaflet(ZoomControl_));
 
 export const mapOrgUnitByLocation = orgUnits => {
     const mappedOrgunits = [];
@@ -165,16 +153,6 @@ export const mapOrgUnitByLocation = orgUnits => {
                 otCopy.orgUnits.shapes.push(o);
             }
         });
-        otCopy.orgUnits.locations = orderBy(
-            otCopy.orgUnits.locations,
-            [o => o.org_unit_type_depth],
-            ['asc'],
-        );
-        otCopy.orgUnits.shapes = orderBy(
-            otCopy.orgUnits.shapes,
-            [o => o.org_unit_type_depth],
-            ['asc'],
-        );
         mappedOrgunits.push(otCopy);
     });
     return mappedOrgunits;

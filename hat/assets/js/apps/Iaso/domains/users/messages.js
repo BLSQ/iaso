@@ -97,6 +97,53 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.filter.searchUser',
         defaultMessage: 'Search user',
     },
+    chooseLocation: {
+        id: 'iaso.users.dialog.chooseLocation',
+        defaultMessage: 'Select location(s)',
+    },
+    iaso_completeness: {
+        id: 'iaso.permissions.completeness',
+        defaultMessage: 'Data completeness',
+    },
+    iaso_mappings: {
+        id: 'iaso.permissions.mappings',
+        defaultMessage: 'Mappings with DHIS2',
+    },
+    iaso_polio: {
+        id: 'iaso.permissions.polio',
+        defaultMessage: 'Polio campaign management',
+    },
+    iaso_polio_config: {
+        id: 'iaso.permissions.polio_config',
+        defaultMessage: 'Polio campaign admin',
+    },
+    iaso_links: {
+        id: 'iaso.permissions.links',
+        defaultMessage: 'Sources matching',
+    },
+    iaso_forms: { id: 'iaso.permissions.forms', defaultMessage: 'Forms' },
+    iaso_pages: { id: 'iaso.permissions.pages', defaultMessage: 'Pages' },
+    iaso_projects: {
+        id: 'iaso.permissions.projects',
+        defaultMessage: 'Projects',
+    },
+    iaso_sources: { id: 'iaso.permissions.sources', defaultMessage: 'Sources' },
+    iaso_data_tasks: {
+        id: 'iaso.permissions.dataTasks',
+        defaultMessage: 'Tasks',
+    },
+    iaso_org_units: {
+        id: 'iaso.permissions.orgUnits',
+        defaultMessage: 'Organisation units',
+    },
+    iaso_submissions: {
+        id: 'iaso.permissions.submissions',
+        defaultMessage: 'Form Submissions',
+    },
+    iaso_users: {
+        id: 'iaso.permissions.users',
+        defaultMessage: 'Users',
+    },
 });
 
 export default MESSAGES;

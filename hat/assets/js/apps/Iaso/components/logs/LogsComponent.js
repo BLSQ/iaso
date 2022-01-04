@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 
-import { makeStyles } from '@material-ui/core';
-
 import PropTypes from 'prop-types';
 
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { fetchLogs } from '../../utils/requests';
 
 import SingleTable from '../tables/SingleTable';
@@ -16,17 +14,8 @@ import { baseUrls } from '../../constants/urls';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginBottom: theme.spacing(2),
-    },
-}));
-
 const Logs = ({ goToRevision, logObjectId }) => {
     const intl = useSafeIntl();
-    const classes = useStyles();
     const [forceRefresh, setForceRefresh] = useState(false);
     return (
         <SingleTable
@@ -43,7 +32,7 @@ const Logs = ({ goToRevision, logObjectId }) => {
             onForceRefreshDone={() => setForceRefresh(false)}
             fetchItems={fetchLogs}
             defaultSorted={[{ id: 'created_at', desc: true }]}
-            columns={orgUnitsLogsColumns(intl.formatMessage, classes)}
+            columns={orgUnitsLogsColumns(intl.formatMessage)}
             subComponent={log =>
                 log ? (
                     <LogsDetails

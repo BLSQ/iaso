@@ -52,11 +52,7 @@ const MESSAGES = defineMessages({
     fetchEnketoError: {
         id: 'iaso.snackBar.fetchEnketoError',
         defaultMessage:
-            'Failed to upload to enketo, either the record is currently edited or enketo is not available',
-    },
-    fetchSourceTypesError: {
-        id: 'iaso.snackBar.fetchSourceTypesError',
-        defaultMessage: 'An error occurred while fetching sources types list',
+            'Failed to upload to enketo, either the submission is currently edited or enketo is not available',
     },
     fetchSourcesError: {
         id: 'iaso.snackBar.fetchSourcesError',
@@ -256,7 +252,7 @@ const MESSAGES = defineMessages({
     saveMultiEditOrgUnitsLaunched: {
         defaultMessage:
             'The modifications to the org units will take a few minutes to take effect',
-        id: 'iaso.snackBar.saveMultiEditOrgUnitsLaunch',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsLaunched',
     },
     saveMultiEditOrgUnitsError: {
         defaultMessage: 'An error occurred while saving selected org units',
@@ -270,10 +266,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while deleting group',
         id: 'iaso.snackBar.deleteGroupError',
     },
-    ignoredTaskErrorCode: {
-        defaultMessage: 'Patching ignored',
-        id: 'iaso.snackBar.ignoredTaskErrorCode',
-    },
+
     patchTaskError: {
         defaultMessage: 'Error Patching task',
         id: 'iaso.snackBar.patchTaskError',
@@ -297,6 +290,30 @@ const MESSAGES = defineMessages({
     fetchFormVersionsError: {
         id: 'iaso.snackBar.fetchFormVersionsError',
         defaultMessage: 'An error occurred while fetching form versions',
+    },
+    fetchCurrentUser: {
+        defaultMessage: 'An error occurred while fetching current user',
+        id: 'iaso.snackBar.fetchCurrentUser',
+    },
+    fetchLogsError: {
+        id: 'iaso.snackBar.fetchLogsError',
+        defaultMessage: 'An error occurred while fetching logs',
+    },
+    fetchMappingsError: {
+        id: 'iaso.snackBar.fetchMappingsError',
+        defaultMessage: 'An error occurred while fetching mappings',
+    },
+    retrieveTaskError: {
+        id: 'iaso.snackBar.fetchMappingsError',
+        defaultMessage: 'An error occurred while fetching task',
+    },
+    generateCSVError: {
+        id: 'iaso.snackBar.generateCSVError',
+        defaultMessage: 'An error occurred while generating CSV file',
+    },
+    exportToDHIS2Error: {
+        id: 'iaso.snackBar.exportToDHIS2Error',
+        defaultMessage: 'An error occurred while exporting to DHIS2',
     },
 });
 

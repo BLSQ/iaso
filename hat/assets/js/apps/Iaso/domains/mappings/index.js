@@ -10,7 +10,6 @@ import {
     injectIntl,
     commonStyles,
     LoadingSpinner,
-    // TopBar,
     Table,
 } from 'bluesquare-components';
 import { redirectTo as redirectToAction } from '../../routing/actions';
@@ -28,10 +27,6 @@ const baseUrl = baseUrls.mappings;
 
 const styles = theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
 });
 
 class Mappings extends Component {
@@ -80,7 +75,7 @@ class Mappings extends Component {
                     <Grid
                         container
                         spacing={0}
-                        justify="flex-end"
+                        justifyContent="flex-end"
                         alignItems="center"
                         className={classes.marginTop}
                     >

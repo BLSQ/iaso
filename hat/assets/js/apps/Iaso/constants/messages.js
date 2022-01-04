@@ -5,6 +5,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Forms',
         id: 'iaso.forms.title',
     },
+    submissionsTitle: {
+        defaultMessage: 'Submissions',
+        id: 'iaso.instance.title',
+    },
+    formsStats: {
+        defaultMessage: 'Dashboard',
+        id: 'iaso.forms.stats.title',
+    },
     list: {
         defaultMessage: 'List',
         id: 'iaso.label.list',
@@ -72,6 +80,10 @@ const MESSAGES = defineMessages({
     polio: {
         defaultMessage: 'Polio',
         id: 'iaso.label.polio',
+    },
+    pages: {
+        defaultMessage: 'Pages',
+        id: 'iaso.label.pages',
     },
 });
 

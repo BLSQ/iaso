@@ -3,7 +3,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 
-import Button from '@material-ui/core/Button';
+import { Button } from '@material-ui/core';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -20,6 +20,7 @@ const ConfirmDialog = ({
     reject,
     btnVariant,
     btnDisabled,
+    btnSize,
 }) => {
     const [open, setOpen] = React.useState(false);
 
@@ -40,13 +41,21 @@ const ConfirmDialog = ({
         <>
             <Button
                 variant={btnVariant}
+                size={btnSize}
                 color="primary"
                 disabled={btnDisabled}
                 onClick={() => handleClickOpen()}
             >
                 {btnMessage}
             </Button>
-            <Dialog open={open} onClick={() => handleClose(false)}>
+            <Dialog
+                open={open}
+                onClose={(event, reason) => {
+                    if (reason === 'backdropClick') {
+                        handleClose(false);
+                    }
+                }}
+            >
                 <DialogTitle>{question}</DialogTitle>
                 {message !== '' && (
                     <DialogContent>
@@ -77,6 +86,7 @@ ConfirmDialog.defaultProps = {
     btnDisabled: false,
     btnVariant: 'outlined',
     message: '',
+    btnSize: 'medium',
 };
 
 ConfirmDialog.propTypes = {
@@ -87,6 +97,7 @@ ConfirmDialog.propTypes = {
     reject: PropTypes.func,
     btnDisabled: PropTypes.bool,
     btnVariant: PropTypes.string,
+    btnSize: PropTypes.string,
 };
 
 export default ConfirmDialog;

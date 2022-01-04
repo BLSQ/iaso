@@ -1,9 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Alert from '@material-ui/lab/Alert';
+import { useSafeIntl } from 'bluesquare-components';
 import { isNeverMapped } from '../question_mappings';
+import MESSAGES from '../messages';
 
 export const DuplicateHint = ({ mapping, mappingVersion }) => {
+    const { formatMessage } = useSafeIntl();
     if (isNeverMapped(mapping) || Object.keys(mapping).length === 0) {
         return null;
     }
@@ -24,7 +27,9 @@ export const DuplicateHint = ({ mapping, mappingVersion }) => {
     }
     return (
         <Alert severity="error">
-            Duplicate mapping ! will be used in both {duplicates.join(' , ')}
+            {formatMessage(MESSAGES.duplicateMappingAlert, {
+                duplicates: duplicates.join(' , '),
+            })}
         </Alert>
     );
 };

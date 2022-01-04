@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { useSafeIntl } from 'bluesquare-components';
-import { setForms } from './actions';
+import {
+    useSafeIntl,
+    AddButton as AddButtonComponent,
+} from 'bluesquare-components';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
 import { redirectTo } from '../../routing/actions';
@@ -12,7 +14,6 @@ import formsTableColumns from './config';
 import archivedFormsTableColumns from './configArchived';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import { deleteForm, restoreForm, fetchForms } from '../../utils/requests';
 
@@ -20,12 +21,14 @@ import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
 import { formsFilters } from '../../constants/filters';
-
-const baseUrl = baseUrls.forms;
+import { userHasPermission } from '../users/utils';
 
 const Forms = ({ params, showOnlyDeleted }) => {
+    const baseUrl = showOnlyDeleted ? baseUrls.archived : baseUrls.forms;
     const intl = useSafeIntl();
     const dispatch = useDispatch();
+    const currentUser = useSelector(state => state.users.current);
+    const userHasFormsPermission = userHasPermission('iaso_forms', currentUser);
     const [forceRefresh, setForceRefresh] = useState(false);
     const handleDeleteForm = formId =>
         deleteForm(dispatch, formId).then(() => {
@@ -36,21 +39,24 @@ const Forms = ({ params, showOnlyDeleted }) => {
             setForceRefresh(true);
         });
     const columnsConfig = showOnlyDeleted
-        ? archivedFormsTableColumns(intl.formatMessage, handleRestoreForm)
-        : formsTableColumns(
+        ? archivedFormsTableColumns(
               intl.formatMessage,
-              null,
-              true,
-              true,
-              handleDeleteForm,
-          );
-    const reduxPage = useSelector(state => state.forms.formsPage);
+              handleRestoreForm,
+              userHasFormsPermission,
+          )
+        : formsTableColumns({
+              formatMessage: intl.formatMessage,
+              user: currentUser,
+              deleteForm: handleDeleteForm,
+          });
 
     useEffect(() => {
         dispatch(fetchAllProjects());
         dispatch(fetchAllOrgUnitTypes());
+        // This fix a bug in redux cache when we passed from "archived" to "non-archived" form page and vice versa
+        setForceRefresh(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
     return (
         <>
             <TopBar title={intl.formatMessage(MESSAGES.title)} />
@@ -68,14 +74,11 @@ const Forms = ({ params, showOnlyDeleted }) => {
                 columns={columnsConfig}
                 hideGpkg
                 defaultPageSize={50}
-                onDataLoaded={({ list, count, pages }) => {
-                    dispatch(setForms(list, count, pages));
-                }}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
-                results={reduxPage}
                 extraComponent={
-                    !showOnlyDeleted && (
+                    !showOnlyDeleted &&
+                    userHasFormsPermission && (
                         <AddButtonComponent
                             onClick={() => {
                                 dispatch(

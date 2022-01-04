@@ -77,6 +77,7 @@ def get_url_from_enketo(url, data):
                 url = data.get("edit_url") or data.get("offline_url") or data.get("url") or data.get("single_url")
                 if url:
                     if settings.get("ENKETO_DEV"):
+                        url = url.replace("enketo:8005", "localhost:8005")
                         return url.replace("https://", "http://")
                     return url
 

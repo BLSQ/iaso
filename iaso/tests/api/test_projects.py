@@ -1,5 +1,4 @@
 import typing
-from django.test import tag
 
 from iaso.test import APITestCase
 from iaso import models as m
@@ -13,7 +12,7 @@ class ProjectsAPITestCase(APITestCase):
 
         cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_forms"])
         cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=["iaso_forms"])
-        cls.jim = cls.create_user_with_profile(username="jimdoe", account=wha)
+        cls.jim = cls.create_user_with_profile(username="jimdoe", account=ghi)
 
         cls.project_1 = m.Project.objects.create(name="Project 1", app_id="org.ghi.p1", account=ghi)
         flag = m.FeatureFlag.objects.create(name="A feature", code="a_feature")
@@ -27,11 +26,12 @@ class ProjectsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_projects_list_no_permission(self):
-        """GET /projects/ with auth but without the proper permission"""
+        """GET /projects/ with auth. User without the iaso_forms permission can list project"""
 
         self.client.force_authenticate(self.jim)
         response = self.client.get("/api/projects/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 200)
+        self.assertValidProjectListData(response.json(), 2)
 
     def test_projects_list_empty_for_user(self):
         """GET /projects/ with a user that has no access to any project"""

@@ -1,7 +1,7 @@
 import React from 'react';
 import nock from 'nock';
 
-import ConnectedLinks from './index';
+import { Links } from './index';
 
 import { mockGetRequestsList } from '../../../../test/utils/requests';
 import { renderWithStore } from '../../../../test/utils/redux';
@@ -49,7 +49,7 @@ describe('Links connected component', () => {
     it('mount properly', () => {
         const connectedWrapper = mount(
             renderWithStore(
-                <ConnectedLinks params={{}} router={{ goBack: () => null }} />,
+                <Links params={{}} router={{ goBack: () => null }} />,
             ),
         );
         expect(connectedWrapper.exists()).to.equal(true);

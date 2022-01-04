@@ -1,4 +1,7 @@
+import React from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { Select } from './Select';
+import MESSAGES from '../../constants/messages';
 
 const PAYMENT = [
     {
@@ -8,9 +11,16 @@ const PAYMENT = [
     {
         value: 'DFC',
         label: 'DFC',
-    }
+    },
 ];
 
-export const PaymentField = props => (
-    <Select label="Payment Mode" options={PAYMENT} {...props} />
-);
+export const PaymentField = props => {
+    const { formatMessage } = useSafeIntl();
+    return (
+        <Select
+            label={formatMessage(MESSAGES.paymentMode)}
+            options={PAYMENT}
+            {...props}
+        />
+    );
+};

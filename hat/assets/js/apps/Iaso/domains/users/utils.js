@@ -1,4 +1,3 @@
-import { routeConfigs } from '../../constants/routes';
 /**
  * check if user has the permission
  *
@@ -10,6 +9,7 @@ export const userHasPermission = (permission, user) => {
     if (!user) {
         return false;
     }
+    if (!user.permissions || !Array.isArray(user.permissions)) return false;
     if (user.is_superuser || user.permissions.find(p => p === permission)) {
         return true;
     }
@@ -46,10 +46,10 @@ export const listMenuPermission = (menuItem, permissions = []) => {
     let permissionsTemp = [...permissions];
     if (menuItem) {
         if (
-            menuItem.permission &&
-            !permissionsTemp.find(p => p === menuItem.permission) // Avoid duplicate permission
+            menuItem?.permissions?.length > 0 &&
+            !permissionsTemp.find(p => menuItem.permissions.includes(p)) // Avoid duplicate permission
         ) {
-            permissionsTemp.push(menuItem.permission);
+            permissionsTemp = [...permissionsTemp, ...menuItem.permissions];
         }
         menuItem.subMenu &&
             menuItem.subMenu.forEach(subMenuItem => {
@@ -57,7 +57,7 @@ export const listMenuPermission = (menuItem, permissions = []) => {
                     subMenuItem,
                     permissionsTemp,
                 ).filter(sp => !permissionsTemp.includes(sp)); // Avoid duplicate permission
-                permissionsTemp = permissionsTemp.concat(subPerms);
+                permissionsTemp = [...permissionsTemp, ...subPerms];
             });
     }
     return permissionsTemp;
@@ -70,13 +70,13 @@ export const listMenuPermission = (menuItem, permissions = []) => {
  * @param {Object} user
  * @return {String}
  */
-export const getFirstAllowedUrl = (rootPermission, user) => {
+export const getFirstAllowedUrl = (rootPermissions, user, routes) => {
     let newRoot;
     user?.permissions.forEach(p => {
-        if (!newRoot && p !== rootPermission) {
+        if (!newRoot && !rootPermissions.includes(p)) {
             newRoot = p;
         }
     });
-    const newPath = routeConfigs.find(p => p.permission === newRoot);
-    return newPath.baseUrl;
+    const newPath = routes.find(p => p.permission === newRoot);
+    return newPath?.baseUrl;
 };

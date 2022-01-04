@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {
-    Select,
     TextInput,
     PasswordInput,
     NumberInput,
@@ -11,13 +10,11 @@ import {
     SearchInput,
     translateOptions,
     injectIntl,
+    Select,
 } from 'bluesquare-components';
+import { FormControl, FormLabel } from '@material-ui/core';
 import MESSAGES from '../../domains/forms/messages';
 
-/**
- * @deprecated
- * Import specific components from bluesquare-components library instead
- */
 class InputComponent extends Component {
     constructor(props) {
         super(props);
@@ -43,18 +40,19 @@ class InputComponent extends Component {
             required,
             onEnterPressed,
             withMarginTop,
-            isSearchable,
             multi,
             uid,
+            loading,
+            getOptionSelected,
+            getOptionLabel,
+            renderOption,
+            className,
         } = this.props;
         const { isFocused, displayPassword } = this.state;
-        let labelText;
-        if (type !== 'radio') {
-            labelText =
-                labelString !== ''
-                    ? labelString
-                    : formatMessage(label || MESSAGES[keyValue]);
-        }
+        const labelText =
+            labelString !== ''
+                ? labelString
+                : formatMessage(label || MESSAGES[keyValue]);
         const inputValue =
             value === null || typeof value === 'undefined' ? '' : value;
 
@@ -115,18 +113,18 @@ class InputComponent extends Component {
             case 'select':
                 return (
                     <Select
-                        withMarginTop={withMarginTop}
                         errors={errors}
                         keyValue={keyValue}
                         label={labelText}
                         required={required}
                         disabled={disabled}
-                        searchable={isSearchable}
+                        loading={loading}
                         clearable={clearable}
-                        isFocused={isFocused}
                         multi={multi}
                         value={value}
-                        noResultsText={formatMessage(MESSAGES.noOptions)}
+                        renderOption={renderOption}
+                        getOptionLabel={getOptionLabel}
+                        getOptionSelected={getOptionSelected}
                         options={translateOptions(options, formatMessage)}
                         onChange={newValue => {
                             onChange(keyValue, newValue);
@@ -171,12 +169,22 @@ class InputComponent extends Component {
                 );
             case 'radio':
                 return (
-                    <Radio
-                        name={keyValue}
-                        onChange={newValue => onChange(keyValue, newValue)}
-                        options={options}
-                        value={value}
-                    />
+                    <FormControl
+                        component="fieldset"
+                        error={errors.length > 0}
+                        variant="outlined"
+                    >
+                        <FormLabel style={{ fontSize: 12 }} component="legend">
+                            {labelText}
+                        </FormLabel>
+                        <Radio
+                            className={className}
+                            name={keyValue}
+                            onChange={newValue => onChange(keyValue, newValue)}
+                            options={options}
+                            value={value}
+                        />
+                    </FormControl>
                 );
             default:
                 return null;
@@ -197,9 +205,13 @@ InputComponent.defaultProps = {
     onEnterPressed: () => null,
     onChange: () => null,
     withMarginTop: true,
-    isSearchable: true,
     multi: false,
     uid: null,
+    loading: false,
+    getOptionLabel: null,
+    getOptionSelected: null,
+    renderOption: null,
+    className: '',
 };
 InputComponent.propTypes = {
     type: PropTypes.string,
@@ -217,9 +229,13 @@ InputComponent.propTypes = {
     required: PropTypes.bool,
     onEnterPressed: PropTypes.func,
     withMarginTop: PropTypes.bool,
-    isSearchable: PropTypes.bool,
     multi: PropTypes.bool,
+    loading: PropTypes.bool,
     uid: PropTypes.any,
+    getOptionLabel: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+    getOptionSelected: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+    renderOption: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+    className: PropTypes.string,
 };
 
 const translated = injectIntl(InputComponent);

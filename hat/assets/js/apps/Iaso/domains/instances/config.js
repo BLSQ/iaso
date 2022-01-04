@@ -1,14 +1,14 @@
 import React from 'react';
 import orderBy from 'lodash/orderBy';
 
-import { ColumnText as ColumnTextComponent } from 'bluesquare-components';
-import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 
 import { baseUrls } from '../../constants/urls';
 import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
+import { userHasPermission } from '../users/utils';
 
-const instancesTableColumns = (formatMessage = () => ({})) => {
+const instancesTableColumns = (formatMessage = () => ({}), user) => {
     const columns = [
         {
             Header: formatMessage(MESSAGES.actions),
@@ -19,24 +19,28 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
             Cell: settings => (
                 <section>
                     <IconButtonComponent
-                        url={`${baseUrls.instanceDetail}/instanceId/${settings.original.id}`}
+                        url={`${baseUrls.instanceDetail}/instanceId/${settings.row.original.id}`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.view}
                     />
                     <IconButtonComponent
                         onClick={() =>
-                            window.open(settings.original.file_url, '_blank')
+                            window.open(
+                                settings.row.original.file_url,
+                                '_blank',
+                            )
                         }
                         icon="xml"
                         tooltipMessage={MESSAGES.downloadXml}
                     />
-                    {settings.original.org_unit && (
-                        <IconButtonComponent
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.org_unit.id}`}
-                            icon="orgUnit"
-                            tooltipMessage={MESSAGES.viewOrgUnit}
-                        />
-                    )}
+                    {settings.row.original.org_unit &&
+                        userHasPermission('iaso_org_units', user) && (
+                            <IconButtonComponent
+                                url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.org_unit.id}`}
+                                icon="orgUnit"
+                                tooltipMessage={MESSAGES.viewOrgUnit}
+                            />
+                        )}
                 </section>
             ),
         },
@@ -47,16 +51,12 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
         columns.push({
             Header: formatMessage(MESSAGES[f.key]),
             accessor: f.accessor || f.key,
-            Cell: settings => (
-                <ColumnTextComponent
-                    title={f.title ? f.title(settings.original[f.key]) : null}
-                    text={
-                        f.render
-                            ? f.render(settings.original[f.key])
-                            : settings.original[f.key]
-                    }
-                />
-            ),
+            Cell:
+                f.Cell ||
+                (settings =>
+                    f.render
+                        ? f.render(settings.row.original[f.key])
+                        : settings.row.original[f.key]),
         }),
     );
     return columns;

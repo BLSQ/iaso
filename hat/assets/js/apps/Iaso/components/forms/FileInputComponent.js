@@ -2,9 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 
-import { injectIntl } from 'bluesquare-components';
-import FormControlComponent from './FormControlComponent';
-import InputLabelComponent from './InputLabelComponent';
+import {
+    injectIntl,
+    InputLabel as InputLabelComponent,
+    FormControl as FormControlComponent,
+} from 'bluesquare-components';
 import MESSAGES from '../../domains/forms/messages';
 
 function FileInputComponent({
@@ -25,7 +27,7 @@ function FileInputComponent({
     const hasErrors = errors.length > 0;
 
     return (
-        <FormControlComponent errors={errors}>
+        <FormControlComponent errors={errors} withMarginTop>
             <InputLabelComponent
                 htmlFor={`input-text-${keyValue}`}
                 label={labelText}

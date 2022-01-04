@@ -1,27 +1,25 @@
-var path = require('path');
-var webpack = require('webpack');
-var BundleTracker = require('webpack-bundle-tracker');
+const path = require('path');
+const webpack = require('webpack');
+const BundleTracker = require('webpack-bundle-tracker');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // Switch here for french
 // remember to switch in webpack.dev.js and
 // django settings as well
-var LOCALE = 'fr';
+const LOCALE = 'fr';
 
 module.exports = {
     // fail the entire build on 'module not found'
     bail: true,
     context: __dirname,
     mode: 'production',
-    target: ['web', 'es2017'],
+    target: ['web', 'es2020'],
     entry: {
-        common: ['react', 'react-dom', 'react-intl'],
+        common: ['react', 'react-dom', 'react-intl','typescript'],
         styles: './assets/css/index.scss',
         iaso: './assets/js/apps/Iaso/index',
     },
 
     output: {
-        library: ['HAT', '[name]'],
-        libraryTarget: 'var',
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
         publicPath: '',
@@ -54,6 +52,9 @@ module.exports = {
         new webpack.LoaderOptionsPlugin({ minimize: true }),
         // XLSX
         new webpack.IgnorePlugin(/cptable/),
+        new webpack.WatchIgnorePlugin({
+            paths: [/\.d\.ts$/],
+        }),
     ],
 
     optimization: {
@@ -74,12 +75,10 @@ module.exports = {
 
     module: {
         rules: [
-            // we pass the output from babel loader to react-hot loader
             {
                 test: /\.js?$/,
                 exclude: /node_modules/,
                 use: [
-                    { loader: 'react-hot-loader/webpack' },
                     {
                         loader: 'babel-loader',
                         options: {
@@ -90,7 +89,7 @@ module.exports = {
                             plugins: [
                                 ['@babel/transform-runtime'],
                                 [
-                                    'react-intl',
+                                    'formatjs',
                                     {
                                         messagesDir: path.join(
                                             __dirname,
@@ -98,6 +97,41 @@ module.exports = {
                                         ),
                                     },
                                 ],
+                            ],
+                        },
+                    },
+                ],
+            },
+            {
+                test: /\.(ts|tsx)?$/,
+                exclude: /node_modules/,
+                use: [
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            cacheDirectory: true,
+                            presets: [
+                                [
+                                    '@babel/preset-env',
+                                    { targets: { node: '14' } },
+                                ],
+                                [
+                                    '@babel/preset-typescript',
+                                    { isTSX: true, allExtensions: true },
+                                ],
+                                '@babel/preset-react',
+                            ],
+                            plugins: [
+                                ['@babel/transform-runtime'], 
+                                [
+                                    'formatjs',
+                                    {
+                                        messagesDir: path.join(
+                                            __dirname,
+                                            '/assets/messages',
+                                        ),
+                                    },
+                                ]
                             ],
                         },
                     },
@@ -168,6 +202,7 @@ module.exports = {
                 },
             },
         ],
+        noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },
 
     // https://github.com/SheetJS/js-xlsx/issues/285
@@ -178,7 +213,8 @@ module.exports = {
         fallback: {
             fs: false,
         },
-        modules: ['node_modules'],
-        extensions: ['.js'],
+        /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
+        modules: ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
+        extensions: ['.js', '.tsx', '.ts'],
     },
 };

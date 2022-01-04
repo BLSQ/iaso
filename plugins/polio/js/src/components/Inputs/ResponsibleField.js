@@ -1,32 +1,44 @@
+import React from 'react';
+import { useSafeIntl, useTranslatedOptions } from 'bluesquare-components';
 import { Select } from './Select';
+import MESSAGES from '../../constants/messages';
 
-const RESPONSIBLES = [
+const responsibles = [
     {
         value: 'WHO',
-        label: 'WHO',
+        label: MESSAGES.who,
     },
     {
         value: 'UNICEF',
-        label: 'UNICEF',
+        label: MESSAGES.unicef,
     },
     {
         value: 'NAT',
-        label: 'National',
+        label: MESSAGES.national,
     },
     {
         value: 'MOH',
-        label: 'MOH',
+        label: MESSAGES.moh,
     },
     {
         value: 'PROV',
-        label: 'PROVINCE',
+        label: MESSAGES.provinceOption,
     },
     {
         value: 'DIST',
-        label: 'District',
+        label: MESSAGES.district,
     },
 ];
 
-export const ResponsibleField = props => (
-    <Select label="Responsible" options={RESPONSIBLES} {...props} />
-);
+export const ResponsibleField = props => {
+    const { formatMessage } = useSafeIntl();
+    const options = useTranslatedOptions(responsibles);
+
+    return (
+        <Select
+            label={formatMessage(MESSAGES.responsible)}
+            options={options}
+            {...props}
+        />
+    );
+};

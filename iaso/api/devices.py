@@ -31,13 +31,16 @@ class DeviceSerializer(serializers.ModelSerializer):
 class DevicesViewSet(ModelViewSet):
     """Iaso Devices API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
+    This API is restricted to authenticated users having the "menupermissions.iaso_forms" or "menupermissions.iaso_submissions" permissions.
 
     GET /api/devices/
     GET /api/devices/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),
+    ]
     serializer_class = DeviceSerializer
     results_key = "devices"
     queryset = Device.objects.all()

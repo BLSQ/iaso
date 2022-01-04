@@ -7,7 +7,7 @@ import MarkerMap from '../../../components/maps/MarkerMapComponent';
 import OrgUnitDisplay from '../../orgUnits/components/OrgUnitDisplay';
 import OrgUnitSourceRefDisplay from '../../orgUnits/components/OrgUnitSourceRefDisplay';
 
-import { getOrgUnitsTree, getOrgunitMessage } from '../../orgUnits/utils';
+import { getOrgUnitsTree, OrgUnitLabel } from '../../orgUnits/utils';
 
 import InstanceDetailsField from './InstanceDetailsField';
 
@@ -37,18 +37,25 @@ const InstanceDetailsLocation = ({
                 {orgUnitTree.map(ou => (
                     <InstanceDetailsField
                         key={ou.id}
-                        label={ou.org_unit_type.name}
-                        valueTitle={getOrgunitMessage(ou, false)}
+                        label={
+                            ou.org_unit_type?.name ??
+                            formatMessage(MESSAGES.noOrgUnitType)
+                        }
+                        valueTitle={
+                            <OrgUnitLabel orgUnit={ou} withType={false} />
+                        }
                         value={<OrgUnitDisplay orgUnit={ou} withType={false} />}
                     />
                 ))}
                 {currentInstance.org_unit && (
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.source_ref)}
-                        valueTitle={getOrgunitMessage(
-                            currentInstance.org_unit,
-                            false,
-                        )}
+                        valueTitle={
+                            <OrgUnitLabel
+                                orgUnit={currentInstance.org_unit}
+                                withType={false}
+                            />
+                        }
                         value={
                             <OrgUnitSourceRefDisplay
                                 orgUnit={currentInstance.org_unit}

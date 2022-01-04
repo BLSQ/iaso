@@ -1,7 +1,15 @@
+from uuid import uuid4
+
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext as _
-from uuid import uuid4
-from iaso.models import Group
+from gspread.utils import extract_id_from_url
+
+from iaso.models import Group, OrgUnit
+from iaso.utils.models.soft_deletable import SoftDeletableModel
+from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
+
+from plugins.polio.preparedness.spread_cache import CachedSpread
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -14,6 +22,11 @@ VACINES = [
     ("mOPV2", _("mOPV2")),
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
+]
+
+LANGUAGES = [
+    ("FR", "Français"),
+    ("EN", "English"),
 ]
 
 RESPONSIBLES = [
@@ -31,6 +44,13 @@ STATUS = [
     ("FINISHED", _("Finished")),
 ]
 
+RA_BUDGET_STATUSES = [
+    ("APPROVED", _("Approved")),
+    ("TO_SUBMIT", _("To Submit")),
+    ("SUBMITTED", _("Submitted")),
+    ("REVIEWED", _("Reviewed by RRT")),
+]
+
 PREPAREDNESS_SYNC_STATUS = [
     ("QUEUED", _("Queued")),
     ("ONGOING", _("Ongoing")),
@@ -41,6 +61,20 @@ PREPAREDNESS_SYNC_STATUS = [
 PAYMENT = [
     ("DIRECT", _("Direct")),
     ("DFC", _("DFC")),
+]
+
+PREPARING = "PREPARING"
+ROUND1START = "ROUND1START"
+ROUND1DONE = "ROUND1DONE"
+ROUND2START = "ROUND2START"
+ROUND2DONE = "ROUND2DONE"
+
+ROUNDSTATUS = [
+    (PREPARING, _("Preparing")),
+    (ROUND1START, _("Round 1 started")),
+    (ROUND1DONE, _("Round 1 completed")),
+    (ROUND2START, _("Round 2 started")),
+    (ROUND2DONE, _("Round 2 completed")),
 ]
 
 
@@ -61,6 +95,9 @@ class Round(models.Model):
     im_percentage_children_missed_out_household = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
     )
+    im_percentage_children_missed_in_plus_out_household = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
+    )
     awareness_of_campaign_planning = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
     )
@@ -69,15 +106,29 @@ class Round(models.Model):
     lqas_district_failing = models.IntegerField(null=True, blank=True)
 
 
-class Campaign(models.Model):
+class Campaign(SoftDeletableModel):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
-    obr_name = models.CharField(max_length=255)
+    obr_name = models.CharField(max_length=255, unique=True)
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
+    gpei_email = models.EmailField(max_length=254, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     initial_org_unit = models.ForeignKey(
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
+    )
+
+    country = models.ForeignKey(
+        "iaso.orgunit",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="campaigns_country",
+        help_text="Country for campaign, set automatically from initial_org_unit",
+    )
+
+    creation_email_send_at = models.DateTimeField(
+        null=True, blank=True, help_text="When and if we sent an email for creation"
     )
 
     group = models.ForeignKey(
@@ -143,7 +194,7 @@ class Campaign(models.Model):
     )
 
     # Risk Assessment
-    risk_assessment_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
+    risk_assessment_status = models.CharField(max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True)
     risk_assessment_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     investigation_at = models.DateField(
         null=True,
@@ -171,6 +222,7 @@ class Campaign(models.Model):
         verbose_name=_("DG Authorization"),
     )
     verification_score = models.IntegerField(null=True, blank=True)
+    doses_requested = models.IntegerField(null=True, blank=True)
     # Preparedness
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
     preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
@@ -178,7 +230,7 @@ class Campaign(models.Model):
     surge_spreadsheet_url = models.URLField(null=True, blank=True)
     country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
-    budget_status = models.CharField(max_length=10, choices=STATUS, null=True, blank=True)
+    budget_status = models.CharField(max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True)
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
 
     who_disbursed_to_co_at = models.DateField(
@@ -220,28 +272,64 @@ class Campaign(models.Model):
     # Rounds
     round_one = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_one", null=True, blank=True)
     round_two = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_two", null=True, blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     # Additional fields
     district_count = models.IntegerField(null=True, blank=True)
+    budget_rrt_oprtt_approval_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Budget Approval"),
+    )
     budget_submitted_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("Budget Submission"),
     )
 
+    is_preventive = models.BooleanField(default=False, help_text="Preventive campaign")
+    enable_send_weekly_email = models.BooleanField(
+        default=False, help_text="Activate the sending of a remainder email every week."
+    )
+
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
 
-    def last_preparedness(self):
-        return self.preparedness_set.order_by("-created_at").first()
+    def get_districts(self):
+        if self.group is None:
+            return OrgUnit.objects.none()
+        return self.group.org_units.all()
+
+    def get_regions(self):
+        return OrgUnit.objects.filter(id__in=self.get_districts().values_list("parent_id", flat=True).distinct())
 
     def last_surge(self):
-        return self.surge_set.order_by("-created_at").first()
+        spreadsheet_url = self.surge_spreadsheet_url
+        ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
+        if not ssi:
+            return None
+        cs = ssi.cached_spreadsheet
+
+        surge_country_name = self.country_name_in_surge_spreadsheet
+        if not surge_country_name:
+            return None
+        response = surge_indicator_for_country(cs, surge_country_name)
+        response["created_at"] = ssi.created_at
+        return response
+
+    def save(self, *args, **kwargs):
+        if self.initial_org_unit is not None:
+            try:
+                country = self.initial_org_unit.ancestors().filter(org_unit_type__category="COUNTRY").first()
+                self.country = country
+            except OrgUnit.DoesNotExist:
+                pass
+
+        super().save(*args, **kwargs)
 
 
+# Deprecated
 class Preparedness(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
@@ -259,6 +347,7 @@ class Preparedness(models.Model):
         return f"{self.campaign} - {self.created_at}"
 
 
+# Deprecated
 class Surge(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
@@ -279,3 +368,79 @@ class Surge(models.Model):
 
     def __str__(self) -> str:
         return f"{self.campaign} - {self.created_at}"
+
+
+class Config(models.Model):
+    slug = models.SlugField(unique=True)
+    content = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.slug
+
+
+class CountryUsersGroup(models.Model):
+    users = models.ManyToManyField(User, blank=True)
+    country = models.OneToOneField(OrgUnit, on_delete=models.CASCADE)
+    language = models.CharField(max_length=32, choices=LANGUAGES, default="EN")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.country)
+
+
+class LineListImport(models.Model):
+    file = models.FileField(upload_to="uploads/linelist/% Y/% m/% d/")
+    import_result = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+
+
+class URLCache(models.Model):
+    url = models.URLField(unique=True)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.url
+
+
+class SpreadSheetImport(models.Model):
+    """A copy of a Google Spreadsheet in the DB, in JSON format
+
+    This allow us to separate the parsing of the datasheet from it's retrieval
+    and to keep a history.
+    """
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    url = models.URLField()
+    content = models.JSONField()
+    spread_id = models.CharField(max_length=60, db_index=True)
+
+    @staticmethod
+    def create_for_url(spreadsheet_url: str):
+        spread = open_sheet_by_url(spreadsheet_url)
+        cached_spread = CachedSpread.from_spread(spread)
+        return SpreadSheetImport.objects.create(content=cached_spread.c, url=spreadsheet_url, spread_id=spread.id)
+
+    @property
+    def cached_spreadsheet(self):
+        return CachedSpread(self.content)
+
+    @staticmethod
+    def last_for_url(spreadsheet_url: str):
+        if not spreadsheet_url:
+            return None
+        spread_id = extract_id_from_url(spreadsheet_url)
+
+        ssis = SpreadSheetImport.objects.filter(spread_id=spread_id)
+
+        if not ssis:
+            # No import yet
+            return None
+        return ssis.latest("created_at")

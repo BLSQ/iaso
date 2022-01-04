@@ -1,76 +1,40 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-
-import { injectIntl, LoadingSpinner } from 'bluesquare-components';
-import {
-    fetchCompleteness as fetchCompletenessAction,
-    generateDerivedInstances as generateDerivedInstancesAction,
-} from './actions';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
-import { redirectTo as redirectToAction } from '../../routing/actions';
 import CompletenessListComponent from './components/CompletenessListComponent';
 
 import MESSAGES from './messages';
+import { getRequest } from 'Iaso/libs/Api';
+import snackMessages from '../../components/snackBars/messages';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
-class Completeness extends Component {
-    componentDidMount() {
-        this.props.fetchCompleteness();
-    }
+const Completeness = ({ params }) => {
+    const { formatMessage } = useSafeIntl();
+    const { data = [], isFetching } = useSnackQuery(
+        ['completeness'],
+        () => getRequest('/api/completeness/').then(res => res.completeness),
+        snackMessages.fetchCompletenessError,
+    );
 
-    render() {
-        const {
-            params,
-            intl: { formatMessage },
-            completeness,
-            redirectTo,
-            onGenerateDerivedInstances,
-        } = this.props;
+    return (
+        <>
+            {isFetching && <LoadingSpinner />}
+            <TopBar
+                title={formatMessage(MESSAGES.completeness)}
+                displayBackButton={false}
+            />
 
-        return (
-            <>
-                {completeness.fetching && <LoadingSpinner />}
-                <TopBar
-                    title={formatMessage(MESSAGES.completeness)}
-                    displayBackButton={false}
-                />
-                <CompletenessListComponent
-                    completenessList={completeness.list}
-                    params={params}
-                    redirectTo={redirectTo}
-                    onGenerateDerivedInstances={onGenerateDerivedInstances}
-                />
-            </>
-        );
-    }
-}
-
-Completeness.propTypes = {
-    intl: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
-    completeness: PropTypes.object.isRequired,
-    fetchCompleteness: PropTypes.func.isRequired,
-    redirectTo: PropTypes.func.isRequired,
-    onGenerateDerivedInstances: PropTypes.func.isRequired,
+            <CompletenessListComponent
+                completenessList={data}
+                params={params}
+            />
+        </>
+    );
 };
 
-const MapStateToProps = state => ({
-    completeness: state.completeness,
-});
+Completeness.propTypes = {
+    params: PropTypes.object.isRequired,
+};
 
-const mapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            fetchCompleteness: fetchCompletenessAction,
-            redirectTo: redirectToAction,
-            onGenerateDerivedInstances: generateDerivedInstancesAction,
-        },
-        dispatch,
-    ),
-});
-
-export default connect(
-    MapStateToProps,
-    mapDispatchToProps,
-)(injectIntl(Completeness));
+export default Completeness;

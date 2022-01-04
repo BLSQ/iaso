@@ -1,5 +1,8 @@
+import json
+
+from django.contrib.auth.models import User
 from django.contrib.gis import admin
-from django.utils.html import format_html_join
+from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
 
 from .models import (
@@ -48,6 +51,7 @@ admin.site.register(OrgUnit, OrgUnitAdmin)
 class OrgUnitTypeAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
     list_display = ("name", "projects_list", "short_name", "depth")
+    list_filter = ("projects",)
 
     def projects_list(self, obj):
         projects = obj.projects.all()
@@ -99,7 +103,8 @@ class FormVersionAdmin(admin.GeoModelAdmin):
 class InstanceAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_unit",)
     search_fields = ("file_name", "uuid")
-    list_display = ("project", "form", "org_unit", "period", "created_at")
+    list_display = ("id", "project", "form", "org_unit", "period", "created_at", "deleted")
+    list_filter = ("project", "deleted")
 
 
 class InstanceFileAdmin(admin.GeoModelAdmin):
@@ -138,8 +143,18 @@ class GroupAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
 
 
+class UserAdmin(admin.GeoModelAdmin):
+    search_fields = ("username", "email", "first_name", "last_name", "iaso_profile__account__name")
+    list_filter = ("iaso_profile__account", "is_staff", "is_superuser", "is_active")
+    list_display = ("username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
+
+
 class ProfileAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_units",)
+    search_fields = ("user__username", "user__first_name", "user__last_name", "account__name")
+    list_select_related = ("user", "account")
+    list_filter = ("account",)
+    list_display = ("id", "user", "account", "language")
 
 
 class ExportRequestAdmin(admin.GeoModelAdmin):
@@ -184,9 +199,24 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
 
 
 class TaskAdmin(admin.ModelAdmin):
-    readonly_fields = ("created_at",)
-    list_display = ("name", "account", "status", "created_at")
+    list_display = ("name", "account", "status", "created_at", "launcher", "result_message")
     list_filter = ("account", "status", "name")
+    readonly_fields = ("stacktrace", "created_at", "result")
+
+    def result_message(self, task):
+        return task.result and task.result.get("message", "")
+
+    def stacktrace(self, task):
+        if not task.result:
+            return
+        stack = task.result.get("stack_trace")
+        return format_html("<p>{}</p><pre>{}</pre>", task.result.get("message", ""), stack)
+
+
+class SourceVersionAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at",)
+    list_display = ("id", "data_source", "number", "created_at")
+    list_filter = ("data_source",)
 
 
 admin.site.register(Link, LinkAdmin)
@@ -198,7 +228,7 @@ admin.site.register(AccountFeatureFlag)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(FeatureFlag, FeatureFlagAdmin)
 admin.site.register(Device)
-admin.site.register(SourceVersion)
+admin.site.register(SourceVersion, SourceVersionAdmin)
 admin.site.register(DataSource)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
@@ -216,3 +246,5 @@ admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
 admin.site.register(Page)
 admin.site.register(Task, TaskAdmin)
+# admin.site.unregister(User)
+# admin.site.register(User, UserAdmin)

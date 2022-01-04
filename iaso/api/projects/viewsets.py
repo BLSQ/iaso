@@ -1,20 +1,22 @@
-from rest_framework import permissions
+from rest_framework import filters, permissions
 
-from ..common import ModelViewSet, HasPermission
-from .serializers import ProjectSerializer
 from iaso.models import Project
+from .serializers import ProjectSerializer
+from ..common import ModelViewSet
 
 
 class ProjectsViewSet(ModelViewSet):
     """Projects API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
+    This API is restricted to authenticated users.
 
     GET /api/projects/
     GET /api/projects/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["app_id", "name"]
     serializer_class = ProjectSerializer
     results_key = "projects"
     http_method_names = ["get", "head", "options", "trace"]

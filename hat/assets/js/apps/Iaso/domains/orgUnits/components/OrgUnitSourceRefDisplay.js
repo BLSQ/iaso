@@ -21,7 +21,7 @@ const OrgUnitSourceRefDisplay = ({ orgUnit, classes }) => {
             className={classes.link}
             href={`${orgUnit.source_url}/api/organisationUnits/${orgUnit.source_ref}`}
         >
-            {orgUnit.source_ref}
+            {orgUnit.source_ref ?? textPlaceholder}
         </Link>
     );
 };

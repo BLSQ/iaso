@@ -104,15 +104,20 @@ class InstancePopupComponent extends Component {
                                     value={o ? o.name : null}
                                 />
                             ))}
-                            {displayUseLocation && (
-                                <Box className={classes.actionBox}>
-                                    <Grid
-                                        container
-                                        spacing={0}
-                                        justify="center"
-                                        alignItems="center"
-                                    >
+                            <Box className={classes.actionBox}>
+                                <Grid
+                                    container
+                                    spacing={0}
+                                    justifyContent={
+                                        displayUseLocation
+                                            ? 'center'
+                                            : 'flex-end'
+                                    }
+                                    alignItems="center"
+                                >
+                                    {displayUseLocation && (
                                         <ConfirmDialog
+                                            btnSize="small"
                                             btnMessage={formatMessage(
                                                 MESSAGES.associate,
                                             )}
@@ -124,27 +129,15 @@ class InstancePopupComponent extends Component {
                                             )}
                                             confirm={() => this.confirmDialog()}
                                         />
-                                    </Grid>
-                                </Box>
-                            )}
-                            <Box className={classes.actionBox}>
-                                <Grid
-                                    container
-                                    spacing={0}
-                                    justify={
-                                        displayUseLocation
-                                            ? 'center'
-                                            : 'flex-end'
-                                    }
-                                    alignItems="center"
-                                >
+                                    )}
                                     <Button
                                         className={classes.marginLeft}
                                         variant="outlined"
-                                        size="small"
                                         color="primary"
+                                        size="small"
                                     >
                                         <Link
+                                            target="_blank"
                                             to={`${baseUrls.instanceDetail}/instanceId/${currentInstance.id}`}
                                             className={classes.linkButton}
                                         >

@@ -1,4 +1,3 @@
-from django.db.models.query import prefetch_related_objects
 from iaso.models import OrgUnit, GroupSet
 from .comparisons import as_field_types, Diff, Comparison
 
@@ -24,13 +23,17 @@ class Differ:
         queryset = (
             OrgUnit.objects.prefetch_related("groups")
             .prefetch_related("groups__group_sets")
+            .prefetch_related("parent")
+            .prefetch_related("parent__parent")
+            .prefetch_related("parent__parent__parent")
+            .prefetch_related("parent__parent__parent__parent")
             .select_related("org_unit_type")
             .filter(version=version)
         )
         if validation_status:
             queryset = queryset.filter(validation_status=validation_status)
         if top_org_unit:
-            parent = OrgUnit.objects.get(id=top_org_unit)
+            parent = OrgUnit.objects.get(id=top_org_unit) if isinstance(top_org_unit, int) else top_org_unit
             queryset = queryset.hierarchy(parent)
         if org_unit_types:
             queryset = queryset.filter(org_unit_type__in=org_unit_types)
@@ -48,8 +51,11 @@ class Differ:
         top_org_unit_ref=None,
         org_unit_types=None,
         org_unit_types_ref=None,
+        field_names=None,
     ):
-        field_names = ["name", "geometry", "parent"]
+
+        if field_names is None:
+            field_names = ["name", "geometry", "parent"]
         if not ignore_groups:
             for group_set in GroupSet.objects.filter(source_version=version):
                 field_names.append("groupset:" + group_set.source_ref + ":" + group_set.name)
@@ -94,9 +100,7 @@ class Differ:
             elif status != "new" and all_same:
                 status = "same"
 
-            diff = Diff(
-                org_unit=orgunit_dhis2 if orgunit_dhis2 else orgunit_ref, status=status, comparisons=comparisons
-            )
+            diff = Diff(orgunit_ref=orgunit_ref, orgunit_dhis2=orgunit_dhis2, status=status, comparisons=comparisons)
             diffs.append(diff)
 
         if show_deleted_org_units:
@@ -117,7 +121,7 @@ class Differ:
                     comparisons.append(comparison)
                 used_to_exist = OrgUnit.objects.filter(source_ref=deleted_id, version=version).count() > 0
                 status = "deleted" if used_to_exist else "never_seen"
-                diff = Diff(orgunit_dhis2, status=status, comparisons=comparisons)
+                diff = Diff(orgunit_ref=None, orgunit_dhis2=orgunit_dhis2, status=status, comparisons=comparisons)
                 diffs.append(diff)
 
         return diffs, field_names
@@ -150,5 +154,4 @@ class Differ:
                     distance=0 if same else field.distance(dhis2_value, ref_value),
                 )
             )
-
         return comparisons

@@ -1,9 +1,21 @@
 import React from 'react';
 import CallMade from '@material-ui/icons/CallMade';
+import moment from 'moment';
+import { Tooltip } from '@material-ui/core';
+import { truncateText, getTableUrl } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import instancesTableColumns from './config';
 import MESSAGES from './messages';
 import DeleteDialog from './components/DeleteInstanceDialog';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
+import { getCookie } from '../../utils/cookies';
+import {
+    apiDateTimeFormat,
+    apiDateFormat,
+    getFromDateString,
+    getToDateString,
+} from '../../utils/dates';
+import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
 const NO_VALUE = '/';
 const hasNoValue = value => !value || value === '';
@@ -16,10 +28,27 @@ const KeyValueFields = ({ entry }) =>
         </>
     ));
 
+/**
+ * Pretty Format value for display
+ * Try to guess if it is a date or datetime to display in appropriate locale
+ * @param value string
+ */
+export const formatValue = value => {
+    // use strict mode so it doesn't try to interpret number as timestamp.
+    const asDay = moment(value, apiDateFormat, true);
+    if (asDay.isValid()) {
+        return asDay.format('L');
+    }
+    const asDT = moment(value, apiDateTimeFormat, true);
+    if (asDT.isValid()) {
+        return asDT.format('LTS');
+    }
+    return value;
+};
 const renderValue = (settings, c) => {
     const { key } = c;
-    // TODO refactor to use camelCase
-    const { file_content } = settings.original;
+    // eslint-disable-next-line camelcase
+    const { file_content } = settings.row.original;
     const value = file_content[key];
 
     if (hasNoValue(value)) {
@@ -37,15 +66,16 @@ const renderValue = (settings, c) => {
             </pre>
         );
     }
-    return <span>{value}</span>;
+    return <span>{formatValue(value)}</span>;
 };
 
 export const getInstancesColumns = (
     formatMessage,
     visibleColumns,
     showDeleted = false,
+    user,
 ) => {
-    const metasColumns = [...instancesTableColumns(formatMessage)];
+    const metasColumns = [...instancesTableColumns(formatMessage, user)];
     if (showDeleted) {
         metasColumns.shift();
     }
@@ -66,7 +96,25 @@ export const getInstancesColumns = (
                     class: 'small',
                     sortable: false,
                     accessor: c.key,
-                    Header: c.label || c.key,
+                    Header: (
+                        <Tooltip
+                            title={
+                                <FormattedMessage
+                                    {...MESSAGES.instanceHeaderTooltip}
+                                    values={{
+                                        label: c.label,
+                                        key: c.key,
+                                    }}
+                                />
+                            }
+                        >
+                            <span>
+                                {c.label?.trim()
+                                    ? truncateText(c.label, 25)
+                                    : c.key}
+                            </span>
+                        </Tooltip>
+                    ),
                     Cell: settings => renderValue(settings, c),
                 });
             }
@@ -75,40 +123,69 @@ export const getInstancesColumns = (
     return tableColumns;
 };
 
-export const getMetasColumns = () =>
-    [...instancesTableColumns()].map(c => c.accessor);
+const labelLocales = { fr: 'French', en: 'English' };
 
-export const getInstancesVisibleColumns = (
+const localizeLabel = field => {
+    const locale = getCookie('django_language') ?? 'en';
+    const singleToDoubleQuotes = field.label.replaceAll("'", '"');
+    const wrongDoubleQuotes = /(?:[a-zA-Z])"(?=[a-zA-Z])/g;
+    const formattedLabel = singleToDoubleQuotes.replace(wrongDoubleQuotes, "'");
+    let result;
+    try {
+        const localeOptions = JSON.parse(formattedLabel);
+        const localeKey = labelLocales[locale] ?? labelLocales.en;
+        result = localeOptions[localeKey];
+    } catch (e) {
+        // some fields are using single quotes. Logging just for info, this can be deleted if it clutters the console
+        console.warn('Error parsing JSON', formattedLabel, e);
+        result = field.name;
+    }
+    return result;
+};
+
+export const formatLabel = field => {
+    if (field.label.charAt(0) === '{') return localizeLabel(field);
+    if (!field.label) return field.name;
+    if (!field.label.trim()) return field.name;
+    if (field.label.includes(':')) return field.label.split(':')[0];
+    if (field.label.includes('$')) return field.label.split('$')[0];
+    return field.label;
+};
+export const getInstancesVisibleColumns = ({
     formatMessage,
     instance,
-    { columns = undefined, order },
+    columns = undefined,
+    order,
     defaultOrder,
-) => {
+    possibleFields,
+    user,
+}) => {
     const activeOrders = (order || defaultOrder).split(',');
+    const columnsNames = columns ? columns.split(',') : [];
     const metasColumns = [
-        ...instancesTableColumns(formatMessage).filter(
+        ...instancesTableColumns(formatMessage, user).filter(
             c => c.accessor !== 'actions',
         ),
     ];
     const newColumns = metasColumns.map(c => ({
         key: c.accessor,
         label: c.Header,
-        active: columns !== undefined && columns.includes(c.accessor),
+        active: columnsNames.includes(c.accessor),
         meta: true,
         disabled:
             activeOrders.indexOf(c.accessor) !== -1 ||
             activeOrders.indexOf(`-${c.accessor}`) !== -1,
     }));
+
     if (instance) {
-        Object.keys(instance.file_content).forEach(k => {
-            if (k !== 'meta' && k !== 'uuid') {
-                newColumns.push({
-                    key: k,
-                    label: k, // TO-DO: get field label from API
-                    active: columns !== undefined && columns.includes(k),
-                    disabled: false,
-                });
-            }
+        possibleFields?.forEach(field => {
+            const label = formatLabel(field);
+            newColumns.push({
+                key: field.name,
+                label,
+                active: columnsNames.includes(field.name),
+                disabled: false,
+            });
         });
     }
     return newColumns;
@@ -116,9 +193,9 @@ export const getInstancesVisibleColumns = (
 
 export const getInstancesFilesList = instances => {
     const filesList = [];
-    instances.forEach(i => {
-        if (i.files.length > 0) {
-            i.files.forEach(path => {
+    instances?.forEach(i => {
+        if (i.files?.length > 0) {
+            i.files?.forEach(path => {
                 const file = {
                     itemId: i.id,
                     createdAt: i.created_at,
@@ -177,4 +254,74 @@ export const getSelectionActions = (
             disabled: false,
         },
     ];
+};
+
+const asBackendStatus = status => {
+    if (status) {
+        return status
+            .split(',')
+            .map(s => (s === 'ERROR' ? 'DUPLICATED' : s))
+            .join(',');
+    }
+    return status;
+};
+
+export const getFilters = params => {
+    const allFilters = {
+        withLocation: params.withLocation,
+        orgUnitTypeId: params.orgUnitTypeId,
+        deviceId: params.deviceId,
+        startPeriod: params.startPeriod,
+        endPeriod: params.endPeriod,
+        status: asBackendStatus(params.status),
+        deviceOwnershipId: params.deviceOwnershipId,
+        search: params.search,
+        orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
+        dateFrom: getFromDateString(params.dateFrom),
+        dateTo: getToDateString(params.dateTo),
+        showDeleted: params.showDeleted,
+        form_ids: params.formIds,
+    };
+    const filters = {};
+    Object.keys(allFilters).forEach(k => {
+        if (allFilters[k]) {
+            filters[k] = allFilters[k];
+        }
+    });
+    return filters;
+};
+
+const defaultOrder = 'updated_at';
+
+export const getEndpointUrl = (
+    params,
+    toExport,
+    exportType = 'csv',
+    asSmallDict = false,
+) => {
+    const urlParams = {
+        limit: params.pageSize ? params.pageSize : 10,
+        order: params.order ? params.order : `-${defaultOrder}`,
+        page: params.page ? params.page : 1,
+        asSmallDict: true,
+        ...getFilters(params),
+    };
+    return getTableUrl(
+        'instances',
+        urlParams,
+        toExport,
+        exportType,
+        false,
+        asSmallDict,
+    );
+};
+
+export const getFileUrl = (params, rowsPerPage, page) => {
+    const urlParams = {
+        limit: rowsPerPage,
+        // Django pagination start at 1 but Material UI at 0
+        page: page + 1,
+        ...getFilters(params),
+    };
+    return getTableUrl('instances/attachments', urlParams);
 };

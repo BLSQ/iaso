@@ -23,6 +23,7 @@ const ProjectInfos = ({ setFieldValue, currentProject }) => (
             errors={currentProject.app_id.errors}
             type="text"
             label={MESSAGES.appId}
+            required
         />
     </>
 );

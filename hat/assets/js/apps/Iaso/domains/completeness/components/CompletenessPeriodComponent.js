@@ -1,14 +1,22 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { Paper, withStyles, Typography, Grid } from '@material-ui/core';
-import ReactTable, { ReactTableDefaults } from 'react-table';
+import { Grid, makeStyles, Paper, Typography } from '@material-ui/core';
 
-import { injectIntl, commonStyles } from 'bluesquare-components';
+import {
+    commonStyles,
+    LoadingSpinner,
+    Table,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { useDispatch } from 'react-redux';
+import { postRequest } from 'Iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { getColumns } from '../config';
-import customTableTranslations from '../../../constants/customTableTranslations';
 import { baseUrls } from '../../../constants/urls';
+import { redirectTo } from '../../../routing/actions';
+import MESSAGES from '../../../components/snackBars/messages';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     root: {
         marginBottom: theme.spacing(4),
@@ -39,96 +47,97 @@ const styles = theme => ({
         justifyContent: 'center',
         alignItems: 'center',
     },
-});
+    linkButton: {
+        textDecoration: 'none',
+    },
+}));
 
-class CompletenessPeriodComponent extends Component {
-    componentDidMount() {
-        const { formatMessage } = this.props.intl;
-        Object.assign(
-            ReactTableDefaults,
-            customTableTranslations(formatMessage),
+const CompletenessPeriodComponent = ({
+    activeInstanceStatuses,
+    period,
+    forms,
+    activePeriodType,
+}) => {
+    const dispatch = useDispatch();
+
+    const derivedInstanceMutation = useSnackMutation(
+        derivedrequest => postRequest('/api/derivedinstances/', derivedrequest),
+        MESSAGES.generateDerivedRequestSuccess,
+        MESSAGES.generateDerivedRequestError,
+        ['completeness'],
+    );
+
+    const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
+    // FIXME: doesn't seem to be actually used
+    const onSelectCell = (form, status, selectedPeriod) => {
+        dispatch(
+            redirectTo(baseUrls.instances, {
+                formIds: form.id,
+                periodType: form.period_type.toUpperCase(),
+                startPeriod: selectedPeriod.asPeriodType(form.period_type)
+                    .periodString,
+                status: status.toUpperCase(),
+            }),
         );
-    }
+    };
 
-    onSelectCell(form, status, period) {
-        this.props.redirectTo(baseUrls.instances, {
-            formId: form.id,
-            periods: period.asPeriodType(form.period_type).periodString,
-            status: status.toUpperCase(),
-        });
-    }
-
-    onClick(form, onGenerateDerivedInstances) {
+    const onClick = form => {
         const periods = Array.from(
             new Set(Object.values(form.months).map(m => m.period.periodString)),
         );
         const derived = form.generate_derived;
-        onGenerateDerivedInstances({ periods, derived });
-    }
+        derivedInstanceMutation.mutate({ periods, derived });
+    };
+    const columns = getColumns(
+        formatMessage,
+        period.monthRange,
+        classes,
+        activeInstanceStatuses,
+        // FIXME: this call back is not called
+        (form, status, p) => onSelectCell(form, status, p),
+        arg => onClick(arg),
+        activePeriodType,
+    );
 
-    render() {
-        const {
-            period,
-            forms,
-            activeInstanceStatuses,
-            activePeriodType,
-            classes,
-            intl: { formatMessage },
-            onGenerateDerivedInstances,
-        } = this.props;
-
-        return (
-            <Paper className={classes.root}>
-                <Grid container spacing={0}>
-                    <Grid
-                        xs={6}
-                        item
-                        container
-                        justify="flex-start"
-                        alignItems="center"
-                    >
-                        <Typography variant="h5" gutterBottom>
-                            {period.toCode()}
-                        </Typography>
-                    </Grid>
+    return (
+        <Paper className={classes.root}>
+            {derivedInstanceMutation.isLoading && <LoadingSpinner />}
+            <Grid container spacing={0}>
+                <Grid
+                    xs={6}
+                    item
+                    container
+                    justifyContent="flex-start"
+                    alignItems="center"
+                >
+                    <Typography variant="h5" gutterBottom>
+                        {period.toCode()}
+                    </Typography>
                 </Grid>
+            </Grid>
 
-                <section className={classes.reactTable}>
-                    <ReactTable
-                        showPagination={false}
-                        multiSort
-                        columns={getColumns(
-                            formatMessage,
-                            period.monthRange,
-                            classes,
-                            activeInstanceStatuses,
-                            (form, status, p) =>
-                                this.onSelectCell(form, status, p),
-                            arg =>
-                                this.onClick(arg, onGenerateDerivedInstances),
-                            activePeriodType,
-                        )}
-                        data={forms}
-                        filterable={false}
-                        sortable={false}
-                        className="-striped -highlight"
-                        defaultSorted={[{ id: 'label', desc: false }]}
-                        defaultPageSize={forms.length}
-                        resizable={false}
-                    />
-                </section>
-            </Paper>
-        );
-    }
-}
+            <section className={classes.reactTable}>
+                <Table
+                    data={forms}
+                    pages={1}
+                    defaultSorted={[{ id: 'label', desc: false }]}
+                    count={forms.length}
+                    redirectTo={() => null}
+                    columns={columns}
+                    showPagination={false}
+                    showFooter
+                />
+            </section>
+        </Paper>
+    );
+};
+
 CompletenessPeriodComponent.propTypes = {
     period: PropTypes.object.isRequired,
     forms: PropTypes.arrayOf(PropTypes.object).isRequired,
     activeInstanceStatuses: PropTypes.arrayOf(PropTypes.string).isRequired,
     activePeriodType: PropTypes.string.isRequired,
-    intl: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
-    redirectTo: PropTypes.func.isRequired,
-    onGenerateDerivedInstances: PropTypes.func.isRequired,
 };
-export default injectIntl(withStyles(styles)(CompletenessPeriodComponent));
+
+export default CompletenessPeriodComponent;

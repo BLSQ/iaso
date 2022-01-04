@@ -1,24 +1,13 @@
-import { useMutation, useQueryClient } from 'react-query';
-import { sendRequest } from '../utils/networking';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { postRequest, putRequest } from 'Iaso/libs/Api';
 
-export const useSaveCampaign = () => {
-    const queryClient = useQueryClient();
-
-    const { mutate, ...result } = useMutation(body => {
-        const method = body.id ? 'PUT' : 'POST';
-        const path = `/api/polio/campaigns/${body.id ? `${body.id}/` : ''}`;
-        return sendRequest(method, path, body);
-    });
-
-    return {
-        ...result,
-        mutate: (variables, { onSuccess, ...options }) =>
-            mutate(variables, {
-                ...options,
-                onSuccess: async (...args) => {
-                    await queryClient.invalidateQueries(['polio', 'campaigns']);
-                    onSuccess(...args);
-                },
-            }),
-    };
-};
+export const useSaveCampaign = () =>
+    useSnackMutation(
+        body =>
+            body.id
+                ? putRequest(`/api/polio/campaigns/${body.id}/`, body)
+                : postRequest('/api/polio/campaigns/', body),
+        undefined,
+        undefined,
+        ['polio', 'campaigns'],
+    );

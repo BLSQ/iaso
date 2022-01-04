@@ -224,7 +224,7 @@ class InstancesFilesList extends Component {
 InstancesFilesList.defaultProps = {
     fetchDetails: true,
     instanceDetail: null,
-    files: null,
+    files: [],
 };
 
 InstancesFilesList.propTypes = {
@@ -237,9 +237,7 @@ InstancesFilesList.propTypes = {
     instanceDetail: PropTypes.object,
 };
 
-const MapStateToProps = state => ({
-    fetching: state.instances.fetching,
-});
+const MapStateToProps = () => ({});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,

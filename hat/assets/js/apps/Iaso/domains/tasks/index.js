@@ -20,10 +20,6 @@ const baseUrl = baseUrls.tasks;
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginBottom: theme.spacing(2),
-    },
 }));
 
 const Tasks = () => {
@@ -47,6 +43,7 @@ const Tasks = () => {
                 endPointPath="tasks"
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
+                defaultSorted={[{ id: 'created_at', desc: true }]}
                 exportButtons={false}
                 dataKey="tasks"
                 fetchItems={fetchTasks}

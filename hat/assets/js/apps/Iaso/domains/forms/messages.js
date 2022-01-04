@@ -5,9 +5,17 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Forms',
         id: 'iaso.forms.title',
     },
+    pages: {
+        defaultMessage: 'Pages',
+        id: 'iaso.pages.title',
+    },
     detailTitle: {
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
+    },
+    statsTitle: {
+        defaultMessage: 'Form Stats',
+        id: 'iaso.forms.stats.title',
     },
     createForm: {
         defaultMessage: 'Create form',
@@ -63,7 +71,7 @@ const MESSAGES = defineMessages({
     },
     created_at: {
         id: 'iaso.forms.created_at',
-        defaultMessage: 'Created at',
+        defaultMessage: 'Created',
     },
     update: {
         id: 'iaso.forms.update',
@@ -71,7 +79,7 @@ const MESSAGES = defineMessages({
     },
     deleted_at: {
         id: 'iaso.forms.deleted_at',
-        defaultMessage: 'Deleted at',
+        defaultMessage: 'Deleted',
     },
     updateFormVersion: {
         id: 'iaso.formversions.update',
@@ -97,6 +105,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
+    },
     latest_version_files: {
         defaultMessage: 'Latest version',
         id: 'iaso.forms.latest_version_files',
@@ -110,7 +122,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.type',
     },
     records: {
-        defaultMessage: 'Record(s)',
+        defaultMessage: 'Submissions',
         id: 'iaso.forms.records',
     },
     instance_updated_at: {
@@ -119,7 +131,7 @@ const MESSAGES = defineMessages({
     },
     updated_at: {
         id: 'iaso.forms.updated_at',
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
     },
     subSource: {
         id: 'iaso.forms.subSource',
@@ -149,13 +161,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.status',
         defaultMessage: 'Status',
     },
+    validationStatus: {
+        id: 'iaso.forms.validationStatus',
+        defaultMessage: 'Validation status',
+    },
     showDeleted: {
         id: 'iaso.forms.showDeleted',
         defaultMessage: 'Show deleted',
     },
     hasInstances: {
         id: 'iaso.forms.hasInstances',
-        defaultMessage: 'Forms',
+        defaultMessage: 'Form submissions',
     },
     yes: {
         id: 'iaso.forms.yes',
@@ -224,14 +240,6 @@ const MESSAGES = defineMessages({
     duplicates: {
         id: 'iaso.label.duplicates',
         defaultMessage: 'Duplicates',
-    },
-    shape: {
-        id: 'iaso.forms.shape',
-        defaultMessage: 'Shape',
-    },
-    location: {
-        id: 'iaso.forms.location',
-        defaultMessage: 'Location',
     },
     device: {
         id: 'iaso.forms.device',
@@ -365,6 +373,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.projects',
         defaultMessage: 'Projects',
     },
+    shape: {
+        id: 'iaso.forms.shape',
+        defaultMessage: 'Shape',
+    },
+    location: {
+        id: 'iaso.forms.location',
+        defaultMessage: 'Location',
+    },
     orgUnitsTypes: {
         id: 'iaso.label.orgUnitsTypes',
         defaultMessage: 'Organisation unit types',
@@ -392,6 +408,14 @@ const MESSAGES = defineMessages({
     textSearch: {
         id: 'iaso.forms.textSearch',
         defaultMessage: 'Text search',
+    },
+    search: {
+        defaultMessage: 'Search',
+        id: 'iaso.label.search',
+    },
+    selectParentOrgUnit: {
+        defaultMessage: 'Select parent Org Unit',
+        id: 'iaso.label.selectParentOrgUnit',
     },
     from: {
         id: 'iaso.label.from',
@@ -428,6 +452,70 @@ const MESSAGES = defineMessages({
     endPeriod: {
         id: 'iaso.label.endPeriod',
         defaultMessage: 'end period',
+    },
+    singlePerPeriodSelect: {
+        id: 'iaso.form.label.singlePerPeriodSelect',
+        defaultMessage: 'Please select an answer',
+    },
+    fields: {
+        id: 'iaso.form.label.fields',
+        defaultMessage: 'Default fields to display',
+    },
+    showAdvancedSettings: {
+        id: 'iaso.form.label.showAdvancedSettings',
+        defaultMessage: 'Show advanced settings',
+    },
+    hideAdvancedSettings: {
+        id: 'iaso.form.label.hideAdvancedSettings',
+        defaultMessage: 'Hide advanced settings',
+    },
+    withShape: {
+        id: 'iaso.label.withShape',
+        defaultMessage: 'With territory only',
+    },
+    withLocation: {
+        id: 'iaso.label.withLocation',
+        defaultMessage: 'With point only',
+    },
+    anyGeography: {
+        id: 'iaso.label.anyGeography',
+        defaultMessage: 'With point or territory',
+    },
+    geographicalData: {
+        id: 'iaso.label.geographicalData',
+        defaultMessage: 'Geographical data',
+    },
+    noGeographicalData: {
+        id: 'iaso.label.noGeographicalData',
+        defaultMessage: 'Without geography',
+    },
+    validateXlsForm: {
+        id: 'iaso.label.validateXLSForm',
+        defaultMessage: 'Validate your Form beforehand using the ',
+    },
+    validateXLSFormLink: {
+        id: 'iaso.label.validateXLSFormLink',
+        defaultMessage: 'online tool',
+    },
+    sources: {
+        id: 'iaso.label.sources',
+        defaultMessage: 'Sources',
+    },
+    noSources: {
+        id: 'iaso.orgUnits.sources.noData',
+        defaultMessage: 'No source',
+    },
+    addSource: {
+        id: 'iaso.orgUnits.addSource',
+        defaultMessage: 'Add source',
+    },
+    sourcesHelperText: {
+        id: 'iaso.orgUnits.sourcesHelperText',
+        defaultMessage: 'Linked org units',
+    },
+    formsHelperText: {
+        id: 'iaso.orgUnits.formsHelperText',
+        defaultMessage: 'Form submissions',
     },
 });
 

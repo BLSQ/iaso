@@ -2,8 +2,12 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     title: {
-        defaultMessage: 'Record(s) for the form',
+        defaultMessage: 'Submissions for the form',
         id: 'iaso.instance.form',
+    },
+    titleMulti: {
+        defaultMessage: 'Form submissions',
+        id: 'iaso.forms.hasInstances',
     },
     forceExport: {
         id: 'iaso.instances.forceExport',
@@ -14,7 +18,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.export',
     },
     exportSelection: {
-        defaultMessage: 'Export {count} records ',
+        defaultMessage: 'Export {count} submissions ',
         id: 'iaso.label.exportSelection',
     },
     reAssignInstance: {
@@ -24,6 +28,14 @@ const MESSAGES = defineMessages({
     reAssignInstanceAction: {
         defaultMessage: 'Re-assign',
         id: 'iaso.label.reAssignInstanceAction',
+    },
+    with: {
+        id: 'iaso.label.with',
+        defaultMessage: 'With',
+    },
+    without: {
+        id: 'iaso.label.without',
+        defaultMessage: 'Without',
     },
     list: {
         defaultMessage: 'List',
@@ -95,11 +107,11 @@ const MESSAGES = defineMessages({
     },
     created_at: {
         id: 'iaso.instance.created_at',
-        defaultMessage: 'Created at',
+        defaultMessage: 'Created',
     },
     updated_at: {
         id: 'iaso.instance.updated_at',
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
     },
     files: {
         id: 'iaso.instance.files',
@@ -158,6 +170,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
     },
+    form_name: {
+        defaultMessage: 'Form',
+        id: 'iaso.instance.formShort',
+    },
     location: {
         defaultMessage: 'Location',
         id: 'iaso.map.location',
@@ -179,20 +195,20 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.instanceStatus',
     },
     ready: {
-        defaultMessage: 'ready',
-        id: 'iaso.label.instanceStatus.readySingle',
+        defaultMessage: 'Ready',
+        id: 'iaso.label.instanceStatus.readyMulti',
     },
     error: {
-        defaultMessage: 'error',
-        id: 'iaso.label.instanceStatus.errorSingle',
+        defaultMessage: 'Error',
+        id: 'iaso.label.instanceStatus.errorMulti',
     },
     duplicated: {
-        defaultMessage: 'duplicated',
-        id: 'iaso.label.instanceStatus.duplicatedSingle',
+        defaultMessage: 'Duplicated',
+        id: 'iaso.label.instanceStatus.duplicatedMulti',
     },
     exported: {
-        defaultMessage: 'exported',
-        id: 'iaso.label.instanceStatus.exportedSingle',
+        defaultMessage: 'Exported',
+        id: 'iaso.label.instanceStatus.exportedMulti',
     },
     exportRequests: {
         defaultMessage: 'Export requests',
@@ -262,11 +278,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.instanceRestoreAction',
     },
     instanceEditAction: {
-        defaultMessage: 'Edit any answer in Enketo',
+        defaultMessage: 'Edit the answers in Enketo',
         id: 'iaso.instance.instanceEditAction',
     },
     instanceReAssignAction: {
-        defaultMessage: 'Edit orgUnit or period',
+        defaultMessage: 'Edit attached OrgUnit or period',
         id: 'iaso.instance.instanceReAssignAction',
     },
     instanceExportAction: {
@@ -278,11 +294,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.see',
     },
     instanceCreateAction: {
-        defaultMessage: 'Create instance',
+        defaultMessage: 'Create submission',
         id: 'iaso.instance.instanceCreateAction',
     },
     instanceCreationDialogTitle: {
-        defaultMessage: 'Create instance',
+        defaultMessage: 'Create submission',
         id: 'iaso.instance.instanceCreationDialogTitle',
     },
     deleteInstance: {
@@ -304,6 +320,62 @@ const MESSAGES = defineMessages({
     deleteInstanceWarning: {
         id: 'iaso.instance.deleteInstanceWarning',
         defaultMessage: 'This operation cannot be undone.',
+    },
+    noOrgUnitType: {
+        id: 'iaso.instance.label.noOrgUnitType',
+        defaultMessage: 'OrgUnit type not specified',
+    },
+    instanceHeaderTooltip: {
+        id: 'iaso.instance.table.label.instanceHeaderTooltip',
+        defaultMessage: 'Label: {label} - Name: {key}',
+    },
+    locationLimit: {
+        id: 'iaso.map.locationLimit',
+        defaultMessage: 'Map results limit',
+    },
+    creationDateFrom: {
+        id: 'iaso.label.creationDateFrom',
+        defaultMessage: 'Creation until',
+    },
+    creationDateTo: {
+        id: 'iaso.label.creationDateTo',
+        defaultMessage: 'Creation from',
+    },
+    periodType: {
+        id: 'iaso.label.periodType',
+        defaultMessage: 'Period type',
+    },
+    forms: {
+        defaultMessage: 'Forms',
+        id: 'iaso.forms.title',
+    },
+    textSearch: {
+        id: 'iaso.forms.textSearch',
+        defaultMessage: 'Text search',
+    },
+    deviceOwnership: {
+        id: 'iaso.forms.deviceOwnership',
+        defaultMessage: 'Device ownership',
+    },
+    showDeleted: {
+        id: 'iaso.forms.showDeleted',
+        defaultMessage: 'Show deleted',
+    },
+    org_unit_type_id: {
+        id: 'iaso.forms.org_unit_type_id',
+        defaultMessage: 'Org unit type',
+    },
+    startPeriod: {
+        id: 'iaso.periods.start',
+        defaultMessage: 'Start period',
+    },
+    endPeriod: {
+        id: 'iaso.periods.end',
+        defaultMessage: 'End period',
+    },
+    periodError: {
+        id: 'iaso.formversions.chronologicalPeriodError',
+        defaultMessage: 'Start period should be before end period',
     },
 });
 

@@ -8,8 +8,25 @@
  * @returns {*}
  */
 export function commaSeparatedIdsToArray(string) {
+    if (!string) return [];
     return string
         .split(',')
         .filter(s => s !== '')
         .map(Number);
 }
+export function commaSeparatedIdsToStringArray(string) {
+    if (!string) return [];
+    return string
+        .split(',')
+        .filter(s => s !== '')
+        .sort();
+}
+
+export const convertFormStateToDict = formState => {
+    const result = {};
+    const fields = Object.keys(formState);
+    fields.forEach(field => {
+        result[field] = formState[field].value;
+    });
+    return result;
+};

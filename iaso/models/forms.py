@@ -3,6 +3,7 @@ import typing
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
+from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import ArrayField, CITextField
 
@@ -73,9 +74,13 @@ class Form(SoftDeletableModel):
     location_field = models.TextField(null=True, blank=True)
     correlation_field = models.TextField(null=True, blank=True)
     correlatable = models.BooleanField(default=False)
-    # Accumulated list of all the fields that were present at some point in a version of the form. This is used to
-    # build a table view of the form answers without having to parse the xml files
-    fields = models.JSONField(null=True, blank=True)
+    # see update_possible_fields
+    possible_fields = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Questions present in all versions of the form, as a flat list."
+        "Automatically updated on new versions.",
+    )
     period_type = models.TextField(null=True, blank=True, choices=PERIOD_TYPE_CHOICES)
     single_per_period = models.BooleanField(default=False)
     # The following two fields control the allowed period span (instances can be provided for the period corresponding
@@ -122,6 +127,23 @@ class Form(SoftDeletableModel):
 
         return res
 
+    def update_possible_fields(self: "Form"):
+        """Keep accumulated list of all the flat fields that were present at some point in a version of the form.
+        This is used to build a table view of the form answers without having to parse the xml files
+
+        This need to be called when a new form version is added
+        """
+        # proceed from the oldest to the newest so we take newest labels
+        all_questions = {}
+        for form_version in self.form_versions.order_by("created_at"):
+            # proceed from the oldest to the newest so we take newest labels
+            questions = form_version.questions_by_name()
+            if isinstance(questions, dict):
+                all_questions.update(questions)
+            else:
+                print(f"Invalid questions on version {form_version}: {str(questions)[:50]}")
+        self.possible_fields = _reformat_questions(all_questions)
+
 
 def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
     path = pathlib.Path(filename)
@@ -138,9 +160,29 @@ class FormVersionQuerySet(models.QuerySet):
             return None
 
 
+def _reformat_questions(questions):
+    """ "Return all questions as a list instead of dict
+    remove fields of type 'note'
+    keep only fields : name, label, type.
+    label can contain html, to prevent injection and make them presentable in list we strip the tags
+    """
+    r = []
+
+    for question in questions.values():
+        if question["type"] == "note":
+            continue
+
+        n = {
+            "name": question["name"],
+            "label": strip_tags(question["label"]) if "label" in question else "",
+            "type": question["type"],
+        }
+        r.append(n)
+    return r
+
+
 class FormVersionManager(models.Manager):
     def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
-        print(kwargs)
         with transaction.atomic():
             latest_version = self.latest_version(form)
 
@@ -152,6 +194,7 @@ class FormVersionManager(models.Manager):
                 form_descriptor=survey.to_json(),
             )
             form.form_id = survey.form_id
+            form.update_possible_fields()
             form.save()
 
             if latest_version is not None:
@@ -174,9 +217,7 @@ class FormVersion(models.Model):
 
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
-    def get_or_save_form_descriptor(
-        self,
-    ):  # TODO: remove me - shoud be populated on create
+    def get_or_save_form_descriptor(self):  # TODO: remove me - should be populated on create
         if self.form_descriptor:
             json_survey = self.form_descriptor
         elif self.xls_file:
@@ -202,7 +243,6 @@ class FormVersion(models.Model):
     def as_dict(self):
         return {
             "id": self.id,
-            "version_id": self.version_id,
             "version_id": self.version_id,
             "file": self.file.url,
             "xls_file": self.xls_file.url if self.xls_file else None,

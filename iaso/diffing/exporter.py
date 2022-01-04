@@ -1,6 +1,9 @@
 import json
 
+import dhis2.exceptions
+from dhis2 import Api
 from django.contrib.gis.geos import GEOSGeometry
+from pprint import pprint
 
 from iaso.models import generate_id_for_dhis_2
 from .comparisons import as_field_types
@@ -51,26 +54,49 @@ def dhis2_group_contains(dhis2_group, org_unit):
     return False
 
 
+def format_error(action, exc, errors):
+    message = f"Error when {action}" f"\n" f"URL : {exc.url}\n" f"Received status code: {exc.code}\n"
+    if errors:
+        message += "Errors:\r\n"
+        for error in errors:
+            message += " * " + error + "\n"
+    return message
+
+
 class Exporter:
     def __init__(self, logger):
         self.iaso_logger = logger
 
-    def export_to_dhis2(self, api, diffs, fields):
+    def export_to_dhis2(self, api, diffs, fields, task=None):
+        if task:
+            task.report_progress_and_stop_if_killed(
+                progress_message="Creating new Org Units", progress_value=0, end_value=3
+            )
         self.iaso_logger.ok("   ------ New org units----")
         self.create_missings(api, diffs)
+        if task:
+            task.report_progress_and_stop_if_killed(
+                progress_message="Modifying existing Org Units", progress_value=1, end_value=3
+            )
         self.iaso_logger.ok("   ------ Modified org units----")
         self.update_orgunits(api, diffs)
+        if task:
+            task.report_progress_and_stop_if_killed(progress_message="Updating groups", progress_value=3, end_value=3)
         self.iaso_logger.ok("   ------ Modified groups----")
         self.update_groups(api, diffs, fields)
 
-    def create_missings(self, api, diffs):
+    def create_missings(self, api, diffs, task=None):
         to_create_diffs = list(filter(lambda x: x.status == "new", diffs))
         self.iaso_logger.info("orgunits to create : ", len(to_create_diffs))
 
         assign_dhis2_ids(to_create_diffs)
         to_create_diffs = sort_by_path(to_create_diffs)
-
+        if task:
+            task.report_progress_and_stop_if_killed(
+                progress_message="Creating Orgunits", progress_value=0, end_value=len(to_create_diffs)
+            )
         # build the "minimal" payloads for creation, groups only done at later stage
+        index = 0
         for to_create in to_create_diffs:
             name_comparison = to_create.comparison("name")
             self.iaso_logger.info("----", name_comparison.after, to_create.org_unit.path)
@@ -86,15 +112,29 @@ class Exporter:
             self.fill_geometry_or_coordinates(to_create.comparison("geometry"), payload)
 
             self.iaso_logger.info("will post ", payload)
+
             try:
                 resp = api.post("organisationUnits", payload)
-                self.iaso_logger.info("received ", resp.json())
-            except:
-                print("passing", payload)
-                pass
+            except dhis2.exceptions.RequestException as exc:
+                errors = []
+                try:
+                    if exc.code != 404:
+                        error_dict = json.loads(exc.description).get("response", {})
+                        for error_report in error_dict.get("errorReports", []):
+                            errors.append(error_report.get("message", str(error_report)))
+                except:
+                    pass
+                exc.message = format_error(f"Error when creating Org Unit {to_create.org_unit}", exc, errors)
+                exc.extra = {"payload": json.dumps(payload, indent=4), "response": exc.description}
+                raise exc
+
+            self.iaso_logger.info("received ", resp.json())
+            index = index + 1
+            if task and index % 10 == 0:
+                task.report_progress_and_stop_if_killed(progress_message="Creating Orgunits", progress_value=index)
 
     def fill_geometry_or_coordinates(self, comparison, payload):
-        if comparison.after:
+        if comparison and comparison.after:
             point_or_shape = GEOSGeometry(comparison.after)
             geometry = json.loads(point_or_shape.geojson)
             # No altitude in DHIS2, remove before exporting
@@ -108,19 +148,22 @@ class Exporter:
             payload["coordinates"] = json.dumps(geometry["coordinates"])
             payload["featureType"] = to_dhis2_feature_type(geometry["type"])
 
-    def update_orgunits(self, api, diffs):
+    def update_orgunits(self, api: Api, diffs, task=None):
         support_by_update_fields = ("name", "parent", "geometry")
         to_update_diffs = list(
             filter(lambda x: x.status == "modified" and x.are_fields_modified(support_by_update_fields), diffs)
         )
         self.iaso_logger.info("orgunits to update : ", len(to_update_diffs))
         to_update_diffs = sort_by_path(to_update_diffs)
-        self.iaso_logger.info("modified", len(to_update_diffs))
 
         slices = all_slices(to_update_diffs, 4)
+        if task:
+            task.report_progress_and_stop_if_killed(
+                progress_message="Updating Orgunits", progress_value=0, end_value=len(slices)
+            )
         index = 0
         for current_slice in slices:
-            index = index + 1
+
             ids = list(map(lambda x: x.org_unit.source_ref, current_slice))
             filter_params = "id:in:[" + ",".join(ids) + "]"
             resp = api.get("organisationUnits?", params={"filter": filter_params, "fields": ":all"})
@@ -139,9 +182,45 @@ class Exporter:
                 for comparison in diff.comparisons:
                     if comparison.status != "same" and not comparison.field.startswith("groupset:"):
                         self.apply_comparison(dhis2_payload, comparison)
-            # self.iaso_logger.info(" will post slice", dhis2_payloads)
-            resp = api.post("metadata", {"organisationUnits": dhis2_payloads})
-            self.iaso_logger.info(resp, resp.json())
+            self.iaso_logger.info(f"will post slice for {', '.join(ids)}")
+            # pprint([{k: (v if k != "geometry" else "...") for k, v in payload.items()} for payload in dhis2_payloads])
+            payload = {"organisationUnits": dhis2_payloads}
+            try:
+                resp = api.post("metadata", payload)
+            except dhis2.exceptions.RequestException as exc:
+                errors = []
+                try:
+                    if exc.code != 404:
+                        error_dict = json.loads(exc.description).get("response", {})
+                        for error_report in error_dict.get("errorReports", []):
+                            errors.append(error_report.get("message", str(error_report)))
+                except:
+                    pass
+                exc.message = format_error(f"updating Org Units {','.join(ids)}", exc, errors)
+                exc.extra = {"payload": json.dumps(payload, indent=4), "response": resp.text}
+                raise exc
+
+            self.iaso_logger.info(resp)
+            report = resp.json()
+            pprint(report)
+
+            if resp.status_code == 200 and report["status"] == "ERROR":
+                exc = dhis2.exceptions.RequestException(code=resp.status_code, url=resp.url, description=resp.text)
+                errors = []
+                try:
+                    for type_report in report.get("typeReports", []):
+                        for object_report in type_report.get("objectReports", []):
+                            for error_report in object_report.get("errorReports", []):
+                                errors.append(error_report.get("message", str(error_report)))
+                except:
+                    pass
+                exc.message = format_error(f"updating Org Units {','.join(ids)}", exc, errors)
+                exc.extra = {"payload": json.dumps(payload, indent=4), "response": resp.text}
+                raise exc
+
+            index = index + 1
+            if task and index % 10 == 0:
+                task.report_progress_and_stop_if_killed(progress_message="Updating Orgunits", progress_value=index)
 
     def apply_comparison(self, payload, comparison):
         # TODO ideally move to FieldTypes in comparisons.py
@@ -163,7 +242,6 @@ class Exporter:
             payload["parent"] = {"id": comparison.after}
 
     def update_groups(self, api, diffs, fields):
-
         support_by_update_fields = [field for field in fields if field.startswith("groupset:")]
         to_update_diffs = list(
             filter(

@@ -41,15 +41,18 @@ const getBaseColumns = formatMessage => [
         Header: formatMessage(MESSAGES.formsTitle),
         accessor: 'name',
         width: 300,
-        style: { justifyContent: 'left' },
+        align: 'left',
         resizable: true,
     },
 ];
 
 const getFormUrl = (form, status, period) => {
     let url = baseUrls.instances;
-    url += `/formId/${form.id}`;
-    url += `/periods/${period.asPeriodType(form.period_type).periodString}`;
+    url += `/formIds/${form.id}`;
+    // periodType must come before startPeriod or you get a 404
+    url += `/periodType/${form.period_type.toUpperCase()}`;
+    url += `/startPeriod/${period.asPeriodType(form.period_type).periodString}`;
+    url += `/endPeriod/${period.asPeriodType(form.period_type).periodString}`;
     url += `/status/${status.toUpperCase()}`;
     return url;
 };
@@ -86,6 +89,9 @@ export const getColumns = (
                     {formatMessage(MESSAGES[monthsList[month - 1]])}
                 </span>
             ),
+            sortable: false,
+            resizable: false,
+            accessor: `month-${month}`,
             columns: activeInstanceStatuses
                 .map(status => status.toLowerCase())
                 .map(status => ({
@@ -95,18 +101,23 @@ export const getColumns = (
                             title={formatMessage(MESSAGES[status])}
                         />
                     ),
+                    sortable: false,
+                    resizable: false,
+                    accessor: `month-${month}-${status}`,
                     key: status.key,
+                    align: 'center',
                     Cell: settings => {
-                        const value = settings.original.months[month][status];
+                        const value =
+                            settings.row.original.months[month][status];
                         if (!value) return textPlaceholder;
                         return (
                             <Link
-                                className={`${classes.linkButton}  
+                                className={`${classes.linkButton}
                                 ${value ? classes[status] : ''}`}
                                 to={getFormUrl(
-                                    settings.original,
+                                    settings.row.original,
                                     status,
-                                    settings.original.months[month].period,
+                                    settings.row.original.months[month].period,
                                 )}
                             >
                                 {value || '-'}
@@ -114,15 +125,14 @@ export const getColumns = (
                         );
                     },
                     Footer: info => {
-                        const counts = info.data.map(
-                            row => row._original.months[month][status],
+                        const counts = info?.data?.map(
+                            row => row.months[month][status],
                         );
-                        const total = counts.reduce(
+                        const total = counts?.reduce(
                             (sum, count) => count + sum,
                             0,
                         );
-
-                        return <span>{formatThousand(total)}</span>;
+                        return <>{total && formatThousand(total)}</>;
                     },
                     width: STATUS_COLUMN_SIZES[activePeriodType],
                 })),
@@ -136,24 +146,30 @@ export const getColumns = (
                 {formatMessage(MESSAGES.actions)}
             </span>
         ),
+        accessor: 'actions',
         columns: [
             {
                 Header: '',
-                Cell: settings =>
-                    settings.original.generate_derived ? (
+                accessor: 'actions-1',
+                Cell: settings => {
+                    return settings.row.original.generate_derived ? (
                         <IconButtonComponent
                             onClick={() =>
-                                onGenerateDerivedInstances(settings.original)
+                                onGenerateDerivedInstances(
+                                    settings.row.original,
+                                )
                             }
                             icon="call-merge"
                             tooltipMessage={MESSAGES.generateDerivedInstances}
                         />
                     ) : (
                         ''
-                    ),
+                    );
+                },
             },
         ],
-        resizable: true,
+        resizable: false,
+        sortable: false,
     });
 
     return columns;

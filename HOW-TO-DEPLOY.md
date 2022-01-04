@@ -23,7 +23,6 @@ git checkout development
 git pull
 rm hat/assets/webpack/*
 npm run webpack-prod
-./scripts/enable_plugins.sh
 git add hat/assets/webpack/
 git commit -m 'Committing assets'
 git push

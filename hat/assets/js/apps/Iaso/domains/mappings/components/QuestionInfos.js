@@ -2,10 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Typography from '@material-ui/core/Typography';
 import _ from 'lodash';
+import { useSafeIntl } from 'bluesquare-components';
 import Descriptor from '../descriptor';
 import ObjectDumper from './ObjectDumper';
+import MESSAGES from '../messages';
 
 const QuestionInfos = ({ question }) => {
+    const { formatMessage } = useSafeIntl();
     const label = Descriptor.getHumanLabel(question);
     return (
         <div>
@@ -20,7 +23,8 @@ const QuestionInfos = ({ question }) => {
             )}
             {question.children && (
                 <>
-                    {' Options :'}
+                    {formatMessage(MESSAGES.options)}
+                    {}
                     {question.children.map(c => c.name).join(' , ')}
                 </>
             )}

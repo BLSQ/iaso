@@ -1,4 +1,3 @@
-import { textPlaceholder } from 'bluesquare-components';
 import { Period } from './models';
 import {
     PERIOD_TYPE_DAY,
@@ -186,14 +185,6 @@ describe('Periods model', () => {
         });
         it('monthRange should return correct month range', () => {
             expect(period.monthRange).to.eql(getMonthRange(month));
-        });
-        describe('getPrettyPeriod', () => {
-            it('should return textPlaceholder if no periodString', () => {
-                expect(Period.getPrettyPeriod()).to.eql(textPlaceholder);
-            });
-            it('should return correct string', () => {
-                expect(Period.getPrettyPeriod(periodString)).to.eql('01-2020');
-            });
         });
         it('nextYear should return next year string', () => {
             expect(period.nextYear(periodString)).to.eql(
@@ -448,9 +439,6 @@ describe('Periods model', () => {
         });
         it('toCode should return correct code', () => {
             expect(period.toCode()).to.eql(periodString);
-        });
-        it('getPrettyPeriod should return periodString', () => {
-            expect(Period.getPrettyPeriod(periodString)).to.eql(periodString);
         });
         it('nextQuarter should return quarter string invalid', () => {
             expect(period.nextQuarter(periodString)).to.eql('2020QNaN');

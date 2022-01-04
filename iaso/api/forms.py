@@ -8,7 +8,7 @@ from rest_framework.request import Request
 
 from iaso.models import Form, Project, OrgUnitType
 from iaso.utils import timestamp_to_datetime
-from .common import ModelViewSet, TimestampField
+from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from .projects import ProjectSerializer
 
@@ -20,10 +20,41 @@ class HasFormPermission(permissions.BasePermission):
 
         return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
 
+    def has_object_permission(self, request, view, obj):
+        if not self.has_permission(request, view):
+            return False
+        return obj in Form.objects_include_deleted.filter_for_user_and_app_id(
+            request.user, request.query_params.get("app_id")
+        )
 
-class FormSerializer(serializers.ModelSerializer):
+
+class FormSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Form
+        default_fields = [
+            "id",
+            "name",
+            "form_id",
+            "device_field",
+            "location_field",
+            "org_unit_types",
+            "org_unit_type_ids",
+            "projects",
+            "project_ids",
+            "period_type",
+            "single_per_period",
+            "periods_before_allowed",
+            "periods_after_allowed",
+            "latest_form_version",
+            "instances_count",
+            "instance_updated_at",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+            "derived",
+            "fields",
+            "label_keys",
+        ]
         fields = [
             "id",
             "name",
@@ -45,6 +76,7 @@ class FormSerializer(serializers.ModelSerializer):
             "updated_at",
             "deleted_at",
             "derived",
+            "possible_fields",
             "label_keys",
         ]
         read_only_fields = [
@@ -56,6 +88,8 @@ class FormSerializer(serializers.ModelSerializer):
             "instance_updated_at",
             "created_at",
             "updated_at",
+            "possible_fields",
+            "fields",
         ]
 
     org_unit_types = serializers.SerializerMethodField()
@@ -112,7 +146,7 @@ class FormsViewSet(ModelViewSet):
     """Forms API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "menupermissions.iaso_forms" permission.
+    having the "menupermissions.iaso_forms"  permission.
 
     GET /api/forms/
     GET /api/forms/<id>
@@ -233,3 +267,9 @@ class FormsViewSet(ModelViewSet):
             created_at,
             updated_at,
         ]
+
+
+class MobileFormViewSet(FormsViewSet):
+    # Filtering out forms without form versions to prevent mobile app from crashing
+    def get_queryset(self):
+        return super().get_queryset().exclude(form_versions=None)

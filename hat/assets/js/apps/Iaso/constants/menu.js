@@ -2,6 +2,7 @@ import React from 'react';
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import Link from '@material-ui/icons/Link';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
+import Input from '@material-ui/icons/Input';
 import CompareArrows from '@material-ui/icons/CompareArrows';
 import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
 import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
@@ -13,10 +14,14 @@ import GroupWork from '@material-ui/icons/GroupWork';
 import CategoryIcon from '@material-ui/icons/Category';
 import AssignmentRoundedIcon from '@material-ui/icons/AssignmentRounded';
 import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRounded';
+import BookIcon from '@material-ui/icons/Book';
+import AssessmentIcon from '@material-ui/icons/Assessment';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
+import { hasFeatureFlag, SHOW_PAGES } from '../utils/featureFlags';
+import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 
 import MESSAGES from './messages';
 
@@ -30,25 +35,38 @@ const menuItems = [
         subMenu: [
             {
                 label: MESSAGES.list,
-                permission: paths.formsPath.permission,
+                permissions: paths.formsPath.permissions,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
+                label: MESSAGES.submissionsTitle,
+                extraPath: `/tab/list/mapResults/${locationLimitMax}`,
+                permissions: paths.instancesPath.permissions,
+                key: 'submissions',
+                icon: props => <Input {...props} />,
+            },
+            {
+                label: MESSAGES.formsStats,
+                permissions: paths.formsStatsPath.permissions,
+                key: 'stats',
+                icon: props => <AssessmentIcon {...props} />,
+            },
+            {
                 label: MESSAGES.dhis2Mappings,
-                permission: paths.mappingsPath.permission,
+                permissions: paths.mappingsPath.permissions,
                 key: 'mappings',
                 icon: props => <DHIS2Svg {...props} />,
             },
             {
                 label: MESSAGES.completeness,
-                permission: paths.completenessPath.permission,
+                permissions: paths.completenessPath.permissions,
                 key: 'completeness',
                 icon: props => <DoneAll {...props} />,
             },
             {
                 label: MESSAGES.archived,
-                permission: paths.archivedPath.permission,
+                permissions: paths.archivedPath.permissions,
                 key: 'archived',
                 icon: props => <Delete {...props} />,
             },
@@ -61,19 +79,19 @@ const menuItems = [
         subMenu: [
             {
                 label: MESSAGES.list,
-                permission: paths.orgUnitsPath.permission,
+                permissions: paths.orgUnitsPath.permissions,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
                 label: MESSAGES.groups,
-                permission: paths.groupsPath.permission,
+                permissions: paths.groupsPath.permissions,
                 key: 'groups',
                 icon: props => <GroupWork {...props} />,
             },
             {
                 label: MESSAGES.orgUnitType,
-                permission: paths.orgUnitTypesPath.permission,
+                permissions: paths.orgUnitTypesPath.permissions,
                 key: 'types',
                 icon: props => <CategoryIcon {...props} />,
             },
@@ -84,7 +102,7 @@ const menuItems = [
                 subMenu: [
                     {
                         label: MESSAGES.list,
-                        permission: paths.dataSourcesPath.permission,
+                        permissions: paths.dataSourcesPath.permissions,
                         key: 'list',
                         icon: props => <FormatListBulleted {...props} />,
                     },
@@ -95,7 +113,7 @@ const menuItems = [
                         subMenu: [
                             {
                                 label: MESSAGES.list,
-                                permission: paths.linksPath.permission,
+                                permissions: paths.linksPath.permissions,
                                 key: 'list',
                                 icon: props => (
                                     <FormatListBulleted {...props} />
@@ -103,7 +121,7 @@ const menuItems = [
                             },
                             {
                                 label: MESSAGES.algorithmsRuns,
-                                permission: paths.algosPath.permission,
+                                permissions: paths.algosPath.permissions,
                                 key: 'runs',
                                 icon: props => <CompareArrows {...props} />,
                             },
@@ -121,45 +139,43 @@ const menuItems = [
             {
                 label: MESSAGES.tasks,
                 key: 'tasks',
-                permission: paths.tasksPath.permission,
+                permissions: paths.tasksPath.permissions,
                 icon: props => <AssignmentRoundedIcon {...props} />,
             },
             {
                 label: MESSAGES.monitoring,
                 key: 'devices',
-                permission: paths.devicesPath.permission,
+                permissions: paths.devicesPath.permissions,
                 icon: props => <ImportantDevicesRoundedIcon {...props} />,
             },
             {
                 label: MESSAGES.projects,
                 key: 'projects',
-                permission: paths.projectsPath.permission,
+                permissions: paths.projectsPath.permissions,
                 icon: props => <PhonelinkSetupIcon {...props} />,
             },
             {
                 label: MESSAGES.users,
                 key: 'users',
-                permission: paths.usersPath.permission,
+                permissions: paths.usersPath.permissions,
                 icon: props => <SupervisorAccount {...props} />,
             },
         ],
     },
 ];
 
-if (PLUGIN_POLIO_ENABLED === 'True') {
-    menuItems.push({
-        label: MESSAGES.polio,
-        key: 'polio',
-        icon: props => <DataSourceIcon {...props} />,
-        subMenu: [
-            {
-                label: MESSAGES.dashboard,
-                key: 'list',
-                permission: paths.formsPath.permission,
-                icon: props => <FormatListBulleted {...props} />,
-            },
-        ],
-    });
-}
+const getMenuItems = (currentUser, enabledPlugins) => {
+    const pluginsMenu = enabledPlugins.map(plugin => plugin.menu).flat();
+    const basicItems = [...menuItems];
+    if (hasFeatureFlag(currentUser, SHOW_PAGES)) {
+        basicItems.push({
+            label: MESSAGES.pages,
+            key: 'pages',
+            icon: props => <BookIcon {...props} />,
+            permissions: paths.pagesPath.permissions,
+        });
+    }
+    return [...basicItems, ...pluginsMenu];
+};
 
-export default menuItems;
+export default getMenuItems;

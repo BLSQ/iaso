@@ -216,7 +216,6 @@ class Command(BaseCommand):
                 org_unit_type_csv_file="./iaso/tests/fixtures/empty_unit_types.csv",
                 force=True,
                 validate=True,
-                page_size=5000,
             )
 
             print("********* generating instances")

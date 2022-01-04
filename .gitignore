@@ -12,6 +12,7 @@ coverage
 __pycache__/
 *.py[cod]
 *$py.class
+.mypy_cache
 
 # C extensions
 *.so
@@ -80,7 +81,7 @@ db.sqlite3
 media
 
 ### Translations ###
-locale/
+*.mo
 
 # Deployment
 build_scripts/Dockerrun.aws.json
@@ -91,6 +92,7 @@ build_scripts/deploy.zip
 #!.elasticbeanstalk/*.cfg.yml
 #!.elasticbeanstalk/*.global.yml
 .elasticbeanstalk/config.yml
+.elasticbeanstalk/logs
 
 ### Built JS ###
 hat/assets/bundles/
@@ -126,3 +128,22 @@ lintErrors.html
 # gpkg tempory files
 *.gpkg-shm
 *.gpkg-wal
+
+# translations scan temporary files
+/hat/assets/js/apps/Iaso/domains/app/translations/extracted/
+
+hat/assets/webpack/
+docker/DHIS2_home/
+
+# enketo build
+docker/enketo/checksum/
+docker/enketo/css/
+docker/enketo/js/
+docker/enketo/locales/
+docker/enketo/redis/
+docker/enketo/redis_main_data/
+docker/enketo/secrets/
+docker/enketo/redis-enketo-main.conf
+docker/enketo/start.sh
+
+temp.json

@@ -1,5 +1,10 @@
+import L from 'leaflet';
+import location from '../../images/location.svg';
+import square from '../../images/square.svg';
+
 /*
- * L.Control.ZoomBar
+ * In react use the <ZoomControl> component from mapUtils instead !
+ *  from L.Control.ZoomBar
  * A control bar that extends standard zoom control.
  *
  * Adds:
@@ -9,9 +14,7 @@
  *     without it, it's not going to be included in the bar.
  */
 
-import L from 'leaflet';
-
-L.Control.ZoomBar = L.Control.Zoom.extend({
+export const ZoomBar = L.Control.Zoom.extend({
     options: {
         zoomInfoTitle: 'Current zoom level',
         zoomBoxTitle:
@@ -58,7 +61,7 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
         );
 
         this._zoomBoxButton = this._createButton(
-            '',
+            `<img src="${square}"/>`,
             options.zoomBoxTitle,
             `${className}-box`,
             container,
@@ -68,22 +71,11 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
 
         if (options.fitToBounds) {
             this._fitToBoundsButton = this._createButton(
-                '',
+                `<img src="${location}"/>`,
                 options.fitToBoundsTitle,
                 `${className}-fit`,
                 container,
                 options.fitToBounds,
-                this,
-            );
-        }
-
-        if (options.withVillageSearch) {
-            this._searchButton = this._createButton(
-                '',
-                options.searchTitle,
-                `${className}-search`,
-                container,
-                options.onSearch,
                 this,
             );
         }
@@ -159,5 +151,3 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
         });
     },
 });
-
-L.control.zoombar = options => new L.Control.ZoomBar(options);

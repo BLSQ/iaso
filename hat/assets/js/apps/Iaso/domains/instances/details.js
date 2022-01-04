@@ -14,7 +14,7 @@ import {
     commonStyles,
     LoadingSpinner,
     IconButton as IconButtonComponent,
-    // TopBar,
+    ExportButton as ExportButtonComponent,
 } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
@@ -28,7 +28,6 @@ import {
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
-import ExportButtonComponent from '../../components/buttons/ExportButtonComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
@@ -173,7 +172,7 @@ class InstanceDetails extends Component {
                             router.goBack();
                         } else {
                             redirectToReplace(baseUrls.instances, {
-                                formId: currentInstance.form_id,
+                                formIds: currentInstance.form_id,
                             });
                         }
                     }}

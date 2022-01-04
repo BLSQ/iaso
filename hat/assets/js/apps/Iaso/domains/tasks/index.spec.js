@@ -5,7 +5,6 @@ import TasksList from './index';
 
 import { mockGetRequestsList } from '../../../../test/utils/requests';
 import { renderWithStore } from '../../../../test/utils/redux';
-import { renderWithMuiTheme } from '../../../../test/utils/muiTheme';
 
 const requests = [
     {
@@ -25,7 +24,7 @@ describe('Tasks component', () => {
 
     it('mounts properly', () => {
         const connectedWrapper = mount(
-            renderWithMuiTheme(renderWithStore(<TasksList params={{}} />)),
+            renderWithStore(<TasksList params={{}} />),
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });

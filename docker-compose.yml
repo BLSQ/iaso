@@ -5,6 +5,7 @@ services:
     tty: true
     build:
       context: .
+      dockerfile: docker/django/Dockerfile
     image: iaso
     ports:
       - "8081:8081"
@@ -19,22 +20,28 @@ services:
       - ./entrypoint.sh:/opt/app/entrypoint.sh
       - ./docs:/opt/app/docs
       - ./README.md:/opt/app/README.md
-      # build scripts for testing prod version
-      - ./build_scripts:/opt/app/build_scripts
+      - ./tsconfig.json:/opt/app/tsconfig.json
+      - ./babel-register.js:/opt/app/babel-register.js
       # test data
       - ./testdata:/opt/app/testdata
       # jupyter notebooks
       - ./notebooks:/opt/notebooks
+      # Optional Used to load dev bluesquare-components JS. See `Live Bluesquare components` in doc
+      - ../bluesquare-components:/opt/bluesquare-components
     links: &hat_links
       - db
     environment: &hat_environment
-      PLUGIN_POLIO_ENABLED:
+      PREPAREDNESS_TEMPLATE_ID:
+      PREPAREDNESS_TEMPLATE_FR_ID:
+      PLUGINS:
       GOOGLE_API_KEY_BASE64:
       IASO_ENVIRONMENT: "development"
       RDS_HOSTNAME: db
       RDS_DB_NAME:
       RDS_USERNAME: postgres
       RDS_PASSWORD: postgres
+      DB_READONLY_USERNAME: postgres
+      DB_READONLY_PASSWORD: postgres
       DEBUG: "true"
       TEST_PROD:
       SECRET_KEY: secret
@@ -44,20 +51,21 @@ services:
       PYTHONUNBUFFERED: "true"
       ENKETO_DEV: "true"
       ENKETO_API_TOKEN: AZE78974654azeAZE
-      ENKETO_URL:
+      ENKETO_URL: http://enketo:8005/
+      EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
+      LIVE_COMPONENTS:
     # Limit logging in dev to not overflow terminal
     logging: &iaso_logging
       driver: "json-file"
       options:
         max-size: "5k"
-
     command: start_dev
 
   db:
     image:
       iaso/postgis
-      # Workaround until there is a stable Postgis image for Apple Silicon
-    build: .docker/db
+    # Workaround until there is a stable Postgis image for Apple Silicon
+    build: docker/db
     logging: *iaso_logging
     ports:
       - "5433:5432"
@@ -67,13 +75,12 @@ services:
       POSTGRES_DB: ${RDS_DB_NAME}
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-
   # the webpack dev server
   webpack:
     image: iaso-webpack
     build:
       context: .
-      dockerfile: .docker/webpack/Dockerfile
+      dockerfile: docker/webpack/Dockerfile
     depends_on:
       - iaso
     ports:

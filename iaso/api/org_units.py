@@ -1,29 +1,30 @@
-from django.utils import timezone
-from rest_framework import viewsets, permissions
+import json
+from copy import deepcopy
+from time import gmtime, strftime
+
+from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
-from rest_framework.response import Response
-from rest_framework.decorators import action
+from django.core.paginator import Paginator
+from django.db.models import Q, IntegerField, Value
+from django.http import StreamingHttpResponse, HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import gettext as _
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.audit import models as audit_models
 from iaso.api.common import safe_api_import
+from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form
-from django.contrib.gis.geos import Point
-
-from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404
-
-from iaso.models.org_unit_search import build_org_units_queryset
+from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
 from iaso.utils import geojson_queryset
-from django.db.models import Q
-from copy import deepcopy
-from hat.audit import models as audit_models
-from time import gmtime, strftime
-from django.http import StreamingHttpResponse, HttpResponse
-from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
-import json
-from django.db.models import Value, IntegerField
 
 
+# noinspection PyMethodMayBeStatic
 class HasOrgUnitPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if not (
@@ -31,6 +32,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
             and (
                 request.user.has_perm("menupermissions.iaso_forms")
                 or request.user.has_perm("menupermissions.iaso_org_units")
+                or request.user.has_perm("menupermissions.iaso_submissions")
             )
         ):
             return False
@@ -45,12 +47,13 @@ class HasOrgUnitPermission(permissions.BasePermission):
         return user_account.id in account_ids
 
 
+# noinspection PyMethodMayBeStatic
 class OrgUnitViewSet(viewsets.ViewSet):
     """Org units API
 
     This API is open to anonymous users for actions that are not org unit-specific (see create method for nuance in
     projects that require authentication). Actions on specific org units are restricted to authenticated users with the
-    "menupermissions.iaso_forms" or "menupermissions.iaso_org_units" permission.
+    "menupermissions.iaso_forms", "menupermissions.iaso_org_units" or "menupermissions.iaso_submissions" permission.
 
     GET /api/orgunits/
     GET /api/orgunits/<id>
@@ -58,6 +61,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     PATCH /api/orgunits/<id>
     """
 
+    # this bypass UserAccessPermission and allow anonymous access
     permission_classes = [HasOrgUnitPermission]
 
     def get_queryset(self):
@@ -69,11 +73,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
         which all the power should be really specified.
 
         Can serve theses formats, depending on the combination of GET Parameters:
-         * Simple JSON (default)
-         * Paginated JSON (if a `limit` is passed)
-         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed.
-         * GeoJson with the geo info (if `withShapes` is passed` )
-         * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting
+         * Simple JSON (default) -> as_dict_for_mobile
+         * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
+         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed. -> OrgUnitSmallSearchSerializer
+         * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
+         * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
          * GeoPackage format (if `gpkg` is passed)
          * Excel XLSX  (if `xslx` is passed)
          * CSV (if `csv` is passed)
@@ -95,34 +99,40 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
+        tree_search = request.GET.get("treeSearch", None)
         direct_children = request.GET.get("onlyDirectChildren", False)
-
-        queryset.prefetch_related("group_set")
 
         if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
 
-        searches = request.GET.get("searches", None)
-        counts = []
+        # Annotate number of instance per org unit to sort by it
+        order_by_instance_count = "instances_count" in order or "-instances_count" in order
+        count_instances = order_by_instance_count or is_export
+        count_per_form = csv_format or xlsx_format
+        # add annotation(s) if needed
+        queryset = annotate_query(queryset, count_instances, count_per_form, forms)
+
         if not request.user.is_anonymous:
             profile = request.user.iaso_profile
         else:
             profile = None
+
+        searches = request.GET.get("searches", None)
+        counts = []
+
         if searches:
             search_index = 0
             base_queryset = queryset
+            queryset = OrgUnit.objects.none()
             for search in json.loads(searches):
-                additional_queryset = build_org_units_queryset(
-                    base_queryset, search, profile, is_export, forms
-                ).annotate(search_index=Value(search_index, IntegerField()))
-                if search_index == 0:
-                    queryset = additional_queryset
-                else:
-                    queryset = queryset.union(additional_queryset)
-                counts.append({"index": search_index, "count": additional_queryset.count()})
+                sub_queryset = build_org_units_queryset(base_queryset, search, profile).annotate(
+                    search_index=Value(search_index, IntegerField())
+                )
+                counts.append({"index": search_index, "count": sub_queryset.count()})
+                queryset = queryset.union(sub_queryset)
                 search_index += 1
         else:
-            queryset = build_org_units_queryset(queryset, request.GET, profile, is_export, forms)
+            queryset = build_org_units_queryset(queryset, request.GET, profile)
 
         queryset = queryset.order_by(*order)
 
@@ -131,27 +141,31 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 limit = int(limit)
                 page_offset = int(page_offset)
                 paginator = Paginator(queryset, limit)
-                res = {"count": paginator.count}
-                res["counts"] = counts
+
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
+
                 if small_search:
-                    res["orgunits"] = map(lambda x: x.as_small_dict(), page.object_list)
+                    serializer = OrgUnitSmallSearchSerializer
                 else:
-                    res["orgunits"] = map(lambda x: x.as_dict_with_parents(light=False), page.object_list)
-
-                res["has_next"] = page.has_next()
-                res["has_previous"] = page.has_previous()
-                res["page"] = page_offset
-                res["pages"] = paginator.num_pages
-                res["limit"] = limit
-
-                res["orgunits"] = list(res["orgunits"])
+                    serializer = OrgUnitSearchSerializer
+                res = {
+                    "count": paginator.count,
+                    "counts": counts,
+                    "orgunits": serializer(page.object_list, many=True).data,
+                    "has_next": page.has_next(),
+                    "has_previous": page.has_previous(),
+                    "page": page_offset,
+                    "pages": paginator.num_pages,
+                    "limit": limit,
+                }
 
                 return Response(res)
+            elif tree_search:
+                org_units = OrgUnitTreeSearchSerializer(queryset, many=True).data
+                return Response({"orgunits": org_units})
             elif with_shapes:
-
                 org_units = []
                 for unit in queryset:
                     temp_org_unit = unit.as_dict()
@@ -180,12 +194,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         elif gpkg_format:
             return self.list_to_gpkg(queryset)
         else:
+            # When filtering the org units by group, the values_list will return the groups also filtered.
+            #  In order to get the all groups independently of filters, we should get the groups
+            # based on the org_unit FK.
 
-            """
-            When filtering the org units by group, the values_list will return the groups also filtered.
-            In order to get the all groups independently of filters, we should get the groups
-            based on the org_unit FK.
-            """
             org_ids = queryset.order_by("pk").values_list("pk", flat=True).distinct()
             groups = Group.objects.filter(org_units__id__in=list(org_ids)).only("id", "name").distinct("id")
 
@@ -210,11 +222,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"title": "Ref Ext parent 4", "width": 20},
             ]
             counts_by_forms = []
-            if is_export:
-                for frm in forms:
-                    columns.append({"title": "Total d'instances " + frm.name, "width": 15})
-                    counts_by_forms.append("form_" + str(frm.id) + "_instances")
-                columns.append({"title": "Total d'instances", "width": 15})
+            for frm in forms:
+                columns.append({"title": "Total d'instances " + frm.name, "width": 15})
+                counts_by_forms.append("form_" + str(frm.id) + "_instances")
+            columns.append({"title": "Total d'instances", "width": 15})
 
             for group in groups:
                 group.org_units__ids = list(group.org_units.values_list("id", flat=True))
@@ -261,14 +272,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 ]
                 return org_unit_values
 
-            # Django don't allow prefetch_related after an union
-            # so we will disable the optimisation in that case
-            # which will make it pretty slow. FIXME.
-            if not queryset.query.combinator:
-                queryset.prefetch_related("parent__parent__parent__parent").prefetch_related(
-                    "parent__parent__parent"
-                ).prefetch_related("parent__parent").prefetch_related("parent")
-
             if xlsx_format:
                 filename = filename + ".xlsx"
                 response = HttpResponse(
@@ -284,12 +287,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return response
 
     def list_to_gpkg(self, queryset):
-        # Django don't allow prefetch_related after an union
-        # so we will disable the optimisation in that case
-        # which will make it pretty slow. FIXME.
-        if not queryset.query.combinator:
-            queryset = queryset.prefetch_related("parent", "org_unit_type")
-
         response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
         filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"
@@ -347,16 +344,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
-
+        altitude = request.data.get("altitude", None)
         if latitude and longitude:
-            # TODO: remove this mess once the frontend handles altitude edition
-            if "altitude" in request.data:  # provided explicitly
-                altitude = request.data["altitude"]
-            elif org_unit.location is not None:  # not provided but we have a current location: keep altitude
-                altitude = org_unit.location.z
-            else:  # no location yet, no altitude provided, set to 0
-                altitude = 0
-
             org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
         else:
             org_unit.location = None
@@ -380,23 +369,24 @@ class OrgUnitViewSet(viewsets.ViewSet):
             else:
                 # User that are restricted to parts of the hierarchy cannot create root orgunit
                 profile = request.user.iaso_profile
-                if profile.org_units:
+                if profile.org_units.all():
                     errors.append(
                         {"errorKey": "parent_id", "errorMessage": _("You cannot create an Org Unit without a parent")}
                     )
                 org_unit.parent = None
+
         new_groups = []
-        for group in groups:
-            temp_group = get_object_or_404(Group, id=group)
-            if temp_group.source_version != org_unit.source:
+        for group_id in groups:
+            temp_group = get_object_or_404(Group, id=group_id)
+            if temp_group.source_version != org_unit.version:
                 errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
                 continue
             new_groups.append(temp_group)
 
-        org_unit.groups.set(new_groups)
-        audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
         if not errors:
             org_unit.save()
+            org_unit.groups.set(new_groups)
+            audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
 
             res = org_unit.as_dict_with_parents()
             res["geo_json"] = None
@@ -498,29 +488,29 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.parent = parent_org_unit
         else:
             # User that are restricted to parts of the hierarchy cannot create root orgunit
-            if profile.org_units:
+            if profile.org_units.all():
                 errors.append(
                     {"errorKey": "parent_id", "errorMessage": _("You cannot create an Org Unit without a parent")}
                 )
 
-        if not errors:
-            org_unit.save()
-        else:
-            return Response(errors, status=400)
-        org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
-        org_unit.org_unit_type = org_unit_type
-
         new_groups = []
         for group in groups:
             temp_group = get_object_or_404(Group, id=group)
-            if temp_group.source_version != org_unit.source:
+
+            if temp_group.source_version != org_unit.version:
                 errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
                 continue
             new_groups.append(temp_group)
+
+        if errors:
+            return Response(errors, status=400)
+
+        org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
+        org_unit.org_unit_type = org_unit_type
+        org_unit.save()
         org_unit.groups.set(new_groups)
 
         audit_models.log_modification(None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
-        org_unit.save()
 
         res = org_unit.as_dict_with_parents()
         return Response(res)

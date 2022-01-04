@@ -1,135 +1,142 @@
 import React from 'react';
-import Chip from '@material-ui/core/Chip';
 import {
     IconButton as IconButtonComponent,
     displayDateFromTimestamp,
 } from 'bluesquare-components';
 import MESSAGES from './messages';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
+
+const getTranslatedStatusMessage = (formatMessage, status) => {
+    // Return untranslated status if not translation available
+    return MESSAGES[status.toLowerCase()]
+        ? formatMessage(MESSAGES[status.toLowerCase()])
+        : status;
+};
+
+const safePercent = (a, b) => {
+    if (b === 0) {
+        return '';
+    }
+    const percent = 100 * (a / b);
+    return `${percent.toFixed(2)}%`;
+};
 
 const tasksTableColumns = (formatMessage, killTaskAction) => [
     {
-        Header: formatMessage(MESSAGES.status),
-        sortable: false,
+        Header: formatMessage(MESSAGES.name),
+        sortable: true,
+        accessor: 'name',
+    },
+    {
+        Header: formatMessage(MESSAGES.progress),
+        sortable: true,
         accessor: 'status',
         Cell: settings => {
-            const statusCode =
-                MESSAGES[settings.original.status.toLowerCase()] !== undefined
-                    ? settings.original.status
-                    : 'UNKNOWN';
-
             return (
                 <span>
-                    {settings.original.name}
-                    <br />
-                    <Chip
-                        variant="outlined"
-                        color="primary"
-                        size="small"
-                        label={formatMessage(
-                            MESSAGES[statusCode.toLowerCase()],
-                        )}
-                    />
+                    {settings.value === 'RUNNING' &&
+                    settings.row.original.end_value > 0
+                        ? `${settings.row.original.progress_value}/${
+                              settings.row.original.end_value
+                          } (${safePercent(
+                              settings.row.original.progress_value,
+                              settings.row.original.end_value,
+                          )})`
+                        : getTranslatedStatusMessage(
+                              formatMessage,
+                              settings.value,
+                          )}
                 </span>
             );
         },
     },
     {
-        Header: formatMessage(MESSAGES.progress),
-        sortable: false,
-        accessor: 'progress',
-        Cell: settings => (
-            <span>
-                {settings.original.status === 'RUNNING' &&
-                settings.original.end_value > 0
-                    ? `${settings.original.progress_value}/${
-                          settings.original.end_value
-                      } (${Math.round(
-                          (settings.original.progress_value /
-                              settings.original.end_value) *
-                              100,
-                      )}%)`
-                    : '-'}
-            </span>
-        ),
-    },
-    {
         Header: formatMessage(MESSAGES.message),
         sortable: false,
-        accessor: 'message',
-        Cell: settings => (
-            <span>
-                {settings.original.status === 'RUNNING'
-                    ? settings.original.progress_message
-                    : '-'}
-            </span>
-        ),
+        align: 'left',
+        accessor: 'progress_message',
+        Cell: settings => {
+            if (!settings.value) return null;
+            return settings.value?.length < 40 ? (
+                settings.value
+            ) : (
+                <details>
+                    <summary>{settings.value.slice(0, 99)}...</summary>
+                    <i>Open for more details</i>
+                    <pre>{settings.value}</pre>
+                </details>
+            );
+        },
+    },
+    {
+        Header: formatMessage(MESSAGES.launcher),
+        sortable: true,
+        accessor: 'launcher',
+        Cell: settings => settings.value?.username,
     },
     {
         Header: formatMessage(MESSAGES.timeCreated),
-        sortable: false,
+        sortable: true,
         accessor: 'created_at',
-        Cell: settings => (
-            <span>
-                {displayDateFromTimestamp(settings.original.created_at)}
-            </span>
-        ),
+        Cell: DateTimeCell,
     },
     {
         Header: formatMessage(MESSAGES.timeStart),
-        sortable: false,
+        sortable: true,
         accessor: 'started_at',
         Cell: settings => (
             <span>
-                {settings.original.status === 'QUEUED' ||
-                settings.original.started_at === null
-                    ? '-'
-                    : displayDateFromTimestamp(settings.original.started_at)}
+                {settings.row.original.status === 'QUEUED' ||
+                settings.row.original.started_at === null
+                    ? ''
+                    : displayDateFromTimestamp(
+                          settings.row.original.started_at,
+                      )}
             </span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.timeEnd),
-        sortable: false,
+        sortable: true,
         accessor: 'ended_at',
         Cell: settings => (
             <span>
-                {settings.original.status === 'RUNNING' ||
-                settings.original.status === 'QUEUED' ||
-                settings.original.ended_at === null
+                {settings.row.original.status === 'RUNNING' ||
+                settings.row.original.status === 'QUEUED' ||
+                settings.row.original.ended_at === null
                     ? '-'
-                    : displayDateFromTimestamp(settings.original.ended_at)}
+                    : displayDateFromTimestamp(settings.row.original.ended_at)}
             </span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
         resizable: false,
         sortable: false,
         width: 150,
-        Cell: settings => {
-            return (
-                <section>
-                    {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
-                        settings.original.status,
-                    ) === true &&
-                        settings.original.should_be_killed === false && (
-                            <IconButtonComponent
-                                onClick={() =>
-                                    killTaskAction({
-                                        id: settings.original.id,
-                                        should_be_killed: true,
-                                    })
-                                }
-                                icon="stop"
-                                tooltipMessage={MESSAGES.killTask}
-                            />
-                        )}
-                    {settings.original.should_be_killed === true &&
-                        settings.original.status === 'RUNNING' &&
-                        formatMessage(MESSAGES.killSignalSent)}
-                </section>
-            );
-        },
+        Cell: settings => (
+            <section>
+                {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
+                    settings.row.original.status,
+                ) === true &&
+                    settings.row.original.should_be_killed === false && (
+                        <IconButtonComponent
+                            onClick={() =>
+                                killTaskAction({
+                                    id: settings.row.original.id,
+                                    should_be_killed: true,
+                                })
+                            }
+                            icon="stop"
+                            tooltipMessage={MESSAGES.killTask}
+                        />
+                    )}
+                {settings.row.original.should_be_killed === true &&
+                    settings.row.original.status === 'RUNNING' &&
+                    formatMessage(MESSAGES.killSignalSent)}
+            </section>
+        ),
     },
 ];
 export default tasksTableColumns;

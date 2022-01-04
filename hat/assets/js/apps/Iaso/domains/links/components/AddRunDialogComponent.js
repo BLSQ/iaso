@@ -117,6 +117,11 @@ class AddRunDialogComponent extends Component {
                     classes={{
                         paper: classes.paper,
                     }}
+                    onClose={(event, reason) => {
+                        if (reason === 'backdropClick') {
+                            this.toggleDialog();
+                        }
+                    }}
                     scroll="body"
                 >
                     <DialogTitle className={classes.title}>
@@ -127,7 +132,7 @@ class AddRunDialogComponent extends Component {
                             container
                             spacing={2}
                             alignItems="center"
-                            justify="flex-start"
+                            justifyContent="flex-start"
                         >
                             <Grid xs={6} item>
                                 <InputComponent
@@ -151,7 +156,7 @@ class AddRunDialogComponent extends Component {
                             container
                             spacing={2}
                             alignItems="center"
-                            justify="flex-start"
+                            justifyContent="flex-start"
                         >
                             <Grid xs={6} item>
                                 <InputComponent

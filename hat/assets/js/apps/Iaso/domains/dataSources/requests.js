@@ -1,5 +1,15 @@
-import { useCallback } from 'react';
-import { iasoPostRequest, useAPI } from '../../utils/requests';
+/* eslint-disable no-else-return */
+import React from 'react';
+import { useMutation } from 'react-query';
+import { useDispatch, useSelector } from 'react-redux';
+import { getRequest, iasoFetch, postRequest, putRequest } from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { dispatch as storeDispatch } from '../../redux/store';
+import { enqueueSnackbar } from '../../redux/snackBarsReducer';
+import { errorSnackBar } from '../../constants/snackBars';
+import snackBarMessages from '../../components/snackBars/messages';
+import { fetchCurrentUser } from '../users/actions';
+import { getValues } from '../../hooks/form';
 
 /**
  *
@@ -16,44 +26,254 @@ import { iasoPostRequest, useAPI } from '../../utils/requests';
  * @returns {Object} request's response
  */
 
-export const sendDhisOuImporterRequest = async requestBody => {
-    if (requestBody) {
-        return iasoPostRequest({
-            requestParams: { url: '/api/dhis2ouimporter/', body: requestBody },
-            errorKeyMessage: 'dhisouimporterError',
-            consoleError: 'DHIS OU Importer',
-        });
-    }
-    return null;
-};
-export const useDhisOuImporterRequest = requestBody => {
-    const callback = useCallback(
-        async () => sendDhisOuImporterRequest(requestBody),
-        [requestBody, sendDhisOuImporterRequest],
-    );
-    return useAPI(callback)?.data;
+export const sendDhisOuImporterRequest = async requestBody =>
+    postRequest('/api/dhis2ouimporter/', requestBody);
+
+export const postGeoPkg = async request => {
+    const file = { file: request.file };
+    const body = { ...request };
+    delete body.file;
+    return postRequest('/api/tasks/create/importgpkg/', body, file);
 };
 
-const postGeoPkg = async request => {
-    if (request) {
-        const file = { file: request.file };
-        const body = { ...request };
-        delete body.file;
-        return iasoPostRequest({
-            requestParams: {
-                url: '/api/tasks/create/importgpkg/',
-                body,
-                fileData: file,
+const getOrgUnitTypes = async () => {
+    return getRequest('/api/orgunittypes/');
+};
+
+export const useOrgUnitTypes = () => {
+    return useSnackQuery(['orgUnitTypes'], getOrgUnitTypes, undefined, {
+        select: data =>
+            data.orgUnitTypes.map(orgUnitType => ({
+                value: orgUnitType.id,
+                label: orgUnitType.name,
+            })),
+    });
+};
+
+const getDataSourceVersions = async () => {
+    return getRequest('/api/sourceversions/');
+};
+
+// Func to compare version to  order them
+// string.localeCompare allow us to have case insensitive sorting and to take accents into account
+const compareVersions = (a, b) => {
+    const comparison = a.data_source_name.localeCompare(
+        b.data_source_name,
+        undefined,
+        {
+            sensitivity: 'accent',
+        },
+    );
+    if (comparison === 0) {
+        if (a.number < b.number) {
+            return -1;
+        } else if (a.number > b.number) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    return comparison;
+};
+
+export const useDataSourceVersions = () => {
+    return useSnackQuery(
+        ['dataSourceVersions'],
+        getDataSourceVersions,
+        undefined,
+        {
+            select: data => {
+                return data.versions
+                    .map(version => {
+                        return {
+                            id: version.id.toString(),
+                            data_source: version.data_source,
+                            data_source_name: version.data_source_name,
+                            is_default: version.is_default,
+                            number: version.number,
+                        };
+                    })
+                    .sort(compareVersions);
             },
-        });
-    }
-    return null;
+        },
+    );
 };
 
-export const useGeoPkgImport = request => {
-    const callback = useCallback(
-        async () => postGeoPkg(request),
-        [request, postGeoPkg],
-    );
-    return useAPI(callback)?.data;
+const adaptForApi = data => {
+    const adaptedData = { ...data };
+    if (data.ref_status === 'ALL') {
+        adaptedData.ref_status = '';
+    }
+    return adaptedData;
 };
+
+export const postToDHIS2 = async data => {
+    const adaptedData = adaptForApi(data);
+    return postRequest('/api/sourceversions/export_dhis2/', adaptedData);
+};
+
+export const convertExportDataToURL = data => {
+    const up = new URLSearchParams();
+
+    Object.entries(data).forEach(([k, v]) => {
+        if (Array.isArray(v)) {
+            v.forEach(p => up.append(k, p));
+        } else if (v !== undefined && v !== null) {
+            up.append(k, v);
+        }
+    });
+
+    return `/api/sourceversions/diff.csv/?${up.toString()}`;
+};
+
+export const csvPreview = async data => {
+    const adaptedData = adaptForApi(data);
+    const url = convertExportDataToURL(adaptedData);
+    const requestSettings = {
+        method: 'GET',
+        headers: { 'Sec-fetch-Dest': 'document', 'Content-Type': 'text/csv' },
+    };
+    // using iasoFetch so I can convert response to text i.o. json
+    return iasoFetch(url, requestSettings)
+        .then(result => result.text())
+        .catch(error => {
+            storeDispatch(
+                enqueueSnackbar(
+                    errorSnackBar(
+                        'iaso.snackBar.generateCSVError',
+                        snackBarMessages.generateCSVError,
+                        error,
+                    ),
+                ),
+            );
+            console.error(`Error while fetching CSV:`, error);
+            throw error;
+        });
+};
+
+export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
+    putRequest(`/api/accounts/${accountId}/`, {
+        default_version: defaultVersionId,
+    });
+
+/**
+ * Save DataSource on server
+ * If the data source is marked as default this necessitate a separate request to
+ * save and then we refetch the user since it's updated
+ * Mark errors in form.
+ * @param {func} setFieldErrors
+ */
+export const useSaveDataSource = setFieldErrors => {
+    const [isSaving, setIsSaving] = React.useState(false);
+    const currentUser = useSelector(state => state.users.current);
+    const dispatch = useDispatch();
+
+    const { mutateAsync: saveMutation } = useSnackMutation(
+        campaignData =>
+            putRequest(`/api/datasources/${campaignData.id}/`, campaignData),
+        undefined,
+        snackBarMessages.updateDataSourceError,
+    );
+    const { mutateAsync: createMutation } = useSnackMutation(
+        campaignData => postRequest('/api/datasources/', campaignData),
+        undefined,
+        snackBarMessages.createDataSourceError,
+    );
+    const saveDefaultDataSourceMutation = useSnackMutation(
+        updateDefaultDataSource,
+        false,
+        snackBarMessages.updateDefaultSourceError,
+    );
+
+    const saveDataSource = async form => {
+        setIsSaving(true);
+        // eslint-disable-next-line camelcase
+        const { is_default_source, ...campaignData } = getValues(form);
+
+        try {
+            if (campaignData.id) {
+                await saveMutation(campaignData);
+            } else {
+                await createMutation(campaignData);
+            }
+        } catch (error) {
+            // Update error on forms
+            if (error.status === 400) {
+                Object.entries(error.details).forEach(
+                    ([errorKey, errorMessages]) => {
+                        setFieldErrors(errorKey, errorMessages);
+                    },
+                );
+            }
+            setIsSaving(false);
+            throw error;
+        }
+
+        // eslint-disable-next-line camelcase
+        if (is_default_source && form.default_version_id.value) {
+            await saveDefaultDataSourceMutation.mutateAsync([
+                currentUser.account.id,
+                form.default_version_id.value,
+            ]);
+            dispatch(fetchCurrentUser());
+        }
+        setIsSaving(false);
+    };
+    return { saveDataSource, isSaving };
+};
+
+export const useCheckDhis2Mutation = setFieldErrors =>
+    useMutation(
+        form =>
+            postRequest(`/api/datasources/check_dhis2/`, {
+                data_source: form.id.value,
+                dhis2_url: form.credentials.value.dhis_url,
+                dhis2_login: form.credentials.value.dhis_login,
+                dhis2_password: form.credentials.value.dhis_password,
+            }),
+        {
+            onSuccess: () => {
+                // Clean errors
+                [
+                    'credentials',
+                    'credentials_dhis2_url',
+                    'credentials_dhis2_login',
+                    'credentials_dhis2_password',
+                ].forEach(key => setFieldErrors(key, []));
+            },
+            onError: error => {
+                if (error.status === 400)
+                    Object.entries(error.details).forEach(
+                        ([errorKey, errorMessages]) => {
+                            setFieldErrors(
+                                `credentials_${errorKey}`,
+                                errorMessages,
+                            );
+                        },
+                    );
+                else {
+                    setFieldErrors('credentials', [
+                        error.details?.detail ?? 'Test failed',
+                    ]);
+                }
+            },
+        },
+    );
+
+export const useDataSourceForVersion = sourceVersion =>
+    useSnackQuery(
+        ['dataSources'],
+        () => getRequest('/api/datasources/'),
+        snackBarMessages.fetchSourcesError,
+        {
+            select: data => {
+                if (sourceVersion) {
+                    const source = data.sources.find(
+                        s => s.id === sourceVersion.data_source,
+                    );
+                    return source;
+                }
+                return null;
+            },
+        },
+    );

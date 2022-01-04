@@ -1,4 +1,8 @@
-export const polioViruses = [
+import deepPurple from '@material-ui/core/colors/deepPurple';
+import orange from '@material-ui/core/colors/orange';
+import green from '@material-ui/core/colors/green';
+
+const polioViruses = [
     {
         value: 'PV1',
         label: 'PV1',
@@ -17,17 +21,22 @@ export const polioViruses = [
     },
 ];
 
-export const polioVacines = [
+const polioVacines = [
     {
         value: 'mOPV2',
         label: 'mOPV2',
+        color: deepPurple['300'],
     },
     {
         value: 'nOPV2',
         label: 'nOPV2',
+        color: green['300'],
     },
     {
         value: 'bOPV',
         label: 'bOPV',
+        color: orange['300'],
     },
 ];
+
+export { polioViruses, polioVacines };

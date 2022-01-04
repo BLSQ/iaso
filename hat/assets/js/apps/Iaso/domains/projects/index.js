@@ -8,8 +8,8 @@ import {
     injectIntl,
     commonStyles,
     LoadingSpinner,
-    // TopBar,
     Table,
+    AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import {
     fetchAllApps as fetchAllAppsAction,
@@ -18,8 +18,6 @@ import {
 
 import TopBar from '../../components/nav/TopBarComponent';
 import ProjectsDialog from './components/ProjectsDialog';
-import AddButtonComponent from '../../components/buttons/AddButtonComponent';
-
 import { baseUrls } from '../../constants/urls';
 
 import projectsTableColumns from './config';
@@ -31,10 +29,6 @@ const baseUrl = baseUrls.projects;
 
 const styles = theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
 });
 
 class Projects extends Component {
@@ -79,7 +73,7 @@ class Projects extends Component {
                     <Grid
                         container
                         spacing={0}
-                        justify="flex-end"
+                        justifyContent="flex-end"
                         alignItems="center"
                         className={classes.marginTop}
                     >

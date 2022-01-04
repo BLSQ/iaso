@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { Component } from 'react';
 import omit from 'lodash/omit';
 import { connect } from 'react-redux';
@@ -12,28 +13,23 @@ import {
     createUrl,
     injectIntl,
     commonStyles,
-    // TopBar,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { alpha } from '@material-ui/core/styles/colorManipulator';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
     setCurrentOrgUnit,
     setOrgUnitTypes,
     resetOrgUnits,
-    setCurrentForms,
     setSources,
     setGroups,
     setFetchingDetail,
     saveOrgUnit as saveOrgUnitAction,
     createOrgUnit as createOrgUnitAction,
-    setSourcesSelected,
 } from './actions';
 import { setAlgorithms, setAlgorithmRuns } from '../links/actions';
 
-import { setForms as setFormsAction } from '../forms/actions';
 import formsTableColumns from '../forms/config';
-import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
 import {
     fetchOrgUnitsTypes,
@@ -48,11 +44,12 @@ import {
     fetchAlgorithmRuns,
     saveLink,
     fetchAssociatedOrgUnits,
+    deleteForm,
 } from '../../utils/requests';
 import {
     getAliasesArrayFromString,
     getOrgUnitsTree,
-    getSourcesWithoutCurrentSource,
+    getLinksSources,
 } from './utils';
 import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
@@ -62,7 +59,7 @@ import Logs from '../../components/logs/LogsComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import LinksDetails from '../links/components/LinksDetailsComponent';
 
-import { getChipColors } from '../../constants/chipColors';
+import { getChipColors, getOtChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 
@@ -74,6 +71,7 @@ import {
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
+// import { userHasPermission } from '../users/utils';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
@@ -81,13 +79,13 @@ const styles = theme => ({
     ...commonStyles(theme),
     root: {
         '& path.primary': {
-            fill: fade(theme.palette.primary.main, 0.6),
+            fill: alpha(theme.palette.primary.main, 0.6),
             stroke: theme.palette.primary.main,
             strokeOpacity: 1,
             strokeWidth: 3,
         },
         '& path.secondary': {
-            fill: fade(theme.palette.secondary.main, 0.6),
+            fill: alpha(theme.palette.secondary.main, 0.6),
             stroke: theme.palette.secondary.main,
             strokeOpacity: 1,
             strokeWidth: 3,
@@ -124,17 +122,22 @@ const initialOrgUnit = {
 class OrgUnitDetail extends Component {
     constructor(props) {
         super(props);
+        this.handleDeleteForm = this.handleDeleteForm.bind(this);
+        this.resetSingleTableForceRefresh =
+            this.resetSingleTableForceRefresh.bind(this);
         this.state = {
             tab: props.params.tab ? props.params.tab : 'infos',
             currentOrgUnit: undefined,
             orgUnitModified: false,
             orgUnitLocationModified: false,
-            tableColumns: formsTableColumns(
-                props.intl.formatMessage,
-                this,
-                false,
-                false,
-            ),
+            sourcesSelected: undefined,
+            tableColumns: formsTableColumns({
+                formatMessage: props.intl.formatMessage,
+                user: this.props.currentUser,
+                deleteForm: this.handleDeleteForm,
+                orgUnitId: props.params.orgUnitId,
+            }),
+            forceSingleTableRefresh: false,
         };
     }
 
@@ -143,17 +146,7 @@ class OrgUnitDetail extends Component {
             dispatch,
             params: { orgUnitId },
             fetchUsersProfiles,
-            setSelectedSources,
         } = this.props;
-        this.props.resetOrgUnitsLevels();
-        const promisesArray = [];
-        if (this.props.orgUnitTypes.length === 0) {
-            promisesArray.push(
-                fetchOrgUnitsTypes(dispatch).then(orgUnitTypes =>
-                    this.props.setOrgUnitTypes(orgUnitTypes),
-                ),
-            );
-        }
 
         fetchUsersProfiles();
         fetchAlgorithms(dispatch).then(algoList =>
@@ -162,90 +155,57 @@ class OrgUnitDetail extends Component {
         fetchAlgorithmRuns(dispatch).then(algoRunsList =>
             this.props.setAlgorithmRuns(algoRunsList),
         );
-        if (!this.props.sources) {
-            promisesArray.push(
-                fetchSources(dispatch).then(data => {
-                    const sources = [];
-                    data.forEach((s, i) => {
-                        sources.push({
-                            ...s,
-                            color: getChipColors(i),
-                        });
-                    });
-                    this.props.setSources(sources);
-                }),
-            );
-        }
+        fetchGroups(dispatch, orgUnitId === '0').then(groups =>
+            this.props.setGroups(groups),
+        );
 
-        if (this.props.groups.length === 0) {
-            promisesArray.push(
-                fetchGroups(dispatch, orgUnitId === '0').then(groups =>
-                    this.props.setGroups(groups),
-                ),
-            );
-        }
-        const sources = [];
+        const promisesArray = [fetchOrgUnitsTypes(dispatch)];
         if (orgUnitId !== '0') {
-            fetchAssociatedDataSources(dispatch, orgUnitId).then(data => {
-                data.forEach((s, i) => {
-                    sources.push({
-                        ...s,
-                        color: getChipColors(i),
-                    });
-                });
-                this.props.setSources(sources);
-            });
+            promisesArray.push(fetchAssociatedDataSources(dispatch, orgUnitId));
+            promisesArray.push(
+                fetchLinks(dispatch, `/api/links/?orgUnitId=${orgUnitId}`),
+            );
+        } else {
+            promisesArray.push(fetchSources(dispatch));
         }
 
-        Promise.all(promisesArray).then(() => {
-            this.fetchDetail().then(async currentOrgUnit => {
-                const { links } = await fetchLinks(
-                    dispatch,
-                    `/api/links/?orgUnitId=${orgUnitId}`,
+        Promise.all(promisesArray).then(
+            ([orgUnitTypes, sources, { links } = []]) => {
+                this.props.setOrgUnitTypes(
+                    orgUnitTypes.map((ot, i) => ({
+                        ...ot,
+                        color: getOtChipColors(i),
+                    })),
                 );
-                let selectedSources = [];
-                links.forEach(l => {
-                    const tempSources = getSourcesWithoutCurrentSource(
-                        sources,
-                        currentOrgUnit.source_id,
+                const coloredSources = sources.map((s, i) => ({
+                    ...s,
+                    color: getChipColors(i),
+                }));
+                this.props.setSources(coloredSources);
+                this.fetchDetail().then(async orgUnit => {
+                    const selectedSources = getLinksSources(
+                        links,
+                        coloredSources,
+                        orgUnit,
                     );
-                    const linkSources = tempSources.filter(
-                        s =>
-                            (s.id === l.source.source_id &&
-                                !selectedSources.find(
-                                    ss => ss.id === l.source.source_id,
-                                )) ||
-                            (s.id === l.destination.source_id &&
-                                !selectedSources.find(
-                                    ss => ss.id === l.destination.source_id,
-                                )),
-                    );
-                    if (linkSources.length > 0) {
-                        selectedSources = selectedSources.concat(linkSources);
-                    }
-                });
-                if (selectedSources.length === 0) {
-                    setSelectedSources([]);
-                } else {
                     const fullSelectedSources = [];
-
                     for (let i = 0; i < selectedSources.length; i += 1) {
                         const ss = selectedSources[i];
                         // eslint-disable-next-line no-await-in-loop
                         const detail = await fetchAssociatedOrgUnits(
                             dispatch,
                             ss,
-                            currentOrgUnit,
+                            orgUnit,
                         );
                         fullSelectedSources.push(detail);
-                        if (i === selectedSources.length - 1) {
-                            setSelectedSources(fullSelectedSources);
-                        }
                     }
-                }
-                dispatch(setFetchingDetail(false));
-            });
-        });
+                    this.setState({
+                        sourcesSelected: fullSelectedSources,
+                    });
+                    dispatch(setFetchingDetail(false));
+                });
+            },
+        );
     }
 
     componentDidUpdate(prevProps) {
@@ -255,9 +215,15 @@ class OrgUnitDetail extends Component {
             prevProps.params.orgUnitId !== '0'
         ) {
             this.resetCurrentOrgUnit();
-            this.fetchDetail();
-        }
-        if (params.tab !== prevProps.params.tab) {
+            this.fetchDetail().then(() => {
+                // we need the condition here otherwise the setState from handleChangeTab will trigger before fetching is done
+                // Which will cause display errors
+                if (params.tab !== prevProps.params.tab) {
+                    this.handleChangeTab(params.tab, false);
+                }
+            });
+            // repeating the condition here with else if to handle tab navigation without redirection
+        } else if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
         }
     }
@@ -288,19 +254,25 @@ class OrgUnitDetail extends Component {
     }
 
     handleChangeLocation(location) {
+        // TODO not sure why, perhaps to remove decimals
+        const convert = pos =>
+            pos !== null ? parseFloat(pos.toFixed(8)) : null;
+        const newPos = {
+            altitude: location.alt ? convert(location.alt) : 0,
+        };
+        // only update dimensions that are presents
+        if (location.lng !== undefined) {
+            newPos.longitude = convert(location.lng);
+        }
+        if (location.lat !== undefined) {
+            newPos.latitude = convert(location.lat);
+        }
+
         this.setState({
             orgUnitLocationModified: true,
             currentOrgUnit: {
                 ...this.state.currentOrgUnit,
-                latitude: location.lat
-                    ? parseFloat(location.lat.toFixed(8))
-                    : null,
-                longitude: location.lng
-                    ? parseFloat(location.lng.toFixed(8))
-                    : null,
-                altitude: location.alt
-                    ? parseFloat(location.alt.toFixed(8))
-                    : null,
+                ...newPos,
             },
         });
     }
@@ -343,7 +315,6 @@ class OrgUnitDetail extends Component {
     }
 
     async handleResetOrgUnit() {
-        this.props.resetOrgUnitsLevels();
         const { redirectTo, params, dispatch } = this.props;
         const newParams = {
             ...params,
@@ -356,6 +327,12 @@ class OrgUnitDetail extends Component {
         dispatch(setFetchingDetail(false));
     }
 
+    async handleDeleteForm(formId) {
+        const { dispatch } = this.props;
+        await deleteForm(dispatch, formId);
+        this.setState({ forceSingleTableRefresh: true });
+    }
+
     setOrgUnitLocationModified(orgUnitLocationModified = true) {
         this.setState({
             orgUnitLocationModified,
@@ -366,6 +343,10 @@ class OrgUnitDetail extends Component {
         this.setState({
             currentOrgUnit: undefined,
         });
+    }
+
+    resetSingleTableForceRefresh() {
+        this.setState({ forceSingleTableRefresh: false });
     }
 
     fetchDetail() {
@@ -386,21 +367,6 @@ class OrgUnitDetail extends Component {
                     redirectTo(baseUrl, newParams);
                 }
                 this.props.setCurrentOrgUnit(orgUnit);
-                if (orgUnit.org_unit_type_id) {
-                    fetchForms(
-                        this.props.dispatch,
-                        `/api/forms/?orgUnitTypeId=${orgUnit.org_unit_type_id}`,
-                    ).then(data => {
-                        const forms = [];
-                        data.forms.forEach((f, i) => {
-                            forms.push({
-                                ...f,
-                                color: getChipColors(i, true),
-                            });
-                        });
-                        this.props.setCurrentForms(forms);
-                    });
-                }
 
                 this.setState({
                     currentOrgUnit: orgUnit,
@@ -459,7 +425,6 @@ class OrgUnitDetail extends Component {
             router,
             prevPathname,
             redirectToPush,
-            reduxPage,
             sources,
             profiles,
             algorithms,
@@ -470,6 +435,7 @@ class OrgUnitDetail extends Component {
             currentOrgUnit,
             orgUnitModified,
             orgUnitLocationModified,
+            sourcesSelected,
         } = this.state;
         const isNewOrgunit = params.orgUnitId === '0';
         let title = '';
@@ -494,6 +460,7 @@ class OrgUnitDetail extends Component {
             'forms',
             'comments',
         ];
+
         return (
             <section className={classes.root}>
                 <TopBar
@@ -501,7 +468,6 @@ class OrgUnitDetail extends Component {
                     displayBackButton
                     goBack={() => {
                         if (prevPathname) {
-                            this.props.resetOrgUnitsLevels();
                             setTimeout(() => {
                                 router.goBack();
                             }, 300);
@@ -565,6 +531,12 @@ class OrgUnitDetail extends Component {
                         >
                             <Box className={classes.containerFullHeight}>
                                 <OrgUnitMap
+                                    sourcesSelected={sourcesSelected}
+                                    setSourcesSelected={newSourcesSelected => {
+                                        this.setState({
+                                            sourcesSelected: newSourcesSelected,
+                                        });
+                                    }}
                                     setOrgUnitLocationModified={isModified =>
                                         this.setOrgUnitLocationModified(
                                             isModified,
@@ -606,18 +578,15 @@ class OrgUnitDetail extends Component {
                                 exportButton={false}
                                 baseUrl={baseUrl}
                                 endPointPath="forms"
+                                propsToWatch={params.tab}
                                 fetchItems={fetchForms}
                                 columns={this.state.tableColumns}
-                                results={reduxPage}
-                                onDataLoaded={({ list, count, pages }) => {
-                                    this.props.setForms(
-                                        list,
-                                        true,
-                                        params,
-                                        count,
-                                        pages,
-                                    );
-                                }}
+                                forceRefresh={
+                                    this.state.forceSingleTableRefresh
+                                }
+                                onForceRefreshDone={() =>
+                                    this.resetSingleTableForceRefresh()
+                                }
                             />
                         )}
                         <div
@@ -631,9 +600,10 @@ class OrgUnitDetail extends Component {
                                     ...onlyChildrenParams(
                                         'childrenParams',
                                         params,
-                                        currentOrgUnit,
+                                        params.orgUnitId,
                                     ),
                                 }}
+                                propsToWatch={params.tab}
                                 baseUrl={baseUrl}
                                 endPointPath="orgunits"
                                 fetchItems={fetchOrgUnitsList}
@@ -659,6 +629,7 @@ class OrgUnitDetail extends Component {
                                 apiParams={{
                                     orgUnitId: currentOrgUnit.id,
                                 }}
+                                propsToWatch={params.tab}
                                 filters={linksFiltersWithPrefix(
                                     'linksParams',
                                     algorithmRuns,
@@ -675,14 +646,8 @@ class OrgUnitDetail extends Component {
                                     { id: 'similarity_score', desc: false },
                                 ]}
                                 columns={handleFetch =>
-                                    linksTableColumns(
-                                        formatMessage,
-                                        link =>
-                                            this.validateLink(
-                                                link,
-                                                handleFetch,
-                                            ),
-                                        classes,
+                                    linksTableColumns(formatMessage, link =>
+                                        this.validateLink(link, handleFetch),
                                     )
                                 }
                                 subComponent={(link, handleFetch) =>
@@ -704,7 +669,7 @@ class OrgUnitDetail extends Component {
                         {tab === 'comments' && (
                             <Grid
                                 container
-                                justify="center"
+                                justifyContent="center"
                                 className={classes.commentsWrapper}
                             >
                                 <Grid item xs={6}>
@@ -726,7 +691,6 @@ OrgUnitDetail.defaultProps = {
     currentOrgUnit: undefined,
     sources: [],
     prevPathname: null,
-    reduxPage: undefined,
 };
 
 OrgUnitDetail.propTypes = {
@@ -735,7 +699,6 @@ OrgUnitDetail.propTypes = {
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     setCurrentOrgUnit: PropTypes.func.isRequired,
-    setCurrentForms: PropTypes.func.isRequired,
     setOrgUnitTypes: PropTypes.func.isRequired,
     currentOrgUnit: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
@@ -744,7 +707,6 @@ OrgUnitDetail.propTypes = {
     orgUnitTypes: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     resetOrgUnits: PropTypes.func.isRequired,
-    resetOrgUnitsLevels: PropTypes.func.isRequired,
     setSources: PropTypes.func.isRequired,
     sources: PropTypes.array,
     prevPathname: PropTypes.any,
@@ -754,47 +716,41 @@ OrgUnitDetail.propTypes = {
     createOrgUnit: PropTypes.func.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
     setAlgorithmRuns: PropTypes.func.isRequired,
-    setForms: PropTypes.func.isRequired,
-    reduxPage: PropTypes.object,
     profiles: PropTypes.array.isRequired,
     algorithms: PropTypes.array.isRequired,
     algorithmRuns: PropTypes.array.isRequired,
     fetchUsersProfiles: PropTypes.func.isRequired,
-    setSelectedSources: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     fetching: state.orgUnits.fetchingDetail,
     currentOrgUnit: state.orgUnits.current,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
-    currentForms: state.orgUnits.currentForms,
     sources: state.orgUnits.sources,
     prevPathname: state.routerCustom.prevPathname,
     groups: state.orgUnits.groups,
     profiles: state.users.list,
     algorithms: state.links.algorithmsList,
     algorithmRuns: state.links.algorithmRunsList,
+    currentUser: state.users.current,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     setCurrentOrgUnit: orgUnit => dispatch(setCurrentOrgUnit(orgUnit)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
-    setCurrentForms: currentForms => dispatch(setCurrentForms(currentForms)),
     redirectTo: (key, params) =>
         dispatch(replace(`${key}${createUrl(params, '')}`)),
     redirectToPush: (key, params) =>
         dispatch(push(`${key}${createUrl(params, '')}`)),
     resetOrgUnits: () => dispatch(resetOrgUnits()),
-    resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
     setSources: sources => dispatch(setSources(sources)),
     setGroups: groups => dispatch(setGroups(groups)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setAlgorithmRuns: algoRunsList => dispatch(setAlgorithmRuns(algoRunsList)),
-    setSelectedSources: sources => dispatch(setSourcesSelected(sources)),
     ...bindActionCreators(
         {
-            setForms: setFormsAction,
             saveOrgUnit: saveOrgUnitAction,
             createOrgUnit: createOrgUnitAction,
             fetchUsersProfiles: fetchUsersProfilesAction,

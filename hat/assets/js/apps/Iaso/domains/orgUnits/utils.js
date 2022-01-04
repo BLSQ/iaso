@@ -1,9 +1,12 @@
 import React from 'react';
-import orderBy from 'lodash/orderBy';
-import { textPlaceholder } from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
 import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
-import { circleColorMarkerOptions } from '../../utils/mapUtils';
+import {
+    circleColorMarkerOptions,
+    orderOrgUnitsByDepth,
+} from '../../utils/mapUtils';
+
 import MESSAGES from './messages';
 
 export const getPolygonPositionsFromSimplifiedGeom = field => {
@@ -63,15 +66,25 @@ export const getSourcesWithoutCurrentSource = (
     return sources;
 };
 
-export const getOrgunitMessage = (orgUnit, withType) => {
+export const orgUnitLabelString = (orgUnit, withType, formatMessage) => {
     let message = textPlaceholder;
-    if (orgUnit) {
-        message = `${orgUnit.name} - source: ${orgUnit.source}`;
+    if (orgUnit && orgUnit.name) {
+        message = orgUnit.name;
+        if (orgUnit.source) {
+            message += ` - ${formatMessage(MESSAGES.sourceLower)}: ${
+                orgUnit.source
+            }`;
+        }
         if (orgUnit.org_unit_type_name && withType) {
             message += ` (${orgUnit.org_unit_type_name})`;
         }
     }
     return message;
+};
+
+export const OrgUnitLabel = ({ orgUnit, withType }) => {
+    const intl = useSafeIntl();
+    return orgUnitLabelString(orgUnit, withType, intl.formatMessage);
 };
 
 const mapOrgUnitBySearch = (orgUnits, searches) => {
@@ -82,20 +95,11 @@ const mapOrgUnitBySearch = (orgUnits, searches) => {
     return mappedOrgunits;
 };
 
-const orderOrgUnitsByDepthAndSearch = orgUnits =>
-    orderBy(
-        orgUnits,
-        [o => o.org_unit_type_depth],
-        [o => o.search_index],
-        ['asc', 'asc'],
-    );
-
 export const mapOrgUnitByLocation = (orgUnits, searches) => {
     let shapes = orgUnits.filter(o => Boolean(o.geo_json));
     let locations = orgUnits.filter(o => Boolean(o.latitude && o.longitude));
-
-    shapes = orderOrgUnitsByDepthAndSearch(shapes);
-    locations = orderOrgUnitsByDepthAndSearch(locations);
+    shapes = orderOrgUnitsByDepth(shapes);
+    locations = orderOrgUnitsByDepth(locations);
     const mappedOrgunits = {
         shapes,
         locations,
@@ -137,29 +141,56 @@ export const encodeUriParams = params => {
     return newParams;
 };
 
-export const getOrgUnitParents = (orgUnit, parents = []) => {
-    let parentsList = [...parents];
-    if (orgUnit.parent) {
-        parentsList.push(orgUnit);
-        if (orgUnit.parent.parent) {
-            parentsList = getOrgUnitParents(orgUnit.parent, parentsList);
-        }
-    }
-    return parentsList;
+export const getOrgUnitParents = orgUnit => {
+    if (!orgUnit.parent) return [];
+    return [orgUnit.parent, ...getOrgUnitParents(orgUnit.parent)];
 };
 
 export const getOrgUnitParentsString = orgUnit =>
     getOrgUnitParents(orgUnit)
-        .map(ou =>
-            ou.parent_name !== '' ? ou.parent_name : ou.org_unit_type_name,
-        )
+        .map(ou => (ou.name !== '' ? ou.name : ou.org_unit_type_name))
         .reverse()
         .join(' > ');
 
 export const getOrgUnitParentsIds = orgUnit =>
     getOrgUnitParents(orgUnit)
-        .map(ou => ou.parent_id)
+        .map(ou => ou.id)
         .reverse();
+
+const getOrgUnitsParentsUntilRoot = (orgUnit, parents = []) => {
+    let parentsList = [...parents];
+    parentsList.push(orgUnit);
+    if (orgUnit.parent) {
+        parentsList = getOrgUnitsParentsUntilRoot(orgUnit.parent, parentsList);
+    }
+    return parentsList;
+};
+
+export const getOrgUnitAncestorsIds = orgUnit => {
+    const result = getOrgUnitParentsIds(orgUnit);
+    // Adding id of the org unit in case it's a root
+    // and to be able to select it with the treeview
+    result.push(orgUnit.id);
+    return result;
+};
+
+export const getOrgUnitAncestors = orgUnit => {
+    const result = new Map(
+        getOrgUnitsParentsUntilRoot(orgUnit)
+            .map(parent => [
+                parent.id.toString(),
+                {
+                    // selecting the necessary fields, as there are many more than those returned by the API used in the treeview itself
+                    // this will allow to use the same label formatting function in the TruncatedTreeview and in the Treeview
+                    name: parent.name,
+                    id: parent.id.toString(),
+                    validation_status: parent.validation_status,
+                },
+            ])
+            .reverse(),
+    );
+    return result;
+};
 
 export const getStatusMessage = (status, formatMessage) => {
     switch (status) {
@@ -183,26 +214,69 @@ export const getOrgUnitGroups = orgUnit => (
     </span>
 );
 
-export const getMarkerList = (
+export const getMarkerList = ({
     locationsList,
     fetchDetail,
     color,
     keyId,
+    useOrgUnitLocation,
     PopupComponent = OrgUnitPopupComponent,
-) => (
-    <MarkersListComponent
-        key={keyId}
-        items={locationsList}
-        onMarkerClick={fetchDetail}
-        PopupComponent={PopupComponent}
-        popupProps={{
-            displayUseLocation: true,
-            useLocation: selectedOrgUnit =>
-                this.useOrgUnitLocation(selectedOrgUnit),
-        }}
-        isCircle
-        markerProps={() => ({
-            ...circleColorMarkerOptions(color),
-        })}
-    />
-);
+}) => {
+    return (
+        <MarkersListComponent
+            key={keyId}
+            items={locationsList}
+            onMarkerClick={fetchDetail}
+            PopupComponent={PopupComponent}
+            popupProps={{
+                displayUseLocation: true,
+                useLocation: selectedOrgUnit =>
+                    useOrgUnitLocation(selectedOrgUnit),
+            }}
+            isCircle
+            markerProps={() => ({
+                ...circleColorMarkerOptions(color),
+            })}
+        />
+    );
+};
+
+export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
+    let sources = [];
+    links?.forEach(l => {
+        const tempSources = getSourcesWithoutCurrentSource(
+            coloredSources,
+            currentOrgUnit.source_id,
+        );
+        const isSelectedSource = sourceId =>
+            sources.find(ss => ss.id === sourceId);
+        // getting the org unit source linked to current one and preselect them
+        const linkSources = tempSources.filter(
+            s =>
+                (s.id === l.source.source_id &&
+                    !isSelectedSource(l.source.source_id)) ||
+                (s.id === l.destination.source_id &&
+                    !isSelectedSource(l.destination.source_id)),
+        );
+        if (linkSources.length > 0) {
+            sources = sources.concat(linkSources);
+        }
+    });
+    return sources;
+};
+
+export const compareGroupVersions = (a, b) => {
+    const comparison = a.name.localeCompare(b.name, undefined, {
+        sensitivity: 'accent',
+    });
+    if (comparison === 0) {
+        if (a.source_version.number < b.source_version.number) {
+            return -1;
+        }
+        if (a.source_version.number > b.source_version.number) {
+            return 1;
+        }
+        return 0;
+    }
+    return comparison;
+};

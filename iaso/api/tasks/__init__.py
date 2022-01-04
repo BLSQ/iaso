@@ -1,8 +1,7 @@
-from rest_framework import viewsets, permissions, serializers
-from rest_framework.response import Response
+from rest_framework import permissions, serializers
 from django.contrib.auth.models import User
 
-from ..common import HasPermission, ModelViewSet, TimestampField
+from ..common import ModelViewSet, TimestampField
 from iaso.models import Task
 
 

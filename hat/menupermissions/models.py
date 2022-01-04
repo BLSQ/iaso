@@ -11,15 +11,25 @@ COMPLETENESS = _("Complétude des données")
 ORG_UNITS = _("Unités d'organisations")
 LINKS = _("Correspondances sources")
 USERS = _("Utilisateurs")
+PAGES = _("Pages")
 PROJECTS = _("Projets")
 SOURCES = _("Sources")
 TASKS = _("Tâches")
+POLIO = _("Polio")
+POLIO_CONFIG = _("Polio config")
+SUBMISSIONS = _("Soumissions")
+
+
+# When adding a new permissions, it also need to be added in
+# hat/assets/js/apps/Iaso/domains/users/messages.js
+# so that it display properly in both lang
 
 
 class CustomPermissionSupport(models.Model):
     # Used in setup_account api
     DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER = [
         "iaso_forms",
+        "iaso_submissions",
         "iaso_mappings",
         "iaso_completeness",
         "iaso_org_units",
@@ -45,7 +55,11 @@ class CustomPermissionSupport(models.Model):
             ("iaso_org_units", ORG_UNITS),
             ("iaso_links", LINKS),
             ("iaso_users", USERS),
+            ("iaso_pages", PAGES),
             ("iaso_projects", PROJECTS),
             ("iaso_sources", SOURCES),
             ("iaso_data_tasks", TASKS),
+            ("iaso_polio", POLIO),
+            ("iaso_polio_config", POLIO_CONFIG),
+            ("iaso_submissions", SUBMISSIONS),
         )

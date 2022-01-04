@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import moment from 'moment';
-import { withStyles, Box, Tabs, Tab } from '@material-ui/core';
-
+import { withStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
 import EditIcon from '@material-ui/icons/Edit';
@@ -17,41 +15,32 @@ import {
     commonStyles,
     injectIntl,
     Table,
+    LoadingSpinner,
 } from 'bluesquare-components';
 
-import {
-    fetchOrgUnitsTypes,
-    fetchSources,
-    fetchOrgUnitsList,
-    fetchGroups,
-} from '../../utils/requests';
+import { fetchSources, fetchOrgUnitsList } from '../../utils/requests';
 
 import {
     setOrgUnits,
     setOrgUnitsLocations,
-    setOrgUnitTypes,
     setOrgUnitsListFetching,
     setSources,
-    setFetchingOrgUnitTypes,
     setFiltersUpdated,
-    setGroups,
     resetOrgUnits,
 } from './actions';
-import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
 import { orgUnitsTableColumns } from './config';
 
 import {
-    fetchLatestOrgUnitLevelId,
     decodeSearch,
     mapOrgUnitByLocation,
     encodeUriParams,
     encodeUriSearches,
 } from './utils';
+import { getFromDateString, getToDateString } from '../../utils/dates.ts';
 
-import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
 import OrgUnitsMultiActionsDialog from './components/OrgUnitsMultiActionsDialog';
@@ -63,10 +52,10 @@ import {
     enqueueSnackbar,
     closeFixedSnackbar,
 } from '../../redux/snackBarsReducer';
-
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { locationLimitMax } from './constants/orgUnitConstants';
+import { convertObjectToString } from '../../utils';
 
 const baseUrl = baseUrls.orgUnits;
 let warningDisplayed = false;
@@ -90,6 +79,15 @@ const styles = theme => ({
         height: 15,
         borderRadius: 15,
     },
+    statusNew: {
+        color: theme.palette.primary.main,
+    },
+    statusValidated: {
+        color: theme.palette.success.main,
+    },
+    statusRejected: {
+        color: theme.palette.error.main,
+    },
 });
 
 const getDefaultSource = currentUser =>
@@ -107,21 +105,13 @@ class OrgUnits extends Component {
             multiActionPopupOpen: false,
             selection: selectionInitialState,
             shouldRenderFilters: false,
+            resetTablePage: convertObjectToString(props.params),
         };
     }
 
     // eslint-disable-next-line camelcase
     UNSAFE_componentWillMount() {
         const { dispatch, params, currentUser } = this.props;
-        this.props.resetOrgUnitsLevels();
-
-        dispatch(this.props.setFetchingOrgUnitTypes(true));
-        fetchOrgUnitsTypes(dispatch).then(orgUnitTypes => {
-            this.props.setOrgUnitTypes(orgUnitTypes);
-            dispatch(this.props.setFetchingOrgUnitTypes(false));
-        });
-
-        fetchGroups(dispatch).then(groups => this.props.setGroups(groups));
 
         fetchSources(dispatch).then(data => {
             const sources = [];
@@ -256,6 +246,10 @@ class OrgUnits extends Component {
             ...params,
             page: 1,
         };
+        this.setState({
+            ...this.state,
+            resetTablePage: convertObjectToString(newParams),
+        });
         redirectTo(baseUrl, newParams);
         this.fetchOrgUnits(withLocations);
     }
@@ -265,21 +259,9 @@ class OrgUnits extends Component {
         const searches = decodeSearch(params.searches);
 
         searches.forEach((s, i) => {
-            searches[i].orgUnitParentId = searches[i].levels
-                ? fetchLatestOrgUnitLevelId(searches[i].levels)
-                : null;
-
-            searches[i].dateFrom = searches[i].dateFrom
-                ? moment(searches[i].dateFrom)
-                      .startOf('day')
-                      .format('YYYY-MM-DD HH:MM')
-                : null;
-
-            searches[i].dateTo = searches[i].dateTo
-                ? moment(searches[i].dateTo)
-                      .endOf('day')
-                      .format('YYYY-MM-DD HH:MM')
-                : null;
+            searches[i].orgUnitParentId = searches[i].levels;
+            searches[i].dateFrom = getFromDateString(searches[i].dateFrom);
+            searches[i].dateTo = getToDateString(searches[i].dateTo);
         });
 
         const urlParams = {
@@ -425,7 +407,10 @@ class OrgUnits extends Component {
                         params={params}
                         defaultItem={{
                             validation_status: 'all',
-                            color: getChipColors(0).replace('#', ''),
+                            color: getChipColors(searches.length + 1).replace(
+                                '#',
+                                '',
+                            ),
                             source: defaultSource && defaultSource.id,
                         }}
                         paramKey="searches"
@@ -439,127 +424,141 @@ class OrgUnits extends Component {
                         displayCounts
                     />
                 </TopBar>
-                <Box className={classes.containerFullHeightPadded}>
-                    {shouldRenderFilters &&
-                        decodeSearch(params.searches).map((s, searchIndex) => {
-                            const currentSearchIndex = parseInt(
-                                params.searchTabIndex,
-                                10,
-                            );
-                            return (
-                                <div
-                                    key={searchIndex}
-                                    className={
-                                        searchIndex !== currentSearchIndex
-                                            ? classes.hiddenOpacity
-                                            : null
-                                    }
-                                >
-                                    <OrgUnitsFiltersComponent
-                                        baseUrl={baseUrl}
-                                        params={params}
-                                        onSearch={() =>
-                                            this.onSearch(params.tab === 'map')
+                <Grid container spacing={4}>
+                    <Grid item xs={12}>
+                        <Box className={classes.containerFullHeightPadded}>
+                            {shouldRenderFilters &&
+                                decodeSearch(params.searches).map(
+                                    (s, searchIndex) => {
+                                        const currentSearchIndex = parseInt(
+                                            params.searchTabIndex,
+                                            10,
+                                        );
+                                        return (
+                                            <div
+                                                key={searchIndex}
+                                                className={
+                                                    searchIndex !==
+                                                    currentSearchIndex
+                                                        ? classes.hiddenOpacity
+                                                        : null
+                                                }
+                                            >
+                                                <OrgUnitsFiltersComponent
+                                                    baseUrl={baseUrl}
+                                                    params={params}
+                                                    onSearch={() =>
+                                                        this.onSearch(
+                                                            params.tab ===
+                                                                'map',
+                                                        )
+                                                    }
+                                                    currentTab={tab}
+                                                    searchIndex={searchIndex}
+                                                />
+                                            </div>
+                                        );
+                                    },
+                                )}
+                            {params.searchActive && (
+                                <>
+                                    <Tabs
+                                        value={tab}
+                                        classes={{
+                                            root: classes.tabs,
+                                        }}
+                                        className={classes.marginBottom}
+                                        indicatorColor="primary"
+                                        onChange={(event, newtab) =>
+                                            this.handleChangeTab(newtab)
                                         }
-                                        currentTab={tab}
-                                        searchIndex={searchIndex}
-                                    />
-                                </div>
-                            );
-                        })}
-                    {params.searchActive && (
-                        <>
-                            <Tabs
-                                value={tab}
-                                classes={{
-                                    root: classes.tabs,
-                                }}
-                                className={classes.marginBottom}
-                                indicatorColor="primary"
-                                onChange={(event, newtab) =>
-                                    this.handleChangeTab(newtab)
-                                }
-                            >
-                                <Tab
-                                    value="list"
-                                    label={formatMessage(MESSAGES.list)}
-                                />
-                                <Tab
-                                    value="map"
-                                    label={formatMessage(MESSAGES.map)}
-                                />
-                            </Tabs>
-                            {tab === 'list' && (
-                                <Table
-                                    data={orgunits || []}
-                                    pages={reduxPage.pages}
-                                    defaultSorted={[{ id: 'id', desc: false }]}
-                                    columns={tableColumns}
-                                    count={reduxPage.count}
-                                    baseUrl={baseUrl}
-                                    params={params}
-                                    marginTop={false}
-                                    countOnTop={false}
-                                    multiSelect
-                                    selection={selection}
-                                    selectionActions={selectionActions}
-                                    redirectTo={redirectTo}
-                                    setTableSelection={(
-                                        selectionType,
-                                        items,
-                                        totalCount,
-                                    ) =>
-                                        this.handleTableSelection(
-                                            selectionType,
-                                            items,
-                                            totalCount,
-                                        )
-                                    }
-                                />
+                                    >
+                                        <Tab
+                                            value="list"
+                                            label={formatMessage(MESSAGES.list)}
+                                        />
+                                        <Tab
+                                            value="map"
+                                            label={formatMessage(MESSAGES.map)}
+                                        />
+                                    </Tabs>
+                                    {tab === 'list' && (
+                                        <Table
+                                            data={orgunits || []}
+                                            pages={reduxPage.pages}
+                                            defaultSorted={[
+                                                { id: 'id', desc: false },
+                                            ]}
+                                            columns={tableColumns}
+                                            count={reduxPage.count}
+                                            baseUrl={baseUrl}
+                                            params={params}
+                                            marginTop={false}
+                                            countOnTop={false}
+                                            multiSelect
+                                            selection={selection}
+                                            selectionActions={selectionActions}
+                                            redirectTo={redirectTo}
+                                            setTableSelection={(
+                                                selectionType,
+                                                items,
+                                                totalCount,
+                                            ) =>
+                                                this.handleTableSelection(
+                                                    selectionType,
+                                                    items,
+                                                    totalCount,
+                                                )
+                                            }
+                                            resetPageToOne={
+                                                this.state.resetTablePage
+                                            }
+                                        />
+                                    )}
+                                    {tab === 'map' && !fetchingOrgUnitTypes && (
+                                        <div
+                                            className={
+                                                classes.containerMarginNeg
+                                            }
+                                        >
+                                            <OrgunitsMap params={params} />
+                                        </div>
+                                    )}
+                                    {tab === 'list' && reduxPage.count > 0 && (
+                                        <Box
+                                            mb={4}
+                                            mt={1}
+                                            display="flex"
+                                            justifyContent="flex-end"
+                                        >
+                                            <DownloadButtonsComponent
+                                                csvUrl={this.getEndpointUrl(
+                                                    true,
+                                                    'csv',
+                                                )}
+                                                xlsxUrl={this.getEndpointUrl(
+                                                    true,
+                                                    'xlsx',
+                                                )}
+                                                gpkgUrl={this.getEndpointUrl(
+                                                    true,
+                                                    'gpkg',
+                                                )}
+                                            />
+                                        </Box>
+                                    )}
+                                </>
                             )}
-                            {tab === 'map' && !fetchingOrgUnitTypes && (
-                                <div className={classes.containerMarginNeg}>
-                                    <OrgunitsMap
-                                        params={params}
-                                        baseUrl={baseUrl}
-                                        setFiltersUpdated={() =>
-                                            this.props.setFiltersUpdated(true)
-                                        }
-                                    />
-                                </div>
-                            )}
-                            {tab === 'list' && reduxPage.count > 0 && (
-                                <Box
-                                    mb={4}
-                                    mt={1}
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                >
-                                    <DownloadButtonsComponent
-                                        csvUrl={this.getEndpointUrl(
-                                            true,
-                                            'csv',
-                                        )}
-                                        xlsxUrl={this.getEndpointUrl(
-                                            true,
-                                            'xlsx',
-                                        )}
-                                        gpkgUrl={this.getEndpointUrl(
-                                            true,
-                                            'gpkg',
-                                        )}
-                                    />
-                                </Box>
-                            )}
-                        </>
-                    )}
-                </Box>
+                        </Box>
+                    </Grid>
+                </Grid>
             </>
         );
     }
 }
 OrgUnits.defaultProps = {
     reduxPage: undefined,
+    currentUser: undefined,
 };
 
 OrgUnits.propTypes = {
@@ -570,20 +569,16 @@ OrgUnits.propTypes = {
     setOrgUnits: PropTypes.func.isRequired,
     resetOrgUnits: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
-    setOrgUnitTypes: PropTypes.func.isRequired,
     setSources: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsListFetching: PropTypes.func.isRequired,
-    setFetchingOrgUnitTypes: PropTypes.func.isRequired,
     fetchingList: PropTypes.bool.isRequired,
     setOrgUnitsLocations: PropTypes.func.isRequired,
     fetchingOrgUnitTypes: PropTypes.bool.isRequired,
     filtersUpdated: PropTypes.bool.isRequired,
     setFiltersUpdated: PropTypes.func.isRequired,
-    setGroups: PropTypes.func.isRequired,
-    resetOrgUnitsLevels: PropTypes.func.isRequired,
     searchCounts: PropTypes.array.isRequired,
-    currentUser: PropTypes.object.isRequired,
+    currentUser: PropTypes.object,
 };
 
 const MapStateToProps = state => ({
@@ -602,18 +597,13 @@ const MapDispatchToProps = dispatch => ({
     resetOrgUnits: () => dispatch(resetOrgUnits()),
     redirectTo: (key, params) =>
         dispatch(push(`${key}${createUrl(params, '')}`)),
-    setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setSources: sources => dispatch(setSources(sources)),
     setOrgUnitsListFetching: isFetching =>
         dispatch(setOrgUnitsListFetching(isFetching)),
-    setFetchingOrgUnitTypes: isFetching =>
-        dispatch(setFetchingOrgUnitTypes(isFetching)),
     setOrgUnitsLocations: orgUnitsList =>
         dispatch(setOrgUnitsLocations(orgUnitsList)),
     setFiltersUpdated: filtersUpdated =>
         dispatch(setFiltersUpdated(filtersUpdated)),
-    setGroups: groups => dispatch(setGroups(groups)),
-    resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
 });
 
 export default withStyles(styles)(

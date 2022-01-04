@@ -13,11 +13,13 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 import sentry_sdk
 from datetime import timedelta
+from django.utils.translation import ugettext_lazy as _
 
 from sentry_sdk.integrations.django import DjangoIntegration
 
+DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
-PLUGIN_POLIO_ENABLED = os.environ.get("PLUGIN_POLIO_ENABLED", "").lower() == "true"
+PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -81,6 +83,7 @@ LOGGING = {
         "rq": {"level": LOGGING_LEVEL},
         "hat": {"level": LOGGING_LEVEL},
         "iaso": {"level": LOGGING_LEVEL},
+        "plugins": {"level": LOGGING_LEVEL},
         "beanstalk_worker": {"level": LOGGING_LEVEL},
         #  Uncomment to print all sql query
         # 'django.db.backends': {'level': 'DEBUG'},
@@ -128,18 +131,21 @@ INSTALLED_APPS = [
     "django_extensions",
     "beanstalk_worker",
     "django_comments",
+    "django_filters",
 ]
 
 # needed because we customize the comment model
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
 
-if PLUGIN_POLIO_ENABLED:
-    INSTALLED_APPS.append("plugins.polio")
+print("Enabled plugins:", PLUGINS)
+for plugin_name in PLUGINS:
+    INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -196,8 +202,28 @@ DATABASES = {
         "PASSWORD": DB_PASSWORD,
         "HOST": DB_HOST,
         "PORT": DB_PORT,
-    }
+    },
 }
+
+if os.environ.get("DB_READONLY_USERNAME"):
+    DATABASES["dashboard"] = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": DB_NAME,
+        "USER": os.environ.get("DB_READONLY_USERNAME"),
+        "PASSWORD": os.environ.get("DB_READONLY_PASSWORD", None),
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
+        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},
+    }
+
+    INSTALLED_APPS.append("django_sql_dashboard")
+
+DATABASES["worker"] = DATABASES["default"].copy()
+DATABASE_ROUTERS = [
+    "hat.common.dbrouter.DbRouter",
+]
+# This database settings which duplicate the main db settings, will be used by the background task worker so that they
+# can have a connexion outside of the transaction to report the progress on a Task. see Comments in services.py
 
 
 def is_superuser(u):
@@ -218,7 +244,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en"
 
-LOCALE_PATHS = ["/var/app/current/hat/locale/", "hat/locale/"]
+LANGUAGES = (
+    ("fr", _("French")),
+    ("en", _("English")),
+)
+
+LOCALE_PATHS = ["/var/app/current/hat/locale/", "/opt/app/hat/locale/", "hat/locale/"]
 
 TIME_ZONE = "UTC"
 
@@ -241,7 +272,7 @@ AUTH_CLASSES = [
 
 
 # Needed for PowerBI, used for the Polio project, which only support support BasicAuth.
-if PLUGIN_POLIO_ENABLED:
+if "polio" in PLUGINS:
     AUTH_CLASSES.append(
         "rest_framework.authentication.BasicAuthentication",
     )
@@ -251,6 +282,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": None,
+    "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
@@ -288,7 +320,6 @@ else:
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "iaso/static"),
-    os.path.join(BASE_DIR, "plugins/polio/static/polio"),
     os.path.join(BASE_DIR, "hat/assets/webpack"),
 )
 
@@ -309,8 +340,17 @@ WEBPACK_LOADER = {
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 
+try:
+    from hat.__version__ import VERSION
+except Exception as e:
+    print("error importing hat.__version", e)
+    VERSION = "undetected_version"
+
+
 if SENTRY_URL:
-    sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0, integrations=[DjangoIntegration()], send_default_pii=True)
+    sentry_sdk.init(
+        SENTRY_URL, traces_sample_rate=1.0, integrations=[DjangoIntegration()], send_default_pii=True, release=VERSION
+    )
 
 # Workers configuration
 
@@ -321,7 +361,7 @@ BEANSTALK_SQS_URL = os.environ.get(
 BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
 
 if DEBUG:
-    BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.FakeTaskService"
+    BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.PostgresTaskService"
 else:
     BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
 
@@ -336,10 +376,10 @@ SECURE_REDIRECT_EXEMPT = [r"_health/$"]
 
 # Email configuration
 
-DEFAULT_FROM_EMAIL = "Iaso Team <iaso@bluesquare.org>"
-
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Iaso <no-reply@iaso.bluesquare.org>")
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.smtpbucket.com")
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_PORT = os.environ.get("EMAIL_PORT", "8025")
+EMAIL_USE_TLS = os.environ.get("EMAIL_TLS", "true") == "true"

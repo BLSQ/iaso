@@ -23,8 +23,7 @@ import { saveMultiEdit as saveMultiEditAction } from '../actions';
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
-
-import { decodeSearch } from '../utils';
+import { compareGroupVersions, decodeSearch } from '../utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -125,7 +124,15 @@ const OrgUnitsMultiActionsDialog = ({
         } else {
             data.select_all = true;
             data.unselected_ids = unSelectedItems.map(i => i.id);
-            data.searches = decodeSearch(params.searches);
+            // TODO : taken from OrgUnitsFiltersComponent to match
+            // their fix but not a fan we should change it
+            // when we refactor the search, probably set orgUnitParentId
+            // directly in the onchange of OrgUnitTreeviewModal.
+            const searches = decodeSearch(params.searches);
+            searches.forEach((s, i) => {
+                searches[i].orgUnitParentId = searches[i].levels;
+            });
+            data.searches = searches;
         }
         saveMultiEdit(data).then(() => {
             closeAndReset();
@@ -141,7 +148,11 @@ const OrgUnitsMultiActionsDialog = ({
                 classes={{
                     paper: classes.paper,
                 }}
-                onBackdropClick={closeAndReset}
+                onClose={(event, reason) => {
+                    if (reason === 'backdropClick') {
+                        closeAndReset();
+                    }
+                }}
                 scroll="body"
             >
                 <DialogTitle className={classes.title}>
@@ -183,12 +194,13 @@ const OrgUnitsMultiActionsDialog = ({
                                             : null
                                     }
                                     type="select"
-                                    options={groups.map(g => ({
-                                        label: g.name,
-                                        value: g.id,
-                                    }))}
+                                    options={groups
+                                        .sort(compareGroupVersions)
+                                        .map(g => ({
+                                            label: `${g.name} - Version: ${g.source_version.number}`,
+                                            value: g.id,
+                                        }))}
                                     label={MESSAGES.addToGroups}
-                                    isSearchable
                                 />
                                 <InputComponent
                                     multi
@@ -206,11 +218,10 @@ const OrgUnitsMultiActionsDialog = ({
                                     }
                                     type="select"
                                     options={groupsWithoutAdded.map(g => ({
-                                        label: g.name,
+                                        label: `${g.name} - Version: ${g.source_version.number}`,
                                         value: g.id,
                                     }))}
                                     label={MESSAGES.removeFromGroups}
-                                    isSearchable
                                 />
                             </>
                         )}

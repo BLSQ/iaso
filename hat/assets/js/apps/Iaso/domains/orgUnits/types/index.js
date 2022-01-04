@@ -5,10 +5,10 @@ import { connect } from 'react-redux';
 import { withStyles, Box, Grid } from '@material-ui/core';
 import {
     injectIntl,
-    // TopBar,
     LoadingSpinner,
     commonStyles,
     Table,
+    AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import {
     fetchOrgUnitTypes as fetchOrgUnitTypesAction,
@@ -19,7 +19,6 @@ import { fetchAllProjects as fetchAllProjectsAction } from '../../projects/actio
 import TopBar from '../../../components/nav/TopBarComponent';
 
 import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
-import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
 
 import { baseUrls } from '../../../constants/urls';
 
@@ -32,10 +31,6 @@ const baseUrl = baseUrls.orgUnitTypes;
 
 const styles = theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
 });
 
 class OrgUnitTypes extends Component {
@@ -98,7 +93,7 @@ class OrgUnitTypes extends Component {
                     <Grid
                         container
                         spacing={0}
-                        justify="flex-end"
+                        justifyContent="flex-end"
                         alignItems="center"
                         className={classes.marginTop}
                     >

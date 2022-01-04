@@ -41,7 +41,7 @@ class Modification(models.Model):
             "past_value": self.past_value,
             "new_value": self.new_value,
             "source": self.source,
-            "user": self.user.iaso_profile.as_dict(),
+            "user": self.user.iaso_profile.as_dict() if self.user else None,
             "created_at": self.created_at,
         }
 
@@ -51,7 +51,7 @@ class Modification(models.Model):
             "content_type": self.content_type.app_label,
             "object_id": self.object_id,
             "source": self.source,
-            "user": self.user.iaso_profile.as_dict(),
+            "user": self.user.iaso_profile.as_dict() if self.user else None,
             "created_at": self.created_at,
         }
 

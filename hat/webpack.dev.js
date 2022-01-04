@@ -1,35 +1,74 @@
-var path = require('path');
-var webpack = require('webpack');
-var BundleTracker = require('webpack-bundle-tracker');
+const path = require('path');
+const webpack = require('webpack');
+const BundleTracker = require('webpack-bundle-tracker');
 // Switch here for french. This is set to 'en' in dev to not get react-intl warnings
 // remember to switch in webpack.prod.js and
 // django settings as well
-var LOCALE = 'fr';
-var WEBPACK_URL = 'http://localhost:3000';
+const LOCALE = 'fr';
+const WEBPACK_URL = 'http://localhost:3000';
 
 module.exports = {
     context: __dirname,
     mode: 'development',
-    target: ['web', 'es2017'],
+    target: 'web',
     entry: {
         // use same settings as in Prod
-        common: ['react', 'react-dom', 'react-intl'],
-        styles: [
-            'webpack-dev-server/client?' + WEBPACK_URL,
-            './assets/css/index.scss',
+        common: [
+            'react',
+            'bluesquare-components',
+            'react-dom',
+            'react-intl',
+            '@material-ui/core',
+            // Don't include, it packs all the icon instead of actually used one
+            // '@material-ui/icons',
+            '@material-ui/lab',
+            '@material-ui/pickers',
+            'lodash',
+            'moment',
+            'leaflet',
+            'leaflet-draw',
+            'react-redux',
+            'prop-types',
+            'typescript',
+            'video.js',
         ],
-        iaso: [
-            'webpack-dev-server/client?' + WEBPACK_URL,
-            './assets/js/apps/Iaso/index',
-        ],
+        styles: ['./assets/css/index.scss'],
+        iaso: {
+            dependOn: 'common',
+            import: './assets/js/apps/Iaso/index',
+        },
     },
 
     output: {
-        library: ['HAT', '[name]'],
-        libraryTarget: 'var',
         path: path.resolve(__dirname, './assets/webpack/'),
         filename: '[name].js',
-        publicPath: WEBPACK_URL + '/static/', // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+        publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+    },
+
+    // config for webpack-dev-server
+    devServer: {
+        historyApiFallback: true,
+        noInfo: false,
+        // needed so we can load the js from django (on another port or docker)
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        },
+        host: '0.0.0.0',
+        port: 3000,
+        // It suppress error shown in console, so it has to be set to false.
+        quiet: false,
+        // It suppress everything except error, so it has to be set to false as well
+        // to see success build.
+        stats: {
+            // Config for minimal console.log mess.
+            assets: true,
+            colors: true,
+            version: false,
+            hash: false,
+            timings: true,
+            chunks: true,
+            chunkModules: false,
+        },
     },
 
     plugins: [
@@ -51,16 +90,48 @@ module.exports = {
         }),
         // XLSX
         new webpack.IgnorePlugin(/cptable/),
+        new webpack.WatchIgnorePlugin({
+            paths: [/\.d\.ts$/],
+        }),
     ],
 
     module: {
         rules: [
-            // we pass the output from babel loader to react-hot loader
+            {
+                test: /\.(js|ts|tsx)$/,
+                enforce: 'pre',
+                use: ['source-map-loader'],
+                exclude: /node_modules/,
+            },
+            {
+                test: /\.(ts|tsx)?$/,
+                exclude: /node_modules/,
+                use: [
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            cacheDirectory: true,
+                            presets: [
+                                [
+                                    '@babel/preset-env',
+                                    { targets: { node: '14' } },
+                                ],
+                                '@babel/preset-react',
+                                [
+                                    '@babel/preset-typescript',
+                                    { isTSX: true, allExtensions: true },
+                                ],
+                            ],
+                            plugins: ['@babel/transform-runtime', 'formatjs'],
+                            // include: ['../plugins/polio/js/']
+                        },
+                    },
+                ],
+            },
             {
                 test: /\.js?$/,
                 exclude: /node_modules/,
                 use: [
-                    { loader: 'react-hot-loader/webpack' },
                     {
                         loader: 'babel-loader',
                         options: {
@@ -68,7 +139,8 @@ module.exports = {
                                 '@babel/preset-env',
                                 '@babel/preset-react',
                             ],
-                            plugins: [['@babel/transform-runtime']],
+                            plugins: ['@babel/transform-runtime', 'formatjs'],
+                            // include: ['../plugins/polio/js/']
                         },
                     },
                 ],
@@ -150,14 +222,33 @@ module.exports = {
                 },
             },
         ],
+        noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },
     externals: [{ './cptable': 'var cptable' }],
 
     resolve: {
+        alias: {
+            // see LIVE_COMPONENTS feature in doc
+            ...(process.env.LIVE_COMPONENTS === 'true' && {
+                'bluesquare-components': path.resolve(
+                    __dirname,
+                    '../../bluesquare-components/src/',
+                ),
+            }),
+        },
         fallback: {
             fs: false,
         },
-        modules: ['node_modules'],
-        extensions: ['.js'],
+        modules:
+            process.env.LIVE_COMPONENTS === 'true'
+                ? [
+                      'node_modules',
+                      '../../bluesquare-components/node_modules/',
+                      path.resolve(__dirname, 'assets/js/apps/'),
+                  ]
+                : /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
+                  ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
+
+        extensions: ['.js', '.tsx', '.ts'],
     },
 };

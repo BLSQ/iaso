@@ -3,10 +3,8 @@ import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import moment from 'moment';
 
-import isEqual from 'lodash/isEqual';
-
 import {
-    withStyles,
+    makeStyles,
     Table,
     TableBody,
     TableCell,
@@ -22,9 +20,10 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 import {
     textPlaceholder,
-    injectIntl,
+    useSafeIntl,
     commonStyles,
 } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import { getPolygonPositionsFromSimplifiedGeom } from '../../domains/orgUnits/utils';
 
 import PolygonMap from '../maps/PolygonMapComponent';
@@ -34,7 +33,7 @@ import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
 import MESSAGES from '../../domains/forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     paper: {
         padding: theme.spacing(2),
@@ -60,40 +59,48 @@ const styles = theme => ({
     cellMap: {
         margin: -theme.spacing(2),
     },
-});
+}));
 
 const renderValue = (fieldKey, value, fields, classes) => {
     if (!value || value.toString().length === 0) return textPlaceholder;
-    switch (fieldKey) {
-        case 'simplified_geom': {
-            const polygonPositions =
-                getPolygonPositionsFromSimplifiedGeom(value);
-            return (
-                <div className={classes.cellMap}>
-                    <PolygonMap polygonPositions={polygonPositions} />
-                </div>
-            );
-        }
-        case 'updated_at': {
-            return moment(value).format('DD/MM/YYYY HH:mm');
-        }
-
-        case 'location': {
-            if (!fields.latitude || !fields.longitude) {
-                return value.toString();
+    try {
+        switch (fieldKey) {
+            case 'geom':
+            case 'catchment':
+            case 'simplified_geom': {
+                const polygonPositions =
+                    getPolygonPositionsFromSimplifiedGeom(value);
+                return (
+                    <div className={classes.cellMap}>
+                        <PolygonMap polygonPositions={polygonPositions} />
+                    </div>
+                );
             }
-            return (
-                <div className={classes.cellMap}>
-                    <MarkerMap
-                        latitude={fields.latitude}
-                        longitude={fields.longitude}
-                    />
-                </div>
-            );
-        }
 
-        default:
-            return value.toString();
+            case 'updated_at': {
+                return moment(value).format('LTS');
+            }
+
+            case 'location': {
+                if (!fields.latitude || !fields.longitude) {
+                    return value.toString();
+                }
+                return (
+                    <div className={classes.cellMap}>
+                        <MarkerMap
+                            latitude={fields.latitude}
+                            longitude={fields.longitude}
+                        />
+                    </div>
+                );
+            }
+            default:
+                return value.toString();
+        }
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('Could not parse', e);
+        return value.toString();
     }
 };
 
@@ -103,25 +110,37 @@ const getArrayfields = objectItem =>
         value: objectItem[fieldKey],
     }));
 
-const LogCompareComponent = ({
-    log,
-    compareLog,
-    classes,
-    goToRevision,
-    title,
-    intl,
-}) => {
-    const [allFields, seeAllFields] = React.useState(false);
+/* a Log is an array
+ *  each item of the array  is a list of change in a model
+ * with pk, fields and models. In effect at the moment there is only ever one.
+ */
 
+const LogCompareComponent = ({ log, compareLog, goToRevision, title }) => {
+    const [showAllFields, setShowAllFields] = React.useState(false);
+    const classes = useStyles();
     const differenceArray = [];
-    const { formatMessage } = intl;
+    const { formatMessage } = useSafeIntl();
 
     return log.map((l, i) => {
-        differenceArray.push({});
+        const otherLog = compareLog[i];
+        if (otherLog && l.pk !== otherLog.pk && l.model !== otherLog.model)
+            return 'Error object is different';
+
+        const diffFields = Object.fromEntries(
+            Object.entries(l.fields).filter(
+                ([key, value]) =>
+                    !isEqual(value, otherLog && otherLog.fields[key]),
+            ),
+        );
+
+        differenceArray[i] = diffFields;
+        const showFields = showAllFields ? l.fields : diffFields;
+        // This block convert to a list and
+        // reorganize so that longitude is just after latitude
         const fieldsObject = {
-            ...l.fields,
+            ...showFields,
         };
-        const fullFields = getArrayfields(l.fields);
+        const fullFields = getArrayfields(fieldsObject);
         const latIndex =
             fullFields.findIndex(field => field.fieldKey === 'latitude') + 1;
         const longitude = fullFields.find(
@@ -133,222 +152,132 @@ const LogCompareComponent = ({
             fields.push(longitude);
         }
         fields = fields.concat(getArrayfields(fieldsObject).slice(latIndex));
-        const fieldEquals = compareLog[i] && isEqual(l.fields, compareLog[i].fields);
+        // end block
+
         return (
             <Paper className={classes.paper} key={l.pk}>
-                {!fieldEquals && (
-                    <Grid container spacing={0} className={classes.seeAll}>
-                        <Grid
-                            container
-                            item
-                            xs={6}
-                            justify="flex-start"
-                            alignItems="center"
-                        >
-                            <Typography
-                                variant="h6"
-                                component="h6"
-                                color="primary"
-                            >
-                                {title}
-                            </Typography>
-                        </Grid>
-                        <Grid
-                            container
-                            item
-                            xs={6}
-                            justify="flex-end"
-                            alignItems="center"
-                        >
-                            <Tooltip
-                                classes={{
-                                    popper: classes.popperFixed,
-                                }}
-                                title={
-                                    allFields ? (
-                                        <FormattedMessage
-                                            {...LOG_MESSAGES.seeChanges}
-                                        />
-                                    ) : (
-                                        <FormattedMessage
-                                            {...LOG_MESSAGES.seeAll}
-                                        />
-                                    )
-                                }
-                            >
-                                <IconButton
-                                    className={classes.deleteIcon}
-                                    color="inherit"
-                                    onClick={() => seeAllFields(!allFields)}
-                                >
-                                    {allFields ? (
-                                        <VisibilityOff />
-                                    ) : (
-                                        <Visibility />
-                                    )}
-                                </IconButton>
-                            </Tooltip>
-                        </Grid>
+                <Grid container spacing={0} className={classes.seeAll}>
+                    <Grid
+                        container
+                        item
+                        xs={6}
+                        justifyContent="flex-start"
+                        alignItems="center"
+                    >
+                        <Typography variant="h6" component="h6" color="primary">
+                            {title}
+                        </Typography>
                     </Grid>
-                )}
-                {fieldEquals && !allFields && (
+                    <Grid
+                        container
+                        item
+                        xs={6}
+                        justifyContent="flex-end"
+                        alignItems="center"
+                    >
+                        <Tooltip
+                            title={formatMessage(
+                                showAllFields
+                                    ? LOG_MESSAGES.seeChanges
+                                    : LOG_MESSAGES.seeAll,
+                            )}
+                        >
+                            <IconButton
+                                className={classes.deleteIcon}
+                                color="inherit"
+                                onClick={() => setShowAllFields(!showAllFields)}
+                            >
+                                {showAllFields ? (
+                                    <VisibilityOff />
+                                ) : (
+                                    <Visibility />
+                                )}
+                            </IconButton>
+                        </Tooltip>
+                    </Grid>
+                </Grid>
+                {showFields.length === 0 && (
                     <FormattedMessage {...LOG_MESSAGES.noDifference} />
                 )}
-                {!fieldEquals && (
-                    <>
-                        <Table className={classes.table}>
-                            <TableBody>
-                                {fields.map(field => {
-                                    if (field) {
-                                        const { value, fieldKey } = field;
-                                        let isDifferent = false;
-                                        if (Array.isArray(value)) {
-                                            value.forEach((f, index) => {
-                                                if (
-                                                    f &&
-                                                    compareLog[i] &&
-                                                    f !==
-                                                        compareLog[i].fields[
-                                                            fieldKey
-                                                        ][index]
-                                                ) {
-                                                    isDifferent = true;
-                                                }
-                                            });
-                                        } else {
-                                            isDifferent =
-                                                compareLog[i] &&
-                                                compareLog[i].fields[
-                                                    fieldKey
-                                                ] !== value;
-                                        }
-                                        isDifferent =
-                                            isDifferent &&
-                                            l.pk === compareLog[i].pk &&
-                                            l.model === compareLog[i].model;
-                                        if (!isDifferent && !allFields)
-                                            return null;
-                                        differenceArray[i][fieldKey] = value;
-                                        if (
-                                            (fieldKey === 'simplified_geom' ||
-                                                fieldKey === 'catchment') &&
-                                            value
-                                        ) {
-                                            const polygonPositions =
-                                                getPolygonPositionsFromSimplifiedGeom(
-                                                    value,
-                                                );
-                                            return (
-                                                <TableRow key={fieldKey}>
-                                                    <TableCell
-                                                        className={classes.cell}
-                                                    >
-                                                        {fieldKey}
-                                                    </TableCell>
-                                                    <TableCell
-                                                        className={
-                                                            isDifferent &&
-                                                            allFields
-                                                                ? classes.isDifferent
-                                                                : null
-                                                        }
-                                                    >
-                                                        <PolygonMap
-                                                            polygonPositions={
-                                                                polygonPositions
-                                                            }
-                                                        />
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        }
-                                        return (
-                                            <TableRow key={fieldKey}>
-                                                <TableCell
-                                                    className={classes.cell}
-                                                >
-                                                    {MESSAGES[fieldKey] &&
-                                                        formatMessage(
-                                                            MESSAGES[fieldKey],
-                                                        )}
-                                                    {!MESSAGES[fieldKey] &&
-                                                        fieldKey}
-                                                </TableCell>
-                                                <TableCell
-                                                    className={
-                                                        isDifferent && allFields
-                                                            ? classes.isDifferent
-                                                            : null
-                                                    }
-                                                >
-                                                    {renderValue(
-                                                        fieldKey,
-                                                        value,
-                                                        l.fields,
-                                                        classes,
-                                                    )}
-                                                </TableCell>
-                                            </TableRow>
-                                        );
+                <Table className={classes.table}>
+                    <TableBody>
+                        {fields.map(({ fieldKey, value }) => (
+                            <TableRow key={fieldKey}>
+                                <TableCell className={classes.cell}>
+                                    {MESSAGES[fieldKey]
+                                        ? formatMessage(MESSAGES[fieldKey])
+                                        : fieldKey}
+                                </TableCell>
+                                <TableCell
+                                    className={
+                                        showAllFields && diffFields[fieldKey]
+                                            ? classes.isDifferent
+                                            : null
                                     }
-                                    return null;
-                                })}
-                            </TableBody>
-                        </Table>
+                                >
+                                    {renderValue(
+                                        fieldKey,
+                                        value,
+                                        l.fields,
+                                        classes,
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
 
-                        <Grid
-                            container
-                            spacing={2}
-                            alignItems="center"
-                            justify="center"
-                        >
-                            <Grid xs={6} item>
-                                <ConfirmDialog
-                                    btnMessage={
-                                        <FormattedMessage
-                                            {...LOG_MESSAGES.goToRevision}
-                                        />
-                                    }
-                                    question={
-                                        <FormattedMessage
-                                            {...LOG_MESSAGES.goToRevisionQuestion}
-                                        />
-                                    }
-                                    message={
-                                        <FormattedMessage
-                                            {...LOG_MESSAGES.goToRevisionText}
-                                        />
-                                    }
-                                    confirm={() => goToRevision(l)}
+                <Grid
+                    container
+                    spacing={2}
+                    alignItems="center"
+                    justifyContent="center"
+                >
+                    <Grid xs={6} item>
+                        <ConfirmDialog
+                            btnMessage={
+                                <FormattedMessage
+                                    {...LOG_MESSAGES.goToRevision}
                                 />
-                            </Grid>
-                            <Grid xs={6} item>
-                                <ConfirmDialog
-                                    btnMessage={
-                                        <FormattedMessage
-                                            {...LOG_MESSAGES.goToRevisionChanges}
-                                        />
-                                    }
-                                    question={
-                                        <FormattedMessage
-                                            {...LOG_MESSAGES.goToRevisionQuestion}
-                                        />
-                                    }
-                                    message={
-                                        <FormattedMessage
-                                            {...LOG_MESSAGES.goToRevisionTextChanges}
-                                        />
-                                    }
-                                    confirm={() =>
-                                        goToRevision({
-                                            fields: differenceArray[i],
-                                        })
-                                    }
+                            }
+                            question={
+                                <FormattedMessage
+                                    {...LOG_MESSAGES.goToRevisionQuestion}
                                 />
-                            </Grid>
-                        </Grid>
-                    </>
-                )}
+                            }
+                            message={
+                                <FormattedMessage
+                                    {...LOG_MESSAGES.goToRevisionText}
+                                />
+                            }
+                            confirm={() => goToRevision(l)}
+                        />
+                    </Grid>
+                    <Grid xs={6} item>
+                        <ConfirmDialog
+                            btnMessage={
+                                <FormattedMessage
+                                    {...LOG_MESSAGES.goToRevisionChanges}
+                                />
+                            }
+                            question={
+                                <FormattedMessage
+                                    {...LOG_MESSAGES.goToRevisionQuestion}
+                                />
+                            }
+                            message={
+                                <FormattedMessage
+                                    {...LOG_MESSAGES.goToRevisionTextChanges}
+                                />
+                            }
+                            confirm={() =>
+                                goToRevision({
+                                    fields: differenceArray[i],
+                                })
+                            }
+                        />
+                    </Grid>
+                </Grid>
             </Paper>
         );
     });
@@ -360,12 +289,10 @@ LogCompareComponent.defaultProps = {
 };
 
 LogCompareComponent.propTypes = {
-    intl: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
     log: PropTypes.array.isRequired,
     compareLog: PropTypes.array,
     goToRevision: PropTypes.func.isRequired,
     title: PropTypes.string.isRequired,
 };
 
-export default withStyles(styles)(injectIntl(LogCompareComponent));
+export default LogCompareComponent;

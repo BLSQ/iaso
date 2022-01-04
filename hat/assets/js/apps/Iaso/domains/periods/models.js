@@ -1,6 +1,4 @@
 import _ from 'lodash/fp';
-
-import { textPlaceholder } from 'bluesquare-components';
 import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
@@ -194,16 +192,6 @@ export class Period {
         };
     }
 
-    static getPrettyPeriod(period) {
-        if (!period) return textPlaceholder;
-        if (period.length === 4) {
-            return period;
-        }
-        const year = period.substring(0, 4);
-        const prefix = period.substring(4, 6);
-        return `${prefix}-${year}`;
-    }
-
     static padMonth(n) {
         return n < 10 ? `0${n}` : n;
     }
@@ -235,6 +223,35 @@ export class Period {
         return false;
     }
 
+    static isBeforeOrEqual(p1String, p2String) {
+        const p1 = new Period(p1String);
+        const p2 = new Period(p2String);
+        if (p1.year < p2.year) {
+            return true;
+        }
+        if (p1.year === p2.year) {
+            if (p1.periodType === PERIOD_TYPE_DAY) {
+                return (
+                    p1.month < p2.month ||
+                    (p1.month === p2.month && p1.day <= p2.day)
+                );
+            }
+            if (p1.periodType === PERIOD_TYPE_MONTH) {
+                return p1.month <= p2.month;
+            }
+            if (p1.periodType === PERIOD_TYPE_QUARTER) {
+                return p1.quarter <= p2.quarter;
+            }
+            if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
+                return p1.semester <= p2.semester;
+            }
+            if (p1.periodType === PERIOD_TYPE_YEAR) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     static isAfter(p1String, p2String) {
         const p1 = new Period(p1String);
         const p2 = new Period(p2String);
@@ -258,6 +275,35 @@ export class Period {
                 return p1.semester > p2.semester;
             }
             return false;
+        }
+        return false;
+    }
+
+    static isAfterOrEqual(p1String, p2String) {
+        const p1 = new Period(p1String);
+        const p2 = new Period(p2String);
+        if (p1.year > p2.year) {
+            return true;
+        }
+        if (p1.year === p2.year) {
+            if (p1.periodType === PERIOD_TYPE_DAY) {
+                return (
+                    p1.month >= p2.month ||
+                    (p1.month === p2.month && p1.day >= p2.day)
+                );
+            }
+            if (p1.periodType === PERIOD_TYPE_MONTH) {
+                return p1.month >= p2.month;
+            }
+            if (p1.periodType === PERIOD_TYPE_QUARTER) {
+                return p1.quarter >= p2.quarter;
+            }
+            if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
+                return p1.semester >= p2.semester;
+            }
+            if (p1.periodType === PERIOD_TYPE_YEAR) {
+                return true;
+            }
         }
         return false;
     }

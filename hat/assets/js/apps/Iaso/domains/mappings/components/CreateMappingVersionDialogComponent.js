@@ -5,8 +5,11 @@ import { connect } from 'react-redux';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import Grid from '@material-ui/core/Grid';
+import {
+    AddButton as AddButtonComponent,
+    useSafeIntl,
+} from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
-import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import IasoSearchComponent from './IasoSearchComponent';
 import Dhis2Search from './Dhis2SearchComponent';
@@ -36,6 +39,7 @@ const CreateMappingVersionDialogComponent = ({
     fetchSources,
     mappingSources,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const [mappingType, setMappingType] = React.useState('AGGREGATE');
     const [source, setSource] = React.useState(0);
     const [formVersion, setFormVersion] = React.useState(0);
@@ -91,7 +95,7 @@ const CreateMappingVersionDialogComponent = ({
                             style={{ marginTop: '30px' }}
                             select
                             fullWidth
-                            label="Source"
+                            label={formatMessage(MESSAGES.source)}
                             variant="outlined"
                             onChange={event => {
                                 setSource(event.target.value);
@@ -109,7 +113,7 @@ const CreateMappingVersionDialogComponent = ({
                     <IasoSearchComponent
                         resourceName="formversions"
                         collectionName="form_versions"
-                        label="Form version"
+                        label={formatMessage(MESSAGES.formVersion)}
                         fields="id,form_name,version_id,mapped"
                         mapOptions={options =>
                             options.map(o => ({
@@ -117,8 +121,10 @@ const CreateMappingVersionDialogComponent = ({
                                     o.form_name,
                                     o.version_id,
                                     o.mapped === true
-                                        ? 'at least a mapping'
-                                        : 'no mapping',
+                                        ? formatMessage(
+                                              MESSAGES.atLeastAMapping,
+                                          )
+                                        : formatMessage(MESSAGES.noMapping),
                                 ].join(' - '),
                                 id: o.id,
                             }))
@@ -138,7 +144,9 @@ const CreateMappingVersionDialogComponent = ({
                         }
                         fields="id,name,periodType"
                         label={
-                            mappingType === 'AGGREGATE' ? 'dataSet' : 'program'
+                            mappingType === 'AGGREGATE'
+                                ? formatMessage(MESSAGES.dataset)
+                                : formatMessage(MESSAGES.program)
                         }
                         mapOptions={options =>
                             options.map(o => ({

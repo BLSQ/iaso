@@ -33,9 +33,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'June',
         id: 'iaso.label.months.june',
     },
-    july: {
+    jully: {
         defaultMessage: 'July',
-        id: 'iaso.label.months.jully',
+        id: 'iaso.label.months.july',
     },
     august: {
         defaultMessage: 'August',
@@ -115,7 +115,7 @@ const MESSAGES = defineMessages({
     },
     quarter: {
         id: 'iaso.label.periodType.quarter',
-        defaultMessage: 'Generate derived instances',
+        defaultMessage: 'Quarter',
     },
     month: {
         id: 'iaso.label.periodType.month',

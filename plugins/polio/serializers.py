@@ -1,25 +1,161 @@
-from plugins.polio.preparedness.calculator import get_preparedness_score
-from django.db.models import fields
+import logging
+from datetime import datetime, timezone
+
+import pandas as pd
+from django.contrib.auth.models import User
+from django.db import transaction
 from django.db.transaction import atomic
-from rest_framework import serializers
-from iaso.models import Group, OrgUnit, org_unit
-from .models import Preparedness, Round, Campaign, Surge
-from .preparedness.parser import (
-    open_sheet_by_url,
-    get_regional_level_preparedness,
-    get_national_level_preparedness,
-    InvalidFormatError,
-    parse_value,
-)
 from gspread.exceptions import APIError
+from gspread.exceptions import NoValidUrlKeyFound
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
+from iaso.models import Group, OrgUnit
+from .models import (
+    Preparedness,
+    Round,
+    LineListImport,
+    VIRUSES,
+    PREPARING,
+    ROUND1START,
+    ROUND1DONE,
+    ROUND2START,
+    ROUND2DONE,
+    SpreadSheetImport,
+)
+from .preparedness.calculator import get_preparedness_score, preparedness_summary
+from .preparedness.parser import (
+    InvalidFormatError,
+    get_preparedness,
+    surge_indicator_for_country,
+)
+from .preparedness.spreadsheet_manager import *
+from .preparedness.spreadsheet_manager import generate_spreadsheet_for_campaign
+
+logger = getLogger(__name__)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "email"]
+
+
+class CountryUsersGroupSerializer(serializers.ModelSerializer):
+    read_only_users_field = UserSerializer(source="users", many=True, read_only=True)
+    country_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
+
+    class Meta:
+        model = CountryUsersGroup
+        read_only_fields = ["id", "country", "created_at", "updated_at", "read_only_users_field"]
+        fields = [
+            "id",
+            "country",
+            "language",
+            "created_at",
+            "updated_at",
+            "country_name",
+            "users",
+            "read_only_users_field",
+        ]
+
+
+def _error(message, exc=None):
+    errors = {"file": [message]}
+    if exc:
+        errors["debug"] = [str(exc)]
+    return errors
+
+
+@transaction.atomic
+def campaign_from_files(file):
+    try:
+        df = pd.read_excel(file)
+    except Exception as exc:
+        print(exc)
+        raise serializers.ValidationError(_error("Invalid Excel file", exc))
+    mapping = {"EPID Number": "epid", "VDPV Category": "virus", "Onset Date": "onset_at"}
+    for key in mapping.keys():
+        if key not in df.columns:
+            raise serializers.ValidationError(_error(f"Missing column {key}"))
+    known_viruses = [v[0] for v in VIRUSES]
+    created_campaigns = []
+    skipped_campaigns = []
+
+    for ind in df.index:
+        epid = df["EPID Number"][ind]
+        if not epid:
+            break
+        onset_date = df["Onset Date"][ind]
+        virus = df["VDPV Category"][ind]
+        print(epid, onset_date, type(onset_date), virus)
+        c, created = Campaign.objects.get_or_create(epid=epid)
+        if not created:
+            skipped_campaigns.append(epid)
+            print(f"Skipping existing campaign {c.epid}")
+            continue
+
+        c.obr_name = epid
+        if virus in known_viruses:
+            c.virus = virus
+        else:
+            raise serializers.ValidationError(_error(f"wrong format for virus on line {ind}"))
+        if isinstance(onset_date, datetime):
+            print(onset_date, type(onset_date))
+            c.onset_at = onset_date
+        else:
+            raise serializers.ValidationError(_error(f"wrong format for onset_date on line {ind}"))
+
+        created_campaigns.append({"id": str(c.id), "epid": c.epid})
+        c.save()
+
+    res = {"created": len(created_campaigns), "campaigns": created_campaigns, "skipped_campaigns": skipped_campaigns}
+    print(res)
+    return res
+
+
+class LineListImportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LineListImport
+        fields = ["file", "import_result", "created_by", "created_at"]
+        read_only_fields = ["import_result", "created_by", "created_at"]
+
+    def create(self, validated_data):
+        line_list_import = LineListImport(
+            file=validated_data.get("file"),
+            import_result="pending",
+            created_by=self.context["request"].user,
+        )
+
+        line_list_import.save()
+
+        # Tentatively created campaign, will transaction.abort in case of error
+        res = "importing"
+        try:
+            res = campaign_from_files(line_list_import.file)
+        except Exception as exc:
+            logging.exception(exc)
+            if isinstance(exc, serializers.ValidationError):
+                res = {"error": exc.get_full_details()}
+            else:
+                res = {"error": str(exc)}
+            line_list_import.import_result = res
+            line_list_import.save()
+            raise
+
+        line_list_import.import_result = res
+        line_list_import.save()
+        return line_list_import
 
 
 class GroupSerializer(serializers.ModelSerializer):
-    org_units = serializers.PrimaryKeyRelatedField(many=True, allow_empty=True, queryset=OrgUnit.objects.all())
+    org_units = serializers.PrimaryKeyRelatedField(
+        many=True, allow_empty=True, queryset=OrgUnit.objects.all(), style={"base_template": "input.html"}
+    )
 
     class Meta:
         model = Group
-        fields = ["name", "org_units"]
+        fields = ["name", "org_units", "id"]
 
 
 class RoundSerializer(serializers.ModelSerializer):
@@ -31,15 +167,17 @@ class RoundSerializer(serializers.ModelSerializer):
 class PreparednessSerializer(serializers.ModelSerializer):
     class Meta:
         model = Preparedness
-        exclude = ["campaign"]
-        extra_kwargs = {"payload": {"write_only": True}}
+        exclude = ["spreadsheet_url"]
 
 
-class SurgeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Surge
-        exclude = ["campaign"]
-        extra_kwargs = {"payload": {"write_only": True}}
+class SurgeSerializer(serializers.Serializer):
+    created_at = serializers.DateTimeField()
+    # surge_country_name = serializers.CharField()
+    title = serializers.CharField()  # title of the Google spreadsheet
+    who_recruitment = serializers.IntegerField()
+    who_completed_recruitment = serializers.IntegerField()
+    unicef_recruitment = serializers.IntegerField()
+    unicef_completed_recruitment = serializers.IntegerField()
 
 
 class PreparednessPreviewSerializer(serializers.Serializer):
@@ -47,13 +185,17 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         try:
-            sheet = open_sheet_by_url(attrs.get("google_sheet_url"))
-            response = {
-                "national": get_national_level_preparedness(sheet),
-                **get_regional_level_preparedness(sheet),
-            }
-            response["totals"] = get_preparedness_score(response)
-            return response
+            ssi = SpreadSheetImport.create_for_url(attrs.get("google_sheet_url"))
+            # ssi = SpreadSheetImport.last_for_url(attrs.get("google_sheet_url"))
+            cs = ssi.cached_spreadsheet
+            r = {}
+            preparedness_data = get_preparedness(cs)
+            r.update(preparedness_data)
+            r["title"] = cs.title
+            r["created_at"] = ssi.created_at
+            r.update(get_preparedness_score(preparedness_data))
+            r.update(preparedness_summary(preparedness_data))
+            return r
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
@@ -64,45 +206,28 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
 
 class SurgePreviewSerializer(serializers.Serializer):
-    google_sheet_url = serializers.URLField()
-    surge_country_name = serializers.CharField(max_length=200)
+    surge_spreadsheet_url = serializers.URLField()
+    country_name_in_surge_spreadsheet = serializers.CharField(max_length=200)
 
     def validate(self, attrs):
         try:
-            surge_country_name = attrs.get("surge_country_name")
-            sheet = open_sheet_by_url(attrs.get("google_sheet_url")).worksheets()[0]
+            spreadsheet_url = attrs.get("surge_spreadsheet_url")
+            surge_country_name = attrs.get("country_name_in_surge_spreadsheet")
 
-            cell = sheet.find(surge_country_name)
+            ssi = SpreadSheetImport.create_for_url(spreadsheet_url)
+            cs = ssi.cached_spreadsheet
 
-            first_row = cell.row
-            first_col = cell.col + 1
-            last_row = cell.row
-            last_col = cell.col + 8
-
-            data = sheet.range(first_row, first_col, last_row, last_col)
-
-            [
-                who_recruitment,
-                who_completed_recruitment,
-                _,
-                _,
-                unicef_recruitment,
-                unicef_completed_recruitment,
-                _,
-                _,
-            ] = data
-
-            response = {
-                "who_recruitment": parse_value(who_recruitment.value),
-                "who_completed_recruitment": parse_value(who_completed_recruitment.value),
-                "unicef_recruitment": parse_value(unicef_recruitment.value),
-                "unicef_completed_recruitment": parse_value(unicef_completed_recruitment.value),
-            }
+            response = surge_indicator_for_country(cs, surge_country_name)
+            response["created_at"] = ssi.created_at
             return response
         except InvalidFormatError as e:
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
             raise serializers.ValidationError(e.args[0].get("message"))
+        except NoValidUrlKeyFound as e:
+            raise serializers.ValidationError({"surge_spreadsheet_url": ["Invalid URL"]})
+        except Exception as e:
+            raise serializers.ValidationError(f"{type(e)}: {str(e)}")
 
     def to_representation(self, instance):
         return instance
@@ -132,31 +257,83 @@ class OrgUnitSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "root", "country_parent"]
 
 
+class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
+    campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all(), write_only=True)
+    url = serializers.URLField(read_only=True)
+
+    def create(self, validated_data):
+        campaign = validated_data.get("campaign")
+
+        spreadsheet = generate_spreadsheet_for_campaign(campaign)
+
+        return {"url": spreadsheet.url}
+
+
 class CampaignSerializer(serializers.ModelSerializer):
     round_one = RoundSerializer()
     round_two = RoundSerializer()
     org_unit = OrgUnitSerializer(source="initial_org_unit", read_only=True)
-    top_level_org_unit_name = serializers.SerializerMethodField()
+    top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
+    top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
+    general_status = serializers.SerializerMethodField()
 
     def get_top_level_org_unit_name(self, campaign):
-        if campaign.initial_org_unit:
-            return campaign.initial_org_unit.name
+        if campaign.country:
+            return campaign.country.name
         return ""
+
+    def get_top_level_org_unit_id(self, campaign):
+        if campaign.country:
+            return campaign.country.id
+        return ""
+
+    def get_general_status(self, campaign):
+        now_utc = datetime.now(timezone.utc).date()
+        if campaign.round_two:
+            if campaign.round_two.ended_at and now_utc > campaign.round_two.ended_at:
+                return ROUND2DONE
+            if campaign.round_two.started_at and now_utc >= campaign.round_two.started_at:
+                return ROUND2START
+        if campaign.round_one:
+            if campaign.round_one.ended_at and now_utc > campaign.round_one.ended_at:
+                return ROUND1DONE
+            if campaign.round_one.started_at and now_utc >= campaign.round_one.started_at:
+                return ROUND1START
+
+        return PREPARING
 
     group = GroupSerializer(required=False, allow_null=True)
 
-    preparedness_data = PreparednessSerializer(required=False)
-    last_preparedness = PreparednessSerializer(
-        required=False,
-        read_only=True,
-        allow_null=True,
-    )
-    surge_data = SurgeSerializer(required=False)
+    last_preparedness = serializers.SerializerMethodField()
+
+    def get_last_preparedness(self, campaign):
+        # summary
+        r = {}
+        try:
+            spreadsheet_url = campaign.preperadness_spreadsheet_url
+            last_ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
+            if not last_ssi:
+                return None
+
+            r["created_at"] = last_ssi.created_at
+            cached_spreadsheet = last_ssi.cached_spreadsheet
+            r["title"] = cached_spreadsheet.title
+            last_p = get_preparedness(cached_spreadsheet)
+            r.update(get_preparedness_score(last_p))
+            r.update(preparedness_summary(last_p))
+        except Exception as e:
+            r["status"] = "error"
+            r["details"] = str(e)
+            logger.exception(e)
+        return r
+
     last_surge = SurgeSerializer(
         required=False,
         read_only=True,
         allow_null=True,
     )
+
+    obr_name = serializers.CharField(validators=[UniqueValidator(queryset=Campaign.objects.all())])
 
     @atomic
     def create(self, validated_data):
@@ -172,19 +349,12 @@ class CampaignSerializer(serializers.ModelSerializer):
         else:
             campaign_group = None
 
-        preparedness_data = validated_data.pop("preparedness_data", None)
-        surge_data = validated_data.pop("surge_data", None)
         campaign = Campaign.objects.create(
             **validated_data,
             round_one=Round.objects.create(**round_one_data),
             round_two=Round.objects.create(**round_two_data),
             group=campaign_group,
         )
-
-        if preparedness_data is not None:
-            Preparedness.objects.create(campaign=campaign, **preparedness_data)
-        if surge_data is not None:
-            Surge.objects.create(campaign=campaign, **surge_data)
 
         return campaign
 
@@ -194,8 +364,13 @@ class CampaignSerializer(serializers.ModelSerializer):
         round_two_data = validated_data.pop("round_two")
         group = validated_data.pop("group") if "group" in validated_data else None
 
-        Round.objects.filter(pk=instance.round_one_id).update(**round_one_data)
-        Round.objects.filter(pk=instance.round_two_id).update(**round_two_data)
+        round_one_serializer = RoundSerializer(instance=instance.round_one, data=round_one_data)
+        round_one_serializer.is_valid(raise_exception=True)
+        instance.round_one = round_one_serializer.save()
+
+        round_two_serializer = RoundSerializer(instance=instance.round_two, data=round_two_data)
+        round_two_serializer.is_valid(raise_exception=True)
+        instance.round_two = round_two_serializer.save()
 
         if group:
             org_units = group.pop("org_units") if "org_units" in group else []
@@ -205,14 +380,67 @@ class CampaignSerializer(serializers.ModelSerializer):
             campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
             instance.group = campaign_group
 
-        if "preparedness_data" in validated_data:
-            Preparedness.objects.create(campaign=instance, **validated_data.pop("preparedness_data"))
-        if "surge_data" in validated_data:
-            Surge.objects.create(campaign=instance, **validated_data.pop("surge_data"))
         return super().update(instance, validated_data)
 
     class Meta:
         model = Campaign
         fields = "__all__"
-        read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status"]
-        extra_kwargs = {"preparedness_data": {"write_only": True}}
+        read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status", "creation_email_send_at"]
+
+
+class AnonymousCampaignSerializer(CampaignSerializer):
+    class Meta:
+        model = Campaign
+        fields = [
+            "id",
+            "epid",
+            "obr_name",
+            "gpei_coordinator",
+            "gpei_email",
+            "description",
+            "initial_org_unit",
+            "creation_email_send_at",
+            "group",
+            "onset_at",
+            "three_level_call_at",
+            "cvdpv_notified_at",
+            "cvdpv2_notified_at",
+            "pv_notified_at",
+            "pv2_notified_at",
+            "virus",
+            "vacine",
+            "detection_status",
+            "detection_responsible",
+            "detection_first_draft_submitted_at",
+            "detection_rrt_oprtt_approval_at",
+            "risk_assessment_status",
+            "risk_assessment_responsible",
+            "investigation_at",
+            "risk_assessment_first_draft_submitted_at",
+            "risk_assessment_rrt_oprtt_approval_at",
+            "ag_nopv_group_met_at",
+            "dg_authorized_at",
+            "verification_score",
+            "doses_requested",
+            "country_name_in_surge_spreadsheet",
+            "budget_status",
+            "budget_responsible",
+            "who_disbursed_to_co_at",
+            "who_disbursed_to_moh_at",
+            "unicef_disbursed_to_co_at",
+            "unicef_disbursed_to_moh_at",
+            "eomg",
+            "no_regret_fund_amount",
+            "payment_mode",
+            "round_one",
+            "round_two",
+            "created_at",
+            "updated_at",
+            "district_count",
+            "budget_rrt_oprtt_approval_at",
+            "budget_submitted_at",
+            "top_level_org_unit_name",
+            "top_level_org_unit_id",
+            "is_preventive",
+        ]
+        read_only_fields = fields

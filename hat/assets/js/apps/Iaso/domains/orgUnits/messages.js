@@ -109,6 +109,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',
     },
+    orgUnitsTypes: {
+        defaultMessage: 'Org unit types',
+        id: 'iaso.label.orgUnitsTypes',
+    },
     type: {
         defaultMessage: 'Type',
         id: 'iaso.orgUnits.type',
@@ -145,16 +149,20 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Source',
         id: 'iaso.orgUnits.source',
     },
+    sourceLower: {
+        defaultMessage: 'source',
+        id: 'iaso.orgUnits.sourceLower',
+    },
     sourceRef: {
         defaultMessage: 'Source ref',
         id: 'iaso.orgUnits.sourceRef',
     },
     updated_at: {
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
         id: 'iaso.label.updated_at',
     },
     created_at: {
-        defaultMessage: 'Created at',
+        defaultMessage: 'Created',
         id: 'iaso.label.created_at',
     },
     details: {
@@ -198,7 +206,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.subOrgUnitsType',
     },
     subOrgUnitsTypeNoData: {
-        defaultMessage: '"No sub org unit types',
+        defaultMessage: 'No sub org unit types',
         id: 'iaso.orgUnits.subOrgUnitsType.noData',
     },
     addOrgUnitType: {
@@ -219,7 +227,7 @@ const MESSAGES = defineMessages({
     },
     instances_count: {
         id: 'iaso.orgUnits.instances_count',
-        defaultMessage: "Nombre d'instances",
+        defaultMessage: 'Number of submissions',
     },
     parent: {
         id: 'iaso.label.parent',
@@ -309,6 +317,26 @@ const MESSAGES = defineMessages({
     comments: {
         id: 'iaso.label.comments',
         defaultMessage: 'Comments',
+    },
+    selectOrgUnit: {
+        id: 'iaso.orgUnits.selectOrgUnit',
+        defaultMessage: 'Please select an Org Unit',
+    },
+    ouTypesHelperText: {
+        id: 'iaso.orgUnits.ouTypesHelperText',
+        defaultMessage: 'Children org units',
+    },
+    statusNew: {
+        id: 'iaso.orgUnits.statusNew',
+        defaultMessage: 'Validation status: NEW',
+    },
+    statusValid: {
+        id: 'iaso.orgUnits.statusValid',
+        defaultMessage: 'Validation status: VALID',
+    },
+    statusRejected: {
+        id: 'iaso.orgUnits.statusRejected',
+        defaultMessage: 'Validation status: REJECTED',
     },
 });
 

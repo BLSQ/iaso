@@ -5,6 +5,7 @@ import DataSourcesList from './index';
 
 import { mockGetRequestsList } from '../../../../test/utils/requests';
 import { renderWithStore } from '../../../../test/utils/redux';
+import { withQueryClientProvider } from '../../../../test/utils';
 
 const requests = [
     {
@@ -30,7 +31,9 @@ describe('Data sources component', () => {
 
     it('mounts properly', () => {
         const connectedWrapper = mount(
-            renderWithStore(<DataSourcesList params={{}} />),
+            withQueryClientProvider(
+                renderWithStore(<DataSourcesList params={{}} />),
+            ),
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });

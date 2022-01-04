@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { Popup } from 'react-leaflet';
@@ -119,13 +119,13 @@ class OrgUnitPopupComponent extends Component {
                                 label={formatMessage(MESSAGES.created_at)}
                                 value={moment
                                     .unix(currentOrgUnit.created_at)
-                                    .format('DD/MM/YYYY HH:mm')}
+                                    .format('LTS')}
                             />
                             <Box className={classes.actionBox}>
                                 <Grid
                                     container
                                     spacing={0}
-                                    justify={
+                                    justifyContent={
                                         displayUseLocation
                                             ? 'center'
                                             : 'flex-end'
@@ -133,31 +133,29 @@ class OrgUnitPopupComponent extends Component {
                                     alignItems="center"
                                 >
                                     {displayUseLocation && (
-                                        <Box mb={1}>
-                                            <ConfirmDialog
-                                                btnMessage={formatMessage(
-                                                    MESSAGES.associate,
-                                                )}
-                                                question={formatMessage(
-                                                    MESSAGES.question,
-                                                )}
-                                                message={formatMessage(
-                                                    MESSAGES.message,
-                                                )}
-                                                confirm={() =>
-                                                    this.confirmDialog()
-                                                }
-                                            />
-                                        </Box>
+                                        <ConfirmDialog
+                                            btnSize="small"
+                                            btnMessage={formatMessage(
+                                                MESSAGES.associate,
+                                            )}
+                                            question={formatMessage(
+                                                MESSAGES.question,
+                                            )}
+                                            message={formatMessage(
+                                                MESSAGES.message,
+                                            )}
+                                            confirm={() => this.confirmDialog()}
+                                        />
                                     )}
                                     <Button
                                         className={classes.marginLeft}
                                         variant="outlined"
-                                        size="small"
                                         color="primary"
+                                        size="small"
                                     >
                                         <Link
-                                            to={`${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}`}
+                                            target="_blank"
+                                            to={`${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}/tab/infos`}
                                             className={classes.linkButton}
                                         >
                                             <FormattedMessage

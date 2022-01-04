@@ -1,11 +1,18 @@
-import React, { useCallback, useState, useEffect } from 'react';
-import { CommentWithThread, AddComment } from 'bluesquare-components';
+import React, { useCallback, useState } from 'react';
+import {
+    CommentWithThread,
+    AddComment,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { Pagination } from '@material-ui/lab';
 import { Box, Typography, makeStyles } from '@material-ui/core';
 
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { useGetComments, postComment } from '../../../../utils/requests';
+import { useGetComments, sendComment } from '../../../../utils/requests';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
+
+import MESSAGES from '../../messages';
 
 const styles = {
     commentsBlock: { marginBottom: '7px' },
@@ -48,36 +55,39 @@ const OrgUnitsMapComments = ({
     inlineTextAreaButton,
     getOrgUnitFromStore,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const globalStateOrgUnit = useSelector(
         state => state.orgUnits.currentSubOrgUnit,
     );
     const orgUnitToUse = getOrgUnitFromStore ? globalStateOrgUnit : orgUnit;
-    // TODO add Loading state for both API calls
-    // Saving the lastPostedComment in order to trigger refetch after a POST
-    const [lastPostedComment, setLastPostedComment] = useState(0);
     const [offset, setOffset] = useState(null);
     // eslint-disable-next-line no-unused-vars
-    const [pageSize, setPageSize] = useState(maxPages);
-    const { data: comments } = useGetComments({
+    const [pageSize, _setPageSize] = useState(maxPages);
+    const commentsParams = {
         orgUnitId: orgUnitToUse?.id,
         offset,
         limit: pageSize,
-        refreshTrigger: lastPostedComment,
-    });
-    const [commentToPost, setCommentToPost] = useState();
+    };
+    const { data: comments } = useGetComments(commentsParams);
+    const { mutateAsync: postComment } = useSnackMutation(
+        sendComment,
+        undefined,
+        undefined,
+        ['comments', commentsParams],
+    );
 
     const addReply = useCallback(
-        (text, id) => {
+        async (text, id) => {
             const requestBody = {
                 parent: id,
                 comment: text,
                 content_type: 'iaso-orgunit',
                 object_pk: orgUnitToUse?.id,
             };
-            setCommentToPost(requestBody);
+            await postComment(requestBody);
         },
-        [orgUnitToUse],
+        [orgUnitToUse, postComment],
     );
     const formatComment = comment => {
         const mainComment = adaptComment(comment);
@@ -109,26 +119,17 @@ const OrgUnitsMapComments = ({
                 // content_type: 57,
                 content_type: 'iaso-orgunit',
             };
-            setCommentToPost(comment);
+            await postComment(comment);
         },
-        [orgUnitToUse],
+        [orgUnitToUse, postComment],
     );
-
-    useEffect(() => {
-        // eslint-disable-next-line consistent-return
-        const updateComment = async () => {
-            if (!commentToPost) return null;
-            const postedComment = await postComment(commentToPost);
-            setLastPostedComment(postedComment.id);
-        };
-        updateComment();
-    }, [commentToPost, postComment]);
 
     return (
         <>
             <Box px={2} component="div" className={classes.header}>
-                <Typography variant="h5">
-                    {orgUnitToUse?.name ?? 'Please select an Org Unit'}
+                <Typography variant="body1">
+                    {orgUnitToUse?.name ??
+                        formatMessage(MESSAGES.selectOrgUnit)}
                 </Typography>
                 {orgUnitToUse && (
                     <AddComment

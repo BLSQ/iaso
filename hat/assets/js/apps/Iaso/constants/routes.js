@@ -1,6 +1,7 @@
 import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
+import FormsStats from '../domains/forms/stats';
 import OrgUnits from '../domains/orgUnits';
 import Links from '../domains/links';
 import Runs from '../domains/links/Runs';
@@ -20,7 +21,10 @@ import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
-import { orgUnitFiltersWithPrefix, linksFiltersWithPrefix } from './filters';
+import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
+import Pages from '../domains/pages';
+
+import { SHOW_PAGES } from '../utils/featureFlags';
 
 const paginationPathParams = [
     {
@@ -57,7 +61,7 @@ export const getPath = path => {
 
 export const formsPath = {
     baseUrl: baseUrls.forms,
-    permission: 'iaso_forms',
+    permissions: ['iaso_forms', 'iaso_submissions'],
     params: [
         ...paginationPathParams,
         {
@@ -73,20 +77,17 @@ export const formsPath = {
     isRootUrl: true,
 };
 
-export const polioPath = {
-    baseUrl: baseUrls.polio,
-    permission: 'iaso_forms',
+export const pagesPath = {
+    baseUrl: baseUrls.pages,
+    permissions: ['iaso_pages'],
+    featureFlag: SHOW_PAGES,
     params: [],
-    component: props => {
-        window.location = '/dashboard/polio/list'
-
-        return <></>;
-    },
+    component: props => <Pages {...props} />,
 };
 
 export const archivedPath = {
     baseUrl: baseUrls.archived,
-    permission: 'iaso_forms',
+    permissions: ['iaso_forms', 'iaso_submissions'],
     params: [
         ...paginationPathParams,
         {
@@ -104,7 +105,7 @@ export const archivedPath = {
 
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
-    permission: 'iaso_forms',
+    permissions: ['iaso_forms', 'iaso_submissions'],
     component: props => <FormDetail {...props} />,
     params: [
         {
@@ -117,7 +118,7 @@ export const formDetailPath = {
 
 export const mappingsPath = {
     baseUrl: baseUrls.mappings,
-    permission: 'iaso_mappings',
+    permissions: ['iaso_mappings'],
     component: props => <Mappings {...props} />,
     params: [
         {
@@ -133,7 +134,7 @@ export const mappingsPath = {
 
 export const mappingDetailPath = {
     baseUrl: baseUrls.mappingDetail,
-    permission: 'iaso_mappings',
+    permissions: ['iaso_mappings'],
     component: props => <MappingDetails {...props} />,
     params: [
         {
@@ -149,14 +150,18 @@ export const mappingDetailPath = {
 
 export const instancesPath = {
     baseUrl: baseUrls.instances,
-    permission: 'iaso_forms',
+    permissions: ['iaso_submissions'],
     component: props => <Instances {...props} />,
     params: [
         {
-            isRequired: true,
-            key: 'formId',
+            isRequired: false,
+            key: 'formIds',
         },
         ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'periodType',
+        },
         {
             isRequired: false,
             key: 'dateFrom',
@@ -167,7 +172,11 @@ export const instancesPath = {
         },
         {
             isRequired: false,
-            key: 'periods',
+            key: 'startPeriod',
+        },
+        {
+            isRequired: false,
+            key: 'endPeriod',
         },
         {
             isRequired: false,
@@ -209,12 +218,24 @@ export const instancesPath = {
             isRequired: false,
             key: 'showDeleted',
         },
+        {
+            isRequired: false,
+            key: 'mapResults',
+        },
+        {
+            isRequired: false,
+            key: 'filePage',
+        },
+        {
+            isRequired: false,
+            key: 'fileRowsPerPage',
+        },
     ],
 };
 
 export const instanceDetailPath = {
     baseUrl: baseUrls.instanceDetail,
-    permission: 'iaso_forms',
+    permissions: ['iaso_forms', 'iaso_submissions'],
     component: props => <InstanceDetail {...props} />,
     params: [
         {
@@ -224,9 +245,16 @@ export const instanceDetailPath = {
     ],
 };
 
+export const formsStatsPath = {
+    baseUrl: baseUrls.formsStats,
+    permissions: ['iaso_forms'],
+    component: () => <FormsStats />,
+    params: [],
+};
+
 export const orgUnitsPath = {
     baseUrl: baseUrls.orgUnits,
-    permission: 'iaso_org_units',
+    permissions: ['iaso_org_units'],
     component: props => <OrgUnits {...props} />,
     params: [
         {
@@ -269,7 +297,7 @@ const linksFiltersPathParamsWithPrefix = prefix =>
 
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
-    permission: 'iaso_org_units',
+    permissions: ['iaso_org_units'],
     component: props => <OrgUnitDetail {...props} />,
     params: [
         {
@@ -300,7 +328,7 @@ export const orgUnitsDetailsPath = {
 
 export const linksPath = {
     baseUrl: baseUrls.links,
-    permission: 'iaso_links',
+    permissions: ['iaso_links'],
     component: props => <Links {...props} />,
     params: [
         {
@@ -361,7 +389,7 @@ export const linksPath = {
 
 export const algosPath = {
     baseUrl: baseUrls.algos,
-    permission: 'iaso_links',
+    permissions: ['iaso_links'],
     component: props => <Runs {...props} />,
     params: [
         {
@@ -398,14 +426,14 @@ export const algosPath = {
 
 export const completenessPath = {
     baseUrl: baseUrls.completeness,
-    permission: 'iaso_completeness',
+    permissions: ['iaso_completeness'],
     component: props => <Completeness {...props} />,
     params: [],
 };
 
 export const usersPath = {
     baseUrl: baseUrls.users,
-    permission: 'iaso_users',
+    permissions: ['iaso_users'],
     component: props => <Users {...props} />,
     params: [
         {
@@ -421,35 +449,35 @@ export const usersPath = {
 
 export const projectsPath = {
     baseUrl: baseUrls.projects,
-    permission: 'iaso_projects',
+    permissions: ['iaso_projects'],
     component: props => <Projects {...props} />,
     params: [...paginationPathParams],
 };
 
 export const dataSourcesPath = {
     baseUrl: baseUrls.sources,
-    permission: 'iaso_sources',
+    permissions: ['iaso_sources'],
     component: props => <DataSources {...props} />,
     params: [...paginationPathParams],
 };
 
 export const tasksPath = {
     baseUrl: baseUrls.tasks,
-    permission: 'iaso_data_tasks',
+    permissions: ['iaso_data_tasks'],
     component: props => <Tasks {...props} />,
     params: [...paginationPathParams],
 };
 
 export const devicesPath = {
     baseUrl: baseUrls.devices,
-    permission: 'iaso_data_devices',
+    permissions: ['iaso_data_devices'],
     component: props => <Devices {...props} />,
     params: [...paginationPathParams],
 };
 
 export const groupsPath = {
     baseUrl: baseUrls.groups,
-    permission: 'iaso_org_units',
+    permissions: ['iaso_org_units'],
     component: props => <Groups {...props} />,
     params: [
         {
@@ -464,7 +492,7 @@ export const groupsPath = {
 };
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
-    permission: 'iaso_org_units',
+    permissions: ['iaso_org_units'],
     component: props => <Types {...props} />,
     params: [
         {
@@ -500,6 +528,7 @@ export const routeConfigs = [
     formsPath,
     archivedPath,
     formDetailPath,
+    formsStatsPath,
     mappingsPath,
     mappingDetailPath,
     instancesPath,
@@ -516,8 +545,7 @@ export const routeConfigs = [
     devicesPath,
     groupsPath,
     orgUnitTypesPath,
-    polioPath,
+    pagesPath,
     page401,
-    page404,
     page500,
 ];

@@ -8,7 +8,6 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.utils.translation import gettext as _
 
-
 from iaso.models import Profile, OrgUnit
 
 from django.contrib.auth.models import Permission
@@ -17,7 +16,7 @@ from django.contrib.auth.models import User
 
 class HasProfilePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if view.action == "retrieve" and view.kwargs.get("pk") == "me":
+        if view.action in ("retrieve", "partial_update") and view.kwargs.get("pk") == "me":
             return True
         if (not request.user.has_perm("menupermissions.iaso_users")) and request.method != "GET":
             return False
@@ -34,6 +33,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     GET /api/profiles/me => current user
     GET /api/profiles/<id>
     POST /api/profiles/
+    POST /api/profiles/me => current user, can only set language field
     PATCH /api/profiles/<id>
     DELETE /api/profiles/<id>
     """
@@ -90,6 +90,15 @@ class ProfilesViewSet(viewsets.ViewSet):
             return Response(profile.as_dict())
 
     def partial_update(self, request, pk=None):
+        if pk == "me":
+            # allow user to change his own language
+            user = request.user
+            profile = request.user.iaso_profile
+
+            if "language" in request.data:
+                profile.language = request.data["language"]
+            profile.save()
+            return Response(profile.as_dict())
         profile = get_object_or_404(self.get_queryset(), id=pk)
         username = request.data.get("user_name")
         password = request.data.get("password", "")

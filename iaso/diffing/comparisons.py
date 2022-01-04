@@ -100,13 +100,18 @@ def as_field_types(field_names):
 
 
 class Diff(Dictable):
-    def __init__(self, org_unit, status, comparisons):
-        self.org_unit = org_unit
+    def __init__(self, orgunit_ref, orgunit_dhis2, status, comparisons):
+        self.org_unit = orgunit_ref if orgunit_ref else orgunit_dhis2
+        self.orgunit_ref = orgunit_ref
+        self.orgunit_dhis2 = orgunit_dhis2
         self.status = status
         self.comparisons = comparisons
 
     def comparison(self, field):
-        return next(x for x in self.comparisons if x.field == field)
+        try:
+            return next(x for x in self.comparisons if x.field == field)
+        except StopIteration:
+            return None
 
     def are_fields_modified(self, fields):
         return len(list(x for x in self.comparisons if x.field in fields and x.status != "same")) > 0

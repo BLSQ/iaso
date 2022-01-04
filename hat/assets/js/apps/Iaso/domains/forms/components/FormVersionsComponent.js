@@ -2,17 +2,18 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { Box, Typography } from '@material-ui/core';
-import { useSelector } from 'react-redux';
+import {
+    useSafeIntl,
+    AddButton as AddButtonComponent,
+} from 'bluesquare-components';
 import { fetchList } from '../../../utils/requests';
 
 import SingleTable from '../../../components/tables/SingleTable';
-import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
 import FormVersionsDialog from './FormVersionsDialogComponent';
 
 import { baseUrls } from '../../../constants/urls';
 
 import { formVersionsTableColumns } from '../config';
-import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
 
@@ -22,12 +23,12 @@ const FormVersionsComponent = ({
     forceRefresh,
     setForceRefresh,
     periodType,
+    formId,
 }) => {
     const intl = useSafeIntl();
 
-    const currentForm = useSelector(state => state.forms.current);
+    if (!formId) return null;
 
-    if (!currentForm || (currentForm && !currentForm.id)) return null;
     return (
         <Box mt={4}>
             <Typography color="primary" variant="h5">
@@ -43,7 +44,7 @@ const FormVersionsComponent = ({
                 fetchItems={(d, url) =>
                     fetchList(
                         d,
-                        `${url}&form_id=${currentForm.id}`,
+                        `${url}&form_id=${formId}`,
                         'fetchFormVersionsError',
                         'form versions',
                     )
@@ -52,12 +53,11 @@ const FormVersionsComponent = ({
                 columns={formVersionsTableColumns(
                     intl.formatMessage,
                     setForceRefresh,
-                    currentForm.id,
+                    formId,
                     periodType,
                 )}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
-                watchToRender={periodType}
             />
             <Box
                 mt={2}
@@ -66,7 +66,7 @@ const FormVersionsComponent = ({
                 display="flex"
             >
                 <FormVersionsDialog
-                    formId={currentForm.id}
+                    formId={formId}
                     periodType={periodType}
                     titleMessage={MESSAGES.createFormVersion}
                     renderTrigger={({ openDialog }) => (
@@ -81,12 +81,16 @@ const FormVersionsComponent = ({
 
 FormVersionsComponent.defaultProps = {
     periodType: PERIOD_TYPE_DAY,
+    setForceRefresh: () => null,
+    forceRefresh: false,
+    formId: null,
 };
 
 FormVersionsComponent.propTypes = {
     periodType: PropTypes.string,
-    forceRefresh: PropTypes.bool.isRequired,
-    setForceRefresh: PropTypes.func.isRequired,
+    forceRefresh: PropTypes.bool,
+    setForceRefresh: PropTypes.func,
+    formId: PropTypes.number,
 };
 
 export default FormVersionsComponent;

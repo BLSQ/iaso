@@ -28,10 +28,12 @@ export const QUARTERS = {
     3: 'Q3',
     4: 'Q4',
 };
+
 export const SEMESTERS = {
     1: 'S1',
     2: 'S2',
 };
+
 export const MONTHS = {
     1: MESSAGES.january,
     2: MESSAGES.february,
@@ -45,4 +47,16 @@ export const MONTHS = {
     10: MESSAGES.october,
     11: MESSAGES.november,
     12: MESSAGES.december,
+};
+
+export const QUARTERS_RANGE = {
+    1: [MONTHS[1], MONTHS[3]],
+    2: [MONTHS[4], MONTHS[6]],
+    3: [MONTHS[7], MONTHS[9]],
+    4: [MONTHS[10], MONTHS[12]],
+};
+
+export const SEMESTERS_RANGE = {
+    1: [MONTHS[1], MONTHS[6]],
+    2: [MONTHS[7], MONTHS[12]],
 };

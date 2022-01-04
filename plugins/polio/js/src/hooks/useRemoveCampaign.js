@@ -1,22 +1,17 @@
-import { useMutation, useQueryClient } from 'react-query';
-import { sendRequest } from '../utils/networking';
+import { defineMessage } from 'react-intl';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { deleteRequest } from 'Iaso/libs/Api';
 
-export const useRemoveCampaign = () => {
-    const queryClient = useQueryClient();
-
-    const { mutate, ...result } = useMutation(id =>
-        sendRequest('DELETE', `/api/polio/campaigns/${id}`),
+export const useRemoveCampaign = () =>
+    useSnackMutation(
+        id => deleteRequest(`/api/polio/campaigns/${id}`),
+        defineMessage({
+            defaultMessage: 'Campaign successfully removed',
+            id: 'iaso.polio.campaign.deleteSuccess',
+        }),
+        defineMessage({
+            defaultMessage: 'Error removing campaign',
+            id: 'iaso.polio.campaign.deleteError',
+        }),
+        ['polio', 'campaigns'],
     );
-
-    return {
-        ...result,
-        mutate: (variables, { onSuccess, ...options }) =>
-            mutate(variables, {
-                ...options,
-                onSuccess: (...args) => {
-                    queryClient.invalidateQueries(['polio', 'campaigns']);
-                    onSuccess(...args);
-                },
-            }),
-    };
-};

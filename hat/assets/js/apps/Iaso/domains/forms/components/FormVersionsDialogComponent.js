@@ -3,10 +3,10 @@ import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid, Typography, Box } from '@material-ui/core';
 
-import { useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
-import PeriodPicker from '../../periods/components/PeriodPickerComponent';
+import PeriodPicker from '../../periods/components/PeriodPicker';
 
 import MESSAGES from '../messages';
 import { createFormVersion, updateFormVersion } from '../../../utils/requests';
@@ -15,7 +15,6 @@ import { errorTypes, getPeriodsErrors } from '../../periods/utils';
 
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../../constants/snackBars';
-import { setIsLoadingForm } from '../actions';
 
 const emptyVersion = (id = null) => ({
     id,
@@ -34,6 +33,7 @@ const FormVersionsDialogComponent = ({
 }) => {
     const dispatch = useDispatch();
     const intl = useSafeIntl();
+    const [isLoading, setIsLoading] = useState(false);
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState({
             id: formVersion.id,
@@ -62,7 +62,7 @@ const FormVersionsDialogComponent = ({
 
     const onConfirm = useCallback(
         async closeDialog => {
-            dispatch(setIsLoadingForm(true));
+            setIsLoading(true);
             let savePromise;
             const data = {
                 form_id: formId,
@@ -74,13 +74,13 @@ const FormVersionsDialogComponent = ({
                 data.end_period = formState.end_period.value;
             }
             if (!formVersion.id) {
-                savePromise = createFormVersion(dispatch, {
+                savePromise = createFormVersion({
                     xls_file: formState.xls_file.value,
                     data,
                 });
             } else {
                 data.id = formVersion.id;
-                savePromise = updateFormVersion(dispatch, data);
+                savePromise = updateFormVersion(data);
             }
             try {
                 await savePromise;
@@ -95,9 +95,17 @@ const FormVersionsDialogComponent = ({
                     );
                 }
             }
-            dispatch(setIsLoadingForm(false));
+            setIsLoading(false);
         },
-        [dispatch, setFieldErrors, formState],
+        [
+            dispatch,
+            setFieldErrors,
+            formState,
+            formId,
+            formVersion.id,
+            onConfirmed,
+            setFormState,
+        ],
     );
 
     const handleCancel = closeDialog => {
@@ -123,108 +131,130 @@ const FormVersionsDialogComponent = ({
     const chronologicalError =
         (periodsErrors.start && periodsErrors.start.chronological) ||
         (periodsErrors.end && periodsErrors.end.chronological);
-
     return (
-        <ConfirmCancelDialogComponent
-            allowConfirm={allowConfirm()}
-            onCancel={handleCancel}
-            maxWidth="xs"
-            titleMessage={titleMessage}
-            onConfirm={onConfirm}
-            cancelMessage={MESSAGES.cancel}
-            confirmMessage={MESSAGES.save}
-            {...dialogProps}
-        >
-            <Grid container spacing={4} justify="flex-start">
-                <Grid xs={12} item>
-                    {!formState.id.value && (
-                        <FileInputComponent
-                            keyValue="xls_file"
-                            onChange={setFieldValue}
-                            value={formState.xls_file.value}
-                            label={MESSAGES.xls_form_file}
-                            errors={formState.xls_file.errors}
-                            required
+        <>
+            {isLoading && <LoadingSpinner />}
+            <ConfirmCancelDialogComponent
+                allowConfirm={allowConfirm()}
+                onCancel={handleCancel}
+                maxWidth="sm"
+                titleMessage={titleMessage}
+                onConfirm={onConfirm}
+                cancelMessage={MESSAGES.cancel}
+                confirmMessage={MESSAGES.save}
+                {...dialogProps}
+            >
+                <Grid container spacing={4} justifyContent="flex-start">
+                    <Grid xs={12} item>
+                        {!formState.id.value && (
+                            <FileInputComponent
+                                keyValue="xls_file"
+                                onChange={setFieldValue}
+                                value={formState.xls_file.value}
+                                label={MESSAGES.xls_form_file}
+                                errors={formState.xls_file.errors}
+                                required
+                            />
+                        )}
+                        {!formState.id.value && (
+                            <span>
+                                {intl.formatMessage(MESSAGES.validateXlsForm)}
+                                <a
+                                    href="https://getodk.org/xlsform/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {intl.formatMessage(
+                                        MESSAGES.validateXLSFormLink,
+                                    )}
+                                </a>
+                            </span>
+                        )}
+                        <PeriodPicker
+                            hasError={Boolean(periodsErrors.start)}
+                            periodType={periodType}
+                            title={intl.formatMessage(MESSAGES.startPeriod)}
+                            activePeriodString={
+                                !startPeriodInvalid
+                                    ? formState.start_period.value
+                                    : null
+                            }
+                            onChange={startPeriod =>
+                                setFieldValue('start_period', startPeriod)
+                            }
                         />
-                    )}
-                    <PeriodPicker
-                        hasError={Boolean(periodsErrors.start)}
-                        periodType={periodType}
-                        title={intl.formatMessage(MESSAGES.startPeriod)}
-                        activePeriodString={
-                            !startPeriodInvalid
-                                ? formState.start_period.value
-                                : null
-                        }
-                        onChange={startPeriod =>
-                            setFieldValue('start_period', startPeriod)
-                        }
-                    />
-                    {startPeriodInvalid && (
-                        <Box mb={2} mt={-3}>
-                            <Typography
-                                id="start-invalid"
-                                variant="body1"
-                                color="error"
-                                fontSize="small"
-                            >
-                                {intl.formatMessage(errorTypes.invalid.message)}
-                            </Typography>
-                        </Box>
-                    )}
-                    <PeriodPicker
-                        hasError={Boolean(periodsErrors.end)}
-                        periodType={periodType}
-                        title={intl.formatMessage(MESSAGES.endPeriod)}
-                        activePeriodString={
-                            !endPeriodInvalid
-                                ? formState.end_period.value
-                                : null
-                        }
-                        onChange={endPeriod =>
-                            setFieldValue('end_period', endPeriod)
-                        }
-                    />
-                    {endPeriodInvalid && (
-                        <Box mb={2} mt={-3}>
-                            <Typography
-                                id="end-invalid"
-                                variant="body1"
-                                color="error"
-                                fontSize="small"
-                            >
-                                {intl.formatMessage(errorTypes.invalid.message)}
-                            </Typography>
-                        </Box>
-                    )}
-                    {chronologicalError && (
-                        <Box mb={2} mt={-1}>
-                            <Typography
-                                id="chronological-error"
-                                variant="body1"
-                                color="error"
-                                fontSize="small"
-                            >
-                                {intl.formatMessage(
-                                    errorTypes.chronological.message,
-                                )}
-                            </Typography>
-                        </Box>
-                    )}
+                        {startPeriodInvalid && (
+                            <Box mb={2} mt={-1}>
+                                <Typography
+                                    id="start-invalid"
+                                    variant="body1"
+                                    color="error"
+                                    fontSize="small"
+                                >
+                                    {intl.formatMessage(
+                                        errorTypes.invalid.message,
+                                    )}
+                                </Typography>
+                            </Box>
+                        )}
+                        <PeriodPicker
+                            hasError={Boolean(periodsErrors.end)}
+                            periodType={periodType}
+                            title={intl.formatMessage(MESSAGES.endPeriod)}
+                            activePeriodString={
+                                !endPeriodInvalid
+                                    ? formState.end_period.value
+                                    : null
+                            }
+                            onChange={endPeriod =>
+                                setFieldValue('end_period', endPeriod)
+                            }
+                        />
+                        {endPeriodInvalid && (
+                            <Box mb={2} mt={-1}>
+                                <Typography
+                                    id="end-invalid"
+                                    variant="body1"
+                                    color="error"
+                                    fontSize="small"
+                                >
+                                    {intl.formatMessage(
+                                        errorTypes.invalid.message,
+                                    )}
+                                </Typography>
+                            </Box>
+                        )}
+                        {chronologicalError && (
+                            <Box mb={2} mt={-1}>
+                                <Typography
+                                    id="chronological-error"
+                                    variant="body1"
+                                    color="error"
+                                    fontSize="small"
+                                >
+                                    {intl.formatMessage(
+                                        errorTypes.chronological.message,
+                                    )}
+                                </Typography>
+                            </Box>
+                        )}
+                    </Grid>
                 </Grid>
-            </Grid>
-        </ConfirmCancelDialogComponent>
+            </ConfirmCancelDialogComponent>
+        </>
     );
 };
 
 FormVersionsDialogComponent.defaultProps = {
     formVersion: emptyVersion(),
+    periodType: '',
+    formId: 0,
 };
 
 FormVersionsDialogComponent.propTypes = {
-    periodType: PropTypes.string.isRequired,
+    periodType: PropTypes.string,
     formVersion: PropTypes.object,
-    formId: PropTypes.number.isRequired,
+    formId: PropTypes.number,
     titleMessage: PropTypes.object.isRequired,
     renderTrigger: PropTypes.func.isRequired,
     onConfirmed: PropTypes.func.isRequired,

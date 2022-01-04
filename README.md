@@ -94,7 +94,8 @@ This is not (yet) the complete Data Model, but here are the main concepts/model 
     * Submission cannot be done via the Iaso UI itself but through Enketo or the Mobile App.
 * `APIImport` are used to log some request from the mobile app so we can replay them in case of error. See [vector_control Readme](hat/vector_control/README.md)
 * `audit.Modification` are used to keep a history of modification on some models (mainly orgunit). See [audit readme](hat/audit/README.md)
-* `Link` are used to match two OrgUnit (in different source or not) that should be the same in the real world, but we don't have an unique identifier for, they have a confidence score.
+* `Link` are used to match two OrgUnit (in different sources or not) that should be the same in the real world. Links have a confidence score indicating how much we trust that the two OrgUnit are actually the same.
+
 They are usually generated via `AlgorithmRun`, or the matching is done in a Notebook and uploaded via the API.
   
 
@@ -115,6 +116,7 @@ configure all dep in separate container. As such your computer should only need:
 If docker-compose give you trouble, make sure it can connect to the
 __docker daemon__.
 
+A `pgdata-iaso` folder, containing the database data, will be created in the parent directory of the git repository
 
 ### 1. Environment variables
 
@@ -221,7 +223,7 @@ Enketo, go to the Enketo setup section of this README (down below).
 
 Once you are done, you can click on the eye for your newly added form,
 click on "+ Create", tap a letter, then enter, select the org unit, then
-click "Create instance".
+click "Create submission".
 
 If Enketo is running and well setup, you can fill the form now.
 
@@ -238,7 +240,7 @@ By running the command
 
 
 ``` {.sourceCode .bash}
-docker-compose run --rm iaso manage.py seed_test_data --mode=seed --dhis2version=2.35.3
+docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.35.3
 ```
 
 The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. Type of OrgUnit are not
@@ -249,18 +251,13 @@ you can then log in through <http://127.0.0.1:8081/dashboard> with :
  -   user : testemail2.35.3
  -   password: testemail2.35.3
 
-### 11. Activating the Polio plugin
+### 11. Activating the Polio plugin (optional)
 
-Create a file `plugins/polio/js/.env` with the content
-
-```env
-SKIP_PREFLIGHT_CHECK=true
-PUBLIC_URL=/static/polio
-APP_ENV=local%
+Set the PLUGINS environment variable  to `polio`.
+You can do so by adding the following line in your root .env:
 ```
-
-in your root .env set
-```PLUGIN_POLIO_ENABLED=true```
+PLUGINS=polio
+```
 
  
 Run commands inside the docker
@@ -285,6 +282,7 @@ The following are some examples:
 * Create pending ORM migration files `docker-compose exec iaso ./manage.py makemigrations`
 * Apply pending ORM migrations `docker-compose exec iaso ./manage.py migrate`
 * Show ORM migrations          `docker-compose exec iaso ./manage.py showmigrations`
+* To run a background worker   `docker-compose run iaso manage tasks_worker`  (see  section Background tasks & Worker)
 
 Containers and services
 -----------------------
@@ -303,6 +301,7 @@ All the container definitions for development can be found in the
 > Postgresql uses Django ORM models for table configuration and
 > migrations.
 
+You can also have a dhis2 and db_dhis2 docker, refer to section below.
 
 ### note : docker-compose run VS docker-compose exec
 
@@ -320,25 +319,19 @@ disk space and need to be cleaned occasionally with `docker-compose rm` to recla
 Enketo
 ------
 
-To enable the Enketo editor in your local environment, you will have to
-install our fork of enketo-express:
+To submit and edit existing form submission from the browser, an Enketo service is needed. 
 
-``` {.sourceCode .shell}
-git clone https://github.com/BLSQ/enketo.git
-cd setup/docker
-docker-compose up
+To enable the Enketo editor in your local environment, include the additional docker compose configuration file for Enketo. Do so by invoking docker-compose with both files.
+```
+docker-compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up
 ```
 
-Then, you need to make sure your .env file is properly configured.
-ENKETO_URL should be set to http://192.168.1.15:81 (Replace
-192.168.1.15 by your host)
+No additional configuration is needed. The first time the docker image is launched, it will download dependencies and do a build witch may take a few minutes. Subsequents launches are faster.
 
-To seed your DB with typical example forms, see the  Import data from DHIS2 section
+You can check that the server is correctly launched. By going to http://localhost:8005
 
-Enketo and Iaso will each run separately in their own  docker-compose but still need to communicate together.
-This is done via your host, which is why you will need to change the IP in .env each time your ip change.
+To seed your DB with typical example forms editable by Enketo, see the  Import data from DHIS2 section
 
-TODO: This setup should be simplified a bit
 
 Database restore and dump
 -------------------------
@@ -353,13 +346,70 @@ The dumpfile will be created on your host. The `-Fc` meant it will use an optimi
 To restore a dump file that you made or that somebody sent you:
 ```
 docker-compose exec db psql -U postgres -c "create database iaso5"
- cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 /dev/stdin
+cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --no-owner /dev/stdin
 ```
 
 This will put the data in a database called iaso5. You can choose in your .env file which database is used by editing
 the `RDS_DB_NAME` settings.
 
+Local DHIS2
+-----------
+Experimental. For development if you need a local dhis2 server, you can spin up one in your docker-compose by using the `docker/docker-compose-dhis2.yml ` configuration file.
 
+Replace your invocations of `docker-compose` by `docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml` you need to specify both config files. e.g to launch the cluster:
+```
+docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
+```
+
+The DHIS2 will be available on your computer on http://localhost:8080 and is reachable from Iaso as http://dhis2:8080. The login and password are admin / district. If you use it as an import source do not set a trailing /
+
+Database file are stored in `../pgdata-dhis2` and dhis2 log and uploaded files in `docker/DHIS2_home`.
+
+### Sample dhis2 database
+You will probably require some sample data in your instance. It is possible to
+populate your DHIS2 server with sample data from a database dump like it's done
+for the official play servers. The DHIS2 database take around 3 GB.
+
+The steps as are follow:
+Download the file, stop all the docker, remove the postgres database directory, start only the database docker, load the database dump and then restart everything.
+
+```
+wget https://databases.dhis2.org/sierra-leone/2.36.4/dhis2-db-sierra-leone.sql.gz
+docker-compose down
+sudo rm ../pgdata-dhis2 -r
+docker-compose up db_dhis2
+zcat dhis2-db-sierra-leone.sql.gz| docker-compose exec -T db_dhis2 psql -U dhis dhis2 -f /dev/stdin
+docker-compose up
+cd Projects/blsq/iaso
+docker-compose up dhis2 db_dhis2
+```
+
+
+Live Bluesquare components
+--------------------------
+
+It is possible to configure the project to load a version of Bluesquare components from a local git repository instead of the one installed from a package. This enabled to develop feature necessitating modification in the components code.
+
+To do so:
+ * place the repository in the parent repository of Iaso `../bluesquare-components/`
+ * install the dependency for bluesquare-component by running npm install in its directory
+ * set the environment variable `LIVE_COMPONENTS=true`
+ * start your docker-compose
+
+```
+cd ..
+git clone git@github.com:BLSQ/bluesquare-components.git
+cd  bluesquare-components
+npm install
+cd ../iaso
+LIVE_COMPONENTS=true docker-compose up
+```
+
+This way the page will reload automatically if you make a change to the bluesquare-components code.
+
+This functionality also works if you launch webpack outside of docker.
+
+If you encounter any problem, first check that your repo is on the correct branch and the deps are up to date
 
 Contributing
 ============
@@ -383,17 +433,38 @@ if the formatting is respected!
 Tests and linting
 -----------------
 
-For python, we use django builtin test framework. Tests can be executed with
+For python, we use the Django builtin test framework. Tests can be executed with
 
 ``` {.sourceCode .bash}
 docker-compose exec iaso ./manage.py test
 ```
 
+Translations
+------------
+
+The few translation for the Django side (login and reset password email etc..)
+are separated from the test. We only translate the template for now
+not the python code (string on model or admin).
+
+When modifying or adding new strings to translate, use the following command to
+regenerate the translations:
+
+```manage.py makemessages --locale=fr --extension txt --extension html```
+
+This will update `hat/locale/fr/LC_MESSAGES/django.po` with the new strings to
+translate.
+
+After updating it with the translation you need to following command to have
+them reflected in the interface:
+
+```manage.py compilemessages```
+
+
 Code reloading
 --------------
 
-In development the servers will reload when it detects a file
-change, either in Python or Javascript. 
+In development the servers will reload when they detect a file
+change, either in Python or Javascript. If you need reloading for the bluesquare-components code, see the "Live Bluesquare Components" section. 
 
 Troubleshooting
 ---------------
@@ -505,22 +576,35 @@ to have a local environment serving you the production assets (minified
 and with the same compilation option as in production). This can be
 useful to reproduce production only bugs.
 
-# Workers
+# Background tasks & worker
+
+Iaso  queue certains functions (task) for later execution, so they can run
+outside an HTTP request. This is used for functions that take a long time to execute
+so they don't canceled in the middle by a timeout of a connection closed.
+e.g: bulk import, modifications or export of OrgUnits.  Theses are the functions
+marked by the decorator @task_decorator, when called they get added to a Queue
+and get executed by a worker.
 
 
-To execute task in the background, we use Elastic Beanstalk workers with
-SQS using a fork of the library
+The logic is based on a fork of the library
 [django-beanstalk-worker](https://pypi.org/project/django-beanstalk-worker/)
-from tolomea. The endpoint `/api/copy_version/` is a good example of how
-to create a task and to plug it to the api.
+from tolomea, please consult it's doc for reference.
 
-When calling a function with the @task decorator, it will add it to the
-task queue. You are required to pass it a User objects, in addition to
-the other function's argument, that represent which user is launching
+In production on AWS, we use Elastic Beanstalk workers which use a SQS queue.
+
+In local development, you can run a worker by using the command:
+```
+docker-compose run iaso manage tasks_worker
+```
+
+Alternatively, you can call the url `tasks/run_all` which will run all the pending tasks in queue.
+
+If you want to develop a new background task, the endpoint `/api/copy_version/`
+is a good example of how to create a task and to plug it to the api.
+
+To call a  function with the @task decorator, you need to pass it a User objects, in addition to
+the other function's arguments, this arg represent which user is launching
 the task. At execution time the task will receive a iaso.models.Task
 instance in argument that should be used to report progress. It's
 mandatory for the function, at the end of a successful execution to call
 task.report_success() to mark its proper completion.
-
-In local development you can call the url `tasks/run_all` which will run
-all tasks in queue.

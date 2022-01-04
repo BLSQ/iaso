@@ -4,7 +4,7 @@ import { Button, Tooltip, makeStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
-import { injectIntl, commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { closeFixedSnackbar } from '../../redux/snackBarsReducer';
 
@@ -27,12 +27,26 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const SnackBarErrorMessage = ({ errorLog, id, intl: { formatMessage } }) => {
-    if (!errorLog || errorLog === '') return null;
+const SnackBarErrorMessage = ({ errorLog, id }) => {
     const classes = useStyles();
-    const errorMessage =
-        typeof errorLog === 'string' ? errorLog : JSON.stringify(errorLog);
+    const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
+    if (!errorLog || errorLog === '') return null;
+
+    let errorMessage;
+    if (typeof errorLog === 'string') {
+        errorMessage = errorLog;
+    } else if (errorLog.name === 'ApiError' || errorLog.name === 'Error') {
+        // Bypass a strange bug in stringify that remove the message from Error
+        errorMessage = JSON.stringify(
+            { ...errorLog, message: errorLog.message },
+            null,
+            1,
+        );
+    } else {
+        errorMessage = JSON.stringify(errorLog, null, 1);
+    }
+
     const handleClick = e => {
         navigator.clipboard.writeText(errorMessage);
         e.target.focus();
@@ -42,7 +56,9 @@ const SnackBarErrorMessage = ({ errorLog, id, intl: { formatMessage } }) => {
         <>
             <Tooltip
                 size="small"
-                title={<p className={classes.errorMessage}>{errorMessage}</p>}
+                title={
+                    <pre className={classes.errorMessage}>{errorMessage}</pre>
+                }
                 className={classes.tooltip}
                 arrow
             >
@@ -79,7 +95,6 @@ SnackBarErrorMessage.defaultProps = {
 SnackBarErrorMessage.propTypes = {
     errorLog: PropTypes.any,
     id: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-    intl: PropTypes.object.isRequired,
 };
 
-export default injectIntl(SnackBarErrorMessage);
+export default SnackBarErrorMessage;

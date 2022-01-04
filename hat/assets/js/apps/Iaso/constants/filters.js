@@ -1,19 +1,38 @@
 import React from 'react';
-import Icon from '@material-ui/core/Icon';
-import Tooltip from '@material-ui/core/Tooltip';
 import { getParamsKey } from 'bluesquare-components';
 import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
-import { Period } from '../domains/periods/models';
-import { getOrgunitMessage } from '../domains/orgUnits/utils';
+import { usePrettyPeriod } from '../domains/periods/utils';
+import { orgUnitLabelString } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';
 
-export const search = (urlKey = 'search') => ({
+export const search = (urlKey = 'search', withMarginTop = true) => ({
     urlKey,
     label: MESSAGES.textSearch,
     type: 'search',
+    withMarginTop,
 });
+
+// CAUTION: value ALL has to be converted to empty string before being sent to API
+export const orgUnitStatusAsOptions = formatMessage => [
+    {
+        label: formatMessage(MESSAGES.all),
+        value: 'ALL',
+    },
+    {
+        label: formatMessage(MESSAGES.new),
+        value: 'NEW',
+    },
+    {
+        label: formatMessage(MESSAGES.validated),
+        value: 'VALID',
+    },
+    {
+        label: formatMessage(MESSAGES.rejected),
+        value: 'REJECTED',
+    },
+];
 
 export const status = (formatMessage, urlKey = 'validation_status') => ({
     urlKey,
@@ -23,53 +42,21 @@ export const status = (formatMessage, urlKey = 'validation_status') => ({
         {
             label: formatMessage(MESSAGES.all),
             value: 'all',
-            icon: (
-                <Tooltip title={formatMessage(MESSAGES.all)}>
-                    <Icon
-                        style={{ color: '#90caf9' }}
-                        className="fa fa-circle-o fa-lg"
-                    />
-                </Tooltip>
-            ),
         },
         {
             label: formatMessage(MESSAGES.new),
             value: 'NEW',
-            icon: (
-                <Tooltip title={formatMessage(MESSAGES.new)}>
-                    <Icon
-                        style={{ color: '#ffb74d' }}
-                        className="fa fa-asterisk fa-lg"
-                    />
-                </Tooltip>
-            ),
         },
         {
             label: formatMessage(MESSAGES.validated),
             value: 'VALID',
-            icon: (
-                <Tooltip title={formatMessage(MESSAGES.validated)}>
-                    <Icon
-                        style={{ color: '#4caf50' }}
-                        className="fa fa-check fa-lg"
-                    />
-                </Tooltip>
-            ),
         },
         {
             label: formatMessage(MESSAGES.rejected),
             value: 'REJECTED',
-            icon: (
-                <Tooltip title={formatMessage(MESSAGES.rejected)}>
-                    <Icon
-                        style={{ color: '#d32f2f' }}
-                        className="fa fa-ban fa-lg"
-                    />
-                </Tooltip>
-            ),
         },
     ],
-    label: MESSAGES.status,
+    label: MESSAGES.validationStatus,
     type: 'select',
 });
 
@@ -107,7 +94,7 @@ export const orgUnitLevel = (
     useKeyParam: false,
     isClearable: true,
     options: orgunitList.map(o => ({
-        label: getOrgunitMessage(o, true),
+        label: orgUnitLabelString(o, true, formatMessage),
         value: o.id,
     })),
     labelString: `${formatMessage(MESSAGES.level)} ${level + 1}`,
@@ -292,10 +279,11 @@ export const score = () => ({
     isMultiSelect: false,
     isClearable: true,
     options: [1, 2, 3, 4, 5].map(s => ({
-        label: <FullStarsSvg score={s} />,
+        label: `${s}`,
         value: `${(s - 1) * 20},${s * 20}`,
     })),
     label: MESSAGES.score,
+    renderOption: option => <FullStarsSvg score={parseInt(option.label, 10)} />,
     type: 'select',
     isSearchable: false,
 });
@@ -318,6 +306,32 @@ export const shape = (formatMessage, urlKey = 'withShape') => ({
     type: 'select',
 });
 
+export const geography = (formatMessage, urlKey = 'geography') => ({
+    urlKey,
+    isMultiSelect: false,
+    isClearable: true,
+    options: [
+        {
+            label: formatMessage(MESSAGES.anyGeography),
+            value: 'any',
+        },
+        {
+            label: formatMessage(MESSAGES.withLocation),
+            value: 'location',
+        },
+        {
+            label: formatMessage(MESSAGES.withShape),
+            value: 'shape',
+        },
+        {
+            label: formatMessage(MESSAGES.noGeographicalData),
+            value: 'none',
+        },
+    ],
+    label: MESSAGES.geographicalData,
+    type: 'select',
+});
+
 export const location = (formatMessage, urlKey = 'withLocation') => ({
     urlKey,
     isMultiSelect: false,
@@ -336,19 +350,13 @@ export const location = (formatMessage, urlKey = 'withLocation') => ({
     type: 'select',
 });
 
-export const locationsLimit = () => ({
-    urlKey: 'locationLimit',
-    label: MESSAGES.locationLimit,
-    type: 'number',
-});
-
 export const group = (groupList, urlKey = 'group') => ({
     urlKey,
     isMultiSelect: true,
     isClearable: true,
     options: groupList.map(a => ({
         label: a.source_version
-            ? `${a.name} - ${a.source_version.data_source.name}`
+            ? `${a.name} - ${a.source_version.data_source.name} ${a.source_version.number}`
             : a.name,
         value: a.id,
     })),
@@ -356,17 +364,22 @@ export const group = (groupList, urlKey = 'group') => ({
     type: 'select',
 });
 
-export const periods = periodsList => ({
+const periods = (periodsList, formatPeriods) => ({
     urlKey: 'periods',
     isMultiSelect: true,
     isClearable: true,
     options: periodsList.map(p => ({
-        label: Period.getPrettyPeriod(p),
+        label: formatPeriods(p),
         value: p,
     })),
     label: MESSAGES.periods,
     type: 'select',
 });
+
+export const useFormatPeriodFilter = () => {
+    const formatPeriod = usePrettyPeriod();
+    return periodList => periods(periodList, formatPeriod);
+};
 
 export const instanceStatus = options => ({
     urlKey: 'status',
@@ -502,26 +515,30 @@ export const linksFiltersWithPrefix = (
         paramsPrefix,
     );
 
-export const onlyChildrenParams = (paramsPrefix, params, parent) => {
-    if (!parent) return null;
+export const onlyChildrenParams = (paramsPrefix, params, parentId) => {
     const onlyDirectChildren =
         params[getParamsKey(paramsPrefix, 'onlyDirectChildren')];
     return onlyDirectChildren === 'true' || onlyDirectChildren === undefined
-        ? { parent_id: parent.id }
-        : { orgUnitParentId: parent.id };
+        ? { parent_id: parentId }
+        : { orgUnitParentId: parentId };
 };
 
-export const runsFilters = (
-    formatMessage = () => null,
-    algorithms = [],
-    profiles = [],
-    sources = [],
-    currentOrigin = null,
-    currentDestination = null,
-) => {
+export const runsFilters = props => {
+    const {
+        formatMessage = () => null,
+        algorithms = [],
+        profiles = [],
+        sources = [],
+        currentOrigin = null,
+        currentDestination = null,
+        fetchingProfiles,
+        fetchingAlgorithms,
+        fetchingSources,
+    } = props;
     const filters = [
         {
             ...algo(algorithms),
+            loading: fetchingAlgorithms,
             column: 1,
         },
         {
@@ -531,6 +548,7 @@ export const runsFilters = (
                 'launcher',
                 formatMessage(MESSAGES.launcher),
             ),
+            loading: fetchingProfiles,
             column: 1,
         },
         {
@@ -541,6 +559,7 @@ export const runsFilters = (
                 'origin',
                 formatMessage(MESSAGES.sourceorigin),
             ),
+            loading: fetchingSources,
             column: 2,
         },
         {
@@ -586,16 +605,22 @@ export const runsFilters = (
     return filters;
 };
 
-export const linksFilters = (
-    formatMessage = () => null,
-    algorithmRuns = [],
-    orgUnitTypes = [],
-    profiles = [],
-    algorithms = [],
-    sources = [],
-    currentOrigin = null,
-    currentDestination = null,
-) => {
+export const linksFilters = props => {
+    const {
+        formatMessage = () => null,
+        algorithmRuns = [],
+        orgUnitTypes = [],
+        profiles = [],
+        algorithms = [],
+        sources = [],
+        currentOrigin = null,
+        currentDestination = null,
+        fetchingRuns,
+        fetchingOrgUnitTypes,
+        fetchingProfiles,
+        fetchingAlgorithms,
+        fetchingSources,
+    } = props;
     const filters = [
         {
             ...search(),
@@ -603,10 +628,12 @@ export const linksFilters = (
         },
         {
             ...algoRun(algorithmRuns, formatMessage),
+            loading: fetchingRuns,
             column: 1,
         },
         {
             ...orgUnitType(orgUnitTypes),
+            loading: fetchingOrgUnitTypes,
             column: 1,
         },
         {
@@ -615,10 +642,12 @@ export const linksFilters = (
         },
         {
             ...validator(profiles),
+            loading: fetchingProfiles,
             column: 2,
         },
         {
             ...algo(algorithms),
+            loading: fetchingAlgorithms,
             column: 2,
         },
         {
@@ -633,6 +662,7 @@ export const linksFilters = (
                 'origin',
                 formatMessage(MESSAGES.sourceorigin),
             ),
+            loading: fetchingSources,
             column: 3,
         },
         {

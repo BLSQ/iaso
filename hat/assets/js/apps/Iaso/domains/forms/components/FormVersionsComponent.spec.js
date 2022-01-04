@@ -42,13 +42,6 @@ describe('FormVersionsComponent connected component', () => {
                     setForceRefresh={() => setForceRefreshSpy()}
                     formId={formId}
                 />,
-                {
-                    forms: {
-                        current: {
-                            id: formId,
-                        },
-                    },
-                },
             ),
         );
         expect(connectedWrapper.exists()).to.equal(true);
@@ -84,23 +77,13 @@ describe('FormVersionsComponent connected component', () => {
         it('not render', () => {
             cleanAndMock();
             connectedWrapper = mount(
-                renderWithStore(<FormVersionsComponent formId={formId} />, {
-                    forms: {
-                        current: {
-                            id: null,
-                        },
-                    },
-                }),
+                renderWithStore(<FormVersionsComponent formId={null} />),
             );
             singleTable = connectedWrapper.find(SingleTable);
             expect(singleTable).to.have.lengthOf(0);
             cleanAndMock();
             connectedWrapper = mount(
-                renderWithStore(<FormVersionsComponent formId={formId} />, {
-                    forms: {
-                        current: null,
-                    },
-                }),
+                renderWithStore(<FormVersionsComponent formId={null} />),
             );
             singleTable = connectedWrapper.find(SingleTable);
             expect(singleTable).to.have.lengthOf(0);

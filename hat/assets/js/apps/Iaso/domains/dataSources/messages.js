@@ -1,14 +1,6 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
-    yes: {
-        defaultMessage: 'Yes',
-        id: 'iaso.label.yes',
-    },
-    no: {
-        defaultMessage: 'No',
-        id: 'iaso.label.no',
-    },
     actions: {
         defaultMessage: 'Actions',
         id: 'iaso.label.actions',
@@ -36,6 +28,10 @@ const MESSAGES = defineMessages({
     save: {
         id: 'iaso.label.save',
         defaultMessage: 'Save',
+    },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
     },
     edit: {
         id: 'iaso.label.edit',
@@ -106,6 +102,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.importFromDhis2',
         defaultMessage: 'Import from DHIS2',
     },
+    updateFromDhis2: {
+        id: 'iaso.dataSources.updateFromDhis2',
+        defaultMessage: 'Update version from DHIS2',
+    },
     useDefaultDhisSettings: {
         id: 'iaso.dataSources.useDefaultDhisSettings',
         defaultMessage: 'Use default DHIS settings',
@@ -118,8 +118,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.addAskTitle',
         defaultMessage: '{title} - Source: {source} - Version: {version}',
     },
-    gpkgFormFile: {
-        id: 'iaso.datasources.label.gpkgFormFile',
+    gpkgChooseFile: {
+        id: 'iaso.datasources.gpkg.chooseFile',
         defaultMessage: 'Choose file',
     },
     versionNumber: {
@@ -130,13 +130,102 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.project',
         defaultMessage: 'Project',
     },
-    geoPkgTitle: {
-        id: 'iaso.datasources.label.geoPkgTitle',
+    gpkgTitle: {
+        id: 'iaso.datasources.gpkg.title',
         defaultMessage: 'Import from GeoPackage',
     },
-    importGeoPkg: {
-        id: 'iaso.datasources.geoPkg',
-        defaultMessage: 'Import GeoPackage',
+    gpkgTooltip: {
+        id: 'iaso.datasources.gpkg.tooltip',
+        defaultMessage: 'Import from a GeoPackage file',
+    },
+    versions: {
+        id: 'iaso.datasources.version',
+        defaultMessage: 'Versions',
+    },
+    exportDataSource: {
+        id: 'iaso.datasources.exportDataSource',
+        defaultMessage: 'Export data source: {dataSourceName}',
+    },
+    name: {
+        id: 'iaso.datasources.options.label.name',
+        defaultMessage: 'Name',
+    },
+    parent: {
+        id: 'iaso.datasources.options.label.parent',
+        defaultMessage: 'Parent',
+    },
+    groups: {
+        id: 'iaso.datasources.options.label.groups',
+        defaultMessage: 'Groups',
+    },
+    geometry: {
+        id: 'iaso.datasources.options.label.geometry',
+        defaultMessage: 'Geometry',
+    },
+    version: {
+        id: 'iaso.datasources.options.label.version',
+        defaultMessage: 'Version',
+    },
+    dhis2ExportSure: {
+        id: 'iaso.datasources.title.dhis2ExportSure',
+        defaultMessage: 'Are you sure? \n' +
+          'This might make a lot of changes in DHIS2.',
+    },
+    default: {
+        id: 'iaso.datasources.options.label.default',
+        defaultMessage: 'default',
+    },
+    selectTopOrgUnit: {
+        id: 'iaso.datasources.label.selectTopOrgUnit',
+        defaultMessage: 'Please select top org unit',
+    },
+    export: {
+        id: 'iaso.datasources.button.label.export',
+        defaultMessage: 'Export',
+    },
+    csvPreview: {
+        id: 'iaso.datasources.button.label.csvPreview',
+        defaultMessage: 'Preview',
+    },
+    orgUnitTypes: {
+        id: 'iaso.datasources.label.orgUnitTypes',
+        defaultMessage: 'OrgUnit types',
+    },
+    status: {
+        id: 'iaso.datasources.label.status',
+        defaultMessage: 'Status',
+    },
+    fieldsToExport: {
+        id: 'iaso.datasources.label.fieldsToExport',
+        defaultMessage: 'Fields to export',
+    },
+    datasourceSource: {
+        id: 'iaso.datasources.label.datasourceSource',
+        defaultMessage: 'Version',
+    },
+    credentials: {
+        id: 'iaso.datasources.label.credentials',
+        defaultMessage: 'Credentials',
+    },
+    exportTitle: {
+        id: 'iaso.datasources.title.export',
+        defaultMessage: 'Org units to export',
+    },
+    sourceDataSource: {
+        id: 'iaso.datasources.title.sourceDataSource',
+        defaultMessage: 'Version to compare with to generate export',
+    },
+    compareAndExport: {
+        id: 'iaso.datasources.tooltip.compareAndExport',
+        defaultMessage: 'Compare data sources and export to DHIS2',
+    },
+    credentialsForExport: {
+        id: 'iaso.datasources.credentialsForExport',
+        defaultMessage: 'Export to:',
+    },
+    noCredentialsForExport: {
+        id: 'iaso.datasources.noCredentialsForExport',
+        defaultMessage: 'Please configure DHIS2 on source to enable export',
     },
 });
 

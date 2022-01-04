@@ -1,12 +1,11 @@
-from datetime import datetime
 import logging
-
-logger = logging.getLogger(__name__)
+from datetime import datetime
 from functools import wraps
 from traceback import format_exc
-from django.utils.timezone import make_aware
-from django.db.models import ProtectedError
+
 from django.db import transaction
+from django.db.models import ProtectedError
+from django.utils.timezone import make_aware
 from rest_framework import serializers, pagination, exceptions, permissions
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -14,6 +13,7 @@ from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
 
 from hat.vector_control.models import APIImport
 
+logger = logging.getLogger(__name__)
 
 REQUEST_HEADER_INFO_KEYS = [
     "HTTP_COOKIE",
@@ -162,7 +162,7 @@ class TimestampField(serializers.Field):
 class Paginator(pagination.PageNumberPagination):
     page_size_query_param = "limit"
 
-    def __init__(self, results_key):
+    def __init__(self, results_key="results"):
         self.results_key = results_key
 
     def get_paginated_response(self, data):
@@ -181,6 +181,7 @@ class Paginator(pagination.PageNumberPagination):
 
 class ModelViewSet(BaseModelViewSet):
     results_key = None
+    # FIXME Contrary to name it remove result key if NOT paginated
     remove_results_key_if_paginated = False
 
     def pagination_class(self):
@@ -193,7 +194,7 @@ class ModelViewSet(BaseModelViewSet):
         Example: if your resource is CarManufacturer, use "car_manufacturers", so that the list responses look like
         {
             "car_manufacturers": [
-                {"id": 1, name: "Honda"},
+                {"id": 1, name  : "Honda"},
                 {"id": 2, name: "Toyota"},
             ]
         }

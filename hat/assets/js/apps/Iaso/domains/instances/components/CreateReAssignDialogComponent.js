@@ -1,29 +1,11 @@
-import React from 'react';
-import { FormattedMessage } from 'react-intl';
+import React, { useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { Chip, makeStyles, Box, Typography } from '@material-ui/core';
-
 import InputComponent from '../../../components/forms/InputComponent';
-import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
-import OrgUnitTooltip from '../../orgUnits/components/OrgUnitTooltip';
-import { getOrgunitMessage } from '../../orgUnits/utils';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { Period } from '../../periods/models';
-
+import { usePrettyPeriod } from '../../periods/utils';
 import MESSAGES from '../messages';
-
-const useStyles = makeStyles(theme => ({
-    chipList: {
-        marginTop: theme.spacing(2),
-    },
-    chipListTitle: {
-        marginBottom: theme.spacing(1),
-    },
-    chip: {
-        marginRight: theme.spacing(1),
-        marginBottom: theme.spacing(1),
-    },
-}));
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
 const CreateReAssignDialogComponent = ({
     titleMessage,
@@ -34,8 +16,9 @@ const CreateReAssignDialogComponent = ({
     currentInstance,
     onCreateOrReAssign,
 }) => {
-    const classes = useStyles();
-    const currentFormOrInstance = currentInstance || formType;
+    const formatPeriod = usePrettyPeriod();
+    const currentFormOrInstanceProp = currentInstance || formType;
+    const currentFormOrInstance = { ...currentFormOrInstanceProp };
 
     // Begin check if this is a Form type
     if (
@@ -47,9 +30,9 @@ const CreateReAssignDialogComponent = ({
             toDay.getFullYear() + `0${toDay.getMonth() + 1}`.slice(-2),
         );
         currentFormOrInstance.period =
-            currentFormOrInstance.period_type !== null &&
-            currentFormOrInstance.period_type !== undefined
-                ? period.asPeriodType(currentFormOrInstance.period_type)
+            currentFormOrInstance.periodType !== null &&
+            currentFormOrInstance.periodType !== undefined
+                ? period.asPeriodType(currentFormOrInstance.periodType)
                       .periodString
                 : null;
     }
@@ -60,22 +43,29 @@ const CreateReAssignDialogComponent = ({
         period: { value: currentFormOrInstance.period, errors: [] },
     });
 
-    const handleRemoveOrgUnit = () => {
-        setFieldValue({
-            ...fieldValue,
-            orgUnit: {
-                errors: ['Org unit is required!'],
-                value: undefined,
-            },
-        });
-    };
+    // copying the current value of the state to restore it on cancel
+    const orgUnitCopy = useRef(currentFormOrInstance.org_unit);
+    const periodCopy = useRef(currentFormOrInstance.period);
+
+    const onCancel = useCallback(
+        closeDialog => {
+            setFieldValue({
+                ...fieldValue,
+                orgUnit: { ...fieldValue.orgUnit, value: orgUnitCopy.current },
+            });
+            closeDialog();
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [fieldValue, orgUnitCopy.current],
+    );
 
     const onConfirm = closeDialog => {
         onCreateOrReAssign(currentFormOrInstance, {
             period: fieldValue.period.value,
-            org_unit: fieldValue.orgUnit.value.id,
+            org_unit: fieldValue.orgUnit.value?.id,
         });
-
+        orgUnitCopy.current = fieldValue.orgUnit.value;
+        periodCopy.current = fieldValue.period.value;
         closeDialog();
     };
 
@@ -100,6 +90,7 @@ const CreateReAssignDialogComponent = ({
             renderTrigger={renderTrigger}
             titleMessage={titleMessage}
             onConfirm={onConfirm}
+            onCancel={onCancel}
             confirmMessage={confirmMessage}
             cancelMessage={cancelMessage}
             maxWidth="xs"
@@ -116,7 +107,7 @@ const CreateReAssignDialogComponent = ({
                 }
                 clearable={false}
                 keyValue="period"
-                onChange={(key, value) =>
+                onChange={(_key, value) =>
                     setFieldValue({
                         ...fieldValue,
                         period: {
@@ -129,50 +120,28 @@ const CreateReAssignDialogComponent = ({
                 errors={fieldValue.period.errors}
                 type="select"
                 options={allPeriods.map(p => ({
-                    label: Period.getPrettyPeriod(p),
+                    label: formatPeriod(p),
                     value: p,
                 }))}
                 label={MESSAGES.period}
                 required
             />
             <>
-                {!fieldValue.orgUnit.value && (
-                    <OrgUnitSearch
-                        onSelectOrgUnit={ou =>
-                            setFieldValue({
-                                ...fieldValue,
-                                orgUnit: {
-                                    ...fieldValue.orgUnit,
-                                    value: ou,
-                                },
-                            })
-                        }
-                        inputLabelObject={MESSAGES.addOrgUnit}
-                    />
-                )}
-                {fieldValue.orgUnit.value !== undefined && (
-                    <Box className={classes.chipList}>
-                        <Typography
-                            variant="subtitle1"
-                            className={classes.chipListTitle}
-                        >
-                            <FormattedMessage {...MESSAGES.selectedOrgUnit} />:
-                        </Typography>
-                        <OrgUnitTooltip
-                            orgUnit={fieldValue.orgUnit.value}
-                            key={fieldValue.orgUnit.value.id}
-                        >
-                            <Chip
-                                label={getOrgunitMessage(
-                                    fieldValue.orgUnit.value,
-                                )}
-                                onDelete={() => handleRemoveOrgUnit()}
-                                className={classes.chip}
-                                color="primary"
-                            />
-                        </OrgUnitTooltip>
-                    </Box>
-                )}
+                <OrgUnitTreeviewModal
+                    titleMessage={MESSAGES.selectedOrgUnit}
+                    toggleOnLabelClick={false}
+                    onConfirm={orgUnit => {
+                        setFieldValue({
+                            ...fieldValue,
+                            orgUnit: {
+                                ...fieldValue.orgUnit,
+                                value: orgUnit,
+                            },
+                        });
+                    }}
+                    multiselect={false}
+                    initialSelection={fieldValue.orgUnit.value}
+                />
             </>
         </ConfirmCancelDialogComponent>
     );

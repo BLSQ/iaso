@@ -3,15 +3,14 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Map, ScaleControl, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { InnerDrawer, injectIntl } from 'bluesquare-components';
-// import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
-// import injectIntl from '../../../libs/intl/injectIntl';
 import { Grid, Divider } from '@material-ui/core';
 
 import {
     getLatLngBounds,
     clusterCustomMarker,
-    customZoomBar,
+    ZoomControl,
+    defaultCenter,
+    defaultZoom,
 } from '../../../utils/mapUtils';
 
 import { resetMapReducer } from '../../../redux/mapReducer';
@@ -20,6 +19,8 @@ import { setCurrentInstance } from '../actions';
 import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+import InnerDrawer from '../../../components/nav/InnerDrawer';
+
 import InstancePopupComponent from './InstancePopupComponent';
 import { warningSnackBar } from '../../../constants/snackBars';
 import {
@@ -28,7 +29,6 @@ import {
 } from '../../../redux/snackBarsReducer';
 
 import { fetchInstanceDetail } from '../../../utils/requests';
-import DrawerMessages from '../../../components/nav/messages';
 
 const boundsOptions = { padding: [50, 50] };
 
@@ -36,16 +36,7 @@ const snackbarKey = 'noInstancesOnMap';
 
 class InstancesMap extends Component {
     componentDidMount() {
-        const {
-            intl: { formatMessage },
-        } = this.props;
         this.setWarning();
-        if (this.map) {
-            const newZoomBar = customZoomBar(formatMessage, () =>
-                this.fitToBounds(),
-            );
-            newZoomBar.addTo(this.map.leafletElement);
-        }
     }
 
     componentWillUnmount() {
@@ -102,16 +93,13 @@ class InstancesMap extends Component {
             <Grid container spacing={0}>
                 <InnerDrawer
                     withTopBorder
-                    settingsOption={{
-                        component: (
-                            <>
-                                <TileSwitch />
-                                <Divider />
-                                <ClusterSwitch />
-                            </>
-                        ),
-                        message: DrawerMessages.settings,
-                    }}
+                    settingsOptionComponent={
+                        <>
+                            <TileSwitch />
+                            <Divider />
+                            <ClusterSwitch />
+                        </>
+                    }
                 >
                     <Map
                         ref={ref => {
@@ -122,10 +110,12 @@ class InstancesMap extends Component {
                         style={{ height: '100%' }}
                         bounds={bounds}
                         boundsOptions={boundsOptions}
-                        zoom={13}
+                        zoom={defaultZoom}
+                        center={defaultCenter}
                         zoomControl={false}
                         keyboard={false}
                     >
+                        <ZoomControl fitToBounds={() => this.fitToBounds()} />
                         <ScaleControl imperial={false} />
                         <TileLayer
                             attribution={
@@ -160,16 +150,11 @@ class InstancesMap extends Component {
     }
 }
 
-InstancesMap.defaultProps = {
-    instances: [],
-};
-
 InstancesMap.propTypes = {
-    instances: PropTypes.array,
+    instances: PropTypes.array.isRequired,
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
     isClusterActive: PropTypes.bool.isRequired,
-    intl: PropTypes.object.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
@@ -179,8 +164,6 @@ InstancesMap.propTypes = {
 const MapStateToProps = state => ({
     currentTile: state.map.currentTile,
     isClusterActive: state.map.isClusterActive,
-    fetching: state.instances.fetching,
-    instances: state.instances.instancesSmall,
     notifications: state.snackBar ? state.snackBar.notifications : [],
 });
 
@@ -190,7 +173,4 @@ const MapDispatchToProps = dispatch => ({
     setCurrentInstance: i => dispatch(setCurrentInstance(i)),
 });
 
-export default connect(
-    MapStateToProps,
-    MapDispatchToProps,
-)(injectIntl(InstancesMap));
+export default connect(MapStateToProps, MapDispatchToProps)(InstancesMap);

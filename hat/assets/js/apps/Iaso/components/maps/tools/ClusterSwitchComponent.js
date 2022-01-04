@@ -7,8 +7,10 @@ import PropTypes from 'prop-types';
 import { injectIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { toggleCluster } from '../../../redux/mapReducer';
+import { innerDrawerStyles } from '../../nav/InnerDrawer/styles';
 
 const styles = theme => ({
+    ...innerDrawerStyles(theme),
     title: {
         paddingTop: theme.spacing(1),
         paddingBottom: theme.spacing(1),
@@ -34,7 +36,7 @@ const ClusterSwitchComponent = props => {
                 component="label"
                 container
                 alignItems="center"
-                justify="flex-start"
+                justifyContent="flex-start"
                 spacing={1}
             >
                 <Grid item>

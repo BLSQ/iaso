@@ -1,24 +1,29 @@
+import json
+import ntpath
+from time import gmtime, strftime
+
+import pandas as pd
 from django.contrib.gis.geos import Point
-from rest_framework import viewsets, permissions, status
+from django.core.paginator import Paginator
+from django.db import connection
+from django.db.models import Q, Count
+from django.http import StreamingHttpResponse, HttpResponse
+from rest_framework import serializers, status
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
-from rest_framework.decorators import action
 from rest_framework.response import Response
-from hat.common.utils import queryset_iterator
-from iaso.models import Instance, OrgUnit, Form, Project
-from django.db.models import Q, Count
-from django.core.paginator import Paginator
-from time import gmtime, strftime
-import ntpath
-import json
-from django.http import StreamingHttpResponse, HttpResponse
-from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
-from iaso.utils import timestamp_to_datetime
-from .common import safe_api_import
-from .instance_filters import parse_instance_filters
-from hat.audit.models import log_modification, INSTANCE_API
-from rest_framework import serializers, status
+
 import iaso.periods as periods
+from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.audit.models import log_modification, INSTANCE_API
+from hat.common.utils import queryset_iterator
+from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile
+from iaso.utils import timestamp_to_datetime
+from . import common
+from .common import safe_api_import, TimestampField
+from .instance_filters import parse_instance_filters
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -30,9 +35,11 @@ class InstanceSerializer(serializers.ModelSerializer):
         fields = ["org_unit", "period", "deleted"]
 
     def validate_org_unit(self, value):
-        """
-        Check if user has acces to this org_unit.
-        """
+        """Check if user has access to this org_unit."""
+        # Prevent IA-928: Don't revalidate org unit if it's not modified. As the allowed Type on form or the type
+        #  on the org unit can change
+        if self.instance and self.instance.org_unit == value:
+            return value
         if value.org_unit_type in self.instance.form.org_unit_types.all():
             try:
                 return OrgUnit.objects.filter_for_user_and_app_id(self.context["request"].user, None).get(pk=value.pk)
@@ -55,11 +62,20 @@ class HasInstancePermission(permissions.BasePermission):
         if request.method == "POST":
             return True
 
-        return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
+        return request.user.is_authenticated and (
+            request.user.has_perm("menupermissions.iaso_forms")
+            or request.user.has_perm("menupermissions.iaso_submissions")
+        )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
         # TODO: should not be necessary once the instances viewset uses a get_queryset that handle accounts
         return request.user.iaso_profile.account in [p.account for p in obj.form.projects.all()]
+
+
+class InstanceFileSerializer(serializers.Serializer):
+    instance_id = serializers.IntegerField()
+    file = serializers.FileField(use_url=True)
+    created_at = TimestampField(read_only=True)
 
 
 class InstancesViewSet(viewsets.ViewSet):
@@ -76,6 +92,25 @@ class InstancesViewSet(viewsets.ViewSet):
 
     permission_classes = [HasInstancePermission]
 
+    @action(["GET"], detail=False)
+    def attachments(self, request):
+        instances = Instance.objects.order_by("-id")
+        profile = request.user.iaso_profile
+        instances = instances.filter(project__account=profile.account)
+
+        filters = parse_instance_filters(request.GET)
+        instances = instances.for_filters(**filters)
+        queryset = InstanceFile.objects.filter(instance__in=instances)
+
+        paginator = common.Paginator()
+        page = paginator.paginate_queryset(queryset, request)
+        if page is not None:
+            serializer = InstanceFileSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = InstanceFileSerializer(queryset, many=True)
+        return Response(serializer.data)
+
     def list(self, request):
         limit = request.GET.get("limit", None)
         as_small_dict = request.GET.get("asSmallDict", None)
@@ -85,21 +120,18 @@ class InstancesViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         filters = parse_instance_filters(request.GET)
 
-        form_id = filters["form_id"]
-        if form_id:
-            form = Form.objects.get(pk=form_id)
-
         queryset = Instance.objects.order_by("-id")
 
         profile = request.user.iaso_profile
         queryset = queryset.filter(project__account=profile.account)
 
-        queryset = queryset.exclude(file="").exclude(device__test_device=True).order_by(*orders)
+        queryset = queryset.exclude(file="").exclude(device__test_device=True)
 
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
         queryset = queryset.for_filters(**filters)
+        queryset = queryset.order_by(*orders)
 
         if csv_format is None and xlsx_format is None:
             if limit:
@@ -138,6 +170,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 {"title": "Export id", "width": 20},
                 {"title": "Latitude", "width": 40},
                 {"title": "Longitude", "width": 20},
+                {"title": "Période", "width": 20},
                 {"title": "Date de création", "width": 20},
                 {"title": "Date de modification", "width": 20},
                 {"title": "Org unit", "width": 20},
@@ -151,18 +184,35 @@ class InstancesViewSet(viewsets.ViewSet):
 
             filename = "instances"
 
+            form_id = filters["form_id"]
+            form_ids = filters["form_ids"]
+
+            form = None
+            if form_id:
+                form = Form.objects.get(pk=form_id)
+            elif form_ids:
+                form_ids = form_ids.split(",")
+                if not len(form_ids) > 1:  # if there is only one form_ids specified
+                    form = Form.objects.get(pk=form_ids[0])
             if form:
                 filename = "%s-%s" % (filename, form.id)
                 if form.correlatable:
                     columns.append({"title": "correlation id", "width": 20})
 
             sub_columns = ["" for __ in columns]
+            # TODO: Check the logic here, it's going to fail in any case if there is no form
+            # Don't know what we are trying to achieve exactly
             latest_form_version = form.form_versions.order_by("id").last()
             questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
             if form and form.latest_version:
                 file_content_template = questions_by_name
                 for title in file_content_template:
-                    sub_columns.append(file_content_template.get(title, {}).get("label", ""))
+                    # some form have dict as label to support MuliLang. So convert to String
+                    # e.g. Vaccine Stock Monitoring {'French': 'fin', 'English': 'end'}
+                    label = file_content_template.get(title, {}).get("label", "")
+                    if isinstance(label, dict):
+                        label = str(label)
+                    sub_columns.append(label)
                     columns.append({"title": title, "width": 50})
             else:
                 file_content_template = queryset.first().as_dict()["file_content"]
@@ -181,6 +231,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     idict.get("export_id"),
                     idict.get("latitude"),
                     idict.get("longitude"),
+                    idict.get("period"),
                     created_at,
                     updated_at,
                     org_unit.get("name") if org_unit else None,
@@ -288,6 +339,50 @@ class InstancesViewSet(viewsets.ViewSet):
             },
             status=201,
         )
+
+    QUERY = """
+    select DATE_TRUNC('month', created_at) as month,
+           (select name from iaso_form where id = iaso_instance.form_id),
+           count(*)                        as value
+    from iaso_instance
+    where created_at > '2019-01-01'
+      and project_id = ANY (%s)
+      and form_id is not null
+    group by DATE_TRUNC('month', created_at), form_id
+    order by DATE_TRUNC('month', created_at)"""
+
+    @action(detail=False)
+    def stats(self, request):
+        projects = request.user.iaso_profile.account.project_set.all()
+        projects_ids = list(projects.values_list("id", flat=True))
+
+        df = pd.read_sql_query(self.QUERY, connection, params=[projects_ids])
+        df = df.pivot(index="month", columns="name", values="value")
+        if not df.empty:
+            df.index = df.index.to_period("M")
+            df = df.sort_index()
+            df = df.reindex(pd.period_range(df.index[0], df.index[-1], freq="M"))
+            df["name"] = df.index.astype(str)
+        r = df.to_json(orient="table")
+        return HttpResponse(r, content_type="application/json")
+
+    @action(detail=False)
+    def stats_sum(self, request):
+        projects = request.user.iaso_profile.account.project_set.all()
+        projects_ids = list(projects.values_list("id", flat=True))
+        QUERY = """
+        select DATE_TRUNC('day', created_at) as period,
+        count(*)                        as value
+        from iaso_instance
+        where created_at > now() - interval '2700 days'
+        and project_id = ANY (%s)
+        group by DATE_TRUNC('day', created_at)
+        order by 1"""
+        df = pd.read_sql_query(QUERY, connection, params=[projects_ids])
+        df["total"] = df["value"].cumsum()
+        df["name"] = df["period"].apply(lambda x: x.strftime("%Y-%m-%d"))
+        r = df.to_json(orient="table")
+        return HttpResponse(r, content_type="application/json")
 
 
 def import_data(instances, user, app_id):

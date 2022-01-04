@@ -6,9 +6,9 @@ from django.test import tag
 from iaso import models as m
 from hat.audit import models as am
 from iaso.test import APITestCase
-from iaso.models import Task
+from iaso.models import Task, QUEUED
 
-from beanstalk_worker import task_service
+from beanstalk_worker.services import TestTaskService
 
 
 class OrgUnitsBulkUpdateAPITestCase(APITestCase):
@@ -117,10 +117,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
         )
 
-    @classmethod
-    def setUp(cls):
-        task_service.clear()
-
     @tag("iaso_only")
     def test_org_unit_bulkupdate_not_authenticated(self):
         """POST /orgunits/bulkupdate, no auth -> 403"""
@@ -132,7 +128,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 403)
 
-        self.assertEqual(len(task_service.queue), 0)
+        self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_some_wrong_account(self):
@@ -366,9 +362,10 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
     def runAndValidateTask(self, task, new_status):
         "Run all task in queue and validate that task is run"
-        self.assertEqual(len(task_service.queue), 1)
+        self.assertEqual(Task.objects.filter(status=QUEUED).count(), 1)
+        task_service = TestTaskService()
         task_service.run_all()
-        self.assertEqual(len(task_service.queue), 0)
+        self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
         response = self.client.get("/api/tasks/%d/" % task.id)
         self.assertEqual(response.status_code, 200)

@@ -4,7 +4,7 @@ import {
     postRequest,
     putRequest,
     deleteRequest,
-} from '../../libs/Api';
+} from 'Iaso/libs/Api';
 import { enqueueSnackbar } from '../snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
@@ -152,6 +152,7 @@ export const saveAction = (
     errorKeyMessage,
     setIsLoading = null,
     ignoredErrorCodes,
+    setResultFunction = null,
 ) => {
     if (setIsLoading !== null) {
         dispatch(setIsLoading(true));
@@ -161,6 +162,13 @@ export const saveAction = (
             dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
             return res;
         })
+        .then(res => {
+            if (setResultFunction) {
+                dispatch(setResultFunction(res));
+            }
+            return res;
+        })
+
         .catch(err => {
             if (
                 !ignoredErrorCodes ||

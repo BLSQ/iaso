@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from django.contrib.auth.models import Permission
@@ -26,7 +27,11 @@ class PermissionsViewSet(viewsets.ViewSet):
             perms = Permission.objects
         else:
             perms = request.user.user_permissions
+
         perms = perms.filter(content_type=content_type).filter(codename__startswith="iaso_").order_by("id")
+        #  in future filter this on a feature flags so we can disable it by account
+        if "polio" not in settings.PLUGINS:
+            perms = perms.exclude(codename__startswith="iaso_polio")
 
         result = []
         for permission in perms:

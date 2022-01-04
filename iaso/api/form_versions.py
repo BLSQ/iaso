@@ -1,7 +1,9 @@
 import typing
-from rest_framework import serializers, parsers, permissions
 
-from iaso.models import Form, FormVersion, MappingVersion
+from django.http.response import HttpResponseBadRequest
+from rest_framework import serializers, parsers, permissions, exceptions
+
+from iaso.models import Form, FormVersion
 from django.db.models.functions import Concat
 from django.db.models import Value, Count
 from django.db.models import BooleanField
@@ -12,6 +14,7 @@ from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, 
 from .forms import HasFormPermission
 
 
+# noinspection PyMethodMayBeStatic
 class FormVersionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = FormVersion
@@ -81,14 +84,16 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         return [f.as_dict() for f in obj.mapping_versions.all()]
 
     def validate(self, data: typing.MutableMapping):
-        #  TO_DO: validate start en end period (is a period and start before end)
-        if self.context["request"].method == "PUT":
-            return data
+        # TODO: validate start en end period (is a period and start before end)
         form = data["form"]
+
         # validate form (access check)
         permission_checker = HasFormPermission()
         if not permission_checker.has_object_permission(self.context["request"], self.context["view"], form):
             raise serializers.ValidationError({"form_id": "Invalid form id"})
+        if self.context["request"].method == "PUT":
+            # if update skip the rest of check
+            return data
 
         # handle xls to xml conversion
         try:
@@ -115,8 +120,11 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     def create(self, validated_data):
         form = validated_data.pop("form")
         survey = validated_data.pop("survey")
-
-        return FormVersion.objects.create_for_form_and_survey(form=form, survey=survey, **validated_data)
+        try:
+            return FormVersion.objects.create_for_form_and_survey(form=form, survey=survey, **validated_data)
+        except Exception as e:
+            # putting the error in an array to prevent front-end crash
+            raise exceptions.ValidationError({"xls_file": [e]})
 
     def update(self, form_version, validated_data):
         form_version.start_period = validated_data.pop("start_period", None)
@@ -128,15 +136,19 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 class FormVersionsViewSet(ModelViewSet):
     """Form versions API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
+    This API is restricted to authenticated users having the "menupermissions.iaso_forms" or "menupermissions.iaso_submissions" permissions.
 
     GET /api/formversions/
     GET /api/formversions/<id>
     POST /api/formversions/
+    PUT /api/formversions/<id>  -- can only update start_period and end_period
     """
 
     serializer_class = FormVersionSerializer
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),
+    ]
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser, parsers.JSONParser)

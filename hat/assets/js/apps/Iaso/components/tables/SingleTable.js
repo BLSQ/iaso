@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { makeStyles } from '@material-ui/core/styles';
@@ -16,11 +16,11 @@ import {
     commonStyles,
 } from 'bluesquare-components';
 
-// import Table from './TableComponent';
 import Filters from './TableFilters';
 
-import DownloadButtonsComponent from '../buttons/DownloadButtonsComponent';
+import DownloadButtonsComponent from '../DownloadButtonsComponent';
 import { redirectToReplace } from '../../routing/actions';
+import { convertObjectToString } from '../../utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -53,16 +53,17 @@ const SingleTable = ({
     setIsLoading,
     multiSelect,
     selectionActions,
-    watchToRender,
+    propsToWatch,
+    resetPageToOne,
 }) => {
     const [loading, setLoading] = useState(false);
     const [selection, setSelection] = useState(selectionInitialState);
     const [didFetchData, setDidFetchData] = useState(false);
-    const [firstLoad, setfFrstLoad] = useState(true);
+    const [firstLoad, setFirstLoad] = useState(true);
     const [tableResults, setTableResults] = useState(tableInitialResult);
-    const [expanded, setExpanded] = useState({});
+    // We need to use state to be able to reset pagination when using built-in filters
+    const [resetPagination, setResetPagination] = useState(resetPageToOne);
     const { list, pages, count } = tableResults;
-
     const dispatch = useDispatch();
     const classes = useStyles();
 
@@ -75,46 +76,92 @@ const SingleTable = ({
         defaultPageSize,
     );
 
-    const handleFetch = () => {
-        if (results && results.list && firstLoad && !forceRefresh) {
-            setTableResults(results);
-        } else {
-            const url = getTableUrl(endPointPath, tableParams);
-            setIsLoading && setLoading(true);
-            fetchItems &&
-                fetchItems(dispatch, url).then(res => {
-                    setIsLoading && setLoading(false);
-                    const r = {
-                        list: res[dataKey !== '' ? dataKey : endPointPath],
-                        count: res.count,
-                        pages: res.pages,
-                    };
-                    onDataLoaded(r);
-                    setTableResults(r);
-                    setDidFetchData(true);
-                });
-        }
+    const handleFetch = useCallback(
+        // newParams is to allow passing the "tempParams" from the filter search handler,
+        // which reset the page to 1 in the API call, which prevents making a call that results in a 404
+        // It does result in a double API call however.
+        newParams => {
+            if (results?.list && firstLoad && !forceRefresh) {
+                setTableResults(results);
+            } else {
+                const url = newParams
+                    ? getTableUrl(
+                          endPointPath,
+                          getTableParams(
+                              newParams,
+                              paramsPrefix,
+                              filters,
+                              apiParams,
+                              defaultSorted,
+                              defaultPageSize,
+                          ),
+                      )
+                    : getTableUrl(endPointPath, tableParams);
+                setIsLoading && setLoading(true);
+                fetchItems &&
+                    fetchItems(dispatch, url).then(res => {
+                        setIsLoading && setLoading(false);
+                        const r = {
+                            list: res[dataKey !== '' ? dataKey : endPointPath],
+                            count: res.count,
+                            pages: res.pages,
+                        };
+                        onDataLoaded(r);
+                        setTableResults(r);
+                        setDidFetchData(true);
+                    });
+            }
 
-        if (firstLoad) {
-            setfFrstLoad(false);
-        }
-    };
+            if (firstLoad) {
+                setFirstLoad(false);
+            }
+        },
+        [
+            results,
+            firstLoad,
+            forceRefresh,
+            endPointPath,
+            paramsPrefix,
+            filters,
+            apiParams,
+            defaultSorted,
+            defaultPageSize,
+            tableParams,
+            setIsLoading,
+            fetchItems,
+            dispatch,
+            dataKey,
+            onDataLoaded,
+        ],
+    );
 
     const getExportUrl = exportType =>
         getTableUrl(endPointPath, tableParams, true, exportType);
 
+    const pageSizeParam = params[getParamsKey(paramsPrefix, 'pageSize')];
+    const pageParam = params[getParamsKey(paramsPrefix, 'page')];
+    const orderParam = params[getParamsKey(paramsPrefix, 'order')];
+    const onlyDeletedParam = params[getParamsKey(paramsPrefix, 'only_deleted')];
+
+    // TODO prevent double API calls when appplying Filters' onSearch
+    // FIXME remove infinite loop when deps array is filled
     useEffect(() => {
         if (!firstLoad || (searchActive && firstLoad)) {
             handleFetch();
         } else if (!searchActive && firstLoad) {
-            setfFrstLoad(false);
+            setFirstLoad(false);
         }
-    }, [
-        params[getParamsKey(paramsPrefix, 'pageSize')],
-        params[getParamsKey(paramsPrefix, 'page')],
-        params[getParamsKey(paramsPrefix, 'order')],
-        params[getParamsKey(paramsPrefix, 'only_deleted')],
-    ]);
+    }, [pageSizeParam, pageParam, orderParam, onlyDeletedParam]);
+
+    const handleTableSelection = (
+        selectionType,
+        items = [],
+        totalCount = 0,
+    ) => {
+        setSelection(
+            setTableSelection(selection, selectionType, items, totalCount),
+        );
+    };
 
     useEffect(() => {
         if (results && results.list) {
@@ -127,31 +174,25 @@ const SingleTable = ({
             handleFetch();
             onForceRefreshDone();
         }
-    }, [forceRefresh]);
+    }, [forceRefresh, handleFetch, onForceRefreshDone]);
+
+    // Override state if prop changes
+    // Should only have an impact if built-in filters are used with filters in parent
+    useEffect(() => {
+        setResetPagination(resetPageToOne);
+    }, [resetPageToOne]);
 
     const { limit } = tableParams;
-    let extraProps = {
+    const extraProps = {
         loading,
         defaultPageSize: defaultPageSize || limit,
+        propsToWatch, // IA-763: pass an extra props that will be watched in table component to force the render
     };
     if (subComponent) {
-        extraProps = {
-            ...extraProps,
-            SubComponent: ({ original }) => subComponent(original, handleFetch),
-            expanded,
-            onExpandedChange: newExpanded => setExpanded(newExpanded),
-        };
+        extraProps.SubComponent = original =>
+            subComponent(original, handleFetch);
     }
 
-    const handleTableSelection = (
-        selectionType,
-        items = [],
-        totalCount = 0,
-    ) => {
-        setSelection(
-            setTableSelection(selection, selectionType, items, totalCount),
-        );
-    };
     return (
         <Box
             className={
@@ -162,15 +203,16 @@ const SingleTable = ({
                 <Filters
                     baseUrl={baseUrl}
                     params={params}
-                    onSearch={() => handleFetch()}
+                    onSearch={newParams => handleFetch(newParams)}
                     paramsPrefix={paramsPrefix}
                     filters={filters}
                     defaultFiltersUpdated={searchActive}
                     toggleActiveSearch={toggleActiveSearch}
                     extraComponent={searchExtraComponent}
-                    redirectTo={(key, newParams) =>
-                        dispatch(redirectToReplace(key, newParams))
-                    }
+                    redirectTo={(key, newParams) => {
+                        setResetPagination(convertObjectToString(newParams));
+                        dispatch(redirectToReplace(key, newParams));
+                    }}
                 />
             )}
             {((count > 0 && exportButtons) || extraComponent) && (
@@ -212,8 +254,8 @@ const SingleTable = ({
                             extraComponent,
                     )}
                     paramsPrefix={paramsPrefix}
-                    watchToRender={watchToRender}
                     params={params}
+                    resetPageToOne={resetPagination}
                 />
             )}
         </Box>
@@ -250,7 +292,8 @@ SingleTable.defaultProps = {
     setIsLoading: true,
     multiSelect: false,
     selectionActions: [],
-    watchToRender: null,
+    propsToWatch: null,
+    resetPageToOne: '',
 };
 
 SingleTable.propTypes = {
@@ -280,7 +323,8 @@ SingleTable.propTypes = {
     setIsLoading: PropTypes.bool,
     multiSelect: PropTypes.bool,
     selectionActions: PropTypes.array,
-    watchToRender: PropTypes.any,
+    propsToWatch: PropTypes.any,
+    resetPageToOne: PropTypes.string,
 };
 
 export default withRouter(SingleTable);

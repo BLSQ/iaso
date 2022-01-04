@@ -49,9 +49,26 @@ class SnackBarContainer extends Component {
             );
         }
         // Display snackbar using notistack
-        const message = notification.messageObject
-            ? formatMessage(notification.messageObject)
-            : formatMessage(MESSAGES[notification.messageKey]);
+        let message;
+        if (notification.messageObject) {
+            if (typeof notification.messageObject === 'string') {
+                message = notification.messageObject;
+            } else if (notification.messageObject.id) {
+                message = formatMessage(notification.messageObject);
+            } else {
+                console.error(
+                    `Invalid translation message for snackbar ${notification.messageObject}`,
+                );
+                message = 'Error';
+            }
+        } else if (MESSAGES[notification.messageKey]) {
+            message = formatMessage(MESSAGES[notification.messageKey]);
+        } else {
+            console.warn(
+                `Translation ${notification.messageKey} not present in SnackBar messages`,
+            );
+            message = 'Error';
+        }
 
         if (notification.errorLog) {
             options.action = (

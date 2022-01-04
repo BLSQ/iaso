@@ -1,16 +1,18 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
+import { Grid, Typography } from '@material-ui/core';
+import { FormattedMessage } from 'react-intl';
+import { LoadingSpinner } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { Grid } from '@material-ui/core';
-import isEqual from 'lodash/isEqual';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 import { Checkboxes } from '../../../components/forms/Checkboxes';
 import { redirectTo } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
-import { useDhisOuImporterRequest } from '../requests';
+import { sendDhisOuImporterRequest } from '../requests';
 import { useFormState } from '../../../hooks/form';
+import { useSnackMutation } from '../../../libs/apiHooks';
 
 const initialFormState = sourceCredentials => {
     return {
@@ -24,31 +26,29 @@ const initialFormState = sourceCredentials => {
 
 const AddTask = ({
     renderTrigger,
-    titleMessage,
     sourceId,
-    sourceVersion,
+    sourceVersionNumber,
     sourceCredentials,
 }) => {
     // eslint-disable-next-line no-unused-vars
     const [form, setFormField, _, setFormState] = useFormState(
         initialFormState(sourceCredentials),
     );
-    const [allowConfirm, setAllowConfirm] = useState(false);
-    const [redirect, setRedirect] = useState(false);
-    const [requestBody, setRequestBody] = useState();
-    const [closeDialogCallback, setCloseDialogCallback] = useState(null);
     const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(
-        !isEqual(sourceCredentials, {}),
+        sourceCredentials.is_valid,
     );
     const dispatch = useDispatch();
-    // TODO add and return reset function
-    const dhisOu = useDhisOuImporterRequest(requestBody);
+    const mutation = useSnackMutation(sendDhisOuImporterRequest);
 
-    const submit = useCallback(() => {
-        setAllowConfirm(false);
+    const reset = () => {
+        setFormState(initialFormState(sourceCredentials));
+        setWithExistingDhis2Settings(true);
+    };
+
+    const submit = async (closeDialogCallBack, redirect = false) => {
         const body = {
             source_id: sourceId,
-            source_version_number: sourceVersion,
+            source_version_number: sourceVersionNumber,
             force: false,
             validate_status: form.validate_status.value,
             continue_on_error: form.continue_on_error.value,
@@ -57,78 +57,47 @@ const AddTask = ({
             body.dhis2_password = form.dhis2_password.value;
             body.dhis2_url = form.dhis2_url.value;
             body.dhis2_login = form.dhis2_login.value;
-            setWithExistingDhis2Settings(true);
         }
-        setRequestBody(body);
-    }, [
-        sourceId,
-        sourceVersion,
-        form.dhis2_url.value,
-        form.dhis2_login.value,
-        form.dhis2_password.value,
-        form.validate_status.value,
-        form.continue_on_error.value,
-        withExistingDhis2Settings,
-    ]);
+        await mutation.mutateAsync(body);
+        closeDialogCallBack();
+        if (redirect) {
+            dispatch(
+                redirectTo(baseUrls.tasks, {
+                    order: '-created_at',
+                }),
+            );
+        }
+        reset();
+    };
 
-    // TODO check if sourceCredentials doesn't make reset refresh too many times
-    const reset = useCallback(() => {
-        setRequestBody(null);
-        setFormState(initialFormState(sourceCredentials));
-    }, [sourceCredentials]);
+    const onConfirm = async closeDialog => {
+        await submit(closeDialog);
+    };
 
-    const onConfirm = useCallback(
-        closeDialog => {
-            submit();
-            setCloseDialogCallback(() => closeDialog);
-        },
-        [submit],
+    const onRedirect = async closeDialog => {
+        await submit(closeDialog, true);
+    };
+
+    const titleMessage = sourceVersionNumber ? (
+        <FormattedMessage
+            id="iaso.sourceVersion.label.update"
+            defaultMessage="Update version {version}"
+            values={{ version: sourceVersionNumber }}
+        />
+    ) : (
+        <FormattedMessage
+            id="iaso.sourceVersion.label.create"
+            defaultMessage="Create a new version from DHIS2"
+        />
     );
 
-    const onRedirect = useCallback(
-        closeDialog => {
-            onConfirm(closeDialog);
-            setRedirect(true);
-        },
-        [onConfirm],
-    );
-    useEffect(() => {
-        if (!withExistingDhis2Settings) {
-            if (
-                form.dhis2_url.value &&
+    const formIsValid = Boolean(
+        withExistingDhis2Settings ||
+            (form.dhis2_url.value &&
                 form.dhis2_login.value &&
-                form.dhis2_password.value
-            ) {
-                setAllowConfirm(true);
-            } else {
-                setAllowConfirm(false);
-            }
-        } else {
-            setAllowConfirm(true);
-        }
-    }, [
-        withExistingDhis2Settings,
-        form.dhis2_url.value,
-        form.dhis2_login.value,
-        form.dhis2_password.value,
-        // this dep to unlock buttons after successful request
-        // TODO include this behaviour in reset() func
-        dhisOu,
-    ]);
-
-    useEffect(() => {
-        if (dhisOu) {
-            closeDialogCallback();
-            if (redirect) {
-                dispatch(
-                    redirectTo(baseUrls.tasks, {
-                        order: '-created_at',
-                    }),
-                );
-            }
-            reset();
-        }
-    }, [closeDialogCallback, dhisOu, reset, redirect]);
+                form.dhis2_password.value),
+    );
+    const allowConfirm = !mutation.isLoading && formIsValid;
 
     const renderDefaultLayout = showDefaultOverride => {
         const checkboxes = [
@@ -160,50 +129,42 @@ const AddTask = ({
         return <Checkboxes checkboxes={checkboxes} />;
     };
 
-    const renderWithOptionalFields = showDefaultOverride => {
-        return (
-            <>
-                <Grid xs={12} item>
-                    <EditableTextFields
-                        fields={[
-                            {
-                                keyValue: 'dhis2_url',
-                                label: MESSAGES.dhisUrl,
-                                value: form.dhis2_url.value,
-                                onChange: (field, value) => {
-                                    setFormField(field, value);
-                                },
-                            },
-                            {
-                                keyValue: 'dhis2_login',
-                                label: MESSAGES.dhisLogin,
-                                value: form.dhis2_login.value,
-                                onChange: (field, value) => {
-                                    setFormField(field, value);
-                                },
-                            },
-                            {
-                                keyValue: 'dhis2_password',
-                                label: MESSAGES.dhisPassword,
-                                value: form.dhis2_password.value,
-                                onChange: (field, value) => {
-                                    setFormField(field, value);
-                                },
-                                password: true,
-                            },
-                        ]}
-                    />
-                    {renderDefaultLayout(showDefaultOverride)}
-                </Grid>
-            </>
-        );
-    };
+    const renderWithOptionalFields = () => (
+        <EditableTextFields
+            fields={[
+                {
+                    keyValue: 'dhis2_url',
+                    label: MESSAGES.dhisUrl,
+                    value: form.dhis2_url.value,
+                    onChange: (field, value) => {
+                        setFormField(field, value);
+                    },
+                },
+                {
+                    keyValue: 'dhis2_login',
+                    label: MESSAGES.dhisLogin,
+                    value: form.dhis2_login.value,
+                    onChange: (field, value) => {
+                        setFormField(field, value);
+                    },
+                },
+                {
+                    keyValue: 'dhis2_password',
+                    label: MESSAGES.dhisPassword,
+                    value: form.dhis2_password.value,
+                    onChange: (field, value) => {
+                        setFormField(field, value);
+                    },
+                    password: true,
+                },
+            ]}
+        />
+    );
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
             titleMessage={titleMessage}
             onConfirm={onConfirm}
-            // eslint-disable-next-line no-unused-vars
             onClosed={reset}
             confirmMessage={MESSAGES.launch}
             cancelMessage={MESSAGES.cancel}
@@ -213,26 +174,48 @@ const AddTask = ({
             additionalMessage={MESSAGES.goToCurrentTask}
             onAdditionalButtonClick={onRedirect}
         >
-            <Grid container spacing={4} style={{ marginTop: '5px' }}>
-                {withExistingDhis2Settings ? (
-                    <Grid xs={12} item>
-                        {renderDefaultLayout(!isEqual(sourceCredentials, {}))}
-                    </Grid>
-                ) : (
-                    renderWithOptionalFields(!isEqual(sourceCredentials, {}))
-                )}
+            {mutation.isLoading && <LoadingSpinner />}
+
+            <Grid container spacing={4}>
+                <Grid item>
+                    <Typography>
+                        {sourceVersionNumber ? (
+                            <FormattedMessage
+                                id="iaso.sourceVersion.label.update_explication"
+                                defaultMessage="Update this version by syncing with DHIS2. New Orgunit from DHIS2 will be imported but OrgUnit already present on this version won't be modified."
+                            />
+                        ) : (
+                            <FormattedMessage
+                                id="iaso.sourceVersion.label.create_explication"
+                                defaultMessage="Import OrgUnits from a DHIS2 server."
+                            />
+                        )}
+                    </Typography>
+                    <Typography>
+                        <FormattedMessage
+                            id="iaso.sourceVersion.label.import_task_explication"
+                            defaultMessage="The import will be realised in the background and can take a dozen minutes to complete."
+                        />
+                    </Typography>
+                </Grid>
+
+                <Grid xs={12} item>
+                    {!withExistingDhis2Settings &&
+                        renderWithOptionalFields(sourceCredentials.is_valid)}
+                    {renderDefaultLayout(sourceCredentials.is_valid)}
+                </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>
     );
 };
 AddTask.defaultProps = {
     sourceCredentials: {},
+    sourceVersionNumber: null,
 };
 AddTask.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
-    titleMessage: PropTypes.object.isRequired,
     sourceId: PropTypes.number.isRequired,
-    sourceVersion: PropTypes.number.isRequired,
+    sourceVersionNumber: PropTypes.number,
     sourceCredentials: PropTypes.object,
 };
 

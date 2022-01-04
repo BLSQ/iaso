@@ -4,6 +4,8 @@ import nock from 'nock';
 import ConnectedCompleteness from './index';
 
 import { mockGetRequestsList } from '../../../../test/utils/requests';
+import { withQueryClientProvider } from '../../../../test/utils';
+import { renderWithIntl } from '../../../../test/utils/intl';
 import { renderWithStore } from '../../../../test/utils/redux';
 
 const requests = [
@@ -24,7 +26,11 @@ describe('Completeness connected component', () => {
 
     it('mount properly', () => {
         const connectedWrapper = mount(
-            renderWithStore(<ConnectedCompleteness params={{}} />),
+            renderWithIntl(
+                withQueryClientProvider(
+                    renderWithStore(<ConnectedCompleteness params={{}} />),
+                ),
+            ),
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });

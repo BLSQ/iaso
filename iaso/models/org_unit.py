@@ -6,6 +6,7 @@ from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
+from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django_ltree.fields import PathField
 from django_ltree.models import TreeModel
@@ -43,7 +44,9 @@ class OrgUnitTypeQuerySet(models.QuerySet):
 class OrgUnitType(models.Model):
     CATEGORIES = [
         ("COUNTRY", _("Country")),
+        ("REGION", _("Region")),
         ("DISTRICT", _("District")),
+        ("HF", _("Health Facility")),
     ]
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=255)
@@ -133,7 +136,7 @@ class OrgUnitQuerySet(models.QuerySet):
             queryset = queryset.filter(version_id__in=version_ids)
 
             # If applicable, filter on the org units associated to the user
-            if user.iaso_profile.org_units.count() > 0:
+            if user.iaso_profile.org_units.exists():
                 queryset = queryset.hierarchy(user.iaso_profile.org_units.all())
 
         if app_id is not None:
@@ -201,7 +204,7 @@ class OrgUnit(TreeModel):
             return self.ancestors().exclude(id=self.id).first()
 
     def country_ancestors(self):
-        if self.path is not None and len(self.path) > 1:
+        if self.path is not None:
             return self.ancestors().filter(org_unit_type__category="COUNTRY")
 
     def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):
@@ -300,6 +303,7 @@ class OrgUnit(TreeModel):
             "parent_id": self.parent_id,
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
+            "org_unit_type_depth": self.org_unit_type.depth if self.org_unit_type else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
@@ -386,11 +390,13 @@ class OrgUnit(TreeModel):
             "id": self.id,
             "name": self.name,
             "short_name": self.name,
+            "parent_id": self.parent_id,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "org_unit_type": self.org_unit_type.name if self.org_unit_type else None,
+            "org_unit_type_id": self.org_unit_type.id if self.org_unit_type else None,
             "org_unit_type_depth": self.org_unit_type.depth if self.org_unit_type else None,
             "source_id": self.version.data_source.id if self.version else None,
             "source_name": self.version.data_source.name if self.version else None,

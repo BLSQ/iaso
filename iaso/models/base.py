@@ -20,6 +20,11 @@ from django.utils import timezone
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
+
 YEAR = "YEAR"
 QUARTER = "QUARTER"
 MONTH = "MONTH"
@@ -173,6 +178,7 @@ class SourceVersion(models.Model):
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "org_units_count": self.orgunit_set.count(),
         }
 
     def as_report_dict(self):
@@ -278,7 +284,7 @@ class AlgorithmRun(models.Model):
 
 class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    started_at = ended_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     progress_value = models.IntegerField(default=0)
     end_value = models.IntegerField(default=0)
@@ -291,6 +297,9 @@ class Task(models.Model):
     queue_answer = models.JSONField(null=True, blank=True)
     progress_message = models.TextField(null=True, blank=True)
     should_be_killed = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
 
     def __str__(self):
         return "%s - %s - %s -%s" % (
@@ -321,8 +330,13 @@ class Task(models.Model):
         }
 
     def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
+        """Save progress and check if we have been killed
+        We use a separate transaction so we can report the progress even from a transaction, see services.py
+        """
+        logger.info(f"Task {self} reported {progress_message}")
         self.refresh_from_db()
         if self.should_be_killed:
+            logger.warning(f"Stopping Task {self} as it as been marked for kill")
             self.status = KILLED
             self.ended_at = timezone.now()
             self.result = {"result": KILLED, "message": "Killed"}
@@ -338,6 +352,8 @@ class Task(models.Model):
         self.save()
 
     def report_success(self, message=None):
+        logger.info(f"Task {self} reported success with message {message}")
+        self.progress_message = message
         self.status = SUCCESS
         self.ended_at = timezone.now()
         self.result = {"result": SUCCESS, "message": message}
@@ -540,6 +556,10 @@ class ExternalCredentials(models.Model):
     password = models.TextField()
     url = models.TextField()
 
+    @property
+    def is_valid(self) -> bool:
+        return bool(self.url and self.password and self.login)
+
     def __str__(self):
         return "%s - %s - %s (%s)" % (self.name, self.login, self.url, self.account)
 
@@ -549,6 +569,7 @@ class ExternalCredentials(models.Model):
             "name": self.name,
             "login": self.login,
             "url": self.url,
+            "is_valid": self.is_valid,
         }
 
 
@@ -635,6 +656,7 @@ class InstanceQuerySet(models.QuerySet):
             )
             .annotate(ready_count=models.Count("id", distinct=True, filter=models.Q(status=Instance.STATUS_READY)))
             .exclude(period=None)
+            .exclude(period="")
             .order_by("period", "form__name")
         )
 
@@ -665,7 +687,9 @@ class InstanceQuerySet(models.QuerySet):
             queryset = queryset.filter(created_at__lte=to_date)
 
         if period_ids:
-            queryset = queryset.filter(period__in=period_ids.split(","))
+            if isinstance(period_ids, str):
+                period_ids = period_ids.split(",")
+            queryset = queryset.filter(period__in=period_ids)
 
         if instance_id:
             queryset = queryset.filter(id=instance_id)
@@ -705,12 +729,6 @@ class InstanceQuerySet(models.QuerySet):
 
         if form_ids:
             queryset = queryset.filter(form_id__in=form_ids.split(","))
-        # add status annotation
-        queryset = queryset.with_status()
-
-        if status:
-            statuses = status.split(",")
-            queryset = queryset.filter(status__in=statuses)
 
         if show_deleted:
             queryset = queryset.filter(deleted=True)
@@ -731,7 +749,12 @@ class InstanceQuerySet(models.QuerySet):
                 queryset = queryset.filter(
                     Q(org_unit__name__icontains=search) | Q(org_unit__aliases__contains=[search])
                 )
+        # add status annotation
+        queryset = queryset.with_status()
 
+        if status:
+            statuses = status.split(",")
+            queryset = queryset.filter(status__in=statuses)
         return queryset
 
     def for_org_unit_hierarchy(self, org_unit):
@@ -895,6 +918,7 @@ class Instance(models.Model):
             "file_url": self.file.url if self.file else None,
             "id": self.id,
             "form_id": self.form_id,
+            "form_name": self.form.name if self.form else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "org_unit": self.org_unit.as_dict(with_groups=False) if self.org_unit else None,
@@ -1033,6 +1057,7 @@ class Profile(models.Model):
             "is_superuser": self.user.is_superuser,
             "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
             "language": self.language,
+            "user_id": self.user.id,
         }
 
     def as_short_dict(self):
@@ -1043,6 +1068,7 @@ class Profile(models.Model):
             "last_name": self.user.last_name,
             "email": self.user.email,
             "language": self.language,
+            "user_id": self.user.id,
         }
 
 

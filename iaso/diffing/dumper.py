@@ -1,5 +1,7 @@
 import json
 
+from django.contrib.gis.geos import GEOSGeometry
+
 from iaso.management.commands.command_logger import CommandLogger
 import csv
 
@@ -27,16 +29,8 @@ class ShapelyJsonEncoder(json.JSONEncoder):
 
 
 class Dumper:
-    def __init__(self, logger, csv_file_name=None):
+    def __init__(self, logger):
         self.iaso_logger = logger
-        self.csv_file_name = csv_file_name
-
-    def dump(self, diffs, fields):
-        stats = self.dump_stats(diffs, fields)
-        if self.csv_file_name:
-            self.dump_as_csv(diffs, fields)
-        else:
-            self.dump_as_table(diffs, fields, stats)
 
     def dump_stats(self, diffs, fields):
         stats_ou = {}
@@ -69,7 +63,7 @@ class Dumper:
     def dump_as_json(self, diffs, fields):
         self.iaso_logger.info(json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder))
 
-    def dump_as_csv(self, diffs, fields):
+    def dump_as_csv(self, diffs, fields, csv_file, number_of_parents=5):
         res = []
 
         header = ["externalId", "diff status", "type"]
@@ -82,23 +76,58 @@ class Dumper:
                 diffable_fields.append(field)
         for field in diffable_fields:
             header.extend((field, field + " before", field + " after"))
-
+            if field == "geometry":
+                header.append("distance diff (KM)")
+        for i in range(1, number_of_parents + 1):
+            header.extend(["parent %d name before" % i, "parent %d name after" % i])
         res.append(header)
 
         for diff in diffs:
-            results = [diff.org_unit.source_ref, diff.status, diff.org_unit.org_unit_type.name if diff.org_unit else ""]
-
+            results = [
+                diff.org_unit.source_ref,
+                diff.status,
+                diff.org_unit.org_unit_type.name if diff.org_unit and diff.org_unit.org_unit_type else "",
+            ]
             for field in fields:
                 comparison = list(filter(lambda x: x.field == field, diff.comparisons))[0]
                 results.append(comparison.status)
-                results.append(str(comparison.before))
-                results.append(str(comparison.after))
+                if field != "geometry":
+                    results.append(str(comparison.before))
+                    results.append(str(comparison.after))
+                else:
+                    if "MULTIPOLYGON" in str(comparison.before):
+                        results.append(str(comparison.before)[:40])
+                        results.append(str(comparison.after)[:40])
+                    else:
+                        results.append(str(comparison.before))
+                        results.append(str(comparison.after))
+                    """ Give the distance between two points """
+                    if "POINT Z" in str(comparison.before):
+                        if str(comparison.before)[:40] != str(comparison.after)[:40]:
+                            results.append(
+                                "{:.3f}".format(
+                                    GEOSGeometry(comparison.before).distance(GEOSGeometry(str(comparison.after))) * 100
+                                )
+                            )
+                        else:
+                            results.append(0)
+                    else:
+                        results.append(0)
+
+            current_dhis2 = diff.orgunit_dhis2
+            current_ref = diff.orgunit_ref
+            for i in range(number_of_parents):
+                if current_dhis2:
+                    current_dhis2 = current_dhis2.parent
+                results.append(current_dhis2.name if current_dhis2 else None)
+                if current_ref:
+                    current_ref = current_ref.parent
+                results.append(current_ref.name if current_ref else None)
 
             res.append(results)
-        with open(self.csv_file_name, "w") as output_file:
-            writer = csv.writer(output_file)
-            for row in res:
-                writer.writerow(row)
+        writer = csv.writer(csv_file)
+        for row in res:
+            writer.writerow(row)
 
     def dump_as_table(self, diffs, fields, stats):
         display = []

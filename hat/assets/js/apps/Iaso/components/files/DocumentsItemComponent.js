@@ -86,12 +86,7 @@ function DocumentsItemComponent(props) {
     const { classes, file } = props;
     const fileName = getFileName(file.path);
     return (
-        <Link
-            to={file.path}
-            target="_blank"
-            size="small"
-            className={classes.link}
-        >
+        <a href={file.path} target="_blank" className={classes.link}>
             <Paper className={classes.paper}>
                 {renderIcon(file, classes)}
                 <span className={classes.fileInfo}>
@@ -101,7 +96,7 @@ function DocumentsItemComponent(props) {
                     {`${fileName.name}.${fileName.extension}`}
                 </span>
             </Paper>
-        </Link>
+        </a>
     );
 }
 

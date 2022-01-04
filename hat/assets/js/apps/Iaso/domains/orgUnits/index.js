@@ -233,12 +233,7 @@ const OrgUnits = props => {
         const urlLocation = getEndpointUrl(false, '', true);
         fetchOrgUnitsList(dispatch, urlLocation).then(orgUnits => {
             dispatch(
-                setOrgUnitsLocations(
-                    mapOrgUnitByLocation(
-                        orgUnits,
-                        decodeSearch(params.searches),
-                    ),
-                ),
+                setOrgUnitsLocations(mapOrgUnitByLocation(orgUnits, searches)),
             );
             dispatch(setOrgUnitsListFetching(false));
         });
@@ -274,24 +269,28 @@ const OrgUnits = props => {
         fetchOrgUnits(withLocations);
     };
 
-    const handleChangeTab = (newtab, redirect = true) => {
+    const handleChangeTab = newtab => {
         setTab(newtab);
-        if (redirect) {
-            const newParams = {
-                ...params,
-                tab,
-            };
-            dispatch(redirectTo(baseUrl, newParams));
-        }
-
+        const newParams = {
+            ...params,
+            tab: newtab,
+        };
+        dispatch(redirectTo(baseUrl, newParams));
         if (
-            tab === 'map' &&
+            newtab === 'map' &&
             params.searchActive &&
             (filtersUpdated || listUpdated)
         ) {
             if (listUpdated) {
                 setListUpdated(false);
             }
+
+            dispatch(
+                setOrgUnitsLocations({
+                    locations: [],
+                    shapes: [],
+                }),
+            );
             fetchOrgUnitsLocations();
         }
     };
@@ -472,9 +471,24 @@ const OrgUnits = props => {
                                         resetPageToOne={resetTablePage}
                                     />
                                 )}
-                                {tab === 'map' && !fetchingOrgUnitTypes && (
-                                    <div className={classes.containerMarginNeg}>
-                                        <OrgunitsMap params={params} />
+                                {!fetchingOrgUnitTypes && (
+                                    <div
+                                        className={
+                                            tab === 'map'
+                                                ? ''
+                                                : classes.hiddenOpacity
+                                        }
+                                    >
+                                        <div
+                                            className={
+                                                classes.containerMarginNeg
+                                            }
+                                        >
+                                            <OrgunitsMap
+                                                params={params}
+                                                orgUnits
+                                            />
+                                        </div>
                                     </div>
                                 )}
                                 {tab === 'list' && reduxPage.count > 0 && (

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { object, oneOf, array, string } from 'prop-types';
+import { object, oneOf, array, string, bool } from 'prop-types';
 import { Box } from '@material-ui/core';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { MapComponent } from '../../components/MapComponent/MapComponent';
 import { MapLegend } from '../../components/MapComponent/MapLegend';
 import { MapLegendContainer } from '../../components/MapComponent/MapLegendContainer';
@@ -12,7 +12,14 @@ import { districtColors } from './constants';
 import { getScopeStyle, findDataForShape } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
 
-export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
+export const ImMap = ({
+    imData,
+    shapes,
+    round,
+    campaign,
+    scope,
+    isLoading,
+}) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
 
@@ -45,30 +52,35 @@ export const ImMap = ({ imData, shapes, round, campaign, scope }) => {
 
     return (
         <>
-            <LqasImMapHeader round={round} />
-            <Box position="relative">
-                <MapLegendContainer>
-                    <MapLegend
-                        title={formatMessage(MESSAGES.imResults)}
-                        legendItems={legendItems}
-                        width="lg"
-                    />
-                </MapLegendContainer>
-                <MapComponent
-                    // Use the key to force render
-                    key={`IMMapRound${round}${renderCount}`}
-                    name={`IMMapRound${round}`}
-                    mainLayer={shapes}
-                    onSelectShape={() => null}
-                    getMainLayerStyle={getShapeStyles}
-                    tooltipLabels={{
-                        main: 'District',
-                        background: 'Region',
-                    }}
-                    makePopup={makePopup(imData, round, campaign)}
-                    height={600}
-                />
-            </Box>
+            {isLoading && <LoadingSpinner />}
+            {!isLoading && (
+                <>
+                    <LqasImMapHeader round={round} />
+                    <Box position="relative">
+                        <MapLegendContainer>
+                            <MapLegend
+                                title={formatMessage(MESSAGES.imResults)}
+                                legendItems={legendItems}
+                                width="lg"
+                            />
+                        </MapLegendContainer>
+                        <MapComponent
+                            // Use the key to force render
+                            key={`IMMapRound${round}${renderCount}`}
+                            name={`IMMapRound${round}`}
+                            mainLayer={shapes}
+                            onSelectShape={() => null}
+                            getMainLayerStyle={getShapeStyles}
+                            tooltipLabels={{
+                                main: 'District',
+                                background: 'Region',
+                            }}
+                            makePopup={makePopup(imData, round, campaign)}
+                            height={600}
+                        />
+                    </Box>
+                </>
+            )}
         </>
     );
 };
@@ -79,10 +91,12 @@ ImMap.propTypes = {
     shapes: array,
     campaign: string,
     scope: array,
+    isLoading: bool,
 };
 ImMap.defaultProps = {
     imData: {},
     shapes: {},
     campaign: '',
     scope: [],
+    isLoading: false,
 };

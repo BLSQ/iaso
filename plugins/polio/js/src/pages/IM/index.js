@@ -22,8 +22,9 @@ import {
     findCountryIds,
     findScope,
 } from '../../utils/index';
-import { PercentageBarChart } from '../../components/PercentageBarChart';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
+import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
+import { PercentageChartWithTitle } from '../../components/LQAS-IM/PercentageChartWithTitle.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -151,96 +152,82 @@ export const ImStats = ({ imType }) => {
                 </Grid>
                 <Grid container item spacing={2} direction="row">
                     <Grid item xs={6}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box ml={2}>
-                                <ImMap
-                                    imData={convertedData}
-                                    shapes={shapes}
-                                    round="round_1"
-                                    campaign={campaign}
-                                    scope={scope}
-                                />
-                            </Box>
-                        )}
+                        <Box ml={2}>
+                            <ImMap
+                                imData={convertedData}
+                                shapes={shapes}
+                                round="round_1"
+                                campaign={campaign}
+                                scope={scope}
+                                isLoading={isLoading}
+                            />
+                        </Box>
+                        )
                     </Grid>
                     <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box mr={2}>
-                                <ImMap
-                                    imData={convertedData}
-                                    shapes={shapes}
-                                    round="round_2"
-                                    campaign={campaign}
-                                    scope={scope}
-                                />
-                            </Box>
-                        )}
+                        <Box mr={2}>
+                            <ImMap
+                                imData={convertedData}
+                                shapes={shapes}
+                                round="round_2"
+                                campaign={campaign}
+                                scope={scope}
+                                isLoading={isLoading}
+                            />
+                        </Box>
+                        )
                     </Grid>
                 </Grid>
                 <Grid container item spacing={2} direction="row">
-                    {campaign && (
-                        <Grid item xs={12}>
-                            <Box ml={2} mt={2}>
-                                <Typography variant="h5">
-                                    {formatMessage(MESSAGES.imPerRegion)}
-                                </Typography>
-                            </Box>
-                        </Grid>
-                    )}
-                    <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && campaign && (
-                            <Box ml={2} mt={2}>
-                                <Box>
-                                    <Typography variant="h6">
-                                        {formatMessage(MESSAGES.round_1)}
-                                    </Typography>{' '}
-                                </Box>
-                                <PercentageBarChart
-                                    data={imDataRound1}
-                                    tooltipFormatter={imTooltipFormatter(
-                                        formatMessage,
-                                    )}
-                                    chartKey="IMChartRound1"
-                                />
-                            </Box>
-                        )}
+                    <Grid item xs={12}>
+                        <Box ml={2} mt={2}>
+                            <GraphTitle
+                                text={formatMessage(MESSAGES.imPerRegion)}
+                                displayTrigger={campaign}
+                            />
+                        </Box>
                     </Grid>
                     <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && campaign && (
-                            <Box mr={2} mt={2}>
-                                <Box>
-                                    <Typography variant="h6">
-                                        {formatMessage(MESSAGES.round_2)}
-                                    </Typography>{' '}
-                                </Box>
-                                <PercentageBarChart
-                                    data={imDataRound2}
-                                    tooltipFormatter={imTooltipFormatter(
-                                        formatMessage,
-                                    )}
-                                    chartKey="IMChartRound1"
-                                />
-                            </Box>
-                        )}
+                        <Box ml={2} mt={2}>
+                            <PercentageChartWithTitle
+                                title={formatMessage(MESSAGES.round_1)}
+                                data={imDataRound1}
+                                tooltipFormatter={imTooltipFormatter(
+                                    formatMessage,
+                                )}
+                                chartKey="IMChartRound1"
+                                isLoading={isLoading}
+                                showChart={Boolean(campaign)}
+                            />
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6} mr={2}>
+                        <Box mr={2} mt={2}>
+                            <PercentageChartWithTitle
+                                title={formatMessage(MESSAGES.round_2)}
+                                data={imDataRound2}
+                                tooltipFormatter={imTooltipFormatter(
+                                    formatMessage,
+                                )}
+                                chartKey="IMChartRound2"
+                                isLoading={isLoading}
+                                showChart={Boolean(campaign)}
+                            />
+                        </Box>
                     </Grid>
                 </Grid>
                 {imType === 'imIHH' && (
                     <Grid container item spacing={2} direction="row">
-                        {campaign && (
-                            <Grid item xs={12}>
-                                <Box ml={2} mt={2}>
-                                    <Typography variant="h5">
-                                        {formatMessage(
-                                            MESSAGES.reasonsNoFingerMarked,
-                                        )}
-                                    </Typography>
-                                </Box>
-                            </Grid>
-                        )}
+                        <Grid item xs={12}>
+                            <Box ml={2} mt={2}>
+                                <GraphTitle
+                                    text={formatMessage(
+                                        MESSAGES.reasonsNoFingerMarked,
+                                    )}
+                                    displayTrigger={campaign}
+                                />
+                            </Box>
+                        </Grid>
                         <Grid item xs={6} mr={2}>
                             {isLoading && <LoadingSpinner />}
                             {!isLoading && campaign && (

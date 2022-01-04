@@ -16,13 +16,12 @@ const findRegion = (
 };
 
 const convertRoundDataToArray = (roundDataAsDict, regions) => {
-    const districtNames = Object.keys(roundDataAsDict);
-    const roundData = Object.values(roundDataAsDict);
-    return roundData.map((value: LqasImCampaignData, index: number) => {
+    const roundData = Object.entries(roundDataAsDict);
+    return roundData.map((entry: [string, LqasImCampaignData]) => {
         return {
-            ...value,
-            name: districtNames[index],
-            region: findRegion(value, regions),
+            ...entry[1],
+            name: entry[0],
+            region: findRegion(entry[1], regions),
         };
     });
 };
@@ -63,3 +62,9 @@ export const makePopup =
             />
         );
     };
+
+export const findCountryIds = LqasIm => {
+    const { stats } = LqasIm;
+    const campaignKeys = Object.keys(stats);
+    return campaignKeys.map(campaignKey => stats[campaignKey].country_id);
+};

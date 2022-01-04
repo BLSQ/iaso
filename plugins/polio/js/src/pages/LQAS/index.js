@@ -20,12 +20,9 @@ import {
     makeDataForTable,
     convertStatToPercent,
 } from './utils.ts';
-import {
-    makeCampaignsDropDown,
-    findCountryIds,
-    findScope,
-} from '../../utils/index';
-import { convertAPIData } from '../../utils/LqasIm.tsx';
+import { makeCampaignsDropDown, findScope } from '../../utils/index';
+import { findCountryIds, convertAPIData } from '../../utils/LqasIm.tsx';
+
 import { useLQAS } from './requests';
 import { LqasMap } from './LqasMap';
 import { PercentageBarChart } from '../../components/PercentageBarChart';

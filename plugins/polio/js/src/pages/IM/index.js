@@ -15,14 +15,13 @@ import {
     imTooltipFormatter,
     formatImDataForNFMChart,
 } from './utils.ts';
-import { useIM } from './requests';
+import { useConvertedIMData, useIM } from './requests';
 import { ImMap } from './ImMap';
 import {
     makeCampaignsDropDown,
     findCountryIds,
     findScope,
 } from '../../utils/index';
-import { convertAPIData } from '../../utils/LqasIm.tsx';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 
@@ -46,7 +45,7 @@ export const ImStats = ({ imType }) => {
     const [campaign, setCampaign] = useState();
 
     const { data: imData, isLoading } = useIM(imType);
-    const convertedData = convertAPIData(imData);
+    const { data: convertedData } = useConvertedIMData(imType);
     const countryIds = findCountryIds(imData);
 
     const { data: campaigns = [], isLoading: campaignsLoading } =
@@ -140,7 +139,7 @@ export const ImStats = ({ imType }) => {
                             <Select
                                 keyValue="campaigns"
                                 label={formatMessage(MESSAGES.campaign)}
-                                loading={campaignsLoading}
+                                loading={!countryIds.length || campaignsLoading}
                                 clearable
                                 multi={false}
                                 value={campaign}

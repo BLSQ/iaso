@@ -1,22 +1,11 @@
 import React from 'react';
 import { Redirect, Route } from 'react-router';
 import { baseUrls } from '../constants/urls';
-import { getChipColors } from '../constants/chipColors';
-
-import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import Page404 from '../components/errors/Page404';
 
 const addRoutes = baseRoutes =>
     baseRoutes.concat([
         <Redirect path="/" to={baseUrls.forms} />,
-        <Redirect
-            path={baseUrls.orgUnits}
-            to={`${
-                baseUrls.orgUnits
-            }/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all", "color":"${getChipColors(
-                0,
-            ).replace('#', '')}"}]`}
-        />,
         <Redirect
             path={baseUrls.mappings}
             to={`${baseUrls.mappings}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}

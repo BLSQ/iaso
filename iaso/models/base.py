@@ -785,8 +785,9 @@ class Instance(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)
-    last_modified_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True,
-                                         null=True, related_name="last_modified_by")
+    last_modified_by = models.ForeignKey(
+        User, on_delete=models.PROTECT, blank=True, null=True, related_name="last_modified_by"
+    )
     updated_at = models.DateTimeField(auto_now=True)
     uuid = models.TextField(null=True, blank=True)
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)

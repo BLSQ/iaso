@@ -34,8 +34,9 @@ def form_upload(request: HttpRequest) -> HttpResponse:
     i.file = request.FILES["xml_submission_file"]
 
     try:
-        user = User.objects.get(pk=jwt.decode(request.headers["Authorization"][7:]
-                                              , SECRET_KEY, algorithms=['HS256'])["user_id"])
+        user = User.objects.get(
+            pk=jwt.decode(request.headers["Authorization"][7:], SECRET_KEY, algorithms=["HS256"])["user_id"]
+        )
         i.user = user
         i.save()
     except (KeyError, DecodeError):

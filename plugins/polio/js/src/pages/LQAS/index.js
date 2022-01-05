@@ -2,20 +2,15 @@ import React, { useState, useMemo } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { useSafeIntl, Select, LoadingSpinner } from 'bluesquare-components';
 
-import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
+import { Grid, Box, makeStyles } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import { useGetRegions } from '../../hooks/useGetRegions';
-import { makeDataForTable, convertStatToPercent } from './utils.ts';
+import { makeDataForTable } from './utils.ts';
 import { makeCampaignsDropDown } from '../../utils/index';
-import {
-    findCountryIds,
-    convertAPIData,
-    totalCaregivers,
-    totalCaregiversInformed,
-} from '../../utils/LqasIm.tsx';
+import { findCountryIds, convertAPIData } from '../../utils/LqasIm.tsx';
 
 import { useLqasIm } from '../IM/requests';
 import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
@@ -25,6 +20,7 @@ import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
 import { LqasImPercentageChart } from '../../components/LQAS-IM/LqasImPercentageChart.tsx';
 import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
 import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
+import { CaregiversTableHeader } from '../../components/LQAS-IM/CaregiversTableHeader.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -214,32 +210,11 @@ export const Lqas = () => {
                     <Grid item xs={6}>
                         {!isLoading && campaign && (
                             <Box ml={2} mt={2}>
-                                <Box
-                                    display="flex"
-                                    justifyContent="space-between"
-                                >
-                                    <Typography variant="h6">
-                                        {`${formatMessage(
-                                            MESSAGES.numberCaregiversInformed,
-                                        )}: ${totalCaregiversInformed(
-                                            convertedData[campaign]?.round_1,
-                                        )}`}
-                                    </Typography>
-                                    <Typography variant="h6">
-                                        {`${formatMessage(
-                                            MESSAGES.ratioCaregiversInformed,
-                                        )}: ${convertStatToPercent(
-                                            totalCaregiversInformed(
-                                                convertedData[campaign]
-                                                    ?.round_1,
-                                            ),
-                                            totalCaregivers(
-                                                convertedData[campaign]
-                                                    ?.round_1,
-                                            ),
-                                        )}`}
-                                    </Typography>
-                                </Box>
+                                <CaregiversTableHeader
+                                    data={convertedData}
+                                    campaign={campaign}
+                                    round="round_1"
+                                />
                                 <CaregiversTable
                                     data={makeDataForTable(
                                         convertedData,
@@ -254,32 +229,11 @@ export const Lqas = () => {
                     <Grid item xs={6}>
                         {!isLoading && campaign && (
                             <Box mr={2} mt={2}>
-                                <Box
-                                    display="flex"
-                                    justifyContent="space-between"
-                                >
-                                    <Typography variant="h6">
-                                        {`${formatMessage(
-                                            MESSAGES.numberCaregiversInformed,
-                                        )}: ${totalCaregiversInformed(
-                                            convertedData[campaign]?.round_2,
-                                        )}`}
-                                    </Typography>
-                                    <Typography variant="h6">
-                                        {`${formatMessage(
-                                            MESSAGES.ratioCaregiversInformed,
-                                        )}: ${convertStatToPercent(
-                                            totalCaregiversInformed(
-                                                convertedData[campaign]
-                                                    ?.round_2,
-                                            ),
-                                            totalCaregivers(
-                                                convertedData[campaign]
-                                                    ?.round_2,
-                                            ),
-                                        )}`}
-                                    </Typography>
-                                </Box>
+                                <CaregiversTableHeader
+                                    data={convertedData}
+                                    campaign={campaign}
+                                    round="round_2"
+                                />
                                 <CaregiversTable
                                     data={makeDataForTable(
                                         convertedData,

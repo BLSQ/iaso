@@ -1,0 +1,10 @@
+{
+    "env": {
+        "siteBaseUrl": "http://localhost:8081",
+        "sessionCookie": "sessionid",
+        "langageCookie": "django_language"
+    },
+    "fileServerFolder": "/hat/assets/js",
+    "viewportWidth": 1280,
+    "viewportHeight": 800
+}

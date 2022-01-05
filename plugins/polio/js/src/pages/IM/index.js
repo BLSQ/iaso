@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { useSafeIntl, Select } from 'bluesquare-components';
 
-import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
+import { Grid, Box, makeStyles } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { oneOf } from 'prop-types';
 import MESSAGES from '../../constants/messages';
@@ -17,6 +17,7 @@ import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
 import { ImPercentageChart } from './ImPercentageChart.tsx';
 import { findCountryIds } from '../../utils/LqasIm.tsx';
+import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -56,12 +57,6 @@ export const ImStats = ({ imType }) => {
         'DISTRICT',
     );
     const scope = findScope(campaign, campaigns, shapes);
-
-    const currentCountryName = imData.stats[campaign]?.country_name;
-
-    const datesIgnored = imData.day_country_not_found
-        ? imData.day_country_not_found[currentCountryName]
-        : {};
 
     const nfmDataRound1 = formatImDataForNFMChart({
         data: imData.stats,
@@ -223,10 +218,10 @@ export const ImStats = ({ imType }) => {
                         </Grid>
                         <Grid item xs={4}>
                             <Box ml={2} mb={4}>
-                                <Typography variant="h6">
-                                    {`${formatMessage(MESSAGES.datesIgnored)}:`}
-                                </Typography>
-                                {Object.keys(datesIgnored ?? {}).join(', ')}
+                                <DatesIgnored
+                                    campaign={campaign}
+                                    data={imData}
+                                />
                             </Box>
                         </Grid>
                     </Grid>

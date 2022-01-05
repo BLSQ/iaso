@@ -215,7 +215,7 @@ export const instancesPath = {
 
 export const instanceDetailPath = {
     baseUrl: baseUrls.instanceDetail,
-    permissions: ['iaso_forms', 'iaso_submissions'],
+    permissions: ['iaso_submissions'],
     component: props => <InstanceDetail {...props} />,
     params: [
         {
@@ -227,7 +227,7 @@ export const instanceDetailPath = {
 
 export const compareInstancesPath = {
     baseUrl: baseUrls.compareInstances,
-    permissions: ['iaso_forms', 'iaso_submissions'],
+    permissions: ['iaso_submissions'],
     component: props => <CompareSubmissions {...props} />,
     params: [
         {

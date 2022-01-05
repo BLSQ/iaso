@@ -5,13 +5,12 @@ import { useSafeIntl, Select } from 'bluesquare-components';
 import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { oneOf } from 'prop-types';
-import { useQueryClient } from 'react-query';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 
 import { formatImDataForNFMChart } from './utils.ts';
-import { useConvertedIMData, useIM, useSetTest, useTest } from './requests';
+import { useConvertedIMData, useIM } from './requests';
 import { ImMap } from './ImMap';
 import { makeCampaignsDropDown, findScope } from '../../utils/index';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
@@ -35,12 +34,6 @@ const useStyles = makeStyles(styles);
 export const ImStats = ({ imType }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    // const queryClient = useQueryClient();
-    // console.log(queryClient.setQueryData(['Test'], 'test'));
-    const [test, setTest] = useTest();
-    console.log('before', test);
-    setTest('prout');
-    console.log('after', test);
 
     const [campaign, setCampaign] = useState();
 

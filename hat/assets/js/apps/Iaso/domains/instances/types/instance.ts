@@ -1,6 +1,6 @@
-import { IOrgUnit } from '../../orgUnits/types/orgUnit';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
-export interface IInstance {
+export type Instance = {
     uuid: string;
     id: number;
     device_id: string;
@@ -16,12 +16,12 @@ export interface IInstance {
     files: Array<string>;
     status: string;
     export_statuses: Array<string>;
-    correlation_id: string | null;
+    correlation_id?: string;
     deleted: boolean;
-    org_unit: IOrgUnit;
+    org_unit: OrgUnit;
 
     period: unknown;
-    file_content: unknown;
+    file_content: Record<string, string>;
     form_descriptor: unknown;
     last_export_success_at: unknown;
-}
+};

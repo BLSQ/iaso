@@ -15,34 +15,34 @@ import { redirectToReplace } from '../../../routing/actions';
 import MESSAGES from './messages';
 import { baseUrls } from '../../../constants/urls';
 
-interface IRouterCustom {
+type RouterCustom = {
     prevPathname: string | undefined;
-}
-interface IState {
-    routerCustom: IRouterCustom;
-}
-interface IParams {
+};
+type State = {
+    routerCustom: RouterCustom;
+};
+type Params = {
     instanceIds: string;
-}
-interface IRouter {
+};
+type Router = {
     goBack: () => void;
-}
-interface IProps {
-    params: IParams;
-    router: IRouter;
-}
+};
+type Props = {
+    params: Params;
+    router: Router;
+};
 
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 
-const CompareSubmissions: FunctionComponent<IProps> = ({ params, router }) => {
+const CompareSubmissions: FunctionComponent<Props> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const classes: any = useStyles();
 
     const prevPathname: string | undefined = useSelector(
-        (state: IState) => state.routerCustom.prevPathname,
+        (state: State) => state.routerCustom.prevPathname,
     );
 
     const instanceIds: Array<string> = params.instanceIds.split(',');

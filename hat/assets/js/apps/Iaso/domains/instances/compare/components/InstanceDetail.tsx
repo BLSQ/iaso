@@ -5,7 +5,7 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { Box, Typography } from '@material-ui/core';
 
 import { useGetInstance } from '../hooks/useGetInstance';
-import { IInstance } from '../../types/instance';
+import { Instance } from '../../types/instance';
 
 import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
 import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
@@ -15,16 +15,16 @@ import ErrorPaperComponent from '../../../../components/papers/ErrorPaperCompone
 
 import MESSAGES from '../messages';
 
-interface IProps {
-    instanceId: string | undefined;
-}
+type Props = {
+    instanceId: string;
+};
 
-const InstanceDetail: FunctionComponent<IProps> = ({ instanceId }) => {
+const InstanceDetail: FunctionComponent<Props> = ({ instanceId }) => {
     const {
         data,
         isLoading,
         isError,
-    }: { data: IInstance | undefined; isLoading: boolean; isError: boolean } =
+    }: { data?: Instance; isLoading: boolean; isError: boolean } =
         useGetInstance(instanceId);
     const { formatMessage } = useSafeIntl();
     if (isLoading)

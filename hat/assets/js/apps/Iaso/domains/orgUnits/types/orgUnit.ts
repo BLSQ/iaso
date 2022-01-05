@@ -1,4 +1,4 @@
-export interface IOrgUnit {
+export type OrgUnit = {
     name: string;
     short_name: string;
     id: number;
@@ -9,14 +9,14 @@ export interface IOrgUnit {
     parent_id: number;
     validation_status: string;
     parent_name: string;
-    parent: IOrgUnit;
+    parent: OrgUnit;
     org_unit_type_id: number;
     created_at: number;
     updated_at: number;
-    aliases: string | null;
-    latitude: number | null;
-    longitude: number | null;
-    altitude: number | null;
+    aliases?: string;
+    latitude?: number;
+    longitude?: number;
+    altitude?: number;
     has_geo_json: boolean;
     org_unit_type_name: string;
     source: string;
@@ -25,4 +25,4 @@ export interface IOrgUnit {
 
     groups: Array<unknown>;
     org_unit_type: unknown;
-}
+};

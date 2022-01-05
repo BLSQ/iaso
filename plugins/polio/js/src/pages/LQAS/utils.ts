@@ -42,7 +42,7 @@ export const getLqasStatsForRound = (lqasData, campaign, round) => {
     return [passed, failed, disqualified];
 };
 
-export const makeLqasMapLengendItems =
+export const makeLqasMapLegendItems =
     formatMessage => (lqasData, campaign, round) => {
         const [passed, failed, disqualified] = getLqasStatsForRound(
             lqasData,

@@ -7,10 +7,7 @@ import { MapLegend } from '../../components/MapComponent/MapLegend';
 import { MapLegendContainer } from '../../components/MapComponent/MapLegendContainer';
 import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
 import { makePopup } from '../../utils/LqasIm.tsx';
-import {
-    determineStatusForDistrict,
-    makeLqasMapLengendItems,
-} from './utils.ts';
+import { determineStatusForDistrict, makeLqasMapLegendItems } from './utils.ts';
 import { getScopeStyle, findDataForShape } from '../../utils/index';
 import { districtColors } from './constants';
 import MESSAGES from '../../constants/messages';
@@ -18,7 +15,7 @@ import MESSAGES from '../../constants/messages';
 export const LqasMap = ({ lqasData, shapes, round, campaign, scope }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
-    const legendItems = makeLqasMapLengendItems(formatMessage)(
+    const legendItems = makeLqasMapLegendItems(formatMessage)(
         lqasData,
         campaign,
         round,

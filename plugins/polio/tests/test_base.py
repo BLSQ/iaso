@@ -12,15 +12,9 @@ from iaso.models import Account, OrgUnit
 from iaso.test import APITestCase, TestCase
 
 from plugins.polio.management.commands.weekly_email import send_notification_email
-from plugins.polio.models import Campaign, Preparedness, Round, CountryUsersGroup
-from plugins.polio.preparedness.calculator import get_preparedness_score
-from plugins.polio.preparedness.exceptions import InvalidFormatError
-from plugins.polio.preparedness.spreadsheet_manager import *
-from plugins.polio.serializers import CampaignSerializer
-from .models import Preparedness, Round
-from .preparedness.calculator import get_preparedness_score
-from .preparedness.exceptions import InvalidFormatError
-from .preparedness.spreadsheet_manager import *
+from ..preparedness.calculator import get_preparedness_score
+from ..preparedness.exceptions import InvalidFormatError
+from ..preparedness.spreadsheet_manager import *
 
 
 class PolioAPITestCase(APITestCase):

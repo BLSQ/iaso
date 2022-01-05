@@ -8,7 +8,7 @@ import { oneOf } from 'prop-types';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
-
+import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
 import { formatImDataForNFMChart } from './utils.ts';
 import { useConvertedIMData, useIM } from './requests';
 import { ImMap } from './ImMap';
@@ -56,9 +56,6 @@ export const ImStats = ({ imType }) => {
         'DISTRICT',
     );
     const scope = findScope(campaign, campaigns, shapes);
-
-    const districtsNotFound =
-        imData.stats[campaign]?.districts_not_found?.join(', ');
 
     const currentCountryName = imData.stats[campaign]?.country_name;
 
@@ -218,12 +215,10 @@ export const ImStats = ({ imType }) => {
                     <Grid container item>
                         <Grid item xs={4}>
                             <Box ml={2} mb={4}>
-                                <Typography variant="h6">
-                                    {`${formatMessage(
-                                        MESSAGES.districtsNotFound,
-                                    )}:`}
-                                </Typography>
-                                {districtsNotFound}
+                                <DistrictsNotFound
+                                    campaign={campaign}
+                                    data={imData.stats}
+                                />
                             </Box>
                         </Grid>
                         <Grid item xs={4}>

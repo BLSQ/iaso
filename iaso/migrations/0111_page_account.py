@@ -7,13 +7,15 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0110_make_readonlyrole'),
+        ("iaso", "0110_make_readonlyrole"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='page',
-            name='account',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='iaso.account'),
+            model_name="page",
+            name="account",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.account"
+            ),
         ),
     ]

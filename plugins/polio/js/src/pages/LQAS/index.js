@@ -9,6 +9,7 @@ import {
 
 import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { useQueryClient } from 'react-query';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
@@ -28,6 +29,7 @@ import { LqasMap } from './LqasMap';
 import { PercentageBarChart } from '../../components/PercentageBarChart';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 import { CaregiversTable } from '../../components/LQAS-IM/CaregiversTable.tsx';
+import { useGetTest } from '../IM/requests';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -59,7 +61,9 @@ export const Lqas = () => {
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
     const { data: LQASData, isLoading } = useLQAS();
-
+    // const prout = useGetTest();
+    const queryClient = useQueryClient();
+    console.log(queryClient.getQueryData(['Test2']));
     const countryIds = findCountryIds(LQASData);
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({

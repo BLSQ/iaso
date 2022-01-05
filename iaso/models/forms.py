@@ -253,6 +253,3 @@ class FormVersion(models.Model):
 
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
-
-
-

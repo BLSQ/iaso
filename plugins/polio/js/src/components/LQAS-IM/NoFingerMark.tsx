@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, { FunctionComponent, useState, useEffect, useMemo } from 'react';
 import { Box, Typography } from '@material-ui/core';
 import {
     Bar,
@@ -10,60 +10,73 @@ import {
     Cell,
 } from 'recharts';
 import { blue } from '@material-ui/core/colors';
-import { LoadingSpinner } from 'bluesquare-components';
-import { BarChartData } from '../../constants/types';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import {
+    BarChartData,
+    LqasImCampaign,
+    RoundString,
+} from '../../constants/types';
 import { BAR_HEIGHT } from '../PercentageBarChart/constants';
-import { lqasNfmTooltipFormatter } from '../../pages/LQAS/utils';
+import {
+    formatLqasDataForNFMChart,
+    lqasNfmTooltipFormatter,
+} from '../../pages/LQAS/utils';
+import { formatImDataForNFMChart } from '../../pages/IM/utils';
+import MESSAGES from '../../constants/messages';
+import { NfmCustomTick } from './NfmCustomTick';
 
 type Props = {
-    data: BarChartData[];
+    // eslint-disable-next-line react/require-default-props
+    data?: Record<string, LqasImCampaign>;
+    // eslint-disable-next-line react/require-default-props
+    campaign?: string;
+    round: RoundString;
     chartKey: string;
-    title: string;
     isLoading: boolean;
     showChart: boolean;
-};
-
-const NfmCustomTick: FunctionComponent<any> = ({ x, y, payload }) => {
-    if (typeof payload.value === 'string') {
-        const allWords = payload?.value?.split(' ') ?? [];
-        const firstWord = allWords.shift();
-        const valuesAsWords = [firstWord];
-        if (allWords.join(' ').length >= 10) {
-            valuesAsWords.push(allWords.shift());
-        }
-        valuesAsWords.push(allWords.join(' '));
-        // const valueAsWords = [firstWord, allWords.join(' ')];
-        return (
-            <g transform={`translate(${x},${y})`}>
-                {valuesAsWords.map((word, index) => (
-                    <text
-                        key={word + index}
-                        x={0}
-                        y={15 * index}
-                        dy={16}
-                        textAnchor="end"
-                        fill="#666"
-                        transform="rotate(-65)"
-                    >
-                        {word}
-                    </text>
-                ))}
-            </g>
-        );
-    }
-    return null;
+    type: 'LQAS' | 'IM';
 };
 
 export const NoFingerMark: FunctionComponent<Props> = ({
     data,
     chartKey,
-    title,
     isLoading,
     showChart,
+    campaign,
+    round,
+    type,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
+
+    const formattedData: BarChartData[] = useMemo(() => {
+        if (type === 'IM') {
+            return formatImDataForNFMChart({
+                data,
+                campaign,
+                round,
+                formatMessage,
+            });
+        }
+        if (type === 'LQAS') {
+            return formatLqasDataForNFMChart({
+                data,
+                campaign,
+                round,
+                formatMessage,
+            });
+        }
+        return [];
+    }, [data, campaign, round, formatMessage, type]);
+
+    const childrenNotMarked = formattedData
+        .map(nfmData => nfmData.value)
+        .reduce((total, current) => total + current, 0);
+
+    const roundText = round === 'round_1' ? 'round 1' : 'round 2';
+
     const yAxisLimit: number =
-        Object.values(data)
+        Object.values(formattedData)
             .map(dataEntry => dataEntry.value)
             .sort((a, b) => (a < b ? 1 : 0))[0] || 10;
 
@@ -77,12 +90,16 @@ export const NoFingerMark: FunctionComponent<Props> = ({
             {!isLoading && showChart && (
                 <>
                     <Box>
-                        <Typography variant="h6">{title}</Typography>
+                        <Typography variant="h6">
+                            {`${formatMessage(
+                                MESSAGES.childrenNoMark,
+                            )}, ${roundText}: ${childrenNotMarked}`}
+                        </Typography>
                     </Box>
                     <Box key={`${chartKey}${renderCount}`}>
                         <ResponsiveContainer height={450} width="90%">
                             <BarChart
-                                data={data}
+                                data={formattedData}
                                 layout="horizontal"
                                 margin={{ left: 50 }}
                                 barSize={BAR_HEIGHT}
@@ -96,12 +113,12 @@ export const NoFingerMark: FunctionComponent<Props> = ({
                                     tick={<NfmCustomTick />}
                                 />
                                 <Tooltip
-                                    payload={data}
+                                    payload={formattedData}
                                     formatter={lqasNfmTooltipFormatter}
                                     itemStyle={{ color: 'black' }}
                                 />
                                 <Bar dataKey="value" minPointSize={3}>
-                                    {data.map((_entry, index) => {
+                                    {formattedData.map((_entry, index) => {
                                         return (
                                             <Cell
                                                 key={`cell-${index}`}

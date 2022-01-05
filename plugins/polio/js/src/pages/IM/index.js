@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { useSafeIntl, Select } from 'bluesquare-components';
 
@@ -6,13 +6,11 @@ import { Grid, Box, makeStyles } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { oneOf } from 'prop-types';
 import MESSAGES from '../../constants/messages';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
-import { formatImDataForNFMChart } from './utils.ts';
-import { useConvertedIMData, useIM } from './requests';
+import { useIM } from './requests';
 import { ImMap } from './ImMap';
-import { makeCampaignsDropDown, findScope } from '../../utils/index';
+import { makeCampaignsDropDown } from '../../utils/index';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
 import { ImPercentageChart } from './ImPercentageChart.tsx';
@@ -39,7 +37,6 @@ export const ImStats = ({ imType }) => {
     const [campaign, setCampaign] = useState();
 
     const { data: imData, isLoading } = useIM(imType);
-    const { data: convertedData } = useConvertedIMData(imType);
     const countryIds = findCountryIds(imData).toString();
 
     const { data: campaigns = [], isLoading: campaignsLoading } =
@@ -52,34 +49,10 @@ export const ImStats = ({ imType }) => {
         campaignOption => campaignOption.obr_name === campaign,
     )[0]?.top_level_org_unit_id;
 
-    const { data: shapes = [] } = useGetGeoJson(
-        countryOfSelectedCampaign,
-        'DISTRICT',
+    const dropDownOptions = useMemo(
+        () => makeCampaignsDropDown(campaigns),
+        [campaigns],
     );
-    const scope = findScope(campaign, campaigns, shapes);
-
-    const nfmDataRound1 = formatImDataForNFMChart({
-        data: imData.stats,
-        campaign,
-        round: 'round_1',
-        formatMessage,
-    });
-    const nfmDataRound2 = formatImDataForNFMChart({
-        data: imData.stats,
-        campaign,
-        round: 'round_2',
-        formatMessage,
-    });
-
-    const childrenNotMarkedRound1 = nfmDataRound1
-        .map(nfmData => nfmData.value)
-        .reduce((total, current) => total + current, 0);
-
-    const childrenNotMarkedRound2 = nfmDataRound2
-        .map(nfmData => nfmData.value)
-        .reduce((total, current) => total + current, 0);
-
-    const dropDownOptions = makeCampaignsDropDown(campaigns);
 
     return (
         <>
@@ -114,24 +87,22 @@ export const ImStats = ({ imType }) => {
                     <Grid item xs={6}>
                         <Box ml={2}>
                             <ImMap
-                                imData={convertedData}
-                                shapes={shapes}
                                 round="round_1"
-                                campaign={campaign}
-                                scope={scope}
-                                isLoading={isLoading}
+                                selectedCampaign={campaign}
+                                imType={imType}
+                                countryId={countryOfSelectedCampaign}
+                                campaigns={campaigns}
                             />
                         </Box>
                     </Grid>
                     <Grid item xs={6} mr={2}>
                         <Box mr={2}>
                             <ImMap
-                                imData={convertedData}
-                                shapes={shapes}
                                 round="round_2"
-                                campaign={campaign}
-                                scope={scope}
-                                isLoading={isLoading}
+                                selectedCampaign={campaign}
+                                imType={imType}
+                                countryId={countryOfSelectedCampaign}
+                                campaigns={campaigns}
                             />
                         </Box>
                     </Grid>
@@ -181,11 +152,11 @@ export const ImStats = ({ imType }) => {
                         <Grid item xs={6} mr={2}>
                             <Box ml={2} mt={2}>
                                 <NoFingerMark
-                                    data={nfmDataRound1}
+                                    data={imData.stats}
+                                    campaign={campaign}
+                                    round="round_1"
+                                    type="IM"
                                     chartKey="nfmRound1"
-                                    title={`${formatMessage(
-                                        MESSAGES.childrenNoMark,
-                                    )}, round 1: ${childrenNotMarkedRound1}`}
                                     isLoading={isLoading}
                                     showChart={Boolean(campaign)}
                                 />
@@ -194,11 +165,11 @@ export const ImStats = ({ imType }) => {
                         <Grid item xs={6} mr={2}>
                             <Box mr={2} mt={2}>
                                 <NoFingerMark
-                                    data={nfmDataRound2}
+                                    data={imData.stats}
+                                    campaign={campaign}
+                                    round="round_2"
+                                    type="IM"
                                     chartKey="nfmRound2"
-                                    titel={`${formatMessage(
-                                        MESSAGES.childrenNoMark,
-                                    )}, round 2: ${childrenNotMarkedRound2}`}
                                     isLoading={isLoading}
                                     showChart={Boolean(campaign)}
                                 />

@@ -279,8 +279,13 @@ export const Lqas = () => {
                                     </Typography>
                                 </Box>
                                 <NoFingerMark
-                                    data={nfmDataRound1}
+                                    data={LQASData.stats}
+                                    campaign={campaign}
+                                    round="round_1"
+                                    type="LQAS"
                                     chartKey="nfmRound1"
+                                    isLoading={isLoading}
+                                    showChart={Boolean(campaign)}
                                 />
                             </Box>
                         )}
@@ -296,15 +301,20 @@ export const Lqas = () => {
                                     </Typography>
                                 </Box>
                                 <NoFingerMark
-                                    data={nfmDataRound2}
+                                    data={LQASData.stats}
+                                    campaign={campaign}
+                                    round="round_2"
+                                    type="LQAS"
                                     chartKey="nfmRound2"
+                                    isLoading={isLoading}
+                                    showChart={Boolean(campaign)}
                                 />
                             </Box>
                         )}
                     </Grid>
                 </Grid>
                 <Grid container item spacing={2} direction="row">
-                    {campaign && (
+                    {/* {campaign && (
                         <Grid item xs={12}>
                             <Box ml={2} mt={2}>
                                 <Typography variant="h5">
@@ -314,7 +324,7 @@ export const Lqas = () => {
                                 </Typography>
                             </Box>
                         </Grid>
-                    )}
+                    )} */}
                     <Grid item xs={6}>
                         {!isLoading && campaign && (
                             <Box ml={2} mt={2}>

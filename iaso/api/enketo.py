@@ -1,4 +1,5 @@
 import filecmp
+import json
 import os
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -288,16 +289,7 @@ class EnketoSubmissionAPIView(APIView):
             original = Instance.objects.get(id=instanceid)
             instance = Instance.objects.get(id=instanceid)
 
-            if instance.file:
-                path = default_storage.save("{0}.xml".format(instance), ContentFile(xml))
-                xml_to_compare = os.path.join(settings.MEDIA_ROOT, path)
-                if not filecmp.cmp(instance.file.path, xml_to_compare):
-                    try:
-                        instance.last_modified_by = request.user
-                        os.remove(xml_to_compare)
-                    except ValueError:
-                        pass
-            else:
+            if not instance.file:
                 instance.user = request.user
 
             instance.file = main_file

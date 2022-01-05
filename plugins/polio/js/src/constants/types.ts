@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 export type FormatForNFMArgs = {
-    data: Record<string, LqasImCampaign>;
-    campaign: string;
+    data?: Record<string, LqasImCampaign>;
+    campaign?: string;
     round: RoundString;
     formatMessage: IntlFormatMessage;
 };

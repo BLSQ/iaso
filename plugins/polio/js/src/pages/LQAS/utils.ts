@@ -2,12 +2,11 @@ import MESSAGES from '../../constants/messages';
 import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED, nfmKeys } from './constants';
 import {
     BarChartData,
-    LqasImCampaign,
     NfmRoundString,
     RoundString,
-    IntlFormatMessage,
     LqasImCampaignDataWithNameAndRegion,
     ConvertedLqasImData,
+    FormatForNFMArgs,
 } from '../../constants/types';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 import { makeLegendItem } from '../../utils';
@@ -127,13 +126,6 @@ export const lqasChartTooltipFormatter =
 export const lqasNfmTooltipFormatter = (value, _name, props) => {
     // eslint-disable-next-line react/prop-types
     return [value, props.payload.nfmKey];
-};
-
-type FormatForNFMArgs = {
-    data: Record<string, LqasImCampaign>;
-    campaign: string;
-    round: RoundString;
-    formatMessage: IntlFormatMessage;
 };
 
 const sortLqasNfmKeys = (a, b) => {

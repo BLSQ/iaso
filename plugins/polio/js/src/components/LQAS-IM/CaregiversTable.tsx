@@ -24,7 +24,7 @@ import {
     IntlFormatMessage,
     LqasImCampaignDataWithNameAndRegion,
 } from '../../constants/types';
-import { caregiverSourceInfoKeys } from '../../pages/LQAS/constants';
+import { caregiverSourceInfoKeys } from '../../pages/IM/constants';
 import { convertStatToPercent } from '../../pages/LQAS/utils';
 import {
     sortbyDistrictNameAsc,

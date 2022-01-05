@@ -1,5 +1,10 @@
 import MESSAGES from '../../constants/messages';
-import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED, nfmKeys } from './constants';
+import {
+    LQAS_PASS,
+    LQAS_FAIL,
+    LQAS_DISQUALIFIED,
+    lqasNfmKeys,
+} from '../IM/constants';
 import {
     BarChartData,
     NfmRoundString,
@@ -150,10 +155,10 @@ export const formatLqasDataForNFMChart = ({
         const [name, value] = entry;
         return { name: formatMessage(MESSAGES[name]), value, nfmKey: name };
     });
-    if (convertedEntries.length === nfmKeys.length)
+    if (convertedEntries.length === lqasNfmKeys.length)
         return convertedEntries.sort(sortLqasNfmKeys);
     const dataKeys = Object.keys(campaignData);
-    const missingEntries = nfmKeys
+    const missingEntries = lqasNfmKeys
         .filter(nfmKey => !dataKeys.includes(nfmKey))
         .map(nfmKey => ({
             name: formatMessage(MESSAGES[nfmKey]),

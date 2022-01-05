@@ -68,3 +68,15 @@ export const findCountryIds = LqasIm => {
     const campaignKeys = Object.keys(stats);
     return campaignKeys.map(campaignKey => stats[campaignKey].country_id);
 };
+
+export const totalCaregiversInformed = (roundData: any[] = []) => {
+    return roundData
+        .map(data => data.care_giver_stats.caregivers_informed)
+        .reduce((total, current) => total + current, 0);
+};
+
+export const totalCaregivers = (roundData: any[] = []) => {
+    return roundData
+        .map(data => data.total_child_checked)
+        .reduce((total, current) => total + current, 0);
+};

@@ -8,12 +8,12 @@ import { oneOf } from 'prop-types';
 import MESSAGES from '../../constants/messages';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
-import { useIM } from './requests';
-import { ImMap } from './ImMap';
+import { useLqasIm } from './requests';
+import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
 import { makeCampaignsDropDown } from '../../utils/index';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
-import { ImPercentageChart } from './ImPercentageChart.tsx';
+import { LqasImPercentageChart } from '../../components/LQAS-IM/LqasImPercentageChart.tsx';
 import { findCountryIds } from '../../utils/LqasIm.tsx';
 import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
 
@@ -36,7 +36,7 @@ export const ImStats = ({ imType }) => {
 
     const [campaign, setCampaign] = useState();
 
-    const { data: imData, isLoading } = useIM(imType);
+    const { data: imData, isLoading } = useLqasIm(imType);
     const countryIds = findCountryIds(imData).toString();
 
     const { data: campaigns = [], isLoading: campaignsLoading } =
@@ -86,10 +86,10 @@ export const ImStats = ({ imType }) => {
                 <Grid container item spacing={2} direction="row">
                     <Grid item xs={6}>
                         <Box ml={2}>
-                            <ImMap
+                            <LqasImMap
                                 round="round_1"
                                 selectedCampaign={campaign}
-                                imType={imType}
+                                type={imType}
                                 countryId={countryOfSelectedCampaign}
                                 campaigns={campaigns}
                             />
@@ -97,10 +97,10 @@ export const ImStats = ({ imType }) => {
                     </Grid>
                     <Grid item xs={6} mr={2}>
                         <Box mr={2}>
-                            <ImMap
+                            <LqasImMap
                                 round="round_2"
                                 selectedCampaign={campaign}
-                                imType={imType}
+                                type={imType}
                                 countryId={countryOfSelectedCampaign}
                                 campaigns={campaigns}
                             />
@@ -118,8 +118,8 @@ export const ImStats = ({ imType }) => {
                     </Grid>
                     <Grid item xs={6} mr={2}>
                         <Box ml={2} mt={2}>
-                            <ImPercentageChart
-                                imType={imType}
+                            <LqasImPercentageChart
+                                type={imType}
                                 round="round_1"
                                 campaign={campaign}
                                 countryId={countryOfSelectedCampaign}
@@ -128,8 +128,8 @@ export const ImStats = ({ imType }) => {
                     </Grid>
                     <Grid item xs={6} mr={2}>
                         <Box mr={2} mt={2}>
-                            <ImPercentageChart
-                                imType={imType}
+                            <LqasImPercentageChart
+                                type={imType}
                                 round="round_2"
                                 campaign={campaign}
                                 countryId={countryOfSelectedCampaign}

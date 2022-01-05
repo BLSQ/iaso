@@ -2,20 +2,27 @@ import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { oneOf, string, array, number } from 'prop-types';
 import { Box } from '@material-ui/core';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-import { MapComponent } from '../../components/MapComponent/MapComponent';
-import { MapLegend } from '../../components/MapComponent/MapLegend';
-import { MapLegendContainer } from '../../components/MapComponent/MapLegendContainer';
+import { MapComponent } from '../MapComponent/MapComponent';
+import { MapLegend } from '../MapComponent/MapLegend';
+import { MapLegendContainer } from '../MapComponent/MapLegendContainer';
 import { makePopup } from '../../utils/LqasIm.tsx';
-import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
-import { determineStatusForDistrict, makeImMapLegendItems } from './utils.ts';
-import { districtColors } from './constants';
+import { LqasImMapHeader } from './LqasImMapHeader.tsx';
+import {
+    determineStatusForDistrict as imDistrictStatus,
+    makeImMapLegendItems,
+} from '../../pages/IM/utils.ts';
+import {
+    determineStatusForDistrict as lqasDistrictStatus,
+    makeLqasMapLegendItems,
+} from '../../pages/LQAS/utils.ts';
+import { imDistrictColors, lqasDistrictColors } from '../../pages/IM/constants';
 import { getScopeStyle, findDataForShape, findScope } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
-import { useConvertedIMData } from './requests';
+import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 
-export const ImMap = ({
-    imType,
+export const LqasImMap = ({
+    type,
     round,
     selectedCampaign,
     countryId,
@@ -24,25 +31,31 @@ export const ImMap = ({
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
     // HERE
-    const { data: imData, isLoading } = useConvertedIMData(imType);
+    const { data: imData, isLoading } = useConvertedLqasImData(type);
     const { data: shapes = [] } = useGetGeoJson(countryId, 'DISTRICT');
 
     const scope = findScope(selectedCampaign, campaigns, shapes);
 
-    const legendItems = useMemo(
-        () =>
-            // HERE
-            makeImMapLegendItems(formatMessage)(
+    const legendItems = useMemo(() => {
+        // HERE
+        if (type === 'lqas') {
+            return makeLqasMapLegendItems(formatMessage)(
                 imData,
                 selectedCampaign,
                 round,
-            ),
-        [imData, selectedCampaign, round, formatMessage],
-    );
+            );
+        }
+        return makeImMapLegendItems(formatMessage)(
+            imData,
+            selectedCampaign,
+            round,
+        );
+    }, [imData, selectedCampaign, round, formatMessage, type]);
 
     const getShapeStyles = useCallback(
         shape => {
-            // HERE
+            const determineStatusForDistrict =
+                type === 'lqas' ? lqasDistrictStatus : imDistrictStatus;
             const status = determineStatusForDistrict(
                 findDataForShape({
                     shape,
@@ -51,11 +64,17 @@ export const ImMap = ({
                     campaign: selectedCampaign,
                 }),
             );
+            const districtColors =
+                type === 'lqas' ? lqasDistrictColors : imDistrictColors;
             if (status) return districtColors[status];
             return getScopeStyle(shape, scope);
         },
-        [scope, selectedCampaign, round, imData],
+        [type, scope, selectedCampaign, round, imData],
     );
+    const title =
+        type === 'lqas'
+            ? formatMessage(MESSAGES.lqasResults)
+            : formatMessage(MESSAGES.imResults);
 
     // force Map render when campaign changes, otherwise, shape colors are off
     useEffect(() => {
@@ -72,15 +91,15 @@ export const ImMap = ({
                         <MapLegendContainer>
                             <MapLegend
                                 // HERE
-                                title={formatMessage(MESSAGES.imResults)}
+                                title={title}
                                 legendItems={legendItems}
                                 width="lg"
                             />
                         </MapLegendContainer>
                         <MapComponent
                             // Use the key to force render
-                            key={`IMMapRound${round}${renderCount}`}
-                            name={`IMMapRound${round}`}
+                            key={`LQASIMMap${round}${renderCount}-${type}`}
+                            name={`LQASIMMap${round}-${type}`}
                             mainLayer={shapes}
                             onSelectShape={() => null}
                             getMainLayerStyle={getShapeStyles}
@@ -102,14 +121,14 @@ export const ImMap = ({
     );
 };
 
-ImMap.propTypes = {
+LqasImMap.propTypes = {
     round: oneOf(['round_1', 'round_2']).isRequired,
     campaigns: array,
     selectedCampaign: string,
-    imType: oneOf(['imGlobal', 'imOHH', 'imIHH']).isRequired,
+    type: oneOf(['imGlobal', 'imOHH', 'imIHH', 'lqas']).isRequired,
     countryId: number,
 };
-ImMap.defaultProps = {
+LqasImMap.defaultProps = {
     campaigns: [],
     selectedCampaign: '',
     countryId: null,

@@ -55,7 +55,6 @@ export const makeImMapLegendItems =
         return [passedLegendItem, disqualifiedLegendItem, failedLegendItem];
     };
 
-// FIXME duplicate with lqas
 const getImStatsWithRegion = ({ data, campaign, round, shapes }) => {
     if (!data[campaign]) return [];
     return [...data[campaign][round]].map(district => ({

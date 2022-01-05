@@ -10,21 +10,19 @@ describe('Log in page', () => {
     before(() => {
         cy.clearCookie(sessionCookie);
     });
-    it('going to root url should redirect to log in page', () => {
+    beforeEach(() => {
         cy.visit(siteBaseUrl);
+    });
+    it('going to root url should redirect to log in page', () => {
         cy.url().should('eq', signInUrl);
     });
     it('click on forgot password should redirect to sign up page', () => {
-        cy.visit(signInUrl);
         cy.get('.login-link a').click();
         cy.url().should('eq', `${siteBaseUrl}/forgot-password/`);
     });
-    it('click display password should change input password to text', () => {
-        cy.visit(signInUrl);
+    it('click display password should togle input password type', () => {
         cy.get('#display-password').click();
         cy.get('#id_password').invoke('attr', 'type').should('equal', 'text');
-    });
-    it('click display password should change input password back to password', () => {
         cy.get('#display-password').click();
         cy.get('#id_password')
             .invoke('attr', 'type')
@@ -73,8 +71,9 @@ describe('Log in page', () => {
         });
     });
     describe('Happy flow', () => {
-        before(() => {
+        beforeEach(() => {
             cy.login();
+            cy.visit(siteBaseUrl);
         });
         it('should redirect to dashboard', () => {
             cy.url().should('eq', `${siteBaseUrl}/dashboard/forms/list`);

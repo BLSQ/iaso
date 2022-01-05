@@ -5,6 +5,7 @@
         "langageCookie": "django_language"
     },
     "fileServerFolder": "/hat/assets/js",
+    "experimentalSessionSupport": true,
     "viewportWidth": 1280,
     "viewportHeight": 800
 }

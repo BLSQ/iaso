@@ -23,9 +23,19 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-Cypress.Commands.add('login', () => {
-    cy.visit(Cypress.env('siteBaseUrl'));
-    cy.get('#id_username').type(Cypress.env('username'));
-    cy.get('#id_password').type(Cypress.env('password'));
-    cy.get('#submit').click();
-});
+
+Cypress.Commands.add(
+    'login',
+    (
+        username = Cypress.env('username'),
+        password = Cypress.env('password'),
+    ) => {
+        cy.session([username], () => {
+            cy.clearCookie(Cypress.env('sessionCookie'));
+            cy.visit(Cypress.env('siteBaseUrl'));
+            cy.get('#id_username').type(username, { log: false });
+            cy.get('#id_password').type(password, { log: false });
+            cy.get('#submit').click();
+        });
+    },
+);

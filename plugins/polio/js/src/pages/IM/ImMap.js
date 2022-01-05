@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { oneOf, string, array, number } from 'prop-types';
 import { Box } from '@material-ui/core';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
@@ -23,19 +23,26 @@ export const ImMap = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
+    // HERE
     const { data: imData, isLoading } = useConvertedIMData(imType);
     const { data: shapes = [] } = useGetGeoJson(countryId, 'DISTRICT');
 
     const scope = findScope(selectedCampaign, campaigns, shapes);
 
-    const legendItems = makeImMapLegendItems(formatMessage)(
-        imData,
-        selectedCampaign,
-        round,
+    const legendItems = useMemo(
+        () =>
+            // HERE
+            makeImMapLegendItems(formatMessage)(
+                imData,
+                selectedCampaign,
+                round,
+            ),
+        [imData, selectedCampaign, round, formatMessage],
     );
 
     const getShapeStyles = useCallback(
         shape => {
+            // HERE
             const status = determineStatusForDistrict(
                 findDataForShape({
                     shape,
@@ -64,6 +71,7 @@ export const ImMap = ({
                     <Box position="relative">
                         <MapLegendContainer>
                             <MapLegend
+                                // HERE
                                 title={formatMessage(MESSAGES.imResults)}
                                 legendItems={legendItems}
                                 width="lg"

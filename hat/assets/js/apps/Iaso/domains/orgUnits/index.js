@@ -484,10 +484,7 @@ const OrgUnits = props => {
                                                 classes.containerMarginNeg
                                             }
                                         >
-                                            <OrgunitsMap
-                                                params={params}
-                                                orgUnits
-                                            />
+                                            <OrgunitsMap params={params} />
                                         </div>
                                     </div>
                                 )}

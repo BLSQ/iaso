@@ -1,10 +1,3 @@
-import filecmp
-import json
-import os
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.conf import settings
-
 from bs4 import BeautifulSoup as Soup
 
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect

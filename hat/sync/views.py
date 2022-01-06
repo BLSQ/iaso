@@ -7,14 +7,29 @@ from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
 
-
 import logging
 
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.settings import SECRET_KEY
 from iaso.models import Instance, InstanceFile, FeatureFlag
+import re
 
 logger = logging.getLogger(__name__)
+
+
+def check_user_agent(request):
+
+    mobile_re = re.compile(r".*(iphone|mobile|androidtouch|android)", re.IGNORECASE)
+    try:
+        if mobile_re.match(request.META["HTTP_USER_AGENT"]):
+            user = User.objects.get(
+                pk=jwt.decode(request.headers["Authorization"][7:], SECRET_KEY, algorithms=["HS256"])["user_id"]
+            )
+        else:
+            user = None
+        return user
+    except KeyError:
+        pass
 
 
 @csrf_exempt
@@ -25,6 +40,8 @@ logger = logging.getLogger(__name__)
 def form_upload(request: HttpRequest) -> HttpResponse:
     main_file = request.FILES["xml_submission_file"]
 
+    print("REQUEST: ", request.headers)
+
     instances = Instance.objects.filter(file_name=main_file.name)
     if instances:
         i = instances.first()
@@ -32,16 +49,9 @@ def form_upload(request: HttpRequest) -> HttpResponse:
         i = Instance(file_name=main_file.name)
 
     i.file = request.FILES["xml_submission_file"]
-
-    try:
-        user = User.objects.get(
-            pk=jwt.decode(request.headers["Authorization"][7:], SECRET_KEY, algorithms=["HS256"])["user_id"]
-        )
-        i.user = user
-        i.save()
-    except (KeyError, DecodeError):
-        user = None
-        i.save()
+    user = check_user_agent(request)
+    i.user = user
+    i.save()
 
     try:
         i.get_and_save_json_of_xml()

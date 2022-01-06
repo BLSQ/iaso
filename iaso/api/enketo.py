@@ -289,7 +289,12 @@ class EnketoSubmissionAPIView(APIView):
             original = Instance.objects.get(id=instanceid)
             instance = Instance.objects.get(id=instanceid)
 
-            if not instance.file:
+            if instance.file:
+                try:
+                    instance.last_modified_by = request.user
+                except ValueError:
+                    pass
+            else:
                 instance.user = request.user
 
             instance.file = main_file

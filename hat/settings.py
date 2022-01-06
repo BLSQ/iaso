@@ -18,7 +18,6 @@ from django.utils.translation import ugettext_lazy as _
 from sentry_sdk.integrations.django import DjangoIntegration
 
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
-FILE_SERVER_URL = os.environ.get("FILE_SERVER_URL", "https://1d1c-188-189-138-13.ngrok.io")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
 
@@ -35,6 +34,7 @@ USE_S3 = os.getenv("USE_S3") == "true"
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("IASO_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
+FILE_SERVER_URL = os.environ.get("FILE_SERVER_URL", "https://1d1c-188-189-138-13.ngrok.io")
 
 ALLOWED_HOSTS = ["*"]
 

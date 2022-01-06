@@ -59,7 +59,7 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     const [sortBy, setSortBy] = useState('asc');
     const [sortFocus, setSortFocus] = useState<SortValues>('REGION');
 
-    const { data: lqasImData } = useConvertedLqasImData('lqas');
+    const { data: lqasImData, isLoading } = useConvertedLqasImData('lqas');
     const data = useMemo((): LqasImCampaignDataWithNameAndRegion[] => {
         return makeDataForTable(lqasImData, campaign, round);
     }, [lqasImData, campaign, round]);
@@ -112,147 +112,162 @@ export const CaregiversTable: FunctionComponent<Props> = ({
 
     return (
         <>
-            <CaregiversTableHeader campaign={campaign} round={round} />
-            <Box mt={marginTop ? 4 : 0} mb={4}>
-                <Paper elevation={3}>
-                    <TableContainer>
-                        <MuiTable stickyHeader size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell
-                                        onClick={() => handleSort('REGION')}
-                                        variant="head"
-                                        className={
-                                            classes.sortableTableHeadCell
-                                        }
-                                    >
-                                        {formatMessage(MESSAGES.region)}
-                                    </TableCell>
-                                    <TableCell
-                                        onClick={() => handleSort('DISTRICT')}
-                                        variant="head"
-                                        className={
-                                            classes.sortableTableHeadCell
-                                        }
-                                    >
-                                        {formatMessage(MESSAGES.district)}
-                                    </TableCell>
-                                    {orderedSourceInfoKeys.map(
-                                        (sourceInfoKey, i) => {
-                                            return (
-                                                <TableCell
-                                                    key={`${tableKey}-head-${sourceInfoKey}-${i}`}
-                                                    variant="head"
-                                                    className={
-                                                        classes.tableHeadCell
-                                                    }
-                                                >
-                                                    {formatMessage(
-                                                        MESSAGES[sourceInfoKey],
-                                                    )}
-                                                </TableCell>
-                                            );
-                                        },
-                                    )}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {dataForTable
-                                    ?.slice(
-                                        page * rowsPerPage,
-                                        page * rowsPerPage + rowsPerPage,
-                                    )
-                                    .map((district, i) => {
-                                        if (district) {
-                                            return (
-                                                <TableRow
-                                                    key={`${tableKey}${district.name}${i}`}
-                                                    className={
-                                                        i % 2 > 0
-                                                            ? ''
-                                                            : classes.districtListRow
-                                                    }
-                                                >
-                                                    <TableCell
-                                                        style={{
-                                                            cursor: 'default',
-                                                        }}
-                                                        align="center"
-                                                        className={
-                                                            classes.lqasImTableCell
-                                                        }
-                                                    >
-                                                        {district.region_name}
-                                                    </TableCell>
-                                                    <TableCell
-                                                        style={{
-                                                            cursor: 'default',
-                                                        }}
-                                                        align="center"
-                                                        className={
-                                                            classes.lqasImTableCell
-                                                        }
-                                                    >
-                                                        {district.name}
-                                                    </TableCell>
-                                                    {orderedSourceInfoKeys.map(
-                                                        (
-                                                            sourceInfoKey,
-                                                            index,
-                                                        ) => {
-                                                            return (
-                                                                <TableCell
-                                                                    key={`${tableKey}${sourceInfoKey}${index}`}
-                                                                    style={{
-                                                                        cursor: 'default',
-                                                                    }}
-                                                                    align="center"
-                                                                    className={
-                                                                        classes.lqasImTableCell
-                                                                    }
-                                                                >
-                                                                    {sourceInfoKey ===
-                                                                    'caregivers_informed'
-                                                                        ? convertStatToPercent(
-                                                                              district
-                                                                                  .care_giver_stats
-                                                                                  .caregivers_informed,
-                                                                              district.total_child_checked,
-                                                                          )
-                                                                        : convertStatToPercent(
-                                                                              district
-                                                                                  .care_giver_stats[
-                                                                                  sourceInfoKey
-                                                                              ],
-                                                                              district
-                                                                                  .care_giver_stats
-                                                                                  .caregivers_informed,
-                                                                          )}
-                                                                </TableCell>
-                                                            );
-                                                        },
-                                                    )}
-                                                </TableRow>
-                                            );
-                                        }
-                                        return null;
-                                    })}
-                            </TableBody>
-                        </MuiTable>
-                    </TableContainer>
-                    <TablePagination
-                        className={classes.tablePagination}
-                        rowsPerPageOptions={[5, 10, 25, 50]}
-                        component="div"
-                        count={data?.length ?? 0}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        labelRowsPerPage="Rows"
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </Paper>
-            </Box>
+            {!isLoading && campaign && (
+                <>
+                    <CaregiversTableHeader campaign={campaign} round={round} />
+                    <Box mt={marginTop ? 4 : 0} mb={4}>
+                        <Paper elevation={3}>
+                            <TableContainer>
+                                <MuiTable stickyHeader size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell
+                                                onClick={() =>
+                                                    handleSort('REGION')
+                                                }
+                                                variant="head"
+                                                className={
+                                                    classes.sortableTableHeadCell
+                                                }
+                                            >
+                                                {formatMessage(MESSAGES.region)}
+                                            </TableCell>
+                                            <TableCell
+                                                onClick={() =>
+                                                    handleSort('DISTRICT')
+                                                }
+                                                variant="head"
+                                                className={
+                                                    classes.sortableTableHeadCell
+                                                }
+                                            >
+                                                {formatMessage(
+                                                    MESSAGES.district,
+                                                )}
+                                            </TableCell>
+                                            {orderedSourceInfoKeys.map(
+                                                (sourceInfoKey, i) => {
+                                                    return (
+                                                        <TableCell
+                                                            key={`${tableKey}-head-${sourceInfoKey}-${i}`}
+                                                            variant="head"
+                                                            className={
+                                                                classes.tableHeadCell
+                                                            }
+                                                        >
+                                                            {formatMessage(
+                                                                MESSAGES[
+                                                                    sourceInfoKey
+                                                                ],
+                                                            )}
+                                                        </TableCell>
+                                                    );
+                                                },
+                                            )}
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {dataForTable
+                                            ?.slice(
+                                                page * rowsPerPage,
+                                                page * rowsPerPage +
+                                                    rowsPerPage,
+                                            )
+                                            .map((district, i) => {
+                                                if (district) {
+                                                    return (
+                                                        <TableRow
+                                                            key={`${tableKey}${district.name}${i}`}
+                                                            className={
+                                                                i % 2 > 0
+                                                                    ? ''
+                                                                    : classes.districtListRow
+                                                            }
+                                                        >
+                                                            <TableCell
+                                                                style={{
+                                                                    cursor: 'default',
+                                                                }}
+                                                                align="center"
+                                                                className={
+                                                                    classes.lqasImTableCell
+                                                                }
+                                                            >
+                                                                {
+                                                                    district.region_name
+                                                                }
+                                                            </TableCell>
+                                                            <TableCell
+                                                                style={{
+                                                                    cursor: 'default',
+                                                                }}
+                                                                align="center"
+                                                                className={
+                                                                    classes.lqasImTableCell
+                                                                }
+                                                            >
+                                                                {district.name}
+                                                            </TableCell>
+                                                            {orderedSourceInfoKeys.map(
+                                                                (
+                                                                    sourceInfoKey,
+                                                                    index,
+                                                                ) => {
+                                                                    return (
+                                                                        <TableCell
+                                                                            key={`${tableKey}${sourceInfoKey}${index}`}
+                                                                            style={{
+                                                                                cursor: 'default',
+                                                                            }}
+                                                                            align="center"
+                                                                            className={
+                                                                                classes.lqasImTableCell
+                                                                            }
+                                                                        >
+                                                                            {sourceInfoKey ===
+                                                                            'caregivers_informed'
+                                                                                ? convertStatToPercent(
+                                                                                      district
+                                                                                          .care_giver_stats
+                                                                                          .caregivers_informed,
+                                                                                      district.total_child_checked,
+                                                                                  )
+                                                                                : convertStatToPercent(
+                                                                                      district
+                                                                                          .care_giver_stats[
+                                                                                          sourceInfoKey
+                                                                                      ],
+                                                                                      district
+                                                                                          .care_giver_stats
+                                                                                          .caregivers_informed,
+                                                                                  )}
+                                                                        </TableCell>
+                                                                    );
+                                                                },
+                                                            )}
+                                                        </TableRow>
+                                                    );
+                                                }
+                                                return null;
+                                            })}
+                                    </TableBody>
+                                </MuiTable>
+                            </TableContainer>
+                            <TablePagination
+                                className={classes.tablePagination}
+                                rowsPerPageOptions={[5, 10, 25, 50]}
+                                component="div"
+                                count={data?.length ?? 0}
+                                rowsPerPage={rowsPerPage}
+                                page={page}
+                                labelRowsPerPage="Rows"
+                                onPageChange={handleChangePage}
+                                onRowsPerPageChange={handleChangeRowsPerPage}
+                            />
+                        </Paper>
+                    </Box>
+                </>
+            )}
         </>
     );
 };

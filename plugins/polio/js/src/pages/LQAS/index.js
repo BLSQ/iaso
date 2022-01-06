@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { useSafeIntl, Select, LoadingSpinner } from 'bluesquare-components';
+import { useSafeIntl, Select } from 'bluesquare-components';
 
 import { Grid, Box, makeStyles } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
@@ -84,32 +84,26 @@ export const Lqas = () => {
                 </Grid>
                 <Grid container item spacing={2} direction="row">
                     <Grid item xs={6}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box ml={2}>
-                                <LqasImMap
-                                    round="round_1"
-                                    selectedCampaign={campaign}
-                                    type="lqas"
-                                    countryId={countryOfSelectedCampaign}
-                                    campaigns={campaigns}
-                                />
-                            </Box>
-                        )}
+                        <Box ml={2}>
+                            <LqasImMap
+                                round="round_1"
+                                selectedCampaign={campaign}
+                                type="lqas"
+                                countryId={countryOfSelectedCampaign}
+                                campaigns={campaigns}
+                            />
+                        </Box>
                     </Grid>
                     <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box mr={2}>
-                                <LqasImMap
-                                    round="round_2"
-                                    selectedCampaign={campaign}
-                                    type="lqas"
-                                    countryId={countryOfSelectedCampaign}
-                                    campaigns={campaigns}
-                                />
-                            </Box>
-                        )}
+                        <Box mr={2}>
+                            <LqasImMap
+                                round="round_2"
+                                selectedCampaign={campaign}
+                                type="lqas"
+                                countryId={countryOfSelectedCampaign}
+                                campaigns={campaigns}
+                            />
+                        </Box>
                     </Grid>
                 </Grid>
                 <Grid container item spacing={2} direction="row">
@@ -184,26 +178,22 @@ export const Lqas = () => {
                 </Grid>
                 <Grid container item spacing={2} direction="row">
                     <Grid item xs={6}>
-                        {!isLoading && campaign && (
-                            <Box ml={2} mt={2}>
-                                <CaregiversTable
-                                    campaign={campaign}
-                                    round="round_2"
-                                    chartKey="CGTable1"
-                                />
-                            </Box>
-                        )}
+                        <Box ml={2} mt={2}>
+                            <CaregiversTable
+                                campaign={campaign}
+                                round="round_2"
+                                chartKey="CGTable1"
+                            />
+                        </Box>
                     </Grid>
                     <Grid item xs={6}>
-                        {!isLoading && campaign && (
-                            <Box mr={2} mt={2}>
-                                <CaregiversTable
-                                    campaign={campaign}
-                                    round="round_2"
-                                    chartKey="CGTable2"
-                                />
-                            </Box>
-                        )}
+                        <Box mr={2} mt={2}>
+                            <CaregiversTable
+                                campaign={campaign}
+                                round="round_2"
+                                chartKey="CGTable2"
+                            />
+                        </Box>
                     </Grid>
                 </Grid>
                 <DisplayIfUserHasPerm permission="iaso_polio_config">

@@ -15,7 +15,10 @@ import {
     determineStatusForDistrict as lqasDistrictStatus,
     makeLqasMapLegendItems,
 } from '../../pages/LQAS/utils.ts';
-import { imDistrictColors, lqasDistrictColors } from '../../pages/IM/constants';
+import {
+    imDistrictColors,
+    lqasDistrictColors,
+} from '../../pages/IM/constants.ts';
 import { getScopeStyle, findDataForShape, findScope } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
 import { useConvertedLqasImData } from '../../pages/IM/requests';

@@ -473,7 +473,6 @@ class IMStatsViewSet(viewsets.ViewSet):
         stats_types = stats_types.split(",")
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="im-config")
-        res = []
         form_count = 0
         fully_mapped_form_count = 0
         base_stats = {"total_child_fmd": 0, "total_child_checked": 0}
@@ -544,7 +543,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                 if form.get("HH", None):
                     if "HH" in stats_types:
                         for kid in form.get("HH", []):
-                            type = "HH"
                             Child_FMD = kid.get("HH/U5_Vac_FM_HH", 0)
                             Child_Checked = kid.get("HH/Total_U5_Present_HH", 0)
 
@@ -558,7 +556,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                 else:
                     if "OHH" in stats_types:
                         for kid in form.get("OHH", []):
-                            type = "OHH"
                             Child_FMD = kid.get("OHH/Child_FMD", 0)
                             Child_Checked = kid.get("OHH/Child_Checked", 0)
 
@@ -583,20 +580,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                     campaign_name = campaign.obr_name
                     campaign_stats[campaign_name]["country_id"] = country.id
                     campaign_stats[campaign_name]["country_name"] = country.name
-                    row = [
-                        type,
-                        country.name,
-                        region_name,
-                        district_name,
-                        form.get("Response"),
-                        round_number,
-                        form.get("today"),
-                        total_Child_FMD,
-                        total_Child_Checked,
-                        campaign_name,
-                    ]
-                    res.append(row)
-
                     round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
                     round_stats_key = round_key + "_nfm_stats"
                     for key in nfm_counts_dict:
@@ -604,10 +587,8 @@ class IMStatsViewSet(viewsets.ViewSet):
                             campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
                         )
                     d = campaign_stats[campaign_name][round_key][district_name]
-                    d["total_child_fmd"] = d["total_child_fmd"] + row[7]
-                    d["total_child_checked"] = d["total_child_checked"] + row[8]
-                    region_name = row[2]
-                    district_name = row[3]
+                    d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
+                    d["total_child_checked"] = d["total_child_checked"] + total_Child_Checked
                     district = find_district(district_name, region_name, districts_qs, district_dict)
                     if not district:
                         district_long_name = "%s - %s" % (district_name, region_name)
@@ -887,7 +868,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
             "MobileMessaging_SocialMedia",
         ]
         for country_config in config.content:
-            res = []
             country = OrgUnit.objects.get(id=country_config["country_id"])
 
             districts_qs = (
@@ -922,7 +902,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
-                type = "HH"
                 caregiver_counts_dict = defaultdict(lambda: defaultdict(int))
                 for HH in form.get("Count_HH", []):
                     # check finger
@@ -969,39 +948,25 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     campaign_name = campaign.obr_name
                     campaign_stats[campaign_name]["country_id"] = country.id
                     campaign_stats[campaign_name]["country_name"] = country.name
-                    row = [
-                        type,
-                        country.name,
-                        region_name,
-                        district_name,
-                        form.get("Response"),
-                        round_number,
-                        form.get("today"),
-                        total_Child_FMD,
-                        len(form.get("Count_HH", [])),
-                        campaign_name,
-                    ]
-                    res.append(row)
-
                     round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
                     round_stats_key = round_key + "_nfm_stats"
+
                     for key in nfm_counts_dict:
                         campaign_stats[campaign_name][round_stats_key][key] = (
                             campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
                         )
 
                     d = campaign_stats[campaign_name][round_key][district_name]
+
                     for key in caregiver_counts_dict[district_name]:
                         d["care_giver_stats"][key] += caregiver_counts_dict[district_name][key]
 
-                    d["total_child_fmd"] = d["total_child_fmd"] + row[7]
-                    d["total_child_checked"] = d["total_child_checked"] + row[8]
-                    region_name = row[2]
-                    district_name = row[3]
+                    d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
+                    d["total_child_checked"] = d["total_child_checked"] + len(form.get("Count_HH", []))
                     district = find_district(district_name, region_name, districts_qs, district_dict)
                     if not district:
                         district_long_name = "%s - %s" % (district_name, region_name)
-                        
+
                         if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
                             campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
                     else:

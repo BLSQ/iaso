@@ -615,7 +615,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                             campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
                     else:
                         d["district"] = district.id
-                        d["region"] = region_name
+                        d["region_name"] = district.parent.name
                         fully_mapped_form_count += 1
                 else:
                     day_country_not_found[country.name][today_string] += 1
@@ -1001,10 +1001,12 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     district = find_district(district_name, region_name, districts_qs, district_dict)
                     if not district:
                         district_long_name = "%s - %s" % (district_name, region_name)
+                        
                         if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
                             campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
                     else:
                         d["district"] = district.id
+                        d["region_name"] = district.parent.name
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1

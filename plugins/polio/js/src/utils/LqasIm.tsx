@@ -6,29 +6,18 @@ import {
 } from '../constants/types';
 import { LqasImPopup } from '../components/LQAS-IM/LqasImPopUp';
 
-const findRegion = (
-    roundData: LqasImCampaignData,
-    regions: Record<number, string>,
-): string | null => {
-    const districtId = roundData.district;
-    if (districtId) return regions[districtId];
-    return null;
-};
-
-const convertRoundDataToArray = (roundDataAsDict, regions) => {
+const convertRoundDataToArray = roundDataAsDict => {
     const roundData = Object.entries(roundDataAsDict);
     return roundData.map((entry: [string, LqasImCampaignData]) => {
         return {
             ...entry[1],
             name: entry[0],
-            region: findRegion(entry[1], regions),
         };
     });
 };
 
 export const convertAPIData = (
     data: LqasImData,
-    regions: Record<number, string> = {},
 ): Record<string, ConvertedLqasImData> => {
     if (!data) return {};
     const { stats } = data;
@@ -37,14 +26,8 @@ export const convertAPIData = (
     campaignKeys.forEach(key => {
         if (stats[key]) {
             result[key] = {};
-            result[key].round_1 = convertRoundDataToArray(
-                stats[key].round_1,
-                regions,
-            );
-            result[key].round_2 = convertRoundDataToArray(
-                stats[key].round_2,
-                regions,
-            );
+            result[key].round_1 = convertRoundDataToArray(stats[key].round_1);
+            result[key].round_2 = convertRoundDataToArray(stats[key].round_2);
         }
     });
     return result;

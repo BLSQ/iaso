@@ -50,7 +50,7 @@ export type LqasImCampaignData = {
 
 export type LqasImCampaignDataWithNameAndRegion = LqasImCampaignData & {
     name: string;
-    region: string | null;
+    region_name: string | null;
 };
 export type ConvertedLqasImData = {
     round_1: LqasImCampaignDataWithNameAndRegion[];

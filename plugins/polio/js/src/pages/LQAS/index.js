@@ -5,12 +5,9 @@ import { useSafeIntl, Select, LoadingSpinner } from 'bluesquare-components';
 import { Grid, Box, makeStyles } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../constants/messages';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
-import { useGetRegions } from '../../hooks/useGetRegions';
-import { makeDataForTable } from './utils.ts';
 import { makeCampaignsDropDown } from '../../utils/index';
-import { findCountryIds, convertAPIData } from '../../utils/LqasIm.tsx';
+import { findCountryIds } from '../../utils/LqasIm.tsx';
 
 import { useLqasIm } from '../IM/requests';
 import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
@@ -20,7 +17,6 @@ import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
 import { LqasImPercentageChart } from '../../components/LQAS-IM/LqasImPercentageChart.tsx';
 import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
 import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
-import { CaregiversTableHeader } from '../../components/LQAS-IM/CaregiversTableHeader.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -40,38 +36,18 @@ export const Lqas = () => {
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
     const { data: LQASData, isLoading } = useLqasIm('lqas');
-    const countryIds = findCountryIds(LQASData);
+
+    const countryIds = findCountryIds(LQASData).toString();
+
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({
-            countries: countryIds.toString(),
-            enabled: countryIds.length,
+            countries: countryIds,
+            enabled: Boolean(countryIds),
         }).query;
 
     const countryOfSelectedCampaign = campaigns.filter(
         campaignOption => campaignOption.obr_name === campaign,
     )[0]?.top_level_org_unit_id;
-
-    const { data: shapes = [] } = useGetGeoJson(
-        countryOfSelectedCampaign,
-        'DISTRICT',
-    );
-
-    const { data: regions = [] } = useGetRegions(countryOfSelectedCampaign);
-    // TODO use this dict i.o looping through regions in older functions
-    const regionsDict = useMemo(() => {
-        const dict = {};
-        shapes.forEach(shape => {
-            dict[shape.id] = regions.filter(
-                region => shape.parent_id === region.id,
-            )[0]?.name;
-        });
-        return dict;
-    }, [regions, shapes]);
-
-    const convertedData = useMemo(
-        () => convertAPIData(LQASData, regionsDict),
-        [LQASData, regionsDict],
-    );
 
     const dropDownOptions = useMemo(
         () => makeCampaignsDropDown(campaigns),
@@ -210,17 +186,9 @@ export const Lqas = () => {
                     <Grid item xs={6}>
                         {!isLoading && campaign && (
                             <Box ml={2} mt={2}>
-                                <CaregiversTableHeader
-                                    data={convertedData}
-                                    campaign={campaign}
-                                    round="round_1"
-                                />
                                 <CaregiversTable
-                                    data={makeDataForTable(
-                                        convertedData,
-                                        campaign,
-                                        'round_1',
-                                    )}
+                                    campaign={campaign}
+                                    round="round_2"
                                     chartKey="CGTable1"
                                 />
                             </Box>
@@ -229,17 +197,9 @@ export const Lqas = () => {
                     <Grid item xs={6}>
                         {!isLoading && campaign && (
                             <Box mr={2} mt={2}>
-                                <CaregiversTableHeader
-                                    data={convertedData}
+                                <CaregiversTable
                                     campaign={campaign}
                                     round="round_2"
-                                />
-                                <CaregiversTable
-                                    data={makeDataForTable(
-                                        convertedData,
-                                        campaign,
-                                        'round_2',
-                                    )}
                                     chartKey="CGTable2"
                                 />
                             </Box>

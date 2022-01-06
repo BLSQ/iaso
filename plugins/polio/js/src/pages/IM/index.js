@@ -33,12 +33,10 @@ const useStyles = makeStyles(styles);
 export const ImStats = ({ imType }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-
     const [campaign, setCampaign] = useState();
-
     const { data: imData, isLoading } = useLqasIm(imType);
-    const countryIds = findCountryIds(imData).toString();
 
+    const countryIds = findCountryIds(imData).toString();
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({
             countries: countryIds,

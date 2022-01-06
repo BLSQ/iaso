@@ -245,8 +245,8 @@ class FormVersion(models.Model):
         return {
             "id": self.id,
             "version_id": self.version_id,
-            "file": settings.FILE_SERVER_URL + self.file.url,
-            "xls_file": settings.FILE_SERVER_URL + self.xls_file.url if self.xls_file else None,
+            "file": self.file.url,
+            "xls_file": self.xls_file.url if self.xls_file else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }

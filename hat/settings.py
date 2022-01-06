@@ -34,7 +34,6 @@ USE_S3 = os.getenv("USE_S3") == "true"
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("IASO_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
-FILE_SERVER_URL = os.environ.get("FILE_SERVER_URL", "https://1d1c-188-189-138-13.ngrok.io")
 
 ALLOWED_HOSTS = ["*"]
 

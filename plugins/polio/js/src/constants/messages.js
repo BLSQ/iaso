@@ -911,7 +911,7 @@ const MESSAGES = defineMessages({
     },
     ratioUnvaccinated: {
         id: 'iaso.polio.label.ratioUnvaccinated',
-        defaultMessage: '% unvaccinated',
+        defaultMessage: 'Unvaccinated',
     },
 });
 

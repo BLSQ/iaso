@@ -79,15 +79,18 @@ const Forms = ({ params, showOnlyDeleted }) => {
                 extraComponent={
                     !showOnlyDeleted &&
                     userHasFormsPermission && (
-                        <AddButtonComponent
-                            onClick={() => {
-                                dispatch(
-                                    redirectTo(baseUrls.formDetail, {
-                                        formId: '0',
-                                    }),
-                                );
-                            }}
-                        />
+                        <div id="add-button-container">
+                            <AddButtonComponent
+                                id="add-form-button"
+                                onClick={() => {
+                                    dispatch(
+                                        redirectTo(baseUrls.formDetail, {
+                                            formId: '0',
+                                        }),
+                                    );
+                                }}
+                            />
+                        </div>
                     )
                 }
                 toggleActiveSearch

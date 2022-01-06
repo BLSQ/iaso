@@ -46,6 +46,7 @@ export type LqasImCampaignData = {
     total_child_checked: number;
     care_giver_stats: Record<string, number>;
     district?: number;
+    total_sites_visited:number;
 };
 
 export type LqasImCampaignDataWithNameAndRegion = LqasImCampaignData & {
@@ -58,3 +59,20 @@ export type ConvertedLqasImData = {
 };
 
 export type IntlFormatMessage = (message:IntlMessage)=>string
+
+export type LqasIMtype = 'imGlobal'|'imIHH'|'imOHH'|'lqas'
+
+export type LqasImMapLegendData = {
+    reportingDistricts: number,
+    total_child_checked: number,
+    total_child_fmd?: number,
+    total_sites_visited: number,
+    ratioUnvaccinated?:string
+}
+
+export type LqasImParams = {
+    type: LqasIMtype;
+    data?: Record<string, ConvertedLqasImData>;
+    campaign?: string;
+    round: RoundString;
+}

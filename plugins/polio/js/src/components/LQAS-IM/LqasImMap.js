@@ -5,7 +5,7 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../MapComponent/MapLegend';
 import { MapLegendContainer } from '../MapComponent/MapLegendContainer';
-import { makePopup } from '../../utils/LqasIm.tsx';
+import { makePopup, makeAccordionData } from '../../utils/LqasIm.tsx';
 import { LqasImMapHeader } from './LqasImMapHeader.tsx';
 import {
     determineStatusForDistrict as imDistrictStatus,
@@ -23,6 +23,7 @@ import { getScopeStyle, findDataForShape, findScope } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
 import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
+import { AccordionMapLegend } from '../MapComponent/AccordionMapLegend.tsx';
 
 export const LqasImMap = ({
     type,
@@ -33,27 +34,34 @@ export const LqasImMap = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
-    // HERE
-    const { data: imData, isLoading } = useConvertedLqasImData(type);
+    const { data, isLoading } = useConvertedLqasImData(type);
     const { data: shapes = [] } = useGetGeoJson(countryId, 'DISTRICT');
 
     const scope = findScope(selectedCampaign, campaigns, shapes);
 
     const legendItems = useMemo(() => {
-        // HERE
         if (type === 'lqas') {
             return makeLqasMapLegendItems(formatMessage)(
-                imData,
+                data,
                 selectedCampaign,
                 round,
             );
         }
         return makeImMapLegendItems(formatMessage)(
-            imData,
+            data,
             selectedCampaign,
             round,
         );
-    }, [imData, selectedCampaign, round, formatMessage, type]);
+    }, [data, selectedCampaign, round, formatMessage, type]);
+
+    const accordionItems = useMemo(() => {
+        return makeAccordionData({
+            type,
+            data,
+            round,
+            campaign: selectedCampaign,
+        });
+    }, [data, type, round, selectedCampaign]);
 
     const getShapeStyles = useCallback(
         shape => {
@@ -62,7 +70,7 @@ export const LqasImMap = ({
             const status = determineStatusForDistrict(
                 findDataForShape({
                     shape,
-                    data: imData,
+                    data,
                     round,
                     campaign: selectedCampaign,
                 }),
@@ -72,7 +80,7 @@ export const LqasImMap = ({
             if (status) return districtColors[status];
             return getScopeStyle(shape, scope);
         },
-        [type, scope, selectedCampaign, round, imData],
+        [type, scope, selectedCampaign, round, data],
     );
     const title =
         type === 'lqas'
@@ -98,6 +106,15 @@ export const LqasImMap = ({
                                 legendItems={legendItems}
                                 width="lg"
                             />
+                            {type !== 'lqas' && (
+                                <AccordionMapLegend
+                                    title={MESSAGES.collectionStats}
+                                    noDataMsg={MESSAGES.noDataFound}
+                                    data={accordionItems}
+                                    defaultExpanded
+                                    width="lg"
+                                />
+                            )}
                         </MapLegendContainer>
                         <MapComponent
                             // Use the key to force render
@@ -110,11 +127,7 @@ export const LqasImMap = ({
                                 main: 'District',
                                 background: 'Region',
                             }}
-                            makePopup={makePopup(
-                                imData,
-                                round,
-                                selectedCampaign,
-                            )}
+                            makePopup={makePopup(data, round, selectedCampaign)}
                             height={600}
                         />
                     </Box>

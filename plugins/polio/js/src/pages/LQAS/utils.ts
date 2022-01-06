@@ -174,6 +174,7 @@ export const makeDataForTable = (
 };
 
 export const convertStatToPercent = (data = 0, total = 1): string => {
+    if (data > total) throw new Error("data can't be greater than total");
     // using safeTotal, because 0 can still be passed as arg and override default value
     const safeTotal = total || 1;
     const ratio = (100 * data) / safeTotal;

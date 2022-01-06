@@ -1,6 +1,5 @@
 import pathlib
 import typing
-from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction

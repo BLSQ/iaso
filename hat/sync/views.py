@@ -39,9 +39,6 @@ def check_user_agent(request):
 @permission_classes([])
 def form_upload(request: HttpRequest) -> HttpResponse:
     main_file = request.FILES["xml_submission_file"]
-
-    print("REQUEST: ", request.headers)
-
     instances = Instance.objects.filter(file_name=main_file.name)
     if instances:
         i = instances.first()

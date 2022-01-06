@@ -4,7 +4,6 @@ import { RoundString } from '../../constants/types';
 import MESSAGES from '../../constants/messages';
 import { PercentageChartWithTitle } from './PercentageChartWithTitle';
 import { useGetRegions } from '../../hooks/useGetRegions';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { formatImDataForChart, imTooltipFormatter } from '../../pages/IM/utils';
 import {
@@ -28,7 +27,6 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { data, isLoading } = useConvertedLqasImData(type);
     const { data: regions = [] } = useGetRegions(countryId);
-    const { data: shapes = [] } = useGetGeoJson(countryId, 'DISTRICT');
     const title: string =
         round === 'round_1'
             ? formatMessage(MESSAGES.round_1)
@@ -39,7 +37,6 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
                 data,
                 campaign,
                 round,
-                shapes,
                 regions,
             });
         }
@@ -47,10 +44,9 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
             data,
             campaign,
             round,
-            shapes,
             regions,
         });
-    }, [data, campaign, shapes, regions, round, type]);
+    }, [data, campaign, regions, round, type]);
     const tooltipFormatter =
         type === 'lqas' ? lqasChartTooltipFormatter : imTooltipFormatter;
     return (

@@ -55,33 +55,12 @@ export const makeImMapLegendItems =
         return [passedLegendItem, disqualifiedLegendItem, failedLegendItem];
     };
 
-const getImStatsWithRegion = ({ data, campaign, round, shapes }) => {
-    if (!data[campaign]) return [];
-    return [...data[campaign][round]].map(district => ({
-        ...district,
-        region: shapes
-            .filter(shape => shape.id === district.district)
-            .map(shape => shape.parent_id)[0],
-    }));
-};
-
-export const formatImDataForChart = ({
-    data,
-    campaign,
-    round,
-    shapes,
-    regions,
-}) => {
-    const dataForRound = getImStatsWithRegion({
-        data,
-        campaign,
-        round,
-        shapes,
-    });
+export const formatImDataForChart = ({ data, campaign, round, regions }) => {
+    const dataForRound = data[campaign] ? [...data[campaign][round]] : [];
     return regions
         .map(region => {
             const regionData = dataForRound.filter(
-                district => district.region === region.id,
+                district => district.region_name === region.name,
             );
             const aggregatedData = regionData
                 .map(district => ({

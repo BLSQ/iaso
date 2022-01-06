@@ -73,34 +73,24 @@ export const makeLqasMapLegendItems =
         return [passedLegendItem, disqualifiedLegendItem, failedLegendItem];
     };
 
-export const getLqasStatsWithRegion = ({ data, campaign, round, shapes }) => {
+export const getLqasStatsWithStatus = ({ data, campaign, round }) => {
     if (!data[campaign]) return [];
     return [...data[campaign][round]].map(district => ({
         ...district,
-        region: shapes
-            .filter(shape => shape.id === district.district)
-            .map(shape => shape.parent_id)[0],
         status: determineStatusForDistrict(district),
     }));
 };
 
-export const formatLqasDataForChart = ({
-    data,
-    campaign,
-    round,
-    shapes,
-    regions,
-}) => {
-    const dataForRound = getLqasStatsWithRegion({
+export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
+    const dataForRound = getLqasStatsWithStatus({
         data,
         campaign,
         round,
-        shapes,
     });
     return regions
         .map(region => {
             const regionData = dataForRound.filter(
-                district => district.region === region.id,
+                district => district.region_name === region.name,
             );
             const passing = regionData.filter(
                 district => parseInt(district.status, 10) === 1,

@@ -1,6 +1,6 @@
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getRequest } from 'Iaso/libs/Api';
-import { IM_POC_URL, LQAS_POC_URL } from './constants';
+import { IM_POC_URL, LQAS_POC_URL } from './constants.ts';
 import { convertAPIData } from '../../utils/LqasIm.tsx';
 
 export const getLqasIm = type => {

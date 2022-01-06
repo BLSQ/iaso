@@ -475,7 +475,7 @@ class IMStatsViewSet(viewsets.ViewSet):
         config = get_object_or_404(Config, slug="im-config")
         form_count = 0
         fully_mapped_form_count = 0
-        base_stats = {"total_child_fmd": 0, "total_child_checked": 0}
+        base_stats = {"total_child_fmd": 0, "total_child_checked": 0, "total_sites_visited": 0}
         campaign_stats = defaultdict(
             lambda: {
                 "round_1": defaultdict(base_stats.copy),
@@ -536,6 +536,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
             for form in forms:
                 form_count += 1
+                total_sites_visited = 0
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
@@ -543,6 +544,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 if form.get("HH", None):
                     if "HH" in stats_types:
                         for kid in form.get("HH", []):
+                            total_sites_visited += 1
                             Child_FMD = kid.get("HH/U5_Vac_FM_HH", 0)
                             Child_Checked = kid.get("HH/Total_U5_Present_HH", 0)
 
@@ -556,6 +558,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 else:
                     if "OHH" in stats_types:
                         for kid in form.get("OHH", []):
+                            total_sites_visited += 1
                             Child_FMD = kid.get("OHH/Child_FMD", 0)
                             Child_Checked = kid.get("OHH/Child_Checked", 0)
 
@@ -589,6 +592,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                     d = campaign_stats[campaign_name][round_key][district_name]
                     d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
                     d["total_child_checked"] = d["total_child_checked"] + total_Child_Checked
+                    d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
                     district = find_district(district_name, region_name, districts_qs, district_dict)
                     if not district:
                         district_long_name = "%s - %s" % (district_name, region_name)
@@ -839,7 +843,12 @@ class LQASStatsViewSet(viewsets.ViewSet):
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="lqas-config")
 
-        base_stats = lambda: {"total_child_fmd": 0, "total_child_checked": 0, "care_giver_stats": defaultdict(int)}
+        base_stats = lambda: {
+            "total_child_fmd": 0,
+            "total_child_checked": 0,
+            "care_giver_stats": defaultdict(int),
+            "total_sites_visited": 0,
+        }
         campaign_stats = defaultdict(
             lambda: {
                 "round_1": defaultdict(base_stats),
@@ -899,11 +908,13 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     print("missing OHH_COUNT", form)
 
                 district_name = form.get("District")
+                total_sites_visited = 0
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
                 caregiver_counts_dict = defaultdict(lambda: defaultdict(int))
                 for HH in form.get("Count_HH", []):
+                    total_sites_visited += 1
                     # check finger
                     Child_FMD = HH.get("Count_HH/FM_Child", 0)
                     Child_Checked = HH.get("Count_HH/Child_Checked", 0)
@@ -963,6 +974,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
                     d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
                     d["total_child_checked"] = d["total_child_checked"] + len(form.get("Count_HH", []))
+                    d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
                     district = find_district(district_name, region_name, districts_qs, district_dict)
                     if not district:
                         district_long_name = "%s - %s" % (district_name, region_name)

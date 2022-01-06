@@ -83,6 +83,10 @@ export const formsPath = {
         },
         {
             isRequired: false,
+            key: 'showDeleted',
+        },
+        {
+            isRequired: false,
             key: 'searchActive',
         },
     ],
@@ -90,22 +94,12 @@ export const formsPath = {
     isRootUrl: true,
 };
 
-export const archivedPath = {
-    baseUrl: baseUrls.archived,
-    permissions: ['iaso_forms', 'iaso_submissions'],
-    params: [
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'searchActive',
-        },
-    ],
-    component: props => <Forms {...props} showOnlyDeleted />,
-    isRootUrl: true,
+export const pagesPath = {
+    baseUrl: baseUrls.pages,
+    permissions: ['iaso_pages'],
+    featureFlag: SHOW_PAGES,
+    params: [],
+    component: props => <Pages {...props} />,
 };
 
 export const formDetailPath = {
@@ -513,14 +507,6 @@ export const orgUnitTypesPath = {
     ],
 };
 
-export const pagesPath = {
-    baseUrl: baseUrls.pages,
-    permissions: ['iaso_pages'],
-    featureFlag: SHOW_PAGES,
-    params: [],
-    component: props => <Pages {...props} />,
-};
-
 export const page401 = {
     baseUrl: baseUrls.error401,
     component: () => <PageError errorCode="401" />,
@@ -541,7 +527,6 @@ export const page500 = {
 
 export const routeConfigs = [
     formsPath,
-    archivedPath,
     formDetailPath,
     formsStatsPath,
     mappingsPath,

@@ -64,12 +64,6 @@ const menuItems = [
                 key: 'completeness',
                 icon: props => <DoneAll {...props} />,
             },
-            {
-                label: MESSAGES.archived,
-                permissions: paths.archivedPath.permissions,
-                key: 'archived',
-                icon: props => <Delete {...props} />,
-            },
         ],
     },
     {

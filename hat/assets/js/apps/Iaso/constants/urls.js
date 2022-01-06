@@ -1,6 +1,5 @@
 export const baseUrls = {
     forms: 'forms/list',
-    archived: 'forms/archived',
     formDetail: 'forms/detail',
     mappings: 'forms/mappings',
     formsStats: 'forms/stats',

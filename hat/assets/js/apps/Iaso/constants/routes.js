@@ -8,6 +8,7 @@ import Runs from '../domains/links/Runs';
 import OrgUnitDetail from '../domains/orgUnits/details';
 import Completeness from '../domains/completeness';
 import Instances from '../domains/instances';
+import CompareSubmissions from '../domains/instances/compare/index.tsx';
 import InstanceDetail from '../domains/instances/details';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
@@ -17,7 +18,7 @@ import DataSources from '../domains/dataSources';
 import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import Groups from '../domains/orgUnits/groups';
-import Types from '../domains/orgUnits/types';
+import Types from '../domains/orgUnits/orgUnitTypes';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
@@ -47,6 +48,18 @@ const paginationPathParamsWithPrefix = prefix =>
         key: `${prefix}${capitalize(p.key, true)}`,
     }));
 
+const orgUnitsFiltersPathParamsWithPrefix = (prefix, withChildren) =>
+    orgUnitFiltersWithPrefix(prefix, withChildren).map(f => ({
+        isRequired: false,
+        key: f.urlKey,
+    }));
+
+const linksFiltersPathParamsWithPrefix = prefix =>
+    linksFiltersWithPrefix(prefix).map(f => ({
+        isRequired: false,
+        key: f.urlKey,
+    }));
+
 export const getPath = path => {
     let url = `/${path.baseUrl}`;
     path.params.forEach(p => {
@@ -70,6 +83,10 @@ export const formsPath = {
         },
         {
             isRequired: false,
+            key: 'showDeleted',
+        },
+        {
+            isRequired: false,
             key: 'searchActive',
         },
     ],
@@ -85,24 +102,6 @@ export const pagesPath = {
     component: props => <Pages {...props} />,
 };
 
-export const archivedPath = {
-    baseUrl: baseUrls.archived,
-    permissions: ['iaso_forms', 'iaso_submissions'],
-    params: [
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'searchActive',
-        },
-    ],
-    component: props => <Forms {...props} showOnlyDeleted />,
-    isRootUrl: true,
-};
-
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
     permissions: ['iaso_forms', 'iaso_submissions'],
@@ -116,36 +115,11 @@ export const formDetailPath = {
     ],
 };
 
-export const mappingsPath = {
-    baseUrl: baseUrls.mappings,
-    permissions: ['iaso_mappings'],
-    component: props => <Mappings {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'formId',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
-};
-
-export const mappingDetailPath = {
-    baseUrl: baseUrls.mappingDetail,
-    permissions: ['iaso_mappings'],
-    component: props => <MappingDetails {...props} />,
-    params: [
-        {
-            isRequired: true,
-            key: 'mappingVersionId',
-        },
-        {
-            isRequired: false,
-            key: 'questionName',
-        },
-    ],
+export const formsStatsPath = {
+    baseUrl: baseUrls.formsStats,
+    permissions: ['iaso_forms'],
+    component: () => <FormsStats />,
+    params: [],
 };
 
 export const instancesPath = {
@@ -235,7 +209,7 @@ export const instancesPath = {
 
 export const instanceDetailPath = {
     baseUrl: baseUrls.instanceDetail,
-    permissions: ['iaso_forms', 'iaso_submissions'],
+    permissions: ['iaso_submissions'],
     component: props => <InstanceDetail {...props} />,
     params: [
         {
@@ -245,11 +219,48 @@ export const instanceDetailPath = {
     ],
 };
 
-export const formsStatsPath = {
-    baseUrl: baseUrls.formsStats,
-    permissions: ['iaso_forms'],
-    component: () => <FormsStats />,
-    params: [],
+export const compareInstancesPath = {
+    baseUrl: baseUrls.compareInstances,
+    permissions: ['iaso_submissions'],
+    component: props => <CompareSubmissions {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'instanceIds',
+        },
+    ],
+};
+
+export const mappingsPath = {
+    baseUrl: baseUrls.mappings,
+    permissions: ['iaso_mappings'],
+    component: props => <Mappings {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'formId',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+
+export const mappingDetailPath = {
+    baseUrl: baseUrls.mappingDetail,
+    permissions: ['iaso_mappings'],
+    component: props => <MappingDetails {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'mappingVersionId',
+        },
+        {
+            isRequired: false,
+            key: 'questionName',
+        },
+    ],
 };
 
 export const orgUnitsPath = {
@@ -283,17 +294,6 @@ export const orgUnitsPath = {
         },
     ],
 };
-const orgUnitsFiltersPathParamsWithPrefix = (prefix, withChildren) =>
-    orgUnitFiltersWithPrefix(prefix, withChildren).map(f => ({
-        isRequired: false,
-        key: f.urlKey,
-    }));
-
-const linksFiltersPathParamsWithPrefix = prefix =>
-    linksFiltersWithPrefix(prefix).map(f => ({
-        isRequired: false,
-        key: f.urlKey,
-    }));
 
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
@@ -490,6 +490,7 @@ export const groupsPath = {
         })),
     ],
 };
+
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
     permissions: ['iaso_org_units'],
@@ -526,13 +527,13 @@ export const page500 = {
 
 export const routeConfigs = [
     formsPath,
-    archivedPath,
     formDetailPath,
     formsStatsPath,
     mappingsPath,
     mappingDetailPath,
     instancesPath,
     instanceDetailPath,
+    compareInstancesPath,
     orgUnitsPath,
     orgUnitsDetailsPath,
     linksPath,

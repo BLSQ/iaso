@@ -7,11 +7,10 @@ import {
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import { fetchAllProjects } from '../projects/actions';
-import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
+import { fetchAllOrgUnitTypes } from '../orgUnits/orgUnitTypes/actions';
 import { redirectTo } from '../../routing/actions';
 
 import formsTableColumns from './config';
-import archivedFormsTableColumns from './configArchived';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -38,13 +37,7 @@ const Forms = ({ params, showOnlyDeleted }) => {
         restoreForm(dispatch, formId).then(() => {
             setForceRefresh(true);
         });
-    const columnsConfig = showOnlyDeleted
-        ? archivedFormsTableColumns(
-              intl.formatMessage,
-              handleRestoreForm,
-              userHasFormsPermission,
-          )
-        : formsTableColumns({
+    const columnsConfig = formsTableColumns({
               formatMessage: intl.formatMessage,
               user: currentUser,
               deleteForm: handleDeleteForm,

@@ -812,6 +812,9 @@ class Instance(models.Model):
     deleted = models.BooleanField(default=False)
     to_export = models.BooleanField(default=False)
 
+    def get_absolute_url(self):
+        return f"/dashboard/forms/submission/instanceId/{self.pk}"
+
     def convert_location_from_field(self, field_name=None):
         f = field_name
         if f is None:

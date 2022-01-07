@@ -148,3 +148,8 @@ docker/enketo/start.sh
 
 temp.json
 *.mp4
+
+cypress/screenshots/
+cypress/videos/
+**/cypress/screenshots/
+**/cypress/videos/

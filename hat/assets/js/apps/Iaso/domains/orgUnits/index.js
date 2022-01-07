@@ -88,12 +88,6 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const getDefaultSource = currentUser =>
-    currentUser &&
-    currentUser.account &&
-    currentUser.account.default_version &&
-    currentUser.account.default_version.data_source;
-
 const OrgUnits = props => {
     const { params } = props;
     const { formatMessage } = useSafeIntl();
@@ -139,21 +133,24 @@ const OrgUnits = props => {
                 ? searches[ou.search_index].color
                 : null,
         }));
-    let multiEditDisabled = false;
-    if (!selection.selectAll && selection.selectedItems.length === 0) {
-        multiEditDisabled = true;
-    }
-    const selectionActions = [
-        {
-            icon: <EditIcon />,
-            label: formatMessage(MESSAGES.multiSelectionAction),
-            onClick: () => setMultiActionPopupOpen(true),
-            disabled: multiEditDisabled,
-        },
-    ];
+
+    const multiEditDisabled =
+        !selection.selectAll && selection.selectedItems.length === 0;
+
+    const selectionActions = useMemo(
+        () => [
+            {
+                icon: <EditIcon />,
+                label: formatMessage(MESSAGES.multiSelectionAction),
+                onClick: () => setMultiActionPopupOpen(true),
+                disabled: multiEditDisabled,
+            },
+        ],
+        [multiEditDisabled, formatMessage],
+    );
 
     const defaultSource = useMemo(
-        () => getDefaultSource(currentUser),
+        () => currentUser?.account?.default_version?.data_source,
         [currentUser],
     );
 
@@ -225,7 +222,10 @@ const OrgUnits = props => {
                 dispatch(setOrgUnitsListFetching(false));
             });
         },
-        [params.pageSize, params.order, params.page, searches],
+        // TODO: getEndpointUrl and params should be added, but the effects of doing so should be tested-> JIRA IA-997
+        // Disabling the es-lint rule for the time being
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [params.pageSize, params.order, params.page, searches, dispatch],
     );
 
     const fetchOrgUnitsLocations = () => {
@@ -314,6 +314,8 @@ const OrgUnits = props => {
             dispatch(setOrgUnits(null, true, params, 0, 1, []));
             dispatch(closeFixedSnackbar('locationLimitWarning'));
         };
+        // Leaving empty to run the effect only on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -322,7 +324,10 @@ const OrgUnits = props => {
             levels: null,
         };
         dispatch(redirectTo(baseUrl, newParams));
-    }, [params.validation_status, params.validation_status]);
+        // TODO test if adding params to the deps array breaks anything.
+        // diabling es-lint rule in the meantime
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [params.validation_status]);
 
     useEffect(() => {
         if (

@@ -40,7 +40,6 @@ export const LqasImMap = ({
     const scope = findScope(selectedCampaign, campaigns, shapes);
 
     const legendItems = useMemo(() => {
-        // HERE
         if (type === 'lqas') {
             return makeLqasMapLegendItems(formatMessage)(
                 imData,
@@ -93,7 +92,6 @@ export const LqasImMap = ({
                     <Box position="relative">
                         <MapLegendContainer>
                             <MapLegend
-                                // HERE
                                 title={title}
                                 legendItems={legendItems}
                                 width="lg"

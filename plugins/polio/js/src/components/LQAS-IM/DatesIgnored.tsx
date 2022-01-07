@@ -24,7 +24,6 @@ export const DatesIgnored: FunctionComponent<Props> = ({ data, campaign }) => {
         <>
             {campaign && (
                 <>
-                    {' '}
                     <Typography variant="h6">
                         {`${formatMessage(MESSAGES.datesIgnored)}:`}
                     </Typography>

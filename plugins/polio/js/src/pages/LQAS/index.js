@@ -181,7 +181,7 @@ export const Lqas = () => {
                         <Box ml={2} mt={2}>
                             <CaregiversTable
                                 campaign={campaign}
-                                round="round_2"
+                                round="round_1"
                                 chartKey="CGTable1"
                             />
                         </Box>

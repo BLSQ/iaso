@@ -1,14 +1,20 @@
 import MESSAGES from '../../constants/messages';
-import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED, nfmKeys } from './constants';
+import {
+    LQAS_PASS,
+    LQAS_FAIL,
+    LQAS_DISQUALIFIED,
+    lqasNfmKeys,
+} from '../IM/constants';
 import {
     BarChartData,
-    LqasImCampaign,
     NfmRoundString,
     RoundString,
-    IntlFormatMessage,
     LqasImCampaignDataWithNameAndRegion,
     ConvertedLqasImData,
+    FormatForNFMArgs,
 } from '../../constants/types';
+import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
+import { makeLegendItem } from '../../utils';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -38,37 +44,53 @@ export const getLqasStatsForRound = (lqasData, campaign, round) => {
     );
     const failed = allStatuses.filter(status => status === LQAS_FAIL);
 
-    return [totalEvaluated, passed, failed, disqualified];
+    return [passed, failed, disqualified];
 };
 
-export const getLqasStatsWithRegion = ({ data, campaign, round, shapes }) => {
+export const makeLqasMapLegendItems =
+    formatMessage => (lqasData, campaign, round) => {
+        const [passed, failed, disqualified] = getLqasStatsForRound(
+            lqasData,
+            campaign,
+            round,
+        );
+        const passedLegendItem = makeLegendItem({
+            color: OK_COLOR,
+            value: passed?.length,
+            message: formatMessage(MESSAGES.passing),
+        });
+        const failedLegendItem = makeLegendItem({
+            color: FAIL_COLOR,
+            value: failed?.length,
+            message: formatMessage(MESSAGES.failing),
+        });
+        const disqualifiedLegendItem = makeLegendItem({
+            color: WARNING_COLOR,
+            value: disqualified?.length,
+            message: formatMessage(MESSAGES.disqualified),
+        });
+
+        return [passedLegendItem, disqualifiedLegendItem, failedLegendItem];
+    };
+
+export const getLqasStatsWithStatus = ({ data, campaign, round }) => {
     if (!data[campaign]) return [];
     return [...data[campaign][round]].map(district => ({
         ...district,
-        region: shapes
-            .filter(shape => shape.id === district.district)
-            .map(shape => shape.parent_id)[0],
         status: determineStatusForDistrict(district),
     }));
 };
 
-export const formatLqasDataForChart = ({
-    data,
-    campaign,
-    round,
-    shapes,
-    regions,
-}) => {
-    const dataForRound = getLqasStatsWithRegion({
+export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
+    const dataForRound = getLqasStatsWithStatus({
         data,
         campaign,
         round,
-        shapes,
     });
     return regions
         .map(region => {
             const regionData = dataForRound.filter(
-                district => district.region === region.id,
+                district => district.region_name === region.name,
             );
             const passing = regionData.filter(
                 district => parseInt(district.status, 10) === 1,
@@ -101,13 +123,6 @@ export const lqasNfmTooltipFormatter = (value, _name, props) => {
     return [value, props.payload.nfmKey];
 };
 
-type FormatForNFMArgs = {
-    data: Record<string, LqasImCampaign>;
-    campaign: string;
-    round: RoundString;
-    formatMessage: IntlFormatMessage;
-};
-
 const sortLqasNfmKeys = (a, b) => {
     if (a.nfmKey === 'Other') return 1;
     if (b.nfmKey === 'Other') return 0;
@@ -130,10 +145,10 @@ export const formatLqasDataForNFMChart = ({
         const [name, value] = entry;
         return { name: formatMessage(MESSAGES[name]), value, nfmKey: name };
     });
-    if (convertedEntries.length === nfmKeys.length)
+    if (convertedEntries.length === lqasNfmKeys.length)
         return convertedEntries.sort(sortLqasNfmKeys);
     const dataKeys = Object.keys(campaignData);
-    const missingEntries = nfmKeys
+    const missingEntries = lqasNfmKeys
         .filter(nfmKey => !dataKeys.includes(nfmKey))
         .map(nfmKey => ({
             name: formatMessage(MESSAGES[nfmKey]),
@@ -152,7 +167,7 @@ export const makeDataForTable = (
     return data[campaign][round];
 
     // removed the filter so that the table reflects the total numbers of its title/header
-    // we should probably filter the not found everywhere, but we would have inconsistencies anyway because of the urrent backend implementation of nfm
+    // we should probably filter the not found everywhere, but we would have inconsistencies anyway because of the current backend implementation of nfm
     // return data[campaign][round].filter(roundData =>
     //     Boolean(roundData.district),
     // );

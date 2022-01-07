@@ -1,4 +1,6 @@
+/* eslint-disable no-param-reassign */
 /// <reference types="cypress" />
+import * as dotenv from 'dotenv';
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins
 //
@@ -15,8 +17,17 @@
 /**
  * @type {Cypress.PluginConfig}
  */
-// eslint-disable-next-line no-unused-vars
+dotenv.config();
 module.exports = (on, config) => {
-  // `on` is used to hook into various events Cypress emits
-  // `config` is the resolved Cypress config
-}
+    // `on` is used to hook into various events Cypress emits
+    // `config` is the resolved Cypress config
+    config.env.siteBaseUrl = process.env.CYPRESS_BASE_URL;
+
+    config.env.username = process.env.CYPRESS_USERNAME;
+    config.env.password = process.env.CYPRESS_PASSWORD;
+
+    config.env.sessionCookie = 'sessionid';
+    config.env.langageCookie = 'django_language';
+
+    return config;
+};

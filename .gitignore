@@ -147,3 +147,4 @@ docker/enketo/redis-enketo-main.conf
 docker/enketo/start.sh
 
 temp.json
+*.mp4

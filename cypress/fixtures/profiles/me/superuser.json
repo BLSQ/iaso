@@ -1,0 +1,48 @@
+{
+    "id": 2,
+    "first_name": "Bruce",
+    "user_name": "oneFistPunch",
+    "last_name": "Lee",
+    "email": "",
+    "account": {
+        "name": "RDC",
+        "id": 1,
+        "created_at": 1565543892.6493,
+        "updated_at": 1629976748.994371,
+        "default_version": {
+            "data_source": {
+                "name": "reference",
+                "description": "",
+                "id": 1,
+                "url": "",
+                "created_at": 1570547349.403788,
+                "updated_at": 1620406206.140532,
+                "versions": [
+                    {
+                        "number": 1,
+                        "description": null,
+                        "id": 3,
+                        "created_at": 1571141555.136647,
+                        "updated_at": 1571141555.136676,
+                        "org_units_count": 27573
+                    }
+                ]
+            },
+            "number": 1,
+            "description": null,
+            "id": 3,
+            "created_at": 1571141555.136647,
+            "updated_at": 1571141555.136676
+        },
+        "feature_flags": [
+            "ALLOW_CATCHMENT_EDITION",
+            "ALLOW_SHAPE_EDITION",
+            "SHOW_PAGES"
+        ]
+    },
+    "permissions": [],
+    "is_superuser": true,
+    "org_units": [],
+    "language": "en",
+    "user_id": 5
+}

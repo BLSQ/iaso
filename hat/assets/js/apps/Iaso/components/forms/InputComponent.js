@@ -161,6 +161,7 @@ class InputComponent extends Component {
             case 'checkbox':
                 return (
                     <Checkbox
+                        keyValue={keyValue}
                         disabled={disabled}
                         onChange={newValue => onChange(keyValue, newValue)}
                         value={value}

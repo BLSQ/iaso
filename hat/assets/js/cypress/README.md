@@ -8,7 +8,7 @@ Setup
 
 - Run `npm ci` to install it locally
 
-- As the authentification flow is tested too, you should set environment variables in your .env file:
+- As the authentication flow is tested too, you should set environment variables in your `.env` file:
 ``` {.sourceCode .env}
     CYPRESS_USERNAME="username_to_use"
     CYPRESS_PASSWORD="password_to_use"
@@ -20,7 +20,7 @@ Setup
     CYPRESS_BASE_URL="http://localhost:8081"
 ```
 
-> .env file should be located at the root of the project
+> `.env` file should be located at the root of the project
 
 Config
 -----
@@ -31,20 +31,21 @@ Config
     > for now we are only changing the default folder of cypress, changing the default viewport and use session support that allows us to save a session between tests
 
 ### 1. Fixtures  `hat/assets/js/cypress/fixtures`
-All the fake data needed to test the app in JSON format.
+All the dummy data needed to test the app in JSON format.
 You can find the doc [here](https://docs.cypress.io/guides/guides/network-requests#Fixtures)
 
 
 ### 2. Integration tests  `hat/assets/js/cypress/integration`
-The tests organized per domains.
-By prefixing folder name with numbers you can specify the orders of the tests.
+The tests organised by domains.
+By prefixing folder names with numbers you can specify the order of the tests.
 Test file has to be suffixed with `.spec.js`.
 
-Authentification is also tested, it is considered as a domain apart
+Authentication is also tested, it is considered as a domain.
+> In order to test a connected page you have to use `cy.login()` and `cy.visit("the_path_to_test")` before each test
 
 ### 3. Plugins `hat/assets/js/cypress/plugins/index.js`
 
-For now we are extending Cypress config with custom env variables used before.
+For now we are extending Cypress config with the custom env variables described in "Setup".
 
 You can also install extra [plugins](https://docs.cypress.io/plugins/directory) to use while testing.
 
@@ -63,7 +64,7 @@ We are using it to preserve cookies between tests.
 
 ### 5. Commands  `hat/assets/js/cypress/support/commands.js`
 
-In this file we can add custom commands that you can use in tests.
+In this file we can add custom commands that can be used in tests.
 
 e.g. `cy.login()` will authenticate the user into Django and save the session.
 > In order to test a connected page you have to use `cy.login()` and `cy.visit("the_path_to_test")` before each test
@@ -75,7 +76,7 @@ e.g. `cy.login()` will authenticate the user into Django and save the session.
 Testing
 -------
 
-- Run `cypress:open` to launch cypress ui
+- Run `cypress:open` to launch cypress GUI
 - Run `test:e2e` to launch cypress tests with node
     > This one need to be implemented in [github actions](https://docs.cypress.io/guides/continuous-integration/github-actions)
 
@@ -87,4 +88,4 @@ The approach here is:
 - changing filters values and checking that the url has been correctly adapted
 - check also if the Api call are done with the correct parameters
 - change user permissions and test the behaviour
-- ...
+- check the components error handling

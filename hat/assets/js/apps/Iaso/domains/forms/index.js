@@ -11,6 +11,7 @@ import { fetchAllOrgUnitTypes } from '../orgUnits/orgUnitTypes/actions';
 import { redirectTo } from '../../routing/actions';
 
 import formsTableColumns from './config';
+import archivedFormsTableColumns from './configArchived';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -22,8 +23,9 @@ import { baseUrls } from '../../constants/urls';
 import { formsFilters } from '../../constants/filters';
 import { userHasPermission } from '../users/utils';
 
-const Forms = ({ params, showOnlyDeleted }) => {
-    const baseUrl = showOnlyDeleted ? baseUrls.archived : baseUrls.forms;
+const Forms = ({ params, showOnlyDeleted = false}) => {
+    console.log(params)
+    const baseUrl =  baseUrls.forms;
     const intl = useSafeIntl();
     const dispatch = useDispatch();
     const currentUser = useSelector(state => state.users.current);
@@ -37,7 +39,13 @@ const Forms = ({ params, showOnlyDeleted }) => {
         restoreForm(dispatch, formId).then(() => {
             setForceRefresh(true);
         });
-    const columnsConfig = formsTableColumns({
+        const columnsConfig = showOnlyDeleted
+        ? archivedFormsTableColumns(
+              intl.formatMessage,
+              handleRestoreForm,
+              userHasFormsPermission,
+          )
+        : formsTableColumns({
               formatMessage: intl.formatMessage,
               user: currentUser,
               deleteForm: handleDeleteForm,

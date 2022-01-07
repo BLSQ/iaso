@@ -33,7 +33,6 @@ export const LqasImMap = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
-    // HERE
     const { data: imData, isLoading } = useConvertedLqasImData(type);
     const { data: shapes = [] } = useGetGeoJson(countryId, 'DISTRICT');
 

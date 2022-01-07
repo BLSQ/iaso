@@ -11,7 +11,6 @@ import { fetchAllOrgUnitTypes } from '../orgUnits/orgUnitTypes/actions';
 import { redirectTo } from '../../routing/actions';
 
 import formsTableColumns from './config';
-import archivedFormsTableColumns from './configArchived';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -24,13 +23,13 @@ import { formsFilters } from '../../constants/filters';
 import { userHasPermission } from '../users/utils';
 
 const Forms = ({ params }) => {
-    console.log(params);
     const baseUrl = baseUrls.forms;
     const intl = useSafeIntl();
     const dispatch = useDispatch();
     const currentUser = useSelector(state => state.users.current);
     const userHasFormsPermission = userHasPermission('iaso_forms', currentUser);
     const [forceRefresh, setForceRefresh] = useState(false);
+    const [showDeleted, setShowDeleted] = useState(params.showDeleted);
     const handleDeleteForm = formId =>
         deleteForm(dispatch, formId).then(() => {
             setForceRefresh(true);
@@ -39,18 +38,6 @@ const Forms = ({ params }) => {
         restoreForm(dispatch, formId).then(() => {
             setForceRefresh(true);
         });
-    const columnsConfig = params.showDeleted
-        ? archivedFormsTableColumns(
-              intl.formatMessage,
-              handleRestoreForm,
-              userHasFormsPermission,
-          )
-        : formsTableColumns({
-              formatMessage: intl.formatMessage,
-              user: currentUser,
-              deleteForm: handleDeleteForm,
-          });
-
     useEffect(() => {
         dispatch(fetchAllProjects());
         dispatch(fetchAllOrgUnitTypes());
@@ -70,15 +57,27 @@ const Forms = ({ params }) => {
                     all: true,
                     only_deleted: params.showDeleted ? 1 : 0,
                 }}
-                fetchItems={fetchForms}
+                fetchItems={(d, u, newParams) =>
+                    fetchForms(d, u).then(res => {
+                        if (newParams) {
+                            setShowDeleted(Boolean(newParams.showDeleted));
+                        }
+                        return res;
+                    })
+                }
                 defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
-                columns={columnsConfig}
+                columns={formsTableColumns({
+                    formatMessage: intl.formatMessage,
+                    user: currentUser,
+                    deleteForm: handleDeleteForm,
+                    restoreForm: handleRestoreForm,
+                    showDeleted,
+                })}
                 hideGpkg
                 defaultPageSize={50}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
                 extraComponent={
-                    !params.showDeleted &&
                     userHasFormsPermission && (
                         <AddButtonComponent
                             onClick={() => {

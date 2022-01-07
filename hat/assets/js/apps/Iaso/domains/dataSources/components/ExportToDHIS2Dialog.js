@@ -47,7 +47,9 @@ const initialExportData = defaultVersionId => ({
     ref_top_org_unit_id: null,
 
     ref_org_unit_type_ids: [],
+    source_org_unit_type_ids: [],
     ref_status: 'ALL', // "New", "Validated" etc, cf orgunit search
+    source_status: 'ALL', // "New", "Validated" etc, cf orgunit search
     fields_to_export: [
         FIELDS_TO_EXPORT.name,
         FIELDS_TO_EXPORT.parent,
@@ -319,6 +321,36 @@ export const ExportToDHIS2Dialog = ({
                                 hardReset
                             />
                         </Box>
+                    </Grid>
+                    <Grid xs={6} item>
+                        <InputComponent
+                            type="select"
+                            labelString={formatMessage(MESSAGES.status)}
+                            keyValue="source_status"
+                            value={exportData.source_status?.value}
+                            errors={exportData.source_status.errors}
+                            onChange={setExportDataField}
+                            options={orgUnitStatusAsOptions(formatMessage)}
+                            required
+                        />
+                    </Grid>
+                    <Grid xs={6} item>
+                        <InputComponent
+                            type="select"
+                            keyValue="source_org_unit_type_ids"
+                            labelString={formatMessage(MESSAGES.orgUnitTypes)}
+                            value={exportData.source_org_unit_type_ids?.value}
+                            errors={exportData.source_org_unit_type_ids.errors}
+                            onChange={(keyValue, newValue) => {
+                                setExportDataField(
+                                    keyValue,
+                                    commaSeparatedIdsToArray(newValue),
+                                );
+                            }}
+                            loading={areOrgUnitTypesLoading}
+                            options={orgUnitTypes ?? []}
+                            multi
+                        />
                     </Grid>
                     {credentials && (
                         <Grid xs={12} item>

@@ -128,7 +128,6 @@
     "iaso.polio.label.enableSendWeeklyEmail": "Send a weekly e-mail reminder",
     "iaso.polio.label.enterGoogleSheet": "Enter Google Sheet url",
     "iaso.polio.label.enterOrCreateGoogleSheet": "Enter Google Sheet url or use the button to generate a new one",
-    "iaso.polio.label.evaluated": "Evaluated",
     "iaso.polio.label.failed": "Failed",
     "iaso.polio.label.finished": "Finished",
     "iaso.polio.label.im": "IM",

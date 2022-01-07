@@ -43,7 +43,6 @@
 "iaso.polio.label.childrenChecked"
 "iaso.polio.label.childrenMarked"
 "iaso.polio.label.dictrictName"
-"iaso.polio.label.evaluated"
 "iaso.polio.label.passed"
 "iaso.polio.label.disqualified"
 "iaso.polio.label.failed"

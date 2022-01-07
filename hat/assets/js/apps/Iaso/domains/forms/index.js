@@ -23,9 +23,9 @@ import { baseUrls } from '../../constants/urls';
 import { formsFilters } from '../../constants/filters';
 import { userHasPermission } from '../users/utils';
 
-const Forms = ({ params, showOnlyDeleted = false}) => {
-    console.log(params)
-    const baseUrl =  baseUrls.forms;
+const Forms = ({ params }) => {
+    console.log(params);
+    const baseUrl = baseUrls.forms;
     const intl = useSafeIntl();
     const dispatch = useDispatch();
     const currentUser = useSelector(state => state.users.current);
@@ -39,7 +39,7 @@ const Forms = ({ params, showOnlyDeleted = false}) => {
         restoreForm(dispatch, formId).then(() => {
             setForceRefresh(true);
         });
-        const columnsConfig = showOnlyDeleted
+    const columnsConfig = params.showDeleted
         ? archivedFormsTableColumns(
               intl.formatMessage,
               handleRestoreForm,
@@ -68,7 +68,7 @@ const Forms = ({ params, showOnlyDeleted = false}) => {
                 apiParams={{
                     ...params,
                     all: true,
-                    only_deleted: showOnlyDeleted ? 1 : 0,
+                    only_deleted: params.showDeleted ? 1 : 0,
                 }}
                 fetchItems={fetchForms}
                 defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
@@ -78,7 +78,7 @@ const Forms = ({ params, showOnlyDeleted = false}) => {
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
                 extraComponent={
-                    !showOnlyDeleted &&
+                    !params.showDeleted &&
                     userHasFormsPermission && (
                         <AddButtonComponent
                             onClick={() => {
@@ -101,11 +101,6 @@ const Forms = ({ params, showOnlyDeleted = false}) => {
 
 Forms.propTypes = {
     params: PropTypes.object.isRequired,
-    showOnlyDeleted: PropTypes.bool,
-};
-
-Forms.defaultProps = {
-    showOnlyDeleted: false,
 };
 
 export default Forms;

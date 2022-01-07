@@ -87,25 +87,10 @@ export const formsPath = {
         },
         {
             isRequired: false,
-            key: 'search',
             key: 'showDeleted',
         },
     ],
     component: props => <Forms {...props} />,
-    isRootUrl: true,
-};
-
-export const archivedPath = {
-    baseUrl: baseUrls.forms,
-    permissions: ['iaso_forms', 'iaso_submissions'],
-    params: [
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'searchActive',
-        },
-    ],
-    component: props => <Forms {...props} showOnlyDeleted />,
     isRootUrl: true,
 };
 

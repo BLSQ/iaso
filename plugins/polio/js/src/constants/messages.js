@@ -889,6 +889,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.Tot_child_VaccinatedRoutine',
         defaultMessage: 'Child vaccinated in routine',
     },
+    noDataFound: {
+        id: 'iaso.polio.label.noDataFound',
+        defaultMessage: 'No data found',
+    },
+    collectionStats: {
+        id: 'iaso.polio.label.collectionStats',
+        defaultMessage: 'Collection stats',
+    },
+    reportingDistricts: {
+        id: 'iaso.polio.label.reportingDistricts',
+        defaultMessage: 'Reporting districts',
+    },
+    total_child_checked: {
+        id: 'iaso.polio.label.total_child_checked',
+        defaultMessage: 'Children seen',
+    },
+    total_sites_visited: {
+        id: 'iaso.polio.label.total_sites_visited',
+        defaultMessage: 'Sites visited',
+    },
+    ratioUnvaccinated: {
+        id: 'iaso.polio.label.ratioUnvaccinated',
+        defaultMessage: '% unvaccinated',
+    },
 });
 
 export default MESSAGES;

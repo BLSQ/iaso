@@ -284,7 +284,7 @@ class EnketoSubmissionAPIView(APIView):
             if not request.user.is_anonymous:
                 instance.last_modified_by = request.user
                 if not instance.file:
-                    instance.last_modified_by = request.user
+                    instance.created_by = request.user
 
             instance.file = main_file
             instance.json = {}

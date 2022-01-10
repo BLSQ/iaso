@@ -1,21 +1,19 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
-import { withStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { makeStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
 import EditIcon from '@material-ui/icons/Edit';
 
 import {
     DynamicTabs,
-    createUrl,
     getTableUrl,
     selectionInitialState,
     setTableSelection,
     commonStyles,
-    injectIntl,
     Table,
     LoadingSpinner,
+    useSafeIntl,
 } from 'bluesquare-components';
 
 import { fetchSources, fetchOrgUnitsList } from '../../utils/requests';
@@ -28,6 +26,7 @@ import {
     setFiltersUpdated,
     resetOrgUnits,
 } from './actions';
+import { redirectTo } from '../../routing/actions';
 
 import { orgUnitsTableColumns } from './config';
 
@@ -58,9 +57,8 @@ import { locationLimitMax } from './constants/orgUnitConstants';
 import { convertObjectToString } from '../../utils';
 
 const baseUrl = baseUrls.orgUnits;
-let warningDisplayed = false;
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     tabs: {
         ...commonStyles(theme).tabs,
@@ -88,176 +86,79 @@ const styles = theme => ({
     statusRejected: {
         color: theme.palette.error.main,
     },
-});
+}));
 
-const getDefaultSource = currentUser =>
-    currentUser &&
-    currentUser.account &&
-    currentUser.account.default_version &&
-    currentUser.account.default_version.data_source;
+const OrgUnits = props => {
+    const { params } = props;
+    const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
+    const dispatch = useDispatch();
 
-class OrgUnits extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            tab: props.params.tab ? props.params.tab : 'list',
-            listUpdated: false,
-            multiActionPopupOpen: false,
-            selection: selectionInitialState,
-            shouldRenderFilters: false,
-            resetTablePage: convertObjectToString(props.params),
-        };
-    }
+    const reduxPage = useSelector(state => state.orgUnits.orgUnitsPage);
+    const searchCounts = useSelector(
+        state => state.orgUnits.orgUnitsPage.counts,
+    );
+    const fetchingList = useSelector(state => state.orgUnits.fetchingList);
+    const fetchingOrgUnitTypes = useSelector(
+        state => state.orgUnits.fetchingOrgUnitTypes,
+    );
+    const filtersUpdated = useSelector(state => state.orgUnits.filtersUpdated);
+    const currentUser = useSelector(state => state.users.current);
 
-    // eslint-disable-next-line camelcase
-    UNSAFE_componentWillMount() {
-        const { dispatch, params, currentUser } = this.props;
+    const [tab, setTab] = useState(params.tab ? params.tab : 'list');
+    const [listUpdated, setListUpdated] = useState(false);
+    const [warningDisplayed, setWarningDisplayed] = useState(false);
+    const [multiActionPopupOpen, setMultiActionPopupOpen] = useState(false);
+    const [selection, setSelection] = useState(selectionInitialState);
+    const [shouldRenderFilters, setShouldRenderFilters] = useState(false);
+    const [resetTablePage, setResetTablePage] = useState(
+        convertObjectToString(params),
+    );
 
-        fetchSources(dispatch).then(data => {
-            const sources = [];
-            data.forEach((s, i) => {
-                sources.push({
-                    ...s,
-                    color: getChipColors(i),
-                });
-            });
-            this.props.setSources(sources);
-            if (this.props.params.searchActive) {
-                this.fetchOrgUnits(params.tab === 'map');
-            }
-            const searches = decodeSearch(params.searches);
-            let needRedirect = false;
-            const defaultSource = getDefaultSource(currentUser);
-            searches.forEach((search, index) => {
-                if (!search.source && defaultSource) {
-                    searches[index].source = defaultSource.id;
-                    needRedirect = true;
-                }
-            });
-            if (needRedirect) {
-                const newParams = {
-                    ...params,
-                    searches: encodeUriSearches(searches),
-                };
-                this.props.redirectTo(baseUrl, newParams);
-            }
-            this.setState({
-                shouldRenderFilters: true,
-            });
-        });
-    }
+    const tableColumns = orgUnitsTableColumns(
+        formatMessage,
+        classes,
+        decodeSearch(params.searches),
+    );
 
-    componentDidUpdate(prevProps) {
-        const validationStatusChanged =
-            prevProps.params.validation_status !==
-            this.props.params.validation_status;
-        const sourceChanged =
-            prevProps.params.source !== this.props.params.source;
-        if (validationStatusChanged || sourceChanged) {
-            const newParams = {
-                ...this.props.params,
-            };
-            newParams.levels = null;
-            this.props.redirectTo(baseUrl, newParams);
-        }
-        const { params, dispatch } = this.props;
-        const { tab } = this.state;
-        if (
-            params.pageSize !== prevProps.params.pageSize ||
-            params.order !== prevProps.params.order ||
-            params.page !== prevProps.params.page
-        ) {
-            this.fetchOrgUnits(false);
-        }
-        if (
-            (params.locationLimit <= locationLimitMax || tab !== 'map') &&
-            warningDisplayed
-        ) {
-            warningDisplayed = false;
-            dispatch(closeFixedSnackbar('locationLimitWarning'));
-        }
-        if (
-            params.locationLimit > locationLimitMax &&
-            tab === 'map' &&
-            !warningDisplayed
-        ) {
-            warningDisplayed = true;
-            dispatch(enqueueSnackbar(warningSnackBar('locationLimitWarning')));
-        }
-    }
+    const searches = useMemo(
+        () => decodeSearch(params.searches),
+        [params.searches],
+    );
+    const orgunits =
+        reduxPage.list &&
+        reduxPage.list.map(ou => ({
+            ...ou,
+            color: searches[ou.search_index]
+                ? searches[ou.search_index].color
+                : null,
+        }));
 
-    componentWillUnmount() {
-        const { dispatch } = this.props;
-        this.props.setOrgUnits(null, this.props.params, 0, 1, []);
-        dispatch(closeFixedSnackbar('locationLimitWarning'));
-    }
+    const multiEditDisabled =
+        !selection.selectAll && selection.selectedItems.length === 0;
 
-    handleTableSelection(selectionType, items = [], totalCount = 0) {
-        const { selection } = this.state;
-        const newSelection = setTableSelection(
-            selection,
-            selectionType,
-            items,
-            totalCount,
-        );
-        this.setState({
-            selection: newSelection,
-        });
-    }
+    const selectionActions = useMemo(
+        () => [
+            {
+                icon: <EditIcon />,
+                label: formatMessage(MESSAGES.multiSelectionAction),
+                onClick: () => setMultiActionPopupOpen(true),
+                disabled: multiEditDisabled,
+            },
+        ],
+        [multiEditDisabled, formatMessage],
+    );
 
-    handleChangeTab(tab, redirect = true) {
-        const { redirectTo, params, filtersUpdated } = this.props;
-        const { listUpdated } = this.state;
-        const newState = {
-            ...this.state,
-            tab,
-        };
-        if (redirect) {
-            const newParams = {
-                ...params,
-                tab,
-            };
-            redirectTo(baseUrl, newParams);
-        }
+    const defaultSource = useMemo(
+        () => currentUser?.account?.default_version?.data_source,
+        [currentUser],
+    );
 
-        if (
-            tab === 'map' &&
-            params.searchActive &&
-            (filtersUpdated || listUpdated)
-        ) {
-            if (listUpdated) {
-                newState.listUpdated = false;
-            }
-            this.fetchOrgUnitsLocations();
-        }
-        this.setState(newState);
-    }
-
-    onTabsDeleted() {
-        this.props.resetOrgUnits();
-        this.props.setFiltersUpdated(true);
-    }
-
-    onSearch(withLocations) {
-        const { redirectTo, params } = this.props;
-        this.handleTableSelection('reset');
-
-        const newParams = {
-            ...params,
-            page: 1,
-        };
-        this.setState({
-            ...this.state,
-            resetTablePage: convertObjectToString(newParams),
-        });
-        redirectTo(baseUrl, newParams);
-        this.fetchOrgUnits(withLocations);
-    }
-
-    getEndpointUrl(toExport, exportType = 'csv', asLocation = false) {
-        const { params } = this.props;
-        const searches = decodeSearch(params.searches);
-
+    const getEndpointUrl = (
+        toExport,
+        exportType = 'csv',
+        asLocation = false,
+    ) => {
         searches.forEach((s, i) => {
             searches[i].orgUnitParentId = searches[i].levels;
             searches[i].dateFrom = getFromDateString(searches[i].dateFrom);
@@ -282,240 +183,307 @@ class OrgUnits extends Component {
             exportType,
             asLocation,
         );
-    }
+    };
 
-    setMultiActionsPopupOpen(multiActionPopupOpen) {
-        this.setState({
-            multiActionPopupOpen,
-        });
-    }
-
-    fetchOrgUnitsLocations() {
-        const { dispatch, params } = this.props;
-        dispatch(this.props.setOrgUnitsListFetching(true));
-        const urlLocation = this.getEndpointUrl(false, '', true);
-        fetchOrgUnitsList(dispatch, urlLocation).then(orgUnits => {
-            this.props.setOrgUnitsLocations(
-                mapOrgUnitByLocation(orgUnits, decodeSearch(params.searches)),
-            );
-            dispatch(this.props.setOrgUnitsListFetching(false));
-        });
-    }
-
-    fetchOrgUnits(withLocations = true) {
-        const { params, dispatch } = this.props;
-        const url = this.getEndpointUrl();
-        dispatch(this.props.setOrgUnitsListFetching(true));
-        const promises = [fetchOrgUnitsList(dispatch, url)];
-        this.setState({
-            listUpdated: !withLocations,
-        });
-        if (withLocations) {
-            const urlLocation = this.getEndpointUrl(false, '', true);
-            promises.push(fetchOrgUnitsList(dispatch, urlLocation));
-        }
-        Promise.all(promises).then(data => {
-            if (!params.searchActive) {
-                const newParams = encodeUriParams(params);
-                newParams.searchActive = true;
-                this.props.redirectTo(baseUrl, newParams);
-            }
-            this.props.setOrgUnits(
-                data[0].orgunits,
-                params,
-                data[0].count,
-                data[0].pages,
-                data[0].counts,
-            );
-            this.props.setFiltersUpdated(false);
+    const fetchOrgUnits = useCallback(
+        (withLocations = false) => {
+            const url = getEndpointUrl();
+            dispatch(setOrgUnitsListFetching(true));
+            const promises = [fetchOrgUnitsList(dispatch, url)];
+            setListUpdated(!withLocations);
             if (withLocations) {
-                this.props.setOrgUnitsLocations(
-                    mapOrgUnitByLocation(
-                        data[1],
-                        decodeSearch(params.searches),
+                const urlLocation = getEndpointUrl(false, '', true);
+                promises.push(fetchOrgUnitsList(dispatch, urlLocation));
+            }
+            Promise.all(promises).then(data => {
+                if (!params.searchActive) {
+                    const newParams = encodeUriParams(params);
+                    newParams.searchActive = true;
+                    dispatch(redirectTo(baseUrl, newParams));
+                }
+                dispatch(
+                    setOrgUnits(
+                        data[0].orgunits,
+                        true,
+                        params,
+                        data[0].count,
+                        data[0].pages,
+                        data[0].counts,
                     ),
                 );
-            }
-            dispatch(this.props.setOrgUnitsListFetching(false));
+                dispatch(setFiltersUpdated(false));
+                if (withLocations) {
+                    dispatch(
+                        setOrgUnitsLocations(
+                            mapOrgUnitByLocation(data[1], searches),
+                        ),
+                    );
+                }
+                dispatch(setOrgUnitsListFetching(false));
+            });
+        },
+        // TODO: getEndpointUrl and params should be added, but the effects of doing so should be tested-> JIRA IA-997
+        // Disabling the es-lint rule for the time being
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [params.pageSize, params.order, params.page, searches, dispatch],
+    );
+
+    const fetchOrgUnitsLocations = () => {
+        dispatch(setOrgUnitsListFetching(true));
+        const urlLocation = getEndpointUrl(false, '', true);
+        fetchOrgUnitsList(dispatch, urlLocation).then(orgUnits => {
+            dispatch(
+                setOrgUnitsLocations(mapOrgUnitByLocation(orgUnits, searches)),
+            );
+            dispatch(setOrgUnitsListFetching(false));
         });
-    }
+    };
 
-    render() {
-        const {
-            classes,
-            params,
-            reduxPage,
-            intl: { formatMessage },
-            fetchingList,
-            fetchingOrgUnitTypes,
-            redirectTo,
-            searchCounts,
-            currentUser,
-        } = this.props;
+    const onTabsDeleted = () => {
+        dispatch(resetOrgUnits());
+        dispatch(setFiltersUpdated(true));
+    };
 
-        const {
-            tab,
-            multiActionPopupOpen,
+    const handleTableSelection = (
+        selectionType,
+        items = [],
+        totalCount = 0,
+    ) => {
+        const newSelection = setTableSelection(
             selection,
-            selection: { selectedItems, selectAll },
-            shouldRenderFilters,
-        } = this.state;
-        const tableColumns = orgUnitsTableColumns(
-            formatMessage,
-            classes,
-            decodeSearch(params.searches),
+            selectionType,
+            items,
+            totalCount,
         );
+        setSelection(newSelection);
+    };
 
-        const searches = decodeSearch(params.searches);
-        const orgunits =
-            reduxPage.list &&
-            reduxPage.list.map(ou => ({
-                ...ou,
-                color: searches[ou.search_index]
-                    ? searches[ou.search_index].color
-                    : null,
-            }));
-        let multiEditDisabled = false;
-        if (!selectAll && selectedItems.length === 0) {
-            multiEditDisabled = true;
+    const onSearch = withLocations => {
+        handleTableSelection('reset');
+        const newParams = {
+            ...params,
+            page: 1,
+        };
+        setResetTablePage(convertObjectToString(newParams));
+        dispatch(redirectTo(baseUrl, newParams));
+        fetchOrgUnits(withLocations);
+    };
+
+    const handleChangeTab = newtab => {
+        setTab(newtab);
+        const newParams = {
+            ...params,
+            tab: newtab,
+        };
+        dispatch(redirectTo(baseUrl, newParams));
+        if (
+            newtab === 'map' &&
+            params.searchActive &&
+            (filtersUpdated || listUpdated)
+        ) {
+            if (listUpdated) {
+                setListUpdated(false);
+            }
+
+            dispatch(
+                setOrgUnitsLocations({
+                    locations: [],
+                    shapes: [],
+                }),
+            );
+            fetchOrgUnitsLocations();
         }
-        const selectionActions = [
-            {
-                icon: <EditIcon />,
-                label: formatMessage(MESSAGES.multiSelectionAction),
-                onClick: () => this.setMultiActionsPopupOpen(true),
-                disabled: multiEditDisabled,
-            },
-        ];
+    };
 
-        const defaultSource = getDefaultSource(currentUser);
-        return (
-            <>
-                {(fetchingList || !shouldRenderFilters) && <LoadingSpinner />}
-                <OrgUnitsMultiActionsDialog
-                    open={multiActionPopupOpen}
+    useEffect(() => {
+        fetchSources(dispatch).then(data => {
+            const sources = [];
+            data.forEach((s, i) => {
+                sources.push({
+                    ...s,
+                    color: getChipColors(i),
+                });
+            });
+            dispatch(setSources(sources));
+            if (params.searchActive) {
+                fetchOrgUnits(params.tab === 'map');
+            }
+            setShouldRenderFilters(true);
+        });
+        return () => {
+            dispatch(setOrgUnits(null, true, params, 0, 1, []));
+            dispatch(closeFixedSnackbar('locationLimitWarning'));
+        };
+        // Leaving empty to run the effect only on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        const newParams = {
+            ...params,
+            levels: null,
+        };
+        dispatch(redirectTo(baseUrl, newParams));
+        // TODO test if adding params to the deps array breaks anything.
+        // diabling es-lint rule in the meantime
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [params.validation_status]);
+
+    useEffect(() => {
+        if (
+            (params.locationLimit <= locationLimitMax || tab !== 'map') &&
+            warningDisplayed
+        ) {
+            setWarningDisplayed(false);
+            dispatch(closeFixedSnackbar('locationLimitWarning'));
+        }
+        if (
+            params.locationLimit > locationLimitMax &&
+            tab === 'map' &&
+            !warningDisplayed
+        ) {
+            setWarningDisplayed(true);
+            dispatch(enqueueSnackbar(warningSnackBar('locationLimitWarning')));
+        }
+    }, [warningDisplayed, params.locationLimit, tab]);
+
+    return (
+        <>
+            {(fetchingList || !shouldRenderFilters) && <LoadingSpinner />}
+            <OrgUnitsMultiActionsDialog
+                open={multiActionPopupOpen}
+                params={params}
+                closeDialog={() => setMultiActionPopupOpen(false)}
+                fetchOrgUnits={() => fetchOrgUnits(false)}
+                selection={selection}
+            />
+            <TopBar title={formatMessage(MESSAGES.title)}>
+                <DynamicTabs
+                    deleteMessage={MESSAGES.delete}
+                    addMessage={MESSAGES.add}
+                    baseLabel={formatMessage(MESSAGES.search)}
                     params={params}
-                    closeDialog={() => this.setMultiActionsPopupOpen(false)}
-                    fetchOrgUnits={() => this.fetchOrgUnits(false)}
-                    selection={selection}
+                    defaultItem={{
+                        validation_status: 'all',
+                        color: getChipColors(searches.length + 1).replace(
+                            '#',
+                            '',
+                        ),
+                        source: defaultSource && defaultSource.id,
+                    }}
+                    paramKey="searches"
+                    tabParamKey="searchTabIndex"
+                    baseUrl={baseUrl}
+                    redirectTo={(path, newParams) =>
+                        dispatch(redirectTo(path, newParams))
+                    }
+                    onTabsUpdated={() => dispatch(setFiltersUpdated(true))}
+                    onTabsDeleted={() => onTabsDeleted()}
+                    maxItems={9}
+                    counts={searchCounts}
+                    displayCounts
                 />
-                <TopBar title={formatMessage(MESSAGES.title)}>
-                    <DynamicTabs
-                        deleteMessage={MESSAGES.delete}
-                        addMessage={MESSAGES.add}
-                        baseLabel={formatMessage(MESSAGES.search)}
-                        params={params}
-                        defaultItem={{
-                            validation_status: 'all',
-                            color: getChipColors(searches.length + 1).replace(
-                                '#',
-                                '',
-                            ),
-                            source: defaultSource && defaultSource.id,
-                        }}
-                        paramKey="searches"
-                        tabParamKey="searchTabIndex"
-                        baseUrl={baseUrl}
-                        redirectTo={redirectTo}
-                        onTabsUpdated={() => this.props.setFiltersUpdated(true)}
-                        onTabsDeleted={() => this.onTabsDeleted()}
-                        maxItems={9}
-                        counts={searchCounts}
-                        displayCounts
-                    />
-                </TopBar>
-                <Grid container spacing={4}>
-                    <Grid item xs={12}>
-                        <Box className={classes.containerFullHeightPadded}>
-                            {shouldRenderFilters &&
-                                decodeSearch(params.searches).map(
-                                    (s, searchIndex) => {
-                                        const currentSearchIndex = parseInt(
-                                            params.searchTabIndex,
-                                            10,
-                                        );
-                                        return (
-                                            <div
-                                                key={searchIndex}
-                                                className={
-                                                    searchIndex !==
-                                                    currentSearchIndex
-                                                        ? classes.hiddenOpacity
-                                                        : null
+            </TopBar>
+            <Grid container spacing={4}>
+                <Grid item xs={12}>
+                    <Box className={classes.containerFullHeightPadded}>
+                        {shouldRenderFilters &&
+                            decodeSearch(params.searches).map(
+                                (s, searchIndex) => {
+                                    const currentSearchIndex = parseInt(
+                                        params.searchTabIndex,
+                                        10,
+                                    );
+                                    return (
+                                        <div
+                                            key={searchIndex}
+                                            className={
+                                                searchIndex !==
+                                                currentSearchIndex
+                                                    ? classes.hiddenOpacity
+                                                    : null
+                                            }
+                                        >
+                                            <OrgUnitsFiltersComponent
+                                                baseUrl={baseUrl}
+                                                params={params}
+                                                onSearch={() =>
+                                                    onSearch(
+                                                        params.tab === 'map',
+                                                    )
                                                 }
-                                            >
-                                                <OrgUnitsFiltersComponent
-                                                    baseUrl={baseUrl}
-                                                    params={params}
-                                                    onSearch={() =>
-                                                        this.onSearch(
-                                                            params.tab ===
-                                                                'map',
-                                                        )
-                                                    }
-                                                    currentTab={tab}
-                                                    searchIndex={searchIndex}
-                                                />
-                                            </div>
-                                        );
-                                    },
-                                )}
-                            {params.searchActive && (
-                                <>
-                                    <Tabs
-                                        value={tab}
-                                        classes={{
-                                            root: classes.tabs,
-                                        }}
-                                        className={classes.marginBottom}
-                                        indicatorColor="primary"
-                                        onChange={(event, newtab) =>
-                                            this.handleChangeTab(newtab)
+                                                currentTab={tab}
+                                                searchIndex={searchIndex}
+                                            />
+                                        </div>
+                                    );
+                                },
+                            )}
+                        {params.searchActive && (
+                            <>
+                                <Tabs
+                                    value={tab}
+                                    classes={{
+                                        root: classes.tabs,
+                                    }}
+                                    className={classes.marginBottom}
+                                    indicatorColor="primary"
+                                    onChange={(event, newtab) =>
+                                        handleChangeTab(newtab)
+                                    }
+                                >
+                                    <Tab
+                                        value="list"
+                                        label={formatMessage(MESSAGES.list)}
+                                    />
+                                    <Tab
+                                        value="map"
+                                        label={formatMessage(MESSAGES.map)}
+                                    />
+                                </Tabs>
+                                {tab === 'list' && (
+                                    <Table
+                                        data={orgunits || []}
+                                        pages={reduxPage.pages}
+                                        defaultSorted={[
+                                            { id: 'id', desc: false },
+                                        ]}
+                                        columns={tableColumns}
+                                        count={reduxPage.count}
+                                        baseUrl={baseUrl}
+                                        params={params}
+                                        marginTop={false}
+                                        countOnTop={false}
+                                        multiSelect
+                                        selection={selection}
+                                        selectionActions={selectionActions}
+                                        redirectTo={(path, newParams) =>
+                                            dispatch(
+                                                redirectTo(path, newParams),
+                                            )
                                         }
-                                    >
-                                        <Tab
-                                            value="list"
-                                            label={formatMessage(MESSAGES.list)}
-                                        />
-                                        <Tab
-                                            value="map"
-                                            label={formatMessage(MESSAGES.map)}
-                                        />
-                                    </Tabs>
-                                    {tab === 'list' && (
-                                        <Table
-                                            data={orgunits || []}
-                                            pages={reduxPage.pages}
-                                            defaultSorted={[
-                                                { id: 'id', desc: false },
-                                            ]}
-                                            columns={tableColumns}
-                                            count={reduxPage.count}
-                                            baseUrl={baseUrl}
-                                            params={params}
-                                            marginTop={false}
-                                            countOnTop={false}
-                                            multiSelect
-                                            selection={selection}
-                                            selectionActions={selectionActions}
-                                            redirectTo={redirectTo}
-                                            setTableSelection={(
+                                        setTableSelection={(
+                                            selectionType,
+                                            items,
+                                            totalCount,
+                                        ) =>
+                                            handleTableSelection(
                                                 selectionType,
                                                 items,
                                                 totalCount,
-                                            ) =>
-                                                this.handleTableSelection(
-                                                    selectionType,
-                                                    items,
-                                                    totalCount,
-                                                )
-                                            }
-                                            resetPageToOne={
-                                                this.state.resetTablePage
-                                            }
-                                        />
-                                    )}
-                                    {tab === 'map' && !fetchingOrgUnitTypes && (
+                                            )
+                                        }
+                                        resetPageToOne={resetTablePage}
+                                    />
+                                )}
+                                {!fetchingOrgUnitTypes && (
+                                    <div
+                                        className={
+                                            tab === 'map'
+                                                ? ''
+                                                : classes.hiddenOpacity
+                                        }
+                                    >
                                         <div
                                             className={
                                                 classes.containerMarginNeg
@@ -523,89 +491,39 @@ class OrgUnits extends Component {
                                         >
                                             <OrgunitsMap params={params} />
                                         </div>
-                                    )}
-                                    {tab === 'list' && reduxPage.count > 0 && (
-                                        <Box
-                                            mb={4}
-                                            mt={1}
-                                            display="flex"
-                                            justifyContent="flex-end"
-                                        >
-                                            <DownloadButtonsComponent
-                                                csvUrl={this.getEndpointUrl(
-                                                    true,
-                                                    'csv',
-                                                )}
-                                                xlsxUrl={this.getEndpointUrl(
-                                                    true,
-                                                    'xlsx',
-                                                )}
-                                                gpkgUrl={this.getEndpointUrl(
-                                                    true,
-                                                    'gpkg',
-                                                )}
-                                            />
-                                        </Box>
-                                    )}
-                                </>
-                            )}
-                        </Box>
-                    </Grid>
+                                    </div>
+                                )}
+                                {tab === 'list' && reduxPage.count > 0 && (
+                                    <Box
+                                        mb={4}
+                                        mt={1}
+                                        display="flex"
+                                        justifyContent="flex-end"
+                                    >
+                                        <DownloadButtonsComponent
+                                            csvUrl={getEndpointUrl(true, 'csv')}
+                                            xlsxUrl={getEndpointUrl(
+                                                true,
+                                                'xlsx',
+                                            )}
+                                            gpkgUrl={getEndpointUrl(
+                                                true,
+                                                'gpkg',
+                                            )}
+                                        />
+                                    </Box>
+                                )}
+                            </>
+                        )}
+                    </Box>
                 </Grid>
-            </>
-        );
-    }
-}
-OrgUnits.defaultProps = {
-    reduxPage: undefined,
-    currentUser: undefined,
+            </Grid>
+        </>
+    );
 };
 
 OrgUnits.propTypes = {
-    classes: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
-    reduxPage: PropTypes.object,
     params: PropTypes.object.isRequired,
-    setOrgUnits: PropTypes.func.isRequired,
-    resetOrgUnits: PropTypes.func.isRequired,
-    redirectTo: PropTypes.func.isRequired,
-    setSources: PropTypes.func.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    setOrgUnitsListFetching: PropTypes.func.isRequired,
-    fetchingList: PropTypes.bool.isRequired,
-    setOrgUnitsLocations: PropTypes.func.isRequired,
-    fetchingOrgUnitTypes: PropTypes.bool.isRequired,
-    filtersUpdated: PropTypes.bool.isRequired,
-    setFiltersUpdated: PropTypes.func.isRequired,
-    searchCounts: PropTypes.array.isRequired,
-    currentUser: PropTypes.object,
 };
 
-const MapStateToProps = state => ({
-    reduxPage: state.orgUnits.orgUnitsPage,
-    searchCounts: state.orgUnits.orgUnitsPage.counts,
-    fetchingList: state.orgUnits.fetchingList,
-    fetchingOrgUnitTypes: state.orgUnits.fetchingOrgUnitTypes,
-    filtersUpdated: state.orgUnits.filtersUpdated,
-    currentUser: state.users.current,
-});
-
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-    setOrgUnits: (orgUnitsList, params, count, pages, counts) =>
-        dispatch(setOrgUnits(orgUnitsList, true, params, count, pages, counts)),
-    resetOrgUnits: () => dispatch(resetOrgUnits()),
-    redirectTo: (key, params) =>
-        dispatch(push(`${key}${createUrl(params, '')}`)),
-    setSources: sources => dispatch(setSources(sources)),
-    setOrgUnitsListFetching: isFetching =>
-        dispatch(setOrgUnitsListFetching(isFetching)),
-    setOrgUnitsLocations: orgUnitsList =>
-        dispatch(setOrgUnitsLocations(orgUnitsList)),
-    setFiltersUpdated: filtersUpdated =>
-        dispatch(setFiltersUpdated(filtersUpdated)),
-});
-
-export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgUnits)),
-);
+export default OrgUnits;

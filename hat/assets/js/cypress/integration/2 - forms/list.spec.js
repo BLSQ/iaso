@@ -48,7 +48,7 @@ const goToPage = (
     cy.visit(baseUrl);
 };
 
-describe.only('Forms', () => {
+describe('Forms', () => {
     describe('page', () => {
         it('click on create button should redirect to form creation url', () => {
             goToPage();
@@ -196,7 +196,7 @@ describe.only('Forms', () => {
         });
     });
 
-    describe.only('api', () => {
+    describe('api', () => {
         it('should be called with base params', () => {
             goToPage(
                 superUser,

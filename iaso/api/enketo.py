@@ -282,10 +282,8 @@ class EnketoSubmissionAPIView(APIView):
 
             # Prevent from rewriting created_by if modification
             if not request.user.is_anonymous:
-                if instance.file:
-                    instance.last_modified_by = request.user
-                else:
-                    instance.created_by = request.user
+                instance.last_modified_by = request.user
+                if not instance.file:
                     instance.last_modified_by = request.user
 
             instance.file = main_file

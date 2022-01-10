@@ -104,6 +104,9 @@ const adaptForApi = data => {
     if (data.ref_status === 'ALL') {
         adaptedData.ref_status = '';
     }
+    if (data.source_status === 'ALL') {
+        adaptedData.source_status = '';
+    }
     return adaptedData;
 };
 

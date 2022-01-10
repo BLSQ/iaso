@@ -441,7 +441,7 @@ class OrgUnitDetail extends Component {
         let title = '';
         if (currentOrgUnit) {
             title = !isNewOrgunit
-                ? currentOrgUnit.name
+                ? currentOrgUnit?.name ?? ''
                 : formatMessage(MESSAGES.newOrgUnit);
             if (!isNewOrgunit) {
                 title = `${title}${

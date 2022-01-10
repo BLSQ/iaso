@@ -15,6 +15,7 @@ const gotToPage = (withForms = true, withUser = true) => {
     if (withForms) {
         cy.intercept('GET', '/api/forms/**', {
             fixture: 'forms/list.json',
+            times: 2,
         });
     }
     if (withUser) {
@@ -187,6 +188,7 @@ describe('Forms', () => {
                 gotToPage(true, false);
                 cy.intercept('GET', '/api/forms/**', {
                     fixture: 'forms/empty.json',
+                    times: 2,
                 });
                 cy.visit(baseUrl);
                 cy.get('#csv-export-button').should('not.exist');
@@ -202,6 +204,7 @@ describe('Forms', () => {
             cy.intercept(
                 {
                     pathname: '/api/forms/**',
+                    times: 2, // TODO: this should be fixed, normally only one call should be made
                     query: {
                         order: 'instance_updated_at',
                         all: 'true',
@@ -226,6 +229,7 @@ describe('Forms', () => {
             cy.intercept(
                 {
                     pathname: '/api/forms/**',
+                    times: 2, // TODO: this should be fixed, normally only one call should be made
                     query: {
                         order: 'instance_updated_at',
                         page: '1',

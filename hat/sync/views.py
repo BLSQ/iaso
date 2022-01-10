@@ -1,6 +1,7 @@
 import jwt
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
+from jwt import DecodeError
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from django.http.request import HttpRequest
 from django.http import HttpResponse
@@ -30,7 +31,7 @@ def detect_user_request(request):
         else:
             user = None
         return user
-    except KeyError:
+    except (KeyError, DecodeError):
         pass
 
 

@@ -4,23 +4,17 @@ from unittest import mock
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 from rest_framework import status
-from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APIClient
 
 from iaso import models as m
-from iaso.models import Account, OrgUnit
+from iaso.models import Account
 from iaso.test import APITestCase, TestCase
 
 from plugins.polio.management.commands.weekly_email import send_notification_email
-from plugins.polio.models import Campaign, Preparedness, Round, CountryUsersGroup
-from plugins.polio.preparedness.calculator import get_preparedness_score
-from plugins.polio.preparedness.exceptions import InvalidFormatError
-from plugins.polio.preparedness.spreadsheet_manager import *
-from plugins.polio.serializers import CampaignSerializer
-from .models import Preparedness, Round
-from .preparedness.calculator import get_preparedness_score
-from .preparedness.exceptions import InvalidFormatError
-from .preparedness.spreadsheet_manager import *
+
+from ..preparedness.calculator import get_preparedness_score
+from ..preparedness.exceptions import InvalidFormatError
+from ..preparedness.spreadsheet_manager import *
 
 
 class PolioAPITestCase(APITestCase):

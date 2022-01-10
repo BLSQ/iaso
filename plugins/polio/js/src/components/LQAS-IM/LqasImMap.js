@@ -101,7 +101,6 @@ export const LqasImMap = ({
                     <Box position="relative">
                         <MapLegendContainer>
                             <MapLegend
-                                // HERE
                                 title={title}
                                 legendItems={legendItems}
                                 width="lg"

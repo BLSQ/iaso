@@ -76,136 +76,168 @@ const formsTableColumns = ({
     user,
     deleteForm = () => null,
     orgUnitId,
-}) => [
-    {
-        Header: formatMessage(MESSAGES.name),
-        accessor: 'name',
-        style: { justifyContent: 'left' },
-    },
-    {
-        Header: formatMessage(MESSAGES.created_at),
-        accessor: 'created_at',
-        Cell: DateTimeCell,
-    },
-    {
-        Header: formatMessage(MESSAGES.updated_at),
-        accessor: 'updated_at',
-        Cell: DateTimeCell,
-    },
-    {
-        Header: formatMessage(MESSAGES.instance_updated_at),
-        accessor: 'instance_updated_at',
-        Cell: DateTimeCell,
-    },
-    {
-        Header: formatMessage(MESSAGES.type),
-        sortable: false,
-        accessor: 'org_unit_types',
-        Cell: settings =>
-            settings.row.original.org_unit_types
-                .map(o => o.short_name)
-                .join(', '),
-    },
-    {
-        Header: formatMessage(MESSAGES.records),
-        accessor: 'instances_count',
-    },
-    {
-        Header: formatMessage(MESSAGES.form_id),
-        accessor: 'form_id',
-        sortable: false,
-        style: { justifyContent: 'left' },
-    },
-    {
-        Header: formatMessage(MESSAGES.latest_version_files),
-        accessor: 'latest_version_files',
-        sortable: false,
-        Cell: settings =>
-            settings.row.original.latest_form_version !== null && (
-                <Grid container spacing={1} justifyContent="center">
-                    <Grid item>
-                        {settings.row.original.latest_form_version.version_id}
-                    </Grid>
+    restoreForm = () => null,
+    showDeleted,
+}) => {
+    const cols = [
+        {
+            Header: formatMessage(MESSAGES.name),
+            accessor: 'name',
+            style: { justifyContent: 'left' },
+        },
+        {
+            Header: formatMessage(MESSAGES.created_at),
+            accessor: 'created_at',
+            Cell: DateTimeCell,
+        },
+        {
+            Header: formatMessage(MESSAGES.updated_at),
+            accessor: 'updated_at',
+            Cell: DateTimeCell,
+        },
+        {
+            Header: formatMessage(MESSAGES.instance_updated_at),
+            accessor: 'instance_updated_at',
+            Cell: DateTimeCell,
+        },
+        {
+            Header: formatMessage(MESSAGES.type),
+            sortable: false,
+            accessor: 'org_unit_types',
+            Cell: settings =>
+                settings.row.original.org_unit_types
+                    .map(o => o.short_name)
+                    .join(', '),
+        },
+        {
+            Header: formatMessage(MESSAGES.records),
+            accessor: 'instances_count',
+        },
+        {
+            Header: formatMessage(MESSAGES.form_id),
+            accessor: 'form_id',
+            sortable: false,
+            style: { justifyContent: 'left' },
+        },
+        {
+            Header: formatMessage(MESSAGES.latest_version_files),
+            accessor: 'latest_version_files',
+            sortable: false,
+            Cell: settings =>
+                settings.row.original.latest_form_version !== null && (
                     <Grid container spacing={1} justifyContent="center">
-                        {settings.row.original.latest_form_version.xls_file && (
+                        <Grid item>
+                            {
+                                settings.row.original.latest_form_version
+                                    .version_id
+                            }
+                        </Grid>
+                        <Grid container spacing={1} justifyContent="center">
+                            {settings.row.original.latest_form_version
+                                .xls_file && (
+                                <Grid item>
+                                    <Link
+                                        download
+                                        href={
+                                            settings.row.original
+                                                .latest_form_version.xls_file
+                                        }
+                                    >
+                                        XLS
+                                    </Link>
+                                </Grid>
+                            )}
                             <Grid item>
                                 <Link
                                     download
                                     href={
                                         settings.row.original
-                                            .latest_form_version.xls_file
+                                            .latest_form_version.file
                                     }
                                 >
-                                    XLS
+                                    XML
                                 </Link>
                             </Grid>
-                        )}
-                        <Grid item>
-                            <Link
-                                download
-                                href={
-                                    settings.row.original.latest_form_version
-                                        .file
-                                }
-                            >
-                                XML
-                            </Link>
                         </Grid>
                     </Grid>
-                </Grid>
-            ),
-    },
-    {
-        Header: formatMessage(MESSAGES.actions),
-        resizable: false,
-        sortable: false,
-        width: 250,
-        accessor: 'actions',
-        Cell: settings => {
-            let urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}`;
-            if (orgUnitId) {
-                urlToInstances = `${urlToInstances}/levels/${orgUnitId}`;
-            }
-            urlToInstances = `${urlToInstances}/tab/list`;
-            return (
-                <section>
-                    {userHasPermission('iaso_submissions', user) &&
-                        settings.row.original.instances_count > 0 && (
+                ),
+        },
+        {
+            Header: formatMessage(MESSAGES.actions),
+            resizable: false,
+            sortable: false,
+            width: 250,
+            accessor: 'actions',
+            Cell: settings => {
+                let urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}`;
+                if (orgUnitId) {
+                    urlToInstances = `${urlToInstances}/levels/${orgUnitId}`;
+                }
+                urlToInstances = `${urlToInstances}/tab/list`;
+                return (
+                    <section>
+                        {showDeleted && (
                             <IconButtonComponent
-                                url={`${urlToInstances}`}
-                                icon="remove-red-eye"
-                                tooltipMessage={MESSAGES.viewInstances}
+                                onClick={() =>
+                                    restoreForm(settings.row.original.id)
+                                }
+                                icon="restore-from-trash"
+                                tooltipMessage={MESSAGES.restoreFormTooltip}
                             />
                         )}
-                    {userHasPermission('iaso_forms', user) && (
-                        <IconButtonComponent
-                            url={`${baseUrls.formDetail}/formId/${settings.row.original.id}`}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
-                        />
-                    )}
-                    {userHasPermission('iaso_forms', user) && (
-                        <IconButtonComponent
-                            url={`/forms/mappings/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
-                            icon="dhis"
-                            tooltipMessage={MESSAGES.dhis2Mappings}
-                        />
-                    )}
-                    {userHasPermission('iaso_forms', user) && (
-                        <DeleteDialog
-                            titleMessage={MESSAGES.deleteFormTitle}
-                            message={MESSAGES.deleteFormText}
-                            onConfirm={closeDialog =>
-                                deleteForm(settings.row.original.id).then(
-                                    closeDialog,
-                                )
-                            }
-                        />
-                    )}
-                </section>
-            );
+                        {!showDeleted && (
+                            <>
+                                {userHasPermission('iaso_submissions', user) &&
+                                    settings.row.original.instances_count >
+                                        0 && (
+                                        <IconButtonComponent
+                                            url={`${urlToInstances}`}
+                                            icon="remove-red-eye"
+                                            tooltipMessage={
+                                                MESSAGES.viewInstances
+                                            }
+                                        />
+                                    )}
+                                {userHasPermission('iaso_forms', user) && (
+                                    <IconButtonComponent
+                                        url={`${baseUrls.formDetail}/formId/${settings.row.original.id}`}
+                                        icon="edit"
+                                        tooltipMessage={MESSAGES.edit}
+                                    />
+                                )}
+                                {userHasPermission('iaso_forms', user) && (
+                                    <IconButtonComponent
+                                        url={`/forms/mappings/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                                        icon="dhis"
+                                        tooltipMessage={MESSAGES.dhis2Mappings}
+                                    />
+                                )}
+                                {userHasPermission('iaso_forms', user) && (
+                                    <DeleteDialog
+                                        titleMessage={MESSAGES.deleteFormTitle}
+                                        message={MESSAGES.deleteFormText}
+                                        onConfirm={closeDialog =>
+                                            deleteForm(
+                                                settings.row.original.id,
+                                            ).then(closeDialog)
+                                        }
+                                    />
+                                )}
+                            </>
+                        )}
+                    </section>
+                );
+            },
         },
-    },
-];
+    ];
+    if (showDeleted) {
+        cols.splice(1, 0, {
+            Header: formatMessage(MESSAGES.deleted_at),
+            accessor: 'deleted_at',
+            Cell: DateTimeCell,
+        });
+    }
+    return cols;
+};
 
 export default formsTableColumns;

@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
+from iaso.models import Account
+
 RAW = "RAW"
 TEXT = "TEXT"
 IFRAME = "IFRAME"
@@ -21,6 +23,7 @@ class Page(models.Model):
     users = models.ManyToManyField(User, related_name="pages", blank=True)
     needs_authentication = models.BooleanField(default=True)
     slug = models.SlugField(max_length=1000, unique=True)
+    account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

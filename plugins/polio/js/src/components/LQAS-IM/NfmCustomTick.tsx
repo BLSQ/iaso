@@ -9,7 +9,6 @@ export const NfmCustomTick: FunctionComponent<any> = ({ x, y, payload }) => {
             valuesAsWords.push(allWords.shift());
         }
         valuesAsWords.push(allWords.join(' '));
-        // const valueAsWords = [firstWord, allWords.join(' ')];
         return (
             <g transform={`translate(${x},${y})`}>
                 {valuesAsWords.map((word, index) => (

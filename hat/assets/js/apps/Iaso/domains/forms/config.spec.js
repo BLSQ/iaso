@@ -97,11 +97,11 @@ describe('Forms config', () => {
         });
     });
     describe('formsTableColumns', () => {
-        it('sould return an array of 9 columns', () => {
+        it('sould return an array of 10 columns', () => {
             columns = formsTableColumns({
                 formatMessage: () => null,
             });
-            expect(columns).to.have.lengthOf(9);
+            expect(columns).to.have.lengthOf(10);
         });
         it('should render a component if Cell is defined', () => {
             columns.forEach(c => {

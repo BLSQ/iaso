@@ -9,6 +9,7 @@ import { userHasPermission } from '../users/utils';
 import MESSAGES from './messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
+import { YesNoCell } from '../../components/Cells/YesNoCell';
 
 export const formVersionsTableColumns = (
     formatMessage,
@@ -99,6 +100,11 @@ const formsTableColumns = ({
             Header: formatMessage(MESSAGES.instance_updated_at),
             accessor: 'instance_updated_at',
             Cell: DateTimeCell,
+        },
+        {
+            Header: formatMessage(MESSAGES.singlePerPeriod),
+            accessor: 'single_per_period',
+            Cell: YesNoCell,
         },
         {
             Header: formatMessage(MESSAGES.type),

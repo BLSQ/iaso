@@ -71,12 +71,6 @@ export const findScope = (obrName, campaigns, shapes) => {
     return shapes.filter(shape => scopeIds.includes(shape.id));
 };
 
-export const findCountryIds = LqasData => {
-    const { stats } = LqasData;
-    const campaignKeys = Object.keys(stats);
-    return campaignKeys.map(campaignKey => stats[campaignKey].country_id);
-};
-
 export const makeLegendItem = ({ message, value, color }) => {
     return {
         label: `${message}: ${value}`,

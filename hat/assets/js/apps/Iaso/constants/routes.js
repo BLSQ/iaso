@@ -83,11 +83,11 @@ export const formsPath = {
         },
         {
             isRequired: false,
-            key: 'showDeleted',
+            key: 'searchActive',
         },
         {
             isRequired: false,
-            key: 'searchActive',
+            key: 'showDeleted',
         },
     ],
     component: props => <Forms {...props} />,

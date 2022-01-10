@@ -99,7 +99,7 @@ const SingleTable = ({
                     : getTableUrl(endPointPath, tableParams);
                 setIsLoading && setLoading(true);
                 fetchItems &&
-                    fetchItems(dispatch, url).then(res => {
+                    fetchItems(dispatch, url, newParams).then(res => {
                         setIsLoading && setLoading(false);
                         const r = {
                             list: res[dataKey !== '' ? dataKey : endPointPath],

@@ -5,6 +5,8 @@ import {
     NfmRoundString,
 } from '../../constants/types';
 import { IM_PASS, IM_FAIL, IM_WARNING, ImNfmKeys } from './constants';
+import { makeLegendItem } from '../../utils';
+import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -16,49 +18,49 @@ export const determineStatusForDistrict = district => {
 };
 
 export const getImStatsForRound = (imData, campaign, round) => {
-    if (!imData[campaign]) return [[], [], [], []];
-    const totalEvaluated = [...imData[campaign][round]];
-    const allStatuses = totalEvaluated.map(district => {
+    if (!imData[campaign]) return [[], [], []];
+    const allStatuses = [...imData[campaign][round]].map(district => {
         return determineStatusForDistrict(district);
     });
     const passed = allStatuses.filter(status => status === IM_PASS);
     const disqualified = allStatuses.filter(status => status === IM_WARNING);
     const failed = allStatuses.filter(status => status === IM_FAIL);
 
-    return [totalEvaluated, passed, failed, disqualified];
+    return [passed, failed, disqualified];
 };
 
-// FIXME duplicate with lqas
-const getImStatsWithRegion = ({ data, campaign, round, shapes }) => {
-    if (!data[campaign]) return [];
-    return [...data[campaign][round]].map(district => ({
-        ...district,
-        region: shapes
-            .filter(shape => shape.id === district.district)
-            .map(shape => shape.parent_id)[0],
-        // status: determineStatusForDistrict(district),
-        // childrenWithMark: district.total_child_fmd,
-        // childrenChecked: district.total_child_checked,
-    }));
-};
+export const makeImMapLegendItems =
+    formatMessage => (imData, campaign, round) => {
+        const [passed, failed, disqualified] = getImStatsForRound(
+            imData,
+            campaign,
+            round,
+        );
+        const passedLegendItem = makeLegendItem({
+            color: OK_COLOR,
+            value: passed?.length,
+            message: formatMessage(MESSAGES['1imOK']),
+        });
+        const disqualifiedLegendItem = makeLegendItem({
+            color: WARNING_COLOR,
+            value: disqualified?.length,
+            message: formatMessage(MESSAGES['2imWarning']),
+        });
+        const failedLegendItem = makeLegendItem({
+            color: FAIL_COLOR,
+            value: failed?.length,
+            message: formatMessage(MESSAGES['3imFail']),
+        });
 
-export const formatImDataForChart = ({
-    data,
-    campaign,
-    round,
-    shapes,
-    regions,
-}) => {
-    const dataForRound = getImStatsWithRegion({
-        data,
-        campaign,
-        round,
-        shapes,
-    });
+        return [passedLegendItem, disqualifiedLegendItem, failedLegendItem];
+    };
+
+export const formatImDataForChart = ({ data, campaign, round, regions }) => {
+    const dataForRound = data[campaign] ? [...data[campaign][round]] : [];
     return regions
         .map(region => {
             const regionData = dataForRound.filter(
-                district => district.region === region.id,
+                district => district.region_name === region.name,
             );
             const aggregatedData = regionData
                 .map(district => ({
@@ -89,7 +91,7 @@ export const formatImDataForChart = ({
         .sort((a, b) => a.value < b.value);
 };
 
-export const imTooltipFormatter = formatMessage => (value, name, props) => {
+export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
     // eslint-disable-next-line react/prop-types
     const ratio = `${props.payload.checked}/${props.payload.marked}`;
     return [ratio, formatMessage(MESSAGES.vaccinated)];
@@ -104,7 +106,6 @@ const sortImNfmKeys = (a, b) => {
     });
 };
 
-// TODO move to IM folder and convert to ts
 export const formatImDataForNFMChart = ({
     data,
     campaign,

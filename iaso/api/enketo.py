@@ -280,13 +280,15 @@ class EnketoSubmissionAPIView(APIView):
             original = Instance.objects.get(id=instanceid)
             instance = Instance.objects.get(id=instanceid)
 
+            # Prevent from rewriting created_by if modification
             if instance.file:
                 try:
                     instance.last_modified_by = request.user
                 except ValueError:
                     pass
             else:
-                instance.user = request.user
+                instance.created_by = request.user
+                instance.last_modified_by = request.user
 
             instance.file = main_file
             instance.json = {}

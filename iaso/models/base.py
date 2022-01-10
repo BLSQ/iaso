@@ -783,7 +783,7 @@ class Instance(models.Model):
     STATUS_EXPORTED = "EXPORTED"
 
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)
     last_modified_by = models.ForeignKey(
         User, on_delete=models.PROTECT, blank=True, null=True, related_name="last_modified_by"
     )

@@ -1,7 +1,6 @@
 import jwt
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
-from jwt import DecodeError
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from django.http.request import HttpRequest
 from django.http import HttpResponse
@@ -17,7 +16,10 @@ import re
 logger = logging.getLogger(__name__)
 
 
-def check_user_agent(request):
+def detect_user_request(request):
+    """Check if the user send the submission by mobile or not as the mobile app do not send
+    the user atm. So instead, the token is passed into the headers and if there is a
+    user agent, the token is decoded to retrieve the user from Iaso. Probably a temporary fix."""
 
     mobile_re = re.compile(r".*(iphone|mobile|androidtouch|android)", re.IGNORECASE)
     try:
@@ -34,7 +36,6 @@ def check_user_agent(request):
 
 @csrf_exempt
 @api_view(http_method_names=["POST"])
-# @throttle_classes([AnonRateThrottle])
 @authentication_classes([])
 @permission_classes([])
 def form_upload(request: HttpRequest) -> HttpResponse:
@@ -46,8 +47,13 @@ def form_upload(request: HttpRequest) -> HttpResponse:
         i = Instance(file_name=main_file.name)
 
     i.file = request.FILES["xml_submission_file"]
-    user = check_user_agent(request)
-    i.user = user
+    user = (
+        User.objects.get(user=request.user)
+        if request.user and not request.user.is_anonymous
+        else detect_user_request(request)
+    )
+    i.created_by = user
+    i.last_modified_by = user
     i.save()
 
     try:

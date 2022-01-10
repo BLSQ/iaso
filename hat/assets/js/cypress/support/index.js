@@ -22,5 +22,5 @@ import './commands';
 // now any cookie with the name 'session_id' or 'django_language'
 // will not be cleared before each test runs
 Cypress.Cookies.defaults({
-    preserve: ['sessionid', 'django_language'],
+    preserve: ['sessionid', 'django_language', 'sessionCookie'],
 });

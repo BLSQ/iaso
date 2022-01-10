@@ -39,3 +39,40 @@ Cypress.Commands.add(
         });
     },
 );
+Cypress.Commands.add(
+    'loginByCSRF',
+    (
+        username = Cypress.env('username'),
+        password = Cypress.env('password'),
+    ) => {
+        cy.session([username], () => {
+            cy.clearCookie(Cypress.env('sessionCookie'));
+            cy.request({
+                url: `${Cypress.env('siteBaseUrl')}/login/`,
+                method: 'HEAD', // cookies are in the HTTP headers, so HEAD suffices
+            }).then(() => {
+                // cy.getCookie('sessionid').should('not.exist');
+
+                cy.clearCookie(Cypress.env('sessionCookie'));
+                cy.getCookie('csrftoken')
+                    .its('value')
+                    .then(token => {
+                        cy.request({
+                            url: `${Cypress.env('siteBaseUrl')}/login/`,
+                            method: 'POST',
+                            form: true,
+                            followRedirect: false, // no need to retrieve the page after login
+                            body: {
+                                username,
+                                password,
+                                csrfmiddlewaretoken: token,
+                            },
+                        }).then(() => {
+                            cy.getCookie('sessionid').should('exist');
+                            return cy.getCookie('csrftoken').its('value');
+                        });
+                    });
+            });
+        });
+    },
+);

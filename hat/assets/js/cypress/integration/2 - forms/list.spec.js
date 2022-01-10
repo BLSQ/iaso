@@ -11,36 +11,47 @@ const baseUrl = `${siteBaseUrl}/dashboard/forms/list`;
 let interceptFlag = false;
 let table;
 let row;
-const gotToPage = (withForms = true, withUser = true) => {
-    if (withForms) {
+const goToPage = (
+    fakeUser = superUser,
+    formQuery,
+    fixture = 'forms/list.json',
+) => {
+    cy.login();
+    interceptFlag = false;
+    cy.intercept('GET', '/api/profiles/me/**', fakeUser);
+    // TODO remove times: 2 cf hat/assets/js/apps/Iaso/components/tables/SingleTable.js l 80
+    const options = {
+        method: 'GET',
+        pathname: '/api/forms/**',
+        times: 2,
+    };
+    if (formQuery) {
+        cy.intercept({ ...options, query: formQuery }, req => {
+            req.continue(res => {
+                interceptFlag = true;
+                res.send({ fixture });
+            });
+        }).as('getForms');
+    } else {
         cy.intercept('GET', '/api/forms/**', {
-            fixture: 'forms/list.json',
+            fixture,
             times: 2,
-        });
+        }).as('getForms');
     }
-    if (withUser) {
-        cy.intercept('GET', '/api/profiles/me/**', {
-            fixture: 'profiles/me/superuser.json',
-        });
-    }
+
+    cy.intercept('GET', '/api/orgunittypes/**', {
+        fixture: 'orgUnitTypes/list.json',
+    });
+    cy.intercept('GET', '/api/projects/**', {
+        fixture: 'projects/list.json',
+    });
     cy.visit(baseUrl);
 };
 
-describe('Forms', () => {
+describe.only('Forms', () => {
     describe('page', () => {
-        beforeEach(() => {
-            cy.login();
-        });
-        it('click on create button should redirect to fom creation url', () => {
-            gotToPage();
-            cy.get('#add-button-container').find('button').click();
-            cy.url().should(
-                'eq',
-                `${siteBaseUrl}/dashboard/forms/detail/formId/0`,
-            );
-        });
-        it('click on create button should redirect to fom creation url', () => {
-            gotToPage();
+        it('click on create button should redirect to form creation url', () => {
+            goToPage();
             cy.get('#add-button-container').find('button').click();
             cy.url().should(
                 'eq',
@@ -48,21 +59,17 @@ describe('Forms', () => {
             );
         });
         it('page should not be accessible if user does not have permission', () => {
-            gotToPage(true, false);
-            const fakeUser = {
+            goToPage({
                 ...superUser,
                 permissions: [],
                 is_superuser: false,
-            };
-            cy.login();
-            cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-            cy.visit(baseUrl);
+            });
             const errorCode = cy.get('#error-code');
             errorCode.should('contain', '401');
         });
         describe('Search field', () => {
             beforeEach(() => {
-                gotToPage();
+                goToPage();
             });
             it('should enabled search button', () => {
                 cy.get('#search-search').type(search);
@@ -77,7 +84,7 @@ describe('Forms', () => {
         });
         describe('Show deleted checkbox', () => {
             beforeEach(() => {
-                gotToPage();
+                goToPage();
             });
             it('should not be checked', () => {
                 cy.get('#check-box-showDeleted').should('not.be.checked');
@@ -89,7 +96,7 @@ describe('Forms', () => {
         });
         describe('Search button', () => {
             beforeEach(() => {
-                gotToPage();
+                goToPage();
             });
             it('should be disabled', () => {
                 cy.get('#search-button')
@@ -107,7 +114,7 @@ describe('Forms', () => {
         });
         describe('Table', () => {
             it('should render results', () => {
-                gotToPage();
+                goToPage();
                 table = cy.get('table');
                 table.should('have.length', 1);
                 const rows = table.find('tbody').find('tr');
@@ -115,8 +122,10 @@ describe('Forms', () => {
                 rows.eq(0).find('td').should('have.length', 9);
             });
             describe('Latest version column', () => {
+                beforeEach(() => {
+                    goToPage();
+                });
                 it('should display a XML link, XLS link and a version number', () => {
-                    gotToPage();
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const latestCol = row.find('td').eq(7);
@@ -127,7 +136,6 @@ describe('Forms', () => {
                     latestCol.find('a').should('have.length', 2);
                 });
                 it('should be empty if no latest_form_version', () => {
-                    gotToPage();
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(1);
                     const latestCol = row.find('td').eq(7);
@@ -140,37 +148,29 @@ describe('Forms', () => {
             });
             describe('Action column', () => {
                 it('should display 4 buttons if user has all rights', () => {
-                    gotToPage();
+                    goToPage();
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
                     actionCol.find('button').should('have.length', 4);
                 });
                 it('should display 3 buttons if user has iaso_forms permission', () => {
-                    gotToPage(true, false);
-                    const fakeUser = {
+                    goToPage({
                         ...superUser,
                         permissions: ['iaso_forms'],
                         is_superuser: false,
-                    };
-                    cy.login();
-                    cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-                    cy.visit(baseUrl);
+                    });
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
                     actionCol.find('button').should('have.length', 3);
                 });
                 it('should display 1 buttons if user has iaso_submissions permission', () => {
-                    gotToPage(true, false);
-                    const fakeUser = {
+                    goToPage({
                         ...superUser,
                         permissions: ['iaso_submissions'],
                         is_superuser: false,
-                    };
-                    cy.login();
-                    cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-                    cy.visit(baseUrl);
+                    });
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
@@ -180,78 +180,59 @@ describe('Forms', () => {
         });
         describe('Exports buttons', () => {
             it('should be visible if we have results', () => {
-                gotToPage();
-                cy.get('#csv-export-button').should('be.visible');
-                cy.get('#xlsx-export-button').should('be.visible');
+                goToPage(superUser, null, 'forms/list.json');
+                cy.wait('@getForms').then(() => {
+                    cy.get('#csv-export-button').should('be.visible');
+                    cy.get('#xlsx-export-button').should('be.visible');
+                });
             });
             it("should not be visible if we don't have results", () => {
-                gotToPage(true, false);
-                cy.intercept('GET', '/api/forms/**', {
-                    fixture: 'forms/empty.json',
-                    times: 2,
+                goToPage(superUser, null, 'forms/empty.json');
+                cy.wait('@getForms').then(() => {
+                    cy.get('#csv-export-button').should('not.exist');
+                    cy.get('#xlsx-export-button').should('not.exist');
                 });
-                cy.visit(baseUrl);
-                cy.get('#csv-export-button').should('not.exist');
-                cy.get('#xlsx-export-button').should('not.exist');
             });
         });
     });
 
-    describe('api', () => {
+    describe.only('api', () => {
         it('should be called with base params', () => {
-            interceptFlag = false;
-            cy.login();
-            cy.intercept(
+            goToPage(
+                superUser,
                 {
-                    pathname: '/api/forms/**',
-                    times: 2, // TODO: this should be fixed, normally only one call should be made
-                    query: {
-                        order: 'instance_updated_at',
-                        all: 'true',
-                        limit: '50',
-                    },
+                    order: 'instance_updated_at',
+                    all: 'true',
+                    limit: '50',
                 },
-                req => {
-                    req.continue(res => {
-                        interceptFlag = true;
-                        res.send({ fixture: 'forms/empty.json' });
-                    });
-                },
-            ).as('getForms');
-            gotToPage(false);
+                'forms/empty.json',
+            );
             cy.wait('@getForms').then(() => {
                 cy.wrap(interceptFlag).should('eq', true);
             });
         });
         it('should be called with search params', () => {
-            interceptFlag = false;
-            cy.login();
-            cy.intercept(
+            goToPage(
+                superUser,
                 {
-                    pathname: '/api/forms/**',
-                    times: 2, // TODO: this should be fixed, normally only one call should be made
-                    query: {
-                        order: 'instance_updated_at',
-                        page: '1',
-                        search,
-                        showDeleted: 'true',
-                        searchActive: 'true',
-                        all: 'true',
-                        limit: '50',
-                    },
+                    order: 'instance_updated_at',
+                    page: '1',
+                    search,
+                    showDeleted: 'true',
+                    searchActive: 'true',
+                    all: 'true',
+                    limit: '50',
                 },
-                req => {
-                    req.continue(res => {
-                        interceptFlag = true;
-                        res.send({ fixture: 'forms/empty.json' });
-                    });
-                },
-            ).as('getFormsSearch');
-            gotToPage(false);
+                'forms/empty.json',
+            );
             cy.get('#search-search').type(search);
             cy.get('#check-box-showDeleted').check();
             cy.get('#search-button').click();
-            cy.wait('@getFormsSearch').then(() => {
+            cy.wait('@getForms').then(() => {
+                // TODO remove this cf hat/assets/js/apps/Iaso/components/tables/SingleTable.js l 80
+                cy.intercept('GET', '/api/forms/**', {
+                    fixture: 'forms/empty.json',
+                });
                 cy.wrap(interceptFlag).should('eq', true);
             });
         });

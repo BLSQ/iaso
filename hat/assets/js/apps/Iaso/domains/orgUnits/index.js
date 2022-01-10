@@ -195,32 +195,38 @@ const OrgUnits = props => {
                 const urlLocation = getEndpointUrl(false, '', true);
                 promises.push(fetchOrgUnitsList(dispatch, urlLocation));
             }
-            Promise.all(promises).then(data => {
-                if (!params.searchActive) {
-                    const newParams = encodeUriParams(params);
-                    newParams.searchActive = true;
-                    dispatch(redirectTo(baseUrl, newParams));
-                }
-                dispatch(
-                    setOrgUnits(
-                        data[0].orgunits,
-                        true,
-                        params,
-                        data[0].count,
-                        data[0].pages,
-                        data[0].counts,
-                    ),
-                );
-                dispatch(setFiltersUpdated(false));
-                if (withLocations) {
+
+            Promise.all(promises)
+                .then(data => {
+                    if (!params.searchActive) {
+                        const newParams = encodeUriParams(params);
+                        newParams.searchActive = true;
+                        dispatch(redirectTo(baseUrl, newParams));
+                    }
                     dispatch(
-                        setOrgUnitsLocations(
-                            mapOrgUnitByLocation(data[1], searches),
+                        setOrgUnits(
+                            data[0].orgunits,
+                            true,
+                            params,
+                            data[0].count,
+                            data[0].pages,
+                            data[0].counts,
                         ),
                     );
-                }
-                dispatch(setOrgUnitsListFetching(false));
-            });
+                    dispatch(setFiltersUpdated(false));
+                    if (withLocations) {
+                        dispatch(
+                            setOrgUnitsLocations(
+                                mapOrgUnitByLocation(data[1], searches),
+                            ),
+                        );
+                    }
+                    dispatch(setOrgUnitsListFetching(false));
+                })
+                // eslint-disable-next-line no-unused-vars
+                .catch(_error => {
+                    dispatch(setOrgUnitsListFetching(false));
+                });
         },
         // TODO: getEndpointUrl and params should be added, but the effects of doing so should be tested-> JIRA IA-997
         // Disabling the es-lint rule for the time being

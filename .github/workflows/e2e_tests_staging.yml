@@ -18,39 +18,25 @@ jobs:
 
       - name: resolve dependencies
         run: npm ci
-
-      - name: download artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: publish.yaml
-          workflow_conclusion: success
-          run_id: 1591802837
-          branch: master
-          name: app
-          path: dist
-#      - name: run e2e tests
-#        run: npm run test:e2e
       - name: UI Tests
         uses: cypress-io/github-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
-          CYPRESS_BASE_URL: https://iaso-staging.bluesquare.org/
+          CYPRESS_BASE_URL: https://iaso-staging.bluesquare.org
         with:
-          start: yarn start
           browser: chrome
           headless: true
           timeout: 180
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: cypress/screenshots
+      # - uses: actions/upload-artifact@v2
+      #   if: failure()
+      #   with:
+      #     name: cypress-screenshots
+      #     path: cypress/screenshots
       # Test run video was always captured, so this action uses "always()" condition
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: cypress-videos
-          path: cypress/videos
+      # - uses: actions/upload-artifact@v2
+      #   if: always()
+      #   with:
+      #     name: cypress-videos
+      #     path: cypress/videos

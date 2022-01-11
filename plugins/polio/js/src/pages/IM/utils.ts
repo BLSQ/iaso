@@ -7,6 +7,7 @@ import {
 import { IM_PASS, IM_FAIL, IM_WARNING, ImNfmKeys } from './constants';
 import { makeLegendItem, sortByDictKey } from '../../utils';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
+import { convertStatToPercentNumber } from '../LQAS/utils';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -97,7 +98,7 @@ export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
     return [ratio, formatMessage(MESSAGES.vaccinated)];
 };
 
-const sortImNfmKeys = sortByDictKey("value");
+const sortImNfmKeys = sortByDictKey("absValue");
 
 export const formatImDataForNFMChart = ({
     data,
@@ -108,10 +109,11 @@ export const formatImDataForNFMChart = ({
     if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
     const roundString: string = NfmRoundString[round];
     const campaignData: Record<string, number> = data[campaign][roundString];
+    const totalChildrenNotMarked = Object.values(campaignData).reduce((total,current) => total+current ,0)
     const entries: [string, number][] = Object.entries(campaignData);
     const convertedEntries = entries.map(entry => {
         const [name, value] = entry;
-        return { name: formatMessage(MESSAGES[name]), value, nfmKey: name };
+        return { name: formatMessage(MESSAGES[name]), value:convertStatToPercentNumber(value,totalChildrenNotMarked), absValue:value, nfmKey: name };
     });
     if (convertedEntries.length === ImNfmKeys.length)
         return convertedEntries.sort(sortImNfmKeys);
@@ -121,7 +123,8 @@ export const formatImDataForNFMChart = ({
         nfmKey => !dataKeys.includes(nfmKey),
     ).map(nfmKey => ({
         name: formatMessage(MESSAGES[nfmKey]),
-        value: 0,
+        value:convertStatToPercentNumber(0,totalChildrenNotMarked),
+        absValue:0,
         nfmKey,
     }));
     return [...convertedEntries, ...missingEntries].sort(sortImNfmKeys);

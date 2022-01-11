@@ -18,8 +18,11 @@ import {
 } from '../../constants/types';
 import { BAR_HEIGHT } from '../PercentageBarChart/constants';
 import {
+    convertStatToPercent,
     formatLqasDataForNFMChart,
     lqasNfmTooltipFormatter,
+    sumChildrenChecked,
+    sumChildrenCheckedLqas,
 } from '../../pages/LQAS/utils';
 import { formatImDataForNFMChart } from '../../pages/IM/utils';
 import MESSAGES from '../../constants/messages';
@@ -70,15 +73,20 @@ export const NoFingerMark: FunctionComponent<Props> = ({
     }, [data, campaign, round, formatMessage, type]);
 
     const childrenNotMarked = formattedData
-        .map(nfmData => nfmData.value)
+        .map(nfmData => nfmData.absValue)
         .reduce((total, current) => total + current, 0);
 
-    const roundText = round === 'round_1' ? 'round 1' : 'round 2';
+    const childrenChecked: number =
+        type === 'LQAS'
+            ? sumChildrenCheckedLqas(round, data, campaign)
+            : sumChildrenChecked(round, data, campaign);
 
-    const yAxisLimit: number =
-        Object.values(formattedData)
-            .map(dataEntry => dataEntry.value)
-            .sort((a, b) => (a < b ? 1 : 0))[0] || 10;
+    const ratioUnmarked = convertStatToPercent(
+        childrenNotMarked,
+        childrenChecked,
+    );
+
+    const roundText = round === 'round_1' ? 'round 1' : 'round 2';
 
     // Force render to avoid visual bug when data has length of 0
     useEffect(() => {
@@ -93,7 +101,7 @@ export const NoFingerMark: FunctionComponent<Props> = ({
                         <Typography variant="h6">
                             {`${formatMessage(
                                 MESSAGES.childrenNoMark,
-                            )}, ${roundText}: ${childrenNotMarked}`}
+                            )}, ${roundText}: ${ratioUnmarked}`}
                         </Typography>
                     </Box>
                     <Box key={`${chartKey}${renderCount}`}>
@@ -104,7 +112,7 @@ export const NoFingerMark: FunctionComponent<Props> = ({
                                 margin={{ left: 50 }}
                                 barSize={BAR_HEIGHT}
                             >
-                                <YAxis domain={[0, yAxisLimit]} type="number" />
+                                <YAxis domain={[0, 100]} type="number" />
                                 <XAxis
                                     type="category"
                                     dataKey="name"

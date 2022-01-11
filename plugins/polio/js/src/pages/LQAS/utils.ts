@@ -12,6 +12,8 @@ import {
     LqasImCampaignDataWithNameAndRegion,
     ConvertedLqasImData,
     FormatForNFMArgs,
+    LqasImCampaign,
+    LqasImCampaignData,
 } from '../../constants/types';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 import { makeLegendItem, sortByDictKey } from '../../utils';
@@ -120,10 +122,53 @@ export const lqasChartTooltipFormatter =
 
 export const lqasNfmTooltipFormatter = (value, _name, props) => {
     // eslint-disable-next-line react/prop-types
-    return [value, props.payload.nfmKey];
+    return [`${value.toFixed(2)}%`, props.payload.nfmKey];
 };
 
-const sortLqasNfmKeys = sortByDictKey("value");
+export const sumChildrenChecked = (
+    round: RoundString,
+    data?: Record<string, LqasImCampaign>,
+    campaign?: string,
+): number => {
+    if (!data || !campaign || !data[campaign]) return 0;
+    const roundData: LqasImCampaignData[] = Object.values(
+        data[campaign][round],
+    );
+    return roundData.reduce(
+        (total, current) => total + current.total_child_checked,
+        0,
+    );
+};
+export const sumChildrenMarked = (
+    round: RoundString,
+    data?: Record<string, LqasImCampaign>,
+    campaign?: string,
+): number => {
+    if (!data || !campaign || !data[campaign]) return 0;
+    const roundData: LqasImCampaignData[] = Object.values(
+        data[campaign][round],
+    );
+    return roundData.reduce(
+        (total, current) => total + current.total_child_fmd,
+        0,
+    );
+};
+
+export const sumChildrenCheckedLqas = (
+    round: RoundString,
+    data?: Record<string, LqasImCampaign>,
+    campaign?: string,
+): number => {
+    if (!data || !campaign || !data[campaign]) return 0;
+    const roundData: LqasImCampaignData[] = Object.values(
+        data[campaign][round],
+    );
+    return roundData
+        .filter(rd => rd.total_child_checked === 60)
+        .reduce((total, current) => total + current.total_child_checked, 0);
+};
+
+const sortLqasNfmKeys = sortByDictKey('absValue');
 
 export const formatLqasDataForNFMChart = ({
     data,
@@ -134,10 +179,19 @@ export const formatLqasDataForNFMChart = ({
     if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
     const roundString: string = NfmRoundString[round];
     const campaignData: Record<string, number> = data[campaign][roundString];
+    const totalChildrenNotMarked = Object.values(campaignData).reduce(
+        (total, current) => total + current,
+        0,
+    );
     const entries: [string, number][] = Object.entries(campaignData);
     const convertedEntries = entries.map(entry => {
         const [name, value] = entry;
-        return { name: formatMessage(MESSAGES[name]), value, nfmKey: name };
+        return {
+            name: formatMessage(MESSAGES[name]),
+            value: convertStatToPercentNumber(value, totalChildrenNotMarked),
+            absValue: value,
+            nfmKey: name,
+        };
     });
     if (convertedEntries.length === lqasNfmKeys.length)
         return convertedEntries.sort(sortLqasNfmKeys);
@@ -146,7 +200,8 @@ export const formatLqasDataForNFMChart = ({
         .filter(nfmKey => !dataKeys.includes(nfmKey))
         .map(nfmKey => ({
             name: formatMessage(MESSAGES[nfmKey]),
-            value: 0,
+            value: convertStatToPercentNumber(0, totalChildrenNotMarked),
+            absValue: 0,
             nfmKey,
         }));
     return [...convertedEntries, ...missingEntries].sort(sortLqasNfmKeys);
@@ -165,6 +220,16 @@ export const makeDataForTable = (
     // return data[campaign][round].filter(roundData =>
     //     Boolean(roundData.district),
     // );
+};
+
+export const convertStatToPercentNumber = (data = 0, total = 1): number => {
+    if (data > total) throw new Error("data can't be greater than total");
+    // using safeTotal, because 0 can still be passed as arg and override default value
+    const safeTotal = total || 1;
+    const ratio = (100 * data) / safeTotal;
+    return ratio;
+    // if (Number.isSafeInteger(ratio)) return ratio;
+    // return Math.ratio;
 };
 
 export const convertStatToPercent = (data = 0, total = 1): string => {

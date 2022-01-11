@@ -1,51 +1,57 @@
-import React, { Fragment } from 'react';
-import { FormattedMessage } from 'react-intl';
-import { bindActionCreators } from 'redux';
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
-import { Grid, Button, withStyles } from '@material-ui/core';
+import { Grid, Button, makeStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
-import { commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
-import FiltersComponent from '../../../components/filters/FiltersComponent';
-import { redirectTo as redirectToAction } from '../../../routing/actions';
+import InputComponent from 'Iaso/components/forms/InputComponent';
+import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-});
+}));
 
-const filter = {
-    urlKey: 'search',
-    label: MESSAGES.searchUser,
-    type: 'search',
-};
-
-const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
-    const [filtersUpdated, setFiltersUpdated] = React.useState(false);
+const Filters = ({ baseUrl, params }) => {
+    const [filtersUpdated, setFiltersUpdated] = useState(false);
+    const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
+    const dispatch = useDispatch();
+    const [filters, setFilters] = useState({
+        search: params.search,
+    });
     const handleSearch = () => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const tempParams = {
                 ...params,
+                ...filters,
             };
             tempParams.page = 1;
-            redirectTo(baseUrl, tempParams);
+            dispatch(redirectTo(baseUrl, tempParams));
         }
-        onSearch();
+    };
+    const handleChange = (key, value) => {
+        setFiltersUpdated(true);
+        setFilters({
+            ...filters,
+            [key]: value,
+        });
     };
     return (
         <>
             <Grid container spacing={4}>
                 <Grid item xs={3}>
-                    <FiltersComponent
-                        params={params}
-                        baseUrl={baseUrl}
-                        onFilterChanged={() => setFiltersUpdated(true)}
-                        filters={[filter]}
-                        onEnterPressed={() => handleSearch()}
+                    <InputComponent
+                        keyValue="search"
+                        onChange={handleChange}
+                        value={filters.search}
+                        type="search"
+                        label={MESSAGES.search}
+                        onEnterPressed={handleSearch}
                     />
                 </Grid>
             </Grid>
@@ -70,7 +76,7 @@ const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
                         onClick={() => handleSearch()}
                     >
                         <SearchIcon className={classes.buttonIcon} />
-                        <FormattedMessage {...MESSAGES.search} />
+                        {formatMessage(MESSAGES.search)}
                     </Button>
                 </Grid>
             </Grid>
@@ -83,23 +89,8 @@ Filters.defaultProps = {
 };
 
 Filters.propTypes = {
-    classes: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string,
-    onSearch: PropTypes.func.isRequired,
-    redirectTo: PropTypes.func.isRequired,
 };
 
-const MapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            redirectTo: redirectToAction,
-        },
-        dispatch,
-    ),
-});
-
-export default connect(
-    () => ({}),
-    MapDispatchToProps,
-)(withStyles(styles)(Filters));
+export default Filters;

@@ -119,7 +119,7 @@ describe('Forms', () => {
                 table.should('have.length', 1);
                 const rows = table.find('tbody').find('tr');
                 rows.should('have.length', listFixture.forms.length);
-                rows.eq(0).find('td').should('have.length', 9);
+                rows.eq(0).find('td').should('have.length', 10);
             });
             describe('Latest version column', () => {
                 beforeEach(() => {
@@ -128,7 +128,7 @@ describe('Forms', () => {
                 it('should display a XML link, XLS link and a version number', () => {
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
-                    const latestCol = row.find('td').eq(7);
+                    const latestCol = row.find('td').eq(8);
                     latestCol.should(
                         'contain',
                         listFixture.forms[0].latest_form_version.version_id,
@@ -138,7 +138,7 @@ describe('Forms', () => {
                 it('should be empty if no latest_form_version', () => {
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(1);
-                    const latestCol = row.find('td').eq(7);
+                    const latestCol = row.find('td').eq(8);
                     latestCol.should(
                         'not.contain',
                         listFixture.forms[0].latest_form_version.version_id,

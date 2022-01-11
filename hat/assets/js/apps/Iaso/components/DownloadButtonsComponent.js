@@ -25,6 +25,7 @@ function DownloadButtonsComponent(props) {
     return (
         <>
             <Button
+                id="csv-export-button"
                 variant="contained"
                 className={classes.button}
                 color="primary"
@@ -36,6 +37,7 @@ function DownloadButtonsComponent(props) {
                 CSV
             </Button>
             <Button
+                id="xlsx-export-button"
                 variant="contained"
                 className={classes.button}
                 color="primary"
@@ -48,6 +50,7 @@ function DownloadButtonsComponent(props) {
             </Button>
             {gpkgUrl !== null && (
                 <Button
+                    id="gpkg-export-button"
                     variant="contained"
                     className={classes.button}
                     color="primary"

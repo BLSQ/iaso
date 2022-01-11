@@ -14,7 +14,7 @@ import {
     FormatForNFMArgs,
 } from '../../constants/types';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
-import { makeLegendItem } from '../../utils';
+import { makeLegendItem, sortByDictKey } from '../../utils';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -123,14 +123,8 @@ export const lqasNfmTooltipFormatter = (value, _name, props) => {
     return [value, props.payload.nfmKey];
 };
 
-const sortLqasNfmKeys = (a, b) => {
-    if (a.nfmKey === 'Other') return 1;
-    if (b.nfmKey === 'Other') return 0;
+const sortLqasNfmKeys = sortByDictKey("value");
 
-    return a.name.localeCompare(b.name, undefined, {
-        sensitivity: 'accent',
-    });
-};
 export const formatLqasDataForNFMChart = ({
     data,
     campaign,

@@ -90,3 +90,9 @@ export const convertWidth = width => {
     if (width === 'xl') return '200px';
     return '100px';
 };
+
+export const sortByDictKey = key => (a, b) => {
+    if (a[key] > b[key]) return 0;
+    if (b[key] > a[key]) return 1;
+    return 1;
+};

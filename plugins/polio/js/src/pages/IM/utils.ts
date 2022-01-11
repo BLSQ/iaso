@@ -5,7 +5,7 @@ import {
     NfmRoundString,
 } from '../../constants/types';
 import { IM_PASS, IM_FAIL, IM_WARNING, ImNfmKeys } from './constants';
-import { makeLegendItem } from '../../utils';
+import { makeLegendItem, sortByDictKey } from '../../utils';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 
 export const determineStatusForDistrict = district => {
@@ -97,14 +97,7 @@ export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
     return [ratio, formatMessage(MESSAGES.vaccinated)];
 };
 
-const sortImNfmKeys = (a, b) => {
-    if (a.nfmKey === 'Tot_child_Others_HH') return 1;
-    if (b.nfmKey === 'Tot_child_Others_HH') return 0;
-
-    return a.name.localeCompare(b.name, undefined, {
-        sensitivity: 'accent',
-    });
-};
+const sortImNfmKeys = sortByDictKey("value");
 
 export const formatImDataForNFMChart = ({
     data,

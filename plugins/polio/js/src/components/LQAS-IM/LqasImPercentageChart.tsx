@@ -10,6 +10,10 @@ import {
     formatLqasDataForChart,
     lqasChartTooltipFormatter,
 } from '../../pages/LQAS/utils';
+import {
+    imBarColorTresholds,
+    lqasBarColorTresholds,
+} from '../../pages/IM/constants';
 
 type Props = {
     type: 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';
@@ -49,6 +53,8 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
     }, [data, campaign, regions, round, type]);
     const tooltipFormatter =
         type === 'lqas' ? lqasChartTooltipFormatter : imTooltipFormatter;
+    const colorTresholds =
+        type === 'lqas' ? lqasBarColorTresholds : imBarColorTresholds;
     return (
         <PercentageChartWithTitle
             title={title}
@@ -57,6 +63,7 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
             chartKey={`LQASIMChart-${round}-${campaign}-${type}`}
             isLoading={isLoading}
             showChart={Boolean(campaign)}
+            colorTresholds={colorTresholds}
         />
     );
 };

@@ -91,3 +91,12 @@ export const ImNfmKeys = [
     'Tot_child_Others_HH',
     'Tot_child_VaccinatedRoutine',
 ];
+export const imBarColorTresholds = {
+    ok: 95,
+    warning: 90,
+};
+
+export const lqasBarColorTresholds = {
+    ok: 80,
+    warning: 50,
+};

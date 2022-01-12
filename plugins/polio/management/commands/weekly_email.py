@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.utils.timezone import now
 
 from plugins.polio.models import Campaign, CountryUsersGroup
+from plugins.polio.serializers import CampaignSerializer
 
 logger = getLogger(__name__)
 
@@ -44,7 +45,8 @@ def send_notification_email(campaign):
     # format thousand
     target_population = f"{c.round_one.target_population:,}" if c.round_one and c.round_one.target_population else ""
 
-    preparedness = c.last_preparedness()
+    preparedness = CampaignSerializer().get_last_preparedness(campaign)
+
     email_text = f"""Dear GPEI coordinator – {country.name},
 
 Weekly status update: Today is day {day_number} since outbreak notification.
@@ -60,9 +62,9 @@ If there are missing data or dates; visit {url} to update
 * Date Budget submitted          : {c.budget_submitted_at}
 * OnSet to Notification (Days)   : {onset_days}
 * Round 1 to Notification (Days) : {round1_days}
-* Prep. national                 : {preparedness.national_score if preparedness else ''}
-* Prep. regional                 : {preparedness.regional_score if preparedness else ''}
-* Prep. district                 : {preparedness.district_score if preparedness else ''}
+* Prep. national                 : {preparedness.get('national_score') if preparedness else ''}
+* Prep. regional                 : {preparedness.get('regional_score') if preparedness else ''}
+* Prep. district                 : {preparedness.get('district_score') if preparedness else ''}
 
 For guidance on updating: contact RRT team
 Timeline tracker Automated message.

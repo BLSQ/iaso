@@ -39,6 +39,11 @@ Cypress.Commands.add(
         });
     },
 );
+
+Cypress.Commands.add('testInputValue', (id, value) =>
+    cy.get(id).invoke('attr', 'value').should('equal', value),
+);
+
 Cypress.Commands.add(
     'loginByCSRF',
     (

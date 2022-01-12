@@ -155,6 +155,7 @@ const UserDialogComponent = ({
             }}
         >
             <Tabs
+                id="user-dialog-tabs"
                 value={tab}
                 classes={{
                     root: classes.tabs,
@@ -183,7 +184,7 @@ const UserDialogComponent = ({
                     label={formatMessage(MESSAGES.location)}
                 />
             </Tabs>
-            <div className={classes.root}>
+            <div className={classes.root} id="user-profile-dialog">
                 {tab === 'infos' && (
                     <UsersInfos
                         setFieldValue={(key, value) =>

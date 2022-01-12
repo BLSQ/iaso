@@ -89,7 +89,7 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
                 checked: aggregatedData.checked,
             };
         })
-        .sort((a, b) => a.value < b.value);
+        .sort((a, b) => parseFloat(a.value) < parseFloat(b.value));
 };
 
 export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
@@ -98,7 +98,7 @@ export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
     return [ratio, formatMessage(MESSAGES.vaccinated)];
 };
 
-const sortImNfmKeys = sortByDictKey("absValue");
+const sortImNfmKeys = sortByDictKey('absValue');
 
 export const formatImDataForNFMChart = ({
     data,
@@ -109,11 +109,19 @@ export const formatImDataForNFMChart = ({
     if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
     const roundString: string = NfmRoundString[round];
     const campaignData: Record<string, number> = data[campaign][roundString];
-    const totalChildrenNotMarked = Object.values(campaignData).reduce((total,current) => total+current ,0)
+    const totalChildrenNotMarked = Object.values(campaignData).reduce(
+        (total, current) => total + current,
+        0,
+    );
     const entries: [string, number][] = Object.entries(campaignData);
     const convertedEntries = entries.map(entry => {
         const [name, value] = entry;
-        return { name: formatMessage(MESSAGES[name]), value:convertStatToPercentNumber(value,totalChildrenNotMarked), absValue:value, nfmKey: name };
+        return {
+            name: formatMessage(MESSAGES[name]),
+            value: convertStatToPercentNumber(value, totalChildrenNotMarked),
+            absValue: value,
+            nfmKey: name,
+        };
     });
     if (convertedEntries.length === ImNfmKeys.length)
         return convertedEntries.sort(sortImNfmKeys);
@@ -123,8 +131,8 @@ export const formatImDataForNFMChart = ({
         nfmKey => !dataKeys.includes(nfmKey),
     ).map(nfmKey => ({
         name: formatMessage(MESSAGES[nfmKey]),
-        value:convertStatToPercentNumber(0,totalChildrenNotMarked),
-        absValue:0,
+        value: convertStatToPercentNumber(0, totalChildrenNotMarked),
+        absValue: 0,
         nfmKey,
     }));
     return [...convertedEntries, ...missingEntries].sort(sortImNfmKeys);

@@ -89,6 +89,7 @@ export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
         campaign,
         round,
     });
+
     return regions
         .map(region => {
             const regionData = dataForRound.filter(
@@ -110,7 +111,7 @@ export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
                 passing,
             };
         })
-        .sort((a, b) => a.value < b.value);
+        .sort((a, b) => parseFloat(a.value) < parseFloat(b.value));
 };
 
 export const lqasChartTooltipFormatter =

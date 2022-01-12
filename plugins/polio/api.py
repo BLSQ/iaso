@@ -870,7 +870,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
             }
         )
         # Storing all "reasons no finger mark" for each campaign in this dict
-        # The
         nfm_reasons_per_district_per_campaign = defaultdict(
             lambda: {
                 "round_1": defaultdict(lambda: defaultdict(int)),
@@ -940,7 +939,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 total_sites_visited = 0
                 total_Child_FMD = 0
                 total_Child_Checked = 0
-                # nfm_counts_dict = defaultdict(int)
                 caregiver_counts_dict = defaultdict(lambda: defaultdict(int))
                 region_name = form.get("Region")
                 district_id = "%s - %s" % (district_name, region_name)
@@ -967,8 +965,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
                                 ]
                                 + 1
                             )
-                        # if reason:
-                        #     nfm_counts_dict[reason] = nfm_counts_dict[reason] + 1
                     total_Child_Checked += int(Child_Checked)
                     # gather caregiver stats
                     caregiver_informed = HH.get("Count_HH/Care_Giver_Informed_SIA", 0)
@@ -991,26 +987,10 @@ class LQASStatsViewSet(viewsets.ViewSet):
                                 caregiver_counts_dict[district_name][source_info_key] = (
                                     caregiver_counts_dict[district_name][source_info_key] + 1
                                 )
-
-                # region_name = form.get("Region")
-                # district_id = "%s - %s" % (district_name, region_name)
-                # districts.add(district_id)
-                # today_string = form["today"]
-                # today = datetime.strptime(today_string, "%Y-%m-%d").date()
-                # campaign = find_campaign(campaigns, today, country)
-                # round_number = form.get("roundNumber")
-
                 if campaign:
                     campaign_name = campaign.obr_name
                     campaign_stats[campaign_name]["country_id"] = country.id
                     campaign_stats[campaign_name]["country_name"] = country.name
-                    # round_stats_key = round_key + "_nfm_stats"
-
-                    # for key in nfm_counts_dict:
-                    #     campaign_stats[campaign_name][round_stats_key][key] = (
-                    #         campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
-                    #     )
-
                     d = campaign_stats[campaign_name][round_key][district_name]
 
                     for key in caregiver_counts_dict[district_name]:

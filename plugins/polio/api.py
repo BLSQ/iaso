@@ -928,6 +928,10 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
             districts = set()
             for form in forms:
+                # Ignoring Mop up for now
+                round_number = form.get("roundNumber")
+                if round_number == "MOPUP":
+                    continue
                 HH_COUNT = form.get("Count_HH", None)
                 if HH_COUNT is None:
                     print("missing OHH_COUNT", form)
@@ -944,9 +948,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 today_string = form["today"]
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
                 campaign = find_campaign(campaigns, today, country)
-                round_number = form.get("roundNumber")
-                if round_number == "MOPUP":
-                    continue
                 round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
                 for HH in form.get("Count_HH", []):
                     total_sites_visited += 1

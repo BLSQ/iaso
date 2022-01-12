@@ -38,6 +38,7 @@ const renderComponent = () => {
                 )}
                 initialData={user}
                 params={{}}
+                saveProfile={() => null}
             />,
         ),
     );
@@ -50,6 +51,9 @@ describe('UsersDialog', () => {
     beforeEach(() => {
         nock.cleanAll();
         nock.abortPendingRequests();
+        mockRequest('get', '/api/permissions/', {
+            permissions: [],
+        });
         renderComponent();
     });
     describe('on mount', () => {
@@ -63,9 +67,6 @@ describe('UsersDialog', () => {
             mockRequest('patch', '/api/profiles/40', 'error', user);
         });
         it('sends the new value to the backend', () => {
-            // const userInState = component.state('user');
-            // component.setState('user', { ...userInState, languae: 'fr' });
-            // component.instance().onConfirm();
             confirmCancelDialogComponent = component.find(
                 ConfirmCancelDialogComponent,
             );

@@ -991,7 +991,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
                 form_count += 1
-            
 
         response = {
             "stats": campaign_stats,

@@ -834,6 +834,17 @@ def find_district(district_name, region_name, districts, district_dict):
     return None
 
 
+# BEURK
+# Checking for each district for each campaign if LQAS data is not disqualified. If it isn't we add the reasons no finger mark to the count
+def add_nfm_stats_for_round(campaign_stats, nfm_stats, round_number):
+    for campaign, stats in campaign_stats.items():
+        for district, district_stats in stats[round_number].items():
+            if district_stats["total_child_checked"] == 60:
+                for reason, count in nfm_stats[campaign][round_number][district].items():
+                    stats["round_1_nfm_stats"][reason] = stats["round_1_nfm_stats"][reason] + count
+    return campaign_stats
+
+
 class LQASStatsViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
@@ -856,6 +867,14 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 "round_2": defaultdict(base_stats),
                 "round_2_nfm_stats": defaultdict(int),
                 "districts_not_found": [],
+            }
+        )
+        # Storing all "reasons no finger mark" for each campaign in this dict
+        # The
+        nfm_reasons_per_district_per_campaign = defaultdict(
+            lambda: {
+                "round_1": defaultdict(lambda: defaultdict(int)),
+                "round_2": defaultdict(lambda: defaultdict(int)),
             }
         )
         form_count = 0
@@ -917,8 +936,18 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 total_sites_visited = 0
                 total_Child_FMD = 0
                 total_Child_Checked = 0
-                nfm_counts_dict = defaultdict(int)
+                # nfm_counts_dict = defaultdict(int)
                 caregiver_counts_dict = defaultdict(lambda: defaultdict(int))
+                region_name = form.get("Region")
+                district_id = "%s - %s" % (district_name, region_name)
+                districts.add(district_id)
+                today_string = form["today"]
+                today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                campaign = find_campaign(campaigns, today, country)
+                round_number = form.get("roundNumber")
+                if round_number == "MOPUP":
+                    continue
+                round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
                 for HH in form.get("Count_HH", []):
                     total_sites_visited += 1
                     # check finger
@@ -928,8 +957,17 @@ class LQASStatsViewSet(viewsets.ViewSet):
                         total_Child_FMD += 1
                     else:
                         reason = HH.get("Count_HH/Reason_Not_FM")
-                        if reason:
-                            nfm_counts_dict[reason] = nfm_counts_dict[reason] + 1
+                        if reason and campaign and round_number:
+                            nfm_reasons_per_district_per_campaign[campaign.obr_name][round_key][district_name][
+                                reason
+                            ] = (
+                                nfm_reasons_per_district_per_campaign[campaign.obr_name][round_key][district_name][
+                                    reason
+                                ]
+                                + 1
+                            )
+                        # if reason:
+                        #     nfm_counts_dict[reason] = nfm_counts_dict[reason] + 1
                     total_Child_Checked += int(Child_Checked)
                     # gather caregiver stats
                     caregiver_informed = HH.get("Count_HH/Care_Giver_Informed_SIA", 0)
@@ -953,25 +991,24 @@ class LQASStatsViewSet(viewsets.ViewSet):
                                     caregiver_counts_dict[district_name][source_info_key] + 1
                                 )
 
-                district_id = "%s - %s" % (district_name, form.get("Region"))
-                districts.add(district_id)
-                today_string = form["today"]
-                today = datetime.strptime(today_string, "%Y-%m-%d").date()
-                campaign = find_campaign(campaigns, today, country)
-                region_name = form.get("Region")
-                round_number = form.get("roundNumber")
+                # region_name = form.get("Region")
+                # district_id = "%s - %s" % (district_name, region_name)
+                # districts.add(district_id)
+                # today_string = form["today"]
+                # today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                # campaign = find_campaign(campaigns, today, country)
+                # round_number = form.get("roundNumber")
 
                 if campaign:
                     campaign_name = campaign.obr_name
                     campaign_stats[campaign_name]["country_id"] = country.id
                     campaign_stats[campaign_name]["country_name"] = country.name
-                    round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
-                    round_stats_key = round_key + "_nfm_stats"
+                    # round_stats_key = round_key + "_nfm_stats"
 
-                    for key in nfm_counts_dict:
-                        campaign_stats[campaign_name][round_stats_key][key] = (
-                            campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
-                        )
+                    # for key in nfm_counts_dict:
+                    #     campaign_stats[campaign_name][round_stats_key][key] = (
+                    #         campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
+                    #     )
 
                     d = campaign_stats[campaign_name][round_key][district_name]
 
@@ -994,6 +1031,9 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
                 form_count += 1
+
+        add_nfm_stats_for_round(campaign_stats, nfm_reasons_per_district_per_campaign, "round_1")
+        add_nfm_stats_for_round(campaign_stats, nfm_reasons_per_district_per_campaign, "round_2")
 
         response = {
             "stats": campaign_stats,

@@ -144,6 +144,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.users',
         defaultMessage: 'Users',
     },
+    deleteError: {
+        id: 'iaso.snackBar.deleteUserError',
+        defaultMessage: 'An error occurred while deleting user profile',
+    },
+    deleteSuccess: {
+        id: 'iaso.snackBar.delete_successful',
+        defaultMessage: 'Deleted successfully',
+    },
 });
 
 export default MESSAGES;

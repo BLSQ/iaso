@@ -618,7 +618,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
 def find_campaign(campaigns, today, country):
     for c in campaigns:
-        if not c.round_one.started_at:
+        if not (c.round_one and c.round_one.started_at):
             continue
         if c.country_id == country.id and c.round_one.started_at <= today < c.round_one.started_at + timedelta(
             days=+28

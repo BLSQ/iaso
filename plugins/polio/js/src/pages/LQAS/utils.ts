@@ -181,3 +181,21 @@ export const convertStatToPercent = (data = 0, total = 1): string => {
     if (Number.isSafeInteger(ratio)) return `${ratio}%`;
     return `${ratio.toFixed(2)}%`;
 };
+
+export const makeCaregiversRatio = (
+    data: LqasImCampaignDataWithNameAndRegion[],
+): string => {
+    const { caregiversInformed, childrenChecked } = data.reduce(
+        (total, current) => {
+            return {
+                caregiversInformed:
+                    total.caregiversInformed +
+                    current.care_giver_stats.caregivers_informed,
+                childrenChecked:
+                    total.childrenChecked + current.total_child_checked,
+            };
+        },
+        { childrenChecked: 0, caregiversInformed: 0 },
+    );
+    return convertStatToPercent(caregiversInformed, childrenChecked);
+};

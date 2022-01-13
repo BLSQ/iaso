@@ -836,6 +836,27 @@ def find_district(district_name, region_name, districts, district_dict):
     return None
 
 
+def format_caregiver_stats(campaign_stats, round_number):
+    for campaign in campaign_stats.values():
+        for district in campaign[round_number].values():
+            all_care_givers_stats = district["care_giver_stats"]
+            sorted_care_givers_stats = {
+                key: all_care_givers_stats[key]
+                for key in sorted(all_care_givers_stats, key=all_care_givers_stats.get, reverse=True)
+            }
+            total_informed = sorted_care_givers_stats.pop("caregivers_informed")
+            best_result_key = next(iter(sorted_care_givers_stats))
+            best_result = sorted_care_givers_stats[best_result_key]
+            caregivers_dict = defaultdict(float)
+            caregivers_dict["caregivers_informed"] = total_informed
+            for reason, count in sorted_care_givers_stats.items():
+                if count == best_result:
+                    caregivers_dict[reason] = count
+            ratio = (100 * best_result) / total_informed
+            caregivers_dict["ratio"] = ratio
+            district["care_giver_stats"] = caregivers_dict
+
+
 class LQASStatsViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
@@ -992,24 +1013,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     form_campaign_not_found_count += 1
                 form_count += 1
 
-        for campaign in campaign_stats.values():
-            for district in campaign["round_1"].values():
-                all_care_givers_stats = district["care_giver_stats"]
-                sorted_care_givers_stats = {
-                    key: all_care_givers_stats[key]
-                    for key in sorted(all_care_givers_stats, key=all_care_givers_stats.get, reverse=True)
-                }
-                total_informed=sorted_care_givers_stats.pop("caregivers_informed")
-                best_result_key = next(iter(sorted_care_givers_stats))
-                best_result = sorted_care_givers_stats[best_result_key]
-                caregivers_dict = defaultdict(float)
-                caregivers_dict["caregivers_informed"] = total_informed
-                for reason,count in sorted_care_givers_stats.items():
-                    if count == best_result:
-                        caregivers_dict[reason]=count
-                ratio=(100*best_result)/total_informed
-                caregivers_dict["ratio"]=ratio
-                district["care_giver_stats"]=caregivers_dict
+        format_caregiver_stats(campaign_stats, "round_1")
+        format_caregiver_stats(campaign_stats, "round_2")
 
         response = {
             "stats": campaign_stats,

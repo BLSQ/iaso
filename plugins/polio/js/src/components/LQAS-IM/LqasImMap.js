@@ -5,7 +5,7 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../MapComponent/MapLegend';
 import { MapLegendContainer } from '../MapComponent/MapLegendContainer';
-import { makePopup, makeAccordionData } from '../../utils/LqasIm.tsx';
+import { makePopup } from '../../utils/LqasIm.tsx';
 import {
     determineStatusForDistrict as imDistrictStatus,
     makeImMapLegendItems,
@@ -22,7 +22,7 @@ import { getScopeStyle, findDataForShape, findScope } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
 import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
-import { AccordionMapLegend } from '../MapComponent/AccordionMapLegend.tsx';
+// import { AccordionMapLegend } from '../MapComponent/AccordionMapLegend.tsx';
 
 export const LqasImMap = ({
     type,
@@ -53,14 +53,14 @@ export const LqasImMap = ({
         );
     }, [data, selectedCampaign, round, formatMessage, type]);
 
-    const accordionItems = useMemo(() => {
-        return makeAccordionData({
-            type,
-            data,
-            round,
-            campaign: selectedCampaign,
-        });
-    }, [data, type, round, selectedCampaign]);
+    // const accordionItems = useMemo(() => {
+    //     return makeAccordionData({
+    //         type,
+    //         data,
+    //         round,
+    //         campaign: selectedCampaign,
+    //     });
+    // }, [data, type, round, selectedCampaign]);
 
     const getShapeStyles = useCallback(
         shape => {
@@ -104,7 +104,7 @@ export const LqasImMap = ({
                                     legendItems={legendItems}
                                     width="lg"
                                 />
-                                {type !== 'lqas' && (
+                                {/* {type !== 'lqas' && (
                                     <AccordionMapLegend
                                         title={MESSAGES.collectionStats}
                                         noDataMsg={MESSAGES.noDataFound}
@@ -112,7 +112,7 @@ export const LqasImMap = ({
                                         defaultExpanded
                                         width="lg"
                                     />
-                                )}
+                                )} */}
                             </MapLegendContainer>
                             <MapComponent
                                 // Use the key to force render

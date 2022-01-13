@@ -848,7 +848,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
         base_stats = lambda: {
             "total_child_fmd": 0,
             "total_child_checked": 0,
-            "care_giver_stats": defaultdict(int),
+            "care_giver_stats": defaultdict(float),
             "total_sites_visited": 0,
         }
         campaign_stats = defaultdict(
@@ -991,6 +991,25 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
                 form_count += 1
+
+        for campaign in campaign_stats.values():
+            for district in campaign["round_1"].values():
+                all_care_givers_stats = district["care_giver_stats"]
+                sorted_care_givers_stats = {
+                    key: all_care_givers_stats[key]
+                    for key in sorted(all_care_givers_stats, key=all_care_givers_stats.get, reverse=True)
+                }
+                total_informed=sorted_care_givers_stats.pop("caregivers_informed")
+                best_result_key = next(iter(sorted_care_givers_stats))
+                best_result = sorted_care_givers_stats[best_result_key]
+                caregivers_dict = defaultdict(float)
+                caregivers_dict["caregivers_informed"] = total_informed
+                for reason,count in sorted_care_givers_stats.items():
+                    if count == best_result:
+                        caregivers_dict[reason]=count
+                ratio=(100*best_result)/total_informed
+                caregivers_dict["ratio"]=ratio
+                district["care_giver_stats"]=caregivers_dict
 
         response = {
             "stats": campaign_stats,

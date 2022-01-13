@@ -26,9 +26,9 @@ const style = theme => ({
     containerGrid: { justifyContent: 'space-evenly' },
     centerText: { textAlign: 'center' },
     boldText: { fontWeight: 'bold' },
-    pass: { color: OK_COLOR },
-    fail: { color: FAIL_COLOR },
-    warning: { color: WARNING_COLOR },
+    pass: { color: OK_COLOR, textShadow: '1px 1px 2px black' },
+    fail: { color: FAIL_COLOR, textShadow: '1px 1px 2px black' },
+    warning: { color: WARNING_COLOR, textShadow: '1px 1px 2px black' },
 });
 
 const useStyles = makeStyles(style);

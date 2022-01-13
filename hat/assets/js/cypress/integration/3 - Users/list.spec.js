@@ -41,7 +41,6 @@ const goToPage = (
     }).as('getUsers');
     cy.visit(baseUrl);
 };
-
 const openDialogForUserIndex = index => {
     table = cy.get('table');
     row = table.find('tbody').find('tr').eq(index);
@@ -73,6 +72,7 @@ describe('Users', () => {
             errorCode.should('contain', '401');
         });
     });
+
     describe('Search field', () => {
         beforeEach(() => {
             goToPage();
@@ -84,6 +84,7 @@ describe('Users', () => {
                 .should('equal', undefined);
         });
     });
+
     describe('Search button', () => {
         beforeEach(() => {
             goToPage();
@@ -112,6 +113,7 @@ describe('Users', () => {
             });
         });
     });
+
     describe('Table', () => {
         it('should render results', () => {
             goToPage();
@@ -134,6 +136,7 @@ describe('Users', () => {
             actionColCurrentUser.find('button').should('have.length', 1);
         });
     });
+
     describe('User dialog', () => {
         beforeEach(() => {
             cy.intercept('GET', '/api/permissions', {
@@ -178,6 +181,12 @@ describe('Users', () => {
             openDialogForUserIndex(2);
             cy.get('#user-dialog-tabs').find('button').eq(1).click();
             cy.get('#permission-checkbox-iaso_forms').should('be.checked');
+            cy.get('#user-dialog-tabs').find('button').eq(2).click();
+
+            cy.get('.MuiTreeView-root').should(
+                'contain',
+                listFixture.profiles[2].org_units[0].name,
+            );
         });
 
         it('should call api list and api save', () => {

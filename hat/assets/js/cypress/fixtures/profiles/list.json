@@ -93,7 +93,19 @@
             },
             "permissions": [],
             "is_superuser": false,
-            "org_units": [],
+            "org_units": [
+                {
+                    "name": "République Démocratique du Congo",
+                    "id": 126083,
+                    "parent_id": null,
+                    "validation_status": "VALID",
+                    "parent_name": null,
+                    "source": "reference",
+                    "source_ref": "ymGeqzoPhN3",
+                    "parent": null,
+                    "org_unit_type_name": "Inconnu"
+                }
+            ],
             "language": "en",
             "user_id": 69
         },
@@ -141,7 +153,19 @@
             },
             "permissions": ["iaso_forms"],
             "is_superuser": false,
-            "org_units": [],
+            "org_units": [
+                {
+                    "name": "République Démocratique du Congo",
+                    "id": 126083,
+                    "parent_id": null,
+                    "validation_status": "VALID",
+                    "parent_name": null,
+                    "source": "reference",
+                    "source_ref": "ymGeqzoPhN3",
+                    "parent": null,
+                    "org_unit_type_name": "Inconnu"
+                }
+            ],
             "language": "en",
             "user_id": 69
         }

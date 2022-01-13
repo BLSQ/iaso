@@ -35,7 +35,7 @@ const useStyles = makeStyles(style);
 
 const getRatePassedColors = (ratePassed, classes) => {
     if (!ratePassed) return '';
-    if (parseFloat(ratePassed) > 80) return classes.pass;
+    if (parseFloat(ratePassed) >= 80) return classes.pass;
     if (parseFloat(ratePassed) >= 50) return classes.warning;
     return classes.fail;
 };

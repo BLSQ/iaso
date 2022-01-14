@@ -109,20 +109,22 @@ export const ImSummary: FunctionComponent<Props> = ({
                                 {`${reportingDistricts.value}`}
                             </Typography>
                         </Grid>
-                        <Grid item xs={4} sm={3}>
-                            <Typography
-                                variant="body1"
-                                className={classes.centerText}
-                            >
-                                {formatMessage(MESSAGES[vaccinated.id])}
-                            </Typography>
-                            <Typography
-                                variant="h6"
-                                className={`${classes.centerText} ${classes.boldText} ${colorVaccinated}`}
-                            >
-                                {vaccinated.value}
-                            </Typography>
-                        </Grid>
+                        {type !== 'imGlobal' && (
+                            <Grid item xs={4} sm={3}>
+                                <Typography
+                                    variant="body1"
+                                    className={classes.centerText}
+                                >
+                                    {formatMessage(MESSAGES[vaccinated.id])}
+                                </Typography>
+                                <Typography
+                                    variant="h6"
+                                    className={`${classes.centerText} ${classes.boldText} ${colorVaccinated}`}
+                                >
+                                    {vaccinated.value}
+                                </Typography>
+                            </Grid>
+                        )}
                     </Grid>
                 </Paper>
             )}

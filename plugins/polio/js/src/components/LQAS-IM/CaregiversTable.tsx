@@ -24,20 +24,18 @@ import {
     LqasImCampaignDataWithNameAndRegion,
     RoundString,
 } from '../../constants/types';
-import { caregiverSourceInfoKeys } from '../../pages/IM/constants';
-import { convertStatToPercent, makeDataForTable } from '../../pages/LQAS/utils';
+import { makeDataForTable } from '../../pages/LQAS/utils';
 import {
     sortbyDistrictNameAsc,
     sortbyDistrictNameDesc,
     sortbyRegionNameAsc,
     sortbyRegionNameDesc,
-    sortSourceKeys,
 } from './tableUtils';
 import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { CaregiversTableHeader } from './CaregiversTableHeader';
+import { floatToPercentString } from '../../utils';
 
 type Props = {
-    // data: LqasImCampaignDataWithNameAndRegion[];
     marginTop?: boolean;
     tableKey: string;
     campaign?: string;
@@ -63,10 +61,6 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     const data = useMemo((): LqasImCampaignDataWithNameAndRegion[] => {
         return makeDataForTable(lqasImData, campaign, round);
     }, [lqasImData, campaign, round]);
-
-    const orderedSourceInfoKeys = caregiverSourceInfoKeys.sort(
-        sortSourceKeys(formatMessage, MESSAGES),
-    );
 
     const handleSort = useCallback(
         focus => {
@@ -156,25 +150,26 @@ export const CaregiversTable: FunctionComponent<Props> = ({
                                                     MESSAGES.district,
                                                 )}
                                             </TableCell>
-                                            {orderedSourceInfoKeys.map(
-                                                (sourceInfoKey, i) => {
-                                                    return (
-                                                        <TableCell
-                                                            key={`${tableKey}-head-${sourceInfoKey}-${i}`}
-                                                            variant="head"
-                                                            className={
-                                                                classes.tableHeadCell
-                                                            }
-                                                        >
-                                                            {formatMessage(
-                                                                MESSAGES[
-                                                                    sourceInfoKey
-                                                                ],
-                                                            )}
-                                                        </TableCell>
-                                                    );
-                                                },
-                                            )}
+                                            <TableCell
+                                                variant="head"
+                                                className={
+                                                    classes.tableHeadCell
+                                                }
+                                            >
+                                                {formatMessage(
+                                                    MESSAGES.caregivers_informed,
+                                                )}
+                                            </TableCell>
+                                            <TableCell
+                                                variant="head"
+                                                className={
+                                                    classes.sortableTableHeadCell
+                                                }
+                                            >
+                                                {formatMessage(
+                                                    MESSAGES.mainCaregiverInfoSource,
+                                                )}
+                                            </TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -210,43 +205,60 @@ export const CaregiversTable: FunctionComponent<Props> = ({
                                                     >
                                                         {district.name}
                                                     </TableCell>
-                                                    {orderedSourceInfoKeys.map(
-                                                        (
-                                                            sourceInfoKey,
-                                                            index,
-                                                        ) => {
-                                                            return (
-                                                                <TableCell
-                                                                    key={`${tableKey}${sourceInfoKey}${index}`}
-                                                                    style={{
-                                                                        cursor: 'default',
-                                                                    }}
-                                                                    align="center"
-                                                                    className={
-                                                                        classes.lqasImTableCell
-                                                                    }
-                                                                >
-                                                                    {sourceInfoKey ===
-                                                                    'caregivers_informed'
-                                                                        ? convertStatToPercent(
-                                                                              district
-                                                                                  .care_giver_stats
-                                                                                  .caregivers_informed,
-                                                                              district.total_child_checked,
-                                                                          )
-                                                                        : convertStatToPercent(
-                                                                              district
-                                                                                  .care_giver_stats[
-                                                                                  sourceInfoKey
-                                                                              ],
-                                                                              district
-                                                                                  .care_giver_stats
-                                                                                  .caregivers_informed,
-                                                                          )}
-                                                                </TableCell>
-                                                            );
-                                                        },
-                                                    )}
+                                                    <TableCell
+                                                        style={{
+                                                            cursor: 'default',
+                                                        }}
+                                                        align="center"
+                                                        className={
+                                                            classes.lqasImTableCell
+                                                        }
+                                                    >
+                                                        {floatToPercentString(
+                                                            district
+                                                                .care_giver_stats
+                                                                .caregivers_informed_ratio,
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell
+                                                        style={{
+                                                            cursor: 'default',
+                                                        }}
+                                                        align="center"
+                                                        className={
+                                                            classes.lqasImTableCell
+                                                        }
+                                                    >
+                                                        {Object.keys(
+                                                            district.care_giver_stats,
+                                                        )
+                                                            .filter(
+                                                                sourceKey =>
+                                                                    sourceKey !==
+                                                                        'caregivers_informed' &&
+                                                                    sourceKey !==
+                                                                        'ratio' &&
+                                                                    sourceKey !==
+                                                                        'caregivers_informed_ratio',
+                                                            )
+                                                            .map(sourceKey => {
+                                                                return (
+                                                                    <p>
+                                                                        {`${formatMessage(
+                                                                            MESSAGES[
+                                                                                sourceKey
+                                                                            ],
+                                                                        )}
+                                                                        : ${floatToPercentString(
+                                                                            district
+                                                                                .care_giver_stats
+                                                                                .ratio,
+                                                                        )}
+                                                                        `}
+                                                                    </p>
+                                                                );
+                                                            })}
+                                                    </TableCell>
                                                 </TableRow>
                                             );
                                         })}

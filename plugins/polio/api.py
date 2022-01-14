@@ -854,6 +854,9 @@ def format_caregiver_stats(campaign_stats, round_number):
                     caregivers_dict[reason] = count
             ratio = (100 * best_result) / total_informed
             caregivers_dict["ratio"] = ratio
+            children_checked = district["total_child_checked"]
+            caregivers_informed_ratio = (100 * total_informed) / children_checked
+            caregivers_dict["caregivers_informed_ratio"] = caregivers_informed_ratio
             district["care_giver_stats"] = caregivers_dict
 
 

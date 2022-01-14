@@ -50,6 +50,7 @@ const Tasks = () => {
                 columns={tasksTableColumns(intl.formatMessage, killTaskAction)}
                 extraComponent={
                     <Button
+                        id="refresh-button"
                         variant="contained"
                         color="primary"
                         onClick={() => setForceRefresh(true)}

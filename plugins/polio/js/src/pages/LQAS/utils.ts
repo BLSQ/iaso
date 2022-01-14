@@ -16,7 +16,7 @@ import {
     LqasImCampaignData,
 } from '../../constants/types';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
-import { makeLegendItem, sortByDictKey } from '../../utils';
+import { makeLegendItem } from '../../utils';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -111,7 +111,7 @@ export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
                 passing,
             };
         })
-        .sort((a, b) => parseFloat(a.value) - parseFloat(b.value));
+        .sort((a, b) => parseFloat(b.value) - parseFloat(a.value));
 };
 
 export const lqasChartTooltipFormatter =
@@ -169,7 +169,7 @@ export const sumChildrenCheckedLqas = (
         .reduce((total, current) => total + current.total_child_checked, 0);
 };
 
-const sortLqasNfmKeys = sortByDictKey('absValue');
+const sortLqasNfmKeys = (a, b) => b.absValue - a.absValue;
 
 export const formatLqasDataForNFMChart = ({
     data,

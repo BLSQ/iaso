@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 
 from plugins.polio.preparedness.calculator import get_preparedness_score
@@ -95,6 +96,12 @@ def _get_scores(sheet: CachedSheet, cell_pos):
     }
 
 
+class RoundNumber(str, Enum):
+    round1 = "Round1"
+    round2 = "Round2"
+    unknown = "Unknown"
+
+
 def get_national_level_preparedness(spread: CachedSpread):
     for worksheet in spread.worksheets():
         cell = worksheet.find_one_of(
@@ -111,6 +118,15 @@ def get_national_level_preparedness(spread: CachedSpread):
         if kv.get("communication_sm_activities"):
             kv["communication_sm_activities"] = from_percent(kv["communication_sm_activities"])
         score = _get_scores(worksheet, cell)
+        round_name = worksheet.get_a1("C8")
+        if round_name == "Tour 1 / Rnd 1":
+            round = RoundNumber.round1
+        elif round_name == "Tour 2 / Rnd 2":
+            round = RoundNumber.round2
+        else:
+            round = RoundNumber.unkown
+
+        kv["round"] = round
         return {**kv, **score}
     raise Exception(
         "Summary of National Level Preparedness or Summary of Regional Level Preparedness was not found in this document"

@@ -39,7 +39,7 @@ from .models import Campaign, Config, LineListImport, SpreadSheetImport
 from .models import CountryUsersGroup
 from .models import URLCache, Preparedness
 from .preparedness.calculator import preparedness_summary
-from .preparedness.parser import get_preparedness
+from .preparedness.parser import get_preparedness, RoundNumber
 
 from logging import getLogger
 
@@ -267,10 +267,15 @@ def score_for_x_day_before(ssi_for_campaign, ref_date: datetime.date, n_day: int
     return ssi.created_at, day, score
 
 
-def history_for_campaign(c):
+def history_for_campaign(c, round: RoundNumber):
     spread_id = extract_id_from_url(c.preperadness_spreadsheet_url)
     ssi = SpreadSheetImport.objects.filter(spread_id=spread_id)
-    if c.round_two and c.round_two.started_at:
+    # quickfix remove when we have sheet per round
+    if round == RoundNumber.round2 and c.round_two and c.round_two.started_at:
+        ref_date = c.round_two.started_at
+    elif round == RoundNumber.round1 and c.round_one and c.round_one.started_at:
+        ref_date = c.round_one.started_at
+    elif c.round_two and c.round_two.started_at:
         ref_date = c.round_two.started_at
     elif c.round_one and c.round_one.started_at:
         ref_date = c.round_one.started_at
@@ -314,14 +319,16 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
                     campaign_prep["status"] = "not_sync"
                     continue
                 campaign_prep["date"] = ssi.last().created_at
-                last_p = get_preparedness(ssi.last().cached_spreadsheet)
+                cs = ssi.last().cached_spreadsheet
+                last_p = get_preparedness(cs)
                 campaign_prep.update(preparedness_summary(last_p))
+                campaign_prep["round"] = last_p["national"]["round"]
+
+                campaign_prep["history"] = history_for_campaign(c, last_p["national"]["round"])
             except Exception as e:
                 campaign_prep["status"] = "error"
                 campaign_prep["details"] = str(e)
                 logger.exception(e)
-
-            campaign_prep["history"] = history_for_campaign(c)
 
             r.append(campaign_prep)
         return Response(r)

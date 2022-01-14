@@ -1,0 +1,28 @@
+from uuid import uuid4
+from django.db import models
+from django.conf import settings
+
+from iaso.models import Instance, Form
+
+
+## Remove blank=True, null=True on FK once the modles are sets and validated
+
+class EntityType(models.Model):
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    defining_form = models.ForeignKey(Form, blank=True, null=True, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+class Entity(models.Model):
+    name = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    entity_type = models.ManyToManyField(EntityType)
+    instance = models.ForeignKey(Instance, blank=True, null=True, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return str(self.name)

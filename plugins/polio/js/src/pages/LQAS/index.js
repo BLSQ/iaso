@@ -17,6 +17,8 @@ import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
 import { LqasImPercentageChart } from '../../components/LQAS-IM/LqasImPercentageChart.tsx';
 import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
 import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
+import { LqasSummary } from '../../components/LQAS-IM/LqasSummary.tsx';
+import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -85,6 +87,8 @@ export const Lqas = () => {
                 <Grid container item spacing={2} direction="row">
                     <Grid item xs={6}>
                         <Box ml={2}>
+                            <LqasImMapHeader round="round_1" />
+                            <LqasSummary round="round_1" campaign={campaign} />
                             <LqasImMap
                                 round="round_1"
                                 selectedCampaign={campaign}
@@ -96,6 +100,8 @@ export const Lqas = () => {
                     </Grid>
                     <Grid item xs={6} mr={2}>
                         <Box mr={2}>
+                            <LqasImMapHeader round="round_2" />
+                            <LqasSummary round="round_2" campaign={campaign} />
                             <LqasImMap
                                 round="round_2"
                                 selectedCampaign={campaign}

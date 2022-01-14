@@ -56,7 +56,9 @@ export const LqasSummary: FunctionComponent<Props> = ({ campaign, round }) => {
             evaluated,
         );
         const caregiversRatio =
-            data && campaign ? makeCaregiversRatio(data[campaign][round]) : '';
+            data && campaign && data[campaign]
+                ? makeCaregiversRatio(data[campaign][round])
+                : '';
 
         return {
             failed: failed.length,
@@ -71,7 +73,7 @@ export const LqasSummary: FunctionComponent<Props> = ({ campaign, round }) => {
     // Leaving the commented code with caregiversRatio, in case client asks for it on Monday as it's in PowerBI
     return (
         <>
-            {data && campaign && (
+            {data && campaign && data[campaign] && (
                 <Paper elevation={1} className={classes.paper}>
                     <Grid
                         container

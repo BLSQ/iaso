@@ -59,7 +59,7 @@ export const ImSummary: FunctionComponent<Props> = ({
     const colorVaccinated = getVaccinatedColors(vaccinated?.value, classes);
     return (
         <>
-            {data && campaign && (
+            {data && campaign && data[campaign] && (
                 <Paper elevation={1} className={classes.paper}>
                     <Grid
                         container

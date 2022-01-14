@@ -843,15 +843,38 @@ def find_district(district_name, region_name, districts, district_dict):
     return None
 
 
-# BEURK
 # Checking for each district for each campaign if LQAS data is not disqualified. If it isn't we add the reasons no finger mark to the count
 def add_nfm_stats_for_round(campaign_stats, nfm_stats, round_number):
     for campaign, stats in campaign_stats.items():
         for district, district_stats in stats[round_number].items():
             if district_stats["total_child_checked"] == 60:
                 for reason, count in nfm_stats[campaign][round_number][district].items():
-                    stats["round_1_nfm_stats"][reason] = stats["round_1_nfm_stats"][reason] + count
+                    stats[round_number + "_nfm_stats"][reason] = stats[round_number + "_nfm_stats"][reason] + count
     return campaign_stats
+
+
+def format_caregiver_stats(campaign_stats, round_number):
+    for campaign in campaign_stats.values():
+        for district in campaign[round_number].values():
+            all_care_givers_stats = district["care_giver_stats"]
+            sorted_care_givers_stats = {
+                key: all_care_givers_stats[key]
+                for key in sorted(all_care_givers_stats, key=all_care_givers_stats.get, reverse=True)
+            }
+            total_informed = sorted_care_givers_stats.pop("caregivers_informed")
+            best_result_key = next(iter(sorted_care_givers_stats))
+            best_result = sorted_care_givers_stats[best_result_key]
+            caregivers_dict = defaultdict(float)
+            caregivers_dict["caregivers_informed"] = total_informed
+            for reason, count in sorted_care_givers_stats.items():
+                if count == best_result:
+                    caregivers_dict[reason] = count
+            ratio = (100 * best_result) / total_informed
+            caregivers_dict["ratio"] = ratio
+            children_checked = district["total_child_checked"]
+            caregivers_informed_ratio = (100 * total_informed) / children_checked
+            caregivers_dict["caregivers_informed_ratio"] = caregivers_informed_ratio
+            district["care_giver_stats"] = caregivers_dict
 
 
 class LQASStatsViewSet(viewsets.ViewSet):
@@ -866,7 +889,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
         base_stats = lambda: {
             "total_child_fmd": 0,
             "total_child_checked": 0,
-            "care_giver_stats": defaultdict(int),
+            "care_giver_stats": defaultdict(float),
             "total_sites_visited": 0,
         }
         campaign_stats = defaultdict(
@@ -1025,6 +1048,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
         add_nfm_stats_for_round(campaign_stats, nfm_reasons_per_district_per_campaign, "round_1")
         add_nfm_stats_for_round(campaign_stats, nfm_reasons_per_district_per_campaign, "round_2")
+        format_caregiver_stats(campaign_stats, "round_1")
+        format_caregiver_stats(campaign_stats, "round_2")
 
         response = {
             "stats": campaign_stats,

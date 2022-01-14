@@ -913,6 +913,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.ratioUnvaccinated',
         defaultMessage: '% unvaccinated',
     },
+    mainCaregiverInfoSource: {
+        id: 'iaso.polio.label.mainCaregiverInfoSource',
+        defaultMessage: 'Main source of information',
+    },
 });
 
 export default MESSAGES;

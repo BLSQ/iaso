@@ -96,3 +96,8 @@ export const sortByDictKey = key => (a, b) => {
     if (b[key] > a[key]) return 1;
     return 1;
 };
+
+export const floatToPercentString = num => {
+    if (Number.isSafeInteger(num)) return `${parseInt(num, 10)}%`;
+    return `${num.toFixed(2)}%`;
+};

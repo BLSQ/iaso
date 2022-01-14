@@ -111,7 +111,7 @@ export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
                 passing,
             };
         })
-        .sort((a, b) => parseFloat(a.value) < parseFloat(b.value));
+        .sort((a, b) => parseFloat(a.value) - parseFloat(b.value));
 };
 
 export const lqasChartTooltipFormatter =

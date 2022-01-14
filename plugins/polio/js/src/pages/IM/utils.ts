@@ -89,7 +89,7 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
                 checked: aggregatedData.checked,
             };
         })
-        .sort((a, b) => parseFloat(a.value) < parseFloat(b.value));
+        .sort((a, b) => parseFloat(a.value) - parseFloat(b.value));
 };
 
 export const imTooltipFormatter = formatMessage => (_value, _name, props) => {

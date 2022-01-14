@@ -19,6 +19,7 @@ import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.ts
 import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
 import { LqasSummary } from '../../components/LQAS-IM/LqasSummary.tsx';
 import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
+import { HorizontalDivider } from '../../components/HorizontalDivider.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -27,8 +28,10 @@ const styles = theme => ({
         overflowY: 'auto',
         overflowX: 'hidden',
         height: `calc(100vh - 65px)`,
+        // height: '100vh',
         maxWidth: '100vw',
     },
+    divider: { width: '100%' },
 });
 
 const useStyles = makeStyles(styles);
@@ -55,6 +58,7 @@ export const Lqas = () => {
         () => makeCampaignsDropDown(campaigns),
         [campaigns],
     );
+
     return (
         <>
             <TopBar
@@ -98,6 +102,9 @@ export const Lqas = () => {
                             />
                         </Box>
                     </Grid>
+                    {/* <Grid item>
+                        <Divider orientation="vertical" flexItem />
+                    </Grid> */}
                     <Grid item xs={6} mr={2}>
                         <Box mr={2}>
                             <LqasImMapHeader round="round_2" />
@@ -112,6 +119,7 @@ export const Lqas = () => {
                         </Box>
                     </Grid>
                 </Grid>
+                <HorizontalDivider mt={4} displayTrigger={campaign} />
                 <Grid container item spacing={2} direction="row">
                     {campaign && (
                         <Grid item xs={12}>
@@ -144,6 +152,7 @@ export const Lqas = () => {
                         </Box>
                     </Grid>
                 </Grid>
+                <HorizontalDivider displayTrigger={campaign} />
                 <Grid container item spacing={2} direction="row">
                     <Grid item xs={12}>
                         <Box ml={2} mt={2}>
@@ -182,7 +191,18 @@ export const Lqas = () => {
                         </Box>
                     </Grid>
                 </Grid>
+                <HorizontalDivider displayTrigger={campaign} />
                 <Grid container item spacing={2} direction="row">
+                    <Grid item xs={12}>
+                        <Box ml={2} mt={2}>
+                            <GraphTitle
+                                text={formatMessage(
+                                    MESSAGES.caregivers_informed,
+                                )}
+                                displayTrigger={campaign}
+                            />
+                        </Box>
+                    </Grid>
                     <Grid item xs={6}>
                         <Box ml={2} mt={2}>
                             <CaregiversTable
@@ -203,9 +223,10 @@ export const Lqas = () => {
                     </Grid>
                 </Grid>
                 <DisplayIfUserHasPerm permission="iaso_polio_config">
+                    <HorizontalDivider displayTrigger={campaign} />
                     <Grid container item>
                         <Grid item xs={4}>
-                            <Box ml={2} mb={4}>
+                            <Box ml={2} mb={4} mt={2}>
                                 <DistrictsNotFound
                                     data={LQASData.stats}
                                     campaign={campaign}
@@ -213,7 +234,7 @@ export const Lqas = () => {
                             </Box>
                         </Grid>
                         <Grid item xs={4}>
-                            <Box ml={2} mb={4}>
+                            <Box ml={2} mb={4} mt={2}>
                                 <DatesIgnored
                                     campaign={campaign}
                                     data={LQASData}

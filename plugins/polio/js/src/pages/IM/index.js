@@ -18,6 +18,7 @@ import { findCountryIds } from '../../utils/LqasIm.tsx';
 import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
 import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
 import { ImSummary } from '../../components/LQAS-IM/ImSummary.tsx';
+import { HorizontalDivider } from '../../components/HorizontalDivider.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -119,6 +120,7 @@ export const ImStats = ({ imType }) => {
                         </Box>
                     </Grid>
                 </Grid>
+                <HorizontalDivider mt={4} displayTrigger={campaign} />
                 <Grid container item spacing={2} direction="row">
                     <Grid item xs={12}>
                         <Box ml={2} mt={2}>
@@ -150,46 +152,58 @@ export const ImStats = ({ imType }) => {
                     </Grid>
                 </Grid>
                 {imType === 'imIHH' && (
-                    <Grid container item spacing={2} direction="row">
-                        <Grid item xs={12}>
-                            <Box ml={2} mt={2}>
-                                <GraphTitle
-                                    text={formatMessage(
-                                        MESSAGES.reasonsNoFingerMarked,
-                                    )}
-                                    displayTrigger={campaign}
-                                />
-                            </Box>
+                    <>
+                        <HorizontalDivider
+                            displayTrigger={campaign}
+                            mb={2}
+                            mt={2}
+                        />
+                        <Grid container item spacing={2} direction="row">
+                            <Grid item xs={12}>
+                                <Box ml={2} mt={2}>
+                                    <GraphTitle
+                                        text={formatMessage(
+                                            MESSAGES.reasonsNoFingerMarked,
+                                        )}
+                                        displayTrigger={campaign}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={6} mr={2}>
+                                <Box ml={2} mt={2}>
+                                    <NoFingerMark
+                                        data={imData.stats}
+                                        campaign={campaign}
+                                        round="round_1"
+                                        type="IM"
+                                        chartKey="nfmRound1"
+                                        isLoading={isLoading}
+                                        showChart={Boolean(campaign)}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={6} mr={2}>
+                                <Box mr={2} mt={2}>
+                                    <NoFingerMark
+                                        data={imData.stats}
+                                        campaign={campaign}
+                                        round="round_2"
+                                        type="IM"
+                                        chartKey="nfmRound2"
+                                        isLoading={isLoading}
+                                        showChart={Boolean(campaign)}
+                                    />
+                                </Box>
+                            </Grid>
                         </Grid>
-                        <Grid item xs={6} mr={2}>
-                            <Box ml={2} mt={2}>
-                                <NoFingerMark
-                                    data={imData.stats}
-                                    campaign={campaign}
-                                    round="round_1"
-                                    type="IM"
-                                    chartKey="nfmRound1"
-                                    isLoading={isLoading}
-                                    showChart={Boolean(campaign)}
-                                />
-                            </Box>
-                        </Grid>
-                        <Grid item xs={6} mr={2}>
-                            <Box mr={2} mt={2}>
-                                <NoFingerMark
-                                    data={imData.stats}
-                                    campaign={campaign}
-                                    round="round_2"
-                                    type="IM"
-                                    chartKey="nfmRound2"
-                                    isLoading={isLoading}
-                                    showChart={Boolean(campaign)}
-                                />
-                            </Box>
-                        </Grid>
-                    </Grid>
+                    </>
                 )}
                 <DisplayIfUserHasPerm permission="iaso_polio_config">
+                    <HorizontalDivider
+                        displayTrigger={campaign}
+                        mb={2}
+                        mt={2}
+                    />
                     <Grid container item>
                         <Grid item xs={4}>
                             <Box ml={2} mb={4}>

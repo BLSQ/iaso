@@ -5,7 +5,7 @@ import {
     NfmRoundString,
 } from '../../constants/types';
 import { IM_PASS, IM_FAIL, IM_WARNING, ImNfmKeys } from './constants';
-import { makeLegendItem, sortByDictKey } from '../../utils';
+import { makeLegendItem } from '../../utils';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 import { convertStatToPercentNumber } from '../LQAS/utils';
 
@@ -89,7 +89,7 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
                 checked: aggregatedData.checked,
             };
         })
-        .sort((a, b) => parseFloat(a.value) < parseFloat(b.value));
+        .sort((a, b) => parseFloat(b.value) - parseFloat(a.value));
 };
 
 export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
@@ -98,7 +98,7 @@ export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
     return [ratio, formatMessage(MESSAGES.vaccinated)];
 };
 
-const sortImNfmKeys = sortByDictKey('absValue');
+const sortImNfmKeys = (a, b) => b.absValue - a.absValue;
 
 export const formatImDataForNFMChart = ({
     data,

@@ -85,9 +85,6 @@ export const NoFingerMark: FunctionComponent<Props> = ({
         childrenNotMarked,
         childrenChecked,
     );
-
-    const roundText = round === 'round_1' ? 'round 1' : 'round 2';
-
     // Force render to avoid visual bug when data has length of 0
     useEffect(() => {
         setRenderCount(count => count + 1);
@@ -101,7 +98,7 @@ export const NoFingerMark: FunctionComponent<Props> = ({
                         <Typography variant="h6">
                             {`${formatMessage(
                                 MESSAGES.childrenNoMark,
-                            )}, ${roundText}: ${ratioUnmarked}`}
+                            )}: ${ratioUnmarked}`}
                         </Typography>
                     </Box>
                     <Box key={`${chartKey}${renderCount}`}>

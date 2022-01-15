@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { RoundString } from '../../constants/types';
-import MESSAGES from '../../constants/messages';
+// import MESSAGES from '../../constants/messages';
 import { PercentageChartWithTitle } from './PercentageChartWithTitle';
 import { useGetRegions } from '../../hooks/useGetRegions';
 import { useConvertedLqasImData } from '../../pages/IM/requests';
@@ -31,10 +31,10 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { data, isLoading } = useConvertedLqasImData(type);
     const { data: regions = [] } = useGetRegions(countryId);
-    const title: string =
-        round === 'round_1'
-            ? formatMessage(MESSAGES.round_1)
-            : formatMessage(MESSAGES.round_2);
+    // const title: string =
+    //     round === 'round_1'
+    //         ? formatMessage(MESSAGES.round_1)
+    //         : formatMessage(MESSAGES.round_2);
     const chartData = useMemo(() => {
         if (type === 'lqas') {
             return formatLqasDataForChart({
@@ -57,7 +57,7 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
         type === 'lqas' ? lqasBarColorTresholds : imBarColorTresholds;
     return (
         <PercentageChartWithTitle
-            title={title}
+            // title={title}
             data={chartData}
             tooltipFormatter={tooltipFormatter(formatMessage)}
             chartKey={`LQASIMChart-${round}-${campaign}-${type}`}

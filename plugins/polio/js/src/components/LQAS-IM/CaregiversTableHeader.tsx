@@ -19,7 +19,8 @@ export const CaregiversTableHeader: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data } = useConvertedLqasImData('lqas');
-    const dataForRound = data && campaign ? data[campaign][round] : [];
+    const dataForRound =
+        data && campaign && data[campaign] ? data[campaign][round] : [];
     return (
         <Box display="flex" justifyContent="space-between">
             <Typography variant="h6">

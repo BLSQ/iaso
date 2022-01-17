@@ -159,7 +159,7 @@
     "iaso.polio.label.provinceOption": "PROVINCE",
     "iaso.polio.label.ratioCaregiversInformed": "Ratio caregivers informed",
     "iaso.polio.label.ratioUnvaccinated": "Unvaccinated",
-    "iaso.polio.label.reasonsNoFingerMarked": "Reasons finger not marked",
+    "iaso.polio.label.reasonsNoFingerMarked": "Reason for non-vaccination",
     "iaso.polio.label.recruitmentSurgeUrl": "Recruitment Surge Google Sheet URL",
     "iaso.polio.label.refreshRecruitmentData": "Refresh Recruitment Data",
     "iaso.polio.label.refreshedAt": "Refreshed at",

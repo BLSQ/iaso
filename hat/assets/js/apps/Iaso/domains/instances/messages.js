@@ -186,6 +186,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Export requests',
         id: 'iaso.label.exportRequests',
     },
+    compare: {
+        defaultMessage: 'Compare',
+        id: 'iaso.label.compare',
+    },
     search: {
         defaultMessage: 'Search',
         id: 'iaso.search',

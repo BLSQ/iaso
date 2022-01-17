@@ -40,7 +40,7 @@ const PageError = ({ errorCode }) => {
                             flexDirection="column"
                         >
                             <Box pt={3}>
-                                <Typography variant="h2">
+                                <Typography variant="h2" id="error-code">
                                     {errorCode}
                                 </Typography>
                             </Box>

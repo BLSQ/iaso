@@ -1,27 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import {
-    useSafeIntl,
-    Select,
-    LoadingSpinner,
-    // Table,
-} from 'bluesquare-components';
+import { useSafeIntl, Select } from 'bluesquare-components';
 
-import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
+import { Grid, Box, makeStyles } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { oneOf } from 'prop-types';
 import MESSAGES from '../../constants/messages';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
-import { determineStatusForDistrict, getImStatsForRound } from './utils';
-import { useIM } from './requests';
-import { ImMap } from './ImMap';
-import {
-    makeCampaignsDropDown,
-    findCountryIds,
-    findScope,
-} from '../../utils/index';
-import { convertAPIData } from '../../utils/LqasIm';
-import { LqasImTable } from '../../components/LQAS-IM/LqasImTable';
+import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
+import { useLqasIm } from './requests';
+import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
+import { makeCampaignsDropDown } from '../../utils/index';
+import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
+import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
+import { LqasImPercentageChart } from '../../components/LQAS-IM/LqasImPercentageChart.tsx';
+import { findCountryIds } from '../../utils/LqasIm.tsx';
+import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
+import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
+import { ImSummary } from '../../components/LQAS-IM/ImSummary.tsx';
+import { HorizontalDivider } from '../../components/HorizontalDivider.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -36,61 +33,32 @@ const styles = theme => ({
 
 const useStyles = makeStyles(styles);
 
-export const ImStats = () => {
+export const ImStats = ({ imType }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
-    const { data: imData, isLoading } = useIM();
-    // console.log('LQAS', imData);
-    const convertedData = convertAPIData(imData);
+    const { data: imData, isLoading } = useLqasIm(imType);
 
-    const countryIds = findCountryIds(imData);
+    const countryIds = findCountryIds(imData).toString();
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({
-            countries: countryIds.toString(),
+            countries: countryIds,
+            enabled: Boolean(countryIds),
         }).query;
 
     const countryOfSelectedCampaign = campaigns.filter(
         campaignOption => campaignOption.obr_name === campaign,
     )[0]?.top_level_org_unit_id;
 
-    const { data: shapes = [] } = useGetGeoJson(
-        countryOfSelectedCampaign,
-        'DISTRICT',
+    const dropDownOptions = useMemo(
+        () => makeCampaignsDropDown(campaigns),
+        [campaigns],
     );
-    const scope = findScope(campaign, campaigns, shapes);
-
-    const districtsNotFound =
-        imData.stats[campaign]?.districts_not_found?.join(', ');
-
-    const currentCountryName = imData.stats[campaign]?.country_name;
-
-    const datesIgnored = imData.day_country_not_found
-        ? imData.day_country_not_found[currentCountryName]
-        : {};
-
-    const round1Stats = getImStatsForRound(convertedData, campaign, 'round_1');
-    const round2Stats = getImStatsForRound(convertedData, campaign, 'round_2');
-    const tableDataRound1 = round1Stats[0].map(district => {
-        return {
-            ...district,
-            status: determineStatusForDistrict(district),
-        };
-    });
-
-    const tableDataRound2 = round2Stats[0].map(district => {
-        return {
-            ...district,
-            status: determineStatusForDistrict(district),
-        };
-    });
-
-    const dropDownOptions = makeCampaignsDropDown(campaigns);
 
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.im)}
+                title={formatMessage(MESSAGES[imType])}
                 displayBackButton={false}
             />
             <Grid container className={classes.container}>
@@ -106,7 +74,7 @@ export const ImStats = () => {
                             <Select
                                 keyValue="campaigns"
                                 label={formatMessage(MESSAGES.campaign)}
-                                loading={campaignsLoading}
+                                loading={!countryIds || campaignsLoading}
                                 clearable
                                 multi={false}
                                 value={campaign}
@@ -118,76 +86,139 @@ export const ImStats = () => {
                 </Grid>
                 <Grid container item spacing={2} direction="row">
                     <Grid item xs={6}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box ml={2}>
-                                <ImMap
-                                    imData={convertedData}
-                                    shapes={shapes}
-                                    round="round_1"
-                                    campaign={campaign}
-                                    scope={scope}
-                                />
-                            </Box>
-                        )}
+                        <Box ml={2}>
+                            <LqasImMapHeader round="round_1" />
+                            <ImSummary
+                                round="round_1"
+                                campaign={campaign}
+                                type={imType}
+                            />
+                            <LqasImMap
+                                round="round_1"
+                                selectedCampaign={campaign}
+                                type={imType}
+                                countryId={countryOfSelectedCampaign}
+                                campaigns={campaigns}
+                            />
+                        </Box>
                     </Grid>
                     <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box mr={2}>
-                                <ImMap
-                                    imData={convertedData}
-                                    shapes={shapes}
-                                    round="round_2"
-                                    campaign={campaign}
-                                    scope={scope}
-                                />
-                            </Box>
-                        )}
+                        <Box mr={2}>
+                            <LqasImMapHeader round="round_2" />
+                            <ImSummary
+                                round="round_2"
+                                campaign={campaign}
+                                type={imType}
+                            />
+                            <LqasImMap
+                                round="round_2"
+                                selectedCampaign={campaign}
+                                type={imType}
+                                countryId={countryOfSelectedCampaign}
+                                campaigns={campaigns}
+                            />
+                        </Box>
                     </Grid>
                 </Grid>
+                <HorizontalDivider mt={4} displayTrigger={campaign} />
                 <Grid container item spacing={2} direction="row">
-                    <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box ml={2}>
-                                <LqasImTable
-                                    data={tableDataRound1}
-                                    tableKey="IM-Round1"
-                                />
-                            </Box>
-                        )}
+                    <Grid item xs={12}>
+                        <Box ml={2} mt={2}>
+                            <GraphTitle
+                                text={formatMessage(MESSAGES.imPerRegion)}
+                                displayTrigger={campaign}
+                            />
+                        </Box>
                     </Grid>
                     <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box mr={2}>
-                                <LqasImTable
-                                    data={tableDataRound2}
-                                    tableKey="IM-Round2"
-                                />
-                            </Box>
-                        )}
+                        <Box ml={2} mt={2}>
+                            <LqasImPercentageChart
+                                type={imType}
+                                round="round_1"
+                                campaign={campaign}
+                                countryId={countryOfSelectedCampaign}
+                            />
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6} mr={2}>
+                        <Box mr={2} mt={2}>
+                            <LqasImPercentageChart
+                                type={imType}
+                                round="round_2"
+                                campaign={campaign}
+                                countryId={countryOfSelectedCampaign}
+                            />
+                        </Box>
                     </Grid>
                 </Grid>
+                {imType === 'imIHH' && (
+                    <>
+                        <HorizontalDivider
+                            displayTrigger={campaign}
+                            mb={2}
+                            mt={2}
+                        />
+                        <Grid container item spacing={2} direction="row">
+                            <Grid item xs={12}>
+                                <Box ml={2} mt={2}>
+                                    <GraphTitle
+                                        text={formatMessage(
+                                            MESSAGES.reasonsNoFingerMarked,
+                                        )}
+                                        displayTrigger={campaign}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={6} mr={2}>
+                                <Box ml={2} mt={2}>
+                                    <NoFingerMark
+                                        data={imData.stats}
+                                        campaign={campaign}
+                                        round="round_1"
+                                        type="IM"
+                                        chartKey="nfmRound1"
+                                        isLoading={isLoading}
+                                        showChart={Boolean(campaign)}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={6} mr={2}>
+                                <Box mr={2} mt={2}>
+                                    <NoFingerMark
+                                        data={imData.stats}
+                                        campaign={campaign}
+                                        round="round_2"
+                                        type="IM"
+                                        chartKey="nfmRound2"
+                                        isLoading={isLoading}
+                                        showChart={Boolean(campaign)}
+                                    />
+                                </Box>
+                            </Grid>
+                        </Grid>
+                    </>
+                )}
                 <DisplayIfUserHasPerm permission="iaso_polio_config">
+                    <HorizontalDivider
+                        displayTrigger={campaign}
+                        mb={2}
+                        mt={2}
+                    />
                     <Grid container item>
                         <Grid item xs={4}>
                             <Box ml={2} mb={4}>
-                                <Typography variant="h6">
-                                    {`${formatMessage(
-                                        MESSAGES.districtsNotFound,
-                                    )}:`}
-                                </Typography>
-                                {districtsNotFound}
+                                <DistrictsNotFound
+                                    campaign={campaign}
+                                    data={imData.stats}
+                                />
                             </Box>
                         </Grid>
                         <Grid item xs={4}>
                             <Box ml={2} mb={4}>
-                                <Typography variant="h6">
-                                    {`${formatMessage(MESSAGES.datesIgnored)}:`}
-                                </Typography>
-                                {Object.keys(datesIgnored ?? {}).join(', ')}
+                                <DatesIgnored
+                                    campaign={campaign}
+                                    data={imData}
+                                />
                             </Box>
                         </Grid>
                     </Grid>
@@ -196,3 +227,8 @@ export const ImStats = () => {
         </>
     );
 };
+ImStats.defaultProps = {
+    imType: 'imGlobal',
+};
+
+ImStats.propTypes = { imType: oneOf(['imGlobal', 'imIHH', 'imOHH']) };

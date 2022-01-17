@@ -1,0 +1,264 @@
+import MESSAGES from '../../constants/messages';
+import {
+    LQAS_PASS,
+    LQAS_FAIL,
+    LQAS_DISQUALIFIED,
+    lqasNfmKeys,
+} from '../IM/constants';
+import {
+    BarChartData,
+    NfmRoundString,
+    RoundString,
+    LqasImCampaignDataWithNameAndRegion,
+    ConvertedLqasImData,
+    FormatForNFMArgs,
+    LqasImCampaign,
+    LqasImCampaignData,
+} from '../../constants/types';
+import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
+import { makeLegendItem } from '../../utils';
+
+export const determineStatusForDistrict = district => {
+    if (!district) return null;
+    const { total_child_fmd: marked, total_child_checked: checked } = district;
+
+    if (checked === 60) {
+        if (marked > 56) {
+            return LQAS_PASS;
+        }
+        return LQAS_FAIL;
+    }
+    return LQAS_DISQUALIFIED;
+};
+
+export const getLqasStatsForRound = (lqasData, campaign, round) => {
+    if (!lqasData[campaign]) return [[], [], [], []];
+    const totalEvaluated = lqasData[campaign][round].map(district => ({
+        ...district,
+        id: district.district,
+    }));
+    const allStatuses = totalEvaluated.map(district => {
+        return determineStatusForDistrict(district);
+    });
+    const passed = allStatuses.filter(status => status === LQAS_PASS);
+    const disqualified = allStatuses.filter(
+        status => status === LQAS_DISQUALIFIED,
+    );
+    const failed = allStatuses.filter(status => status === LQAS_FAIL);
+
+    return [passed, failed, disqualified];
+};
+
+export const makeLqasMapLegendItems =
+    formatMessage => (lqasData, campaign, round) => {
+        const [passed, failed, disqualified] = getLqasStatsForRound(
+            lqasData,
+            campaign,
+            round,
+        );
+        const passedLegendItem = makeLegendItem({
+            color: OK_COLOR,
+            value: passed?.length,
+            message: formatMessage(MESSAGES.passing),
+        });
+        const failedLegendItem = makeLegendItem({
+            color: FAIL_COLOR,
+            value: failed?.length,
+            message: formatMessage(MESSAGES.failing),
+        });
+        const disqualifiedLegendItem = makeLegendItem({
+            color: WARNING_COLOR,
+            value: disqualified?.length,
+            message: formatMessage(MESSAGES.disqualified),
+        });
+
+        return [passedLegendItem, disqualifiedLegendItem, failedLegendItem];
+    };
+
+export const getLqasStatsWithStatus = ({ data, campaign, round }) => {
+    if (!data[campaign]) return [];
+    return [...data[campaign][round]].map(district => ({
+        ...district,
+        status: determineStatusForDistrict(district),
+    }));
+};
+
+export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
+    const dataForRound = getLqasStatsWithStatus({
+        data,
+        campaign,
+        round,
+    });
+
+    return regions
+        .map(region => {
+            const regionData = dataForRound.filter(
+                district => district.region_name === region.name,
+            );
+            const passing = regionData.filter(
+                district => parseInt(district.status, 10) === 1,
+            ).length;
+            const percentSuccess =
+                // fallback to 1 to avoid dividing by zero
+                (passing / (regionData.length || 1)) * 100;
+            const roundedPercentSuccess = Number.isSafeInteger(percentSuccess)
+                ? percentSuccess
+                : percentSuccess.toFixed(2);
+            return {
+                name: region.name,
+                value: roundedPercentSuccess,
+                found: regionData.length,
+                passing,
+            };
+        })
+        .sort((a, b) => parseFloat(b.value) - parseFloat(a.value));
+};
+
+export const lqasChartTooltipFormatter =
+    formatMessage => (_value, _name, props) => {
+        // eslint-disable-next-line react/prop-types
+        const ratio = `${props.payload.passing}/${props.payload.found}`;
+        return [ratio, formatMessage(MESSAGES.passing)];
+    };
+
+export const lqasNfmTooltipFormatter = (value, _name, props) => {
+    // eslint-disable-next-line react/prop-types
+    return [`${value.toFixed(2)}%`, props.payload.nfmKey];
+};
+
+export const sumChildrenChecked = (
+    round: RoundString,
+    data?: Record<string, LqasImCampaign>,
+    campaign?: string,
+): number => {
+    if (!data || !campaign || !data[campaign]) return 0;
+    const roundData: LqasImCampaignData[] = Object.values(
+        data[campaign][round],
+    );
+    return roundData.reduce(
+        (total, current) => total + current.total_child_checked,
+        0,
+    );
+};
+export const sumChildrenMarked = (
+    round: RoundString,
+    data?: Record<string, LqasImCampaign>,
+    campaign?: string,
+): number => {
+    if (!data || !campaign || !data[campaign]) return 0;
+    const roundData: LqasImCampaignData[] = Object.values(
+        data[campaign][round],
+    );
+    return roundData.reduce(
+        (total, current) => total + current.total_child_fmd,
+        0,
+    );
+};
+
+export const sumChildrenCheckedLqas = (
+    round: RoundString,
+    data?: Record<string, LqasImCampaign>,
+    campaign?: string,
+): number => {
+    if (!data || !campaign || !data[campaign]) return 0;
+    const roundData: LqasImCampaignData[] = Object.values(
+        data[campaign][round],
+    );
+    return roundData
+        .filter(rd => rd.total_child_checked === 60)
+        .reduce((total, current) => total + current.total_child_checked, 0);
+};
+
+const sortLqasNfmKeys = (a, b) => b.absValue - a.absValue;
+
+export const formatLqasDataForNFMChart = ({
+    data,
+    campaign,
+    round,
+    formatMessage,
+}: FormatForNFMArgs): BarChartData[] => {
+    if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
+    const roundString: string = NfmRoundString[round];
+    const campaignData: Record<string, number> = data[campaign][roundString];
+    const totalChildrenNotMarked = Object.values(campaignData).reduce(
+        (total, current) => total + current,
+        0,
+    );
+    const entries: [string, number][] = Object.entries(campaignData);
+    const convertedEntries = entries.map(entry => {
+        const [name, value] = entry;
+        return {
+            name: formatMessage(MESSAGES[name]),
+            value: convertStatToPercentNumber(value, totalChildrenNotMarked),
+            absValue: value,
+            nfmKey: name,
+        };
+    });
+    if (convertedEntries.length === lqasNfmKeys.length)
+        return convertedEntries.sort(sortLqasNfmKeys);
+    const dataKeys = Object.keys(campaignData);
+    const missingEntries = lqasNfmKeys
+        .filter(nfmKey => !dataKeys.includes(nfmKey))
+        .map(nfmKey => ({
+            name: formatMessage(MESSAGES[nfmKey]),
+            value: convertStatToPercentNumber(0, totalChildrenNotMarked),
+            absValue: 0,
+            nfmKey,
+        }));
+    return [...convertedEntries, ...missingEntries].sort(sortLqasNfmKeys);
+};
+
+export const makeDataForTable = (
+    data: Record<string, ConvertedLqasImData>,
+    campaign: string,
+    round: RoundString,
+): LqasImCampaignDataWithNameAndRegion[] => {
+    if (!data || !campaign || !data[campaign]) return [];
+    return data[campaign][round];
+
+    // removed the filter so that the table reflects the total numbers of its title/header
+    // we should probably filter the not found everywhere, but we would have inconsistencies anyway because of the current backend implementation of nfm
+    // return data[campaign][round].filter(roundData =>
+    //     Boolean(roundData.district),
+    // );
+};
+
+export const convertStatToPercentNumber = (data = 0, total = 1): number => {
+    if (data > total) throw new Error("data can't be greater than total");
+    // using safeTotal, because 0 can still be passed as arg and override default value
+    const safeTotal = total || 1;
+    const ratio = (100 * data) / safeTotal;
+    return ratio;
+    // if (Number.isSafeInteger(ratio)) return ratio;
+    // return Math.ratio;
+};
+
+export const convertStatToPercent = (data = 0, total = 1): string => {
+    if (data > total)
+        throw new Error(
+            `data can't be greater than total. data: ${data}, total: ${total}`,
+        );
+    // using safeTotal, because 0 can still be passed as arg and override default value
+    const safeTotal = total || 1;
+    const ratio = (100 * data) / safeTotal;
+    if (Number.isSafeInteger(ratio)) return `${ratio}%`;
+    return `${ratio.toFixed(2)}%`;
+};
+
+export const makeCaregiversRatio = (
+    data: LqasImCampaignDataWithNameAndRegion[],
+): string => {
+    const { caregiversInformed, childrenChecked } = data.reduce(
+        (total, current) => {
+            return {
+                caregiversInformed:
+                    total.caregiversInformed +
+                    current.care_giver_stats.caregivers_informed,
+                childrenChecked:
+                    total.childrenChecked + current.total_child_checked,
+            };
+        },
+        { childrenChecked: 0, caregiversInformed: 0 },
+    );
+    return convertStatToPercent(caregiversInformed, childrenChecked);
+};

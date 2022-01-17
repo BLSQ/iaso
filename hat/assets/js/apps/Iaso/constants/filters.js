@@ -390,7 +390,7 @@ export const instanceStatus = options => ({
     type: 'select',
 });
 
-export const instanceDeleted = () => ({
+export const showOnlyDeleted = () => ({
     urlKey: 'showDeleted',
     label: MESSAGES.showDeleted,
     type: 'checkbox',
@@ -712,6 +712,10 @@ export const formsFilters = () => {
     const filters = [
         {
             ...search(),
+            column: 1,
+        },
+        {
+            ...showOnlyDeleted(),
             column: 1,
         },
     ];

@@ -94,7 +94,7 @@ const SidebarMenu = ({
     };
     const { plugins } = useContext(PluginsContext);
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
-    const menuItems = getMenuItems(currentUser, plugins);
+    const menuItems = getMenuItems(currentUser, plugins, defaultSourceVersion);
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>

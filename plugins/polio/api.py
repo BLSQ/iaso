@@ -548,7 +548,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
                 done_something = False
-                 # FIXME dirty workaround to prevent crash
+                # FIXME dirty workaround to prevent crash
                 round_number = form.get("roundNumber", "Rnd1")
                 if round_number == "MOPUP":
                     continue
@@ -590,15 +590,15 @@ class IMStatsViewSet(viewsets.ViewSet):
 
                 if campaign:
                     campaign_name = campaign.obr_name
-                    scope = campaign.group.org_units.values_list('id', flat=True)
-                    if scope is not None: 
+                    scope = campaign.group.org_units.values_list("id", flat=True)
+                    if scope is not None:
                         district = find_district(district_name, region_name, districts_qs, district_dict)
                         if not district:
                             district_long_name = "%s - %s" % (district_name, region_name)
                             if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
                                 campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
                         if district is not None and district.id in scope:
-                           
+
                             campaign_stats[campaign_name]["country_id"] = country.id
                             campaign_stats[campaign_name]["country_name"] = country.name
                             round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
@@ -1027,8 +1027,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                                 )
                 if campaign:
                     campaign_name = campaign.obr_name
-                    scope = campaign.group.org_units.values_list('id', flat=True)
-                    if scope is not None: 
+                    scope = campaign.group.org_units.values_list("id", flat=True)
+                    if scope is not None:
                         district = find_district(district_name, region_name, districts_qs, district_dict)
                         if not district:
                             district_long_name = "%s - %s" % (district_name, region_name)

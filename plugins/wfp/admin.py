@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from iaso.models import Entity, EntityType
+
+
+admin.site.register(EntityType)
+admin.site.register(Entity)

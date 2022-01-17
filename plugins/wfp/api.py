@@ -6,7 +6,6 @@ from rest_framework import viewsets
 
 
 class TestViewSet(viewsets.ViewSet):
-
     def list(self, request):
         return HttpResponse("Okay")
 

@@ -7,6 +7,7 @@ from iaso.models import Instance, Form
 
 ## Remove blank=True, null=True on FK once the modles are sets and validated
 
+
 class EntityType(models.Model):
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -17,6 +18,9 @@ class EntityType(models.Model):
         return f"{self.name}"
 
 
+"""Define the clients """
+
+
 class Entity(models.Model):
     name = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -25,4 +29,4 @@ class Entity(models.Model):
     instance = models.ForeignKey(Instance, blank=True, null=True, on_delete=models.PROTECT)
 
     def __str__(self):
-        return str(self.name)
+        return f"{self.name}"

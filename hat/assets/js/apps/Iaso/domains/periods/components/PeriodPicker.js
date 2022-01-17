@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
@@ -8,6 +9,10 @@ import InputComponent from '../../../components/forms/InputComponent';
 
 import { getYears } from '../../../utils';
 import { getPeriodPickerString } from '../utils';
+import {
+    hasFeatureFlag,
+    HIDE_PERIOD_QUARTER_NAME,
+} from '../../../utils/featureFlags';
 import { Period } from '../models';
 
 import {
@@ -48,6 +53,7 @@ const PeriodPicker = ({
             : null,
     );
     const [currentPeriodType, setCurrentPeriodType] = useState(periodType);
+    const currentUser = useSelector(state => state.users.current);
 
     useEffect(() => {
         if (currentPeriodType !== periodType) {
@@ -70,6 +76,16 @@ const PeriodPicker = ({
     if (!periodType) {
         return null;
     }
+    const getQuarterOptionLabel = (value, label) => {
+        if (hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME)) {
+            return `${formatMessage(QUARTERS_RANGE[value][0])}-${formatMessage(
+                QUARTERS_RANGE[value][1],
+            )}`;
+        }
+        return `${label} (${formatMessage(
+            QUARTERS_RANGE[value][0],
+        )}-${formatMessage(QUARTERS_RANGE[value][1])})`;
+    };
     return (
         <Box
             mt={2}
@@ -160,11 +176,10 @@ const PeriodPicker = ({
                                         type="select"
                                         options={Object.entries(QUARTERS).map(
                                             ([value, label]) => ({
-                                                label: `${label} (${formatMessage(
-                                                    QUARTERS_RANGE[value][0],
-                                                )}-${formatMessage(
-                                                    QUARTERS_RANGE[value][1],
-                                                )})`,
+                                                label: getQuarterOptionLabel(
+                                                    value,
+                                                    label,
+                                                ),
                                                 value,
                                             }),
                                         )}

@@ -1,4 +1,5 @@
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { useSelector } from 'react-redux';
 import { Period } from './models';
 import {
     PERIOD_TYPE_DAY,
@@ -11,6 +12,11 @@ import {
     MONTHS,
 } from './constants';
 import MESSAGES from './messages';
+
+import {
+    hasFeatureFlag,
+    HIDE_PERIOD_QUARTER_NAME,
+} from '../../utils/featureFlags';
 
 export const getDefaultPeriodString = () => {
     const currentYear = new Date().getFullYear();
@@ -112,14 +118,21 @@ export const getPeriodPickerString = (periodType, period, value) => {
             return period.year ? `${period.year}` : null;
     }
 };
-export const getPrettyPeriod = (period, formatMessage) => {
+export const getPrettyPeriod = (period, formatMessage, currentUser) => {
+    console.log('getPrettyPeriod', currentUser);
     if (!period) return textPlaceholder;
     const periodClass = new Period(period);
     if (periodClass.periodType === PERIOD_TYPE_YEAR) {
         return period;
     }
-    const prefix = period.substring(4, 6);
-    const prettyPeriod = `${prefix}-${periodClass.year}`;
+    let prefix = `${period.substring(4, 6)}-`;
+    if (
+        hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME) &&
+        periodClass.periodType === PERIOD_TYPE_QUARTER
+    ) {
+        prefix = '';
+    }
+    const prettyPeriod = `${prefix}${periodClass.year}`;
 
     let monthRangeString;
     if (
@@ -139,5 +152,7 @@ export const getPrettyPeriod = (period, formatMessage) => {
 
 export const usePrettyPeriod = () => {
     const { formatMessage } = useSafeIntl();
-    return period => getPrettyPeriod(period, formatMessage);
+    const currentUser = useSelector(state => state.users.current);
+    console.log('usePrettyPeriod', currentUser);
+    return period => getPrettyPeriod(period, formatMessage, currentUser);
 };

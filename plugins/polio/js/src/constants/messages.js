@@ -643,10 +643,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.round2',
         defaultMessage: 'Round 2',
     },
-    evaluated: {
-        id: 'iaso.polio.label.evaluated',
-        defaultMessage: 'Evaluated',
-    },
     passing: {
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',
@@ -678,10 +674,6 @@ const MESSAGES = defineMessages({
     districtName: {
         id: 'iaso.polio.label.name',
         defaultMessage: 'Name',
-    },
-    districtFound: {
-        id: 'iaso.polio.label.districtFound',
-        defaultMessage: 'District found',
     },
     datesIgnored: {
         id: 'iaso.polio.label.datesIgnored',
@@ -911,7 +903,7 @@ const MESSAGES = defineMessages({
     },
     ratioUnvaccinated: {
         id: 'iaso.polio.label.ratioUnvaccinated',
-        defaultMessage: '% unvaccinated',
+        defaultMessage: 'Unvaccinated',
     },
     mainCaregiverInfoSource: {
         id: 'iaso.polio.label.mainCaregiverInfoSource',

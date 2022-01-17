@@ -78,10 +78,12 @@ describe('Users', () => {
             goToPage();
         });
         it('should enabled search button', () => {
-            cy.get('#search-search').type(search);
-            cy.get('#search-button')
-                .invoke('attr', 'disabled')
-                .should('equal', undefined);
+            cy.wait('@getUsers').then(() => {
+                cy.get('#search-search').type(search);
+                cy.get('#search-button')
+                    .invoke('attr', 'disabled')
+                    .should('equal', undefined);
+            });
         });
     });
 
@@ -117,23 +119,27 @@ describe('Users', () => {
     describe('Table', () => {
         it('should render results', () => {
             goToPage();
-            table = cy.get('table');
-            table.should('have.length', 1);
-            const rows = table.find('tbody').find('tr');
-            rows.should('have.length', listFixture.profiles.length);
-            rows.eq(0).find('td').should('have.length', 5);
+            cy.wait('@getUsers').then(() => {
+                table = cy.get('table');
+                table.should('have.length', 1);
+                const rows = table.find('tbody').find('tr');
+                rows.should('have.length', listFixture.profiles.length);
+                rows.eq(0).find('td').should('have.length', 5);
+            });
         });
 
         it('should display correct amount of buttons on action column', () => {
             goToPage();
-            table = cy.get('table');
-            row = table.find('tbody').find('tr').eq(1);
-            const actionCol = row.find('td').last();
-            actionCol.find('button').should('have.length', 2);
-            table = cy.get('table');
-            row = table.find('tbody').find('tr').eq(0);
-            const actionColCurrentUser = row.find('td').last();
-            actionColCurrentUser.find('button').should('have.length', 1);
+            cy.wait('@getUsers').then(() => {
+                table = cy.get('table');
+                row = table.find('tbody').find('tr').eq(1);
+                const actionCol = row.find('td').last();
+                actionCol.find('button').should('have.length', 2);
+                table = cy.get('table');
+                row = table.find('tbody').find('tr').eq(0);
+                const actionColCurrentUser = row.find('td').last();
+                actionColCurrentUser.find('button').should('have.length', 1);
+            });
         });
     });
 
@@ -145,93 +151,99 @@ describe('Users', () => {
         });
         it('should display empty user infos', () => {
             goToPage();
-            cy.get('#add-button-container').find('button').click();
-            cy.get('#user-profile-dialog').should('be.visible');
-            userInfosFields.forEach(f => {
-                cy.testInputValue(`#input-text-${f}`, '');
-            });
-            cy.testInputValue('#language', '');
-            cy.get('#user-dialog-tabs').find('button').eq(1).click();
-            cy.get('.permission-checkbox').each($el => {
-                expect($el).to.not.be.checked;
+            cy.wait('@getUsers').then(() => {
+                cy.get('#add-button-container').find('button').click();
+                cy.get('#user-profile-dialog').should('be.visible');
+                userInfosFields.forEach(f => {
+                    cy.testInputValue(`#input-text-${f}`, '');
+                });
+                cy.testInputValue('#language', '');
+                cy.get('#user-dialog-tabs').find('button').eq(1).click();
+                cy.get('.permission-checkbox').each($el => {
+                    expect($el).to.not.be.checked;
+                });
             });
         });
         it('should display correct user infos', () => {
             goToPage();
-            const userIndex = 0;
-            openDialogForUserIndex(userIndex);
-            userInfosFields.forEach(f => {
-                cy.testInputValue(
-                    `#input-text-${f}`,
-                    listFixture.profiles[userIndex][f],
+            cy.wait('@getUsers').then(() => {
+                const userIndex = 0;
+                openDialogForUserIndex(userIndex);
+                userInfosFields.forEach(f => {
+                    cy.testInputValue(
+                        `#input-text-${f}`,
+                        listFixture.profiles[userIndex][f],
+                    );
+                });
+                cy.testInputValue('#language', 'English version');
+
+                cy.get('#user-dialog-tabs').find('button').eq(1).click();
+                cy.get('#superuser-permission-message').should('be.visible');
+
+                cy.get('.MuiDialogActions-root').find('button').first().click();
+                openDialogForUserIndex(1);
+                cy.get('#user-dialog-tabs').find('button').eq(1).click();
+                cy.get('.permission-checkbox').each($el => {
+                    expect($el).to.not.be.checked;
+                });
+                cy.get('.MuiDialogActions-root').find('button').first().click();
+                openDialogForUserIndex(2);
+                cy.get('#user-dialog-tabs').find('button').eq(1).click();
+                cy.get('#permission-checkbox-iaso_forms').should('be.checked');
+                cy.get('#user-dialog-tabs').find('button').eq(2).click();
+
+                cy.get('.MuiTreeView-root').should(
+                    'contain',
+                    listFixture.profiles[2].org_units[0].name,
                 );
             });
-            cy.testInputValue('#language', 'English version');
-
-            cy.get('#user-dialog-tabs').find('button').eq(1).click();
-            cy.get('#superuser-permission-message').should('be.visible');
-
-            cy.get('.MuiDialogActions-root').find('button').first().click();
-            openDialogForUserIndex(1);
-            cy.get('#user-dialog-tabs').find('button').eq(1).click();
-            cy.get('.permission-checkbox').each($el => {
-                expect($el).to.not.be.checked;
-            });
-            cy.get('.MuiDialogActions-root').find('button').first().click();
-            openDialogForUserIndex(2);
-            cy.get('#user-dialog-tabs').find('button').eq(1).click();
-            cy.get('#permission-checkbox-iaso_forms').should('be.checked');
-            cy.get('#user-dialog-tabs').find('button').eq(2).click();
-
-            cy.get('.MuiTreeView-root').should(
-                'contain',
-                listFixture.profiles[2].org_units[0].name,
-            );
         });
 
         it('should call api list and api save', () => {
             goToPage();
-            const userIndex = 0;
-            openDialogForUserIndex(userIndex);
-            const userName = 'superman';
-            cy.get('#input-text-user_name').clear().type(userName);
-            cy.testInputValue('#input-text-user_name', userName);
-            interceptFlag = false;
-            cy.intercept(
-                {
-                    method: 'PATCH',
-                    pathname: `/api/profiles/${listFixture.profiles[userIndex].id}/`,
-                },
-                req => {
-                    interceptFlag = true;
-                    req.reply({
-                        statusCode: 200, // default
-                        body: listFixture.profiles[userIndex],
-                    });
-                },
-            ).as('saveUser');
+            cy.wait('@getUsers').then(() => {
+                const userIndex = 0;
+                openDialogForUserIndex(userIndex);
+                const userName = 'superman';
+                cy.get('#input-text-user_name').clear().type(userName);
+                cy.testInputValue('#input-text-user_name', userName);
+                interceptFlag = false;
+                cy.intercept(
+                    {
+                        method: 'PATCH',
+                        pathname: `/api/profiles/${listFixture.profiles[userIndex].id}/`,
+                    },
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200, // default
+                            body: listFixture.profiles[userIndex],
+                        });
+                    },
+                ).as('saveUser');
 
-            let interceptFlagUsers = false;
-            cy.intercept(
-                {
-                    method: 'GET',
-                    pathname: '/api/profiles',
-                    query: defautlQuery,
-                },
-                req => {
-                    interceptFlagUsers = true;
-                    req.reply({
-                        statusCode: 200, // default
-                        body: listFixture.profiles[userIndex],
-                    });
-                },
-            ).as('getUsersAfterSave');
-            cy.get('.MuiDialogActions-root').find('button').last().click();
-            cy.wait('@saveUser').then(() => {
-                cy.wrap(interceptFlag).should('eq', true);
-            });
-            cy.wait('@getUsersAfterSave').then(() => {
-                cy.wrap(interceptFlagUsers).should('eq', true);
+                let interceptFlagUsers = false;
+                cy.intercept(
+                    {
+                        method: 'GET',
+                        pathname: '/api/profiles',
+                        query: defautlQuery,
+                    },
+                    req => {
+                        interceptFlagUsers = true;
+                        req.reply({
+                            statusCode: 200, // default
+                            body: listFixture.profiles[userIndex],
+                        });
+                    },
+                ).as('getUsersAfterSave');
+                cy.get('.MuiDialogActions-root').find('button').last().click();
+                cy.wait('@saveUser').then(() => {
+                    cy.wrap(interceptFlag).should('eq', true);
+                });
+                cy.wait('@getUsersAfterSave').then(() => {
+                    cy.wrap(interceptFlagUsers).should('eq', true);
+                });
             });
         });
     });

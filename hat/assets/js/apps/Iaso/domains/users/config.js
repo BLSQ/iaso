@@ -8,7 +8,13 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 
 import MESSAGES from './messages';
 
-const usersTableColumns = (formatMessage, component) => [
+const usersTableColumns = ({
+    formatMessage,
+    deleteProfile,
+    params,
+    currentUser,
+    saveProfile,
+}) => [
     {
         Header: formatMessage(MESSAGES.userName),
         id: 'user__username',
@@ -52,19 +58,17 @@ const usersTableColumns = (formatMessage, component) => [
                     )}
                     initialData={settings.row.original}
                     titleMessage={MESSAGES.updateUser}
-                    key={settings.row.original.updated_at}
-                    params={component.props.params}
+                    params={params}
+                    saveProfile={saveProfile}
                 />
-                <DeleteDialog
-                    disabled={settings.row.original.instances_count > 0}
-                    titleMessage={MESSAGES.deleteUserTitle}
-                    message={MESSAGES.deleteUserText}
-                    onConfirm={closeDialog =>
-                        component
-                            .deleteUser(settings.row.original)
-                            .then(closeDialog)
-                    }
-                />
+                {currentUser.id !== settings.row.original.id && (
+                    <DeleteDialog
+                        disabled={settings.row.original.instances_count > 0}
+                        titleMessage={MESSAGES.deleteUserTitle}
+                        message={MESSAGES.deleteUserText}
+                        onConfirm={() => deleteProfile(settings.row.original)}
+                    />
+                )}
             </section>
         ),
     },

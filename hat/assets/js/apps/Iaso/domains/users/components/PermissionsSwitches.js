@@ -54,7 +54,11 @@ class PermissionsSwitches extends Component {
         return (
             <>
                 {isSuperUser && (
-                    <Typography variant="body1" className={classes.admin}>
+                    <Typography
+                        id="superuser-permission-message"
+                        variant="body1"
+                        className={classes.admin}
+                    >
                         {this.props.intl.formatMessage(MESSAGES.isSuperUser)}
                     </Typography>
                 )}
@@ -70,6 +74,8 @@ class PermissionsSwitches extends Component {
                                 <FormControlLabel
                                     control={
                                         <Switch
+                                            className="permission-checkbox"
+                                            id={`permission-checkbox-${p.codename}`}
                                             checked={Boolean(
                                                 currentUser.permissions.value.find(
                                                     up => up === p.codename,

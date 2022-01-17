@@ -1,26 +1,19 @@
-import React, { Component } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import get from 'lodash/get';
-import isEqual from 'lodash/isEqual';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { bindActionCreators } from 'redux';
-import { Tabs, Tab, withStyles } from '@material-ui/core';
+import { Tabs, Tab, makeStyles } from '@material-ui/core';
+import { useSafeIntl } from 'bluesquare-components';
 
-import { injectIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 import UsersInfos from './UsersInfos';
-import {
-    saveUserProFile as saveUserProFileAction,
-    fetchUsersProfiles as fetchUsersProfilesAction,
-    createUserProFile as createUserProFileAction,
-    fetchCurrentUser as fetchCurrentUserAction,
-} from '../actions';
+import { fetchCurrentUser } from '../actions';
 import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
 import PermissionsSwitches from './PermissionsSwitches';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     tabs: {
         marginBottom: theme.spacing(4),
     },
@@ -40,225 +33,186 @@ const styles = theme => ({
         zIndex: -10,
         opacity: 0,
     },
-});
+}));
 
-class UserDialogComponent extends Component {
-    constructor(props) {
-        super(props);
+const UserDialogComponent = ({
+    titleMessage,
+    renderTrigger,
+    initialData = {},
+    saveProfile,
+}) => {
+    const connectedUser = useSelector(state => state.users.current);
+    const { formatMessage } = useSafeIntl();
+    const dispatch = useDispatch();
+    const classes = useStyles();
 
-        this.state = {
-            user: this.initialUser(),
-            tab: 'infos',
+    const initialUser = useMemo(() => {
+        const newInitialData = initialData || {};
+        return {
+            id: { value: get(newInitialData, 'id', null), errors: [] },
+            user_name: {
+                value: get(newInitialData, 'user_name', ''),
+                errors: [],
+            },
+            first_name: {
+                value: get(newInitialData, 'first_name', ''),
+                errors: [],
+            },
+            last_name: {
+                value: get(newInitialData, 'last_name', ''),
+                errors: [],
+            },
+            email: { value: get(newInitialData, 'email', ''), errors: [] },
+            password: { value: '', errors: [] },
+            permissions: {
+                value: get(newInitialData, 'permissions', []),
+                errors: [],
+            },
+            org_units: {
+                value: get(newInitialData, 'org_units', []),
+                errors: [],
+            },
+            language: {
+                value: get(newInitialData, 'language', ''),
+                errors: [],
+            },
         };
-        this.onConfirm = this.onConfirm.bind(this);
-    }
+    }, [initialData]);
+    const [user, setUser] = useState(initialUser);
+    const [tab, setTab] = useState('infos');
+    const onClosed = () => {
+        setUser(initialUser);
+        setTab('infos');
+    };
 
-    componentDidUpdate(prevProps) {
-        if (!isEqual(prevProps.initialData, this.props.initialData)) {
-            this.setInitialState();
-        }
-    }
-
-    handleChangeTab(tab) {
-        this.setState({
-            tab,
+    const setFieldValue = (fieldName, fieldValue) => {
+        setUser({
+            ...user,
+            [fieldName]: {
+                value: fieldValue,
+                errors: [],
+            },
         });
-    }
+    };
 
-    onConfirm(closeDialog) {
-        const {
-            params,
-            fetchUsersProfiles,
-            saveUserProFile,
-            createUserProFile,
-            initialData,
-            connectedUser,
-            fetchCurrentUser,
-        } = this.props;
+    const setFieldErrors = (fieldName, fieldError) => {
+        setUser({
+            ...user,
+            [fieldName]: {
+                value: user[fieldName].value,
+                errors: [fieldError],
+            },
+        });
+    };
+
+    const onConfirm = closeDialog => {
         const currentUser = {};
-        Object.keys(this.state.user).forEach(key => {
-            currentUser[key] = this.state.user[key].value;
+        Object.keys(user).forEach(key => {
+            currentUser[key] = user[key].value;
         });
 
-        let saveUser;
-
-        if (initialData) {
-            saveUser = saveUserProFile(currentUser);
-        } else {
-            saveUser = createUserProFile(currentUser);
-        }
-        saveUser
-            .then(() => {
+        saveProfile(currentUser, {
+            onSuccess: () => {
                 closeDialog();
-                this.handleChangeTab('infos');
-                this.setState({
-                    user: this.initialUser(),
-                });
-                fetchUsersProfiles(params);
-                if (initialData.id === connectedUser.id) {
-                    fetchCurrentUser();
+                setTab('infos');
+                setUser(initialUser);
+                if (currentUser.id === connectedUser.id) {
+                    dispatch(fetchCurrentUser());
                 }
-            })
-            .catch(error => {
+            },
+            onError: error => {
                 if (error.status === 400) {
-                    this.setFieldErrors(
+                    setFieldErrors(
                         error.details.errorKey,
                         error.details.errorMessage,
                     );
                 }
-            });
-    }
-
-    onClosed() {
-        this.setState({ user: this.initialUser() });
-        this.handleChangeTab('infos');
-    }
-
-    setFieldValue(fieldName, fieldValue) {
-        const { user } = this.state;
-        this.setState({
-            user: {
-                ...user,
-                [fieldName]: {
-                    value: fieldValue,
-                    errors: [],
-                },
             },
         });
-    }
+    };
 
-    setFieldErrors(fieldName, fieldError) {
-        const { user } = this.state;
-        this.setState({
-            user: {
-                ...user,
-                [fieldName]: {
-                    value: user[fieldName].value,
-                    errors: [fieldError],
-                },
-            },
-        });
-    }
+    useEffect(() => {
+        setUser(initialUser);
+    }, [initialData, initialUser]);
 
-    setInitialState() {
-        this.setState({
-            user: this.initialUser(),
-        });
-    }
-
-    initialUser(profile) {
-        let initialData = this.props.initialData ? this.props.initialData : {};
-        if (profile) {
-            initialData = profile;
-        }
-        return {
-            id: { value: get(initialData, 'id', null), errors: [] },
-            user_name: { value: get(initialData, 'user_name', ''), errors: [] },
-            first_name: {
-                value: get(initialData, 'first_name', ''),
-                errors: [],
-            },
-            last_name: { value: get(initialData, 'last_name', ''), errors: [] },
-            email: { value: get(initialData, 'email', ''), errors: [] },
-            password: { value: '', errors: [] },
-            permissions: {
-                value: get(initialData, 'permissions', []),
-                errors: [],
-            },
-            org_units: { value: get(initialData, 'org_units', []), errors: [] },
-            language: { value: get(initialData, 'language', ''), errors: [] },
-        };
-    }
-
-    render() {
-        const {
-            titleMessage,
-            renderTrigger,
-            initialData,
-            classes,
-            intl: { formatMessage },
-        } = this.props;
-        const { user, tab } = this.state;
-        return (
-            <ConfirmCancelDialogComponent
-                titleMessage={titleMessage}
-                onConfirm={closeDialog => this.onConfirm(closeDialog)}
-                cancelMessage={MESSAGES.cancel}
-                confirmMessage={MESSAGES.save}
-                onClosed={() => this.onClosed()}
-                renderTrigger={renderTrigger}
-                maxWidth="sm"
-                dialogProps={{
-                    classNames: classes.dialog,
+    return (
+        <ConfirmCancelDialogComponent
+            titleMessage={titleMessage}
+            onConfirm={closeDialog => onConfirm(closeDialog)}
+            cancelMessage={MESSAGES.cancel}
+            confirmMessage={MESSAGES.save}
+            onClosed={() => onClosed()}
+            renderTrigger={renderTrigger}
+            maxWidth="sm"
+            dialogProps={{
+                classNames: classes.dialog,
+            }}
+        >
+            <Tabs
+                id="user-dialog-tabs"
+                value={tab}
+                classes={{
+                    root: classes.tabs,
                 }}
+                onChange={(_event, newtab) => setTab(newtab)}
             >
-                <Tabs
-                    value={tab}
+                <Tab
                     classes={{
-                        root: classes.tabs,
+                        root: classes.tab,
                     }}
-                    onChange={(event, newtab) => this.handleChangeTab(newtab)}
-                >
-                    <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
-                        value="infos"
-                        label={formatMessage(MESSAGES.infos)}
-                    />
-                    <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
-                        value="permissions"
-                        label={formatMessage(MESSAGES.permissions)}
-                    />
-                    <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
-                        value="locations"
-                        label={formatMessage(MESSAGES.location)}
-                    />
-                </Tabs>
-                <div className={classes.root}>
-                    {tab === 'infos' && (
-                        <UsersInfos
-                            setFieldValue={(key, value) =>
-                                this.setFieldValue(key, value)
-                            }
-                            initialData={initialData}
-                            currentUser={user}
-                        />
-                    )}
-                    <div
-                        className={
-                            tab === 'permissions' ? '' : classes.hiddenOpacity
+                    value="infos"
+                    label={formatMessage(MESSAGES.infos)}
+                />
+                <Tab
+                    classes={{
+                        root: classes.tab,
+                    }}
+                    value="permissions"
+                    label={formatMessage(MESSAGES.permissions)}
+                />
+                <Tab
+                    classes={{
+                        root: classes.tab,
+                    }}
+                    value="locations"
+                    label={formatMessage(MESSAGES.location)}
+                />
+            </Tabs>
+            <div className={classes.root} id="user-profile-dialog">
+                {tab === 'infos' && (
+                    <UsersInfos
+                        setFieldValue={(key, value) =>
+                            setFieldValue(key, value)
                         }
-                    >
-                        <PermissionsSwitches
-                            isSuperUser={
-                                initialData && initialData.is_superuser
-                            }
-                            currentUser={user}
-                            handleChange={permissions =>
-                                this.setFieldValue('permissions', permissions)
-                            }
-                        />
-                    </div>
-                    {tab === 'locations' && (
-                        <UsersLocations
-                            handleChange={ouList =>
-                                this.setFieldValue('org_units', ouList)
-                            }
-                            currentUser={user}
-                        />
-                    )}
+                        initialData={initialData}
+                        currentUser={user}
+                    />
+                )}
+                <div
+                    className={
+                        tab === 'permissions' ? '' : classes.hiddenOpacity
+                    }
+                >
+                    <PermissionsSwitches
+                        isSuperUser={initialData?.is_superuser}
+                        currentUser={user}
+                        handleChange={permissions =>
+                            setFieldValue('permissions', permissions)
+                        }
+                    />
                 </div>
-            </ConfirmCancelDialogComponent>
-        );
-    }
-}
+                {tab === 'locations' && (
+                    <UsersLocations
+                        handleChange={ouList =>
+                            setFieldValue('org_units', ouList)
+                        }
+                        currentUser={user}
+                    />
+                )}
+            </div>
+        </ConfirmCancelDialogComponent>
+    );
+};
 
 UserDialogComponent.defaultProps = {
     initialData: null,
@@ -268,38 +222,7 @@ UserDialogComponent.propTypes = {
     titleMessage: PropTypes.object.isRequired,
     renderTrigger: PropTypes.func.isRequired,
     initialData: PropTypes.object,
-    fetchUsersProfiles: PropTypes.func.isRequired,
-    saveUserProFile: PropTypes.func.isRequired,
-    createUserProFile: PropTypes.func.isRequired,
-    params: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
-    fetchCurrentUser: PropTypes.func.isRequired,
-    connectedUser: PropTypes.object.isRequired,
+    saveProfile: PropTypes.func.isRequired,
 };
 
-const MapStateToProps = state => ({
-    profiles: state.users.list,
-    count: state.users.count,
-    pages: state.users.pages,
-    fetching: state.users.fetching,
-    connectedUser: state.users.current,
-});
-
-const mapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            fetchUsersProfiles: fetchUsersProfilesAction,
-            saveUserProFile: saveUserProFileAction,
-            createUserProFile: createUserProFileAction,
-            fetchCurrentUser: fetchCurrentUserAction,
-        },
-        dispatch,
-    ),
-});
-export default withStyles(styles)(
-    connect(
-        MapStateToProps,
-        mapDispatchToProps,
-    )(injectIntl(UserDialogComponent)),
-);
+export default UserDialogComponent;

@@ -123,6 +123,12 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = Instance.objects.order_by("-id")
 
         profile = request.user.iaso_profile
+
+        # If user is restricted to some org unit, filter on thoses
+        if profile.org_units.exists():
+            orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+
+            queryset = queryset.filter(org_unit__in=orgunits)
         queryset = queryset.filter(project__account=profile.account)
 
         queryset = queryset.exclude(file="").exclude(device__test_device=True)

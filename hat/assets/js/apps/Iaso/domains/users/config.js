@@ -8,13 +8,13 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 
 import MESSAGES from './messages';
 
-const usersTableColumns = (
+const usersTableColumns = ({
     formatMessage,
     deleteProfile,
     params,
     currentUser,
     saveProfile,
-) => [
+}) => [
     {
         Header: formatMessage(MESSAGES.userName),
         id: 'user__username',

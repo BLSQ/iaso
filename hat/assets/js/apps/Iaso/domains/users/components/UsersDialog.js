@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import get from 'lodash/get';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -38,7 +38,7 @@ const useStyles = makeStyles(theme => ({
 const UserDialogComponent = ({
     titleMessage,
     renderTrigger,
-    initialData,
+    initialData = {},
     saveProfile,
 }) => {
     const connectedUser = useSelector(state => state.users.current);
@@ -46,48 +46,42 @@ const UserDialogComponent = ({
     const dispatch = useDispatch();
     const classes = useStyles();
 
-    const initialUser = useCallback(
-        profile => {
-            let newInitialData = initialData || {};
-            if (profile) {
-                newInitialData = profile;
-            }
-            return {
-                id: { value: get(newInitialData, 'id', null), errors: [] },
-                user_name: {
-                    value: get(newInitialData, 'user_name', ''),
-                    errors: [],
-                },
-                first_name: {
-                    value: get(newInitialData, 'first_name', ''),
-                    errors: [],
-                },
-                last_name: {
-                    value: get(newInitialData, 'last_name', ''),
-                    errors: [],
-                },
-                email: { value: get(newInitialData, 'email', ''), errors: [] },
-                password: { value: '', errors: [] },
-                permissions: {
-                    value: get(newInitialData, 'permissions', []),
-                    errors: [],
-                },
-                org_units: {
-                    value: get(newInitialData, 'org_units', []),
-                    errors: [],
-                },
-                language: {
-                    value: get(newInitialData, 'language', ''),
-                    errors: [],
-                },
-            };
-        },
-        [initialData],
-    );
-    const [user, setUser] = useState(initialUser());
+    const initialUser = useMemo(() => {
+        const newInitialData = initialData || {};
+        return {
+            id: { value: get(newInitialData, 'id', null), errors: [] },
+            user_name: {
+                value: get(newInitialData, 'user_name', ''),
+                errors: [],
+            },
+            first_name: {
+                value: get(newInitialData, 'first_name', ''),
+                errors: [],
+            },
+            last_name: {
+                value: get(newInitialData, 'last_name', ''),
+                errors: [],
+            },
+            email: { value: get(newInitialData, 'email', ''), errors: [] },
+            password: { value: '', errors: [] },
+            permissions: {
+                value: get(newInitialData, 'permissions', []),
+                errors: [],
+            },
+            org_units: {
+                value: get(newInitialData, 'org_units', []),
+                errors: [],
+            },
+            language: {
+                value: get(newInitialData, 'language', ''),
+                errors: [],
+            },
+        };
+    }, [initialData]);
+    const [user, setUser] = useState(initialUser);
     const [tab, setTab] = useState('infos');
     const onClosed = () => {
-        setUser(initialUser());
+        setUser(initialUser);
         setTab('infos');
     };
 
@@ -121,7 +115,7 @@ const UserDialogComponent = ({
             onSuccess: () => {
                 closeDialog();
                 setTab('infos');
-                setUser(initialUser());
+                setUser(initialUser);
                 if (currentUser.id === connectedUser.id) {
                     dispatch(fetchCurrentUser());
                 }
@@ -138,7 +132,7 @@ const UserDialogComponent = ({
     };
 
     useEffect(() => {
-        setUser(initialUser());
+        setUser(initialUser);
     }, [initialData, initialUser]);
 
     return (
@@ -160,7 +154,7 @@ const UserDialogComponent = ({
                 classes={{
                     root: classes.tabs,
                 }}
-                onChange={(event, newtab) => setTab(newtab)}
+                onChange={(_event, newtab) => setTab(newtab)}
             >
                 <Tab
                     classes={{
@@ -200,7 +194,7 @@ const UserDialogComponent = ({
                     }
                 >
                     <PermissionsSwitches
-                        isSuperUser={initialData && initialData.is_superuser}
+                        isSuperUser={initialData?.is_superuser}
                         currentUser={user}
                         handleChange={permissions =>
                             setFieldValue('permissions', permissions)

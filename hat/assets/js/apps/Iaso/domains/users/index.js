@@ -74,13 +74,13 @@ const Users = ({ params }) => {
                     data={data?.profiles ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'user__username', desc: false }]}
-                    columns={usersTableColumns(
+                    columns={usersTableColumns({
                         formatMessage,
-                        user => deleteProfile(user),
+                        deleteProfile,
                         params,
                         currentUser,
                         saveProfile,
-                    )}
+                    })}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}

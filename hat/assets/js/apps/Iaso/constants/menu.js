@@ -22,12 +22,12 @@ import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
 import { hasFeatureFlag, SHOW_PAGES } from '../utils/featureFlags';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
+import { getChipColors } from './chipColors';
 
 import MESSAGES from './messages';
 
 // !! remove permission property if the menu has a subMenu !!
-
-const menuItems = [
+const menuItems = defaultSourceId => [
     {
         label: MESSAGES.formsTitle,
         key: 'forms',
@@ -64,12 +64,6 @@ const menuItems = [
                 key: 'completeness',
                 icon: props => <DoneAll {...props} />,
             },
-            {
-                label: MESSAGES.archived,
-                permissions: paths.archivedPath.permissions,
-                key: 'archived',
-                icon: props => <Delete {...props} />,
-            },
         ],
     },
     {
@@ -80,6 +74,11 @@ const menuItems = [
             {
                 label: MESSAGES.list,
                 permissions: paths.orgUnitsPath.permissions,
+                extraPath: `/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all","color":"${getChipColors(
+                    0,
+                ).replace('#', '')}"${
+                    defaultSourceId ? `,"source":${defaultSourceId}` : ''
+                }}]`,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
             },
@@ -164,9 +163,9 @@ const menuItems = [
     },
 ];
 
-const getMenuItems = (currentUser, enabledPlugins) => {
+const getMenuItems = (currentUser, enabledPlugins, defaultSourceVersion) => {
     const pluginsMenu = enabledPlugins.map(plugin => plugin.menu).flat();
-    const basicItems = [...menuItems];
+    const basicItems = [...menuItems(defaultSourceVersion?.source?.id)];
     if (hasFeatureFlag(currentUser, SHOW_PAGES)) {
         basicItems.push({
             label: MESSAGES.pages,

@@ -24,6 +24,7 @@ import {
     sortByFoundAsc,
     sortByFoundDesc,
 } from './tableUtils';
+import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 
 export const LqasImTable = ({ data, marginTop, tableKey }) => {
     const { formatMessage } = useSafeIntl();
@@ -81,9 +82,9 @@ export const LqasImTable = ({ data, marginTop, tableKey }) => {
     }, [sortBy, sortFocus, data]);
 
     const determineStatusColor = status => {
-        if (parseInt(status, 10) === 1) return 'green';
-        if (parseInt(status, 10) === 2) return '#FFD835';
-        if (parseInt(status, 10) === 3) return 'red';
+        if (parseInt(status, 10) === 1) return OK_COLOR;
+        if (parseInt(status, 10) === 2) return WARNING_COLOR;
+        if (parseInt(status, 10) === 3) return FAIL_COLOR;
         throw new Error(
             `Expected to status value to be parsed to int value of 1,2 or 3, got ${parseInt(
                 status,

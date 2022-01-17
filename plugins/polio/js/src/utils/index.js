@@ -71,16 +71,27 @@ export const findScope = (obrName, campaigns, shapes) => {
     return shapes.filter(shape => scopeIds.includes(shape.id));
 };
 
-export const findCountryIds = LqasData => {
-    const { stats } = LqasData;
-    const campaignKeys = Object.keys(stats);
-    return campaignKeys.map(campaignKey => stats[campaignKey].country_id);
-};
-
 export const makeLegendItem = ({ message, value, color }) => {
     return {
         label: `${message}: ${value}`,
         value: `${message}: ${value}`,
         color,
     };
+};
+export const findRegion = (orgUnit, regions) => {
+    return regions?.filter(region => region.id === orgUnit.parent_id)[0]?.name;
+};
+
+export const convertWidth = width => {
+    if (width === 'xs') return '100px';
+    if (width === 'sm') return '120px';
+    if (width === 'md') return '150px';
+    if (width === 'lg') return '180px';
+    if (width === 'xl') return '200px';
+    return '100px';
+};
+
+export const floatToPercentString = num => {
+    if (Number.isSafeInteger(num)) return `${parseInt(num, 10)}%`;
+    return `${num.toFixed(2)}%`;
 };

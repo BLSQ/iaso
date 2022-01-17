@@ -186,4 +186,7 @@ export const useStyles = makeStyles(theme => ({
     noCampaign: {
         textAlign: 'center',
     },
+    mapLegendText: {
+        fontWeight: 'bold',
+    },
 }));

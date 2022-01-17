@@ -1,28 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import {
-    useSafeIntl,
-    Select,
-    LoadingSpinner,
-    // Table,
-} from 'bluesquare-components';
+import { useSafeIntl, Select } from 'bluesquare-components';
 
-import { Grid, Box, makeStyles, Typography } from '@material-ui/core';
+import { Grid, Box, makeStyles } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../constants/messages';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
-import { determineStatusForDistrict, getLqasStatsForRound } from './utils';
-import {
-    makeCampaignsDropDown,
-    findCountryIds,
-    findScope,
-} from '../../utils/index';
-import { convertAPIData } from '../../utils/LqasIm';
-import { useLQAS } from './requests';
-import { LqasMap } from './LqasMap';
-import { LqasImTable } from '../../components/LQAS-IM/LqasImTable';
-import { lqasTableColumns } from './lqasTableConfig';
+import { makeCampaignsDropDown } from '../../utils/index';
+import { findCountryIds } from '../../utils/LqasIm.tsx';
+
+import { useLqasIm } from '../IM/requests';
+import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
+import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
+import { CaregiversTable } from '../../components/LQAS-IM/CaregiversTable.tsx';
+import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
+import { LqasImPercentageChart } from '../../components/LQAS-IM/LqasImPercentageChart.tsx';
+import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
+import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
+import { LqasSummary } from '../../components/LQAS-IM/LqasSummary.tsx';
+import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
+import { HorizontalDivider } from '../../components/HorizontalDivider.tsx';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -31,8 +28,10 @@ const styles = theme => ({
         overflowY: 'auto',
         overflowX: 'hidden',
         height: `calc(100vh - 65px)`,
+        // height: '100vh',
         maxWidth: '100vw',
     },
+    divider: { width: '100%' },
 });
 
 const useStyles = makeStyles(styles);
@@ -41,60 +40,24 @@ export const Lqas = () => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
-    const { data: LQASData, isLoading } = useLQAS();
-    const convertedData = convertAPIData(LQASData);
-    // console.log('LQAS', convertedData);
+    const { data: LQASData, isLoading } = useLqasIm('lqas');
 
-    const countryIds = findCountryIds(LQASData);
+    const countryIds = findCountryIds(LQASData).toString();
+
     const { data: campaigns = [], isLoading: campaignsLoading } =
         useGetCampaigns({
-            countries: countryIds.toString(),
+            countries: countryIds,
+            enabled: Boolean(countryIds),
         }).query;
 
     const countryOfSelectedCampaign = campaigns.filter(
         campaignOption => campaignOption.obr_name === campaign,
     )[0]?.top_level_org_unit_id;
 
-    const { data: shapes = [] } = useGetGeoJson(
-        countryOfSelectedCampaign,
-        'DISTRICT',
+    const dropDownOptions = useMemo(
+        () => makeCampaignsDropDown(campaigns),
+        [campaigns],
     );
-    const scope = findScope(campaign, campaigns, shapes);
-
-    const districtsNotFound =
-        LQASData.stats[campaign]?.districts_not_found?.join(', ');
-
-    const currentCountryName = LQASData.stats[campaign]?.country_name;
-
-    const datesIgnored = LQASData.day_country_not_found
-        ? LQASData.day_country_not_found[currentCountryName]
-        : {};
-
-    const round1Stats = getLqasStatsForRound(
-        convertedData,
-        campaign,
-        'round_1',
-    );
-    const round2Stats = getLqasStatsForRound(
-        convertedData,
-        campaign,
-        'round_2',
-    );
-    const tableDataRound1 = round1Stats[0].map(district => {
-        return {
-            ...district,
-            status: determineStatusForDistrict(district),
-        };
-    });
-
-    const tableDataRound2 = round2Stats[0].map(district => {
-        return {
-            ...district,
-            status: determineStatusForDistrict(district),
-        };
-    });
-
-    const dropDownOptions = makeCampaignsDropDown(campaigns);
 
     return (
         <>
@@ -127,77 +90,155 @@ export const Lqas = () => {
                 </Grid>
                 <Grid container item spacing={2} direction="row">
                     <Grid item xs={6}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box ml={2}>
-                                <LqasMap
-                                    lqasData={convertedData}
-                                    shapes={shapes}
-                                    round="round_1"
-                                    campaign={campaign}
-                                    scope={scope}
-                                />
-                            </Box>
-                        )}
+                        <Box ml={2}>
+                            <LqasImMapHeader round="round_1" />
+                            <LqasSummary round="round_1" campaign={campaign} />
+                            <LqasImMap
+                                round="round_1"
+                                selectedCampaign={campaign}
+                                type="lqas"
+                                countryId={countryOfSelectedCampaign}
+                                campaigns={campaigns}
+                            />
+                        </Box>
                     </Grid>
+                    {/* <Grid item>
+                        <Divider orientation="vertical" flexItem />
+                    </Grid> */}
                     <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box mr={2}>
-                                <LqasMap
-                                    lqasData={convertedData}
-                                    shapes={shapes}
-                                    round="round_2"
-                                    campaign={campaign}
-                                    scope={scope}
-                                />
-                            </Box>
-                        )}
+                        <Box mr={2}>
+                            <LqasImMapHeader round="round_2" />
+                            <LqasSummary round="round_2" campaign={campaign} />
+                            <LqasImMap
+                                round="round_2"
+                                selectedCampaign={campaign}
+                                type="lqas"
+                                countryId={countryOfSelectedCampaign}
+                                campaigns={campaigns}
+                            />
+                        </Box>
                     </Grid>
                 </Grid>
+                <HorizontalDivider mt={4} displayTrigger={campaign} />
                 <Grid container item spacing={2} direction="row">
-                    <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box ml={2}>
-                                <LqasImTable
-                                    data={tableDataRound1}
-                                    tableKey="LQAS-Round1"
-                                    columns={lqasTableColumns(formatMessage)}
+                    {campaign && (
+                        <Grid item xs={12}>
+                            <Box ml={2} mt={2}>
+                                <GraphTitle
+                                    text={formatMessage(MESSAGES.lqasPerRegion)}
+                                    displayTrigger={campaign}
                                 />
                             </Box>
-                        )}
+                        </Grid>
+                    )}
+                    <Grid item xs={6}>
+                        <Box ml={2} mt={2}>
+                            <LqasImPercentageChart
+                                type="lqas"
+                                round="round_1"
+                                campaign={campaign}
+                                countryId={countryOfSelectedCampaign}
+                            />
+                        </Box>
                     </Grid>
                     <Grid item xs={6} mr={2}>
-                        {isLoading && <LoadingSpinner />}
-                        {!isLoading && (
-                            <Box mr={2}>
-                                <LqasImTable
-                                    data={tableDataRound2}
-                                    tableKey="LQAS-Round2"
-                                />
-                            </Box>
-                        )}
+                        <Box mr={2} mt={2}>
+                            <LqasImPercentageChart
+                                type="lqas"
+                                round="round_2"
+                                campaign={campaign}
+                                countryId={countryOfSelectedCampaign}
+                            />
+                        </Box>
+                    </Grid>
+                </Grid>
+                <HorizontalDivider displayTrigger={campaign} />
+                <Grid container item spacing={2} direction="row">
+                    <Grid item xs={12}>
+                        <Box ml={2} mt={2}>
+                            <GraphTitle
+                                text={formatMessage(
+                                    MESSAGES.reasonsNoFingerMarked,
+                                )}
+                                displayTrigger={campaign}
+                            />
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                        <Box ml={2} mt={2}>
+                            <NoFingerMark
+                                data={LQASData.stats}
+                                campaign={campaign}
+                                round="round_1"
+                                type="LQAS"
+                                chartKey="nfmRound1"
+                                isLoading={isLoading}
+                                showChart={Boolean(campaign)}
+                            />
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                        <Box mr={2} mt={2}>
+                            <NoFingerMark
+                                data={LQASData.stats}
+                                campaign={campaign}
+                                round="round_2"
+                                type="LQAS"
+                                chartKey="nfmRound2"
+                                isLoading={isLoading}
+                                showChart={Boolean(campaign)}
+                            />
+                        </Box>
+                    </Grid>
+                </Grid>
+                <HorizontalDivider displayTrigger={campaign} />
+                <Grid container item spacing={2} direction="row">
+                    <Grid item xs={12}>
+                        <Box ml={2} mt={2}>
+                            <GraphTitle
+                                text={formatMessage(
+                                    MESSAGES.caregivers_informed,
+                                )}
+                                displayTrigger={campaign}
+                            />
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                        <Box ml={2} mt={2}>
+                            <CaregiversTable
+                                campaign={campaign}
+                                round="round_1"
+                                chartKey="CGTable1"
+                            />
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                        <Box mr={2} mt={2}>
+                            <CaregiversTable
+                                campaign={campaign}
+                                round="round_2"
+                                chartKey="CGTable2"
+                            />
+                        </Box>
                     </Grid>
                 </Grid>
                 <DisplayIfUserHasPerm permission="iaso_polio_config">
+                    <HorizontalDivider displayTrigger={campaign} />
                     <Grid container item>
                         <Grid item xs={4}>
-                            <Box ml={2} mb={4}>
-                                <Typography variant="h6">
-                                    {`${formatMessage(
-                                        MESSAGES.districtsNotFound,
-                                    )}:`}
-                                </Typography>
-                                {districtsNotFound}
+                            <Box ml={2} mb={4} mt={2}>
+                                <DistrictsNotFound
+                                    data={LQASData.stats}
+                                    campaign={campaign}
+                                />
                             </Box>
                         </Grid>
                         <Grid item xs={4}>
-                            <Box ml={2} mb={4}>
-                                <Typography variant="h6">
-                                    {`${formatMessage(MESSAGES.datesIgnored)}:`}
-                                </Typography>
-                                {Object.keys(datesIgnored ?? {}).join(', ')}
+                            <Box ml={2} mb={4} mt={2}>
+                                <DatesIgnored
+                                    campaign={campaign}
+                                    data={LQASData}
+                                />
                             </Box>
                         </Grid>
                     </Grid>

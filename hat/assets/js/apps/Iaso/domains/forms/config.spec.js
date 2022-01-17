@@ -1,7 +1,6 @@
 import { IconButton } from 'bluesquare-components';
 import { expect } from 'chai';
 import formsTableColumns, { formVersionsTableColumns } from './config';
-import archivedTableColumn from './configArchived';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import FormVersionsDialog from './components/FormVersionsDialogComponent';
 
@@ -98,11 +97,11 @@ describe('Forms config', () => {
         });
     });
     describe('formsTableColumns', () => {
-        it('sould return an array of 9 columns', () => {
+        it('sould return an array of 10 columns', () => {
             columns = formsTableColumns({
                 formatMessage: () => null,
             });
-            expect(columns).to.have.lengthOf(9);
+            expect(columns).to.have.lengthOf(10);
         });
         it('should render a component if Cell is defined', () => {
             columns.forEach(c => {
@@ -230,66 +229,6 @@ describe('Forms config', () => {
                 expect(deleteDialog).to.have.lengthOf(1);
                 deleteDialog.props().onConfirm();
                 expect(deleteFormSpy.calledOnce).to.equal(true);
-            });
-        });
-    });
-
-    describe('archivedTableColumn', () => {
-        it('sould return an array of 9 columns', () => {
-            restoreFormSpy = sinon.spy();
-            columns = archivedTableColumn(
-                () => null,
-                () => restoreFormSpy(),
-                true,
-            );
-            expect(columns).to.have.lengthOf(9);
-        });
-        it('should render a component if Cell is defined', () => {
-            columns.forEach(c => {
-                if (c.Cell) {
-                    const cell = c.Cell(colOriginal(fakeForm));
-                    expect(cell).to.exist;
-                }
-            });
-        });
-        it('should render a component if Cell is defined and no form id', () => {
-            columns.forEach(c => {
-                if (c.Cell) {
-                    const cell = c.Cell(colOriginal(fakeForm));
-                    expect(cell).to.exist;
-                }
-            });
-        });
-        it('should render a component if value not present and Cell is defined', () => {
-            const tempForm = { ...fakeForm };
-            delete tempForm.instance_updated_at;
-            columns.forEach(c => {
-                if (c.Cell) {
-                    const cell = c.Cell(colOriginal(tempForm));
-                    expect(cell).to.exist;
-                }
-            });
-        });
-        describe('action column', () => {
-            it('should render restore icon if user has permission', () => {
-                actionColumn = columns[columns.length - 1];
-                wrapper = shallow(actionColumn.Cell(colOriginal(fakeForm)));
-                restoreIcon = wrapper.find('[icon="restore-from-trash"]');
-                expect(restoreIcon).to.have.lengthOf(1);
-            });
-            it('should trigger restoreForm on onConfirm', () => {
-                restoreIcon.props().onClick();
-                expect(restoreFormSpy.calledOnce).to.equal(true);
-            });
-        });
-        describe('When user does not have permission', () => {
-            it('does not display actions column', () => {
-                const restrictedColumns = archivedTableColumn(
-                    () => null,
-                    () => null,
-                    false,
-                );
-                expect(restrictedColumns.length).to.equal(columns.length - 1);
             });
         });
     });

@@ -13,7 +13,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { fetchAllProjects } from '../projects/actions';
-import { fetchAllOrgUnitTypes } from '../orgUnits/types/actions';
+import { fetchAllOrgUnitTypes } from '../orgUnits/orgUnitTypes/actions';
 import { redirectToReplace } from '../../routing/actions';
 
 import TopBar from '../../components/nav/TopBarComponent';

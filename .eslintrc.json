@@ -133,7 +133,11 @@
           "shallow": "readonly",
           "mount": "readonly",
           "sinon": "readonly",
-          "render":"readonly"
+          "cy": "readonly",
+          "localStorage": "readonly",
+          "Cypress": "readonly",
+          "context": "readonly",
+          "assert": "readonly"
         }
     }
   ],

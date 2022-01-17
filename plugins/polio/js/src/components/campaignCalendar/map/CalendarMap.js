@@ -13,12 +13,9 @@ import { CampaignsLegend } from './CampaignsLegend';
 import MESSAGES from '../../../constants/messages';
 import { appId } from '../../../constants/app';
 import { useStyles } from '../Styles';
+import { findRegion } from '../../../utils';
 
 import 'leaflet/dist/leaflet.css';
-
-const findRegion = (shape, regions) => {
-    return regions?.filter(region => region.id === shape.parent_id)[0]?.name;
-};
 
 const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const classes = useStyles();

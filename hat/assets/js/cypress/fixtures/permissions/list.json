@@ -1,0 +1,69 @@
+{
+    "permissions": [
+        {
+            "id": 382,
+            "name": "Complétude des données",
+            "codename": "iaso_completeness"
+        },
+        {
+            "id": 381,
+            "name": "Correspondances avec DHIS2",
+            "codename": "iaso_mappings"
+        },
+        {
+            "id": 384,
+            "name": "Correspondances sources",
+            "codename": "iaso_links"
+        },
+        {
+            "id": 380,
+            "name": "Formulaires",
+            "codename": "iaso_forms"
+        },
+        {
+            "id": 435,
+            "name": "Pages",
+            "codename": "iaso_pages"
+        },
+        {
+            "id": 460,
+            "name": "Polio",
+            "codename": "iaso_polio"
+        },
+        {
+            "id": 483,
+            "name": "Polio config",
+            "codename": "iaso_polio_config"
+        },
+        {
+            "id": 398,
+            "name": "Projets",
+            "codename": "iaso_projects"
+        },
+        {
+            "id": 469,
+            "name": "Soumissions",
+            "codename": "iaso_submissions"
+        },
+        {
+            "id": 399,
+            "name": "Sources",
+            "codename": "iaso_sources"
+        },
+        {
+            "id": 408,
+            "name": "Tâches",
+            "codename": "iaso_data_tasks"
+        },
+        {
+            "id": 383,
+            "name": "Unités d'organistations",
+            "codename": "iaso_org_units"
+        },
+        {
+            "id": 385,
+            "name": "Utilisateurs",
+            "codename": "iaso_users"
+        }
+    ]
+}

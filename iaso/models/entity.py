@@ -22,11 +22,14 @@ class EntityType(models.Model):
 
 
 class Entity(models.Model):
-    name = models.TextField(null=True, blank=True)
+    name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    entity_type = models.ManyToManyField(EntityType)
+    entity_type = models.ForeignKey(EntityType, blank=True, null=True, on_delete=models.PROTECT)
     instance = models.ForeignKey(Instance, blank=True, null=True, on_delete=models.PROTECT)
+
+    class Meta:
+        verbose_name_plural = "Entities"
 
     def __str__(self):
         return f"{self.name}"

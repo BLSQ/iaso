@@ -31,11 +31,4 @@ class Migration(migrations.Migration):
                 blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL
             ),
         ),
-        migrations.AddField(
-            model_name="page",
-            name="account",
-            field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.account"
-            ),
-        ),
     ]

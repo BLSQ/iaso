@@ -94,38 +94,6 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
     return regionsList.sort(
         (a, b) => parseFloat(b.value) - parseFloat(a.value),
     );
-    // return regions
-    //     .map(region => {
-    //         const regionData = dataForRound.filter(
-    //             district => district.region_name === region.name,
-    //         );
-    //         const aggregatedData = regionData
-    //             .map(district => ({
-    //                 marked: district.total_child_fmd,
-    //                 checked: district.total_child_checked,
-    //             }))
-    //             .reduce(
-    //                 (total, current) => {
-    //                     return {
-    //                         marked: total.marked + current.marked,
-    //                         checked: total.checked + current.checked,
-    //                     };
-    //                 },
-    //                 { marked: 0, checked: 0 },
-    //             );
-    //         const { checked, marked } = aggregatedData;
-    //         // forcing aggregatedData.checked to 1 to avoid dividing by 0
-    //         const markedRatio = (marked / (checked || 1)) * 100;
-    //         return {
-    //             name: region.name,
-    //             value: Number.isSafeInteger(markedRatio)
-    //                 ? markedRatio
-    //                 : markedRatio.toFixed(2),
-    //             marked: aggregatedData.marked,
-    //             checked: aggregatedData.checked,
-    //         };
-    //     })
-    //     .sort((a, b) => parseFloat(b.value) - parseFloat(a.value));
 };
 
 export const imTooltipFormatter = formatMessage => (_value, _name, props) => {

@@ -119,7 +119,6 @@ export const getPeriodPickerString = (periodType, period, value) => {
     }
 };
 export const getPrettyPeriod = (period, formatMessage, currentUser) => {
-    console.log('getPrettyPeriod', currentUser);
     if (!period) return textPlaceholder;
     const periodClass = new Period(period);
     if (periodClass.periodType === PERIOD_TYPE_YEAR) {
@@ -153,6 +152,5 @@ export const getPrettyPeriod = (period, formatMessage, currentUser) => {
 export const usePrettyPeriod = () => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useSelector(state => state.users.current);
-    console.log('usePrettyPeriod', currentUser);
     return period => getPrettyPeriod(period, formatMessage, currentUser);
 };

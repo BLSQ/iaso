@@ -1,12 +1,36 @@
-Development environment
-=======================
+Development environment - Cypress e2e tests
+===========================================
 
-[Cypress documenation](https://docs.cypress.io/guides/overview/why-cypress)
+[Cypress documentation](https://docs.cypress.io/guides/overview/why-cypress)
+
+Cypress is now used to test the user interface.
 
 Setup
 -----
 
 - Run `npm ci` to install it locally
+
+- To run the backend on a fresh database instance with a test user you can launch a django testserver.  alternatively see below to run on your current database.
+  - in docker:
+```
+docker-compose run   -p 8000:8000 iaso manage testserver --addrport 0.0.0.0:8000 --noinput iaso/fixtures/user.yaml
+```
+  - outside docker
+```
+./manage.py testserver --noinput iaso/fixtures/user.yaml
+```
+
+- Launch Cypress interface
+```
+CYPRESS_USERNAME=test CYPRESS_PASSWORD=test CYPRESS_BASE_URL="http://localhost:8000" npm run cypress:open
+```
+
+you can also set the variable in the .env file, to not have to repeat them see below.
+
+The database is deleted and recreated each time `testserver` is rerun.
+This method is used in the CI, so use it when you need to reproduce an error in the CI.
+
+### Launch Cypress on your current server or advanced config
 
 - As the authentication flow is tested too, you should set environment variables in your `.env` file:
 ``` {.sourceCode .env}
@@ -84,8 +108,8 @@ Testing
 
 
 The approach here is:
-- for each elements presents, test all possible states and behaviours
+- for each element presents, test all possible states and behaviours
 - changing filters values and checking that the url has been correctly adapted
 - check also if the Api call are done with the correct parameters
 - change user permissions and test the behaviour
-- check the components error handling
+- check the components' error handling

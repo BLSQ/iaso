@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 import { RoundString } from '../../constants/types';
 import { useConvertedLqasImData } from '../../pages/IM/requests';
-import { FAIL_COLOR, OK_COLOR, WARNING_COLOR } from '../../styles/constants';
+import { FAIL_COLOR, OK_COLOR } from '../../styles/constants';
 import {
     convertStatToPercent,
     getLqasStatsForRound,
@@ -26,9 +26,9 @@ const style = theme => ({
     containerGrid: { justifyContent: 'space-evenly' },
     centerText: { textAlign: 'center' },
     boldText: { fontWeight: 'bold' },
-    pass: { color: OK_COLOR, textShadow: '1px 1px 2px black' },
-    fail: { color: FAIL_COLOR, textShadow: '1px 1px 2px black' },
-    warning: { color: WARNING_COLOR, textShadow: '1px 1px 2px black' },
+    pass: { color: OK_COLOR },
+    fail: { color: FAIL_COLOR },
+    warning: { color: 'rgb(255,196,53)' },
 });
 
 const useStyles = makeStyles(style);

@@ -32,6 +32,7 @@ const Filters = ({ router, disableDates }) => {
                 search: search && search !== '' ? search : undefined,
                 r1StartFrom,
                 r1StartTo,
+                page: null,
             });
             dispatch(replace(url));
         }

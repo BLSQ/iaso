@@ -1,3 +1,5 @@
+import { useSelector } from 'react-redux';
+
 const getDisplayName = user => {
     if (!user.first_name && !user.last_name) {
         return user.user_name;
@@ -8,3 +10,9 @@ const getDisplayName = user => {
 };
 
 export default getDisplayName;
+
+export const useCurrentUser = () => {
+    // noinspection UnnecessaryLocalVariableJS
+    const currentUser = useSelector(state => state.users.current);
+    return currentUser;
+};

@@ -26,21 +26,7 @@ import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
-
-const paginationPathParams = [
-    {
-        isRequired: false,
-        key: 'order',
-    },
-    {
-        isRequired: false,
-        key: 'pageSize',
-    },
-    {
-        isRequired: false,
-        key: 'page',
-    },
-];
+import { paginationPathParams } from '../routing/common';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({

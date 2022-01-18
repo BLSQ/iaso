@@ -19,7 +19,6 @@ import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateE
 import { PageAction } from '../components/Buttons/PageAction';
 import { PageActions } from '../components/Buttons/PageActions';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
-
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useStyles } from '../styles/theme';
@@ -46,9 +45,9 @@ const Dashboard = ({ router }) => {
     // Need a better way to handle default in the routing
     const tableParams = useMemo(() => {
         return {
-            page: params?.page ?? DEFAULT_PAGE,
-            pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,
             order: params?.order ?? DEFAULT_ORDER,
+            pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,
+            page: params?.page ?? DEFAULT_PAGE,
             countries: params.countries,
             search: params.search,
             r1StartFrom: getApiParamDateString(params.r1StartFrom),

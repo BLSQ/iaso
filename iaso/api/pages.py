@@ -33,4 +33,4 @@ class PagesViewSet(ModelViewSet):
         user = self.request.user
         order = self.request.query_params.get("order", "created_at").split(",")
         users = User.objects.filter(iaso_profile__account=user.iaso_profile.account)
-        return Page.objects.filter(users__in=users).order_by(*order)
+        return Page.objects.filter(users__in=users).order_by(*order).distinct()

@@ -26,6 +26,7 @@ import MESSAGES from '../constants/messages';
 
 import ImportLineListDialog from '../components/ImportLineListDialog';
 import { genUrl } from '../utils/routing';
+import { DASHBOARD_BASE_URL } from '../constants/routes';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
@@ -227,7 +228,7 @@ const Dashboard = ({ router }) => {
                     pages={campaigns?.pages}
                     params={tableParams}
                     columns={columns}
-                    baseUrl="polio/list"
+                    baseUrl={DASHBOARD_BASE_URL}
                     marginTop={false}
                     extraProps={{
                         loading: isFetching,

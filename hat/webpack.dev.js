@@ -1,3 +1,4 @@
+const dotenv = require('dotenv');
 const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
@@ -6,6 +7,12 @@ const BundleTracker = require('webpack-bundle-tracker');
 // django settings as well
 const LOCALE = 'fr';
 const WEBPACK_URL = 'http://localhost:3000';
+
+dotenv.config();
+// Application customizations
+const primaryColor = process.env.THEME_PRIMARY_COLOR || '#3f51b5';
+const secondaryColor = process.env.THEME_SECONDARY_COLOR || '#f50057';
+const appTitle = process.env.APP_TITLE || 'Iaso';
 
 module.exports = {
     context: __dirname,
@@ -88,6 +95,11 @@ module.exports = {
             filename: './assets/webpack/webpack-stats.json',
         }),
         new webpack.DefinePlugin({
+            'process.env': {
+                REACT_THEME_PRIMARY_COLOR: `"${primaryColor}"`,
+                REACT_THEME_SECONDARY_COLOR: `"${secondaryColor}"`,
+                REACT_APP_TITLE: `"${appTitle}"`,
+            },
             __LOCALE: JSON.stringify(LOCALE),
         }),
         // XLSX
@@ -157,7 +169,14 @@ module.exports = {
                 use: [
                     { loader: 'style-loader' },
                     { loader: 'css-loader' },
-                    { loader: 'sass-loader' },
+                    {
+                        loader: 'sass-loader',
+                        options: {
+                            additionalData:
+                                `$primary: ${primaryColor};` +
+                                `$secondary: ${secondaryColor};`,
+                        },
+                    },
                 ],
             },
             // font files

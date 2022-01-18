@@ -4,7 +4,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: $dark-blue;
+  background: $secondary;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -17,6 +17,9 @@
 .auth__heading {
   font-size: $font-size-xl;
   margin-bottom: $padding-unit/4;
+  img {
+    height: 80px;
+  }
 }
 
 .auth__content {
@@ -39,7 +42,7 @@
   border-radius: 4px;
   padding: $padding-unit;
   padding-top: calc(#{$padding-unit} - 1em);
-  box-shadow: inset 0 3px 0 0 $blue, 0 0 10px 10px rgba(black, 0.15);
+  box-shadow: inset 0 3px 0 0 $primary, 0 0 10px 10px rgba(black, 0.15);
   position: relative;
 
   * {
@@ -102,7 +105,7 @@ $right-icon-position : 40px;
   background: white;
   border-radius: 4px;
   padding: $padding-unit;
-  box-shadow: inset 0 3px 0 0 $blue, 0 0 10px 10px rgba(black, 0.15);
+  box-shadow: inset 0 3px 0 0 $primary, 0 0 10px 10px rgba(black, 0.15);
 }
 
 .login-link {
@@ -116,6 +119,6 @@ $right-icon-position : 40px;
   margin-top: 10px;
   margin-left: auto;
   display: block;
-  border: 1px solid $blue;
+  border: 1px solid $primary;
   border-radius: 5px;
 }

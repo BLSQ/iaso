@@ -38,6 +38,11 @@ services:
       IASO_ENVIRONMENT: "development"
       RDS_HOSTNAME: db
       RDS_DB_NAME:
+      THEME_PRIMARY_COLOR:
+      THEME_SECONDARY_COLOR:
+      FAVICON_PATH:
+      LOGO_PATH:
+      APP_TITLE:
       RDS_USERNAME: postgres
       RDS_PASSWORD: postgres
       DB_READONLY_USERNAME: postgres

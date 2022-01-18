@@ -244,18 +244,16 @@ const Dashboard = ({ router }) => {
                         )}
                     />
                 </PageActions>
-                {status === 'success' && (
-                    <Table
-                        marginTop={false}
-                        params={tableParams}
-                        count={campaigns.count}
-                        pages={Math.ceil(campaigns.count / pageSize)}
-                        baseUrl="/polio"
-                        redirectTo={onTableParamsChange}
-                        columns={columns}
-                        data={campaigns.campaigns}
-                    />
-                )}
+                <Table
+                    marginTop={false}
+                    params={tableParams}
+                    count={campaigns.count}
+                    pages={Math.ceil(campaigns.count / pageSize)}
+                    baseUrl="/polio"
+                    redirectTo={onTableParamsChange}
+                    columns={columns}
+                    data={campaigns.campaigns ?? []}
+                />
             </Box>
         </>
     );

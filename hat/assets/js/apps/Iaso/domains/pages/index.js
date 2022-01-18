@@ -212,17 +212,15 @@ const Pages = () => {
                         {intl.formatMessage(MESSAGES.create)}
                     </PageAction>
                 </PageActions>
-                {status === 'success' && (
-                    <Table
-                        params={tableParams}
-                        count={pages.count}
-                        pages={Math.ceil(pages.count / pageSize)}
-                        baseUrl="/polio"
-                        redirectTo={onTableParamsChange}
-                        columns={columns}
-                        data={pages.results}
-                    />
-                )}
+                <Table
+                    params={tableParams}
+                    count={pages.count}
+                    pages={Math.ceil(pages.count / pageSize)}
+                    baseUrl="/polio"
+                    redirectTo={onTableParamsChange}
+                    columns={columns}
+                    data={pages.results ?? []}
+                />
             </Box>
         </>
     );

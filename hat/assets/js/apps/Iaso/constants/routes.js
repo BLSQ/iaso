@@ -98,7 +98,7 @@ export const pagesPath = {
     baseUrl: baseUrls.pages,
     permissions: ['iaso_pages'],
     featureFlag: SHOW_PAGES,
-    params: [],
+    params: [...paginationPathParams],
     component: props => <Pages {...props} />,
 };
 

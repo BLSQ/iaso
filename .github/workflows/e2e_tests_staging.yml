@@ -18,17 +18,6 @@ jobs:
 
       - name: resolve dependencies
         run: npm ci
-      - name: Slack testing start
-        uses: rtCamp/action-slack-notify@v2.1.3
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}
-          SLACK_COLOR: ""
-          SLACK_USERNAME: ${{ steps.config.outputs.ENVIRONMENT }}
-          SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_TITLE: Started cypress of  ${{ steps.version.outputs.VERSION_NAME }} on STAGING ...
-          SLACK_FOOTER: "-"
-          MSG_MINIMAL: true
       - name: UI Tests
         uses: cypress-io/github-action@v2
         env:
@@ -40,32 +29,6 @@ jobs:
           browser: chrome
           headless: true
           timeout: 180
-      - name: Slack testing success notification
-        uses: rtCamp/action-slack-notify@v2.1.3
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_USERNAME: ${{ steps.config.outputs.ENVIRONMENT }}
-          SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_TITLE: Iaso ${{ steps.version.outputs.VERSION_NAME }} successfully tested on Staging
-          SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
-          SLACK_FOOTER: "-"
-          MSG_MINIMAL: true
-        if: success()
-      - name: Slack testing failure notification
-        uses: rtCamp/action-slack-notify@v2.1.3
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}
-          SLACK_USERNAME: ${{ steps.config.outputs.ENVIRONMENT }}
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_TITLE: Tested failed on Iaso ${{ steps.version.outputs.VERSION_NAME }} - Staging
-          SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
-          SLACK_FOOTER: "-"
-          MSG_MINIMAL: true
-        if: failure()
       # - uses: actions/upload-artifact@v2
       #   if: failure()
       #   with:

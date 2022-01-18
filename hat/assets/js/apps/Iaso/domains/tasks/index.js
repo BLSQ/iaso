@@ -1,20 +1,18 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import { makeStyles, Button } from '@material-ui/core';
+import { Box, Button, makeStyles } from '@material-ui/core';
 import Autorenew from '@material-ui/icons/Autorenew';
 
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import { killTask } from './actions';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
-import SingleTable from '../../components/tables/SingleTable';
-import TopBar from '../../components/nav/TopBarComponent';
-
-import { baseUrls } from '../../constants/urls';
-
+import PropTypes from 'prop-types';
+import { getRequest, patchRequest } from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
+import TopBar from 'Iaso/components/nav/TopBarComponent';
+import { baseUrls } from 'Iaso/constants/urls';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import tasksTableColumns from './config';
 import MESSAGES from './messages';
-import { fetchTasks } from '../../utils/requests';
 
 const baseUrl = baseUrls.tasks;
 
@@ -22,15 +20,53 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Tasks = () => {
+/**
+ * Get request with params passed as query params
+ * Remove undefined params
+ * @param {string} url
+ * @param {{[p: string]: T}} params
+ */
+const getRequestParams = (url, params) => {
+    const urlSearchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([k, v]) => {
+        if (Array.isArray(v)) {
+            v.forEach(p => urlSearchParams.append(k, p));
+        } else if (v !== undefined) {
+            urlSearchParams.append(k, v);
+        }
+    });
+
+    return getRequest(`${url}/?${urlSearchParams.toString()}`);
+};
+
+const defaultOrder = 'created_at';
+
+const Tasks = params => {
     const intl = useSafeIntl();
     const classes = useStyles();
-    const [forceRefresh, setForceRefresh] = useState(false);
-    const dispatch = useDispatch();
 
-    const killTaskAction = task => {
-        dispatch(killTask(task)).then(() => setForceRefresh(true));
+    const { mutateAsync: killTaskAction } = useSnackMutation(
+        task => patchRequest(`/api/tasks/${task.id}/`, task),
+        'patchTaskSuccess',
+        'patchTaskError',
+        ['tasks'],
+    );
+
+    const urlParams = {
+        limit: params.pageSize ? params.pageSize : 10,
+        order: params.order ? params.order : `-${defaultOrder}`,
+        page: params.page ? params.page : 1,
     };
+    const {
+        data,
+        isLoading,
+        refetch: setForceRefresh,
+    } = useSnackQuery(
+        ['tasks', params],
+        () => getRequestParams('/api/tasks', urlParams),
+        'fetchTasksError',
+    );
 
     return (
         <>
@@ -38,30 +74,39 @@ const Tasks = () => {
                 title={intl.formatMessage(MESSAGES.tasks)}
                 displayBackButton={false}
             />
-            <SingleTable
-                baseUrl={baseUrl}
-                endPointPath="tasks"
-                forceRefresh={forceRefresh}
-                onForceRefreshDone={() => setForceRefresh(false)}
-                defaultSorted={[{ id: 'created_at', desc: true }]}
-                exportButtons={false}
-                dataKey="tasks"
-                fetchItems={fetchTasks}
-                columns={tasksTableColumns(intl.formatMessage, killTaskAction)}
-                extraComponent={
+            <Box className={classes.containerFullHeightNoTabPadded}>
+                <Box display="flex" justifyContent="flex-end">
                     <Button
                         id="refresh-button"
                         variant="contained"
                         color="primary"
-                        onClick={() => setForceRefresh(true)}
+                        onClick={setForceRefresh}
                     >
                         <Autorenew className={classes.buttonIcon} />
                         <FormattedMessage {...MESSAGES.refresh} />
                     </Button>
-                }
-            />
+                </Box>
+                <TableWithDeepLink
+                    data={data?.tasks ?? []}
+                    pages={data?.pages}
+                    count={data?.count}
+                    params={params}
+                    columns={tasksTableColumns(
+                        intl.formatMessage,
+                        killTaskAction,
+                    )}
+                    baseUrl={baseUrl}
+                    extraProps={{
+                        loading: isLoading,
+                    }}
+                />
+            </Box>
         </>
     );
+};
+
+Tasks.propTypes = {
+    params: PropTypes.object.isRequired,
 };
 
 export default Tasks;

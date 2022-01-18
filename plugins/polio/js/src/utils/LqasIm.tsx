@@ -97,12 +97,6 @@ const makeCollectionStats = ({
         );
         const { total_child_checked, total_sites_visited, reportingDistricts } =
             aggregatedData;
-        if (type === 'imGlobal')
-            return {
-                total_child_checked,
-                total_sites_visited,
-                reportingDistricts,
-            };
         const { total_child_checked: checked, total_child_fmd: marked } =
             aggregatedData;
         const ratioUnvaccinated = convertStatToPercent(

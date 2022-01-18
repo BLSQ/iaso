@@ -490,6 +490,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 "round_1_nfm_stats": defaultdict(int),
                 "round_2_nfm_stats": defaultdict(int),
                 "districts_not_found": [],
+                "has_scope": False,
             }
         )
         day_country_not_found = defaultdict(lambda: defaultdict(int))
@@ -591,30 +592,31 @@ class IMStatsViewSet(viewsets.ViewSet):
                 if campaign:
                     campaign_name = campaign.obr_name
                     scope = campaign.group.org_units.values_list("id", flat=True)
-                    if scope is not None:
-                        district = find_district(district_name, region_name, districts_qs, district_dict)
-                        if not district:
-                            district_long_name = "%s - %s" % (district_name, region_name)
-                            if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
-                                campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
-                        if district is not None and district.id in scope:
+                    campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
+                    district = find_district(district_name, region_name, districts_qs, district_dict)
+                    if not district:
+                        district_long_name = "%s - %s" % (district_name, region_name)
+                        if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
+                            campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
+                    # Sending district info if it exists and either the district is in scope or there's no scope (in which case we send all ifo for all distrcits found)
+                    if district is not None and (district.id in scope or len(scope) == 0):
 
-                            campaign_stats[campaign_name]["country_id"] = country.id
-                            campaign_stats[campaign_name]["country_name"] = country.name
-                            round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
-                            round_stats_key = round_key + "_nfm_stats"
-                            for key in nfm_counts_dict:
-                                campaign_stats[campaign_name][round_stats_key][key] = (
-                                    campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
-                                )
-                            d = campaign_stats[campaign_name][round_key][district_name]
-                            d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
-                            d["total_child_checked"] = d["total_child_checked"] + total_Child_Checked
-                            d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
-                            district = find_district(district_name, region_name, districts_qs, district_dict)
-                            d["district"] = district.id
-                            d["region_name"] = district.parent.name
-                            fully_mapped_form_count += 1
+                        campaign_stats[campaign_name]["country_id"] = country.id
+                        campaign_stats[campaign_name]["country_name"] = country.name
+                        round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
+                        round_stats_key = round_key + "_nfm_stats"
+                        for key in nfm_counts_dict:
+                            campaign_stats[campaign_name][round_stats_key][key] = (
+                                campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
+                            )
+                        d = campaign_stats[campaign_name][round_key][district_name]
+                        d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
+                        d["total_child_checked"] = d["total_child_checked"] + total_Child_Checked
+                        d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
+                        district = find_district(district_name, region_name, districts_qs, district_dict)
+                        d["district"] = district.id
+                        d["region_name"] = district.parent.name
+                        fully_mapped_form_count += 1
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
@@ -905,6 +907,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 "round_2": defaultdict(base_stats),
                 "round_2_nfm_stats": defaultdict(int),
                 "districts_not_found": [],
+                "has_scope": [],
             }
         )
         # Storing all "reasons no finger mark" for each campaign in this dict
@@ -1028,27 +1031,28 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 if campaign:
                     campaign_name = campaign.obr_name
                     scope = campaign.group.org_units.values_list("id", flat=True)
-                    if scope is not None:
-                        district = find_district(district_name, region_name, districts_qs, district_dict)
-                        if not district:
-                            district_long_name = "%s - %s" % (district_name, region_name)
-                            d["region_name"] = region_name
+                    campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
+                    district = find_district(district_name, region_name, districts_qs, district_dict)
+                    if not district:
+                        district_long_name = "%s - %s" % (district_name, region_name)
+                        d["region_name"] = region_name
 
-                            if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
-                                campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
-                        if district is not None and district.id in scope:
-                            campaign_stats[campaign_name]["country_id"] = country.id
-                            campaign_stats[campaign_name]["country_name"] = country.name
-                            d = campaign_stats[campaign_name][round_key][district_name]
+                        if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
+                            campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
+                    # Sending district info if it exists and either the district is in scope or there's no scope (in which case we send all ifo for all distrcits found)
+                    if district is not None and (district.id in scope or len(scope) == 0):
+                        campaign_stats[campaign_name]["country_id"] = country.id
+                        campaign_stats[campaign_name]["country_name"] = country.name
+                        d = campaign_stats[campaign_name][round_key][district_name]
 
-                            for key in caregiver_counts_dict[district_name]:
-                                d["care_giver_stats"][key] += caregiver_counts_dict[district_name][key]
+                        for key in caregiver_counts_dict[district_name]:
+                            d["care_giver_stats"][key] += caregiver_counts_dict[district_name][key]
 
-                            d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
-                            d["total_child_checked"] = d["total_child_checked"] + len(form.get("Count_HH", []))
-                            d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
-                            d["district"] = district.id
-                            d["region_name"] = district.parent.name
+                        d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
+                        d["total_child_checked"] = d["total_child_checked"] + len(form.get("Count_HH", []))
+                        d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
+                        d["district"] = district.id
+                        d["region_name"] = district.parent.name
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1

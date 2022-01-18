@@ -12,6 +12,8 @@ dotenv.config();
 // Application customizations
 const primaryColor = process.env.THEME_PRIMARY_COLOR || '#3f51b5';
 const secondaryColor = process.env.THEME_SECONDARY_COLOR || '#f50057';
+const primaryBackgroundColor =
+    process.env.THEME_PRIMARY_BACKGROUND_COLOR || '#F5F5F5';
 const appTitle = process.env.APP_TITLE || 'Iaso';
 
 module.exports = {
@@ -98,6 +100,7 @@ module.exports = {
             'process.env': {
                 REACT_THEME_PRIMARY_COLOR: `"${primaryColor}"`,
                 REACT_THEME_SECONDARY_COLOR: `"${secondaryColor}"`,
+                REACT_THEME_PRIMARY_BACKGROUND_COLOR: `"${primaryBackgroundColor}"`,
                 REACT_APP_TITLE: `"${appTitle}"`,
             },
             __LOCALE: JSON.stringify(LOCALE),
@@ -174,6 +177,7 @@ module.exports = {
                         options: {
                             additionalData:
                                 `$primary: ${primaryColor};` +
+                                `$primary-background: ${primaryBackgroundColor};` +
                                 `$secondary: ${secondaryColor};`,
                         },
                     },

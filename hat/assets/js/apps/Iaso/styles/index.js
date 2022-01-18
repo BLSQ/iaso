@@ -4,6 +4,9 @@ import { styles as mapCustomControl } from './mapCustomControl';
 
 export const getOverriddenTheme = theme => {
     const primaryColor = Color(process.env.REACT_THEME_PRIMARY_COLOR);
+    const primaryBackgroundColor = Color(
+        process.env.REACT_THEME_PRIMARY_BACKGROUND_COLOR,
+    );
     const primaryContrastText = primaryColor.isDark() ? '#fff' : '#000';
     const secondaryColor = Color(process.env.REACT_THEME_SECONDARY_COLOR);
     const secondaryContrastText = secondaryColor.isDark() ? '#fff' : '#000';
@@ -33,6 +36,7 @@ export const getOverriddenTheme = theme => {
                         height: '100vh',
                         overflow: 'hidden',
                         lineHeight: 1,
+                        backgroundColor: primaryBackgroundColor.hex(),
                     },
                 },
             },

@@ -3,8 +3,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
     IconButton as IconButtonComponent,
-    LoadingSpinner,
-    Table,
     useSafeIntl,
 } from 'bluesquare-components';
 import { withRouter } from 'react-router';
@@ -16,6 +14,7 @@ import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { getApiParamDateString } from 'Iaso/utils/dates';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateEditDialog';
 import { PageAction } from '../components/Buttons/PageAction';
 import { PageActions } from '../components/Buttons/PageActions';
@@ -41,22 +40,25 @@ const Dashboard = ({ router }) => {
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
-    const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
-    const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
-    const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
-    const { query, exportToCSV } = useGetCampaigns({
-        page,
-        pageSize,
-        order,
-        countries: params.countries,
-        search: params.search,
-        r1StartFrom: getApiParamDateString(params.r1StartFrom),
-        r1StartTo: getApiParamDateString(params.r1StartTo),
-    });
+    // Add the defaults. put in a memo for comparison.
+    // Need a better way to handle default in the routing
+    const tableParams = useMemo(() => {
+        return {
+            page: params?.page ?? DEFAULT_PAGE,
+            pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,
+            order: params?.order ?? DEFAULT_ORDER,
+            countries: params.countries,
+            search: params.search,
+            r1StartFrom: getApiParamDateString(params.r1StartFrom),
+            r1StartTo: getApiParamDateString(params.r1StartTo),
+        };
+    }, [params]);
 
-    const { data: campaigns = [], status } = query;
+    const { query, exportToCSV } = useGetCampaigns(tableParams);
+
+    const { data: campaigns, isFetching } = query;
 
     const { mutate: removeCampaign } = useRemoveCampaign();
 
@@ -182,29 +184,6 @@ const Dashboard = ({ router }) => {
         [handleClickDeleteRow, handleClickEditRow, formatMessage],
     );
 
-    // The naming is aligned with the names in Table
-    const onTableParamsChange = useCallback(
-        (_baseUrl, newParams) => {
-            if (newParams.page !== page) {
-                setPage(newParams.page);
-            }
-            if (newParams.pageSize !== pageSize) {
-                setPageSize(newParams.pageSize);
-            }
-            if (newParams.order !== order) {
-                setOrder(newParams.order);
-            }
-        },
-        [page, pageSize, order],
-    );
-
-    const tableParams = useMemo(() => {
-        return {
-            pageSize,
-            page,
-            order,
-        };
-    }, [pageSize, page, order]);
     return (
         <>
             <TopBar
@@ -222,7 +201,6 @@ const Dashboard = ({ router }) => {
                 onConfirm={handleDeleteConfirmDialogConfirm}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                {status === 'loading' && <LoadingSpinner />}
                 <PageActions params={params}>
                     <PageAction
                         icon={AddIcon}
@@ -244,15 +222,17 @@ const Dashboard = ({ router }) => {
                         )}
                     />
                 </PageActions>
-                <Table
-                    marginTop={false}
+                <TableWithDeepLink
+                    data={campaigns?.campaigns ?? []}
+                    count={campaigns?.count}
+                    pages={campaigns?.pages}
                     params={tableParams}
-                    count={campaigns.count}
-                    pages={Math.ceil(campaigns.count / pageSize)}
-                    baseUrl="/polio"
-                    redirectTo={onTableParamsChange}
                     columns={columns}
-                    data={campaigns.campaigns ?? []}
+                    baseUrl="polio/list"
+                    marginTop={false}
+                    extraProps={{
+                        loading: isFetching,
+                    }}
                 />
             </Box>
         </>

@@ -53,6 +53,18 @@ const routes = [
         params: [
             {
                 isRequired: false,
+                key: 'page',
+            },
+            {
+                isRequired: false,
+                key: 'pageSize',
+            },
+            {
+                isRequired: false,
+                key: 'order',
+            },
+            {
+                isRequired: false,
                 key: 'campaignId',
             },
             ...campaignsFilters,

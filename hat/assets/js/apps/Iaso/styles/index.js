@@ -19,6 +19,7 @@ export const getOverriddenTheme = theme => {
                 dark: primaryColor.darken(0.2).hex(),
                 light: primaryColor.lighten(0.2).hex(),
                 main: primaryColor.hex(),
+                background: primaryBackgroundColor.hex(),
             },
             secondary: {
                 contrastText: secondaryContrastText,
@@ -36,7 +37,7 @@ export const getOverriddenTheme = theme => {
                         height: '100vh',
                         overflow: 'hidden',
                         lineHeight: 1,
-                        backgroundColor: primaryBackgroundColor.hex(),
+                        backgroundColor: 'white',
                     },
                 },
             },

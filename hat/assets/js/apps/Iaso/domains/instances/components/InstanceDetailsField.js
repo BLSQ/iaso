@@ -20,57 +20,60 @@ const styles = theme => ({
     },
 });
 
-const InstanceDetailsField = ({ classes, label, value, Icon, valueTitle, formId }) => (
-    <Grid container spacing={1}>
-        <Grid xs={5} item>
-            <div className={classes.labelContainer}>
-                {Icon && <Icon />}
-                <Typography
-                    variant="body2"
-                    noWrap
-                    color="inherit"
-                    title={label}
-                >
-                    {label}
-                </Typography>
-                :
-            </div>
-        </Grid>
-        <Grid
-            xs={7}
-            container
-            item
-            justifyContent="flex-start"
-            alignItems="center"
-        >
-            <Typography
-                variant="body1"
-                color="inherit"
-                title={valueTitle !== '' ? valueTitle : value}
+const InstanceDetailsField = ({
+    classes,
+    label,
+    value,
+    Icon,
+    valueTitle,
+    renderValue,
+}) => {
+    return (
+        <Grid container spacing={1}>
+            <Grid xs={5} item>
+                <div className={classes.labelContainer}>
+                    {Icon && <Icon />}
+                    <Typography
+                        variant="body2"
+                        noWrap
+                        color="inherit"
+                        title={label}
+                    >
+                        {label}
+                    </Typography>
+                    :
+                </div>
+            </Grid>
+            <Grid
+                xs={7}
+                container
+                item
+                justifyContent="flex-start"
+                alignItems="center"
             >
-                {label !== 'Form'
-                    ? value
-                    : (
-                        <Link
-                            className={classes.link}
-                            href={`/dashboard/forms/detail/formId/${formId}`}
-                        >
-                            {value}
-                        </Link>
-                      ) || textPlaceholder}
-            </Typography>
+                <Typography
+                    variant="body1"
+                    color="inherit"
+                    title={valueTitle !== '' ? valueTitle : value}
+                >
+                    {renderValue && renderValue(value)}
+                    {!renderValue && (value || textPlaceholder)}
+                </Typography>
+            </Grid>
         </Grid>
-    </Grid>
-);
+    );
+};
 
 InstanceDetailsField.defaultProps = {
     Icon: null,
     valueTitle: '',
     value: null,
+    renderValue: null,
 };
 
 InstanceDetailsField.propTypes = {
     classes: PropTypes.object.isRequired,
+    renderValue: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
     label: PropTypes.string.isRequired,
     value: PropTypes.any,
     Icon: PropTypes.object,

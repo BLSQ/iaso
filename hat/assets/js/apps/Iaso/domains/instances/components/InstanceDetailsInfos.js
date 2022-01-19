@@ -24,7 +24,11 @@ const InstanceDetailsInfos = ({
                 return (
                     <InstanceDetailsField
                         key={f.key}
-                        formId={currentInstance.form_id}
+                        renderValue={
+                            f.renderValue
+                                ? () => f.renderValue(currentInstance)
+                                : null
+                        }
                         label={formatMessage(
                             MESSAGES['labelKey' in f ? f.labelKey : f.key],
                         )}

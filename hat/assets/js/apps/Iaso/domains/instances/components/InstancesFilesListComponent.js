@@ -223,6 +223,7 @@ class InstancesFilesList extends Component {
 
 InstancesFilesList.defaultProps = {
     fetchDetails: true,
+    fetching: false,
     instanceDetail: null,
     files: [],
 };
@@ -231,7 +232,7 @@ InstancesFilesList.propTypes = {
     files: PropTypes.any,
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    fetching: PropTypes.bool.isRequired,
+    fetching: PropTypes.bool,
     dispatch: PropTypes.func.isRequired,
     fetchDetails: PropTypes.bool,
     instanceDetail: PropTypes.object,

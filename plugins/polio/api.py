@@ -1030,7 +1030,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     district = find_district(district_name, region_name, district_dict)
                     if not district:
                         district_long_name = "%s - %s" % (district_name, region_name)
-                        d["region_name"] = region_name
 
                         if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
                             campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)

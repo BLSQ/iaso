@@ -41,3 +41,26 @@ export const useConvertedLqasImData = type => {
         },
     );
 };
+
+export const useScopeAndDistrictsNotFound = (type, campaign) => {
+    return useSnackQuery(
+        [type, getLqasIm],
+        async () => getLqasIm(type),
+        undefined,
+        {
+            select: data => {
+                if (!data.stats || !campaign || !data.stats[campaign])
+                    return {};
+                return {
+                    [campaign]: {
+                        hasScope: data.stats[campaign].has_scope,
+                        districtsNotFound:
+                            data.stats[campaign].districts_not_found,
+                    },
+                };
+            },
+            keepPreviousData: true,
+            initialData: { stats: {} },
+        },
+    );
+};

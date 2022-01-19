@@ -110,20 +110,18 @@ const PreparednessSummary = ({ preparedness, preperadness_sync_status }) => {
     );
 };
 
-export const PreparednessForm = () => {
+const PreparednessConfig = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { values, setFieldValue, dirty, setErrors } = useFormikContext();
-    const { last_preparedness: lastPreparedness, last_surge: lastSurge } =
-        values;
-    const preparednessMutation = useGetPreparednessData();
+    const { values, setFieldValue, dirty } = useFormikContext();
+    const { last_preparedness: lastPreparedness } = values;
     const {
         mutate: generateSpreadsheetMutation,
         isLoading: isGeneratingSpreadsheet,
         error: generationError,
     } = useGeneratePreparednessSheet(values.id);
-
     const { preperadness_spreadsheet_url = '' } = values;
+    const preparednessMutation = useGetPreparednessData();
 
     const refreshData = () => {
         preparednessMutation.mutate(preperadness_spreadsheet_url, {
@@ -132,6 +130,142 @@ export const PreparednessForm = () => {
             },
         });
     };
+
+    const generateSpreadsheet = () => {
+        generateSpreadsheetMutation(null, {
+            onSuccess: data => {
+                setFieldValue('preperadness_spreadsheet_url', data.url);
+            },
+        });
+    };
+
+    return (
+        <Grid container spacing={2}>
+            <Grid item>
+                Configure the Google Sheets that will be used to import the
+                preparedness data about campaign.
+            </Grid>
+            <Grid container direction="row" item spacing={2}>
+                <Grid xs={12} md={8} item>
+                    <Field
+                        placeholder={formatMessage(
+                            MESSAGES.enterOrCreateGoogleSheet,
+                        )}
+                        label={formatMessage(
+                            MESSAGES.preparednessGoogleSheetUrl,
+                        )}
+                        name="preperadness_spreadsheet_url"
+                        component={TextInput}
+                        disabled={
+                            preparednessMutation.isLoading ||
+                            isGeneratingSpreadsheet
+                        }
+                        className={classes.input}
+                    />
+                </Grid>
+                {preperadness_spreadsheet_url?.trim().length > 0 && (
+                    <>
+                        <Grid item md={1}>
+                            <IconButton
+                                target="_blank"
+                                href={preperadness_spreadsheet_url}
+                                color="primary"
+                            >
+                                <OpenInNewIcon />
+                            </IconButton>
+                        </Grid>
+                        <Grid item md={3}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                disabled={preparednessMutation.isLoading}
+                                onClick={refreshData}
+                            >
+                                {formatMessage(
+                                    MESSAGES.refreshPreparednessData,
+                                )}
+                            </Button>
+                        </Grid>
+                    </>
+                )}
+                {!preperadness_spreadsheet_url?.trim().length && (
+                    <Grid
+                        xs={12}
+                        md={4}
+                        item
+                        direction="column"
+                        container
+                        alignContent="space-between"
+                    >
+                        <Tooltip
+                            title={
+                                dirty || !values.id
+                                    ? 'Please save modification before generating a sheet'
+                                    : 'Generate a google sheet'
+                            }
+                        >
+                            <span>
+                                <Button
+                                    fullWidth
+                                    variant="contained"
+                                    color="primary"
+                                    disabled={
+                                        isGeneratingSpreadsheet ||
+                                        dirty ||
+                                        !values.id
+                                    }
+                                    onClick={generateSpreadsheet}
+                                >
+                                    {formatMessage(
+                                        MESSAGES.generateSpreadsheet,
+                                    )}
+                                </Button>
+                            </span>
+                        </Tooltip>
+                    </Grid>
+                )}
+                {/* the padding bottom is a horrible quick fix to remove */}
+                <Grid xd={12} item style={{ paddingBottom: 20 }}>
+                    {preparednessMutation.isLoading ||
+                    isGeneratingSpreadsheet ? (
+                        <CircularProgress />
+                    ) : (
+                        <>
+                            {preparednessMutation.isError && (
+                                <Typography color="error">
+                                    {
+                                        preparednessMutation.error
+                                            .non_field_errors
+                                    }
+                                </Typography>
+                            )}
+                            {generationError && (
+                                <Typography color="error">
+                                    {`${formatMessage(
+                                        MESSAGES.preparednessError,
+                                    )}: ${generationError.message}`}
+                                </Typography>
+                            )}
+                            <PreparednessSummary
+                                preparedness={lastPreparedness}
+                                preperadness_sync_status={
+                                    values.preperadness_sync_status
+                                }
+                            />
+                        </>
+                    )}
+                </Grid>
+            </Grid>
+        </Grid>
+    );
+};
+
+export const PreparednessForm = () => {
+    const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
+    const { values, setFieldValue, setErrors } = useFormikContext();
+    const { last_surge: lastSurge } = values;
+    const preparednessMutation = useGetPreparednessData();
 
     const surgeMutation = useSurgeData();
     const refreshSurgeData = () => {
@@ -154,133 +288,9 @@ export const PreparednessForm = () => {
         );
     };
 
-    const generateSpreadsheet = () => {
-        generateSpreadsheetMutation(null, {
-            onSuccess: data => {
-                setFieldValue('preperadness_spreadsheet_url', data.url);
-            },
-        });
-    };
-
     return (
         <>
-            <Grid container spacing={2}>
-                <Grid item>
-                    Configure the Google Sheets that will be used to import the
-                    preparedness data about campaign.
-                </Grid>
-                <Grid container direction="row" item spacing={2}>
-                    <Grid xs={12} md={8} item>
-                        <Field
-                            placeholder={formatMessage(
-                                MESSAGES.enterOrCreateGoogleSheet,
-                            )}
-                            label={formatMessage(
-                                MESSAGES.preparednessGoogleSheetUrl,
-                            )}
-                            name="preperadness_spreadsheet_url"
-                            component={TextInput}
-                            disabled={
-                                preparednessMutation.isLoading ||
-                                isGeneratingSpreadsheet
-                            }
-                            className={classes.input}
-                        />
-                    </Grid>
-                    {preperadness_spreadsheet_url?.trim().length > 0 && (
-                        <>
-                            <Grid item md={1}>
-                                <IconButton
-                                    target="_blank"
-                                    href={preperadness_spreadsheet_url}
-                                    color="primary"
-                                >
-                                    <OpenInNewIcon />
-                                </IconButton>
-                            </Grid>
-                            <Grid item md={3}>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    disabled={preparednessMutation.isLoading}
-                                    onClick={refreshData}
-                                >
-                                    {formatMessage(
-                                        MESSAGES.refreshPreparednessData,
-                                    )}
-                                </Button>
-                            </Grid>
-                        </>
-                    )}
-                    {!preperadness_spreadsheet_url?.trim().length && (
-                        <Grid
-                            xs={12}
-                            md={4}
-                            item
-                            direction="column"
-                            container
-                            alignContent="space-between"
-                        >
-                            <Tooltip
-                                title={
-                                    dirty || !values.id
-                                        ? 'Please save modification before generating a sheet'
-                                        : 'Generate a google sheet'
-                                }
-                            >
-                                <span>
-                                    <Button
-                                        fullWidth
-                                        variant="contained"
-                                        color="primary"
-                                        disabled={
-                                            isGeneratingSpreadsheet ||
-                                            dirty ||
-                                            !values.id
-                                        }
-                                        onClick={generateSpreadsheet}
-                                    >
-                                        {formatMessage(
-                                            MESSAGES.generateSpreadsheet,
-                                        )}
-                                    </Button>
-                                </span>
-                            </Tooltip>
-                        </Grid>
-                    )}
-                    {/* the padding bottom is a horrible quick fix to remove */}
-                    <Grid xd={12} item style={{ paddingBottom: 20 }}>
-                        {preparednessMutation.isLoading ||
-                        isGeneratingSpreadsheet ? (
-                            <CircularProgress />
-                        ) : (
-                            <>
-                                {preparednessMutation.isError && (
-                                    <Typography color="error">
-                                        {
-                                            preparednessMutation.error
-                                                .non_field_errors
-                                        }
-                                    </Typography>
-                                )}
-                                {generationError && (
-                                    <Typography color="error">
-                                        {`${formatMessage(
-                                            MESSAGES.preparednessError,
-                                        )}: ${generationError.message}`}
-                                    </Typography>
-                                )}
-                                <PreparednessSummary
-                                    preparedness={lastPreparedness}
-                                    preperadness_sync_status={
-                                        values.preperadness_sync_status
-                                    }
-                                />
-                            </>
-                        )}
-                    </Grid>
-                </Grid>
-            </Grid>
+            <PreparednessConfig />
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={8} item>

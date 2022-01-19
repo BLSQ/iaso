@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router';
 import PropTypes from 'prop-types';
 import { Grid, withStyles, Typography } from '@material-ui/core';
 
@@ -19,7 +20,7 @@ const styles = theme => ({
     },
 });
 
-const InstanceDetailsField = ({ classes, label, value, Icon, valueTitle }) => (
+const InstanceDetailsField = ({ classes, label, value, Icon, valueTitle, id }) => (
     <Grid container spacing={1}>
         <Grid xs={5} item>
             <div className={classes.labelContainer}>
@@ -47,7 +48,16 @@ const InstanceDetailsField = ({ classes, label, value, Icon, valueTitle }) => (
                 color="inherit"
                 title={valueTitle !== '' ? valueTitle : value}
             >
-                {value || textPlaceholder}
+                {label !== 'Form'
+                    ? value
+                    : (
+                        <Link
+                            className={classes.link}
+                            href={`/dashboard/forms/detail/formId/${id}`}
+                        >
+                            {value}
+                        </Link>
+                      ) || textPlaceholder}
             </Typography>
         </Grid>
     </Grid>

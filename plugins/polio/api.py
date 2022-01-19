@@ -447,6 +447,15 @@ class IMViewSet(viewsets.ViewSet):
             return response
 
 
+def _build_district_cache(districts_qs):
+    district_dict = defaultdict(list)
+    for f in districts_qs:
+        district_dict[f.name.lower()].append(f)
+        for alias in f.aliases:
+            district_dict[alias.lower()].append(f)
+    return district_dict
+
+
 class IMStatsViewSet(viewsets.ViewSet):
     """
            Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA. Very custom to the polio project.
@@ -519,11 +528,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 .only("name", "id", "parent", "aliases")
                 .prefetch_related("parent")
             )
-            district_dict = defaultdict(list)
-            for f in districts_qs:
-                district_dict[f.name.lower()].append(f)
-
-            districts = set()
+            district_dict = _build_district_cache(districts_qs)
 
             cached_response, created = URLCache.objects.get_or_create(url=country_config["url"])
             delta = now() - cached_response.updated_at
@@ -581,8 +586,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                             done_something = True
                 if not done_something:
                     continue
-                district_id = "%s - %s" % (form.get("District"), form.get("Region"))
-                districts.add(district_id)
                 today_string = form["today"]
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
                 campaign = find_campaign(campaigns, today, country)
@@ -593,7 +596,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                     campaign_name = campaign.obr_name
                     scope = campaign.group.org_units.values_list("id", flat=True) if campaign.group else []
                     campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
-                    district = find_district(district_name, region_name, districts_qs, district_dict)
+                    district = find_district(district_name, region_name, district_dict)
                     if not district:
                         district_long_name = "%s - %s" % (district_name, region_name)
                         if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
@@ -834,7 +837,7 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
             return JsonResponse(res, safe=False)
 
 
-def find_district(district_name, region_name, districts, district_dict):
+def find_district(district_name, region_name, district_dict):
     district_list = district_dict.get(district_name.lower())
     if district_list and len(district_list) == 1:
         return district_list[0]
@@ -842,11 +845,6 @@ def find_district(district_name, region_name, districts, district_dict):
         for di in district_list:
             if di.parent.name.lower() == region_name.lower() or region_name in di.parent.aliases:
                 return di
-    else:
-        for d in districts:
-            if d.aliases and district_name in d.aliases:
-                district_dict[district_name] = [d]
-                return d
     return None
 
 
@@ -949,9 +947,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 .only("name", "id", "parent", "aliases")
                 .prefetch_related("parent")
             )
-            district_dict = defaultdict(list)
-            for f in districts_qs:
-                district_dict[f.name.lower()].append(f)
+            district_dict = _build_district_cache(districts_qs)
 
             cached_response, created = URLCache.objects.get_or_create(url=country_config["url"])
             delta = now() - cached_response.updated_at
@@ -1031,7 +1027,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     campaign_name = campaign.obr_name
                     scope = campaign.group.org_units.values_list("id", flat=True) if campaign.group else []
                     campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
-                    district = find_district(district_name, region_name, districts_qs, district_dict)
+                    district = find_district(district_name, region_name, district_dict)
                     if not district:
                         district_long_name = "%s - %s" % (district_name, region_name)
                         d["region_name"] = region_name

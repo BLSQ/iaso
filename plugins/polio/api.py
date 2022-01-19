@@ -613,7 +613,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                         d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
                         d["total_child_checked"] = d["total_child_checked"] + total_Child_Checked
                         d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
-                        district = find_district(district_name, region_name, districts_qs, district_dict)
                         d["district"] = district.id
                         d["region_name"] = district.parent.name
                         fully_mapped_form_count += 1

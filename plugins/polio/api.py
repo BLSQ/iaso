@@ -559,8 +559,14 @@ class IMStatsViewSet(viewsets.ViewSet):
                 round_number = form.get("roundNumber", "Rnd1")
                 if round_number == "MOPUP":
                     continue
-                if round_number == "Rnd0":
+                # We should confirm that it's ok to treat Rnd0 as Rnd1
+                if round_number == "Rnd0" or round_number == "Round1":
                     round_number = "Rnd1"
+                if round_number == "Round2":
+                    round_number = "Rnd2"
+                # FIXME log skipped forms somewhere, accept keys like "Round1" and "Round2"
+                if round_number != "Rnd1" and round_number != "Rnd2":
+                    continue
                 if form.get("HH", None):
                     if "HH" in stats_types:
                         for kid in form.get("HH", []):
@@ -964,9 +970,13 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
             districts = set()
             for form in forms:
-                # Ignoring Mop up for now
                 round_number = form.get("roundNumber")
-                if round_number == "MOPUP":
+                if round_number == "Rnd0" or round_number == "Round1":
+                    round_number = "Rnd1"
+                if round_number == "Round2":
+                    round_number = "Rnd2"
+                # FIXME ignored forms should be logged somewhere
+                if round_number != "Rnd1" and round_number != "Rnd2":
                     continue
                 HH_COUNT = form.get("Count_HH", None)
                 if HH_COUNT is None:

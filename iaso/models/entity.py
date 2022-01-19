@@ -2,10 +2,9 @@ from uuid import uuid4
 from django.db import models
 from django.conf import settings
 
-from iaso.models import Instance, Form
-
 
 ## Remove blank=True, null=True on FK once the modles are sets and validated
+from iaso.models import Instance, Form
 
 
 class EntityType(models.Model):
@@ -26,7 +25,7 @@ class Entity(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     entity_type = models.ForeignKey(EntityType, blank=True, null=True, on_delete=models.PROTECT)
-    instance = models.ForeignKey(Instance, blank=True, null=True, on_delete=models.PROTECT)
+    attributes = models.ForeignKey(Instance, blank=True, null=True, on_delete=models.PROTECT)
 
     class Meta:
         verbose_name_plural = "Entities"

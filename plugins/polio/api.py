@@ -591,7 +591,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
                 if campaign:
                     campaign_name = campaign.obr_name
-                    scope = campaign.group.org_units.values_list("id", flat=True)
+                    scope = campaign.group.org_units.values_list("id", flat=True) if campaign.groupe else []
                     campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                     district = find_district(district_name, region_name, districts_qs, district_dict)
                     if not district:
@@ -1029,7 +1029,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                                 )
                 if campaign:
                     campaign_name = campaign.obr_name
-                    scope = campaign.group.org_units.values_list("id", flat=True)
+                    scope = campaign.group.org_units.values_list("id", flat=True) if campaign.groupe else []
                     campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                     district = find_district(district_name, region_name, districts_qs, district_dict)
                     if not district:

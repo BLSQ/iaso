@@ -105,6 +105,9 @@ class Round(models.Model):
     lqas_district_passing = models.IntegerField(null=True, blank=True)
     lqas_district_failing = models.IntegerField(null=True, blank=True)
 
+    # Preparedness
+    preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
+
 
 class Campaign(SoftDeletableModel):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)

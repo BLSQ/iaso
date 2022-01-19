@@ -12,6 +12,7 @@ import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import PropTypes from 'prop-types';
 import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import {
@@ -29,7 +30,7 @@ const formatIndicator = indicatorValue => {
     if (indicatorValue.length) return indicatorValue.join(' -- ');
     return indicatorValue;
 };
-const PreparednessSummary = ({ preparedness, preperadness_sync_status }) => {
+const PreparednessSummary = ({ preparedness }) => {
     const { formatMessage } = useSafeIntl();
     if (!preparedness) return null;
     if (preparedness.status === 'error')
@@ -99,8 +100,6 @@ const PreparednessSummary = ({ preparedness, preperadness_sync_status }) => {
                     </tbody>
                 </table>
                 <Typography variant="caption">
-                    {formatMessage(MESSAGES.sync_status)}:{' '}
-                    {preperadness_sync_status}.
                     {formatMessage(MESSAGES.spreadsheetImportTitle)}{' '}
                     {preparedness.title}. {formatMessage(MESSAGES.refreshedAt)}:{' '}
                     {createdAt.format('LTS')} ({createdAt.fromNow()})
@@ -110,7 +109,7 @@ const PreparednessSummary = ({ preparedness, preperadness_sync_status }) => {
     );
 };
 
-const PreparednessConfig = () => {
+const PreparednessConfig = ({ roundKey }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, dirty } = useFormikContext();
@@ -120,11 +119,12 @@ const PreparednessConfig = () => {
         isLoading: isGeneratingSpreadsheet,
         error: generationError,
     } = useGeneratePreparednessSheet(values.id);
-    const { preperadness_spreadsheet_url = '' } = values;
-    const preparednessMutation = useGetPreparednessData();
+    const key = `${roundKey}.preparedness_spreadsheet_url`;
+    const { preparedness_spreadsheet_url } = values[roundKey];
+    const previewMutation = useGetPreparednessData();
 
     const refreshData = () => {
-        preparednessMutation.mutate(preperadness_spreadsheet_url, {
+        previewMutation.mutate(preparedness_spreadsheet_url, {
             onSuccess: data => {
                 setFieldValue('last_preparedness', data);
             },
@@ -134,7 +134,7 @@ const PreparednessConfig = () => {
     const generateSpreadsheet = () => {
         generateSpreadsheetMutation(null, {
             onSuccess: data => {
-                setFieldValue('preperadness_spreadsheet_url', data.url);
+                setFieldValue(key, data.url);
             },
         });
     };
@@ -154,21 +154,20 @@ const PreparednessConfig = () => {
                         label={formatMessage(
                             MESSAGES.preparednessGoogleSheetUrl,
                         )}
-                        name="preperadness_spreadsheet_url"
+                        name={key}
                         component={TextInput}
                         disabled={
-                            preparednessMutation.isLoading ||
-                            isGeneratingSpreadsheet
+                            previewMutation.isLoading || isGeneratingSpreadsheet
                         }
                         className={classes.input}
                     />
                 </Grid>
-                {preperadness_spreadsheet_url?.trim().length > 0 && (
+                {preparedness_spreadsheet_url?.trim().length > 0 && (
                     <>
                         <Grid item md={1}>
                             <IconButton
                                 target="_blank"
-                                href={preperadness_spreadsheet_url}
+                                href={preparedness_spreadsheet_url}
                                 color="primary"
                             >
                                 <OpenInNewIcon />
@@ -178,7 +177,7 @@ const PreparednessConfig = () => {
                             <Button
                                 variant="contained"
                                 color="primary"
-                                disabled={preparednessMutation.isLoading}
+                                disabled={previewMutation.isLoading}
                                 onClick={refreshData}
                             >
                                 {formatMessage(
@@ -188,7 +187,7 @@ const PreparednessConfig = () => {
                         </Grid>
                     </>
                 )}
-                {!preperadness_spreadsheet_url?.trim().length && (
+                {!preparedness_spreadsheet_url?.trim().length && (
                     <Grid
                         xs={12}
                         md={4}
@@ -226,17 +225,13 @@ const PreparednessConfig = () => {
                 )}
                 {/* the padding bottom is a horrible quick fix to remove */}
                 <Grid xd={12} item style={{ paddingBottom: 20 }}>
-                    {preparednessMutation.isLoading ||
-                    isGeneratingSpreadsheet ? (
+                    {previewMutation.isLoading || isGeneratingSpreadsheet ? (
                         <CircularProgress />
                     ) : (
                         <>
-                            {preparednessMutation.isError && (
+                            {previewMutation.isError && (
                                 <Typography color="error">
-                                    {
-                                        preparednessMutation.error
-                                            .non_field_errors
-                                    }
+                                    {previewMutation.error.non_field_errors}
                                 </Typography>
                             )}
                             {generationError && (
@@ -248,9 +243,6 @@ const PreparednessConfig = () => {
                             )}
                             <PreparednessSummary
                                 preparedness={lastPreparedness}
-                                preperadness_sync_status={
-                                    values.preperadness_sync_status
-                                }
                             />
                         </>
                     )}
@@ -260,12 +252,15 @@ const PreparednessConfig = () => {
     );
 };
 
+PreparednessConfig.propTypes = {
+    roundKey: PropTypes.string.isRequired,
+};
+
 export const PreparednessForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setErrors } = useFormikContext();
     const { last_surge: lastSurge } = values;
-    const preparednessMutation = useGetPreparednessData();
 
     const surgeMutation = useSurgeData();
     const refreshSurgeData = () => {
@@ -290,7 +285,8 @@ export const PreparednessForm = () => {
 
     return (
         <>
-            <PreparednessConfig />
+            <PreparednessConfig roundKey="round_one" />
+            <PreparednessConfig roundKey="round_two" />
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={8} item>
@@ -298,14 +294,14 @@ export const PreparednessForm = () => {
                             label={formatMessage(MESSAGES.recruitmentSurgeUrl)}
                             name="surge_spreadsheet_url"
                             component={TextInput}
-                            disabled={preparednessMutation.isLoading}
+                            disabled={surgeMutation.isLoading}
                             className={classes.input}
                         />
                         <Field
                             label={formatMessage(MESSAGES.countryNameInSheet)}
                             name="country_name_in_surge_spreadsheet"
                             component={TextInput}
-                            disabled={preparednessMutation.isLoading}
+                            disabled={surgeMutation.isLoading}
                             className={classes.input}
                         />
                     </Grid>

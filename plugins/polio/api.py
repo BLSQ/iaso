@@ -451,8 +451,9 @@ def _build_district_cache(districts_qs):
     district_dict = defaultdict(list)
     for f in districts_qs:
         district_dict[f.name.lower()].append(f)
-        for alias in f.aliases:
-            district_dict[alias.lower()].append(f)
+        if f.aliases:
+            for alias in f.aliases:
+                district_dict[alias.lower()].append(f)
     return district_dict
 
 

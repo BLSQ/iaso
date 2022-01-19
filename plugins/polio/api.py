@@ -521,7 +521,7 @@ class IMStatsViewSet(viewsets.ViewSet):
             )
             district_dict = defaultdict(list)
             for f in districts_qs:
-                district_dict[f.name].append(f)
+                district_dict[f.name.lower()].append(f)
 
             districts = set()
 
@@ -836,7 +836,7 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
 
 
 def find_district(district_name, region_name, districts, district_dict):
-    district_list = district_dict.get(district_name)
+    district_list = district_dict.get(district_name.lower())
     if district_list and len(district_list) == 1:
         return district_list[0]
     elif district_list and len(district_list) > 1:
@@ -952,7 +952,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             )
             district_dict = defaultdict(list)
             for f in districts_qs:
-                district_dict[f.name].append(f)
+                district_dict[f.name.lower()].append(f)
 
             cached_response, created = URLCache.objects.get_or_create(url=country_config["url"])
             delta = now() - cached_response.updated_at

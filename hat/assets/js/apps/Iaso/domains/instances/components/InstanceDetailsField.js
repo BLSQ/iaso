@@ -20,7 +20,7 @@ const styles = theme => ({
     },
 });
 
-const InstanceDetailsField = ({ classes, label, value, Icon, valueTitle, id }) => (
+const InstanceDetailsField = ({ classes, label, value, Icon, valueTitle, formId }) => (
     <Grid container spacing={1}>
         <Grid xs={5} item>
             <div className={classes.labelContainer}>
@@ -53,7 +53,7 @@ const InstanceDetailsField = ({ classes, label, value, Icon, valueTitle, id }) =
                     : (
                         <Link
                             className={classes.link}
-                            href={`/dashboard/forms/detail/formId/${id}`}
+                            href={`/dashboard/forms/detail/formId/${formId}`}
                         >
                             {value}
                         </Link>

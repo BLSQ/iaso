@@ -102,9 +102,6 @@ export const Lqas = () => {
                             />
                         </Box>
                     </Grid>
-                    {/* <Grid item>
-                        <Divider orientation="vertical" flexItem />
-                    </Grid> */}
                     <Grid item xs={6} mr={2}>
                         <Box mr={2}>
                             <LqasImMapHeader round="round_2" />

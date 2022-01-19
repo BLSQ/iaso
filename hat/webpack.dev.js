@@ -15,7 +15,15 @@ const secondaryColor = process.env.THEME_SECONDARY_COLOR || '#f50057';
 const primaryBackgroundColor =
     process.env.THEME_PRIMARY_BACKGROUND_COLOR || '#F5F5F5';
 const appTitle = process.env.APP_TITLE || 'Iaso';
-
+const envVariables = {
+    REACT_THEME_PRIMARY_COLOR: `"${primaryColor}"`,
+    REACT_THEME_SECONDARY_COLOR: `"${secondaryColor}"`,
+    REACT_THEME_PRIMARY_BACKGROUND_COLOR: `"${primaryBackgroundColor}"`,
+    REACT_APP_TITLE: `"${appTitle}"`,
+};
+if (process.env.LOGO_PATH) {
+    envVariables.REACT_LOGO_PATH = `"${process.env.LOGO_PATH}"`;
+}
 module.exports = {
     context: __dirname,
     mode: 'development',
@@ -97,12 +105,7 @@ module.exports = {
             filename: './assets/webpack/webpack-stats.json',
         }),
         new webpack.DefinePlugin({
-            'process.env': {
-                REACT_THEME_PRIMARY_COLOR: `"${primaryColor}"`,
-                REACT_THEME_SECONDARY_COLOR: `"${secondaryColor}"`,
-                REACT_THEME_PRIMARY_BACKGROUND_COLOR: `"${primaryBackgroundColor}"`,
-                REACT_APP_TITLE: `"${appTitle}"`,
-            },
+            'process.env': envVariables,
             __LOCALE: JSON.stringify(LOCALE),
         }),
         // XLSX

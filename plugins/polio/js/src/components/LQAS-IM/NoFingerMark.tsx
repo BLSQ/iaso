@@ -8,6 +8,7 @@ import {
     Tooltip,
     ResponsiveContainer,
     Cell,
+    LabelList,
 } from 'recharts';
 import { blue } from '@material-ui/core/colors';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
@@ -27,6 +28,7 @@ import {
 import { formatImDataForNFMChart } from '../../pages/IM/utils';
 import MESSAGES from '../../constants/messages';
 import { NfmCustomTick } from './NfmCustomTick';
+import { customLabelHorizontal } from '../PercentageBarChart/utils';
 
 type Props = {
     // eslint-disable-next-line react/require-default-props
@@ -131,6 +133,10 @@ export const NoFingerMark: FunctionComponent<Props> = ({
                                             />
                                         );
                                     })}
+                                    <LabelList
+                                        dataKey="value"
+                                        content={customLabelHorizontal}
+                                    />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>

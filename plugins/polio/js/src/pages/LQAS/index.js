@@ -40,7 +40,7 @@ export const Lqas = () => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
-    const { data: LQASData, isLoading } = useLqasIm('lqas');
+    const { data: LQASData, isFetching, isLoading } = useLqasIm('lqas');
 
     const countryIds = findCountryIds(LQASData).toString();
 
@@ -78,7 +78,7 @@ export const Lqas = () => {
                             <Select
                                 keyValue="campaigns"
                                 label={formatMessage(MESSAGES.campaign)}
-                                loading={campaignsLoading}
+                                loading={campaignsLoading || isFetching}
                                 clearable
                                 multi={false}
                                 value={campaign}

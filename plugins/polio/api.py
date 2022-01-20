@@ -844,8 +844,9 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
             return JsonResponse(res, safe=False)
 
 
-def find_district(district_name, region_name, district_dict):
-    district_list = district_dict.get(district_name.lower())
+def find_district(district_name, region_name, districts, district_dict):
+    district_name_lower = district_name.lower() if district_name else None
+    district_list = district_dict.get(district_name_lower)
     if district_list and len(district_list) == 1:
         return district_list[0]
     elif district_list and len(district_list) > 1:
@@ -873,6 +874,8 @@ def format_caregiver_stats(campaign_stats, round_number):
                 key: all_care_givers_stats[key]
                 for key in sorted(all_care_givers_stats, key=all_care_givers_stats.get, reverse=True)
             }
+            if "caregivers_informed" not in sorted_care_givers_stats.keys():
+                continue
             total_informed = sorted_care_givers_stats.pop("caregivers_informed")
             best_result_key = next(iter(sorted_care_givers_stats))
             best_result = sorted_care_givers_stats[best_result_key]
@@ -1016,6 +1019,15 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     # gather caregiver stats
                     caregiver_informed = HH.get("Count_HH/Care_Giver_Informed_SIA", 0)
                     caregiver_source_info = HH.get("Count_HH/Caregiver_Source_Info", None)
+                    # if district_name is None:
+                    #     print('+++++++++++++++++++++++++++')
+                    #     print(region_name, district_id)
+                    #     print('+++++++++++++++++++++++++++')
+                    # if district_name is not None:
+                    #     if district_name.lower() == "kankossa":
+                    #         print("---------------------")
+                    #         print(region_name, caregiver_informed,caregiver_source_info)
+                    #         print("---------------------")
                     if caregiver_informed == "Y":
                         caregiver_counts_dict[district_name]["caregivers_informed"] = (
                             caregiver_counts_dict[district_name]["caregivers_informed"] + 1

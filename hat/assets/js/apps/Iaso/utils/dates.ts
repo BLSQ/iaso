@@ -89,3 +89,12 @@ export const setLocale = (code: 'en' | 'fr') => {
         },
     });
 };
+
+/**
+ * Configure the local for time displayed to the user.
+ * @param {"LT"|"LTS"|"L"|"LL"|"LLL"|"LLLL"} longType - Language code string
+ */
+export const getLocaleDateFormat = longType => {
+    const locale = moment.locale();
+    return longDateFormats[locale][longType];
+};

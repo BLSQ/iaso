@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -38,6 +38,15 @@ const Filters = ({ router, disableDates }) => {
     };
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const countriesList = (data && data.orgUnits) || [];
+
+    useEffect(() => {
+        setFiltersUpdated(true);
+    }, [countries, search, r1StartFrom, r1StartTo]);
+
+    useEffect(() => {
+        setFiltersUpdated(false);
+    }, []);
+
     return (
         <>
             <Box display="inline-flex" width="85%">
@@ -46,7 +55,6 @@ const Filters = ({ router, disableDates }) => {
                         <InputComponent
                             keyValue="search"
                             onChange={(key, value) => {
-                                setFiltersUpdated(true);
                                 setSearch(value);
                             }}
                             value={search}
@@ -62,7 +70,6 @@ const Filters = ({ router, disableDates }) => {
                             multi
                             clearable
                             onChange={(key, value) => {
-                                setFiltersUpdated(true);
                                 setCountries(value);
                             }}
                             value={countries}
@@ -84,7 +91,6 @@ const Filters = ({ router, disableDates }) => {
                                     if (key === 'dateTo') {
                                         set1StartTo(value);
                                     }
-                                    setFiltersUpdated(true);
                                 }}
                                 labelFrom={MESSAGES.R1StartFrom}
                                 labelTo={MESSAGES.R1StartTo}

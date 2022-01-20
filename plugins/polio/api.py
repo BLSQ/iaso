@@ -844,7 +844,7 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
             return JsonResponse(res, safe=False)
 
 
-def find_district(district_name, region_name, districts, district_dict):
+def find_district(district_name, region_name, district_dict):
     district_name_lower = district_name.lower() if district_name else None
     district_list = district_dict.get(district_name_lower)
     if district_list and len(district_list) == 1:

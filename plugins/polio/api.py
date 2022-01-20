@@ -555,10 +555,10 @@ class IMStatsViewSet(viewsets.ViewSet):
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
                 done_something = False
-                if isinstance(form,str):
-                    print('------------')
-                    print('wrong form format:',form, 'in', country.name)
-                    print('------------')
+                if isinstance(form, str):
+                    print("------------")
+                    print("wrong form format:", form, "in", country.name)
+                    print("------------")
                     continue
                 # FIXME dirty workaround to prevent crash
                 round_number = form.get("roundNumber", "Rnd1")

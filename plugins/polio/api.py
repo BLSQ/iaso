@@ -851,7 +851,9 @@ def find_district(district_name, region_name, district_dict):
         return district_list[0]
     elif district_list and len(district_list) > 1:
         for di in district_list:
-            if di.parent.name.lower() == region_name.lower() or region_name in di.parent.aliases:
+            if di.parent.name.lower() == region_name.lower() or (
+                di.parent.aliases and region_name in di.parent.aliases
+            ):
                 return di
     return None
 

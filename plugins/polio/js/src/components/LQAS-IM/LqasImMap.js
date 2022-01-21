@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { oneOf, string, array, number } from 'prop-types';
-import { Box, Paper } from '@material-ui/core';
+import { Box, makeStyles, Paper, Typography } from '@material-ui/core';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../MapComponent/MapLegend';
@@ -20,9 +20,18 @@ import {
 } from '../../pages/IM/constants.ts';
 import { getScopeStyle, findDataForShape, findScope } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
-import { useConvertedLqasImData } from '../../pages/IM/requests';
+import {
+    useConvertedLqasImData,
+    useScopeAndDistrictsNotFound,
+} from '../../pages/IM/requests';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
-// import { AccordionMapLegend } from '../MapComponent/AccordionMapLegend.tsx';
+
+const style = {
+    centerText: { textAlign: 'center' },
+    boldText: { fontWeight: 'bold' },
+};
+
+const useStyles = makeStyles(style);
 
 export const LqasImMap = ({
     type,
@@ -31,10 +40,17 @@ export const LqasImMap = ({
     countryId,
     campaigns,
 }) => {
+    const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
     const { data, isLoading } = useConvertedLqasImData(type);
     const { data: shapes = [] } = useGetGeoJson(countryId, 'DISTRICT');
+    const { data: scopeStatus } = useScopeAndDistrictsNotFound(
+        type,
+        selectedCampaign,
+    );
+    const districtsNotFound =
+        scopeStatus[selectedCampaign]?.districtsNotFound ?? [];
 
     const scope = findScope(selectedCampaign, campaigns, shapes);
 
@@ -132,6 +148,18 @@ export const LqasImMap = ({
                                 )}
                                 height={600}
                             />
+                            {districtsNotFound.length > 0 && (
+                                <Box className={classes.centerText}>
+                                    <Typography
+                                        variant="body2"
+                                        className={classes.boldText}
+                                    >
+                                        {formatMessage(
+                                            MESSAGES.districtsNeedMatching,
+                                        )}
+                                    </Typography>
+                                </Box>
+                            )}
                         </Paper>
                     </Box>
                 </>

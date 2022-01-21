@@ -404,9 +404,6 @@ class CampaignSerializer(serializers.ModelSerializer):
         read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status", "creation_email_send_at"]
 
 
-# FIXME ANONYMOUS SERIALIZER FOR ROUND ONE
-
-
 class AnonymousCampaignSerializer(CampaignSerializer):
     round_one = RoundAnonymouSerializer()
     round_two = RoundAnonymouSerializer()

@@ -178,16 +178,16 @@ const menu = [
                         icon: props => <HomeWorkIcon {...props} />,
                     },
                     {
-                        label: MESSAGES.imOHH,
-                        key: 'ohh',
-                        permissions: ['iaso_polio'],
-                        icon: props => <StorefrontIcon {...props} />,
-                    },
-                    {
                         label: MESSAGES.imIHH,
                         key: 'ihh',
                         permissions: ['iaso_polio'],
                         icon: props => <HomeIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.imOHH,
+                        key: 'ohh',
+                        permissions: ['iaso_polio'],
+                        icon: props => <StorefrontIcon {...props} />,
                     },
                 ],
             },

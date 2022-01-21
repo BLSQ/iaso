@@ -4,12 +4,14 @@
 {% block extrajs %}
   {% render_bundle 'common' %}
   {% render_bundle 'iaso' %}
+
 {% endblock %}
 {% block body %}
   <section>
     {% block content %}
       <div id="app"></div>
       <script>
+        window.STATIC_URL = "{{ STATIC_URL }}";
         const PLUGINS_ENABLED = {{ PLUGINS_ENABLED|safe }};
         window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED);
       </script>

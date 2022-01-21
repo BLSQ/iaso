@@ -1,4 +1,4 @@
-name: deploy
+name: deploy-wfp
 
 on:
   workflow_dispatch:

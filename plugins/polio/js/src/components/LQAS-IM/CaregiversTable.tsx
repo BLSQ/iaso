@@ -142,10 +142,9 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     }, [sortBy, sortFocus, data, formatDataForTable]);
 
     const pages = useMemo(
-        () => (data?.length ? Math.round(data?.length / rowsPerPage) : 0),
+        () => (data?.length ? Math.ceil(data?.length / rowsPerPage) : 0),
         [data, rowsPerPage],
     );
-
     const params = useMemo(
         () => ({
             pageSize: rowsPerPage,

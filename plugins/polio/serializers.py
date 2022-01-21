@@ -186,6 +186,13 @@ class RoundSerializer(serializers.ModelSerializer):
         return r
 
 
+# Don't display the url for Anyomous users
+class RoundAnonymouSerializer(RoundSerializer):
+    class Meta:
+        model = Round
+        exclude = ["preparedness_spreadsheet_url"]
+
+
 class PreparednessSerializer(serializers.ModelSerializer):
     class Meta:
         model = Preparedness
@@ -401,6 +408,9 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 
 class AnonymousCampaignSerializer(CampaignSerializer):
+    round_one = RoundAnonymouSerializer()
+    round_two = RoundAnonymouSerializer()
+
     class Meta:
         model = Campaign
         fields = [

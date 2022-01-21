@@ -1,6 +1,7 @@
 import csv
 import json
 from datetime import timedelta, datetime
+from typing import Optional
 
 import requests
 from django.conf import settings
@@ -35,7 +36,7 @@ from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
 )
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
-from .models import Campaign, Config, LineListImport, SpreadSheetImport
+from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round
 from .models import CountryUsersGroup
 from .models import URLCache, Preparedness
 from .preparedness.calculator import preparedness_summary
@@ -267,23 +268,13 @@ def score_for_x_day_before(ssi_for_campaign, ref_date: datetime.date, n_day: int
     return ssi.created_at, day, score
 
 
-def history_for_campaign(c, round: RoundNumber):
-    spread_id = extract_id_from_url(c.preperadness_spreadsheet_url)
-    ssi = SpreadSheetImport.objects.filter(spread_id=spread_id)
-    # quickfix remove when we have sheet per round
-    if round == RoundNumber.round2 and c.round_two and c.round_two.started_at:
-        ref_date = c.round_two.started_at
-    elif round == RoundNumber.round1 and c.round_one and c.round_one.started_at:
-        ref_date = c.round_one.started_at
-    elif c.round_two and c.round_two.started_at:
-        ref_date = c.round_two.started_at
-    elif c.round_one and c.round_one.started_at:
-        ref_date = c.round_one.started_at
-    else:
-        return {"error": "No round start found"}
+def history_for_campaign(ssi_qs, round: Round):
+    ref_date = round.started_at
+    if not ref_date:
+        return {"error": f"Please configure a start date for the round {round}"}
     r = []
     for n_day, target in DAYS_EVOLUTION:
-        sync_time, day, score = score_for_x_day_before(ssi, ref_date, n_day)
+        sync_time, day, score = score_for_x_day_before(ssi_qs, ref_date, n_day)
         r.append(
             {
                 "days_before": n_day,
@@ -296,6 +287,43 @@ def history_for_campaign(c, round: RoundNumber):
     return r
 
 
+def _make_prep(c: Campaign, round: Round, round_number: RoundNumber):
+    url = round.preparedness_spreadsheet_url
+    if not url:
+        return None
+    campaign_prep = {
+        "campaign_id": c.id,
+        "campaign_obr_name": c.obr_name,
+        "indicators": {},
+        "round": round_number,
+        "round_id": round.id,
+        "round_start": round.started_at,
+        "round_end": round.ended_at,
+    }
+    try:
+        spread_id = extract_id_from_url(url)
+        ssi_qs = SpreadSheetImport.objects.filter(spread_id=spread_id)
+
+        if not ssi_qs:
+            # No import yet
+            campaign_prep["status"] = "not_sync"
+            campaign_prep["details"] = "This spreadsheet has not been synchronised yet"
+            return None
+        campaign_prep["date"] = ssi_qs.last().created_at
+        cs = ssi_qs.last().cached_spreadsheet
+        last_p = get_preparedness(cs)
+        campaign_prep.update(preparedness_summary(last_p))
+        if round_number != last_p["national"]["round"]:
+            logger.info(f"Round mismatch on {c} {round}")
+
+        campaign_prep["history"] = history_for_campaign(ssi_qs, round)
+    except Exception as e:
+        campaign_prep["status"] = "error"
+        campaign_prep["details"] = str(e)
+        logger.exception(e)
+    return campaign_prep
+
+
 class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
 
@@ -305,32 +333,14 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
             qs = qs.filter(obr_name=request.query_params.get("campaign"))
 
         for c in qs:
-            campaign_prep = {
-                "campaign_id": c.id,
-                "campaign_obr_name": c.obr_name,
-                "indicators": {},
-            }
-            try:
-                spread_id = extract_id_from_url(c.preperadness_spreadsheet_url)
-                ssi = SpreadSheetImport.objects.filter(spread_id=spread_id)
-
-                if not ssi:
-                    # No import yet
-                    campaign_prep["status"] = "not_sync"
-                    continue
-                campaign_prep["date"] = ssi.last().created_at
-                cs = ssi.last().cached_spreadsheet
-                last_p = get_preparedness(cs)
-                campaign_prep.update(preparedness_summary(last_p))
-                campaign_prep["round"] = last_p["national"]["round"]
-
-                campaign_prep["history"] = history_for_campaign(c, last_p["national"]["round"])
-            except Exception as e:
-                campaign_prep["status"] = "error"
-                campaign_prep["details"] = str(e)
-                logger.exception(e)
-
-            r.append(campaign_prep)
+            if c.round_one:
+                p = _make_prep(c, c.round_one, RoundNumber.round1)
+                if p:
+                    r.append(p)
+            if c.round_two:
+                p = _make_prep(c, c.round_two, RoundNumber.round2)
+                if p:
+                    r.append(p)
         return Response(r)
 
 

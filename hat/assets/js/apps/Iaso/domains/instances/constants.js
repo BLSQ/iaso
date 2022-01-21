@@ -36,11 +36,6 @@ const LinkToForm = ({ formId, formName }) => {
 
 export const INSTANCE_METAS_FIELDS = [
     {
-        labelKey: 'version',
-        key: 'file_content._version',
-        type: 'info',
-    },
-    {
         key: 'uuid',
         type: 'info',
     },
@@ -57,15 +52,26 @@ export const INSTANCE_METAS_FIELDS = [
         },
     },
     {
+        key: 'version',
+        accessor: 'file_content._version',
+        sortable: false,
+        tableOrder: 2,
+        type: 'info',
+        Cell: settings => {
+            const data = settings.row.original;
+            return data.file_content?._version || '--';
+        },
+    },
+    {
         key: 'updated_at',
         render: value => displayDateFromTimestamp(value),
-        tableOrder: 2,
+        tableOrder: 3,
         type: 'info',
     },
     {
         key: 'created_at',
         render: value => displayDateFromTimestamp(value),
-        tableOrder: 5,
+        tableOrder: 4,
         type: 'info',
     },
     {

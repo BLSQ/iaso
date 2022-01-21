@@ -1,11 +1,13 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-// import { isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 import { RoundString } from '../../constants/types';
-// import MESSAGES from '../../constants/messages';
 import { PercentageChartWithTitle } from './PercentageChartWithTitle';
 import { useGetRegions } from '../../hooks/useGetRegions';
-import { useConvertedLqasImData } from '../../pages/IM/requests';
+import {
+    useConvertedLqasImData,
+    useScopeAndDistrictsNotFound,
+} from '../../pages/IM/requests';
 import { formatImDataForChart, imTooltipFormatter } from '../../pages/IM/utils';
 import {
     formatLqasDataForChart,
@@ -15,7 +17,7 @@ import {
     imBarColorTresholds,
     lqasBarColorTresholds,
 } from '../../pages/IM/constants';
-// import { NoDataForBarChart } from './NoDataForBarChart';
+import { NoDataForBarChart } from './NoDataForBarChart';
 
 type Props = {
     type: 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';
@@ -34,6 +36,8 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { data, isLoading } = useConvertedLqasImData(type);
     const { data: regions = [] } = useGetRegions(countryId);
+    const { data: scopeStatus } = useScopeAndDistrictsNotFound(type, campaign);
+    const hasScope = scopeStatus[campaign]?.hasScope;
     const chartData = useMemo(() => {
         if (type === 'lqas') {
             return formatLqasDataForChart({
@@ -54,25 +58,25 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
         type === 'lqas' ? lqasChartTooltipFormatter : imTooltipFormatter;
     const colorTresholds =
         type === 'lqas' ? lqasBarColorTresholds : imBarColorTresholds;
-    // const hasData =
-    //     data && campaign && data[campaign]
-    //         ? !isEqual(data[campaign][round], [])
-    //         : false;
+    const hasData =
+        data && campaign && data[campaign]
+            ? !isEqual(data[campaign][round], [])
+            : false;
     return (
         <>
-            {/* {!hasData && campaign && (
+            {((!hasData && campaign) || (!hasScope && campaign)) && (
                 <NoDataForBarChart campaign={campaign} type={type} />
-            )} */}
-            {/* {hasData && ( */}
-            <PercentageChartWithTitle
-                data={chartData}
-                tooltipFormatter={tooltipFormatter(formatMessage)}
-                chartKey={`LQASIMChart-${round}-${campaign}-${type}`}
-                isLoading={isLoading}
-                showChart={Boolean(campaign)}
-                colorTresholds={colorTresholds}
-            />
-            {/* )} */}
+            )}
+            {hasData && (
+                <PercentageChartWithTitle
+                    data={chartData}
+                    tooltipFormatter={tooltipFormatter(formatMessage)}
+                    chartKey={`LQASIMChart-${round}-${campaign}-${type}`}
+                    isLoading={isLoading}
+                    showChart={Boolean(campaign)}
+                    colorTresholds={colorTresholds}
+                />
+            )}
         </>
     );
 };

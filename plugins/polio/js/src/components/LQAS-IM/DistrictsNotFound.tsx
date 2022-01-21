@@ -17,7 +17,7 @@ export const DistrictsNotFound: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const districtsNotFound =
-        data && campaign
+        data && campaign && data[campaign]
             ? data[campaign]?.districts_not_found?.join(', ')
             : null;
     return (

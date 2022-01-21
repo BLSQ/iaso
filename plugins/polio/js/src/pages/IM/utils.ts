@@ -58,11 +58,12 @@ export const makeImMapLegendItems =
 
 export const formatImDataForChart = ({ data, campaign, round, regions }) => {
     const dataForRound = data[campaign] ? [...data[campaign][round]] : [];
-    return regions
-        .map(region => {
-            const regionData = dataForRound.filter(
-                district => district.region_name === region.name,
-            );
+    const regionsList: any[] = [];
+    regions.forEach(region => {
+        const regionData = dataForRound.filter(
+            district => district.region_name === region.name,
+        );
+        if (regionData.length > 0) {
             const aggregatedData = regionData
                 .map(district => ({
                     marked: district.total_child_fmd,
@@ -79,17 +80,20 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
                 );
             const { checked, marked } = aggregatedData;
             // forcing aggregatedData.checked to 1 to avoid dividing by 0
-            const markedRatio = (marked / (checked || 1)) * 100;
-            return {
+            const markedRatio = (marked / checked) * 100;
+            regionsList.push({
                 name: region.name,
                 value: Number.isSafeInteger(markedRatio)
                     ? markedRatio
                     : markedRatio.toFixed(2),
                 marked: aggregatedData.marked,
                 checked: aggregatedData.checked,
-            };
-        })
-        .sort((a, b) => parseFloat(b.value) - parseFloat(a.value));
+            });
+        }
+    });
+    return regionsList.sort(
+        (a, b) => parseFloat(b.value) - parseFloat(a.value),
+    );
 };
 
 export const imTooltipFormatter = formatMessage => (_value, _name, props) => {

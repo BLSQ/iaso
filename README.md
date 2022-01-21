@@ -411,6 +411,28 @@ This functionality also works if you launch webpack outside of docker.
 
 If you encounter any problem, first check that your repo is on the correct branch and the deps are up-to-date
 
+
+Customization
+-------------
+
+You can override default application title, logo and colors using the `.env` file and specify those variables:
+
+```
+THEME_PRIMARY_COLOR="<hexa_color>"
+THEME_PRIMARY_BACKGROUND_COLOR="<hexa_color>"
+THEME_SECONDARY_COLOR="<hexa_color>"
+APP_TITLE="<app_title>"
+FAVICON_PATH="<path_in_static_folder>"
+LOGO_PATH="<path_in_static_folder>"
+```
+
+> **note**
+>
+> Those settings are optional and are using a default value if nothing is provided
+
+
+
+
 Contributing
 ============
 

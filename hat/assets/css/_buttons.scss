@@ -7,7 +7,7 @@
     -webkit-font-smoothing: antialiased;
 }
 
-@mixin button($color: $blue) {
+@mixin button($color: $primary) {
     display: inline-block;
     width: auto;
     padding: 0.75em 1.5em;

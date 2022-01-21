@@ -31,7 +31,7 @@ function TopBar(props) {
     } = props;
     // Set the page title from the top bar title.
     React.useEffect(() => {
-        document.title = `Iaso ${title}`;
+        document.title = `${process.env.REACT_APP_TITLE} ${title}`;
     }, [title]);
 
     return (

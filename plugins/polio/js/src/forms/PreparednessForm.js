@@ -4,6 +4,7 @@ import {
     CircularProgress,
     Grid,
     IconButton,
+    Tab,
     Tooltip,
     Typography,
 } from '@material-ui/core';
@@ -13,6 +14,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import PropTypes from 'prop-types';
+import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import {
@@ -113,20 +115,24 @@ const PreparednessConfig = ({ roundKey }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, dirty } = useFormikContext();
-    const { last_preparedness: lastPreparedness } = values;
     const {
         mutate: generateSpreadsheetMutation,
         isLoading: isGeneratingSpreadsheet,
         error: generationError,
     } = useGeneratePreparednessSheet(values.id);
+    const {
+        preparedness_spreadsheet_url,
+        last_preparedness: lastPreparedness,
+    } = values[roundKey];
     const key = `${roundKey}.preparedness_spreadsheet_url`;
-    const { preparedness_spreadsheet_url } = values[roundKey];
+    const lastKey = `${roundKey}.last_preparedness`;
+
     const previewMutation = useGetPreparednessData();
 
     const refreshData = () => {
         previewMutation.mutate(preparedness_spreadsheet_url, {
             onSuccess: data => {
-                setFieldValue('last_preparedness', data);
+                setFieldValue(lastKey, data);
             },
         });
     };
@@ -143,7 +149,7 @@ const PreparednessConfig = ({ roundKey }) => {
         <Grid container spacing={2}>
             <Grid item>
                 Configure the Google Sheets that will be used to import the
-                preparedness data about campaign.
+                preparedness data for the campaign.
             </Grid>
             <Grid container direction="row" item spacing={2}>
                 <Grid xs={12} md={8} item>
@@ -282,11 +288,33 @@ export const PreparednessForm = () => {
             },
         );
     };
+    const [currentTab, setCurrentTab] = React.useState('round_one');
+
+    const handleChangeTab = (event, newValue) => {
+        setCurrentTab(newValue);
+    };
 
     return (
         <>
-            <PreparednessConfig roundKey="round_one" />
-            <PreparednessConfig roundKey="round_two" />
+            <TabContext value={currentTab}>
+                <TabList onChange={handleChangeTab}>
+                    <Tab
+                        label={formatMessage(MESSAGES.roundOne)}
+                        value="round_one"
+                    />
+                    <Tab
+                        label={formatMessage(MESSAGES.roundTwo)}
+                        value="round_two"
+                    />
+                </TabList>
+                <TabPanel value="round_one">
+                    <PreparednessConfig roundKey="round_one" />
+                </TabPanel>
+                <TabPanel value="round_two">
+                    <PreparednessConfig roundKey="round_two" />
+                </TabPanel>
+            </TabContext>
+
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={8} item>

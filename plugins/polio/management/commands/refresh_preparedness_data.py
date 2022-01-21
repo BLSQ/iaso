@@ -32,25 +32,9 @@ class Command(BaseCommand):
 
             print(f"Campaign {campaign.pk} refresh started: {campaign.preperadness_spreadsheet_url}")
             try:
-                # Separate import from parsing
                 ssi = SpreadSheetImport.create_for_url(campaign.preperadness_spreadsheet_url)
                 cs = ssi.cached_spreadsheet
                 logger.info(f"using spread: {cs.title}")
-
-                try:
-                    preparedness_data = get_preparedness(cs)
-                    preparedness = Preparedness.objects.create(
-                        campaign=campaign,
-                        spreadsheet_url=campaign.preperadness_spreadsheet_url,
-                        national_score=preparedness_data["totals"]["national_score"],
-                        district_score=preparedness_data["totals"]["district_score"],
-                        regional_score=preparedness_data["totals"]["regional_score"],
-                        payload=preparedness_data,
-                    )
-                    print(f"Campaign {campaign.obr_name} refreshed")
-                except Exception as e:
-                    logger.exception(f"Campaign {campaign.obr_name} refresh failed")
-
                 campaign.preperadness_sync_status = "FINISHED"
                 campaign.save()
             except Exception as e:

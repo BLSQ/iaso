@@ -4,13 +4,13 @@
 <!DOCTYPE HTML>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
-  <title>{% trans 'Iaso Dashboard' %}</title>
+  <title>{{ app_title }}</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="">
   <meta name="keywords" content="">
   {# favicon #}
-  <link rel="icon" type="image/png" href="{% static 'images/iaso-favicon.png' %}">
+  <link rel="icon" type="image/png" href="{% static favicon_path %}">
 
   {% block extrajs %}
   {% endblock %}
@@ -20,11 +20,11 @@
   {% if user.is_authenticated %}
   <meta data-qa="logged-in-marker" name="logged-in" content="{{ user.get_username }}">
   {% else %}
-  <meta property="og:title" content="{% trans 'Welcome to the IASO Dashboard' %}" />
+  <meta property="og:title" content="{{ app_title }}" />
   <meta property="og:description" content="" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="" />
-  <meta property="og:url" content="http://iaso.bluesquarehub.com" />
+  <meta property="og:url" content="{{ request.build_absolute_uri }} " />
   {% endif %}
 </head>
 

@@ -163,6 +163,35 @@ class RoundSerializer(serializers.ModelSerializer):
         model = Round
         fields = "__all__"
 
+    last_preparedness = serializers.SerializerMethodField()
+
+    def get_last_preparedness(self, round: Round):
+        r = {}
+        try:
+            spreadsheet_url = round.preparedness_spreadsheet_url
+            last_ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
+            if not last_ssi:
+                return None
+
+            r["created_at"] = last_ssi.created_at
+            cached_spreadsheet = last_ssi.cached_spreadsheet
+            r["title"] = cached_spreadsheet.title
+            last_p = get_preparedness(cached_spreadsheet)
+            r.update(get_preparedness_score(last_p))
+            r.update(preparedness_summary(last_p))
+        except Exception as e:
+            r["status"] = "error"
+            r["details"] = str(e)
+            logger.exception(e)
+        return r
+
+
+# Don't display the url for Anyomous users
+class RoundAnonymouSerializer(RoundSerializer):
+    class Meta:
+        model = Round
+        exclude = ["preparedness_spreadsheet_url"]
+
 
 class PreparednessSerializer(serializers.ModelSerializer):
     class Meta:
@@ -307,25 +336,12 @@ class CampaignSerializer(serializers.ModelSerializer):
     last_preparedness = serializers.SerializerMethodField()
 
     def get_last_preparedness(self, campaign):
-        # summary
-        r = {}
-        try:
-            spreadsheet_url = campaign.preperadness_spreadsheet_url
-            last_ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
-            if not last_ssi:
-                return None
-
-            r["created_at"] = last_ssi.created_at
-            cached_spreadsheet = last_ssi.cached_spreadsheet
-            r["title"] = cached_spreadsheet.title
-            last_p = get_preparedness(cached_spreadsheet)
-            r.update(get_preparedness_score(last_p))
-            r.update(preparedness_summary(last_p))
-        except Exception as e:
-            r["status"] = "error"
-            r["details"] = str(e)
-            logger.exception(e)
-        return r
+        # Provided for compat but would be nice if we could move the client to use the one on round directly
+        if campaign.round_two and campaign.round_two.preparedness_spreadsheet_url:
+            return RoundSerializer().get_last_preparedness(campaign.round_two)
+        elif campaign.round_one and campaign.round_one.preparedness_spreadsheet_url:
+            return RoundSerializer().get_last_preparedness(campaign.round_one)
+        return {}
 
     last_surge = SurgeSerializer(
         required=False,
@@ -389,6 +405,9 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 
 class AnonymousCampaignSerializer(CampaignSerializer):
+    round_one = RoundAnonymouSerializer()
+    round_two = RoundAnonymouSerializer()
+
     class Meta:
         model = Campaign
         fields = [

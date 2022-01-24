@@ -1,8 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-// import { isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 import { RoundString } from '../../constants/types';
-// import MESSAGES from '../../constants/messages';
 import { PercentageChartWithTitle } from './PercentageChartWithTitle';
 import { useGetRegions } from '../../hooks/useGetRegions';
 import { useConvertedLqasImData } from '../../pages/IM/requests';
@@ -15,7 +14,7 @@ import {
     imBarColorTresholds,
     lqasBarColorTresholds,
 } from '../../pages/IM/constants';
-// import { NoDataForBarChart } from './NoDataForBarChart';
+import { NoData } from './NoData';
 
 type Props = {
     type: 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';
@@ -54,25 +53,23 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
         type === 'lqas' ? lqasChartTooltipFormatter : imTooltipFormatter;
     const colorTresholds =
         type === 'lqas' ? lqasBarColorTresholds : imBarColorTresholds;
-    // const hasData =
-    //     data && campaign && data[campaign]
-    //         ? !isEqual(data[campaign][round], [])
-    //         : false;
+    const hasData =
+        data && campaign && data[campaign]
+            ? !isEqual(data[campaign][round], [])
+            : false;
     return (
         <>
-            {/* {!hasData && campaign && (
-                <NoDataForBarChart campaign={campaign} type={type} />
-            )} */}
-            {/* {hasData && ( */}
-            <PercentageChartWithTitle
-                data={chartData}
-                tooltipFormatter={tooltipFormatter(formatMessage)}
-                chartKey={`LQASIMChart-${round}-${campaign}-${type}`}
-                isLoading={isLoading}
-                showChart={Boolean(campaign)}
-                colorTresholds={colorTresholds}
-            />
-            {/* )} */}
+            {campaign && !hasData && <NoData />}
+            {hasData && (
+                <PercentageChartWithTitle
+                    data={chartData}
+                    tooltipFormatter={tooltipFormatter(formatMessage)}
+                    chartKey={`LQASIMChart-${round}-${campaign}-${type}`}
+                    isLoading={isLoading}
+                    showChart={Boolean(campaign)}
+                    colorTresholds={colorTresholds}
+                />
+            )}
         </>
     );
 };

@@ -85,7 +85,7 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
                 name: region.name,
                 value: Number.isSafeInteger(markedRatio)
                     ? markedRatio
-                    : markedRatio.toFixed(2),
+                    : Math.round(markedRatio),
                 marked: aggregatedData.marked,
                 checked: aggregatedData.checked,
             });

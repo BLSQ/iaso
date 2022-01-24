@@ -25,8 +25,8 @@ export const CaregiversTableHeader: FunctionComponent<Props> = ({
         <Box display="flex" justifyContent="space-between">
             <Typography variant="h6">
                 {`${formatMessage(
-                    MESSAGES.numberCaregiversInformed,
-                )}: ${totalCaregiversInformed(dataForRound)}`}
+                    MESSAGES.totalCaregiversSurveyed,
+                )}: ${totalCaregivers(dataForRound)}`}
             </Typography>
             <Typography variant="h6">
                 {`${formatMessage(

@@ -67,7 +67,7 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
             {((!hasData && campaign) || (!hasScope && campaign)) && (
                 <NoDataForBarChart campaign={campaign} type={type} />
             )}
-            {hasData && (
+            {hasData && hasScope && (
                 <PercentageChartWithTitle
                     data={chartData}
                     tooltipFormatter={tooltipFormatter(formatMessage)}

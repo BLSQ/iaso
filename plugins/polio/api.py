@@ -502,12 +502,12 @@ class IMStatsViewSet(viewsets.ViewSet):
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="im-config")
         requested_country = request.GET.get("country_id", None)
-        
+
         if requested_country is None:
             return HttpResponseBadRequest
-        
-        requested_country=int(requested_country)
-        
+
+        requested_country = int(requested_country)
+
         form_count = 0
         fully_mapped_form_count = 0
         base_stats = {"total_child_fmd": 0, "total_child_checked": 0, "total_sites_visited": 0}
@@ -930,7 +930,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
         requested_country = request.GET.get("country_id", None)
         if requested_country is None:
             return HttpResponseBadRequest
-        requested_country=int(requested_country)
+        requested_country = int(requested_country)
 
         base_stats = lambda: {
             "total_child_fmd": 0,
@@ -979,10 +979,10 @@ class LQASStatsViewSet(viewsets.ViewSet):
             authorized_countries = request.user.iaso_profile.org_units.filter(org_unit_type_id__category="COUNTRY")
         for country_config in config.content:
             country = OrgUnit.objects.get(id=country_config["country_id"])
-                
+
             if country not in authorized_countries:
                 continue
-            
+
             if country.id != requested_country:
                 continue
 

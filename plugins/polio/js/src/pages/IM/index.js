@@ -42,7 +42,7 @@ export const ImStats = ({ imType }) => {
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
     const [country, setCountry] = useState();
-    const { data: imData, isLoading } = useLqasIm(imType, country);
+    const { data: imData, isLoading, isFetching } = useLqasIm(imType, country);
 
     const countryIds = findCountryIds(imData).toString();
     const { data: campaigns = [], isLoading: campaignsLoading } =
@@ -102,7 +102,11 @@ export const ImStats = ({ imType }) => {
                                 <Select
                                     keyValue="campaigns"
                                     label={formatMessage(MESSAGES.campaign)}
-                                    loading={!countryIds || campaignsLoading}
+                                    loading={
+                                        !countryIds ||
+                                        campaignsLoading ||
+                                        isFetching
+                                    }
                                     clearable
                                     multi={false}
                                     value={campaign}

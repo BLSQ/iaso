@@ -7,7 +7,7 @@ from iaso.api.common import safe_api_import
 from iaso.api.instances import InstancesViewSet, HasInstancePermission
 from iaso.models import Entity, Instance, EntityType, Form
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework import viewsets, permissions
 from rest_framework.request import Request
 from rest_framework import serializers
@@ -22,7 +22,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
 class EntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Entity
-        fields = ["id", "uuid", "name", "entity_type", "attributes"]
+        fields = "__all__"
 
 
 class HasEntityPermission(permissions.BasePermission):
@@ -92,17 +92,20 @@ class EntityViewSet(viewsets.ViewSet):
 
     def create(self, request):
         entities = EntityType.objects.all()
-        data = request.data
-        entity_type = get_object_or_404(entities, pk=data["entity_type"])
-        instance = get_object_or_404(Instance.objects.all(), pk=data["attributes"])
-
-        # Avoid duplicates
-        if Entity.objects.filter(attributes=instance):
-            return Response({"result": "An Entity with this attribute already exists."}, status=409)
-
-        entity = Entity.objects.create(name=data["name"], entity_type=entity_type, attributes=instance)
-        serializer = EntitySerializer(entity, many=False)
-        return Response(serializer.data)
+        created_entities = []
+        data = request.data if isinstance(request.data, list) else [request.data]
+        for entity in data:
+            entity_type = get_object_or_404(entities, pk=entity["entity_type"])
+            instance = get_object_or_404(Instance.objects.all(), pk=entity["attributes"])
+            # Avoid duplicates
+            if Entity.objects.filter(attributes=instance):
+                return Response(
+                    {"result": "Error with {0}. An Entity with this attribute already exists.".format(entity["name"])},
+                    status=409,
+                )
+            Entity.objects.create(name=entity["name"], entity_type=entity_type, attributes=instance)
+            created_entities.append(entity)
+        return JsonResponse(created_entities, safe=False)
 
     def update(self, request, pk=None):
         entities = Entity.objects.all()

@@ -912,6 +912,7 @@ const MESSAGES = defineMessages({
     totalCaregiversSurveyed: {
         id: 'iaso.polio.label.totalCaregiversSurveyed',
         defaultMessage: 'Caregivers surveyed',
+    },
     noScope: {
         id: 'iaso.polio.label.noScope',
         defaultMessage: 'Plese select a scope for the campaign',

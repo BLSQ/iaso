@@ -56,8 +56,9 @@ export const Lqas = () => {
             enabled: Boolean(countryIds),
         }).query;
 
-    const { data, isFetching: countriesLoading } = useGetCountries();
-    const countriesList = (data && data.orgUnits) || [];
+    const { data: countriesData, isFetching: countriesLoading } =
+        useGetCountries();
+    const countriesList = (countriesData && countriesData.orgUnits) || [];
     const countryOfSelectedCampaign = campaigns.filter(
         campaignOption => campaignOption.obr_name === campaign,
     )[0]?.top_level_org_unit_id;
@@ -113,6 +114,7 @@ export const Lqas = () => {
                                     value={campaign}
                                     options={dropDownOptions}
                                     onChange={value => setCampaign(value)}
+                                    disabled={Boolean(!country)}
                                 />
                             </Grid>
                         </Grid>

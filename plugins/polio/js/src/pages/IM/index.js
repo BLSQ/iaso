@@ -107,6 +107,7 @@ export const ImStats = ({ imType }) => {
                                     value={campaign}
                                     options={dropDownOptions}
                                     onChange={value => setCampaign(value)}
+                                    disabled={Boolean(!country)}
                                 />
                             </Grid>
                         </Grid>

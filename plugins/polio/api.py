@@ -68,7 +68,7 @@ class CustomFilterBackend(filters.BaseFilterBackend):
 
 class CampaignFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        query_param = request.query_params.get("campaigns")
+        query_param = request.query_params.get("deletion_status", "active")
 
         if query_param == "deleted":
             query = Q(deleted_at__isnull=False)
@@ -78,11 +78,12 @@ class CampaignFilterBackend(filters.BaseFilterBackend):
             query = Q(deleted_at__isnull=True)
             return queryset.filter(query)
 
+        if query_param == "all":
+            return queryset
         return queryset
 
 
 class CampaignViewSet(ModelViewSet):
-
     results_key = "campaigns"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend, CampaignFilterBackend]

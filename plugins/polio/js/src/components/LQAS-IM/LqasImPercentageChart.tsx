@@ -4,10 +4,7 @@ import { isEqual } from 'lodash';
 import { RoundString } from '../../constants/types';
 import { PercentageChartWithTitle } from './PercentageChartWithTitle';
 import { useGetRegions } from '../../hooks/useGetRegions';
-import {
-    useConvertedLqasImData,
-    useScopeAndDistrictsNotFound,
-} from '../../pages/IM/requests';
+import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { formatImDataForChart, imTooltipFormatter } from '../../pages/IM/utils';
 import {
     formatLqasDataForChart,
@@ -17,7 +14,7 @@ import {
     imBarColorTresholds,
     lqasBarColorTresholds,
 } from '../../pages/IM/constants';
-import { NoDataForBarChart } from './NoDataForBarChart';
+import { NoData } from './NoData';
 
 type Props = {
     type: 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';
@@ -36,8 +33,6 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { data, isLoading } = useConvertedLqasImData(type);
     const { data: regions = [] } = useGetRegions(countryId);
-    const { data: scopeStatus } = useScopeAndDistrictsNotFound(type, campaign);
-    const hasScope = scopeStatus[campaign]?.hasScope;
     const chartData = useMemo(() => {
         if (type === 'lqas') {
             return formatLqasDataForChart({
@@ -64,10 +59,8 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
             : false;
     return (
         <>
-            {((!hasData && campaign) || (!hasScope && campaign)) && (
-                <NoDataForBarChart campaign={campaign} type={type} />
-            )}
-            {hasData && hasScope && (
+            {campaign && !hasData && <NoData />}
+            {hasData && (
                 <PercentageChartWithTitle
                     data={chartData}
                     tooltipFormatter={tooltipFormatter(formatMessage)}

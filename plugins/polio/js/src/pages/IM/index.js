@@ -208,9 +208,7 @@ export const ImStats = ({ imType }) => {
                                             type="IM"
                                             chartKey="nfmRound1"
                                             isLoading={isLoading}
-                                            showChart={Boolean(
-                                                campaign && hasScope,
-                                            )}
+                                            showChart={Boolean(campaign)}
                                         />
                                     </Box>
                                 </Grid>
@@ -223,9 +221,7 @@ export const ImStats = ({ imType }) => {
                                             type="IM"
                                             chartKey="nfmRound2"
                                             isLoading={isLoading}
-                                            showChart={Boolean(
-                                                campaign && hasScope,
-                                            )}
+                                            showChart={Boolean(campaign)}
                                         />
                                     </Box>
                                 </Grid>

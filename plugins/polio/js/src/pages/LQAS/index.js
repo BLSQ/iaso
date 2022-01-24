@@ -212,7 +212,7 @@ export const Lqas = () => {
                                     type="LQAS"
                                     chartKey="nfmRound1"
                                     isLoading={isLoading}
-                                    showChart={Boolean(campaign && hasScope)}
+                                    showChart={Boolean(campaign)}
                                 />
                             </Box>
                         </Grid>
@@ -225,7 +225,7 @@ export const Lqas = () => {
                                     type="LQAS"
                                     chartKey="nfmRound2"
                                     isLoading={isLoading}
-                                    showChart={Boolean(campaign && hasScope)}
+                                    showChart={Boolean(campaign)}
                                 />
                             </Box>
                         </Grid>

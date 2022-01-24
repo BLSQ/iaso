@@ -22,7 +22,6 @@ import { getScopeStyle, findDataForShape, findScope } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
 import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
-// import { AccordionMapLegend } from '../MapComponent/AccordionMapLegend.tsx';
 
 export const LqasImMap = ({
     type,
@@ -33,7 +32,7 @@ export const LqasImMap = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
-    const { data, isLoading } = useConvertedLqasImData(type);
+    const { data, isLoading } = useConvertedLqasImData(type, countryId);
     const { data: shapes = [] } = useGetGeoJson(countryId, 'DISTRICT');
 
     const scope = findScope(selectedCampaign, campaigns, shapes);

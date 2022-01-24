@@ -3,20 +3,24 @@ import { getRequest } from 'Iaso/libs/Api';
 import { IM_POC_URL, LQAS_POC_URL } from './constants.ts';
 import { convertAPIData } from '../../utils/LqasIm.tsx';
 
-export const getLqasIm = type => {
-    if (type === 'imOHH') return getRequest(`${IM_POC_URL}?type=OHH`);
-    if (type === 'imIHH') return getRequest(`${IM_POC_URL}?type=HH`);
-    if (type === 'imGlobal') return getRequest(`${IM_POC_URL}`);
-    if (type === 'lqas') return getRequest(`${LQAS_POC_URL}`);
+export const getLqasIm = (type, countryId) => {
+    if (type === 'imOHH')
+        return getRequest(`${IM_POC_URL}?type=OHH&country_id=${countryId}`);
+    if (type === 'imIHH')
+        return getRequest(`${IM_POC_URL}?type=HH&country_id=${countryId}`);
+    if (type === 'imGlobal')
+        return getRequest(`${IM_POC_URL}?country_id=${countryId}`);
+    if (type === 'lqas')
+        return getRequest(`${LQAS_POC_URL}?country_id=${countryId}`);
     throw new Error(
         `wrong "type" parameter, expected one of :imOHH,imIHH,imGlobal, lqas; got ${type} `,
     );
 };
 
-export const useLqasIm = type => {
+export const useLqasIm = (type, countryId) => {
     return useSnackQuery(
-        [type, getLqasIm],
-        async () => getLqasIm(type),
+        [type, countryId, getLqasIm],
+        async () => getLqasIm(type, countryId),
         undefined,
         {
             select: data => {
@@ -24,13 +28,14 @@ export const useLqasIm = type => {
             },
             keepPreviousData: true,
             initialData: { stats: {} },
+            enabled: Boolean(countryId),
         },
     );
 };
-export const useConvertedLqasImData = type => {
+export const useConvertedLqasImData = (type, countryId) => {
     return useSnackQuery(
-        [type, getLqasIm],
-        async () => getLqasIm(type),
+        [type, countryId, getLqasIm],
+        async () => getLqasIm(type, countryId),
         undefined,
         {
             select: data => {
@@ -38,14 +43,15 @@ export const useConvertedLqasImData = type => {
             },
             keepPreviousData: true,
             initialData: { stats: {} },
+            enabled: Boolean(countryId),
         },
     );
 };
 
-export const useScopeAndDistrictsNotFound = (type, campaign) => {
+export const useScopeAndDistrictsNotFound = (type, campaign, countryId) => {
     return useSnackQuery(
-        [type, getLqasIm],
-        async () => getLqasIm(type),
+        [type, countryId, getLqasIm],
+        async () => getLqasIm(type, countryId),
         undefined,
         {
             select: data => {
@@ -61,6 +67,7 @@ export const useScopeAndDistrictsNotFound = (type, campaign) => {
             },
             keepPreviousData: true,
             initialData: { stats: {} },
+            enabled: Boolean(countryId),
         },
     );
 };

@@ -14,6 +14,7 @@ import {
 type Props = {
     campaign?: string;
     round: RoundString;
+    country?: number;
 };
 
 const style = theme => ({
@@ -40,9 +41,13 @@ const getRatePassedColors = (ratePassed, classes) => {
     return classes.fail;
 };
 
-export const LqasSummary: FunctionComponent<Props> = ({ campaign, round }) => {
+export const LqasSummary: FunctionComponent<Props> = ({
+    campaign,
+    round,
+    country,
+}) => {
     const classes = useStyles();
-    const { data } = useConvertedLqasImData('lqas');
+    const { data } = useConvertedLqasImData('lqas', country);
     const summary = useMemo(() => {
         // eslint-disable-next-line no-unused-vars
         const [passed, failed, _disqualified] = getLqasStatsForRound(

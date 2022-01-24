@@ -32,7 +32,7 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
 }) => {
     // TODO: add consition on scope
     const { formatMessage } = useSafeIntl();
-    const { data, isLoading } = useConvertedLqasImData(type);
+    const { data, isLoading } = useConvertedLqasImData(type, countryId);
     const { data: regions = [] } = useGetRegions(countryId);
     const chartData = useMemo(() => {
         if (type === 'lqas') {

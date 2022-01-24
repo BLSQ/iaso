@@ -1,18 +1,20 @@
+/* eslint-disable react/require-default-props */
 import { Box, Paper } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 import { useScopeAndDistrictsNotFound } from '../../pages/IM/requests';
 
 type Props = {
     type: 'lqas' | 'imGlobal' | 'imIHH' | 'imOHH';
-    // eslint-disable-next-line react/require-default-props
     campaign?: string;
+    country?: number;
 };
 
 export const NoDataForBarChart: FunctionComponent<Props> = ({
     campaign,
     type,
+    country,
 }) => {
-    const { data } = useScopeAndDistrictsNotFound(type, campaign);
+    const { data } = useScopeAndDistrictsNotFound(type, campaign, country);
     const { hasScope, districtsNotFound } = data[campaign] ?? {};
     return (
         <>

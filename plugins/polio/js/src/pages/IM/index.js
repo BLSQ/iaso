@@ -42,7 +42,7 @@ export const ImStats = ({ imType }) => {
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
     const [country, setCountry] = useState();
-    const { data: imData, isLoading } = useLqasIm(imType);
+    const { data: imData, isLoading } = useLqasIm(imType, country);
 
     const countryIds = findCountryIds(imData).toString();
     const { data: campaigns = [], isLoading: campaignsLoading } =
@@ -50,8 +50,9 @@ export const ImStats = ({ imType }) => {
             countries: countryIds,
             enabled: Boolean(countryIds),
         }).query;
-    const { data, isFetching: countriesLoading } = useGetCountries();
-    const countriesList = (data && data.orgUnits) || [];
+    const { data: countriesData, isFetching: countriesLoading } =
+        useGetCountries();
+    const countriesList = (countriesData && countriesData.orgUnits) || [];
     const countryOfSelectedCampaign = campaigns.filter(
         campaignOption => campaignOption.obr_name === campaign,
     )[0]?.top_level_org_unit_id;
@@ -112,6 +113,7 @@ export const ImStats = ({ imType }) => {
                                     round="round_1"
                                     campaign={campaign}
                                     type={imType}
+                                    country={country}
                                 />
                                 <LqasImMap
                                     round="round_1"
@@ -129,6 +131,7 @@ export const ImStats = ({ imType }) => {
                                     round="round_2"
                                     campaign={campaign}
                                     type={imType}
+                                    country={country}
                                 />
                                 <LqasImMap
                                     round="round_2"

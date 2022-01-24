@@ -28,6 +28,7 @@ type Props = {
     marginTop?: boolean;
     campaign?: string;
     round: RoundString;
+    country?: number;
 };
 
 type SortValues = 'district_name' | 'region_name';
@@ -70,6 +71,7 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     marginTop = true,
     campaign = '',
     round,
+    country,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [page, setPage] = useState(0);
@@ -78,7 +80,10 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     const [sortFocus, setSortFocus] = useState<SortValues>('region_name');
     const [resetPageToOne, setResetPageToOne] = useState(`${rowsPerPage}`);
 
-    const { data: lqasImData, isLoading } = useConvertedLqasImData('lqas');
+    const { data: lqasImData, isLoading } = useConvertedLqasImData(
+        'lqas',
+        country,
+    );
     const data = useMemo((): LqasImCampaignDataWithNameAndRegion[] => {
         return makeDataForTable(lqasImData, campaign, round);
     }, [lqasImData, campaign, round]);
@@ -157,7 +162,11 @@ export const CaregiversTable: FunctionComponent<Props> = ({
         <>
             {!isLoading && campaign && (
                 <>
-                    <CaregiversTableHeader campaign={campaign} round={round} />
+                    <CaregiversTableHeader
+                        campaign={campaign}
+                        round={round}
+                        country={country}
+                    />
                     <Box mt={marginTop ? 4 : 0} mb={4}>
                         <Paper elevation={3}>
                             <Table

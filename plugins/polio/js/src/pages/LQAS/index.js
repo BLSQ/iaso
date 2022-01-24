@@ -46,7 +46,11 @@ export const Lqas = () => {
     // const [displayedCampaigns, setDisplayedCampaigns] = useState([]);
     const [campaign, setCampaign] = useState();
     const [country, setCountry] = useState();
-    const { data: LQASData, isFetching, isLoading } = useLqasIm('lqas');
+    const {
+        data: LQASData,
+        isFetching,
+        isLoading,
+    } = useLqasIm('lqas', country);
 
     const countryIds = findCountryIds(LQASData).toString();
 
@@ -56,8 +60,9 @@ export const Lqas = () => {
             enabled: Boolean(countryIds),
         }).query;
 
-    const { data, isFetching: countriesLoading } = useGetCountries();
-    const countriesList = (data && data.orgUnits) || [];
+    const { data: countriesData, isFetching: countriesLoading } =
+        useGetCountries();
+    const countriesList = (countriesData && countriesData.orgUnits) || [];
     const countryOfSelectedCampaign = campaigns.filter(
         campaignOption => campaignOption.obr_name === campaign,
     )[0]?.top_level_org_unit_id;
@@ -118,6 +123,7 @@ export const Lqas = () => {
                                 <LqasSummary
                                     round="round_1"
                                     campaign={campaign}
+                                    country={country}
                                 />
                                 <LqasImMap
                                     round="round_1"
@@ -137,6 +143,7 @@ export const Lqas = () => {
                                 <LqasSummary
                                     round="round_2"
                                     campaign={campaign}
+                                    country={country}
                                 />
                                 <LqasImMap
                                     round="round_2"
@@ -240,6 +247,7 @@ export const Lqas = () => {
                                     campaign={campaign}
                                     round="round_1"
                                     chartKey="CGTable1"
+                                    country={country}
                                 />
                             </Box>
                         </Grid>
@@ -249,6 +257,7 @@ export const Lqas = () => {
                                     campaign={campaign}
                                     round="round_2"
                                     chartKey="CGTable2"
+                                    country={country}
                                 />
                             </Box>
                         </Grid>

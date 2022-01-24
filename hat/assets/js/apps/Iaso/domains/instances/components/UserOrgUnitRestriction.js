@@ -1,7 +1,7 @@
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { useSafeIntl } from 'bluesquare-components';
-import { Card, CardContent, Typography } from '@material-ui/core';
 import React from 'react';
+import { Alert } from '@material-ui/lab';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 
 export const UserOrgUnitRestriction = () => {
@@ -12,15 +12,9 @@ export const UserOrgUnitRestriction = () => {
         return null;
     }
     return (
-        <Card>
-            {/* Override the rule for the last child that make it seems */}
-            {/* unbalanced */}
-            <CardContent style={{ paddingBottom: 16 }}>
-                <Typography>
-                    {formatMessage(MESSAGES.restricted_submissions_by_orgunits)}{' '}
-                    {currentUser.org_units.map(ou => ou.name).join(', ')}
-                </Typography>
-            </CardContent>
-        </Card>
+        <Alert severity="info">
+            {formatMessage(MESSAGES.restricted_submissions_by_orgunits)}{' '}
+            {currentUser.org_units.map(ou => ou.name).join(', ')}
+        </Alert>
     );
 };

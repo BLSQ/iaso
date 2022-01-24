@@ -22,6 +22,7 @@ import { getScopeStyle, findDataForShape, findScope } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
 import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
+import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer.tsx';
 
 export const LqasImMap = ({
     type,
@@ -51,15 +52,6 @@ export const LqasImMap = ({
             round,
         );
     }, [data, selectedCampaign, round, formatMessage, type]);
-
-    // const accordionItems = useMemo(() => {
-    //     return makeAccordionData({
-    //         type,
-    //         data,
-    //         round,
-    //         campaign: selectedCampaign,
-    //     });
-    // }, [data, type, round, selectedCampaign]);
 
     const getShapeStyles = useCallback(
         shape => {
@@ -131,6 +123,12 @@ export const LqasImMap = ({
                                 )}
                                 height={600}
                             />
+                            {selectedCampaign && (
+                                <ScopeAndDNFDisclaimer
+                                    type={type}
+                                    campaign={selectedCampaign}
+                                />
+                            )}
                         </Paper>
                     </Box>
                 </>

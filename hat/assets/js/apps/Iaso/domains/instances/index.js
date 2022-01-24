@@ -153,6 +153,7 @@ const Instances = ({ params }) => {
                 baseUrl={baseUrl}
                 labelKeys={labelKeys}
                 possibleFields={possibleFields}
+                instances={data?.instances}
             />
 
             {fetching && <LoadingSpinner />}

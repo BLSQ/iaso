@@ -10,7 +10,7 @@ import MESSAGES from '../../constants/messages';
 import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 
-import { useLqasIm } from './requests';
+import { useLqasIm, useScopeAndDistrictsNotFound } from './requests';
 
 import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
 import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
@@ -56,6 +56,13 @@ export const ImStats = ({ imType }) => {
     const countryOfSelectedCampaign = campaigns.filter(
         campaignOption => campaignOption.obr_name === campaign,
     )[0]?.top_level_org_unit_id;
+
+    const { data: scopeStatus } = useScopeAndDistrictsNotFound(
+        imType,
+        campaign,
+    );
+    const hasScope = scopeStatus[campaign]?.hasScope;
+
     useEffect(() => {
         setCampaign();
     }, [country]);
@@ -101,6 +108,7 @@ export const ImStats = ({ imType }) => {
                                     value={campaign}
                                     options={dropDownOptions}
                                     onChange={value => setCampaign(value)}
+                                    disabled={Boolean(!country)}
                                 />
                             </Grid>
                         </Grid>
@@ -177,7 +185,7 @@ export const ImStats = ({ imType }) => {
                     {imType === 'imIHH' && (
                         <>
                             <HorizontalDivider
-                                displayTrigger={campaign}
+                                displayTrigger={campaign && hasScope}
                                 mb={2}
                                 mt={2}
                             />
@@ -188,7 +196,9 @@ export const ImStats = ({ imType }) => {
                                             text={formatMessage(
                                                 MESSAGES.reasonsNoFingerMarked,
                                             )}
-                                            displayTrigger={campaign}
+                                            displayTrigger={
+                                                campaign && hasScope
+                                            }
                                         />
                                     </Box>
                                 </Grid>

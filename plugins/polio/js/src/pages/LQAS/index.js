@@ -12,7 +12,7 @@ import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import { makeCampaignsDropDown } from '../../utils/index';
 import { findCountryIds } from '../../utils/LqasIm.tsx';
 
-import { useLqasIm } from '../IM/requests';
+import { useLqasIm, useScopeAndDistrictsNotFound } from '../IM/requests';
 
 import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
@@ -61,6 +61,12 @@ export const Lqas = () => {
     const countryOfSelectedCampaign = campaigns.filter(
         campaignOption => campaignOption.obr_name === campaign,
     )[0]?.top_level_org_unit_id;
+
+    const { data: scopeStatus } = useScopeAndDistrictsNotFound(
+        'lqas',
+        campaign,
+    );
+    const hasScope = scopeStatus[campaign]?.hasScope;
 
     useEffect(() => {
         setCampaign();
@@ -183,7 +189,7 @@ export const Lqas = () => {
                             </Box>
                         </Grid>
                     </Grid>
-                    <HorizontalDivider displayTrigger={campaign} />
+                    <HorizontalDivider displayTrigger={campaign && hasScope} />
                     <Grid container item spacing={2} direction="row">
                         <Grid item xs={12}>
                             <Box ml={2} mt={2}>
@@ -191,7 +197,7 @@ export const Lqas = () => {
                                     text={formatMessage(
                                         MESSAGES.reasonsNoFingerMarked,
                                     )}
-                                    displayTrigger={campaign}
+                                    displayTrigger={campaign && hasScope}
                                 />
                             </Box>
                         </Grid>
@@ -204,7 +210,7 @@ export const Lqas = () => {
                                     type="LQAS"
                                     chartKey="nfmRound1"
                                     isLoading={isLoading}
-                                    showChart={Boolean(campaign)}
+                                    showChart={Boolean(campaign && hasScope)}
                                 />
                             </Box>
                         </Grid>
@@ -217,7 +223,7 @@ export const Lqas = () => {
                                     type="LQAS"
                                     chartKey="nfmRound2"
                                     isLoading={isLoading}
-                                    showChart={Boolean(campaign)}
+                                    showChart={Boolean(campaign && hasScope)}
                                 />
                             </Box>
                         </Grid>

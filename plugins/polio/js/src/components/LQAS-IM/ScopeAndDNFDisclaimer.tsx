@@ -20,6 +20,7 @@ const style = theme => ({
     centerText: { textAlign: 'center' },
     justifyCenter: { justifyContent: 'center' },
     boldText: { fontWeight: 'bold' },
+    alignTextLeft: { textAlign: 'left' },
 });
 
 const useStyles = makeStyles(style);
@@ -43,38 +44,16 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
                             direction="column"
                             className={classes.centerText}
                         >
-                            {/* TODO have anothe no data found component */}
-                            {/* {hasScope && (
-                                <Grid item>
-                                    <Box
-                                        mt={4}
-                                        mb={
-                                            hasScope && allDistrictsFound
-                                                ? 4
-                                                : 0
-                                        }
-                                    >
-                                        <Typography
-                                            variant="h6"
-                                            className={classes.boldText}
-                                        >
-                                            {formatMessage(
-                                                MESSAGES.noDataFound,
-                                            )}
-                                        </Typography>
-                                    </Box>
-                                </Grid>
-                            )} */}
                             {!hasScope && (
                                 <Grid container item direction="column">
                                     <Grid item>
-                                        <Box mt={4}>
+                                        <Box mt={2}>
                                             <Typography
                                                 variant="h6"
                                                 className={classes.boldText}
                                             >
                                                 {formatMessage(
-                                                    MESSAGES.noScopeFound,
+                                                    MESSAGES.noScope,
                                                 )}
                                             </Typography>
                                         </Box>
@@ -83,7 +62,7 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
                                         <Box mb={allDistrictsFound ? 4 : 0}>
                                             <Typography variant="body1">
                                                 {formatMessage(
-                                                    MESSAGES.noScope,
+                                                    MESSAGES.noScopeFound,
                                                 )}
                                             </Typography>
                                         </Box>
@@ -96,24 +75,33 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
                                     item
                                     className={classes.justifyCenter}
                                 >
+                                    {' '}
                                     <Grid item>
-                                        <Box mb={4}>
-                                            <Typography variant="body1">
+                                        <Box mt={2}>
+                                            <Typography
+                                                variant="h6"
+                                                className={classes.boldText}
+                                            >
+                                                {formatMessage(
+                                                    MESSAGES.districtsNotFound,
+                                                )}
+                                            </Typography>
+                                        </Box>
+                                    </Grid>
+                                    <Grid item>
+                                        <Box mb={2} ml={2} mr={2}>
+                                            <Typography
+                                                variant="body1"
+                                                className={
+                                                    classes.alignTextLeft
+                                                }
+                                            >
                                                 {formatMessage(
                                                     MESSAGES.districtsNeedMatching,
                                                 )}
                                             </Typography>
                                         </Box>
                                     </Grid>
-                                    {/* <Grid item>
-                                        <Box mt={2} mb={4}>
-                                            <Typography variant="body1">
-                                                {`Unidentified districts: ${districtsNotFound.join(
-                                                    ', ',
-                                                )}`}
-                                            </Typography>
-                                        </Box>
-                                    </Grid> */}
                                 </Grid>
                             )}
                         </Grid>

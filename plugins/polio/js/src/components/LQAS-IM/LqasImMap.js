@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { oneOf, string, array, number } from 'prop-types';
-import { Box, makeStyles, Paper, Typography } from '@material-ui/core';
+import { Box, Paper } from '@material-ui/core';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../MapComponent/MapLegend';
@@ -20,19 +20,9 @@ import {
 } from '../../pages/IM/constants.ts';
 import { getScopeStyle, findDataForShape, findScope } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
-import {
-    useConvertedLqasImData,
-    useScopeAndDistrictsNotFound,
-} from '../../pages/IM/requests';
+import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
-import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer';
-
-const style = {
-    centerText: { textAlign: 'center' },
-    boldText: { fontWeight: 'bold' },
-};
-
-const useStyles = makeStyles(style);
+import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer.tsx';
 
 export const LqasImMap = ({
     type,
@@ -41,17 +31,10 @@ export const LqasImMap = ({
     countryId,
     campaigns,
 }) => {
-    const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
     const { data, isLoading } = useConvertedLqasImData(type);
     const { data: shapes = [] } = useGetGeoJson(countryId, 'DISTRICT');
-    const { data: scopeStatus } = useScopeAndDistrictsNotFound(
-        type,
-        selectedCampaign,
-    );
-    const districtsNotFound =
-        scopeStatus[selectedCampaign]?.districtsNotFound ?? [];
 
     const scope = findScope(selectedCampaign, campaigns, shapes);
 
@@ -69,15 +52,6 @@ export const LqasImMap = ({
             round,
         );
     }, [data, selectedCampaign, round, formatMessage, type]);
-
-    // const accordionItems = useMemo(() => {
-    //     return makeAccordionData({
-    //         type,
-    //         data,
-    //         round,
-    //         campaign: selectedCampaign,
-    //     });
-    // }, [data, type, round, selectedCampaign]);
 
     const getShapeStyles = useCallback(
         shape => {

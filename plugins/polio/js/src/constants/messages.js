@@ -909,6 +909,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.mainCaregiverInfoSource',
         defaultMessage: 'Main source of information',
     },
+    totalCaregiversSurveyed: {
+        id: 'iaso.polio.label.totalCaregiversSurveyed',
+        defaultMessage: 'Caregivers surveyed',
+    },
 });
 
 export default MESSAGES;

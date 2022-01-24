@@ -53,7 +53,7 @@ export const INSTANCE_METAS_FIELDS = [
     },
     {
         key: 'version',
-        accessor: 'file_content._version',
+        accessor: 'formVersion',
         sortable: false,
         tableOrder: 2,
         type: 'info',

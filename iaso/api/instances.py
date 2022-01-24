@@ -132,6 +132,7 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("form")
         queryset = queryset.for_filters(**filters)
         queryset = queryset.order_by(*orders)
+        # IA-1023 = allow to sort instances by form version
 
         if csv_format is None and xlsx_format is None:
             if limit:
@@ -167,6 +168,7 @@ class InstancesViewSet(viewsets.ViewSet):
         else:
             columns = [
                 {"title": "ID du formulaire", "width": 20},
+                {"title": "Version du formulaire", "width": 20},
                 {"title": "Export id", "width": 20},
                 {"title": "Latitude", "width": 40},
                 {"title": "Longitude", "width": 20},
@@ -226,8 +228,11 @@ class InstancesViewSet(viewsets.ViewSet):
                 created_at = timestamp_to_datetime(idict.get("created_at"))
                 updated_at = timestamp_to_datetime(idict.get("updated_at"))
                 org_unit = idict.get("org_unit")
+                file_content = idict.get("file_content")
+
                 instance_values = [
                     idict.get("id"),
+                    file_content.get("_version") if file_content else None,
                     idict.get("export_id"),
                     idict.get("latitude"),
                     idict.get("longitude"),

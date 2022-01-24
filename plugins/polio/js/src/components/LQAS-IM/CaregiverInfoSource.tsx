@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 

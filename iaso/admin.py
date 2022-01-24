@@ -38,6 +38,8 @@ from .models import (
     Task,
     Page,
     AccountFeatureFlag,
+    EntityType,
+    Entity,
 )
 
 
@@ -288,5 +290,5 @@ admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
 admin.site.register(Page)
 admin.site.register(Task, TaskAdmin)
-# admin.site.unregister(User)
-# admin.site.register(User, UserAdmin)
+admin.site.register(EntityType)
+admin.site.register(Entity)

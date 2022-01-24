@@ -7,21 +7,23 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0112_entity_entitytype'),
+        ("iaso", "0112_entity_entitytype"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='entity',
-            options={'verbose_name_plural': 'Entities'},
+            name="entity",
+            options={"verbose_name_plural": "Entities"},
         ),
         migrations.RemoveField(
-            model_name='entity',
-            name='entity_type',
+            model_name="entity",
+            name="entity_type",
         ),
         migrations.AddField(
-            model_name='entity',
-            name='entity_type',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='iaso.entitytype'),
+            model_name="entity",
+            name="entity_type",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.entitytype"
+            ),
         ),
     ]

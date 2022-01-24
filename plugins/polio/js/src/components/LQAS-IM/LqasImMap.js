@@ -25,6 +25,7 @@ import {
     useScopeAndDistrictsNotFound,
 } from '../../pages/IM/requests';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
+import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer';
 
 const style = {
     centerText: { textAlign: 'center' },
@@ -148,17 +149,11 @@ export const LqasImMap = ({
                                 )}
                                 height={600}
                             />
-                            {districtsNotFound.length > 0 && (
-                                <Box className={classes.centerText}>
-                                    <Typography
-                                        variant="body2"
-                                        className={classes.boldText}
-                                    >
-                                        {formatMessage(
-                                            MESSAGES.districtsNeedMatching,
-                                        )}
-                                    </Typography>
-                                </Box>
+                            {selectedCampaign && (
+                                <ScopeAndDNFDisclaimer
+                                    type={type}
+                                    campaign={selectedCampaign}
+                                />
                             )}
                         </Paper>
                     </Box>

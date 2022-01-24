@@ -24,7 +24,7 @@ const style = theme => ({
 
 const useStyles = makeStyles(style);
 
-export const NoDataForBarChart: FunctionComponent<Props> = ({
+export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
     campaign,
     type,
 }) => {
@@ -43,7 +43,8 @@ export const NoDataForBarChart: FunctionComponent<Props> = ({
                             direction="column"
                             className={classes.centerText}
                         >
-                            {hasScope && (
+                            {/* TODO have anothe no data found component */}
+                            {/* {hasScope && (
                                 <Grid item>
                                     <Box
                                         mt={4}
@@ -63,7 +64,7 @@ export const NoDataForBarChart: FunctionComponent<Props> = ({
                                         </Typography>
                                     </Box>
                                 </Grid>
-                            )}
+                            )} */}
                             {!hasScope && (
                                 <Grid container item direction="column">
                                     <Grid item>

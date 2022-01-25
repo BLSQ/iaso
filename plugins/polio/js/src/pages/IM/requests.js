@@ -4,17 +4,20 @@ import { IM_POC_URL, LQAS_POC_URL } from './constants.ts';
 import { convertAPIData } from '../../utils/LqasIm.tsx';
 
 export const getLqasIm = (type, countryId) => {
-    if (type === 'imOHH')
-        return getRequest(`${IM_POC_URL}?type=OHH&country_id=${countryId}`);
-    if (type === 'imIHH')
-        return getRequest(`${IM_POC_URL}?type=HH&country_id=${countryId}`);
-    if (type === 'imGlobal')
-        return getRequest(`${IM_POC_URL}?country_id=${countryId}`);
-    if (type === 'lqas')
-        return getRequest(`${LQAS_POC_URL}?country_id=${countryId}`);
-    throw new Error(
-        `wrong "type" parameter, expected one of :imOHH,imIHH,imGlobal, lqas; got ${type} `,
-    );
+    switch (type) {
+        case 'imOHH':
+            return getRequest(`${IM_POC_URL}?type=OHH&country_id=${countryId}`);
+        case 'imIHH':
+            return getRequest(`${IM_POC_URL}?type=HH&country_id=${countryId}`);
+        case 'imGlobal':
+            return getRequest(`${IM_POC_URL}?country_id=${countryId}`);
+        case 'lqas':
+            return getRequest(`${LQAS_POC_URL}?country_id=${countryId}`);
+        default:
+            throw new Error(
+                `wrong "type" parameter, expected one of :imOHH,imIHH,imGlobal, lqas; got ${type} `,
+            );
+    }
 };
 
 export const useLqasIm = (type, countryId) => {

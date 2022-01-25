@@ -43,8 +43,11 @@ export const ImStats = ({ imType }) => {
     const [country, setCountry] = useState();
     const { data: imData, isLoading } = useLqasIm(imType);
 
-    const { data: campaigns = [], isLoading: campaignsLoading } =
-        useGetCampaigns().query;
+    const { data: campaigns = [], isFetching: campaignsFetching } =
+        useGetCampaigns({
+            countries: [country],
+            enabled: Boolean(country),
+        }).query;
     const { data, isFetching: countriesLoading } = useGetCountries();
     const countriesList = (data && data.orgUnits) || [];
     const countryOfSelectedCampaign = campaigns.filter(
@@ -96,7 +99,7 @@ export const ImStats = ({ imType }) => {
                                 <Select
                                     keyValue="campaigns"
                                     label={formatMessage(MESSAGES.campaign)}
-                                    loading={campaignsLoading}
+                                    loading={campaignsFetching}
                                     clearable
                                     multi={false}
                                     value={campaign}

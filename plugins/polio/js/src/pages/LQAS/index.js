@@ -47,8 +47,11 @@ export const Lqas = () => {
     const [country, setCountry] = useState();
     const { data: LQASData, isFetching, isLoading } = useLqasIm('lqas');
 
-    const { data: campaigns = [], isLoading: campaignsLoading } =
-        useGetCampaigns().query;
+    const { data: campaigns = [], isFetching: campaignsFetching } =
+        useGetCampaigns({
+            countries: [country],
+            enabled: Boolean(country),
+        }).query;
 
     const { data: countriesData, isFetching: countriesLoading } =
         useGetCountries();
@@ -102,7 +105,7 @@ export const Lqas = () => {
                                 <Select
                                     keyValue="campaigns"
                                     label={formatMessage(MESSAGES.campaign)}
-                                    loading={campaignsLoading || isFetching}
+                                    loading={campaignsFetching}
                                     clearable
                                     multi={false}
                                     value={campaign}

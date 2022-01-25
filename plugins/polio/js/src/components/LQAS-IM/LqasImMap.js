@@ -33,8 +33,11 @@ export const LqasImMap = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
-    const { data, isLoading } = useConvertedLqasImData(type, countryId);
-    const { data: shapes = [] } = useGetGeoJson(countryId, 'DISTRICT');
+    const { data, isFetching } = useConvertedLqasImData(type, countryId);
+    const { data: shapes = [], isFetching: isFetchingGeoJson } = useGetGeoJson(
+        countryId,
+        'DISTRICT',
+    );
 
     const scope = findScope(selectedCampaign, campaigns, shapes);
 
@@ -84,55 +87,42 @@ export const LqasImMap = ({
 
     return (
         <>
-            {isLoading && <LoadingSpinner />}
-            {!isLoading && (
-                <>
-                    <Box position="relative">
-                        <Paper elevation={2}>
-                            <MapLegendContainer>
-                                <MapLegend
-                                    title={title}
-                                    legendItems={legendItems}
-                                    width="lg"
-                                />
-                                {/* {type !== 'lqas' && (
-                                    <AccordionMapLegend
-                                        title={MESSAGES.collectionStats}
-                                        noDataMsg={MESSAGES.noDataFound}
-                                        data={accordionItems}
-                                        defaultExpanded
-                                        width="lg"
-                                    />
-                                )} */}
-                            </MapLegendContainer>
-                            <MapComponent
-                                // Use the key to force render
-                                key={`LQASIMMap${round}${renderCount}-${type}`}
-                                name={`LQASIMMap${round}-${type}`}
-                                mainLayer={shapes}
-                                onSelectShape={() => null}
-                                getMainLayerStyle={getShapeStyles}
-                                tooltipLabels={{
-                                    main: 'District',
-                                    background: 'Region',
-                                }}
-                                makePopup={makePopup(
-                                    data,
-                                    round,
-                                    selectedCampaign,
-                                )}
-                                height={600}
-                            />
-                            {selectedCampaign && (
-                                <ScopeAndDNFDisclaimer
-                                    type={type}
-                                    campaign={selectedCampaign}
-                                />
-                            )}
-                        </Paper>
-                    </Box>
-                </>
-            )}
+            <Box position="relative">
+                <Paper elevation={2}>
+                    <MapLegendContainer>
+                        <MapLegend
+                            title={title}
+                            legendItems={legendItems}
+                            width="lg"
+                        />
+                    </MapLegendContainer>
+                    {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
+                    {((isFetching && isFetchingGeoJson) ||
+                        isFetchingGeoJson) && (
+                        <LoadingSpinner fixed={false} absolute />
+                    )}
+                    <MapComponent
+                        // Use the key to force render
+                        key={`LQASIMMap${round}${renderCount}-${type}`}
+                        name={`LQASIMMap${round}-${type}`}
+                        mainLayer={shapes}
+                        onSelectShape={() => null}
+                        getMainLayerStyle={getShapeStyles}
+                        tooltipLabels={{
+                            main: 'District',
+                            background: 'Region',
+                        }}
+                        makePopup={makePopup(data, round, selectedCampaign)}
+                        height={600}
+                    />
+                    {selectedCampaign && (
+                        <ScopeAndDNFDisclaimer
+                            type={type}
+                            campaign={selectedCampaign}
+                        />
+                    )}
+                </Paper>
+            </Box>
         </>
     );
 };

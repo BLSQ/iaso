@@ -59,6 +59,7 @@ const OrgUnitTreeviewPicker = ({
     required,
     disabled,
     label,
+    clearable,
 }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
@@ -114,7 +115,7 @@ const OrgUnitTreeviewPicker = ({
             </InputLabel>
             <Paper variant="outlined" elevation={0} className={className}>
                 {makeTruncatedTrees(selectedItems)}
-                {resetSelection && selectedItems.size > 0 && (
+                {clearable && resetSelection && selectedItems.size > 0 && (
                     <Box className={classes.clearButton}>
                         <IconButton
                             icon="clear"
@@ -149,6 +150,7 @@ OrgUnitTreeviewPicker.propTypes = {
     required: bool,
     disabled: bool,
     label: func.isRequired,
+    clearable: bool,
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: [],
@@ -157,6 +159,7 @@ OrgUnitTreeviewPicker.defaultProps = {
     placeholder: null,
     required: false,
     disabled: false,
+    clearable: true,
 };
 
 export { OrgUnitTreeviewPicker };

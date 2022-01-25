@@ -10,7 +10,6 @@ import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 
 import { makeCampaignsDropDown } from '../../utils/index';
-import { findCountryIds } from '../../utils/LqasIm.tsx';
 
 import { useLqasIm, useScopeAndDistrictsNotFound } from '../IM/requests';
 
@@ -52,12 +51,11 @@ export const Lqas = () => {
         isLoading,
     } = useLqasIm('lqas', country);
 
-    const countryIds = findCountryIds(LQASData).toString();
 
-    const { data: campaigns = [], isLoading: campaignsLoading } =
+    const { data: campaigns = [], isFetching: campaignsFetching } =
         useGetCampaigns({
-            countries: countryIds,
-            enabled: Boolean(countryIds),
+            countries: [country],
+            enabled: Boolean(country),
         }).query;
 
     const { data: countriesData, isFetching: countriesLoading } =
@@ -97,7 +95,7 @@ export const Lqas = () => {
                                 <Select
                                     keyValue="countries"
                                     label={formatMessage(MESSAGES.country)}
-                                    loading={countriesLoading || isFetching}
+                                    loading={countriesLoading}
                                     clearable
                                     multi={false}
                                     value={country}
@@ -112,7 +110,7 @@ export const Lqas = () => {
                                 <Select
                                     keyValue="campaigns"
                                     label={formatMessage(MESSAGES.campaign)}
-                                    loading={campaignsLoading || isFetching}
+                                    loading={campaignsFetching}
                                     clearable
                                     multi={false}
                                     value={campaign}

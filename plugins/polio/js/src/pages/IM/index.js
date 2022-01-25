@@ -18,7 +18,6 @@ import { makeCampaignsDropDown } from '../../utils/index';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
 import { LqasImPercentageChart } from '../../components/LQAS-IM/LqasImPercentageChart.tsx';
-import { findCountryIds } from '../../utils/LqasIm.tsx';
 import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
 import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
 import { ImSummary } from '../../components/LQAS-IM/ImSummary.tsx';
@@ -44,11 +43,10 @@ export const ImStats = ({ imType }) => {
     const [country, setCountry] = useState();
     const { data: imData, isFetching } = useLqasIm(imType, country);
 
-    const countryIds = findCountryIds(imData).toString();
-    const { data: campaigns = [], isLoading: campaignsLoading } =
+    const { data: campaigns = [], isFetching: campaignsFetching } =
         useGetCampaigns({
-            countries: countryIds,
-            enabled: Boolean(countryIds),
+            countries: [country],
+            enabled: Boolean(country),
         }).query;
     const { data: countriesData, isFetching: countriesLoading } =
         useGetCountries();
@@ -103,8 +101,6 @@ export const ImStats = ({ imType }) => {
                                     keyValue="campaigns"
                                     label={formatMessage(MESSAGES.campaign)}
                                     loading={
-                                        !countryIds ||
-                                        campaignsLoading ||
                                         isFetching
                                     }
                                     clearable

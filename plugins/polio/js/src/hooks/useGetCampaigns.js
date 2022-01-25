@@ -1,7 +1,7 @@
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getRequest } from 'Iaso/libs/Api';
 
-export const useGetCampaigns = options => {
+export const useGetCampaigns = (options = {}) => {
     const params = {
         limit: options.pageSize,
         page: options.page,

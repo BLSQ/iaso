@@ -10,7 +10,6 @@ import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 
 import { makeCampaignsDropDown } from '../../utils/index';
-import { findCountryIds } from '../../utils/LqasIm.tsx';
 
 import { useLqasIm, useScopeAndDistrictsNotFound } from '../IM/requests';
 
@@ -48,13 +47,8 @@ export const Lqas = () => {
     const [country, setCountry] = useState();
     const { data: LQASData, isFetching, isLoading } = useLqasIm('lqas');
 
-    const countryIds = findCountryIds(LQASData).toString();
-
     const { data: campaigns = [], isLoading: campaignsLoading } =
-        useGetCampaigns({
-            countries: countryIds,
-            enabled: Boolean(countryIds),
-        }).query;
+        useGetCampaigns().query;
 
     const { data: countriesData, isFetching: countriesLoading } =
         useGetCountries();

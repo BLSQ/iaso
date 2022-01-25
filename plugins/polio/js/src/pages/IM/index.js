@@ -42,7 +42,7 @@ export const ImStats = ({ imType }) => {
     const classes = useStyles();
     const [campaign, setCampaign] = useState();
     const [country, setCountry] = useState();
-    const { data: imData, isLoading, isFetching } = useLqasIm(imType, country);
+    const { data: imData, isFetching } = useLqasIm(imType, country);
 
     const countryIds = findCountryIds(imData).toString();
     const { data: campaigns = [], isLoading: campaignsLoading } =
@@ -214,7 +214,7 @@ export const ImStats = ({ imType }) => {
                                             round="round_1"
                                             type="IM"
                                             chartKey="nfmRound1"
-                                            isLoading={isLoading}
+                                            isLoading={isFetching}
                                             showChart={Boolean(campaign)}
                                         />
                                     </Box>
@@ -227,7 +227,7 @@ export const ImStats = ({ imType }) => {
                                             round="round_2"
                                             type="IM"
                                             chartKey="nfmRound2"
-                                            isLoading={isLoading}
+                                            isLoading={isFetching}
                                             showChart={Boolean(campaign)}
                                         />
                                     </Box>

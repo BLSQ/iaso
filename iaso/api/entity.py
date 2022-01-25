@@ -46,15 +46,13 @@ class EntityTypeViewSet(ModelViewSet):
 
     @action(methods=["GET"], detail=True, serializer_class=EntityTypeSerializer)
     def retrieve_entity_type(self, request, pk=None):
-        entities_type = EntityType.objects.all()
-        entity_type = get_object_or_404(entities_type, pk=pk)
+        entity_type = get_object_or_404(EntityType, pk=pk)
         serializer = EntityTypeSerializer(entity_type)
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        entities_type = Form.objects.all()
         data = request.data
-        defining_form = get_object_or_404(entities_type, pk=data["defining_form"])
+        defining_form = get_object_or_404(Form, pk=data["defining_form"])
         entity_type = EntityType.objects.create(name=data["name"], defining_form=defining_form)
 
         serializer = EntityTypeSerializer(entity_type, many=False)
@@ -62,10 +60,9 @@ class EntityTypeViewSet(ModelViewSet):
 
     @action(methods=["PUT"], detail=True, serializer_class=EntityTypeSerializer)
     def update_entity_type(self, request, pk=None):
-        entities_type = EntityType.objects.all()
         form_qs = Form.objects.all()
         data = request.data
-        entity_type = get_object_or_404(entities_type, pk=pk)
+        entity_type = get_object_or_404(EntityType, pk=pk)
         form = get_object_or_404(form_qs, pk=data["defining_form"])
 
         entity_type.name = data["name"]
@@ -97,8 +94,7 @@ class EntityViewSet(ModelViewSet):
 
     @action(methods=["GET"], detail=True, serializer_class=EntitySerializer)
     def retrieve_entity(self, pk=None):
-        entities = Entity.objects.all()
-        entity = get_object_or_404(entities, pk=pk)
+        entity = get_object_or_404(Entity, pk=pk)
         serializer = EntitySerializer(entity, many=False)
         return Response(serializer.data)
 
@@ -120,14 +116,11 @@ class EntityViewSet(ModelViewSet):
 
     @action(methods=["PUT"], detail=True, serializer_class=EntitySerializer)
     def update_entity(self, request, pk=None):
-        entities = Entity.objects.all()
-        instance_qs = Instance.objects.all()
-        entity = get_object_or_404(entities, pk=pk)
-        entity_types = EntityType.objects.all()
+        entity = get_object_or_404(Entity, pk=pk)
         data = request.data
-        instance = get_object_or_404(instance_qs, pk=data["attributes"])
+        instance = get_object_or_404(Instance, pk=data["attributes"])
         entity.name = data["name"]
-        entity.entity_type = get_object_or_404(entity_types, pk=data["entity_type"])
+        entity.entity_type = get_object_or_404(EntityType, pk=data["entity_type"])
         entity.attributes = instance
         entity.save()
 

@@ -97,7 +97,7 @@ export const LqasImMap = ({
                         />
                     </MapLegendContainer>
                     {(isLoading || isFetchingGeoJson) && (
-                        <LoadingSpinner fixed={false} />
+                        <LoadingSpinner fixed={false} absolute />
                     )}
                     <MapComponent
                         // Use the key to force render

@@ -33,7 +33,7 @@ export const LqasImMap = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
-    const { data, isLoading } = useConvertedLqasImData(type);
+    const { data, isFetching } = useConvertedLqasImData(type);
     const { data: shapes = [], isFetching: isFetchingGeoJson } = useGetGeoJson(
         countryId,
         'DISTRICT',
@@ -96,7 +96,9 @@ export const LqasImMap = ({
                             width="lg"
                         />
                     </MapLegendContainer>
-                    {(isLoading || isFetchingGeoJson) && (
+                    {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
+                    {((isFetching && isFetchingGeoJson) ||
+                        isFetchingGeoJson) && (
                         <LoadingSpinner fixed={false} absolute />
                     )}
                     <MapComponent

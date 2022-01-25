@@ -6,6 +6,7 @@ from django.conf import settings
 
 ## Remove blank=True, null=True on FK once the modles are sets and validated
 from iaso.models import Instance, Form
+from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
 class EntityType(models.Model):
@@ -21,7 +22,7 @@ class EntityType(models.Model):
 """Define the clients """
 
 
-class Entity(models.Model):
+class Entity(SoftDeletableModel):
     name = models.CharField(max_length=255)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)

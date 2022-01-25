@@ -384,6 +384,31 @@ cd Projects/blsq/iaso
 docker-compose up dhis2 db_dhis2
 ```
 
+Test and serving forms from Iaso mobile application
+-----------
+
+To test your forms on the mobile app follow those steps:
+
+### 1 - Setup Ngrok
+Download and setup Ngrok on https://ngrok.com/. Once Ngrok installed and running you must add your ngrok server url
+in ```settings.py``` by adding the following line :
+```
+FILE_SERVER_URL = os.environ.get("FILE_SERVER_URL", "YOUR_NGROK_SERVER_URL")
+```
+
+After this step you have to import  ```settings.py``` and add ```FILE_SERVER_URL``` to ```forms.py``` in iaso/models/forms as
+shown on the following lines :
+
+```
+"file": settings.FILE_SERVER_URL + self.file.url,
+"xls_file": settings.FILE_SERVER_URL + self.xls_file.url if self.xls_file else None
+```
+
+### 2 - Setup the mobile app
+Once Ngrok installed and running you have to run the app in developer mode (tap 10 times on the Iaso icon at start ) and connect the mobile app to your server
+by selecting the 3 dots in the top right corner and select "change server url". When connected to your server, refresh
+all data and your app will be ready and connected to your development server.
+
 
 Live Bluesquare components
 --------------------------

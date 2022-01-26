@@ -15,6 +15,7 @@
     "iaso.algo.addRun": "Exécuter un algorithme",
     "iaso.archived.title": "Archives",
     "iaso.area": "Aire de santé",
+    "iaso.restricted_submissions_by_orgunits": "Vous êtes autorisé(e) à voir uniquement les unités d'organisation suivantes:",
     "iaso.completeness.generateDerivedInstances": "Générer les instances dérivées",
     "iaso.completeness.title": "Complétude des données",
     "iaso.dataSources.continueOnError": "Continuer en cas d'erreur",

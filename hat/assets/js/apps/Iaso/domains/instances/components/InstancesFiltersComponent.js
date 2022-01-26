@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Button, makeStyles, Grid, Box, Typography } from '@material-ui/core';
+import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -19,7 +19,7 @@ import { Period } from '../../periods/models';
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
-import { useInstancesFiltersData, useGetForms } from '../hooks';
+import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 
 import MESSAGES from '../messages';
@@ -27,6 +27,7 @@ import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnit
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 
 import { LocationLimit } from '../../../utils/map/LocationLimit';
+import { UserOrgUnitRestriction } from './UserOrgUnitRestriction';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -136,8 +137,10 @@ const InstancesFiltersComponent = ({
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);
+
     return (
         <div className={classes.marginBottomBig}>
+            <UserOrgUnitRestriction />
             <Grid container spacing={4}>
                 <Grid item xs={4}>
                     <InputComponent

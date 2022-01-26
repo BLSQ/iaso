@@ -110,7 +110,7 @@ class EntitiesAPITestCase(APITestCase):
 
         response = self.client.post("/api/entitytype/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
     def test_get_entity_type(self):
         self.client.force_authenticate(self.yoda)

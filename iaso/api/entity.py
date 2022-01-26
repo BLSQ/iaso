@@ -44,35 +44,6 @@ class EntityTypeViewSet(ModelViewSet):
     def get_queryset(self):
         return EntityType.objects.filter()
 
-    @action(methods=["GET"], detail=True, serializer_class=EntityTypeSerializer)
-    def retrieve_entity_type(self, request, pk=None):
-        entity_type = get_object_or_404(EntityType, pk=pk)
-        serializer = EntityTypeSerializer(entity_type)
-        return Response(serializer.data)
-
-    def create(self, request, *args, **kwargs):
-        data = request.data
-        defining_form = get_object_or_404(Form, pk=data["defining_form"])
-        entity_type = EntityType.objects.create(name=data["name"], defining_form=defining_form)
-
-        serializer = EntityTypeSerializer(entity_type, many=False)
-        return Response(serializer.data)
-
-    @action(methods=["PUT"], detail=True, serializer_class=EntityTypeSerializer)
-    def update_entity_type(self, request, pk=None):
-        form_qs = Form.objects.all()
-        data = request.data
-        entity_type = get_object_or_404(EntityType, pk=pk)
-        form = get_object_or_404(form_qs, pk=data["defining_form"])
-
-        entity_type.name = data["name"]
-        entity_type.defining_form = form
-
-        entity_type.save()
-
-        serializer = EntityTypeSerializer(entity_type)
-        return Response(serializer.data)
-
 
 class EntityFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
@@ -92,15 +63,10 @@ class EntityViewSet(ModelViewSet):
     def get_queryset(self):
         return Entity.objects.filter()
 
-    @action(methods=["GET"], detail=True, serializer_class=EntitySerializer)
-    def retrieve_entity(self, pk=None):
-        entity = get_object_or_404(Entity, pk=pk)
-        serializer = EntitySerializer(entity, many=False)
-        return Response(serializer.data)
-
     def create(self, request, *args, **kwargs):
         created_entities = []
         data = request.data if isinstance(request.data, list) else [request.data]
+        # allows multiple create
         for entity in data:
             entity_type = get_object_or_404(EntityType, pk=entity["entity_type"])
             instance = get_object_or_404(Instance.objects.all(), pk=entity["attributes"])
@@ -113,17 +79,3 @@ class EntityViewSet(ModelViewSet):
             Entity.objects.create(name=entity["name"], entity_type=entity_type, attributes=instance)
             created_entities.append(entity)
         return JsonResponse(created_entities, safe=False)
-
-    @action(methods=["PUT"], detail=True, serializer_class=EntitySerializer)
-    def update_entity(self, request, pk=None):
-        entity = get_object_or_404(Entity, pk=pk)
-        data = request.data
-        instance = get_object_or_404(Instance, pk=data["attributes"])
-        entity.name = data["name"]
-        entity.entity_type = get_object_or_404(EntityType, pk=data["entity_type"])
-        entity.attributes = instance
-        entity.save()
-
-        serializer = EntitySerializer(entity, many=False)
-
-        return Response(serializer.data)

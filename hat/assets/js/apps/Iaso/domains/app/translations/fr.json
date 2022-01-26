@@ -228,6 +228,7 @@
     "iaso.label.ended_at": "Fin",
     "iaso.label.execute": "Exécuter",
     "iaso.label.export": "Export",
+    "iaso.orgUnits.bulkChangeCount": "Vous allez modifier {count} unités d'org.",
     "iaso.label.exportRequests": "Demandes d'export",
     "iaso.label.exportSelection": "Exporter {count} soumissions",
     "iaso.label.featureFlags": "Options",

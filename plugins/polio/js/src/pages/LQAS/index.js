@@ -51,7 +51,6 @@ export const Lqas = () => {
         isLoading,
     } = useLqasIm('lqas', country);
 
-
     const { data: campaigns = [], isFetching: campaignsFetching } =
         useGetCampaigns({
             countries: [country],
@@ -110,13 +109,14 @@ export const Lqas = () => {
                                 <Select
                                     keyValue="campaigns"
                                     label={formatMessage(MESSAGES.campaign)}
-                                    loading={campaignsFetching}
+                                    loading={campaignsFetching || isFetching}
                                     clearable
                                     multi={false}
                                     value={campaign}
-                                    options={dropDownOptions}
+                                    // Not showing camapigns before Im data has been fetched because selecting a campaign before the end of data fetching will cause bugs in the map
+                                    options={isFetching ? [] : dropDownOptions}
                                     onChange={value => setCampaign(value)}
-                                    disabled={Boolean(!country)}
+                                    disabled={Boolean(!country) && isFetching}
                                 />
                             </Grid>
                         </Grid>

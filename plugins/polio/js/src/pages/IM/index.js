@@ -100,13 +100,12 @@ export const ImStats = ({ imType }) => {
                                 <Select
                                     keyValue="campaigns"
                                     label={formatMessage(MESSAGES.campaign)}
-                                    loading={
-                                        isFetching
-                                    }
+                                    loading={campaignsFetching || isFetching}
                                     clearable
                                     multi={false}
                                     value={campaign}
-                                    options={dropDownOptions}
+                                    // Not showing camapigns before Im data has been fetched because selecting a campaign before the end of data fetching will cause bugs in the map
+                                    options={isFetching ? [] : dropDownOptions}
                                     onChange={value => setCampaign(value)}
                                     disabled={Boolean(!country)}
                                 />

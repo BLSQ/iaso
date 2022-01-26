@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet
-from iaso.models import Entity, Instance, EntityType, Form
+from iaso.models import Entity, Instance, EntityType, Form, Account
 
 from django.http import JsonResponse
 from rest_framework import viewsets, permissions, filters
@@ -73,13 +73,14 @@ class EntityViewSet(ModelViewSet):
         # allows multiple create
         for entity in data:
             entity_type = get_object_or_404(EntityType, pk=entity["entity_type"])
-            instance = get_object_or_404(Instance.objects.all(), pk=entity["attributes"])
+            instance = get_object_or_404(Instance, pk=entity["attributes"])
+            account = get_object_or_404(Account, pk=entity["account"])
             # Avoid duplicates
             if Entity.objects.filter(attributes=instance):
                 return Response(
                     {"result": "Error with {0}. An Entity with this attribute already exists.".format(entity["name"])},
                     status=409,
                 )
-            Entity.objects.create(name=entity["name"], entity_type=entity_type, attributes=instance)
+            Entity.objects.create(name=entity["name"], entity_type=entity_type, attributes=instance, account=account)
             created_entities.append(entity)
         return JsonResponse(created_entities, safe=False)

@@ -115,7 +115,12 @@ class EntityAPITestCase(APITestCase):
             period="202002",
         )
 
-        payload = {"name": "New Client", "entity_type": entity_type.pk, "attributes": instance.pk}
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
+        }
 
         response = self.client.post("/api/entity/", data=payload, format="json")
 
@@ -139,10 +144,16 @@ class EntityAPITestCase(APITestCase):
             period="202002",
         )
 
-        payload = {"name": "New Client", "entity_type": entity_type.pk, "attributes": instance.pk}, {
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
+        }, {
             "name": "New Client 2",
             "entity_type": entity_type.pk,
             "attributes": second_instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
         }
 
         response = self.client.post("/api/entity/", data=payload, format="json")
@@ -161,10 +172,16 @@ class EntityAPITestCase(APITestCase):
             period="202002",
         )
 
-        payload = {"name": "New Client", "entity_type": entity_type.pk, "attributes": instance.pk}, {
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
+        }, {
             "name": "New Client 2",
             "entity_type": entity_type.pk,
             "attributes": instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
         }
 
         response = self.client.post("/api/entity/", data=payload, format="json")
@@ -188,10 +205,16 @@ class EntityAPITestCase(APITestCase):
             period="202002",
         )
 
-        payload = {"name": "New Client", "entity_type": entity_type.pk, "attributes": instance.pk}, {
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
+        }, {
             "name": "New Client 2",
             "entity_type": entity_type.pk,
             "attributes": second_instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
         }
 
         self.client.post("/api/entity/", data=payload, format="json")
@@ -212,7 +235,12 @@ class EntityAPITestCase(APITestCase):
             period="202002",
         )
 
-        payload = {"name": "New Client", "entity_type": entity_type.pk, "attributes": instance.pk}
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
+        }
 
         self.client.post("/api/entity/", data=payload, format="json")
 
@@ -225,7 +253,12 @@ class EntityAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
 
-        payload = {"name": "New Client", "entity_type": entity_type.pk, "attributes": 2324}
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": 2324,
+            "account": self.yoda.iaso_profile.account.pk,
+        }
 
         response = self.client.post("/api/entity/", data=payload, format="json")
 
@@ -242,7 +275,12 @@ class EntityAPITestCase(APITestCase):
             period="202002",
         )
 
-        payload_post = {"name": "New Client", "entity_type": entity_type.pk, "attributes": instance.pk}
+        payload_post = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
+        }
 
         self.client.post("/api/entity/", data=payload_post, format="json")
 
@@ -269,10 +307,16 @@ class EntityAPITestCase(APITestCase):
             period="202002",
         )
 
-        payload = {"name": "New Client", "entity_type": entity_type.pk, "attributes": instance.pk}, {
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
+        }, {
             "name": "New Client 2",
             "entity_type": entity_type.pk,
             "attributes": second_instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
         }
 
         self.client.post("/api/entity/", data=payload, format="json")
@@ -288,8 +332,49 @@ class EntityAPITestCase(APITestCase):
 
         entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
 
-        payload = {"name": "New Client", "entity_type": entity_type.pk, "attributes": None}
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": None,
+            "account": self.yoda.iaso_profile.account.pk,
+        }
 
         response = self.client.post("/api/entity/", data=payload, format="json")
 
         self.assertEqual(response.status_code, 404)
+
+    def test_retrieve_entity_only_same_account(self):
+        self.client.force_authenticate(self.yoda)
+
+        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+
+        instance = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+        )
+
+        second_instance = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+        )
+
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": instance.pk,
+            "account": self.yop_solo.iaso_profile.account.pk,
+        }, {
+            "name": "New Client 2",
+            "entity_type": entity_type.pk,
+            "attributes": second_instance.pk,
+            "account": self.yoda.iaso_profile.account.pk,
+        }
+
+        self.client.post("/api/entity/", data=payload, format="json")
+
+        response = self.client.get("/api/entity/", format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)

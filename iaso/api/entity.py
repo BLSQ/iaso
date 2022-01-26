@@ -1,4 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
@@ -32,7 +33,6 @@ class HasEntityPermission(permissions.BasePermission):
 
 
 class EntityTypeViewSet(ModelViewSet):
-
     results_key = "entities"
     remove_results_key_if_paginated = True
     # Check if filters are needed
@@ -48,20 +48,24 @@ class EntityTypeViewSet(ModelViewSet):
 class EntityFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         query_param = request.query_params.get("entity")
-        # Check with team if filters are required
-        pass
+
+        if query_param == "deleted":
+            query = Q(deleted_at__isnull=False)
+            return queryset.filter(query)
+        else:
+            return queryset.filter(deleted_at__isnull=True)
 
 
 class EntityViewSet(ModelViewSet):
     results_key = "entities"
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, EntityFilterBackend]
 
     def get_serializer_class(self):
         return EntitySerializer
 
     def get_queryset(self):
-        return Entity.objects.filter()
+        return Entity.objects.filter(account=self.request.user.iaso_profile.account)
 
     def create(self, request, *args, **kwargs):
         created_entities = []

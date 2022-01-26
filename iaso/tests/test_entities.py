@@ -1,16 +1,17 @@
 from django.core.files import File
 from unittest import mock
 
-
 from iaso import models as m
 from iaso.models import EntityType, Instance, Entity
 from iaso.test import APITestCase
 
 
-class EntityTypesAPITestCase(APITestCase):
+class EntityAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
+
+        space_balls = m.Account.objects.create(name="Space Balls")
 
         sw_source = m.DataSource.objects.create(name="Galactic Empire")
         cls.sw_source = sw_source
@@ -18,6 +19,10 @@ class EntityTypesAPITestCase(APITestCase):
         star_wars.default_version = sw_version
         star_wars.save()
         cls.sw_version = sw_version
+
+        cls.yop_solo = cls.create_user_with_profile(
+            username="yop solo", account=space_balls, permissions=["iaso_submissions"]
+        )
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
 
@@ -246,3 +251,45 @@ class EntityTypesAPITestCase(APITestCase):
         response = self.client.patch("/api/entity/{0}/".format(Entity.objects.last().pk), data=payload, format="json")
 
         self.assertEqual(response.status_code, 200)
+
+    def test_retrieve_only_non_deleted_entity(self):
+        self.client.force_authenticate(self.yoda)
+
+        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+
+        instance = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+        )
+
+        second_instance = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+        )
+
+        payload = {"name": "New Client", "entity_type": entity_type.pk, "attributes": instance.pk}, {
+            "name": "New Client 2",
+            "entity_type": entity_type.pk,
+            "attributes": second_instance.pk,
+        }
+
+        self.client.post("/api/entity/", data=payload, format="json")
+        self.client.delete("/api/entity/{0}/".format(Entity.objects.last().pk), format="json")
+
+        response = self.client.get("/api/entity/", format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+
+    def test_cant_create_entity_without_attributes(self):
+        self.client.force_authenticate(self.yoda)
+
+        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+
+        payload = {"name": "New Client", "entity_type": entity_type.pk, "attributes": None}
+
+        response = self.client.post("/api/entity/", data=payload, format="json")
+
+        self.assertEqual(response.status_code, 404)

@@ -5,7 +5,7 @@ from django.conf import settings
 
 
 ## Remove blank=True, null=True on FK once the modles are sets and validated
-from iaso.models import Instance, Form
+from iaso.models import Instance, Form, Account
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
@@ -27,8 +27,9 @@ class Entity(SoftDeletableModel):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    entity_type = models.ForeignKey(EntityType, blank=True, null=True, on_delete=models.PROTECT)
-    attributes = models.OneToOneField(Instance, blank=True, null=True, on_delete=models.PROTECT, help_text="instance")
+    entity_type = models.ForeignKey(EntityType, blank=True, on_delete=models.PROTECT)
+    attributes = models.OneToOneField(Instance, on_delete=models.PROTECT, help_text="instance")
+    account = models.ForeignKey(Account, on_delete=models.PROTECT)
 
     class Meta:
         verbose_name_plural = "Entities"

@@ -119,6 +119,7 @@ export const LqasImMap = ({
                         <ScopeAndDNFDisclaimer
                             type={type}
                             campaign={selectedCampaign}
+                            countryId={countryId}
                         />
                     )}
                 </Paper>

@@ -338,6 +338,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.statusRejected',
         defaultMessage: 'Validation status: REJECTED',
     },
+    bulkChangeCount: {
+        id: 'iaso.orgUnits.bulkChangeCount',
+        defaultMessage: 'You are about to change {count} Org units',
+    },
 });
 
 export default MESSAGES;

@@ -7,6 +7,7 @@ import {
 import { IM_PASS, IM_FAIL, IM_WARNING, ImNfmKeys } from './constants';
 import { makeLegendItem } from '../../utils';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
+import { convertStatToPercentNumber } from '../LQAS/utils';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -57,11 +58,12 @@ export const makeImMapLegendItems =
 
 export const formatImDataForChart = ({ data, campaign, round, regions }) => {
     const dataForRound = data[campaign] ? [...data[campaign][round]] : [];
-    return regions
-        .map(region => {
-            const regionData = dataForRound.filter(
-                district => district.region_name === region.name,
-            );
+    const regionsList: any[] = [];
+    regions.forEach(region => {
+        const regionData = dataForRound.filter(
+            district => district.region_name === region.name,
+        );
+        if (regionData.length > 0) {
             const aggregatedData = regionData
                 .map(district => ({
                     marked: district.total_child_fmd,
@@ -78,17 +80,20 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
                 );
             const { checked, marked } = aggregatedData;
             // forcing aggregatedData.checked to 1 to avoid dividing by 0
-            const markedRatio = (marked / (checked || 1)) * 100;
-            return {
+            const markedRatio = (marked / checked) * 100;
+            regionsList.push({
                 name: region.name,
                 value: Number.isSafeInteger(markedRatio)
                     ? markedRatio
-                    : markedRatio.toFixed(2),
+                    : Math.round(markedRatio),
                 marked: aggregatedData.marked,
                 checked: aggregatedData.checked,
-            };
-        })
-        .sort((a, b) => a.value < b.value);
+            });
+        }
+    });
+    return regionsList.sort(
+        (a, b) => parseFloat(b.value) - parseFloat(a.value),
+    );
 };
 
 export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
@@ -97,14 +102,7 @@ export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
     return [ratio, formatMessage(MESSAGES.vaccinated)];
 };
 
-const sortImNfmKeys = (a, b) => {
-    if (a.nfmKey === 'Tot_child_Others_HH') return 1;
-    if (b.nfmKey === 'Tot_child_Others_HH') return 0;
-
-    return a.name.localeCompare(b.name, undefined, {
-        sensitivity: 'accent',
-    });
-};
+const sortImNfmKeys = (a, b) => b.absValue - a.absValue;
 
 export const formatImDataForNFMChart = ({
     data,
@@ -115,10 +113,19 @@ export const formatImDataForNFMChart = ({
     if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
     const roundString: string = NfmRoundString[round];
     const campaignData: Record<string, number> = data[campaign][roundString];
+    const totalChildrenNotMarked = Object.values(campaignData).reduce(
+        (total, current) => total + current,
+        0,
+    );
     const entries: [string, number][] = Object.entries(campaignData);
     const convertedEntries = entries.map(entry => {
         const [name, value] = entry;
-        return { name: formatMessage(MESSAGES[name]), value, nfmKey: name };
+        return {
+            name: formatMessage(MESSAGES[name]),
+            value: convertStatToPercentNumber(value, totalChildrenNotMarked),
+            absValue: value,
+            nfmKey: name,
+        };
     });
     if (convertedEntries.length === ImNfmKeys.length)
         return convertedEntries.sort(sortImNfmKeys);
@@ -128,7 +135,8 @@ export const formatImDataForNFMChart = ({
         nfmKey => !dataKeys.includes(nfmKey),
     ).map(nfmKey => ({
         name: formatMessage(MESSAGES[nfmKey]),
-        value: 0,
+        value: convertStatToPercentNumber(0, totalChildrenNotMarked),
+        absValue: 0,
         nfmKey,
     }));
     return [...convertedEntries, ...missingEntries].sort(sortImNfmKeys);

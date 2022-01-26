@@ -12,6 +12,7 @@ def _base_iaso(request: HttpRequest) -> HttpResponse:
         "iaso/index.html",
         {
             "PLUGINS_ENABLED": settings.PLUGINS,
+            "STATIC_URL": settings.STATIC_URL,
         },
     )
 

@@ -1,3 +1,4 @@
+const dotenv = require('dotenv');
 const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
@@ -7,6 +8,22 @@ const BundleTracker = require('webpack-bundle-tracker');
 const LOCALE = 'fr';
 const WEBPACK_URL = 'http://localhost:3000';
 
+dotenv.config();
+// Application customizations
+const primaryColor = process.env.THEME_PRIMARY_COLOR || '#3f51b5';
+const secondaryColor = process.env.THEME_SECONDARY_COLOR || '#f50057';
+const primaryBackgroundColor =
+    process.env.THEME_PRIMARY_BACKGROUND_COLOR || '#F5F5F5';
+const appTitle = process.env.APP_TITLE || 'Iaso';
+const envVariables = {
+    REACT_THEME_PRIMARY_COLOR: `"${primaryColor}"`,
+    REACT_THEME_SECONDARY_COLOR: `"${secondaryColor}"`,
+    REACT_THEME_PRIMARY_BACKGROUND_COLOR: `"${primaryBackgroundColor}"`,
+    REACT_APP_TITLE: `"${appTitle}"`,
+};
+if (process.env.LOGO_PATH) {
+    envVariables.REACT_LOGO_PATH = `"${process.env.LOGO_PATH}"`;
+}
 module.exports = {
     context: __dirname,
     mode: 'development',
@@ -42,8 +59,10 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './assets/webpack/'),
         filename: '[name].js',
+        sourceMapFilename: '[name].js.map',
         publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
     },
+    devtool: 'source-map',
 
     // config for webpack-dev-server
     devServer: {
@@ -86,6 +105,7 @@ module.exports = {
             filename: './assets/webpack/webpack-stats.json',
         }),
         new webpack.DefinePlugin({
+            'process.env': envVariables,
             __LOCALE: JSON.stringify(LOCALE),
         }),
         // XLSX
@@ -155,7 +175,15 @@ module.exports = {
                 use: [
                     { loader: 'style-loader' },
                     { loader: 'css-loader' },
-                    { loader: 'sass-loader' },
+                    {
+                        loader: 'sass-loader',
+                        options: {
+                            additionalData:
+                                `$primary: ${primaryColor};` +
+                                `$primary-background: ${primaryBackgroundColor};` +
+                                `$secondary: ${secondaryColor};`,
+                        },
+                    },
                 ],
             },
             // font files

@@ -1,8 +1,6 @@
 import {
     fetchAction,
     saveAction,
-    createAction,
-    deleteAction,
     retrieveAction,
 } from '../../redux/actions/formsActions';
 
@@ -65,16 +63,6 @@ export const fetchUsersProfiles = params => dispatch =>
         setIsFetching,
     );
 
-export const saveUserProFile = profile => dispatch =>
-    saveAction(
-        dispatch,
-        profile,
-        apiKey,
-        'saveUserSuccessful',
-        'saveUserError',
-        setIsFetching,
-    );
-
 export const saveCurrentUserProFile = profile => dispatch =>
     saveAction(
         dispatch,
@@ -85,27 +73,4 @@ export const saveCurrentUserProFile = profile => dispatch =>
         setIsFetching,
         undefined,
         setCurrentUser,
-    );
-
-export const createUserProFile = profile => dispatch =>
-    createAction(
-        dispatch,
-        profile,
-        apiKey,
-        'saveUserSuccessful',
-        'saveUserError',
-        setIsFetching,
-    );
-
-export const deleteUser = (profile, params) => dispatch =>
-    deleteAction(
-        dispatch,
-        profile,
-        apiKey,
-        setUsersProfiles,
-        'deleteUserSuccessful',
-        'deleteUserError',
-        apiKey,
-        params,
-        setIsFetching,
     );

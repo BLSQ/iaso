@@ -64,23 +64,6 @@ export const lqasNfmKeys = [
     'Child_is_a_visitor',
 ];
 
-export const caregiverSourceInfoKeys = [
-    'caregivers_informed',
-    'TV',
-    'Radio',
-    'Others',
-    'Gong_gong',
-    'Mob_VanPA',
-    'H2H_Mobilizer',
-    'IEC_Materials',
-    'Volunteers',
-    'Health_worker',
-    'Opinion_leader',
-    'Com_Info_centre',
-    'Religious_leader',
-    'MobileMessaging_SocialMedia',
-];
-
 // keys of reasons for children not fingermarked in IM
 export const ImNfmKeys = [
     'Tot_child_Absent_HH',
@@ -91,3 +74,12 @@ export const ImNfmKeys = [
     'Tot_child_Others_HH',
     'Tot_child_VaccinatedRoutine',
 ];
+export const imBarColorTresholds = {
+    ok: 95,
+    warning: 90,
+};
+
+export const lqasBarColorTresholds = {
+    ok: 80,
+    warning: 50,
+};

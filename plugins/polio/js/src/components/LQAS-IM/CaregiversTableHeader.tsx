@@ -11,21 +11,24 @@ import { useConvertedLqasImData } from '../../pages/IM/requests';
 type Props = {
     campaign?: string;
     round: RoundString;
+    country?: number;
 };
 
 export const CaregiversTableHeader: FunctionComponent<Props> = ({
     campaign,
     round,
+    country,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { data } = useConvertedLqasImData('lqas');
-    const dataForRound = data && campaign ? data[campaign][round] : [];
+    const { data } = useConvertedLqasImData('lqas', country);
+    const dataForRound =
+        data && campaign && data[campaign] ? data[campaign][round] : [];
     return (
         <Box display="flex" justifyContent="space-between">
             <Typography variant="h6">
                 {`${formatMessage(
-                    MESSAGES.numberCaregiversInformed,
-                )}: ${totalCaregiversInformed(dataForRound)}`}
+                    MESSAGES.totalCaregiversSurveyed,
+                )}: ${totalCaregivers(dataForRound)}`}
             </Typography>
             <Typography variant="h6">
                 {`${formatMessage(

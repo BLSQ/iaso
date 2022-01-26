@@ -91,7 +91,7 @@ const InstancesTopBar = ({
             });
             handleChangeVisibleColmuns(cols);
         }
-    }, [instances]);
+    }, [instances, possibleFields]);
 
     let title = formatMessage(MESSAGES.titleMulti);
     if (formIds?.length === 1) {

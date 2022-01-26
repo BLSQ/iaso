@@ -105,6 +105,10 @@ class Round(models.Model):
     lqas_district_passing = models.IntegerField(null=True, blank=True)
     lqas_district_failing = models.IntegerField(null=True, blank=True)
 
+    # Preparedness
+    preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
+    preparedness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
+
 
 class Campaign(SoftDeletableModel):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
@@ -270,8 +274,12 @@ class Campaign(SoftDeletableModel):
     )
     payment_mode = models.CharField(max_length=10, choices=PAYMENT, null=True, blank=True)
     # Rounds
-    round_one = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_one", null=True, blank=True)
-    round_two = models.OneToOneField(Round, on_delete=models.PROTECT, related_name="round_two", null=True, blank=True)
+    round_one = models.OneToOneField(
+        Round, on_delete=models.PROTECT, related_name="campaign_round_one", null=True, blank=True
+    )
+    round_two = models.OneToOneField(
+        Round, on_delete=models.PROTECT, related_name="campaign_round_two", null=True, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

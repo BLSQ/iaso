@@ -8,6 +8,7 @@ import {
     Tooltip,
     ResponsiveContainer,
     Cell,
+    LabelList,
 } from 'recharts';
 import { blue } from '@material-ui/core/colors';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
@@ -18,12 +19,17 @@ import {
 } from '../../constants/types';
 import { BAR_HEIGHT } from '../PercentageBarChart/constants';
 import {
+    convertStatToPercent,
     formatLqasDataForNFMChart,
     lqasNfmTooltipFormatter,
+    sumChildrenChecked,
+    sumChildrenCheckedLqas,
 } from '../../pages/LQAS/utils';
 import { formatImDataForNFMChart } from '../../pages/IM/utils';
 import MESSAGES from '../../constants/messages';
 import { NfmCustomTick } from './NfmCustomTick';
+import { customLabelHorizontal } from '../PercentageBarChart/utils';
+import { NoData } from './NoData';
 
 type Props = {
     // eslint-disable-next-line react/require-default-props
@@ -48,6 +54,7 @@ export const NoFingerMark: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
+    const dataIsEmpty = data ? Object.keys(data).length === 0 : true;
 
     const formattedData: BarChartData[] = useMemo(() => {
         if (type === 'IM') {
@@ -70,16 +77,18 @@ export const NoFingerMark: FunctionComponent<Props> = ({
     }, [data, campaign, round, formatMessage, type]);
 
     const childrenNotMarked = formattedData
-        .map(nfmData => nfmData.value)
+        .map(nfmData => nfmData.absValue)
         .reduce((total, current) => total + current, 0);
 
-    const roundText = round === 'round_1' ? 'round 1' : 'round 2';
+    const childrenChecked: number =
+        type === 'LQAS'
+            ? sumChildrenCheckedLqas(round, data, campaign)
+            : sumChildrenChecked(round, data, campaign);
 
-    const yAxisLimit: number =
-        Object.values(formattedData)
-            .map(dataEntry => dataEntry.value)
-            .sort((a, b) => (a < b ? 1 : 0))[0] || 10;
-
+    const ratioUnmarked = convertStatToPercent(
+        childrenNotMarked,
+        childrenChecked,
+    );
     // Force render to avoid visual bug when data has length of 0
     useEffect(() => {
         setRenderCount(count => count + 1);
@@ -87,13 +96,14 @@ export const NoFingerMark: FunctionComponent<Props> = ({
     return (
         <>
             {isLoading && <LoadingSpinner />}
-            {!isLoading && showChart && (
+            {!isLoading && showChart && dataIsEmpty && <NoData />}
+            {!isLoading && showChart && !dataIsEmpty && (
                 <>
                     <Box>
                         <Typography variant="h6">
                             {`${formatMessage(
                                 MESSAGES.childrenNoMark,
-                            )}, ${roundText}: ${childrenNotMarked}`}
+                            )}: ${ratioUnmarked}`}
                         </Typography>
                     </Box>
                     <Box key={`${chartKey}${renderCount}`}>
@@ -104,7 +114,7 @@ export const NoFingerMark: FunctionComponent<Props> = ({
                                 margin={{ left: 50 }}
                                 barSize={BAR_HEIGHT}
                             >
-                                <YAxis domain={[0, yAxisLimit]} type="number" />
+                                <YAxis domain={[0, 100]} type="number" />
                                 <XAxis
                                     type="category"
                                     dataKey="name"
@@ -126,6 +136,10 @@ export const NoFingerMark: FunctionComponent<Props> = ({
                                             />
                                         );
                                     })}
+                                    <LabelList
+                                        dataKey="value"
+                                        content={customLabelHorizontal}
+                                    />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>

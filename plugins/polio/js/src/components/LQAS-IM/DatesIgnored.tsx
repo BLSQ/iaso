@@ -14,7 +14,9 @@ type Props = {
 export const DatesIgnored: FunctionComponent<Props> = ({ data, campaign }) => {
     const { formatMessage } = useSafeIntl();
     const currentCountryName =
-        data && campaign ? data.stats[campaign]?.country_name : null;
+        data && campaign && data[campaign]
+            ? data.stats[campaign]?.country_name
+            : null;
 
     const datesIgnored = currentCountryName
         ? data?.day_country_not_found[currentCountryName] ?? {}

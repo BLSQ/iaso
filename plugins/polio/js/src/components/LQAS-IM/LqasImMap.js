@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { oneOf, string, array, number } from 'prop-types';
-import { Box } from '@material-ui/core';
+import { Box, Paper } from '@material-ui/core';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../MapComponent/MapLegend';
 import { MapLegendContainer } from '../MapComponent/MapLegendContainer';
-import { makePopup, makeAccordionData } from '../../utils/LqasIm.tsx';
-import { LqasImMapHeader } from './LqasImMapHeader.tsx';
+import { makePopup } from '../../utils/LqasIm.tsx';
 import {
     determineStatusForDistrict as imDistrictStatus,
     makeImMapLegendItems,
@@ -23,7 +22,7 @@ import { getScopeStyle, findDataForShape, findScope } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
 import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
-import { AccordionMapLegend } from '../MapComponent/AccordionMapLegend.tsx';
+import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer.tsx';
 
 export const LqasImMap = ({
     type,
@@ -34,8 +33,11 @@ export const LqasImMap = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
-    const { data, isLoading } = useConvertedLqasImData(type);
-    const { data: shapes = [] } = useGetGeoJson(countryId, 'DISTRICT');
+    const { data, isFetching } = useConvertedLqasImData(type, countryId);
+    const { data: shapes = [], isFetching: isFetchingGeoJson } = useGetGeoJson(
+        countryId,
+        'DISTRICT',
+    );
 
     const scope = findScope(selectedCampaign, campaigns, shapes);
 
@@ -53,15 +55,6 @@ export const LqasImMap = ({
             round,
         );
     }, [data, selectedCampaign, round, formatMessage, type]);
-
-    const accordionItems = useMemo(() => {
-        return makeAccordionData({
-            type,
-            data,
-            round,
-            campaign: selectedCampaign,
-        });
-    }, [data, type, round, selectedCampaign]);
 
     const getShapeStyles = useCallback(
         shape => {
@@ -94,44 +87,42 @@ export const LqasImMap = ({
 
     return (
         <>
-            {isLoading && <LoadingSpinner />}
-            {!isLoading && (
-                <>
-                    <LqasImMapHeader round={round} />
-                    <Box position="relative">
-                        <MapLegendContainer>
-                            <MapLegend
-                                title={title}
-                                legendItems={legendItems}
-                                width="lg"
-                            />
-                            {type !== 'lqas' && (
-                                <AccordionMapLegend
-                                    title={MESSAGES.collectionStats}
-                                    noDataMsg={MESSAGES.noDataFound}
-                                    data={accordionItems}
-                                    defaultExpanded
-                                    width="lg"
-                                />
-                            )}
-                        </MapLegendContainer>
-                        <MapComponent
-                            // Use the key to force render
-                            key={`LQASIMMap${round}${renderCount}-${type}`}
-                            name={`LQASIMMap${round}-${type}`}
-                            mainLayer={shapes}
-                            onSelectShape={() => null}
-                            getMainLayerStyle={getShapeStyles}
-                            tooltipLabels={{
-                                main: 'District',
-                                background: 'Region',
-                            }}
-                            makePopup={makePopup(data, round, selectedCampaign)}
-                            height={600}
+            <Box position="relative">
+                <Paper elevation={2}>
+                    <MapLegendContainer>
+                        <MapLegend
+                            title={title}
+                            legendItems={legendItems}
+                            width="lg"
                         />
-                    </Box>
-                </>
-            )}
+                    </MapLegendContainer>
+                    {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
+                    {((isFetching && isFetchingGeoJson) ||
+                        isFetchingGeoJson) && (
+                        <LoadingSpinner fixed={false} absolute />
+                    )}
+                    <MapComponent
+                        // Use the key to force render
+                        key={`LQASIMMap${round}${renderCount}-${type}`}
+                        name={`LQASIMMap${round}-${type}`}
+                        mainLayer={shapes}
+                        onSelectShape={() => null}
+                        getMainLayerStyle={getShapeStyles}
+                        tooltipLabels={{
+                            main: 'District',
+                            background: 'Region',
+                        }}
+                        makePopup={makePopup(data, round, selectedCampaign)}
+                        height={600}
+                    />
+                    {selectedCampaign && (
+                        <ScopeAndDNFDisclaimer
+                            type={type}
+                            campaign={selectedCampaign}
+                        />
+                    )}
+                </Paper>
+            </Box>
         </>
     );
 };

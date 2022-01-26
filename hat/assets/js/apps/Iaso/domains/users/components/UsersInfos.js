@@ -10,7 +10,7 @@ const UsersInfos = ({ setFieldValue, currentUser, initialData }) => (
     <>
         <InputComponent
             keyValue="user_name"
-            onChange={(key, value) => setFieldValue(key, value)}
+            onChange={(key, value) => setFieldValue(key, value.trim())}
             value={currentUser.user_name.value}
             errors={currentUser.user_name.errors}
             type="text"
@@ -43,7 +43,7 @@ const UsersInfos = ({ setFieldValue, currentUser, initialData }) => (
         />
         <InputComponent
             keyValue="password"
-            onChange={(key, value) => setFieldValue(key, value)}
+            onChange={(key, value) => setFieldValue(key, value.trim())}
             value={currentUser.password.value}
             errors={currentUser.password.errors}
             type="password"

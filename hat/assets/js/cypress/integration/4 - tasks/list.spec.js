@@ -9,6 +9,7 @@ const baseUrl = `${siteBaseUrl}/dashboard/settings/tasks`;
 describe('Tasks', () => {
     beforeEach(() => {
         cy.login();
+        cy.intercept('GET', '/sockjs-node/**');
         cy.intercept('GET', '/api/profiles/me/**', {
             fixture: 'profiles/me/superuser.json',
         });

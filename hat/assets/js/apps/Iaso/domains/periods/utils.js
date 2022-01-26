@@ -5,7 +5,6 @@ import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
-    PERIOD_TYPE_YEAR,
     PERIOD_TYPE_SIX_MONTH,
     QUARTERS,
     SEMESTERS,
@@ -118,35 +117,41 @@ export const getPeriodPickerString = (periodType, period, value) => {
             return period.year ? `${period.year}` : null;
     }
 };
+
+const getMonthRangeString = (monthRange, formatMessage) => {
+    if (monthRange.length === 1) {
+        return formatMessage(MONTHS[monthRange[0]]);
+    }
+    const firstMonth = MONTHS[monthRange[0]];
+    const lastMonth = MONTHS[monthRange[monthRange.length - 1]];
+    return `${formatMessage(firstMonth)} - ${formatMessage(lastMonth)}`;
+};
+
 export const getPrettyPeriod = (period, formatMessage, currentUser) => {
     if (!period) return textPlaceholder;
     const periodClass = new Period(period);
-    if (periodClass.periodType === PERIOD_TYPE_YEAR) {
-        return period;
+    const monthRangeString = getMonthRangeString(
+        periodClass.monthRange,
+        formatMessage,
+    );
+    const prettyPeriod = `${period.substring(4, 6)}-${periodClass.year}`;
+    switch (periodClass.periodType) {
+        case PERIOD_TYPE_DAY: {
+            return `${prettyPeriod}`;
+        }
+        case PERIOD_TYPE_MONTH:
+        case PERIOD_TYPE_SIX_MONTH: {
+            return `${prettyPeriod} (${monthRangeString})`;
+        }
+        case PERIOD_TYPE_QUARTER: {
+            if (hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME)) {
+                return `${monthRangeString} ${periodClass.year}`;
+            }
+            return `${prettyPeriod} (${monthRangeString})`;
+        }
+        default:
+            return period;
     }
-    let prefix = `${period.substring(4, 6)}-`;
-    if (
-        hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME) &&
-        periodClass.periodType === PERIOD_TYPE_QUARTER
-    ) {
-        prefix = '';
-    }
-    const prettyPeriod = `${prefix}${periodClass.year}`;
-
-    let monthRangeString;
-    if (
-        formatMessage &&
-        periodClass.periodType !== PERIOD_TYPE_DAY &&
-        periodClass.periodType !== PERIOD_TYPE_MONTH
-    ) {
-        const { monthRange } = periodClass;
-        const firstMonth = MONTHS[monthRange[0]];
-        const lastMonth = MONTHS[monthRange[monthRange.length - 1]];
-        monthRangeString = ` (${formatMessage(firstMonth)}-${formatMessage(
-            lastMonth,
-        )})`;
-    }
-    return `${prettyPeriod}${monthRangeString || ''}`;
 };
 
 export const usePrettyPeriod = () => {

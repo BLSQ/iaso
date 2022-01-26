@@ -4,6 +4,10 @@ import SvgIcon from '@material-ui/core/SvgIcon';
 import { withStyles } from '@material-ui/core';
 
 const styles = theme => ({
+    root: {
+        height: 35,
+        width: 90,
+    },
     text: {
         fontFamily: '"DINAlternate-Bold", "DIN Alternate", sans-serif',
         fontWeight: '700',
@@ -19,12 +23,13 @@ const styles = theme => ({
 });
 
 const LogoSvg = props => {
+    const { classes } = props;
     const finalProps = {
         ...props,
         viewBox: '0 0 485 189',
+        className: classes.root,
     };
     delete finalProps.classes;
-    const { classes } = props;
     return (
         <SvgIcon {...finalProps}>
             <g transform="matrix(1,0,0,1,-2590,-1245)">

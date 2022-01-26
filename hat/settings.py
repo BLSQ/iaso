@@ -177,6 +177,9 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "hat.common.context_processors.appversions",
                 "hat.common.context_processors.environment",
+                "hat.common.context_processors.app_title",
+                "hat.common.context_processors.favicon_path",
+                "hat.common.context_processors.logo_path",
             ]
         },
     }
@@ -383,3 +386,9 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_PORT = os.environ.get("EMAIL_PORT", "8025")
 EMAIL_USE_TLS = os.environ.get("EMAIL_TLS", "true") == "true"
+
+
+# Application customizations
+APP_TITLE = os.environ.get("APP_TITLE", "Iaso")
+FAVICON_PATH = os.environ.get("FAVICON_PATH", "images/iaso-favicon.png")
+LOGO_PATH = os.environ.get("LOGO_PATH", "images/logo.png")

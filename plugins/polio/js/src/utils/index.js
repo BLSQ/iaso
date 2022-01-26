@@ -90,3 +90,8 @@ export const convertWidth = width => {
     if (width === 'xl') return '200px';
     return '100px';
 };
+
+export const floatToPercentString = (num = 0) => {
+    if (Number.isSafeInteger(num)) return `${parseInt(num, 10)}%`;
+    return `${Math.round(num)}%`;
+};

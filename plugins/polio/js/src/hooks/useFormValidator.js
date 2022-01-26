@@ -39,13 +39,13 @@ const useRoundShape = () => {
         cost: number().nullable().min(0).integer(),
         lqas_district_passing: number()
             .nullable()
-            .positive()
             .integer()
+            .min(0)
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         lqas_district_failing: number()
             .nullable()
-            .positive()
             .integer()
+            .min(0)
             .typeError(formatMessage(MESSAGES.positiveInteger)),
     });
 };

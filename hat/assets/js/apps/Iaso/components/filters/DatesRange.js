@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
@@ -7,7 +7,11 @@ import { FormControl, Grid, useTheme, useMediaQuery } from '@material-ui/core';
 import { injectIntl, IconButton } from 'bluesquare-components';
 import EventIcon from '@material-ui/icons/Event';
 import MESSAGES from './messages';
-import { getUrlParamDateObject, dateFormat } from '../../utils/dates';
+import {
+    getUrlParamDateObject,
+    dateFormat,
+    getLocaleDateFormat,
+} from '../../utils/dates.ts';
 
 const useStyles = makeStyles(theme => ({
     formControl: {
@@ -59,6 +63,8 @@ const DatesRange = ({
     lg,
 }) => {
     const classes = useStyles();
+    const [from, setFrom] = useState(dateFrom);
+    const [to, setTo] = useState(dateTo);
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
     return (
         <Grid container spacing={useCurrentBreakPointSpacing(xs, sm, md, lg)}>
@@ -74,27 +80,30 @@ const DatesRange = ({
                                 : getUrlParamDateObject(dateTo)
                         }
                         InputLabelProps={{
-                            shrink: Boolean(dateFrom),
+                            shrink: Boolean(from),
                         }}
                         KeyboardButtonProps={{
                             size: 'small',
                         }}
                         keyboardIcon={<EventIcon size="small" />}
-                        format="L"
+                        format={getLocaleDateFormat('L')}
                         label={formatMessage(labelFrom)}
                         helperText=""
                         inputVariant="outlined"
                         value={
-                            dateFrom === '' || dateFrom === null
+                            from === '' || from === null
                                 ? null
-                                : getUrlParamDateObject(dateFrom)
+                                : getUrlParamDateObject(from)
                         }
-                        onChange={date =>
+                        onChange={date => {
+                            setFrom(date);
                             onChangeDate(
                                 'dateFrom',
-                                date ? date.format(dateFormat) : null,
-                            )
-                        }
+                                date && date.isValid()
+                                    ? date.format(dateFormat)
+                                    : undefined,
+                            );
+                        }}
                     />
                     {dateFrom && (
                         <span className={classes.clearDateButton}>
@@ -102,7 +111,10 @@ const DatesRange = ({
                                 size="small"
                                 icon="clear"
                                 tooltipMessage={MESSAGES.clear}
-                                onClick={() => onChangeDate('dateFrom', null)}
+                                onClick={() => {
+                                    setFrom('');
+                                    onChangeDate('dateFrom', undefined);
+                                }}
                             />
                         </span>
                     )}
@@ -121,26 +133,29 @@ const DatesRange = ({
                                 : getUrlParamDateObject(dateFrom)
                         }
                         InputLabelProps={{
-                            shrink: Boolean(dateTo),
+                            shrink: Boolean(to),
                         }}
                         KeyboardButtonProps={{
                             size: 'small',
                         }}
                         keyboardIcon={<EventIcon size="small" />}
-                        format="L"
+                        format={getLocaleDateFormat('L')}
                         label={formatMessage(labelTo)}
                         helperText=""
                         value={
-                            dateTo === '' || dateTo === null
+                            to === '' || to === null
                                 ? null
-                                : getUrlParamDateObject(dateTo)
+                                : getUrlParamDateObject(to)
                         }
-                        onChange={date =>
+                        onChange={date => {
+                            setTo(date);
                             onChangeDate(
                                 'dateTo',
-                                date ? date.format(dateFormat) : null,
-                            )
-                        }
+                                date && date.isValid()
+                                    ? date.format(dateFormat)
+                                    : undefined,
+                            );
+                        }}
                     />
                     {dateTo && (
                         <span className={classes.clearDateButton}>
@@ -148,7 +163,10 @@ const DatesRange = ({
                                 size="small"
                                 icon="clear"
                                 tooltipMessage={MESSAGES.clear}
-                                onClick={() => onChangeDate('dateTo', null)}
+                                onClick={() => {
+                                    setTo('');
+                                    onChangeDate('dateTo', undefined);
+                                }}
                             />
                         </span>
                     )}

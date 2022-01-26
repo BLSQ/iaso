@@ -21,7 +21,8 @@ export enum NfmRoundString {
 
 export type BarChartData = {
     name:string,
-    value:number
+    value:number, // value as percentage
+    absValue:number // absolute number
 }
 
 export type IntlMessage = {

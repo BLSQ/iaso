@@ -3,10 +3,7 @@ from logging import getLogger
 
 from django.core.management.base import BaseCommand
 
-from plugins.polio.models import Campaign, Preparedness, SpreadSheetImport
-from plugins.polio.preparedness.parser import (
-    get_preparedness,
-)
+from plugins.polio.models import Campaign, SpreadSheetImport, Round
 
 logger = getLogger(__name__)
 
@@ -19,45 +16,25 @@ class Command(BaseCommand):
 
     def handle(self, campaigns, **options):
         started_at = datetime.now()
-        campaigns_with_spreadsheet = Campaign.objects.only("id", "preperadness_spreadsheet_url").filter(
-            preperadness_spreadsheet_url__isnull=False
-        )
-        if campaigns:
-            campaigns_with_spreadsheet = campaigns_with_spreadsheet.filter(obr_name__in=campaigns)
-        campaigns_with_spreadsheet.update(preperadness_sync_status="QUEUED")
-        logger.info(campaigns_with_spreadsheet)
-        for campaign in campaigns_with_spreadsheet:
-            campaign.preperadness_sync_status = "ONGOING"
-            campaign.save()
+        round_qs = Round.objects.filter(preparedness_spreadsheet_url__isnull=False)
+        round_qs.update(preparedness_sync_status="QUEUED")
+        logger.info(round_qs)
+        for round in round_qs:
+            round.preparedness_sync_status = "ONGOING"
+            round.save()
 
-            print(f"Campaign {campaign.pk} refresh started: {campaign.preperadness_spreadsheet_url}")
+            print(f"Round {round.pk} refresh started: {round.preparedness_spreadsheet_url}")
             try:
-                # Separate import from parsing
-                ssi = SpreadSheetImport.create_for_url(campaign.preperadness_spreadsheet_url)
+                ssi = SpreadSheetImport.create_for_url(round.preparedness_spreadsheet_url)
                 cs = ssi.cached_spreadsheet
                 logger.info(f"using spread: {cs.title}")
-
-                try:
-                    preparedness_data = get_preparedness(cs)
-                    preparedness = Preparedness.objects.create(
-                        campaign=campaign,
-                        spreadsheet_url=campaign.preperadness_spreadsheet_url,
-                        national_score=preparedness_data["totals"]["national_score"],
-                        district_score=preparedness_data["totals"]["district_score"],
-                        regional_score=preparedness_data["totals"]["regional_score"],
-                        payload=preparedness_data,
-                    )
-                    print(f"Campaign {campaign.obr_name} refreshed")
-                except Exception as e:
-                    logger.exception(f"Campaign {campaign.obr_name} refresh failed")
-
-                campaign.preperadness_sync_status = "FINISHED"
-                campaign.save()
+                round.preparedness_sync_status = "FINISHED"
+                round.save()
             except Exception as e:
-                logger.error(f"Campaign {campaign.obr_name} refresh failed")
+                logger.error(f"Round {round} refresh failed")
                 logger.exception(e)
-                campaign.preperadness_sync_status = "FAILURE"
-                campaign.save()
+                round.preparedness_sync_status = "FAILURE"
+                round.save()
 
         campaigns_with_surge = Campaign.objects.exclude(surge_spreadsheet_url__isnull=True)
         surge_urls = [c.surge_spreadsheet_url for c in campaigns_with_surge]

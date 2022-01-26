@@ -15,13 +15,13 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
         border-radius: 4px;
         font-family: $body-font-family;
         font-size: $font-size-standard !important;
-        color: $dark-blue;
+        color: $text-color;
         line-height: 1;
 
         &:focus {
             outline: 0;
-            border: 1px solid $blue;
-            box-shadow: $input-inner-shadow, 0 0 1px 1px rgba($dark-blue, 0.15);
+            border: 1px solid $primary;
+            box-shadow: $input-inner-shadow, 0 0 1px 1px rgba($text-color, 0.15);
         }
 
         &:disabled {

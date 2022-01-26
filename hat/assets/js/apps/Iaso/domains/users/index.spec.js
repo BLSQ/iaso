@@ -5,6 +5,7 @@ import ConnectedUsers from './index';
 
 import { mockGetRequestsList } from '../../../../test/utils/requests';
 import { renderWithStore } from '../../../../test/utils/redux';
+import { withQueryClientProvider } from '../../../../test/utils';
 
 const requests = [
     {
@@ -15,7 +16,7 @@ const requests = [
     },
 ];
 
-describe('Forms connected component', () => {
+describe('Users connected component', () => {
     before(() => {
         nock.cleanAll();
         nock.abortPendingRequests();
@@ -24,7 +25,9 @@ describe('Forms connected component', () => {
 
     it('mount properly', () => {
         const connectedWrapper = mount(
-            renderWithStore(<ConnectedUsers params={{}} />),
+            renderWithStore(
+                withQueryClientProvider(<ConnectedUsers params={{}} />),
+            ),
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });

@@ -78,7 +78,16 @@ const routes = [
         baseUrl: LQAS_BASE_URL,
         component: props => <Lqas {...props} />,
         permissions: ['iaso_polio'],
-        params: [],
+        params: [
+            {
+                isRequired: false,
+                key: 'campaign',
+            },
+            {
+                isRequired: false,
+                key: 'country',
+            },
+        ],
     },
     {
         baseUrl: IM_OHH,
@@ -89,19 +98,45 @@ const routes = [
                 isRequired: false,
                 key: 'imType',
             },
+            {
+                isRequired: false,
+                key: 'campaign',
+            },
+            {
+                isRequired: false,
+                key: 'country',
+            },
         ],
     },
     {
         baseUrl: IM_IHH,
         component: props => <ImStats {...props} imType="imIHH" />,
         permissions: ['iaso_polio'],
-        params: [],
+        params: [
+            {
+                isRequired: false,
+                key: 'campaign',
+            },
+            {
+                isRequired: false,
+                key: 'country',
+            },
+        ],
     },
     {
         baseUrl: IM_GLOBAL,
         component: props => <ImStats {...props} imType="imGlobal" />,
         permissions: ['iaso_polio'],
-        params: [],
+        params: [
+            {
+                isRequired: false,
+                key: 'campaign',
+            },
+            {
+                isRequired: false,
+                key: 'country',
+            },
+        ],
     },
     {
         baseUrl: CONFIG_BASE_URL,

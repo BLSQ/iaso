@@ -355,7 +355,6 @@ const OrgUnits = props => {
 
     return (
         <>
-            {(fetchingList || !shouldRenderFilters) && <LoadingSpinner />}
             <OrgUnitsMultiActionsDialog
                 open={multiActionPopupOpen}
                 params={params}
@@ -363,6 +362,9 @@ const OrgUnits = props => {
                 fetchOrgUnits={() => fetchOrgUnits(false)}
                 selection={selection}
             />
+            {(fetchingList || !shouldRenderFilters) && (
+                <LoadingSpinner fixed={false} absolute />
+            )}
             <TopBar title={formatMessage(MESSAGES.title)}>
                 <DynamicTabs
                     deleteMessage={MESSAGES.delete}

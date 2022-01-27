@@ -14,7 +14,7 @@ import {
     Table,
     LoadingSpinner,
     useSafeIntl,
-    useDidMountEffect,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 
 import { fetchSources, fetchOrgUnitsList } from '../../utils/requests';
@@ -267,13 +267,13 @@ const OrgUnits = props => {
         onSearch({ ...newParams, page: 1 });
     };
 
-    useDidMountEffect(() => {
+    useSkipEffectOnMount(() => {
         if (!filtersUpdated) {
             fetchOrgUnits();
         }
     }, [params.pageSize, params.order, params.page]);
 
-    useDidMountEffect(() => {
+    useSkipEffectOnMount(() => {
         if (filtersUpdated) {
             fetchOrgUnits();
         }

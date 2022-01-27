@@ -68,9 +68,9 @@ const OrgUnitsFiltersComponent = ({
     currentTab,
     onSearch,
 }) => {
-    const initalSearches = [...decodeSearch(params.searches)];
+    const decodedSearches = [...decodeSearch(params.searches)];
     const [searchParams, setSearchPrams] = useState(
-        initalSearches[searchIndex],
+        decodedSearches[searchIndex] ?? {},
     );
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
@@ -124,17 +124,16 @@ const OrgUnitsFiltersComponent = ({
                 dispatch(setOrgUnitsLocations(orgUnitsLocations));
             }, 100);
         }
-        const searches = [...decodeSearch(params.searches)];
 
-        searches[searchIndex] = {
+        decodedSearches[searchIndex] = {
             ...searchParams,
             [urlKey]: value,
         };
         if (urlKey === 'hasInstances' && value === 'false') {
-            delete searches[searchIndex].dateFrom;
-            delete searches[searchIndex].dateTo;
+            delete decodedSearches[searchIndex].dateFrom;
+            delete decodedSearches[searchIndex].dateTo;
         }
-        setSearchPrams(searches[searchIndex]);
+        setSearchPrams(decodedSearches[searchIndex]);
     };
 
     const handleSearchFilterChange = (value, urlKey) => {

@@ -124,6 +124,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
             # validate org_unit_types against projects
             allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
+            print(allowed_org_unit_types)
             if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
                 raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
 

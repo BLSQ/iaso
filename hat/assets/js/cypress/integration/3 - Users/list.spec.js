@@ -24,6 +24,7 @@ const goToPage = (
 ) => {
     cy.login();
     interceptFlag = false;
+    cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
     const options = {
         method: 'GET',

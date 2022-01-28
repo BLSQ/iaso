@@ -142,7 +142,13 @@ const Dashboard = ({ router }) => {
         delete newParams.page;
         delete newParams.order;
         setResetPageToOne(convertObjectToString(newParams));
-    }, [tableParams]);
+    }, [
+        tableParams.pageSize,
+        tableParams.countries,
+        tableParams.search,
+        tableParams.r1StartFrom,
+        tableParams.r1StartTo,
+    ]);
 
     const columns = useMemo(
         () => [

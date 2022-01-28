@@ -135,27 +135,6 @@ describe('Forms config', () => {
             });
         });
         describe('action column', () => {
-            it('should not display action button if instances_count = 0 and user only has submissions permission', () => {
-                const tempForm = { ...fakeForm };
-
-                deleteFormSpy = sinon.spy();
-                columns = makeColumns({
-                    user: userWithSubmissionsPermission,
-                });
-                tempForm.instances_count = 0;
-                actionColumn = columns[columns.length - 1];
-                wrapper = shallow(actionColumn.Cell(colOriginal(tempForm)));
-
-                const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
-                expect(redEyeIcon).to.have.lengthOf(0);
-                const editIcon = wrapper.find('[icon="edit"]');
-                expect(editIcon).to.have.lengthOf(0);
-                const dhisIcon = wrapper.find('[icon="dhis"]');
-                expect(dhisIcon).to.have.lengthOf(0);
-                const deleteAction = wrapper.find(DeleteDialog);
-                expect(deleteAction).to.have.lengthOf(0);
-                expect(wrapper.find(IconButton)).to.have.lengthOf(0);
-            });
             it("should allow all actions except see submissions when user only has 'forms' permission", () => {
                 const tempForm = { ...fakeForm };
 

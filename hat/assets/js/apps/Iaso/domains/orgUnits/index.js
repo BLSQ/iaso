@@ -259,6 +259,9 @@ const OrgUnits = props => {
         handleTableSelection('reset');
         setResetTablePage(convertObjectToString(newParams));
         dispatch(redirectTo(baseUrl, newParams));
+        if (!filtersUpdated && !params.searchActive) {
+            fetchOrgUnits();
+        }
     };
 
     const onTabsDeleted = newParams => {
@@ -266,6 +269,10 @@ const OrgUnits = props => {
         dispatch(setFiltersUpdated(true));
         onSearch({ ...newParams, page: 1 });
     };
+
+    useEffect(() => {
+        dispatch(setFiltersUpdated(false));
+    }, []);
 
     useSkipEffectOnMount(() => {
         if (!filtersUpdated) {
@@ -278,6 +285,7 @@ const OrgUnits = props => {
             fetchOrgUnits();
         }
     }, [searches]);
+
     const handleChangeTab = newtab => {
         setTab(newtab);
         const newParams = {

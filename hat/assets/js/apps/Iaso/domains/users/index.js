@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles, Box, Grid } from '@material-ui/core';
@@ -9,6 +9,7 @@ import {
     LoadingSpinner,
     AddButton as AddButtonComponent,
     useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -24,6 +25,7 @@ import usersTableColumns from './config';
 import MESSAGES from './messages';
 
 import { redirectTo } from '../../routing/actions';
+import { convertObjectToString } from '../../utils';
 
 const baseUrl = baseUrls.users;
 
@@ -34,6 +36,12 @@ const useStyles = makeStyles(theme => ({
 const Users = ({ params }) => {
     const classes = useStyles();
     const currentUser = useSelector(state => state.users.current);
+    const [resetPageToOne, setResetPageToOne] = useState(
+        convertObjectToString({
+            pageSize: params.pageSize,
+            search: params.search,
+        }),
+    );
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
 
@@ -42,6 +50,15 @@ const Users = ({ params }) => {
         useDeleteProfile();
     const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
     const isLoading = fetchingProfiles || deletingProfile || savingProfile;
+
+    useSkipEffectOnMount(() => {
+        setResetPageToOne(
+            convertObjectToString({
+                pageSize: params.pageSize,
+                search: params.search,
+            }),
+        );
+    }, [params.pageSize, params.search]);
 
     return (
         <>
@@ -84,6 +101,7 @@ const Users = ({ params }) => {
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
+                    resetPageToOne={resetPageToOne}
                     redirectTo={(b, p) => dispatch(redirectTo(b, p))}
                 />
             </Box>

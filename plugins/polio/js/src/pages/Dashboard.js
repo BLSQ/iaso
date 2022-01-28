@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import {
     IconButton as IconButtonComponent,
     useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
@@ -13,7 +14,7 @@ import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { getApiParamDateString } from 'Iaso/utils/dates';
+import { getApiParamDateString } from 'Iaso/utils/dates.ts';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateEditDialog';
 import { PageAction } from '../components/Buttons/PageAction';
@@ -26,6 +27,7 @@ import MESSAGES from '../constants/messages';
 
 import ImportLineListDialog from '../components/ImportLineListDialog';
 import { genUrl } from '../utils/routing';
+import { convertObjectToString } from '../utils';
 import { DASHBOARD_BASE_URL } from '../constants/routes';
 
 const DEFAULT_PAGE_SIZE = 40;
@@ -36,6 +38,7 @@ const Dashboard = ({ router }) => {
     const { params } = router;
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
+
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
@@ -55,6 +58,8 @@ const Dashboard = ({ router }) => {
             r1StartTo: getApiParamDateString(params.r1StartTo),
         };
     }, [params]);
+
+    const [resetPageToOne, setResetPageToOne] = useState('');
 
     const { query, exportToCSV } = useGetCampaigns(tableParams);
 
@@ -129,6 +134,21 @@ const Dashboard = ({ router }) => {
             openCreateEditDialog(params.campaignId);
         }
     }, []);
+
+    useSkipEffectOnMount(() => {
+        const newParams = {
+            ...tableParams,
+        };
+        delete newParams.page;
+        delete newParams.order;
+        setResetPageToOne(convertObjectToString(tableParams.pageSize));
+    }, [
+        tableParams.pageSize,
+        tableParams.countries,
+        tableParams.search,
+        tableParams.r1StartFrom,
+        tableParams.r1StartTo,
+    ]);
 
     const columns = useMemo(
         () => [
@@ -233,6 +253,7 @@ const Dashboard = ({ router }) => {
                     extraProps={{
                         loading: isFetching,
                     }}
+                    resetPageToOne={resetPageToOne}
                 />
             </Box>
         </>

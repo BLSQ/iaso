@@ -91,7 +91,7 @@ export const convertWidth = width => {
     return '100px';
 };
 
-export const floatToPercentString = num => {
+export const floatToPercentString = (num = 0) => {
     if (Number.isSafeInteger(num)) return `${parseInt(num, 10)}%`;
-    return `${num.toFixed(2)}%`;
+    return `${Math.round(num)}%`;
 };

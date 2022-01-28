@@ -65,11 +65,13 @@ const OrgUnitsFiltersComponent = ({
     params,
     baseUrl,
     searchIndex,
-    onSearch,
     currentTab,
+    onSearch,
 }) => {
-    const initalSearches = [...decodeSearch(params.searches)];
-    const searchParams = initalSearches[searchIndex];
+    const decodedSearches = [...decodeSearch(params.searches)];
+    const [searchParams, setSearchPrams] = useState(
+        decodedSearches[searchIndex] ?? {},
+    );
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [fetchingGroups, setFetchingGroups] = useState(false);
@@ -122,22 +124,16 @@ const OrgUnitsFiltersComponent = ({
                 dispatch(setOrgUnitsLocations(orgUnitsLocations));
             }, 100);
         }
-        const searches = [...decodeSearch(params.searches)];
 
-        searches[searchIndex] = {
-            ...searches[searchIndex],
+        decodedSearches[searchIndex] = {
+            ...searchParams,
             [urlKey]: value,
         };
         if (urlKey === 'hasInstances' && value === 'false') {
-            delete searches[searchIndex].dateFrom;
-            delete searches[searchIndex].dateTo;
+            delete decodedSearches[searchIndex].dateFrom;
+            delete decodedSearches[searchIndex].dateTo;
         }
-
-        const tempParams = {
-            ...params,
-            searches: encodeUriSearches(searches),
-        };
-        dispatch(redirectTo(baseUrl, tempParams));
+        setSearchPrams(decodedSearches[searchIndex]);
     };
 
     const handleSearchFilterChange = (value, urlKey) => {
@@ -154,15 +150,13 @@ const OrgUnitsFiltersComponent = ({
 
     const handleSearch = () => {
         const searches = [...decodeSearch(params.searches)];
-        if (filtersUpdated) {
-            dispatch(setFiltersUpdated(false));
-            const tempParams = {
-                ...params,
-                searches: encodeUriSearches(searches),
-            };
-            dispatch(redirectTo(baseUrl, tempParams));
-        }
-        onSearch();
+        searches[searchIndex] = searchParams;
+        const tempParams = {
+            ...params,
+            page: 1,
+            searches: encodeUriSearches(searches),
+        };
+        onSearch(tempParams);
     };
 
     const handleLocationLimitChange = locationLimit => {
@@ -171,7 +165,7 @@ const OrgUnitsFiltersComponent = ({
             ...params,
             locationLimit,
         };
-        dispatch(redirectTo(baseUrl, tempParams));
+        onSearch(tempParams);
     };
     const currentColor = searchParams.color
         ? `#${searchParams.color}`
@@ -353,6 +347,7 @@ const OrgUnitsFiltersComponent = ({
                             (!filtersUpdated && Boolean(params.searchActive)) ||
                             hasLocationLimitError
                         }
+                        id="searchButton"
                         variant="contained"
                         className={classes.button}
                         color="primary"

@@ -1,11 +1,5 @@
 /* eslint-disable react/require-default-props */
-import {
-    Grid,
-    makeStyles,
-    Paper,
-    rgbToHex,
-    Typography,
-} from '@material-ui/core';
+import { Grid, makeStyles, Paper, Typography } from '@material-ui/core';
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { RoundString } from '../../constants/types';
@@ -18,6 +12,7 @@ type Props = {
     campaign?: string;
     round: RoundString;
     type: 'imGlobal' | 'imIHH' | 'imOHH';
+    country?: number;
 };
 
 const style = theme => ({
@@ -49,10 +44,11 @@ export const ImSummary: FunctionComponent<Props> = ({
     campaign,
     round,
     type,
+    country,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data } = useConvertedLqasImData(type);
+    const { data } = useConvertedLqasImData(type, country);
     const [childrenChecked, sitesVisited, reportingDistricts, vaccinated] =
         useMemo(() => {
             return makeAccordionData({

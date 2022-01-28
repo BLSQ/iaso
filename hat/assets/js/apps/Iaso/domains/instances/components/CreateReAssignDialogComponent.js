@@ -95,7 +95,7 @@ const CreateReAssignDialogComponent = ({
             cancelMessage={cancelMessage}
             maxWidth="xs"
             allowConfirm={
-                fieldValue.orgUnit.value !== undefined &&
+                Boolean(fieldValue.orgUnit.value) &&
                 (Boolean(isPeriodDisabled) ||
                     (!isPeriodDisabled && Boolean(fieldValue.period.value)))
             }
@@ -128,6 +128,8 @@ const CreateReAssignDialogComponent = ({
             />
             <>
                 <OrgUnitTreeviewModal
+                    required
+                    clearable={false}
                     titleMessage={MESSAGES.selectedOrgUnit}
                     toggleOnLabelClick={false}
                     onConfirm={orgUnit => {

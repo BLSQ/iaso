@@ -8,6 +8,7 @@ import {
     Tooltip,
     ResponsiveContainer,
     Cell,
+    LabelList,
 } from 'recharts';
 import { blue } from '@material-ui/core/colors';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
@@ -27,6 +28,8 @@ import {
 import { formatImDataForNFMChart } from '../../pages/IM/utils';
 import MESSAGES from '../../constants/messages';
 import { NfmCustomTick } from './NfmCustomTick';
+import { customLabelHorizontal } from '../PercentageBarChart/utils';
+import { NoData } from './NoData';
 
 type Props = {
     // eslint-disable-next-line react/require-default-props
@@ -51,6 +54,7 @@ export const NoFingerMark: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
+    const dataIsEmpty = data ? Object.keys(data).length === 0 : true;
 
     const formattedData: BarChartData[] = useMemo(() => {
         if (type === 'IM') {
@@ -92,7 +96,8 @@ export const NoFingerMark: FunctionComponent<Props> = ({
     return (
         <>
             {isLoading && <LoadingSpinner />}
-            {!isLoading && showChart && (
+            {!isLoading && showChart && dataIsEmpty && <NoData />}
+            {!isLoading && showChart && !dataIsEmpty && (
                 <>
                     <Box>
                         <Typography variant="h6">
@@ -131,6 +136,10 @@ export const NoFingerMark: FunctionComponent<Props> = ({
                                             />
                                         );
                                     })}
+                                    <LabelList
+                                        dataKey="value"
+                                        content={customLabelHorizontal}
+                                    />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>

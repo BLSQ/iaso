@@ -909,6 +909,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.mainCaregiverInfoSource',
         defaultMessage: 'Main source of information',
     },
+    totalCaregiversSurveyed: {
+        id: 'iaso.polio.label.totalCaregiversSurveyed',
+        defaultMessage: 'Caregivers surveyed',
+    },
+    noScope: {
+        id: 'iaso.polio.label.noScope',
+        defaultMessage: 'Plese select a scope for the campaign',
+    },
+    districtsNeedMatching: {
+        id: 'iaso.polio.label.districtsNeedMatching',
+        defaultMessage: 'Some districts need matching. Please contact an admin',
+    },
+    noScopeFound: {
+        id: 'iaso.polio.label.noScopeFound',
+        defaultMessage: 'No scope found',
+    },
 });
 
 export default MESSAGES;

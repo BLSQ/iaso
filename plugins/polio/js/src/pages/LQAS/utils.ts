@@ -89,29 +89,33 @@ export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
         campaign,
         round,
     });
-
-    return regions
-        .map(region => {
-            const regionData = dataForRound.filter(
-                district => district.region_name === region.name,
-            );
+    const regionsList: any[] = [];
+    regions.forEach(region => {
+        const regionData = dataForRound.filter(
+            district => district.region_name === region.name,
+        );
+        if (regionData.length > 0) {
             const passing = regionData.filter(
                 district => parseInt(district.status, 10) === 1,
             ).length;
             const percentSuccess =
                 // fallback to 1 to avoid dividing by zero
-                (passing / (regionData.length || 1)) * 100;
+                (passing / regionData.length) * 100;
             const roundedPercentSuccess = Number.isSafeInteger(percentSuccess)
                 ? percentSuccess
-                : percentSuccess.toFixed(2);
-            return {
+                : Math.round(percentSuccess);
+
+            regionsList.push({
                 name: region.name,
                 value: roundedPercentSuccess,
                 found: regionData.length,
                 passing,
-            };
-        })
-        .sort((a, b) => parseFloat(b.value) - parseFloat(a.value));
+            });
+        }
+    });
+    return regionsList.sort(
+        (a, b) => parseFloat(b.value) - parseFloat(a.value),
+    );
 };
 
 export const lqasChartTooltipFormatter =
@@ -123,7 +127,7 @@ export const lqasChartTooltipFormatter =
 
 export const lqasNfmTooltipFormatter = (value, _name, props) => {
     // eslint-disable-next-line react/prop-types
-    return [`${value.toFixed(2)}%`, props.payload.nfmKey];
+    return [`${Math.round(value)}%`, props.payload.nfmKey];
 };
 
 export const sumChildrenChecked = (
@@ -229,8 +233,6 @@ export const convertStatToPercentNumber = (data = 0, total = 1): number => {
     const safeTotal = total || 1;
     const ratio = (100 * data) / safeTotal;
     return ratio;
-    // if (Number.isSafeInteger(ratio)) return ratio;
-    // return Math.ratio;
 };
 
 export const convertStatToPercent = (data = 0, total = 1): string => {
@@ -242,7 +244,7 @@ export const convertStatToPercent = (data = 0, total = 1): string => {
     const safeTotal = total || 1;
     const ratio = (100 * data) / safeTotal;
     if (Number.isSafeInteger(ratio)) return `${ratio}%`;
-    return `${ratio.toFixed(2)}%`;
+    return `${Math.round(ratio)}%`;
 };
 
 export const makeCaregiversRatio = (

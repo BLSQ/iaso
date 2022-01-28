@@ -50,22 +50,16 @@ export const makePopup =
         );
     };
 
-export const findCountryIds = LqasIm => {
-    const { stats } = LqasIm;
-    const campaignKeys = Object.keys(stats);
-    return campaignKeys.map(campaignKey => stats[campaignKey].country_id);
-};
-
 export const totalCaregiversInformed = (roundData: any[] = []) => {
     return roundData
         .map(data => data.care_giver_stats.caregivers_informed)
-        .reduce((total, current) => total + current, 0);
+        .reduce((total, current = 0) => total + current, 0);
 };
 
 export const totalCaregivers = (roundData: any[] = []) => {
     return roundData
         .map(data => data.total_child_checked)
-        .reduce((total, current) => total + current, 0);
+        .reduce((total, current = 0) => total + current, 0);
 };
 
 const makeCollectionStats = ({

@@ -14,12 +14,16 @@ import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 import { makeCampaignsDropDown } from '../../utils/index';
 import { genUrl } from '../../utils/routing';
 
-type FiltersState = {
+type Params = {
     campaign: string | undefined;
     country: string | undefined;
 };
+type FiltersState = {
+    campaign: string | undefined;
+    country: number | undefined;
+};
 type Router = {
-    params: FiltersState;
+    params: Params;
 };
 type Props = {
     isFetching: boolean;
@@ -33,7 +37,7 @@ const Filters: FunctionComponent<Props> = ({ isFetching, router }) => {
 
     const [filters, setFilters] = useState<FiltersState>({
         campaign: params.campaign,
-        country: params.country,
+        country: params.country ? parseInt(params.country, 10) : undefined,
     });
     const { campaign, country } = filters;
 
@@ -42,7 +46,6 @@ const Filters: FunctionComponent<Props> = ({ isFetching, router }) => {
             countries: [country],
             enabled: Boolean(country),
         }).query;
-
     const { data: countriesData, isFetching: countriesLoading } =
         useGetCountries();
     const countriesList = (countriesData && countriesData.orgUnits) || [];

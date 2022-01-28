@@ -141,14 +141,8 @@ const Dashboard = ({ router }) => {
         };
         delete newParams.page;
         delete newParams.order;
-        setResetPageToOne(convertObjectToString(tableParams.pageSize));
-    }, [
-        tableParams.pageSize,
-        tableParams.countries,
-        tableParams.search,
-        tableParams.r1StartFrom,
-        tableParams.r1StartTo,
-    ]);
+        setResetPageToOne(convertObjectToString(newParams));
+    }, [tableParams]);
 
     const columns = useMemo(
         () => [

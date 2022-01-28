@@ -1,0 +1,277 @@
+{
+    "name": "hk Katanga Centre de Santé de Référence",
+    "short_name": "hk Katanga Centre de Santé de Référence",
+    "id": 105869,
+    "sub_source": "snis",
+    "sub_source_id": "snis",
+    "source_ref": "mPGjfBuVKJv",
+    "source_url": "",
+    "parent_id": 105868,
+    "validation_status": "VALID",
+    "parent_name": "hk Katanga Aire de Santé",
+    "parent": {
+        "name": "hk Katanga Aire de Santé",
+        "short_name": "hk Katanga Aire de Santé",
+        "id": 105868,
+        "sub_source": "snis",
+        "sub_source_id": "snis",
+        "source_ref": "ooDkw8j0wZR",
+        "source_url": "",
+        "parent_id": 105813,
+        "validation_status": "VALID",
+        "parent_name": "hk Kapolowe Zone de Santé",
+        "parent": {
+            "name": "hk Kapolowe Zone de Santé",
+            "short_name": "hk Kapolowe Zone de Santé",
+            "id": 105813,
+            "sub_source": "snis",
+            "sub_source_id": "snis",
+            "source_ref": "bAFJ18IAf2S",
+            "source_url": "",
+            "parent_id": 105658,
+            "validation_status": "VALID",
+            "parent_name": "hk Haut Katanga Provincee",
+            "parent": {
+                "name": "hk Haut Katanga Provincee",
+                "short_name": "hk Haut Katanga Provincee",
+                "id": 105658,
+                "sub_source": "snis",
+                "sub_source_id": "snis",
+                "source_ref": "F9w3VW1cQmb",
+                "source_url": "",
+                "parent_id": 126083,
+                "validation_status": "VALID",
+                "parent_name": "République Démocratique du Congo",
+                "parent": {
+                    "name": "République Démocratique du Congo",
+                    "short_name": "République Démocratique du Congo",
+                    "id": 126083,
+                    "sub_source": "snis",
+                    "sub_source_id": "snis",
+                    "source_ref": "ymGeqzoPhN3",
+                    "source_url": "",
+                    "parent_id": null,
+                    "validation_status": "VALID",
+                    "parent_name": null,
+                    "parent": null,
+                    "org_unit_type_id": 14,
+                    "created_at": 1571141798.663625,
+                    "updated_at": 1597269688.136348,
+                    "aliases": [],
+                    "latitude": null,
+                    "longitude": null,
+                    "altitude": null,
+                    "has_geo_json": true,
+                    "groups": [],
+                    "org_unit_type_name": "Inconnu",
+                    "org_unit_type": {
+                        "id": 14,
+                        "name": "Inconnu",
+                        "short_name": "???",
+                        "created_at": 1570547452.252486,
+                        "updated_at": 1593418505.245559,
+                        "depth": 0,
+                        "sub_unit_types": []
+                    },
+                    "source": "reference",
+                    "source_id": 1,
+                    "version": 1
+                },
+                "org_unit_type_id": 9,
+                "created_at": 1571141586.143131,
+                "updated_at": 1631195287.667621,
+                "aliases": null,
+                "latitude": null,
+                "longitude": null,
+                "altitude": null,
+                "has_geo_json": false,
+                "groups": [
+                    {
+                        "id": 5,
+                        "name": "Province(DPS)",
+                        "source_ref": null,
+                        "created_at": 1571141570.105347,
+                        "updated_at": 1571141570.10537,
+                        "source_version": 3
+                    }
+                ],
+                "org_unit_type_name": "Province",
+                "org_unit_type": {
+                    "id": 9,
+                    "name": "Province",
+                    "short_name": "Prov",
+                    "created_at": 1561062550.970094,
+                    "updated_at": 1632473766.239644,
+                    "depth": 1,
+                    "sub_unit_types": [
+                        {
+                            "id": 11,
+                            "name": "Hôpital",
+                            "short_name": "Hôp.",
+                            "created_at": 1561062550.993334,
+                            "updated_at": 1632133245.216007,
+                            "depth": 4
+                        },
+                        {
+                            "id": 7,
+                            "name": "Zone de santé",
+                            "short_name": "ZS",
+                            "created_at": 1561020481.959638,
+                            "updated_at": 1632473935.62488,
+                            "depth": 2
+                        }
+                    ]
+                },
+                "source": "reference",
+                "source_id": 1,
+                "version": 1
+            },
+            "org_unit_type_id": 7,
+            "created_at": 1571141587.681724,
+            "updated_at": 1571141587.681754,
+            "aliases": null,
+            "latitude": null,
+            "longitude": null,
+            "altitude": null,
+            "has_geo_json": true,
+            "groups": [
+                {
+                    "id": 3,
+                    "name": "Zone de Sante",
+                    "source_ref": null,
+                    "created_at": 1571141569.562546,
+                    "updated_at": 1571141569.562565,
+                    "source_version": 3
+                }
+            ],
+            "org_unit_type_name": "Zone de santé",
+            "org_unit_type": {
+                "id": 7,
+                "name": "Zone de santé",
+                "short_name": "ZS",
+                "created_at": 1561020481.959638,
+                "updated_at": 1632473935.62488,
+                "depth": 2,
+                "sub_unit_types": [
+                    {
+                        "id": 11,
+                        "name": "Hôpital",
+                        "short_name": "Hôp.",
+                        "created_at": 1561062550.993334,
+                        "updated_at": 1632133245.216007,
+                        "depth": 4
+                    },
+                    {
+                        "id": 10,
+                        "name": "Aire de santés",
+                        "short_name": "AS",
+                        "created_at": 1561062550.986341,
+                        "updated_at": 1632479907.326365,
+                        "depth": 1
+                    }
+                ]
+            },
+            "source": "reference",
+            "source_id": 1,
+            "version": 1
+        },
+        "org_unit_type_id": 10,
+        "created_at": 1571141588.265953,
+        "updated_at": 1571141588.265975,
+        "aliases": null,
+        "latitude": null,
+        "longitude": null,
+        "altitude": null,
+        "has_geo_json": false,
+        "groups": [
+            {
+                "id": 2,
+                "name": "Aire de Sante",
+                "source_ref": null,
+                "created_at": 1571141569.482,
+                "updated_at": 1571141569.48202,
+                "source_version": 3
+            }
+        ],
+        "org_unit_type_name": "Aire de santés",
+        "org_unit_type": {
+            "id": 10,
+            "name": "Aire de santés",
+            "short_name": "AS",
+            "created_at": 1561062550.986341,
+            "updated_at": 1632479907.326365,
+            "depth": 1,
+            "sub_unit_types": [
+                {
+                    "id": 11,
+                    "name": "Hôpital",
+                    "short_name": "Hôp.",
+                    "created_at": 1561062550.993334,
+                    "updated_at": 1632133245.216007,
+                    "depth": 4
+                },
+                {
+                    "id": 13,
+                    "name": "Village",
+                    "short_name": "Vil.",
+                    "created_at": 1565613642.291168,
+                    "updated_at": 1632473956.734712,
+                    "depth": 5
+                },
+                {
+                    "id": 3,
+                    "name": "Centre de Santé",
+                    "short_name": "CDS",
+                    "created_at": 1560778833.738812,
+                    "updated_at": 1632475787.648355,
+                    "depth": 5
+                }
+            ]
+        },
+        "source": "reference",
+        "source_id": 1,
+        "version": 1
+    },
+    "org_unit_type_id": 3,
+    "created_at": 1571141588.275938,
+    "updated_at": 1571141588.275967,
+    "aliases": null,
+    "latitude": -11.127856,
+    "longitude": 27.105071,
+    "altitude": 0.0,
+    "has_geo_json": false,
+    "groups": [
+        {
+            "id": 1,
+            "name": "Formation Sanitaire",
+            "source_ref": null,
+            "created_at": 1571141569.453447,
+            "updated_at": 1571141569.453466,
+            "source_version": 3
+        }
+    ],
+    "org_unit_type_name": "Centre de Santé",
+    "org_unit_type": {
+        "id": 3,
+        "name": "Centre de Santé",
+        "short_name": "CDS",
+        "created_at": 1560778833.738812,
+        "updated_at": 1632475787.648355,
+        "depth": 5,
+        "sub_unit_types": [
+            {
+                "id": 12,
+                "name": "Site de santé communautaire",
+                "short_name": "SSC",
+                "created_at": 1561062551.004035,
+                "updated_at": 1569425808.955913,
+                "depth": null
+            }
+        ]
+    },
+    "source": "reference",
+    "source_id": 1,
+    "version": 1,
+    "geo_json": null,
+    "catchment": null
+}

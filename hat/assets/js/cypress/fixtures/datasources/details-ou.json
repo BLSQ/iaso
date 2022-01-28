@@ -1,0 +1,55 @@
+{
+    "sources": [
+        {
+            "id": 2,
+            "name": "AFRO",
+            "read_only": false,
+            "description": "",
+            "created_at": "2021-05-22T09:26:00.502453Z",
+            "updated_at": "2021-07-05T18:54:48.459118Z",
+            "versions": [
+                {
+                    "number": 1,
+                    "description": null,
+                    "id": 2,
+                    "created_at": 1621676007.449474,
+                    "updated_at": 1621676007.449499,
+                    "org_units_count": 29678
+                },
+                {
+                    "number": 2,
+                    "description": null,
+                    "id": 3,
+                    "created_at": 1625506700.452454,
+                    "updated_at": 1625506700.452479,
+                    "org_units_count": 5263
+                }
+            ],
+            "url": "https://dhis2.snis-ihp-quarterly.bluesquare.org",
+            "projects": [
+                [
+                    {
+                        "id": 1,
+                        "name": "Polio",
+                        "app_id": "com.poliooutbreaks.app"
+                    }
+                ]
+            ],
+            "default_version": {
+                "number": 2,
+                "description": null,
+                "id": 3,
+                "created_at": 1625506700.452454,
+                "updated_at": 1625506700.452479,
+                "org_units_count": 5263
+            },
+            "credentials": {
+                "id": 1,
+                "name": "SNIS Copy RDC",
+                "login": "admin",
+                "url": "https://dhis2.snis-ihp-quarterly.bluesquare.org",
+                "is_valid": false
+            }
+        }
+    ]
+}

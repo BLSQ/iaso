@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "name": "iaso.matching.matching_algo_name_sim_1",
+        "description": "Name and parent similarity",
+        "created_at": "2021-05-22T08:03:05.221148Z"
+    },
+    {
+        "id": 2,
+        "name": "iaso.matching.matching_on_external_id",
+        "description": "ID Matching",
+        "created_at": "2021-05-22T08:03:05.230565Z"
+    }
+]

@@ -68,19 +68,33 @@ class EntityViewSet(ModelViewSet):
         return Entity.objects.filter(account=self.request.user.iaso_profile.account)
 
     def create(self, request, *args, **kwargs):
+        data = request.data
+        entity_type = get_object_or_404(EntityType, pk=data["entity_type"])
+        instance = get_object_or_404(Instance, pk=data["attributes"])
+        account = get_object_or_404(Account, pk=data["account"])
+        # Avoid duplicates
+        if Entity.objects.filter(attributes=instance):
+            raise serializers.ValidationError({"attributes": "Entity with this attribute already exists."})
+
+        entity = Entity.objects.create(name=data["name"], entity_type=entity_type, attributes=instance, account=account)
+        serializer = EntitySerializer(entity, many=False)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["POST", "GET"])
+    def bulk_create(self, request, *args, **kwargs):
         created_entities = []
         data = request.data if isinstance(request.data, list) else [request.data]
         # allows multiple create
-        for entity in data:
-            entity_type = get_object_or_404(EntityType, pk=entity["entity_type"])
-            instance = get_object_or_404(Instance, pk=entity["attributes"])
-            account = get_object_or_404(Account, pk=entity["account"])
-            # Avoid duplicates
-            if Entity.objects.filter(attributes=instance):
-                return Response(
-                    {"result": "Error with {0}. An Entity with this attribute already exists.".format(entity["name"])},
-                    status=409,
-                )
-            Entity.objects.create(name=entity["name"], entity_type=entity_type, attributes=instance, account=account)
-            created_entities.append(entity)
-        return JsonResponse(created_entities, safe=False)
+        if request.method == "POST":
+            for entity in data:
+                instance = get_object_or_404(Instance, pk=entity["attributes"])
+                # Avoid duplicates
+                if Entity.objects.filter(attributes=instance):
+                    raise serializers.ValidationError(
+                        {"attributes": "Entity with the attribute '{0}' already exists.".format(entity)}
+                    )
+                entity_type = get_object_or_404(EntityType, pk=entity["entity_type"])
+                account = get_object_or_404(Account, pk=entity["account"])
+                Entity.objects.create(name=entity["name"], entity_type=entity_type, attributes=instance, account=account)
+                created_entities.append(entity)
+            return JsonResponse(created_entities, safe=False)

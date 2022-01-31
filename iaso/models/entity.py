@@ -41,8 +41,8 @@ class Entity(SoftDeletableModel):
         return dict(
             name=self.name,
             uuid=self.uuid,
-            created_at=self.created_at,
-            updated_at=self.updated_at,
+            created_at=self.created_at.timestamp() if self.created_at else None,
+            updated_at=self.updated_at.timestamp() if self.updated_at else None,
             entity_type=self.entity_type,
             attributes=self.attributes,
         )

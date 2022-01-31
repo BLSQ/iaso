@@ -5,8 +5,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from iaso.api.common import ModelViewSet
-from iaso.models import Entity, Instance, EntityType, Form, Account
+from iaso.api.common import ModelViewSet, TimestampField
+from iaso.models import Entity, Instance, EntityType, Form, Account, entity
 
 from django.http import JsonResponse
 from rest_framework import viewsets, permissions, filters
@@ -23,7 +23,24 @@ class EntityTypeSerializer(serializers.ModelSerializer):
 class EntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Entity
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+            "uuid",
+            "created_at",
+            "updated_at",
+            "entity_type",
+            "entity_type_name",
+            "attributes",
+        ]
+
+    entity_type_name = serializers.SerializerMethodField()
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
+
+    @staticmethod
+    def get_entity_type_name(obj: Entity):
+        return obj.entity_type.name if obj.entity_type else None
 
 
 class HasEntityPermission(permissions.BasePermission):
@@ -65,7 +82,19 @@ class EntityViewSet(ModelViewSet):
         return EntitySerializer
 
     def get_queryset(self):
-        return Entity.objects.filter(account=self.request.user.iaso_profile.account)
+        search = self.request.query_params.get("search", None)
+        entity_types__id = self.request.query_params.get("entity_types__ids", None)
+
+        order = self.request.query_params.get("order", "updated_at").split(",")
+        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        if entity_types__id:
+            entity_types__ids = entity_types__id.split(",")
+            queryset = queryset.filter(entity_type__in=entity_types__ids)
+
+        queryset = queryset.order_by(*order)
+        return queryset
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -95,6 +124,8 @@ class EntityViewSet(ModelViewSet):
                     )
                 entity_type = get_object_or_404(EntityType, pk=entity["entity_type"])
                 account = get_object_or_404(Account, pk=entity["account"])
-                Entity.objects.create(name=entity["name"], entity_type=entity_type, attributes=instance, account=account)
+                Entity.objects.create(
+                    name=entity["name"], entity_type=entity_type, attributes=instance, account=account
+                )
                 created_entities.append(entity)
             return JsonResponse(created_entities, safe=False)

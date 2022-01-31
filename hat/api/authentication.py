@@ -1,5 +1,11 @@
+from django.http import HttpResponse
+from django.views.generic import TemplateView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework import permissions
+
+from iaso.api.openid_pkce import pkce_generator
+import requests
+from rest_framework.response import Response
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -21,3 +27,8 @@ class UserAccessPermission(permissions.BasePermission):
             return user and user.is_authenticated
         else:
             return False
+
+
+class WfpLogin(TemplateView):
+    template_name = "iaso/pages/wfp_login.html"
+

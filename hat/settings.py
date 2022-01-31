@@ -17,6 +17,15 @@ from django.utils.translation import ugettext_lazy as _
 
 from sentry_sdk.integrations.django import DjangoIntegration
 
+import base64
+import hashlib
+import html
+import re
+import urllib.parse
+
+
+
+
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
@@ -118,6 +127,10 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "django.contrib.postgres",
     "django.contrib.sites",  # needed by contrib-comments
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.auth0",
     "storages",
     "corsheaders",
     "rest_framework",
@@ -132,6 +145,7 @@ INSTALLED_APPS = [
     "beanstalk_worker",
     "django_comments",
     "django_filters",
+
 ]
 
 # needed because we customize the comment model
@@ -273,7 +287,6 @@ AUTH_CLASSES = [
     "rest_framework_simplejwt.authentication.JWTAuthentication",
 ]
 
-
 # Needed for PowerBI, used for the Polio project, which only support support BasicAuth.
 if "polio" in PLUGINS:
     AUTH_CLASSES.append(
@@ -392,3 +405,32 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_TLS", "true") == "true"
 APP_TITLE = os.environ.get("APP_TITLE", "Iaso")
 FAVICON_PATH = os.environ.get("FAVICON_PATH", "images/iaso-favicon.png")
 LOGO_PATH = os.environ.get("LOGO_PATH", "images/logo.png")
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend"
+]
+
+SITE_ID = 1
+
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+code_verifier = base64.urlsafe_b64encode(os.urandom(40)).decode('utf-8')
+code_verifier = re.sub('[^a-zA-Z0-9]+', '', code_verifier)
+code_verifier, len(code_verifier)
+code_challenge = hashlib.sha256(code_verifier.encode('utf-8')).digest()
+code_challenge = base64.urlsafe_b64encode(code_challenge).decode('utf-8')
+code_challenge = code_challenge.replace('=', '')
+
+SOCIALACCOUNT_PROVIDERS = {
+    "auth0": {
+        "AUTH0_URL": "https://ciam.auth.wfp.org/oauth2",
+        "APP": {
+            "client_id": "",
+            "secret": "",
+            "key": "",
+            "code_challenge": code_challenge,
+            "code_verifier": code_verifier
+        }
+    }
+}

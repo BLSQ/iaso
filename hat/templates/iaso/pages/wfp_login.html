@@ -1,0 +1,8 @@
+{% load socialaccount %}
+
+<h1>WFP Login</h1>
+{% if user.is_authenticated %}
+<p>CONNECTED</p>
+{% else %}
+connect here
+{% endif %}

@@ -180,7 +180,7 @@ describe('Forms config', () => {
                     actionColumn = columns[columns.length - 1];
                     wrapper = shallow(actionColumn.Cell(colOriginal(fakeForm)));
                     const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
-                    expect(redEyeIcon).to.have.lengthOf(0);
+                    expect(redEyeIcon).to.have.lengthOf(1);
                     const editIcon = wrapper.find('[icon="edit"]');
                     expect(editIcon).to.have.lengthOf(0);
                     const dhisIcon = wrapper.find('[icon="dhis"]');

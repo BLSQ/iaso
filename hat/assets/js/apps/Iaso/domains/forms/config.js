@@ -193,17 +193,16 @@ const formsTableColumns = ({
                         )}
                         {!showDeleted && (
                             <>
-                                {userHasPermission('iaso_submissions', user) &&
-                                    settings.row.original.instances_count >
-                                        0 && (
-                                        <IconButtonComponent
-                                            url={`${urlToInstances}`}
-                                            icon="remove-red-eye"
-                                            tooltipMessage={
-                                                MESSAGES.viewInstances
-                                            }
-                                        />
-                                    )}
+                                {userHasPermission(
+                                    'iaso_submissions',
+                                    user,
+                                ) && (
+                                    <IconButtonComponent
+                                        url={`${urlToInstances}`}
+                                        icon="remove-red-eye"
+                                        tooltipMessage={MESSAGES.viewInstances}
+                                    />
+                                )}
                                 {userHasPermission('iaso_forms', user) && (
                                     <IconButtonComponent
                                         url={`${baseUrls.formDetail}/formId/${settings.row.original.id}`}

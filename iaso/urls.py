@@ -143,7 +143,7 @@ urlpatterns = urlpatterns + [
 urlpatterns = urlpatterns + [
     url("auth0/login/callback/", callback, name="callback"),
     path("", include("allauth.urls")),
-    path("auth0/login/", WfpLogin.as_view(), name="openid")
+    path("auth0/login/", WfpLogin.as_view(), name="openid"),
 ]
 
 for dhis2_resource in DHIS2_VIEWSETS:

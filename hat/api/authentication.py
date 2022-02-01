@@ -64,7 +64,7 @@ def callback(request):
             "grant_type": "authorization_code",
             "redirect_uri": "https://bluesquare.eu.ngrok.io/api/auth0/login/callback/",
             "code": code,
-            "code_verifier": settings.code_verifier,
+            "code_verifier": settings.code_challenge,
         }
 
         print(payload)

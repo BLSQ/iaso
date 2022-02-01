@@ -24,8 +24,6 @@ import re
 import urllib.parse
 
 
-
-
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
@@ -145,7 +143,6 @@ INSTALLED_APPS = [
     "beanstalk_worker",
     "django_comments",
     "django_filters",
-
 ]
 
 # needed because we customize the comment model
@@ -408,18 +405,18 @@ LOGO_PATH = os.environ.get("LOGO_PATH", "images/logo.png")
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend"
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 SITE_ID = 1
 
 ACCOUNT_EMAIL_VERIFICATION = "none"
 
-code_verifier = base64.urlsafe_b64encode(os.urandom(40)).decode('utf-8')
-code_verifier = re.sub('[^a-zA-Z0-9]+', '', code_verifier)
-code_challenge = hashlib.sha256(code_verifier.encode('utf-8')).digest()
-code_challenge = base64.urlsafe_b64encode(code_challenge).decode('utf-8')
-code_challenge = code_challenge.replace('=', '')
+code_verifier = base64.urlsafe_b64encode(os.urandom(40)).decode("utf-8")
+code_verifier = re.sub("[^a-zA-Z0-9]+", "", code_verifier)
+code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
+code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
+code_challenge = code_challenge.replace("=", "")
 print(code_verifier)
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -430,6 +427,6 @@ SOCIALACCOUNT_PROVIDERS = {
             "secret": "",
             "key": "",
         },
-        'AUTH_PARAMS': {"code_challenge": code_challenge},
+        "AUTH_PARAMS": {"code_challenge": code_challenge},
     }
 }

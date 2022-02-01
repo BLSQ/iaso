@@ -97,7 +97,7 @@ describe('Forms config', () => {
         });
     });
     describe('formsTableColumns', () => {
-        it('sould return an array of 10 columns', () => {
+        it('should return an array of 10 columns', () => {
             columns = formsTableColumns({
                 formatMessage: () => null,
             });

@@ -417,10 +417,10 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 code_verifier = base64.urlsafe_b64encode(os.urandom(40)).decode('utf-8')
 code_verifier = re.sub('[^a-zA-Z0-9]+', '', code_verifier)
-code_verifier, len(code_verifier)
 code_challenge = hashlib.sha256(code_verifier.encode('utf-8')).digest()
 code_challenge = base64.urlsafe_b64encode(code_challenge).decode('utf-8')
 code_challenge = code_challenge.replace('=', '')
+print(code_verifier)
 
 SOCIALACCOUNT_PROVIDERS = {
     "auth0": {
@@ -429,8 +429,7 @@ SOCIALACCOUNT_PROVIDERS = {
             "client_id": "",
             "secret": "",
             "key": "",
-            "code_challenge": code_challenge,
-            "code_verifier": code_verifier
-        }
+        },
+        'AUTH_PARAMS': {"code_challenge": code_challenge},
     }
 }

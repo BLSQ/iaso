@@ -73,6 +73,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.pages.errors.name',
         defaultMessage: 'Name is required',
     },
+    attributes: {
+        defaultMessage: 'Submission',
+        id: 'iaso.instance.titleSingle',
+    },
+    viewInstance: {
+        id: 'iaso.forms.viewInstance',
+        defaultMessage: 'View submission',
+    },
 });
 
 export default MESSAGES;

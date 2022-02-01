@@ -12,7 +12,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export const Logo: FunctionComponent = () => {
     const classes = useStyles();
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const staticUrl = window.STATIC_URL ?? '/static/';
     if (process.env.REACT_LOGO_PATH) {

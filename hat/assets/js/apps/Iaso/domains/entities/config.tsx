@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import Dialog from './components/Dialog';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
@@ -8,14 +8,39 @@ import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
 
+import { Entity } from './types/entity';
+
 export const baseUrl = baseUrls.entities;
 
+type Message = {
+    id: string;
+    defaultMessage: string;
+};
+
+type Column = {
+    Header: string;
+    id?: string;
+    accessor: string;
+    sortable?: boolean;
+    resizable?: boolean;
+    // eslint-disable-next-line no-unused-vars
+    Cell?: (s: any) => ReactElement;
+};
+
+type Props = {
+    // eslint-disable-next-line no-unused-vars
+    formatMessage: (msg: Message) => string;
+    // eslint-disable-next-line no-unused-vars
+    deleteEntitiy: (e: Entity) => void;
+    // eslint-disable-next-line no-unused-vars
+    saveEntity: (e: Entity) => void;
+};
+
 export const columns = ({
-    params,
     formatMessage,
     deleteEntitiy,
     saveEntity,
-}) => [
+}: Props): Array<Column> => [
     {
         Header: formatMessage(MESSAGES.name),
         id: 'name',
@@ -25,6 +50,7 @@ export const columns = ({
         Header: formatMessage(MESSAGES.types),
         id: 'entity_type_name',
         accessor: 'entity_type_name',
+        // TODO: allow to sort on entity type name
         sortable: false,
     },
     {
@@ -42,8 +68,14 @@ export const columns = ({
         accessor: 'actions',
         resizable: false,
         sortable: false,
-        Cell: settings => (
+        Cell: (settings): ReactElement => (
+            // TODO: limit to user permissions
             <section>
+                <IconButtonComponent
+                    url={`/${baseUrls.instanceDetail}/instanceId/${settings.row.original.attributes}`}
+                    icon="remove-red-eye"
+                    tooltipMessage={MESSAGES.viewInstance}
+                />
                 <Dialog
                     renderTrigger={({ openDialog }) => (
                         <IconButtonComponent
@@ -54,7 +86,6 @@ export const columns = ({
                     )}
                     initialData={settings.row.original}
                     titleMessage={MESSAGES.updateMessage}
-                    params={params}
                     saveEntity={saveEntity}
                 />
                 <DeleteDialog

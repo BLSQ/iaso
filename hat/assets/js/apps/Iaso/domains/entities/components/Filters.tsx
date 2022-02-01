@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
 
 import { Grid, Button, makeStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
-import InputComponent from 'Iaso/components/forms/InputComponent';
+import InputComponent from '../../../components/forms/InputComponent';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 
@@ -19,9 +18,21 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Filters = ({ params }) => {
+type Params = {
+    pageSize: string;
+    order: string;
+    page: string;
+    search?: string;
+    entityTypes?: string;
+};
+
+type Props = {
+    params: Params;
+};
+
+const Filters: FunctionComponent<Props> = ({ params }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
-    const classes = useStyles();
+    const classes: any = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const [filters, setFilters] = useState({
@@ -38,7 +49,7 @@ const Filters = ({ params }) => {
                 ...params,
                 ...filters,
             };
-            tempParams.page = 1;
+            tempParams.page = '1';
             dispatch(redirectTo(baseUrl, tempParams));
         }
     };
@@ -109,10 +120,6 @@ const Filters = ({ params }) => {
             </Grid>
         </>
     );
-};
-
-Filters.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Filters;

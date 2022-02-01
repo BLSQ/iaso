@@ -1,7 +1,8 @@
-import { useSnackMutation } from 'Iaso/libs/apiHooks';
-import { postRequest, patchRequest } from 'Iaso/libs/Api';
+import { UseMutationResult } from 'react-query';
+import { useSnackMutation } from '../../../libs/apiHooks';
+import { postRequest, patchRequest } from '../../../libs/Api';
 
-export const useSave = () =>
+export const useSave = (): UseMutationResult =>
     useSnackMutation(
         body =>
             body.id

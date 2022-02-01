@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 import { makeStyles, Box, Grid } from '@material-ui/core';
 
@@ -7,15 +6,15 @@ import {
     commonStyles,
     Table,
     LoadingSpinner,
-    AddButton as AddButtonComponent,
+    // AddButton as AddButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
-import Dialog from './components/Dialog';
+// import Dialog from './components/Dialog';
 
-import { useGet } from './hooks/useGet';
+import { useGetPaginated } from './hooks/useGet';
 import { useDelete } from './hooks/useDelete';
 import { useSave } from './hooks/useSave';
 
@@ -28,14 +27,27 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Entities = ({ params }) => {
-    const classes = useStyles();
+type Params = {
+    pageSize: string;
+    order: string;
+    page: string;
+    search?: string;
+    entityTypes?: string;
+};
+
+type Props = {
+    params: Params;
+};
+
+const Entities: FunctionComponent<Props> = ({ params }) => {
+    const classes: any = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
 
-    const { data, isFetching: fetchingEntities } = useGet(params);
+    const { data, isFetching: fetchingEntities } = useGetPaginated(params);
     const { mutate: deleteEntitiy, isLoading: deleting } = useDelete();
     const { mutate: saveEntity, isLoading: saving } = useSave();
+
     const isLoading = fetchingEntities || deleting || saving;
 
     return (
@@ -54,23 +66,21 @@ const Entities = ({ params }) => {
                     alignItems="center"
                     className={classes.marginTop}
                 >
-                    <Dialog
+                    {/* <Dialog
                         titleMessage={MESSAGES.create}
                         renderTrigger={({ openDialog }) => (
                             <div id="add-button-container">
                                 <AddButtonComponent onClick={openDialog} />
                             </div>
                         )}
-                        params={params}
                         saveEntity={saveEntity}
-                    />
+                    /> */}
                 </Grid>
                 <Table
                     data={data?.entities ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={columns({
-                        params,
                         formatMessage,
                         deleteEntitiy,
                         saveEntity,
@@ -84,9 +94,4 @@ const Entities = ({ params }) => {
         </>
     );
 };
-
-Entities.propTypes = {
-    params: PropTypes.object.isRequired,
-};
-
 export default Entities;

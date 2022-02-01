@@ -139,6 +139,7 @@
     "iaso.forms.updated_at": "Updated",
     "iaso.forms.validated": "Validated",
     "iaso.forms.validationStatus": "Validation status",
+    "iaso.forms.viewInstance": "View submission",
     "iaso.forms.viewInstances": "View submission(s)",
     "iaso.forms.yes": "Yes",
     "iaso.formversions.chronologicalPeriodError": "Start period should be before end period",

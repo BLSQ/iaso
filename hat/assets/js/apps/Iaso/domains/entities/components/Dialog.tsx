@@ -1,26 +1,63 @@
-import React from 'react';
-import { useFormik, FormikProvider } from 'formik';
+import React, { ReactNode, FunctionComponent } from 'react';
+import { useFormik, FormikProvider, FormikProps } from 'formik';
 import * as yup from 'yup';
-import PropTypes from 'prop-types';
+import {
+    IconButton as IconButtonComponent,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { makeStyles } from '@material-ui/core';
-import { useSafeIntl } from 'bluesquare-components';
 import isEqual from 'lodash/isEqual';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { useGetTypes } from '../hooks/useGetTypes';
 
+import { Entity } from '../types/entity';
+
+import { baseUrls } from '../../../constants/urls';
+
 import MESSAGES from '../messages';
+
+type Message = {
+    id: string;
+    defaultMessage: string;
+};
+type RenderTriggerProps = {
+    openDialog: () => void;
+};
+
+type EmptyEntity = {
+    name?: string | null;
+    attributes?: number | null;
+    entity_type?: number | null;
+};
+
+type Props = {
+    titleMessage: Message;
+    // eslint-disable-next-line no-unused-vars
+    renderTrigger: ({ openDialog }: RenderTriggerProps) => ReactNode;
+    initialData: Entity | EmptyEntity;
+    // eslint-disable-next-line no-unused-vars
+    saveEntity: (e: Entity) => void;
+};
 
 const useStyles = makeStyles(() => ({
     root: {
-        minHeight: 365,
         position: 'relative',
     },
 }));
 
-const Dialog = ({ titleMessage, renderTrigger, initialData, saveEntity }) => {
-    const classes = useStyles();
+const Dialog: FunctionComponent<Props> = ({
+    titleMessage,
+    renderTrigger,
+    initialData = {
+        name: null,
+        entity_type: null,
+        attributes: null,
+    },
+    saveEntity,
+}) => {
+    const classes: any = useStyles();
     const { formatMessage } = useSafeIntl();
 
     const { data: entityTypes, isFetching: fetchingEntitytypes } =
@@ -34,25 +71,25 @@ const Dialog = ({ titleMessage, renderTrigger, initialData, saveEntity }) => {
                     .trim()
                     .required(formatMessage(MESSAGES.nameRequired)),
                 entity_type: yup.string().trim().required(),
+                attributes: yup.string().trim().required(),
             }),
         );
 
-    const formik = useFormik({
-        initialValues: initialData || {
-            name: null,
-            entity_type: null,
-        },
+    const formik: FormikProps<Entity | EmptyEntity> = useFormik<
+        Entity | EmptyEntity
+    >({
+        initialValues: initialData,
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: getSchema,
         onSubmit: saveEntity,
     });
     const { values, setFieldValue, errors, isValid, initialValues } = formik;
-
     const getErrors = k => (errors[k] ? [errors[k]] : []);
 
     return (
         <FormikProvider value={formik}>
+            {/* @ts-ignore */}
             <ConfirmCancelDialogComponent
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
@@ -70,10 +107,17 @@ const Dialog = ({ titleMessage, renderTrigger, initialData, saveEntity }) => {
                 }}
             >
                 <div className={classes.root} id="entity-dialog">
+                    {values.attributes && (
+                        <IconButtonComponent
+                            url={`/${baseUrls.instanceDetail}/instanceId/${values.attributes}`}
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.viewInstance}
+                        />
+                    )}
                     <InputComponent
                         keyValue="name"
                         onChange={setFieldValue}
-                        value={values?.name}
+                        value={values.name}
                         errors={getErrors('name')}
                         type="text"
                         label={MESSAGES.name}
@@ -84,7 +128,7 @@ const Dialog = ({ titleMessage, renderTrigger, initialData, saveEntity }) => {
                         clearable={false}
                         required
                         onChange={setFieldValue}
-                        value={values?.entity_type}
+                        value={values.entity_type}
                         errors={getErrors('entity_type')}
                         type="select"
                         options={
@@ -100,17 +144,6 @@ const Dialog = ({ titleMessage, renderTrigger, initialData, saveEntity }) => {
             </ConfirmCancelDialogComponent>
         </FormikProvider>
     );
-};
-
-Dialog.defaultProps = {
-    initialData: null,
-};
-
-Dialog.propTypes = {
-    titleMessage: PropTypes.object.isRequired,
-    renderTrigger: PropTypes.func.isRequired,
-    initialData: PropTypes.object,
-    saveEntity: PropTypes.func.isRequired,
 };
 
 export default Dialog;

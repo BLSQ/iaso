@@ -29,9 +29,9 @@ class EntitySerializer(serializers.ModelSerializer):
             "uuid",
             "created_at",
             "updated_at",
+            "attributes",
             "entity_type",
             "entity_type_name",
-            "attributes",
         ]
 
     entity_type_name = serializers.SerializerMethodField()
@@ -50,7 +50,7 @@ class HasEntityPermission(permissions.BasePermission):
 
 
 class EntityTypeViewSet(ModelViewSet):
-    results_key = "entities"
+    results_key = "types"
     remove_results_key_if_paginated = True
     # Check if filters are needed
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]

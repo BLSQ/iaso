@@ -41,5 +41,13 @@ export const useGetTypesPaginated = (
 
 export const useGetTypes = (): UseQueryResult<Array<EntityType>, Error> => {
     // @ts-ignore
-    return useSnackQuery(['entitytypes'], () => getRequest('/api/entitytype/'));
+    return useSnackQuery(
+        ['entitytypes'],
+        () => getRequest('/api/entitytype/'),
+        undefined,
+        {
+            // using this here to avoid multiple identical calls
+            staleTime: 300000,
+        },
+    );
 };

@@ -141,6 +141,12 @@ const menuItems = defaultSourceId => [
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
             },
+            {
+                label: MESSAGES.entityTypesTitle,
+                permissions: paths.entitiesPath.permissions,
+                key: 'types',
+                icon: props => <CategoryIcon {...props} />,
+            },
         ],
     },
     {

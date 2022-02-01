@@ -5,12 +5,12 @@ import {
     IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles, Box } from '@material-ui/core';
 import isEqual from 'lodash/isEqual';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { useGetTypes } from '../hooks/useGetTypes';
+import { useGetTypes } from '../entityTypes/hooks/useGetTypes';
 
 import { Entity } from '../types/entity';
 
@@ -41,13 +41,18 @@ type Props = {
     saveEntity: (e: Entity) => void;
 };
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
     root: {
         position: 'relative',
     },
+    view: {
+        position: 'absolute',
+        top: theme.spacing(1),
+        right: theme.spacing(1),
+    },
 }));
 
-const Dialog: FunctionComponent<Props> = ({
+const EntityDialog: FunctionComponent<Props> = ({
     titleMessage,
     renderTrigger,
     initialData = {
@@ -106,14 +111,16 @@ const Dialog: FunctionComponent<Props> = ({
                     classNames: classes.dialog,
                 }}
             >
-                <div className={classes.root} id="entity-dialog">
-                    {values.attributes && (
+                {values.attributes && (
+                    <Box className={classes.view}>
                         <IconButtonComponent
                             url={`/${baseUrls.instanceDetail}/instanceId/${values.attributes}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewInstance}
                         />
-                    )}
+                    </Box>
+                )}
+                <div className={classes.root} id="entity-dialog">
                     <InputComponent
                         keyValue="name"
                         onChange={setFieldValue}
@@ -146,4 +153,4 @@ const Dialog: FunctionComponent<Props> = ({
     );
 };
 
-export default Dialog;
+export default EntityDialog;

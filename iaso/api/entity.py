@@ -17,7 +17,22 @@ from rest_framework import serializers
 class EntityTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityType
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+            "created_at",
+            "updated_at",
+            "defining_form",
+            "entities_count",
+        ]
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
+    entities_count = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_entities_count(obj: EntityType):
+        return Entity.objects.filter(entity_type=obj.id).count()
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -59,7 +74,11 @@ class EntityTypeViewSet(ModelViewSet):
         return EntityTypeSerializer
 
     def get_queryset(self):
-        return EntityType.objects.filter()
+        search = self.request.query_params.get("search", None)
+        queryset = EntityType.objects.filter()
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        return queryset
 
 
 class EntityFilterBackend(filters.BaseFilterBackend):

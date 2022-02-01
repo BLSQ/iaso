@@ -20,6 +20,7 @@ export const baseUrls = {
     tasks: 'settings/tasks',
     devices: 'settings/devices',
     entities: 'entities/list',
+    entityTypes: 'entities/types',
     polio: 'polio/list',
     pages: 'pages',
     error401: '401',

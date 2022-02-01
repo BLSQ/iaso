@@ -6,13 +6,11 @@ import SearchIcon from '@material-ui/icons/Search';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
-import InputComponent from '../../../components/forms/InputComponent';
-import { redirectTo } from '../../../routing/actions';
-import MESSAGES from '../messages';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { redirectTo } from '../../../../routing/actions';
+import MESSAGES from '../../messages';
 
 import { baseUrl } from '../config';
-
-import { useGetTypes } from '../entityTypes/hooks/useGetTypes';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -23,7 +21,6 @@ type Params = {
     order: string;
     page: string;
     search?: string;
-    entityTypes?: string;
 };
 
 type Props = {
@@ -37,11 +34,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
     const [filters, setFilters] = useState({
         search: params.search,
-        entityTypes: params.entityTypes,
     });
-
-    const { data: entityTypes, isFetching: fetchingEntitytypes } =
-        useGetTypes();
     const handleSearch = () => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
@@ -71,24 +64,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         type="search"
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
-                    />
-                </Grid>
-                <Grid item xs={3}>
-                    <InputComponent
-                        keyValue="entityTypes"
-                        clearable
-                        multi
-                        onChange={handleChange}
-                        value={filters.entityTypes}
-                        type="select"
-                        options={
-                            entityTypes?.map(t => ({
-                                label: t.name,
-                                value: t.id,
-                            })) ?? []
-                        }
-                        label={MESSAGES.types}
-                        loading={fetchingEntitytypes}
                     />
                 </Grid>
             </Grid>

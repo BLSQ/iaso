@@ -19,7 +19,8 @@ import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
-import Entities from '../domains/entities';
+import Entities from '../domains/entities/index.tsx';
+import EntityTypes from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
@@ -527,6 +528,21 @@ export const entitiesPath = {
         })),
     ],
 };
+export const entityTypesPath = {
+    baseUrl: baseUrls.entityTypes,
+    permissions: ['iaso_entities'],
+    component: props => <EntityTypes {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
 
 export const page401 = {
     baseUrl: baseUrls.error401,
@@ -568,6 +584,7 @@ export const routeConfigs = [
     groupsPath,
     orgUnitTypesPath,
     entitiesPath,
+    entityTypesPath,
     pagesPath,
     page401,
     page500,

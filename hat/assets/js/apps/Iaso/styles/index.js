@@ -42,9 +42,6 @@ export const getOverriddenTheme = theme => {
                     a: {
                         color: primaryColor.hex(),
                         textDecoration: 'none',
-                        '&:hover': {
-                            textDecoration: 'underline',
-                        },
                         '&:visited': {
                             color: primaryColor.hex(),
                         },

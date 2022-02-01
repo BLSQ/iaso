@@ -30,6 +30,10 @@ const addRoutes = baseRoutes =>
             to={`${baseUrls.entities}/order/name/pageSize/20/page/1`}
         />,
         <Redirect
+            path={baseUrls.entityTypes}
+            to={`${baseUrls.entityTypes}/order/name/pageSize/20/page/1`}
+        />,
+        <Redirect
             path={baseUrls.groups}
             to={`${baseUrls.groups}/order/name/pageSize/20/page/1`}
         />,

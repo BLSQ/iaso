@@ -1,16 +1,16 @@
 import React, { ReactElement } from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import EntityDialog from './components/EntityDialog';
-import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { DateTimeCell } from '../../components/Cells/DateTimeCell';
+import EntityTypesDialog from './components/EntityTypesDialog';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 
 import MESSAGES from './messages';
 
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from '../../../constants/urls';
 
-import { Entity } from './types/entity';
+import { EntityType } from './types/entityType';
 
-export const baseUrl = baseUrls.entities;
+export const baseUrl = baseUrls.entityTypes;
 
 type Message = {
     id: string;
@@ -31,27 +31,20 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     formatMessage: (msg: Message) => string;
     // eslint-disable-next-line no-unused-vars
-    deleteEntitiy: (e: Entity) => void;
+    deleteEntitiyType: (e: EntityType) => void;
     // eslint-disable-next-line no-unused-vars
-    saveEntity: (e: Entity) => void;
+    saveEntityType: (e: EntityType) => void;
 };
 
 export const columns = ({
     formatMessage,
-    deleteEntitiy,
-    saveEntity,
+    deleteEntitiyType,
+    saveEntityType,
 }: Props): Array<Column> => [
     {
         Header: formatMessage(MESSAGES.name),
         id: 'name',
         accessor: 'name',
-    },
-    {
-        Header: formatMessage(MESSAGES.types),
-        id: 'entity_type_name',
-        accessor: 'entity_type_name',
-        // TODO: allow to sort on entity type name
-        sortable: false,
     },
     {
         Header: formatMessage(MESSAGES.created_at),
@@ -64,6 +57,11 @@ export const columns = ({
         Cell: DateTimeCell,
     },
     {
+        Header: formatMessage(MESSAGES.entitiesCount),
+        accessor: 'entities_count',
+        sortable: false,
+    },
+    {
         Header: formatMessage(MESSAGES.actions),
         accessor: 'actions',
         resizable: false,
@@ -71,12 +69,14 @@ export const columns = ({
         Cell: (settings): ReactElement => (
             // TODO: limit to user permissions
             <section>
-                <IconButtonComponent
-                    url={`/${baseUrls.instanceDetail}/instanceId/${settings.row.original.attributes}`}
-                    icon="remove-red-eye"
-                    tooltipMessage={MESSAGES.viewInstance}
-                />
-                <EntityDialog
+                {settings.row.original?.defining_form && (
+                    <IconButtonComponent
+                        url={`/${baseUrls.formDetail}/formId/${settings.row.original.defining_form}`}
+                        icon="remove-red-eye"
+                        tooltipMessage={MESSAGES.viewForm}
+                    />
+                )}
+                <EntityTypesDialog
                     renderTrigger={({ openDialog }) => (
                         <IconButtonComponent
                             onClick={openDialog}
@@ -86,14 +86,18 @@ export const columns = ({
                     )}
                     initialData={settings.row.original}
                     titleMessage={MESSAGES.updateMessage}
-                    saveEntity={saveEntity}
+                    saveEntityType={saveEntityType}
                 />
-                <DeleteDialog
-                    disabled={settings.row.original.instances_count > 0}
-                    titleMessage={MESSAGES.deleteTitle}
-                    message={MESSAGES.deleteText}
-                    onConfirm={() => deleteEntitiy(settings.row.original)}
-                />
+                {settings.row.original.entities_count === 0 && (
+                    <DeleteDialog
+                        disabled={settings.row.original.instances_count > 0}
+                        titleMessage={MESSAGES.deleteTitle}
+                        message={MESSAGES.deleteText}
+                        onConfirm={() =>
+                            deleteEntitiyType(settings.row.original)
+                        }
+                    />
+                )}
             </section>
         ),
     },

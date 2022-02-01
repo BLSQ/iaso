@@ -1,7 +1,7 @@
-import { Entity } from './entity';
+import { EntityType } from './entityType';
 
 export type PaginatedEntityTypes = {
-    types: Array<Entity>;
+    types: Array<EntityType>;
     pages: number;
     page: number;
     count: number;

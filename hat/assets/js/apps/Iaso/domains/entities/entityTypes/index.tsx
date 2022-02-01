@@ -10,18 +10,18 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import TopBar from '../../components/nav/TopBarComponent';
+import TopBar from '../../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
-// import EntityDialog from './components/EntityDialog';
+// import EntityTypesDialog from './components/EntityTypesDialog';
 
-import { useGetPaginated } from './hooks/useGet';
+import { useGetTypesPaginated } from './hooks/useGetTypes';
 import { useDelete } from './hooks/useDelete';
 import { useSave } from './hooks/useSave';
 
 import { columns, baseUrl } from './config';
 import MESSAGES from './messages';
 
-import { redirectTo } from '../../routing/actions';
+import { redirectTo } from '../../../routing/actions';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -32,21 +32,20 @@ type Params = {
     order: string;
     page: string;
     search?: string;
-    entityTypes?: string;
 };
 
 type Props = {
     params: Params;
 };
 
-const Entities: FunctionComponent<Props> = ({ params }) => {
+const EntityTypes: FunctionComponent<Props> = ({ params }) => {
     const classes: any = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
 
-    const { data, isFetching: fetchingEntities } = useGetPaginated(params);
-    const { mutate: deleteEntitiy, isLoading: deleting } = useDelete();
-    const { mutate: saveEntity, isLoading: saving } = useSave();
+    const { data, isFetching: fetchingEntities } = useGetTypesPaginated(params);
+    const { mutate: deleteEntitiyType, isLoading: deleting } = useDelete();
+    const { mutate: saveEntityType, isLoading: saving } = useSave();
 
     const isLoading = fetchingEntities || deleting || saving;
 
@@ -73,17 +72,17 @@ const Entities: FunctionComponent<Props> = ({ params }) => {
                                 <AddButtonComponent onClick={openDialog} />
                             </div>
                         )}
-                        saveEntity={saveEntity}
+                        saveEntityType={saveEntityType}
                     /> */}
                 </Grid>
                 <Table
-                    data={data?.entities ?? []}
+                    data={data?.types ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={columns({
                         formatMessage,
-                        deleteEntitiy,
-                        saveEntity,
+                        deleteEntitiyType,
+                        saveEntityType,
                     })}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
@@ -94,4 +93,4 @@ const Entities: FunctionComponent<Props> = ({ params }) => {
         </>
     );
 };
-export default Entities;
+export default EntityTypes;

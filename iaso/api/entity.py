@@ -101,7 +101,9 @@ class EntityViewSet(ModelViewSet):
                     )
                 entity_type = get_object_or_404(EntityType, pk=entity["entity_type"])
                 account = request.user.iaso_profile.account
-                Entity.objects.create(name=entity["name"], entity_type=entity_type, attributes=instance, account=account)
+                Entity.objects.create(
+                    name=entity["name"], entity_type=entity_type, attributes=instance, account=account
+                )
                 created_entities.append(entity)
             return JsonResponse(created_entities, safe=False)
         entities = Entity.objects.filter(account=request.user.iaso_profile.account)

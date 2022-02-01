@@ -125,7 +125,6 @@ class EntityAPITestCase(APITestCase):
         response = self.client.post("/api/entity/", data=payload, format="json")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)
 
     def test_create_multiples_entity(self):
         self.client.force_authenticate(self.yoda)
@@ -156,7 +155,7 @@ class EntityAPITestCase(APITestCase):
             "account": self.yoda.iaso_profile.account.pk,
         }
 
-        response = self.client.post("/api/entity/", data=payload, format="json")
+        response = self.client.post("/api/entity/bulk_create/", data=payload, format="json")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
@@ -184,9 +183,9 @@ class EntityAPITestCase(APITestCase):
             "account": self.yoda.iaso_profile.account.pk,
         }
 
-        response = self.client.post("/api/entity/", data=payload, format="json")
+        response = self.client.post("/api/entity/bulk_create/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.status_code, 400)
 
     def test_retrieve_entity(self):
         self.client.force_authenticate(self.yoda)
@@ -217,7 +216,7 @@ class EntityAPITestCase(APITestCase):
             "account": self.yoda.iaso_profile.account.pk,
         }
 
-        self.client.post("/api/entity/", data=payload, format="json")
+        self.client.post("/api/entity/bulk_create/", data=payload, format="json")
 
         response = self.client.get("/api/entity/", format="json")
 
@@ -319,7 +318,7 @@ class EntityAPITestCase(APITestCase):
             "account": self.yoda.iaso_profile.account.pk,
         }
 
-        self.client.post("/api/entity/", data=payload, format="json")
+        self.client.post("/api/entity/bulk_create/", data=payload, format="json")
         self.client.delete("/api/entity/{0}/".format(Entity.objects.last().pk), format="json")
 
         response = self.client.get("/api/entity/", format="json")
@@ -360,19 +359,19 @@ class EntityAPITestCase(APITestCase):
             period="202002",
         )
 
-        payload = {
-            "name": "New Client",
-            "entity_type": entity_type.pk,
-            "attributes": instance.pk,
-            "account": self.yop_solo.iaso_profile.account.pk,
-        }, {
-            "name": "New Client 2",
-            "entity_type": entity_type.pk,
-            "attributes": second_instance.pk,
-            "account": self.yoda.iaso_profile.account.pk,
-        }
+        Entity.objects.create(
+            name="New Client",
+            entity_type=entity_type,
+            attributes=instance,
+            account=self.yop_solo.iaso_profile.account,
+        )
 
-        self.client.post("/api/entity/", data=payload, format="json")
+        Entity.objects.create(
+            name="New Client",
+            entity_type=entity_type,
+            attributes=second_instance,
+            account=self.yoda.iaso_profile.account,
+        )
 
         response = self.client.get("/api/entity/", format="json")
 

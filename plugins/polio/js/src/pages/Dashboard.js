@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import moment from 'moment';
 import PropTypes from 'prop-types';
 import {
     IconButton as IconButtonComponent,
@@ -15,14 +16,15 @@ import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { getApiParamDateString } from 'Iaso/utils/dates';
+import { getApiParamDateString } from 'Iaso/utils/dates.ts';
 import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateEditDialog';
 import { PageAction } from '../components/Buttons/PageAction';
 import { PageActions } from '../components/Buttons/PageActions';
-import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
+import { useRestoreCampaign } from '../hooks/useRestoreCampaign';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 
@@ -40,6 +42,7 @@ const Dashboard = ({ router }) => {
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
+    const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
     const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
     const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
@@ -52,13 +55,15 @@ const Dashboard = ({ router }) => {
         order,
         countries: params.countries,
         search: params.search,
+        showOnlyDeleted: params.showOnlyDeleted,
         r1StartFrom: getApiParamDateString(params.r1StartFrom),
         r1StartTo: getApiParamDateString(params.r1StartTo),
     });
 
-    const { data: campaigns = [], status } = query;
+    const { data: campaigns = [], isFetching } = query;
 
     const { mutate: removeCampaign } = useRemoveCampaign();
+    const { mutate: restoreCampaign } = useRestoreCampaign();
 
     const selectedCampaign = campaigns?.campaigns?.find(
         campaign => campaign.id === selectedCampaignId,
@@ -91,11 +96,21 @@ const Dashboard = ({ router }) => {
     const closeDeleteConfirmDialog = () => {
         setIsConfirmDeleteDialogOpen(false);
     };
+    const closeRestoreConfirmDialog = () => {
+        setIsRestoreDialogOpen(false);
+    };
 
     const handleDeleteConfirmDialogConfirm = () => {
         removeCampaign(selectedCampaign.id, {
             onSuccess: () => {
                 closeDeleteConfirmDialog();
+            },
+        });
+    };
+    const handleRestoreDialogConfirm = () => {
+        restoreCampaign(selectedCampaign.id, {
+            onSuccess: () => {
+                closeRestoreConfirmDialog();
             },
         });
     };
@@ -115,6 +130,13 @@ const Dashboard = ({ router }) => {
         },
         [setSelectedCampaignId, openDeleteConfirmDialog],
     );
+    const handleClickRestoreRow = useCallback(
+        id => {
+            setSelectedCampaignId(id);
+            setIsRestoreDialogOpen(true);
+        },
+        [setSelectedCampaignId, setIsRestoreDialogOpen],
+    );
 
     const handleClickCreateButton = () => {
         setSelectedCampaignId(undefined);
@@ -128,8 +150,8 @@ const Dashboard = ({ router }) => {
         }
     }, []);
 
-    const columns = useMemo(
-        () => [
+    const columns = useMemo(() => {
+        const cols = [
             {
                 Header: formatMessage(MESSAGES.country),
                 id: 'country__name',
@@ -165,22 +187,52 @@ const Dashboard = ({ router }) => {
                 sortable: false,
                 Cell: settings => (
                     <>
-                        <IconButtonComponent
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
-                            onClick={() => handleClickEditRow(settings.value)}
-                        />
-                        <IconButtonComponent
-                            icon="delete"
-                            tooltipMessage={MESSAGES.delete}
-                            onClick={() => handleClickDeleteRow(settings.value)}
-                        />
+                        {!params.showOnlyDeleted && (
+                            <>
+                                <IconButtonComponent
+                                    icon="edit"
+                                    tooltipMessage={MESSAGES.edit}
+                                    onClick={() =>
+                                        handleClickEditRow(settings.value)
+                                    }
+                                />
+                                <IconButtonComponent
+                                    icon="delete"
+                                    tooltipMessage={MESSAGES.delete}
+                                    onClick={() =>
+                                        handleClickDeleteRow(settings.value)
+                                    }
+                                />
+                            </>
+                        )}
+                        {params.showOnlyDeleted && (
+                            <IconButtonComponent
+                                icon="restore-from-trash"
+                                tooltipMessage={MESSAGES.restoreCampaign}
+                                onClick={() =>
+                                    handleClickRestoreRow(settings.value)
+                                }
+                            />
+                        )}
                     </>
                 ),
             },
-        ],
-        [handleClickDeleteRow, handleClickEditRow, formatMessage],
-    );
+        ];
+        if (params.showOnlyDeleted) {
+            cols.unshift({
+                Header: formatMessage(MESSAGES.deleted_at),
+                accessor: 'deleted_at',
+                Cell: settings =>
+                    moment(settings.row.original.deleted_at).format('LTS'),
+            });
+        }
+        return cols;
+    }, [
+        handleClickDeleteRow,
+        handleClickEditRow,
+        formatMessage,
+        params.showOnlyDeleted,
+    ]);
 
     // The naming is aligned with the names in Table
     const onTableParamsChange = useCallback(
@@ -216,13 +268,20 @@ const Dashboard = ({ router }) => {
                 isOpen={isCreateEditDialogOpen}
                 onClose={closeCreateEditDialog}
             />
-            <DeleteConfirmDialog
+            <ConfirmDialog
+                title={formatMessage(MESSAGES.deleteWarning)}
                 isOpen={isConfirmDeleteDialogOpen}
                 onClose={closeDeleteConfirmDialog}
                 onConfirm={handleDeleteConfirmDialogConfirm}
             />
+            <ConfirmDialog
+                title={formatMessage(MESSAGES.restoreWarning)}
+                isOpen={isRestoreDialogOpen}
+                onClose={closeRestoreConfirmDialog}
+                onConfirm={handleRestoreDialogConfirm}
+            />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                {status === 'loading' && <LoadingSpinner />}
+                {isFetching && <LoadingSpinner />}
                 <PageActions params={params}>
                     <PageAction
                         icon={AddIcon}

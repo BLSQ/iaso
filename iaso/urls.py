@@ -4,7 +4,7 @@ from django.contrib import auth
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from hat.api.authentication import WfpLogin, callback
+from hat.api.authentication import WfpLogin, wfp_callback
 from .api.comment import CommentViewSet
 from .api.logs import LogsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
@@ -141,7 +141,7 @@ urlpatterns = urlpatterns + [
 ]
 # WFP OAUTH / Openid
 urlpatterns = urlpatterns + [
-    url("auth0/login/callback/", callback, name="callback"),
+    url("auth0/login/callback/", wfp_callback, name="callback"),
     path("", include("allauth.urls")),
     path("auth0/login/", WfpLogin.as_view(), name="openid"),
 ]

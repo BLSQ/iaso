@@ -39,13 +39,6 @@ export const getOverriddenTheme = theme => {
                         lineHeight: 1,
                         backgroundColor: 'white',
                     },
-                    a: {
-                        color: primaryColor.hex(),
-                        textDecoration: 'none',
-                        '&:visited': {
-                            color: primaryColor.hex(),
-                        },
-                    },
                 },
             },
         },

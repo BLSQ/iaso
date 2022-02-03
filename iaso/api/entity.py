@@ -123,7 +123,7 @@ class EntityViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         data = request.data
         entity_type = get_object_or_404(EntityType, pk=data["entity_type"])
-        instance = get_object_or_404(Instance, pk=data["attributes"])
+        instance = get_object_or_404(Instance, uuid=data["attributes"])
         account = request.user.iaso_profile.account
         # Avoid duplicates
         if Entity.objects.filter(attributes=instance):
@@ -140,7 +140,7 @@ class EntityViewSet(ModelViewSet):
         # allows multiple create
         if request.method == "POST":
             for entity in data:
-                instance = get_object_or_404(Instance, pk=entity["attributes"])
+                instance = get_object_or_404(Instance, uuid=entity["attributes"])
                 # Avoid duplicates
                 if Entity.objects.filter(attributes=instance):
                     raise serializers.ValidationError(

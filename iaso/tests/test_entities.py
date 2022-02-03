@@ -118,7 +118,7 @@ class EntityAPITestCase(APITestCase):
         payload = {
             "name": "New Client",
             "entity_type": entity_type.pk,
-            "attributes": instance.pk,
+            "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
 
@@ -146,12 +146,12 @@ class EntityAPITestCase(APITestCase):
         payload = {
             "name": "New Client",
             "entity_type": entity_type.pk,
-            "attributes": instance.pk,
+            "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }, {
             "name": "New Client 2",
             "entity_type": entity_type.pk,
-            "attributes": second_instance.pk,
+            "attributes": second_instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
 
@@ -174,7 +174,7 @@ class EntityAPITestCase(APITestCase):
         payload = {
             "name": "New Client",
             "entity_type": entity_type.pk,
-            "attributes": instance.pk,
+            "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }, {
             "name": "New Client 2",
@@ -207,12 +207,12 @@ class EntityAPITestCase(APITestCase):
         payload = {
             "name": "New Client",
             "entity_type": entity_type.pk,
-            "attributes": instance.pk,
+            "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }, {
             "name": "New Client 2",
             "entity_type": entity_type.pk,
-            "attributes": second_instance.pk,
+            "attributes": second_instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
 
@@ -237,7 +237,7 @@ class EntityAPITestCase(APITestCase):
         payload = {
             "name": "New Client",
             "entity_type": entity_type.pk,
-            "attributes": instance.pk,
+            "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
 
@@ -274,16 +274,18 @@ class EntityAPITestCase(APITestCase):
             period="202002",
         )
 
+        print(Instance.objects.filter(uuid=instance.uuid))
+
         payload_post = {
             "name": "New Client",
             "entity_type": entity_type.pk,
-            "attributes": instance.pk,
+            "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
 
         self.client.post("/api/entity/", data=payload_post, format="json")
 
-        payload = {"name": "New Client-2", "entity_type": entity_type.pk, "attributes": instance.pk}
+        payload = {"name": "New Client-2", "entity_type": entity_type.pk, "attributes": instance.uuid}
 
         response = self.client.patch("/api/entity/{0}/".format(Entity.objects.last().pk), data=payload, format="json")
 
@@ -309,12 +311,12 @@ class EntityAPITestCase(APITestCase):
         payload = {
             "name": "New Client",
             "entity_type": entity_type.pk,
-            "attributes": instance.pk,
+            "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }, {
             "name": "New Client 2",
             "entity_type": entity_type.pk,
-            "attributes": second_instance.pk,
+            "attributes": second_instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
 

@@ -122,7 +122,7 @@ class EntityViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        entity_type = get_object_or_404(EntityType, pk=data["entity_type"])
+        entity_type = get_object_or_404(EntityType, pk=int(data["entity_type"]))
         instance = get_object_or_404(Instance, uuid=data["attributes"])
         account = request.user.iaso_profile.account
         # Avoid duplicates
@@ -146,7 +146,7 @@ class EntityViewSet(ModelViewSet):
                     raise serializers.ValidationError(
                         {"attributes": "Entity with the attribute '{0}' already exists.".format(entity["attributes"])}
                     )
-                entity_type = get_object_or_404(EntityType, pk=entity["entity_type"])
+                entity_type = get_object_or_404(EntityType, pk=int(entity["entity_type"]))
                 account = request.user.iaso_profile.account
                 Entity.objects.create(
                     name=entity["name"], entity_type=entity_type, attributes=instance, account=account

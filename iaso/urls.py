@@ -1,8 +1,10 @@
+from django.conf.urls import url
 from django.urls import path, include
 from django.contrib import auth
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from hat.api.authentication import WfpLogin, wfp_callback
 from .api.comment import CommentViewSet
 from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.logs import LogsViewSet
@@ -140,6 +142,13 @@ urlpatterns = urlpatterns + [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("", include(router.urls)),
 ]
+# WFP OAUTH / Openid
+urlpatterns = urlpatterns + [
+    url("auth0/login/callback/", wfp_callback, name="callback"),
+    path("", include("allauth.urls")),
+    path("auth0/login/", WfpLogin.as_view(), name="openid"),
+]
+
 for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)
 

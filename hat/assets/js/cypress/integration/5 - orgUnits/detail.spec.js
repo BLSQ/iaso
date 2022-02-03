@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+import moment from 'moment';
 
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import orgUnit from '../../fixtures/orgunits/details.json';
@@ -14,6 +15,17 @@ const interceptList = [
     'groups',
     'orgunittypes',
 ];
+
+const testInfos = ou => {
+    cy.testInputValue('#input-text-name', ou.name);
+    cy.testInputValue('#org_unit_type_id', ou.org_unit_type.name);
+    cy.testMultiSelect('#groups', ou.groups);
+    cy.testInputValue('#validation_status', 'New');
+    cy.testInputValue('#input-text-source_ref', ou.source_ref);
+    ou.aliases.forEach((a, i) => {
+        cy.testInputValue(`#aliases-${i}`, a);
+    });
+};
 
 describe('OrgUnits detail', () => {
     beforeEach(() => {
@@ -38,9 +50,7 @@ describe('OrgUnits detail', () => {
         cy.intercept(
             'GET',
             `/api/orgunits/?&orgUnitParentId=${orgUnit.id}&orgUnitTypeId=7&withShapes=true&valid`,
-            {
-                fixture: 'orgunits/details-children.json',
-            },
+            { orgUnits: [] },
         );
         cy.intercept(
             'GET',
@@ -85,15 +95,43 @@ describe('OrgUnits detail', () => {
         const errorCode = cy.get('#error-code');
         errorCode.should('contain', '401');
     });
-    describe('infos tab', () => {
+    describe.only('infos tab', () => {
         it('should render correct infos', () => {
             cy.visit(baseUrl);
             cy.wait('@getOuDetail').then(() => {
-                cy.testInputValue('#input-text-name', orgUnit.name);
+                testInfos(orgUnit);
+                cy.testInputValue('#input-text-source', orgUnit.source);
                 cy.testInputValue(
-                    '#org_unit_type_id',
-                    orgUnit.org_unit_type.name,
+                    '#input-text-created_at',
+                    moment.unix(orgUnit.created_at).format('DD/MM/YYYY HH:mm'),
                 );
+                cy.testInputValue(
+                    '#input-text-updated_at',
+                    moment.unix(orgUnit.updated_at).format('DD/MM/YYYY HH:mm'),
+                );
+            });
+        });
+        it('should save new infos', () => {
+            cy.visit(baseUrl);
+            cy.wait('@getOuDetail').then(() => {
+                const newOu = {
+                    name: 'ZELDA',
+                    org_unit_type: {
+                        name: 'MARIO',
+                    },
+                    groups: [
+                        {
+                            name: 'GORONS',
+                        },
+                        {
+                            name: 'GERUDO',
+                        },
+                    ],
+                    validation_status: 'VALIDATED',
+                    aliases: ['LINK', 'LUIGI'],
+                };
+                // change values
+                testInfos(newOu);
             });
         });
     });

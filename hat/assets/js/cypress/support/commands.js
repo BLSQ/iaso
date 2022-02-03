@@ -44,6 +44,15 @@ Cypress.Commands.add('testInputValue', (id, value) =>
     cy.get(id).invoke('attr', 'value').should('equal', value),
 );
 
+Cypress.Commands.add('testMultiSelect', (id, options, accessor = 'name') => {
+    const select = cy.get(id).parent();
+    const chips = select.find('div[role=button]');
+    chips.should('have.length', options.length);
+    options.forEach(o => {
+        select.should('contain', o[accessor]);
+    });
+});
+
 Cypress.Commands.add(
     'loginByCSRF',
     (

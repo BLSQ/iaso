@@ -43,7 +43,7 @@ def wfp_callback(request):
         payload = {
             "client_id": os.environ.get("IASO_WFP_ID"),
             "grant_type": "authorization_code",
-            "redirect_uri": "https://bluesquare.eu.ngrok.io/api/auth0/login/callback/",
+            "redirect_uri": os.environ.get("WFP_CALLBACK_URL"),
             "code": code,
             "code_verifier": settings.CODE_CHALLENGE,
         }

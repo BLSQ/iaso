@@ -7,11 +7,12 @@ import {
     Table,
     LoadingSpinner,
     useSafeIntl,
+    // AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
-
+// import EntityDialog from './components/EntityDialog';
 import { useGetPaginated } from './hooks/useGet';
 import { useDelete } from './hooks/useDelete';
 import { useSave } from './hooks/useSave';
@@ -63,7 +64,18 @@ const Entities: FunctionComponent<Props> = ({ params }) => {
                     justifyContent="flex-end"
                     alignItems="center"
                     className={classes.marginTop}
-                />
+                >
+                    {/* Uncomment when adding entities is implemented */}
+                    {/* <EntityDialog
+                        titleMessage={MESSAGES.create}
+                        renderTrigger={({ openDialog }) => (
+                            <div id="add-button-container">
+                                <AddButtonComponent onClick={openDialog} />
+                            </div>
+                        )}
+                        saveEntity={saveEntity}
+                    /> */}
+                </Grid>
                 <Table
                     data={data?.entities ?? []}
                     pages={data?.pages ?? 1}

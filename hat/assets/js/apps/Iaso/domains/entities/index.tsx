@@ -6,13 +6,11 @@ import {
     commonStyles,
     Table,
     LoadingSpinner,
-    // AddButton as AddButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
-// import EntityDialog from './components/EntityDialog';
 
 import { useGetPaginated } from './hooks/useGet';
 import { useDelete } from './hooks/useDelete';
@@ -45,7 +43,7 @@ const Entities: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
 
     const { data, isFetching: fetchingEntities } = useGetPaginated(params);
-    const { mutate: deleteEntitiy, isLoading: deleting } = useDelete();
+    const { mutate: deleteEntity, isLoading: deleting } = useDelete();
     const { mutate: saveEntity, isLoading: saving } = useSave();
 
     const isLoading = fetchingEntities || deleting || saving;
@@ -65,24 +63,14 @@ const Entities: FunctionComponent<Props> = ({ params }) => {
                     justifyContent="flex-end"
                     alignItems="center"
                     className={classes.marginTop}
-                >
-                    {/* <EntityDialog
-                        titleMessage={MESSAGES.create}
-                        renderTrigger={({ openDialog }) => (
-                            <div id="add-button-container">
-                                <AddButtonComponent onClick={openDialog} />
-                            </div>
-                        )}
-                        saveEntity={saveEntity}
-                    /> */}
-                </Grid>
+                />
                 <Table
                     data={data?.entities ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={columns({
                         formatMessage,
-                        deleteEntitiy,
+                        deleteEntity,
                         saveEntity,
                     })}
                     count={data?.count ?? 0}

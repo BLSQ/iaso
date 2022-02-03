@@ -31,14 +31,14 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     formatMessage: (msg: Message) => string;
     // eslint-disable-next-line no-unused-vars
-    deleteEntitiyType: (e: EntityType) => void;
+    deleteEntityType: (e: EntityType) => void;
     // eslint-disable-next-line no-unused-vars
     saveEntityType: (e: EntityType) => void;
 };
 
 export const columns = ({
     formatMessage,
-    deleteEntitiyType,
+    deleteEntityType,
     saveEntityType,
 }: Props): Array<Column> => [
     {
@@ -94,7 +94,7 @@ export const columns = ({
                         titleMessage={MESSAGES.deleteTitle}
                         message={MESSAGES.deleteText}
                         onConfirm={() =>
-                            deleteEntitiyType(settings.row.original)
+                            deleteEntityType(settings.row.original)
                         }
                     />
                 )}

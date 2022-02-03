@@ -6,13 +6,11 @@ import {
     commonStyles,
     Table,
     LoadingSpinner,
-    // AddButton as AddButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
 
 import TopBar from '../../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
-// import EntityTypesDialog from './components/EntityTypesDialog';
 
 import { useGetTypesPaginated } from './hooks/useGetTypes';
 import { useDelete } from './hooks/useDelete';
@@ -44,7 +42,7 @@ const EntityTypes: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
 
     const { data, isFetching: fetchingEntities } = useGetTypesPaginated(params);
-    const { mutate: deleteEntitiyType, isLoading: deleting } = useDelete();
+    const { mutate: deleteEntityType, isLoading: deleting } = useDelete();
     const { mutate: saveEntityType, isLoading: saving } = useSave();
 
     const isLoading = fetchingEntities || deleting || saving;
@@ -64,24 +62,14 @@ const EntityTypes: FunctionComponent<Props> = ({ params }) => {
                     justifyContent="flex-end"
                     alignItems="center"
                     className={classes.marginTop}
-                >
-                    {/* <EntityDialog
-                        titleMessage={MESSAGES.create}
-                        renderTrigger={({ openDialog }) => (
-                            <div id="add-button-container">
-                                <AddButtonComponent onClick={openDialog} />
-                            </div>
-                        )}
-                        saveEntityType={saveEntityType}
-                    /> */}
-                </Grid>
+                />
                 <Table
                     data={data?.types ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={columns({
                         formatMessage,
-                        deleteEntitiyType,
+                        deleteEntityType,
                         saveEntityType,
                     })}
                     count={data?.count ?? 0}

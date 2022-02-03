@@ -1,21 +1,20 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { useSafeIntl, Select } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 
 import { Grid, Box, makeStyles } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
-import { oneOf } from 'prop-types';
+import { oneOf, PropTypes } from 'prop-types';
 import MESSAGES from '../../constants/messages';
 
-import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 
 import { useLqasIm, useScopeAndDistrictsNotFound } from './requests';
 
 import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
 import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
-import { makeCampaignsDropDown } from '../../utils/index';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
+import { Filters } from '../../components/LQAS-IM/Filters.tsx';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
 import { LqasImPercentageChart } from '../../components/LQAS-IM/LqasImPercentageChart.tsx';
 import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
@@ -36,21 +35,17 @@ const styles = theme => ({
 
 const useStyles = makeStyles(styles);
 
-export const ImStats = ({ imType }) => {
+export const ImStats = ({ imType, router }) => {
+    const { campaign, country } = router.params;
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const [campaign, setCampaign] = useState();
-    const [country, setCountry] = useState();
     const { data: imData, isFetching } = useLqasIm(imType, country);
 
-    const { data: campaigns = [], isFetching: campaignsFetching } =
-        useGetCampaigns({
-            countries: [country],
-            enabled: Boolean(country),
-        }).query;
-    const { data: countriesData, isFetching: countriesLoading } =
-        useGetCountries();
-    const countriesList = (countriesData && countriesData.orgUnits) || [];
+    const { data: campaigns = [] } = useGetCampaigns({
+        countries: [country],
+        enabled: Boolean(country),
+    }).query;
+
     const countryOfSelectedCampaign = campaigns.filter(
         campaignOption => campaignOption.obr_name === campaign,
     )[0]?.top_level_org_unit_id;
@@ -61,16 +56,6 @@ export const ImStats = ({ imType }) => {
     );
     const hasScope = scopeStatus[campaign]?.hasScope;
 
-    useEffect(() => {
-        setCampaign();
-    }, [country]);
-
-    const dropDownOptions = useMemo(() => {
-        const displayedCampaigns = country
-            ? campaigns.filter(c => c.org_unit.id === country)
-            : campaigns;
-        return makeCampaignsDropDown(displayedCampaigns);
-    }, [country, campaigns]);
     return (
         <>
             <TopBar
@@ -79,40 +64,7 @@ export const ImStats = ({ imType }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container className={classes.container}>
-                    <Box px={2} mt={2} width="100%">
-                        <Grid container item spacing={4}>
-                            <Grid item xs={4}>
-                                <Select
-                                    keyValue="countries"
-                                    label={formatMessage(MESSAGES.country)}
-                                    loading={countriesLoading}
-                                    clearable
-                                    multi={false}
-                                    value={country}
-                                    options={countriesList.map(c => ({
-                                        label: c.name,
-                                        value: c.id,
-                                    }))}
-                                    onChange={value => setCountry(value)}
-                                />
-                            </Grid>
-                            <Grid item xs={4}>
-                                <Select
-                                    keyValue="campaigns"
-                                    label={formatMessage(MESSAGES.campaign)}
-                                    loading={
-                                        isFetching
-                                    }
-                                    clearable
-                                    multi={false}
-                                    value={campaign}
-                                    options={dropDownOptions}
-                                    onChange={value => setCampaign(value)}
-                                    disabled={Boolean(!country)}
-                                />
-                            </Grid>
-                        </Grid>
-                    </Box>
+                    <Filters isFetching={isFetching} />
                     <Grid container item spacing={2} direction="row">
                         <Grid item xs={6}>
                             <Box ml={2}>
@@ -265,4 +217,7 @@ ImStats.defaultProps = {
     imType: 'imGlobal',
 };
 
-ImStats.propTypes = { imType: oneOf(['imGlobal', 'imIHH', 'imOHH']) };
+ImStats.propTypes = {
+    imType: oneOf(['imGlobal', 'imIHH', 'imOHH']),
+    router: PropTypes.object.isRequired,
+};

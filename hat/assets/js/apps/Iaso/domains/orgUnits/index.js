@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { makeStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
 import PropTypes from 'prop-types';
@@ -14,6 +14,7 @@ import {
     Table,
     LoadingSpinner,
     useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 
 import { fetchSources, fetchOrgUnitsList } from '../../utils/requests';
@@ -185,54 +186,49 @@ const OrgUnits = props => {
         );
     };
 
-    const fetchOrgUnits = useCallback(
-        (withLocations = false) => {
-            const url = getEndpointUrl();
-            dispatch(setOrgUnitsListFetching(true));
-            const promises = [fetchOrgUnitsList(dispatch, url)];
-            setListUpdated(!withLocations);
-            if (withLocations) {
-                const urlLocation = getEndpointUrl(false, '', true);
-                promises.push(fetchOrgUnitsList(dispatch, urlLocation));
-            }
+    const fetchOrgUnits = () => {
+        const withLocations = params.tab === 'map';
+        const url = getEndpointUrl();
+        dispatch(setOrgUnitsListFetching(true));
+        const promises = [fetchOrgUnitsList(dispatch, url)];
+        setListUpdated(!withLocations);
+        if (withLocations) {
+            const urlLocation = getEndpointUrl(false, '', true);
+            promises.push(fetchOrgUnitsList(dispatch, urlLocation));
+        }
 
-            Promise.all(promises)
-                .then(data => {
-                    if (!params.searchActive) {
-                        const newParams = encodeUriParams(params);
-                        newParams.searchActive = true;
-                        dispatch(redirectTo(baseUrl, newParams));
-                    }
+        Promise.all(promises)
+            .then(data => {
+                if (!params.searchActive) {
+                    const newParams = encodeUriParams(params);
+                    newParams.searchActive = true;
+                    dispatch(redirectTo(baseUrl, newParams));
+                }
+                dispatch(
+                    setOrgUnits(
+                        data[0].orgunits,
+                        true,
+                        params,
+                        data[0].count,
+                        data[0].pages,
+                        data[0].counts,
+                    ),
+                );
+                dispatch(setFiltersUpdated(false));
+                if (withLocations) {
                     dispatch(
-                        setOrgUnits(
-                            data[0].orgunits,
-                            true,
-                            params,
-                            data[0].count,
-                            data[0].pages,
-                            data[0].counts,
+                        setOrgUnitsLocations(
+                            mapOrgUnitByLocation(data[1], searches),
                         ),
                     );
-                    dispatch(setFiltersUpdated(false));
-                    if (withLocations) {
-                        dispatch(
-                            setOrgUnitsLocations(
-                                mapOrgUnitByLocation(data[1], searches),
-                            ),
-                        );
-                    }
-                    dispatch(setOrgUnitsListFetching(false));
-                })
-                // eslint-disable-next-line no-unused-vars
-                .catch(_error => {
-                    dispatch(setOrgUnitsListFetching(false));
-                });
-        },
-        // TODO: getEndpointUrl and params should be added, but the effects of doing so should be tested-> JIRA IA-997
-        // Disabling the es-lint rule for the time being
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [params.pageSize, params.order, params.page, searches, dispatch],
-    );
+                }
+                dispatch(setOrgUnitsListFetching(false));
+            })
+            // eslint-disable-next-line no-unused-vars
+            .catch(_error => {
+                dispatch(setOrgUnitsListFetching(false));
+            });
+    };
 
     const fetchOrgUnitsLocations = () => {
         dispatch(setOrgUnitsListFetching(true));
@@ -243,11 +239,6 @@ const OrgUnits = props => {
             );
             dispatch(setOrgUnitsListFetching(false));
         });
-    };
-
-    const onTabsDeleted = () => {
-        dispatch(resetOrgUnits());
-        dispatch(setFiltersUpdated(true));
     };
 
     const handleTableSelection = (
@@ -264,16 +255,36 @@ const OrgUnits = props => {
         setSelection(newSelection);
     };
 
-    const onSearch = withLocations => {
+    const onSearch = newParams => {
         handleTableSelection('reset');
-        const newParams = {
-            ...params,
-            page: 1,
-        };
         setResetTablePage(convertObjectToString(newParams));
         dispatch(redirectTo(baseUrl, newParams));
-        fetchOrgUnits(withLocations);
+        if (!filtersUpdated && !params.searchActive) {
+            fetchOrgUnits();
+        }
     };
+
+    const onTabsDeleted = newParams => {
+        dispatch(resetOrgUnits());
+        dispatch(setFiltersUpdated(true));
+        onSearch({ ...newParams, page: 1 });
+    };
+
+    useEffect(() => {
+        dispatch(setFiltersUpdated(false));
+    }, []);
+
+    useSkipEffectOnMount(() => {
+        if (!filtersUpdated) {
+            fetchOrgUnits();
+        }
+    }, [params.pageSize, params.order, params.page]);
+
+    useSkipEffectOnMount(() => {
+        if (filtersUpdated) {
+            fetchOrgUnits();
+        }
+    }, [searches]);
 
     const handleChangeTab = newtab => {
         setTab(newtab);
@@ -312,7 +323,7 @@ const OrgUnits = props => {
             });
             dispatch(setSources(sources));
             if (params.searchActive) {
-                fetchOrgUnits(params.tab === 'map');
+                fetchOrgUnits();
             }
             setShouldRenderFilters(true);
         });
@@ -352,17 +363,18 @@ const OrgUnits = props => {
             dispatch(enqueueSnackbar(warningSnackBar('locationLimitWarning')));
         }
     }, [warningDisplayed, params.locationLimit, tab]);
-
     return (
         <>
-            {(fetchingList || !shouldRenderFilters) && <LoadingSpinner />}
             <OrgUnitsMultiActionsDialog
                 open={multiActionPopupOpen}
                 params={params}
                 closeDialog={() => setMultiActionPopupOpen(false)}
-                fetchOrgUnits={() => fetchOrgUnits(false)}
+                fetchOrgUnits={() => fetchOrgUnits()}
                 selection={selection}
             />
+            {(fetchingList || !shouldRenderFilters) && (
+                <LoadingSpinner fixed={false} absolute />
+            )}
             <TopBar title={formatMessage(MESSAGES.title)}>
                 <DynamicTabs
                     deleteMessage={MESSAGES.delete}
@@ -383,8 +395,13 @@ const OrgUnits = props => {
                     redirectTo={(path, newParams) =>
                         dispatch(redirectTo(path, newParams))
                     }
-                    onTabsUpdated={() => dispatch(setFiltersUpdated(true))}
-                    onTabsDeleted={() => onTabsDeleted()}
+                    onTabsUpdated={newParams =>
+                        dispatch(redirectTo(baseUrl, newParams))
+                    }
+                    onTabChange={newParams =>
+                        dispatch(redirectTo(baseUrl, newParams))
+                    }
+                    onTabsDeleted={onTabsDeleted}
                     maxItems={9}
                     counts={searchCounts}
                     displayCounts
@@ -413,11 +430,7 @@ const OrgUnits = props => {
                                             <OrgUnitsFiltersComponent
                                                 baseUrl={baseUrl}
                                                 params={params}
-                                                onSearch={() =>
-                                                    onSearch(
-                                                        params.tab === 'map',
-                                                    )
-                                                }
+                                                onSearch={onSearch}
                                                 currentTab={tab}
                                                 searchIndex={searchIndex}
                                             />

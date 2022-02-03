@@ -97,20 +97,21 @@ export const useSnackQuery = (
     queryFn,
     snackErrorMsg = MESSAGES.defaultQueryApiSuccess,
     options = {},
+    // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
+    dispatchOnError = true,
 ) => {
     const dispatch = useDispatch();
     const newOptions = {
         ...options,
         onError: (error, variables, context) => {
-            if (snackErrorMsg) {
+            if (dispatchOnError) {
                 dispatch(
                     enqueueSnackbar(errorSnackBar(null, snackErrorMsg, error)),
                 );
             }
             if (options.onError) {
-                return options.onError(error, variables, context);
+                options.onError(error, variables, context);
             }
-            return null;
         },
     };
     const query = useQuery(queryKey, queryFn, newOptions);

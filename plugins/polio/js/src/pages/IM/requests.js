@@ -48,6 +48,7 @@ export const useConvertedLqasImData = (type, countryId) => {
             initialData: { stats: {} },
             enabled: Boolean(countryId),
         },
+        false,
     );
 };
 
@@ -72,5 +73,6 @@ export const useScopeAndDistrictsNotFound = (type, campaign, countryId) => {
             initialData: { stats: {} },
             enabled: Boolean(countryId),
         },
+        false,
     );
 };

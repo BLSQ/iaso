@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import { Box, Grid, makeStyles, Paper, Typography } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
@@ -6,8 +7,8 @@ import { useScopeAndDistrictsNotFound } from '../../pages/IM/requests';
 
 type Props = {
     type: 'lqas' | 'imGlobal' | 'imIHH' | 'imOHH';
-    // eslint-disable-next-line react/require-default-props
     campaign?: string;
+    countryId?: number;
 };
 
 const style = theme => ({
@@ -28,10 +29,11 @@ const useStyles = makeStyles(style);
 export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
     campaign,
     type,
+    countryId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data } = useScopeAndDistrictsNotFound(type, campaign);
+    const { data } = useScopeAndDistrictsNotFound(type, campaign, countryId);
     const { hasScope, districtsNotFound } = data[campaign] ?? {};
     const allDistrictsFound = !districtsNotFound?.length;
     return (

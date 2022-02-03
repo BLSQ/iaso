@@ -1,20 +1,19 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { useSafeIntl, Select } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 
 import { Grid, Box, makeStyles } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../constants/messages';
 
-import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
-
-import { makeCampaignsDropDown } from '../../utils/index';
 
 import { useLqasIm, useScopeAndDistrictsNotFound } from '../IM/requests';
 
 import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
+import { Filters } from '../../components/LQAS-IM/Filters.tsx';
 import { CaregiversTable } from '../../components/LQAS-IM/CaregiversTable.tsx';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
 import { LqasImPercentageChart } from '../../components/LQAS-IM/LqasImPercentageChart.tsx';
@@ -31,7 +30,6 @@ const styles = theme => ({
         overflowY: 'auto',
         overflowX: 'hidden',
         height: `calc(100vh - 65px)`,
-        // height: '100vh',
         maxWidth: '100vw',
     },
     divider: { width: '100%' },
@@ -39,28 +37,20 @@ const styles = theme => ({
 
 const useStyles = makeStyles(styles);
 
-export const Lqas = () => {
+export const Lqas = ({ router }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    // const [displayedCampaigns, setDisplayedCampaigns] = useState([]);
-    const [campaign, setCampaign] = useState();
-    const [country, setCountry] = useState();
+    const { campaign, country } = router.params;
     const {
         data: LQASData,
         isFetching,
         isLoading,
     } = useLqasIm('lqas', country);
 
-
-    const { data: campaigns = [], isFetching: campaignsFetching } =
-        useGetCampaigns({
-            countries: [country],
-            enabled: Boolean(country),
-        }).query;
-
-    const { data: countriesData, isFetching: countriesLoading } =
-        useGetCountries();
-    const countriesList = (countriesData && countriesData.orgUnits) || [];
+    const { data: campaigns = [] } = useGetCampaigns({
+        countries: [country],
+        enabled: Boolean(country),
+    }).query;
     const countryOfSelectedCampaign = campaigns.filter(
         campaignOption => campaignOption.obr_name === campaign,
     )[0]?.top_level_org_unit_id;
@@ -71,16 +61,6 @@ export const Lqas = () => {
     );
     const hasScope = scopeStatus[campaign]?.hasScope;
 
-    useEffect(() => {
-        setCampaign();
-    }, [country]);
-
-    const dropDownOptions = useMemo(() => {
-        const displayedCampaigns = country
-            ? campaigns.filter(c => c.org_unit.id === country)
-            : campaigns;
-        return makeCampaignsDropDown(displayedCampaigns);
-    }, [country, campaigns]);
     return (
         <>
             <TopBar
@@ -89,38 +69,7 @@ export const Lqas = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container className={classes.container}>
-                    <Box px={2} mt={2} width="100%">
-                        <Grid container item spacing={4}>
-                            <Grid item xs={4}>
-                                <Select
-                                    keyValue="countries"
-                                    label={formatMessage(MESSAGES.country)}
-                                    loading={countriesLoading}
-                                    clearable
-                                    multi={false}
-                                    value={country}
-                                    options={countriesList.map(c => ({
-                                        label: c.name,
-                                        value: c.id,
-                                    }))}
-                                    onChange={value => setCountry(value)}
-                                />
-                            </Grid>
-                            <Grid item xs={4}>
-                                <Select
-                                    keyValue="campaigns"
-                                    label={formatMessage(MESSAGES.campaign)}
-                                    loading={campaignsFetching}
-                                    clearable
-                                    multi={false}
-                                    value={campaign}
-                                    options={dropDownOptions}
-                                    onChange={value => setCampaign(value)}
-                                    disabled={Boolean(!country)}
-                                />
-                            </Grid>
-                        </Grid>
-                    </Box>
+                    <Filters isFetching={isFetching} />
                     <Grid container item spacing={2} direction="row">
                         <Grid item xs={6}>
                             <Box ml={2}>
@@ -292,4 +241,8 @@ export const Lqas = () => {
             </Box>
         </>
     );
+};
+
+Lqas.propTypes = {
+    router: PropTypes.object.isRequired,
 };

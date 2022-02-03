@@ -101,8 +101,8 @@ class Dumper:
                     else:
                         results.append(str(comparison.before))
                         results.append(str(comparison.after))
-                    """ Give the distance between two points """
-                    if "POINT Z" in str(comparison.before):
+                    # Add distance between two points
+                    if "POINT Z" in str(comparison.before) and comparison.after:
                         if str(comparison.before)[:40] != str(comparison.after)[:40]:
                             results.append(
                                 "{:.3f}".format(

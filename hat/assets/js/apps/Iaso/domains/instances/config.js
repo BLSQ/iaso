@@ -51,6 +51,7 @@ const instancesTableColumns = (formatMessage = () => ({}), user) => {
         columns.push({
             Header: formatMessage(MESSAGES[f.key]),
             accessor: f.accessor || f.key,
+            sortable: f.sortable !== false,
             Cell:
                 f.Cell ||
                 (settings =>

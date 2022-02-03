@@ -1,0 +1,292 @@
+{
+    "groups": [
+        {
+            "id": 9,
+            "name": "CHC",
+            "source_ref": "CXw2yu5fodb",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 194,
+            "created_at": 1643364007.720081,
+            "updated_at": 1643364007.720114
+        },
+        {
+            "id": 4,
+            "name": "Chiefdom",
+            "source_ref": "gzcv65VyaGq",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 152,
+            "created_at": 1643364007.662953,
+            "updated_at": 1643364007.662989
+        },
+        {
+            "id": 10,
+            "name": "CHP",
+            "source_ref": "uYxK4wmcPqA",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 223,
+            "created_at": 1643364007.769262,
+            "updated_at": 1643364007.769284
+        },
+        {
+            "id": 13,
+            "name": "Clinic",
+            "source_ref": "RXL3lPSK8oG",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 51,
+            "created_at": 1643364007.985838,
+            "updated_at": 1643364007.98586
+        },
+        {
+            "id": 1,
+            "name": "Country",
+            "source_ref": "RpbiCJpIYEj",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 1,
+            "created_at": 1643364007.619134,
+            "updated_at": 1643364007.619164
+        },
+        {
+            "id": 3,
+            "name": "District",
+            "source_ref": "w1Atoz18PCL",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 13,
+            "created_at": 1643364007.649073,
+            "updated_at": 1643364007.649096
+        },
+        {
+            "id": 17,
+            "name": "Eastern Area",
+            "source_ref": "nlX2VoouN63",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 3,
+            "created_at": 1643364008.951533,
+            "updated_at": 1643364008.951556
+        },
+        {
+            "id": 11,
+            "name": "Hospital",
+            "source_ref": "tDZVQ1WtwpA",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 34,
+            "created_at": 1643364007.794544,
+            "updated_at": 1643364007.794583
+        },
+        {
+            "id": 7,
+            "name": "MCHP",
+            "source_ref": "EYbopBOJWsW",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 594,
+            "created_at": 1643364007.69191,
+            "updated_at": 1643364007.691941
+        },
+        {
+            "id": 12,
+            "name": "Mission",
+            "source_ref": "w0gFTTmsUcF",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 6,
+            "created_at": 1643364007.798741,
+            "updated_at": 1643364007.798762
+        },
+        {
+            "id": 15,
+            "name": "NGO",
+            "source_ref": "PVLOW4bCshG",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 3,
+            "created_at": 1643364008.196386,
+            "updated_at": 1643364008.196408
+        },
+        {
+            "id": 18,
+            "name": "Northern Area",
+            "source_ref": "J40PpdN4Wkk",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 4,
+            "created_at": 1643364010.781578,
+            "updated_at": 1643364010.781609
+        },
+        {
+            "id": 14,
+            "name": "Private Clinic",
+            "source_ref": "MAs88nJc9nL",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 11,
+            "created_at": 1643364007.996159,
+            "updated_at": 1643364007.996181
+        },
+        {
+            "id": 8,
+            "name": "Public facilities",
+            "source_ref": "oRVt7g429ZO",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 1097,
+            "created_at": 1643364007.697437,
+            "updated_at": 1643364007.69747
+        },
+        {
+            "id": 6,
+            "name": "Rural",
+            "source_ref": "GGghZsfu7qV",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 432,
+            "created_at": 1643364007.686434,
+            "updated_at": 1643364007.686467
+        },
+        {
+            "id": 2,
+            "name": "Southern Area",
+            "source_ref": "jqBqIXoXpfy",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 3,
+            "created_at": 1643364007.64404,
+            "updated_at": 1643364007.644073
+        },
+        {
+            "id": 5,
+            "name": "Urban",
+            "source_ref": "f25dqv3Y7Z0",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 868,
+            "created_at": 1643364007.673745,
+            "updated_at": 1643364007.673777
+        },
+        {
+            "id": 16,
+            "name": "Western Area",
+            "source_ref": "b0EsAxm8Nge",
+            "source_version": {
+                "id": 1,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "reference_play_test2.35.3"
+                }
+            },
+            "org_unit_count": 3,
+            "created_at": 1643364008.947424,
+            "updated_at": 1643364008.947445
+        }
+    ]
+}

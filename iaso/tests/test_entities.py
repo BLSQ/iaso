@@ -1,3 +1,5 @@
+import uuid
+
 from django.core.files import File
 from unittest import mock
 
@@ -36,73 +38,49 @@ class EntityAPITestCase(APITestCase):
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
-        cls.create_form_instance(
-            form=cls.form_1, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project
-        )
-        cls.create_form_instance(
-            form=cls.form_1, period="202002", org_unit=cls.jedi_council_corruscant, project=cls.project
-        )
-        cls.create_form_instance(
-            form=cls.form_1, period="202002", org_unit=cls.jedi_council_corruscant, project=cls.project
-        )
-        cls.create_form_instance(
-            form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
-        )
+        # cls.create_form_instance(
+        #     form=cls.form_1, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project,
+        #     uuid=uuid.uuid4
+        # )
+        # cls.create_form_instance(
+        #     form=cls.form_1, period="202002", org_unit=cls.jedi_council_corruscant, project=cls.project,
+        #     uuid=uuid.uuid4
+        # )
+        # cls.create_form_instance(
+        #     form=cls.form_1, period="202002", org_unit=cls.jedi_council_corruscant, project=cls.project,
+        #     uuid=uuid.uuid4
+        # )
+        # cls.create_form_instance(
+        #     form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project,
+        #     uuid=uuid.uuid4
+        # )
 
-        cls.form_2 = m.Form.objects.create(
-            name="Hydroponic public survey",
-            form_id="sample2",
-            device_field="deviceid",
-            location_field="geoloc",
-            period_type="QUARTER",
-            single_per_period=True,
-        )
-
-        # Form without period
-        cls.form_3 = m.Form.objects.create(
-            name="Hydroponic public survey III",
-            form_id="sample34",
-            device_field="deviceid",
-            location_field="geoloc",
-            # period_type="QUARTER",
-            # single_per_period=True,
-        )
-
-        cls.form_4 = m.Form.objects.create(
-            name="Hydroponic public survey IV",
-            form_id="sample26",
-            device_field="deviceid",
-            location_field="geoloc",
-            period_type="QUARTER",
-            single_per_period=True,
-        )
-
-        form_2_file_mock = mock.MagicMock(spec=File)
-        form_2_file_mock.name = "test.xml"
-        cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
-        cls.form_2.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(form=cls.form_2, period="202001", org_unit=cls.jedi_council_corruscant)
-        cls.form_2.save()
-
-        # Instance saved without period
-        cls.form_3.form_versions.create(file=form_2_file_mock, version_id="2020022401")
-        cls.form_3.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(form=cls.form_3, org_unit=cls.jedi_council_corruscant)
-        cls.form_3.save()
-
-        # A deleted Instance
-        cls.form_4.form_versions.create(file=form_2_file_mock, version_id="2020022402")
-        cls.form_4.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(form=cls.form_4, period="2020Q1", org_unit=cls.jedi_council_corruscant, deleted=True)
-        cls.form_4.save()
-
-        cls.project.unit_types.add(cls.jedi_council)
-        cls.project.forms.add(cls.form_1)
-        cls.project.forms.add(cls.form_2)
-        cls.project.forms.add(cls.form_3)
-        cls.project.forms.add(cls.form_4)
-        sw_source.projects.add(cls.project)
-        cls.project.save()
+        # form_2_file_mock = mock.MagicMock(spec=File)
+        # form_2_file_mock.name = "test.xml"
+        # cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
+        # cls.form_2.org_unit_types.add(cls.jedi_council)
+        # cls.create_form_instance(form=cls.form_2, period="202001", org_unit=cls.jedi_council_corruscant)
+        # cls.form_2.save()
+        #
+        # # Instance saved without period
+        # cls.form_3.form_versions.create(file=form_2_file_mock, version_id="2020022401")
+        # cls.form_3.org_unit_types.add(cls.jedi_council)
+        # cls.create_form_instance(form=cls.form_3, org_unit=cls.jedi_council_corruscant)
+        # cls.form_3.save()
+        #
+        # # A deleted Instance
+        # cls.form_4.form_versions.create(file=form_2_file_mock, version_id="2020022402")
+        # cls.form_4.org_unit_types.add(cls.jedi_council)
+        # cls.create_form_instance(form=cls.form_4, period="2020Q1", org_unit=cls.jedi_council_corruscant, deleted=True)
+        # cls.form_4.save()
+        #
+        # cls.project.unit_types.add(cls.jedi_council)
+        # cls.project.forms.add(cls.form_1)
+        # cls.project.forms.add(cls.form_2)
+        # cls.project.forms.add(cls.form_3)
+        # cls.project.forms.add(cls.form_4)
+        # sw_source.projects.add(cls.project)
+        # cls.project.save()
 
     def test_create_single_entity(self):
         self.client.force_authenticate(self.yoda)
@@ -132,15 +110,11 @@ class EntityAPITestCase(APITestCase):
         entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
+            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
         second_instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
+            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
         payload = {
@@ -166,9 +140,7 @@ class EntityAPITestCase(APITestCase):
         entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
+            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
         payload = {
@@ -179,7 +151,7 @@ class EntityAPITestCase(APITestCase):
         }, {
             "name": "New Client 2",
             "entity_type": entity_type.pk,
-            "attributes": instance.pk,
+            "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
 
@@ -193,15 +165,11 @@ class EntityAPITestCase(APITestCase):
         entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
+            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
         second_instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
+            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
         payload = {
@@ -269,12 +237,8 @@ class EntityAPITestCase(APITestCase):
         entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
+            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
-
-        print(Instance.objects.filter(uuid=instance.uuid))
 
         payload_post = {
             "name": "New Client",
@@ -285,7 +249,7 @@ class EntityAPITestCase(APITestCase):
 
         self.client.post("/api/entity/", data=payload_post, format="json")
 
-        payload = {"name": "New Client-2", "entity_type": entity_type.pk, "attributes": instance.uuid}
+        payload = {"name": "New Client-2", "entity_type": entity_type.pk, "attributes": instance.pk}
 
         response = self.client.patch("/api/entity/{0}/".format(Entity.objects.last().pk), data=payload, format="json")
 
@@ -297,15 +261,11 @@ class EntityAPITestCase(APITestCase):
         entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
+            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
         second_instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
+            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
         payload = {

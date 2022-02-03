@@ -575,7 +575,7 @@ class OrgUnitDetail extends Component {
                                 apiParams={{
                                     orgUnitId: currentOrgUnit.id,
                                 }}
-                                exportButton={false}
+                                exportButtons={false}
                                 baseUrl={baseUrl}
                                 endPointPath="forms"
                                 propsToWatch={params.tab}

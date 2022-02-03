@@ -65,7 +65,7 @@ describe('OrgUnits', () => {
 
             const row = cy.get('table').find('tbody').find('tr').eq(0);
             const nameCol = row.find('td').eq(1);
-            nameCol.should('contain.text', 'ANGOLA');
+            nameCol.should('contain.text', 'Sierra Leone');
 
             cy.get('button.pagination-next').as('nextButton').click();
             cy.intercept(
@@ -81,7 +81,7 @@ describe('OrgUnits', () => {
 
             const row2 = cy.get('table').find('tbody').find('tr').eq(0);
             const nameCol2 = row2.find('td').eq(1);
-            nameCol2.should('contain.text', 'CÔTE D’IVOIRE');
+            nameCol2.should('contain.text', 'Yemoh MCHP');
         });
     });
     describe('pagination', () => {

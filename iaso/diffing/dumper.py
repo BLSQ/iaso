@@ -112,7 +112,10 @@ class Dumper:
                         else:
                             results.append(0)
                     else:
-                        results.append(0)
+                        if not comparison.before and not comparison.after:
+                            results.append("")
+                        else:
+                            results.append("NA")
 
             current_dhis2 = diff.orgunit_dhis2
             current_ref = diff.orgunit_ref

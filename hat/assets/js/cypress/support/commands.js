@@ -24,6 +24,10 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
+/**
+ * @param {string} username - by default then env username specified
+ * @param {string} password - by default then env password specified
+ */
 Cypress.Commands.add(
     'login',
     (
@@ -40,19 +44,11 @@ Cypress.Commands.add(
     },
 );
 
-Cypress.Commands.add('testInputValue', (id, value) =>
-    cy.get(id).invoke('attr', 'value').should('equal', value),
-);
-
-Cypress.Commands.add('testMultiSelect', (id, options, accessor = 'name') => {
-    const select = cy.get(id).parent();
-    const chips = select.find('div[role=button]');
-    chips.should('have.length', options.length);
-    options.forEach(o => {
-        select.should('contain', o[accessor]);
-    });
-});
-
+/**
+ * @param {string} username - by default then env username specified
+ * @param {string} password - by default then env password specified
+ * This Login way of working is not stable an needs to be improved
+ */
 Cypress.Commands.add(
     'loginByCSRF',
     (
@@ -90,3 +86,96 @@ Cypress.Commands.add(
         });
     },
 );
+/**
+ * @param {number} id - DOM id of the input
+ * @param {number} newOuIndex - index of the new selected ou
+ */
+Cypress.Commands.add('fillTreeView', (id, newOuIndex) => {
+    cy.get(id).as('tree');
+    cy.get('@tree').find('.clear-tree button').as('clearButton');
+    cy.get('@clearButton').click();
+    cy.get('@tree').click();
+    cy.get('@tree')
+        .find('.input-label')
+        .parent()
+        .find('div[role=button]')
+        .click();
+    cy.get('.MuiTreeView-root .MuiTreeItem-root').eq(newOuIndex).click();
+    cy.get('.MuiDialog-container button').last().click();
+});
+
+/**
+ * @param {number} id - DOM id of the input
+ * @param {string} value - value to check
+ */
+Cypress.Commands.add('testInputValue', (id, value) =>
+    cy.get(id).invoke('attr', 'value').should('equal', value),
+);
+
+/**
+ * @param {number} id - DOM id of the input
+ * @param {array} options - list of possible options
+ * @param {string} accessor - key of the option to test, by default 'name'
+ */
+Cypress.Commands.add('testMultiSelect', (id, options, accessor = 'name') => {
+    const select = cy.get(id).parent();
+    const chips = select.find('div[role=button]');
+    chips.should('have.length', options.length);
+    options.forEach(o => {
+        select.should('contain', o[accessor]);
+    });
+});
+
+/**
+ * @param {number} id - Base id used to select DOM element
+ * @param {array} selectedOptions - list of options selected ids
+ */
+Cypress.Commands.add('fillMultiSelect', (id, selectedOptions = []) => {
+    cy.get(id).as('multiSelect');
+    cy.get('@multiSelect').click();
+    cy.get('@multiSelect')
+        .parent()
+        .find('.MuiAutocomplete-clearIndicator')
+        .click();
+    selectedOptions.forEach((selectedOption, index) => {
+        cy.get(`${id}-option-${selectedOption}`).click();
+        if (index + 1 < selectedOptions.length) {
+            cy.get('@multiSelect').click();
+        }
+    });
+});
+
+/**
+ * @param {number} id - Base id used to select DOM element
+ * @param {number} selectedOption - option id selected
+ */
+Cypress.Commands.add('fillSingleSelect', (id, selectedOption = 1) => {
+    cy.get(id).click();
+    cy.get(`${id}-option-${selectedOption}`).click();
+});
+
+/**
+ * @param {number} id - Base id used to select DOM element
+ * @param {number} newValues - new values list of string
+ */
+Cypress.Commands.add('fillArrayInputField', (id, newValues = []) => {
+    cy.get(`#array-input-field-list-${id}`).as('arrayInputFieldList');
+    cy.get('@arrayInputFieldList').find(`#${id}-0`).parent().next().click();
+    cy.get('@arrayInputFieldList')
+        .find('li')
+        .last()
+        .find('button')
+        .as('addButton');
+    newValues.forEach((a, i) => {
+        cy.get('@addButton').click();
+        cy.get(`#${id}-${i}`).type(a);
+    });
+});
+
+/**
+ * @param {number} id - DOM id of the input
+ * @param {string} value - new value to fill, by default empty string
+ */
+Cypress.Commands.add('fillTextField', (id, value = '') => {
+    cy.get(id).clear().type(value);
+});

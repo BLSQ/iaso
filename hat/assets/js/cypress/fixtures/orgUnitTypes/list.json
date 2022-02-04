@@ -20,6 +20,27 @@
             "created_at": 1633954017.101693,
             "updated_at": 1633954017.101713,
             "units_count": 2665
+        },
+        {
+            "name": "MARIO",
+            "id": 2,
+            "short_name": "",
+            "created_at": 1633954017.101693,
+            "updated_at": 1633954017.101713,
+            "depth": null,
+            "sub_unit_types": [],
+            "projects": [
+                {
+                    "id": 19,
+                    "name": "test",
+                    "app_id": "demoexport",
+                    "feature_flags": [],
+                    "created_at": 1633953959.931199,
+                    "updated_at": 1633953959.931219,
+                    "needs_authentication": false
+                }
+            ],
+            "units_count": 2665
         }
     ]
 }

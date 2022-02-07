@@ -1,7 +1,13 @@
-import { UseQueryResult } from 'react-query';
+import { UseMutationResult, UseQueryResult } from 'react-query';
+import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
+import {
+    deleteRequest,
+    getRequest,
+    postRequest,
+    patchRequest,
+} from '../../../libs/Api';
+import MESSAGES from '../messages';
 
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
 import { PaginatedEntities } from '../types/paginatedEntities';
 import { Entity } from '../types/entity';
 
@@ -48,3 +54,22 @@ export const useGet = (): UseQueryResult<Array<Entity>, Error> => {
     // @ts-ignore
     return useSnackQuery(['entities'], () => getRequest('/api/entity/'));
 };
+
+export const useDelete = (): UseMutationResult =>
+    useSnackMutation(
+        body => deleteRequest(`/api/entity/${body.id}/`),
+        MESSAGES.deleteSuccess,
+        MESSAGES.deleteError,
+        ['entities'],
+    );
+
+export const useSave = (): UseMutationResult =>
+    useSnackMutation(
+        body =>
+            body.id
+                ? patchRequest(`/api/entity/${body.id}/`, body)
+                : postRequest('/api/entity/', body),
+        undefined,
+        undefined,
+        ['entities'],
+    );

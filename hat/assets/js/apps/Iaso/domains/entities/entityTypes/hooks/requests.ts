@@ -1,9 +1,24 @@
-import { UseQueryResult } from 'react-query';
-import { getRequest } from '../../../../libs/Api';
-import { useSnackQuery } from '../../../../libs/apiHooks';
+import { UseQueryResult, UseMutationResult } from 'react-query';
+import {
+    getRequest,
+    deleteRequest,
+    postRequest,
+    patchRequest,
+} from '../../../../libs/Api';
+import { useSnackQuery, useSnackMutation } from '../../../../libs/apiHooks';
 
 import { PaginatedEntityTypes } from '../types/paginatedEntityTypes';
 import { EntityType } from '../types/entityType';
+
+import MESSAGES from '../messages';
+
+export const useDelete = (): UseMutationResult =>
+    useSnackMutation(
+        body => deleteRequest(`/api/entitytype/${body.id}/`),
+        MESSAGES.deleteSuccess,
+        MESSAGES.deleteError,
+        ['entitytypes'],
+    );
 
 type Params = {
     pageSize: string;
@@ -47,7 +62,18 @@ export const useGetTypes = (): UseQueryResult<Array<EntityType>, Error> => {
         undefined,
         {
             // using this here to avoid multiple identical calls
-            staleTime: 300000,
+            staleTime: 60000,
         },
     );
 };
+
+export const useSave = (): UseMutationResult =>
+    useSnackMutation(
+        body =>
+            body.id
+                ? patchRequest(`/api/entitytype/${body.id}/`, body)
+                : postRequest('/api/entitytypes/', body),
+        undefined,
+        undefined,
+        ['entitytypes'],
+    );

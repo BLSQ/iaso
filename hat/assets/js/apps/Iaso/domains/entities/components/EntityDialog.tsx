@@ -10,7 +10,7 @@ import isEqual from 'lodash/isEqual';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { useGetTypes } from '../entityTypes/hooks/useGetTypes';
+import { useGetTypes } from '../entityTypes/hooks/requests';
 
 import { Entity } from '../types/entity';
 
@@ -18,10 +18,8 @@ import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from '../messages';
 
-type Message = {
-    id: string;
-    defaultMessage: string;
-};
+import { IntlMessage } from '../../../types/intl';
+
 type RenderTriggerProps = {
     openDialog: () => void;
 };
@@ -33,7 +31,7 @@ type EmptyEntity = {
 };
 
 type Props = {
-    titleMessage: Message;
+    titleMessage: IntlMessage;
     // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: RenderTriggerProps) => ReactNode;
     initialData: Entity | EmptyEntity;
@@ -62,7 +60,7 @@ const EntityDialog: FunctionComponent<Props> = ({
     },
     saveEntity,
 }) => {
-    const classes: any = useStyles();
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
 
     const { data: entityTypes, isFetching: fetchingEntitytypes } =
@@ -89,8 +87,16 @@ const EntityDialog: FunctionComponent<Props> = ({
         validationSchema: getSchema,
         onSubmit: saveEntity,
     });
-    const { values, setFieldValue, errors, isValid, initialValues } = formik;
-    const getErrors = k => (errors[k] ? [errors[k]] : []);
+    const {
+        values,
+        setFieldValue,
+        errors,
+        isValid,
+        initialValues,
+        handleSubmit,
+        resetForm,
+    } = formik;
+    const getErrors = k => errors[k] ?? [];
 
     return (
         <FormikProvider value={formik}>
@@ -98,10 +104,10 @@ const EntityDialog: FunctionComponent<Props> = ({
             <ConfirmCancelDialogComponent
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
-                onConfirm={formik.handleSubmit}
+                onConfirm={handleSubmit}
                 onCancel={closeDialog => {
                     closeDialog();
-                    formik.resetForm();
+                    resetForm();
                 }}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}

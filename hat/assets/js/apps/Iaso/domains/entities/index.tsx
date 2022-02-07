@@ -11,11 +11,9 @@ import {
 } from 'bluesquare-components';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import Filters from './components/Filters';
+import { Filters } from './components/Filters';
 // import EntityDialog from './components/EntityDialog';
-import { useGetPaginated } from './hooks/useGet';
-import { useDelete } from './hooks/useDelete';
-import { useSave } from './hooks/useSave';
+import { useGetPaginated, useDelete, useSave } from './hooks/requests';
 
 import { columns, baseUrl } from './config';
 import MESSAGES from './messages';
@@ -39,7 +37,7 @@ type Props = {
 };
 
 const Entities: FunctionComponent<Props> = ({ params }) => {
-    const classes: any = useStyles();
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
 

@@ -59,7 +59,7 @@ const EntityTypesDialog: FunctionComponent<Props> = ({
     },
     saveEntityType,
 }) => {
-    const classes: any = useStyles();
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
 
     const getSchema = () =>
@@ -81,18 +81,26 @@ const EntityTypesDialog: FunctionComponent<Props> = ({
         validationSchema: getSchema,
         onSubmit: saveEntityType,
     });
-    const { values, setFieldValue, errors, isValid, initialValues } = formik;
-    const getErrors = k => (errors[k] ? [errors[k]] : []);
+    const {
+        values,
+        setFieldValue,
+        errors,
+        isValid,
+        initialValues,
+        handleSubmit,
+        resetForm,
+    } = formik;
+    const getErrors = k => errors[k] ?? [];
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
             <ConfirmCancelDialogComponent
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
-                onConfirm={formik.handleSubmit}
+                onConfirm={handleSubmit}
                 onCancel={closeDialog => {
                     closeDialog();
-                    formik.resetForm();
+                    resetForm();
                 }}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}

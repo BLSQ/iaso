@@ -9,22 +9,13 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 
 import { Entity } from './types/entity';
+import { Column } from '../../types/table';
 
 export const baseUrl = baseUrls.entities;
 
 type Message = {
     id: string;
     defaultMessage: string;
-};
-
-type Column = {
-    Header: string;
-    id?: string;
-    accessor: string;
-    sortable?: boolean;
-    resizable?: boolean;
-    // eslint-disable-next-line no-unused-vars
-    Cell?: (s: any) => ReactElement;
 };
 
 type Props = {

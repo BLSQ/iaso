@@ -32,7 +32,7 @@ function TopBar(props) {
     // Set the page title from the top bar title.
     React.useEffect(() => {
         document.title = `${process.env.REACT_APP_TITLE} ${
-            title && title !== '' ? `| ${title}` : ''
+            title ? `| ${title}` : ''
         }`;
     }, [title]);
 

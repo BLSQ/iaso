@@ -42,7 +42,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Are you sure you want to delete this entity type?',
     },
     deleteText: {
-        id: 'iaso.entityTypes.dialog.deleteText',
+        id: 'iaso.label.deleteText',
         defaultMessage: 'This operation cannot be undone.',
     },
     edit: {

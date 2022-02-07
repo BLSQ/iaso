@@ -1,4 +1,4 @@
-import React, { useState, FunctionComponent } from 'react';
+import React, { useState, FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { Grid, Button, makeStyles } from '@material-ui/core';
@@ -29,13 +29,14 @@ type Props = {
 
 const Filters: FunctionComponent<Props> = ({ params }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
-    const classes: any = useStyles();
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const [filters, setFilters] = useState({
         search: params.search,
     });
-    const handleSearch = () => {
+
+    const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const tempParams = {
@@ -45,14 +46,18 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             tempParams.page = '1';
             dispatch(redirectTo(baseUrl, tempParams));
         }
-    };
-    const handleChange = (key, value) => {
-        setFiltersUpdated(true);
-        setFilters({
-            ...filters,
-            [key]: value,
-        });
-    };
+    }, [filtersUpdated, dispatch, filters, params]);
+
+    const handleChange = useCallback(
+        (key, value) => {
+            setFiltersUpdated(true);
+            setFilters({
+                ...filters,
+                [key]: value,
+            });
+        },
+        [filters],
+    );
     return (
         <>
             <Grid container spacing={4}>
@@ -97,4 +102,4 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     );
 };
 
-export default Filters;
+export { Filters };

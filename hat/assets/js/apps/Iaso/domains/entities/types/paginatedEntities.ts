@@ -1,11 +1,6 @@
 import { Entity } from './entity';
+import { Pagination } from '../../../types/table';
 
-export type PaginatedEntities = {
+export interface PaginatedEntities extends Pagination {
     entities: Array<Entity>;
-    pages: number;
-    page: number;
-    count: number;
-    limit: number;
-    has_next: boolean;
-    has_previous: boolean;
-};
+}

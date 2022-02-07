@@ -47,7 +47,7 @@ const Dashboard = ({ router }) => {
 
     // Add the defaults. put in a memo for comparison.
     // Need a better way to handle default in the routing
-    const tableParams = useMemo(() => {
+    const apiParams = useMemo(() => {
         return {
             order: params?.order ?? DEFAULT_ORDER,
             pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,
@@ -61,7 +61,7 @@ const Dashboard = ({ router }) => {
 
     const [resetPageToOne, setResetPageToOne] = useState('');
 
-    const { query, exportToCSV } = useGetCampaigns(tableParams);
+    const { query, exportToCSV } = useGetCampaigns(apiParams);
 
     const { data: campaigns, isFetching } = query;
 
@@ -137,17 +137,17 @@ const Dashboard = ({ router }) => {
 
     useSkipEffectOnMount(() => {
         const newParams = {
-            ...tableParams,
+            ...apiParams,
         };
         delete newParams.page;
         delete newParams.order;
         setResetPageToOne(convertObjectToString(newParams));
     }, [
-        tableParams.pageSize,
-        tableParams.countries,
-        tableParams.search,
-        tableParams.r1StartFrom,
-        tableParams.r1StartTo,
+        apiParams.pageSize,
+        apiParams.countries,
+        apiParams.search,
+        apiParams.r1StartFrom,
+        apiParams.r1StartTo,
     ]);
 
     const columns = useMemo(
@@ -246,7 +246,7 @@ const Dashboard = ({ router }) => {
                     data={campaigns?.campaigns ?? []}
                     count={campaigns?.count}
                     pages={campaigns?.pages}
-                    params={tableParams}
+                    params={params}
                     columns={columns}
                     baseUrl={DASHBOARD_BASE_URL}
                     marginTop={false}

@@ -4,6 +4,12 @@ export const findDataForShape = ({ shape, data, round, campaign }) => {
     const result = dataForRound.filter(d => d.district === shape.id)[0];
     return result;
 };
+// export const findShapeForData = ({ shape, data, round, campaign }) => {
+//     if (!data || !data[campaign]) return null;
+//     const dataForRound = data[campaign][round];
+//     const result = dataForRound.filter(d => d.district === shape.id)[0];
+//     return result;
+// };
 
 // TODO have exhaustive sorting function
 const sortCampaignNames = (nameA, nameB) => {
@@ -54,7 +60,7 @@ export const getScopeStyle = (shape, scope) => {
     return defaultShapeStyle;
 };
 
-export const findScope = (obrName, campaigns, shapes) => {
+export const findScopeIds = (obrName, campaigns) => {
     let scopeIds = [];
     if (obrName) {
         scopeIds = campaigns
@@ -68,7 +74,7 @@ export const findScope = (obrName, campaigns, shapes) => {
             .map(campaign => campaign.group.org_units)
             .flat();
     }
-    return shapes.filter(shape => scopeIds.includes(shape.id));
+    return scopeIds;
 };
 
 export const makeLegendItem = ({ message, value, color }) => {

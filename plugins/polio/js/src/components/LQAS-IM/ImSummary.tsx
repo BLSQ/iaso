@@ -2,8 +2,7 @@
 import { Grid, makeStyles, Paper, Typography } from '@material-ui/core';
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { RoundString } from '../../constants/types';
-import { useConvertedLqasImData } from '../../pages/IM/requests';
+import { ConvertedLqasImData, RoundString } from '../../constants/types';
 import { makeAccordionData } from '../../utils/LqasIm';
 import MESSAGES from '../../constants/messages';
 import { FAIL_COLOR, OK_COLOR } from '../../styles/constants';
@@ -12,7 +11,7 @@ type Props = {
     campaign?: string;
     round: RoundString;
     type: 'imGlobal' | 'imIHH' | 'imOHH';
-    country?: number;
+    data: Record<string, ConvertedLqasImData>;
 };
 
 const style = theme => ({
@@ -44,11 +43,10 @@ export const ImSummary: FunctionComponent<Props> = ({
     campaign,
     round,
     type,
-    country,
+    data,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data } = useConvertedLqasImData(type, country);
     const [childrenChecked, sitesVisited, reportingDistricts, vaccinated] =
         useMemo(() => {
             return makeAccordionData({

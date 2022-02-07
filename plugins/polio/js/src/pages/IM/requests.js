@@ -1,7 +1,6 @@
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getRequest } from 'Iaso/libs/Api';
 import { IM_POC_URL, LQAS_POC_URL } from './constants.ts';
-import { convertAPIData } from '../../utils/LqasIm.tsx';
 
 export const getLqasIm = (type, countryId) => {
     switch (type) {
@@ -29,50 +28,9 @@ export const useLqasIm = (type, countryId) => {
             select: data => {
                 return data;
             },
-            keepPreviousData: true,
+            keepPreviousData: false,
             initialData: { stats: {} },
             enabled: Boolean(countryId),
         },
-    );
-};
-export const useConvertedLqasImData = (type, countryId) => {
-    return useSnackQuery(
-        [type, countryId, getLqasIm],
-        async () => getLqasIm(type, countryId),
-        undefined,
-        {
-            select: data => {
-                return convertAPIData(data);
-            },
-            keepPreviousData: true,
-            initialData: { stats: {} },
-            enabled: Boolean(countryId),
-        },
-        false,
-    );
-};
-
-export const useScopeAndDistrictsNotFound = (type, campaign, countryId) => {
-    return useSnackQuery(
-        [type, countryId, getLqasIm],
-        async () => getLqasIm(type, countryId),
-        undefined,
-        {
-            select: data => {
-                if (!data.stats || !campaign || !data.stats[campaign])
-                    return {};
-                return {
-                    [campaign]: {
-                        hasScope: data.stats[campaign].has_scope,
-                        districtsNotFound:
-                            data.stats[campaign].districts_not_found,
-                    },
-                };
-            },
-            keepPreviousData: true,
-            initialData: { stats: {} },
-            enabled: Boolean(countryId),
-        },
-        false,
     );
 };

@@ -3,12 +3,10 @@ import { Box, Grid, makeStyles, Paper, Typography } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
-import { useScopeAndDistrictsNotFound } from '../../pages/IM/requests';
 
 type Props = {
-    type: 'lqas' | 'imGlobal' | 'imIHH' | 'imOHH';
     campaign?: string;
-    countryId?: number;
+    data: Record<string, { hasScope: boolean; districtsNotFound: string[] }>;
 };
 
 const style = theme => ({
@@ -27,13 +25,11 @@ const style = theme => ({
 const useStyles = makeStyles(style);
 
 export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
-    campaign,
-    type,
-    countryId,
+    campaign = '',
+    data,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data } = useScopeAndDistrictsNotFound(type, campaign, countryId);
     const { hasScope, districtsNotFound } = data[campaign] ?? {};
     const allDistrictsFound = !districtsNotFound?.length;
     return (

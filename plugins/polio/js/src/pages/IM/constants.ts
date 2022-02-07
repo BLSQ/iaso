@@ -10,6 +10,7 @@ export const LQAS_POC_URL = '/api/polio/lqasstats/';
 export const LQAS_PASS = '1lqasOK';
 export const LQAS_DISQUALIFIED = '2lqasDisqualified';
 export const LQAS_FAIL = '3lqasFail';
+export const IN_SCOPE = 'inScope';
 
 export const imDistrictColors = {
     [IM_PASS]: {
@@ -29,6 +30,13 @@ export const imDistrictColors = {
         weight: '2',
         opacity: '1',
         zIndex: 999,
+    },
+    [IN_SCOPE]: {
+        color: 'grey',
+        opacity: '1',
+        fillColor: 'grey',
+        weight: '2',
+        zIndex: 1,
     },
 };
 
@@ -50,6 +58,13 @@ export const lqasDistrictColors = {
         weight: '2',
         opacity: '1',
         zIndex: 999,
+    },
+    [IN_SCOPE]: {
+        color: 'grey',
+        opacity: '1',
+        fillColor: 'grey',
+        weight: '2',
+        zIndex: 1,
     },
 };
 

@@ -9,6 +9,7 @@ import { Box, Paper } from '@material-ui/core';
 import { useSafeIntl, Table } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
 import {
+    ConvertedLqasImData,
     LqasImCampaignDataWithNameAndRegion,
     RoundString,
 } from '../../constants/types';
@@ -19,7 +20,6 @@ import {
     sortbyRegionNameAsc,
     sortbyRegionNameDesc,
 } from './tableUtils';
-import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { CaregiversTableHeader } from './CaregiversTableHeader';
 import { floatToPercentString } from '../../utils';
 import { CaregiverInfoSource } from './CaregiverInfoSource';
@@ -28,7 +28,8 @@ type Props = {
     marginTop?: boolean;
     campaign?: string;
     round: RoundString;
-    country?: number;
+    data: Record<string, ConvertedLqasImData>;
+    isLoading: boolean;
 };
 
 type SortValues = 'district_name' | 'region_name';
@@ -71,7 +72,8 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     marginTop = true,
     campaign = '',
     round,
-    country,
+    data,
+    isLoading,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [page, setPage] = useState(0);
@@ -80,13 +82,9 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     const [sortFocus, setSortFocus] = useState<SortValues>('region_name');
     const [resetPageToOne, setResetPageToOne] = useState(`${rowsPerPage}`);
 
-    const { data: lqasImData, isLoading } = useConvertedLqasImData(
-        'lqas',
-        country,
-    );
-    const data = useMemo((): LqasImCampaignDataWithNameAndRegion[] => {
-        return makeDataForTable(lqasImData, campaign, round);
-    }, [lqasImData, campaign, round]);
+    const dataForTable = useMemo((): LqasImCampaignDataWithNameAndRegion[] => {
+        return makeDataForTable(data, campaign, round);
+    }, [data, campaign, round]);
 
     const handleSort = useCallback(
         focus => {
@@ -127,28 +125,31 @@ export const CaregiversTable: FunctionComponent<Props> = ({
         [page, rowsPerPage],
     );
 
-    const dataForTable = useMemo(() => {
+    const sortedData = useMemo(() => {
         if (sortFocus === 'district_name' && sortBy === 'asc') {
-            return formatDataForTable(data, sortbyDistrictNameAsc);
+            return formatDataForTable(dataForTable, sortbyDistrictNameAsc);
         }
         if (sortFocus === 'district_name' && sortBy === 'desc') {
-            return formatDataForTable(data, sortbyDistrictNameDesc);
+            return formatDataForTable(dataForTable, sortbyDistrictNameDesc);
         }
         if (sortFocus === 'region_name' && sortBy === 'asc') {
-            return formatDataForTable(data, sortbyRegionNameAsc);
+            return formatDataForTable(dataForTable, sortbyRegionNameAsc);
         }
         if (sortFocus === 'region_name' && sortBy === 'desc') {
-            return formatDataForTable(data, sortbyRegionNameDesc);
+            return formatDataForTable(dataForTable, sortbyRegionNameDesc);
         }
         console.warn(
             `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and district_name|region_name`,
         );
         return [];
-    }, [sortBy, sortFocus, data, formatDataForTable]);
+    }, [sortBy, sortFocus, dataForTable, formatDataForTable]);
 
     const pages = useMemo(
-        () => (data?.length ? Math.ceil(data?.length / rowsPerPage) : 0),
-        [data, rowsPerPage],
+        () =>
+            dataForTable?.length
+                ? Math.ceil(dataForTable?.length / rowsPerPage)
+                : 0,
+        [dataForTable, rowsPerPage],
     );
     const params = useMemo(
         () => ({
@@ -165,13 +166,13 @@ export const CaregiversTable: FunctionComponent<Props> = ({
                     <CaregiversTableHeader
                         campaign={campaign}
                         round={round}
-                        country={country}
+                        data={data}
                     />
                     <Box mt={marginTop ? 4 : 0} mb={4}>
                         <Paper elevation={3}>
                             <Table
                                 countOnTop={false}
-                                data={dataForTable}
+                                data={sortedData}
                                 pages={pages}
                                 defaultSorted={defaultSorted}
                                 columns={columns(formatMessage)}

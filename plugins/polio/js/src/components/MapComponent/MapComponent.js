@@ -29,16 +29,20 @@ export const MapComponent = ({
     height,
     fitToBounds,
     makePopup,
+    fitBoundsToBackground,
 }) => {
     const map = useRef();
 
     // When there is no data, bounds is undefined, so default center and zoom is used,
     // when the data get there, bounds change and the effect focus on it via the deps
     const bounds = useMemo(() => {
-        if (!mainLayer || mainLayer.length === 0) {
+        const referenceLayer = fitBoundsToBackground
+            ? backgroundLayer
+            : mainLayer;
+        if (!referenceLayer || referenceLayer.length === 0) {
             return null;
         }
-        const bounds_list = mainLayer
+        const bounds_list = referenceLayer
             .map(orgunit => geoJSON(orgunit.geo_json).getBounds())
             .filter(b => b !== undefined);
         if (bounds_list.length === 0) {
@@ -47,7 +51,7 @@ export const MapComponent = ({
         const newBounds = bounds_list[0];
         newBounds.extend(bounds_list);
         return newBounds;
-    }, [mainLayer]);
+    }, [mainLayer, fitBoundsToBackground, backgroundLayer]);
 
     useEffect(() => {
         if (bounds && bounds.isValid() && fitToBounds) {
@@ -121,6 +125,7 @@ MapComponent.propTypes = {
     height: number,
     fitToBounds: bool,
     makePopup: func,
+    fitBoundsToBackground: bool,
 };
 
 MapComponent.defaultProps = {
@@ -133,4 +138,5 @@ MapComponent.defaultProps = {
     getBackgroundLayerStyle: () => null,
     tooltipLabels: { main: 'District', background: 'Region' },
     makePopup: () => null,
+    fitBoundsToBackground: false,
 };

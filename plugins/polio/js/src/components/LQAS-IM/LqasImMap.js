@@ -1,7 +1,9 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { oneOf, string, array, number } from 'prop-types';
+import React, { useCallback, useMemo } from 'react';
+import { oneOf, string, array, number, bool, object } from 'prop-types';
 import { Box, Paper } from '@material-ui/core';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { isEqual } from 'lodash';
+import { any } from 'lodash/fp';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../MapComponent/MapLegend';
 import { MapLegendContainer } from '../MapComponent/MapLegendContainer';
@@ -17,12 +19,18 @@ import {
 import {
     imDistrictColors,
     lqasDistrictColors,
+    IN_SCOPE,
 } from '../../pages/IM/constants.ts';
-import { getScopeStyle, findDataForShape, findScope } from '../../utils/index';
+import {
+    findDataForShape,
+    findScopeIds,
+    defaultShapeStyle,
+} from '../../utils/index';
 import MESSAGES from '../../constants/messages';
-import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer.tsx';
+
+const defaultShapes = [];
 
 export const LqasImMap = ({
     type,
@@ -30,16 +38,13 @@ export const LqasImMap = ({
     selectedCampaign,
     countryId,
     campaigns,
+    data,
+    isFetching,
+    disclaimerData,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [renderCount, setRenderCount] = useState(0);
-    const { data, isFetching } = useConvertedLqasImData(type, countryId);
-    const { data: shapes = [], isFetching: isFetchingGeoJson } = useGetGeoJson(
-        countryId,
-        'DISTRICT',
-    );
-
-    const scope = findScope(selectedCampaign, campaigns, shapes);
+    const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
+        useGetGeoJson(countryId, 'DISTRICT');
 
     const legendItems = useMemo(() => {
         if (type === 'lqas') {
@@ -56,34 +61,57 @@ export const LqasImMap = ({
         );
     }, [data, selectedCampaign, round, formatMessage, type]);
 
-    const getShapeStyles = useCallback(
+    const mainLayer = useMemo(() => {
+        if (isEqual(data, {})) return [];
+        if (!selectedCampaign) return [];
+        const determineStatusForDistrict =
+            type === 'lqas' ? lqasDistrictStatus : imDistrictStatus;
+        const scopeIds = findScopeIds(selectedCampaign, campaigns);
+        const hasScope = scopeIds.length > 0;
+        const shapesInScope = hasScope
+            ? shapes.filter(shape => scopeIds.includes(shape.id))
+            : shapes;
+        const shapesWithData = shapesInScope.map(shape => ({
+            ...shape,
+            data: findDataForShape({
+                shape,
+                data,
+                round,
+                campaign: selectedCampaign,
+            }),
+        }));
+        if (hasScope) {
+            return shapesWithData.map(shape => ({
+                ...shape,
+                status: shape.data
+                    ? determineStatusForDistrict(shape.data)
+                    : IN_SCOPE,
+            }));
+        }
+        return shapesWithData
+            .filter(shape => Boolean(shape.data))
+            .map(shape => ({
+                ...shape,
+                status: determineStatusForDistrict(shape.data),
+            }));
+    }, [shapes, data, selectedCampaign, type, round, campaigns]);
+
+    const getMainLayerStyles = useCallback(
         shape => {
-            const determineStatusForDistrict =
-                type === 'lqas' ? lqasDistrictStatus : imDistrictStatus;
-            const status = determineStatusForDistrict(
-                findDataForShape({
-                    shape,
-                    data,
-                    round,
-                    campaign: selectedCampaign,
-                }),
-            );
             const districtColors =
                 type === 'lqas' ? lqasDistrictColors : imDistrictColors;
-            if (status) return districtColors[status];
-            return getScopeStyle(shape, scope);
+            return districtColors[shape.status];
         },
-        [type, scope, selectedCampaign, round, data],
+        [type],
     );
+
+    // eslint-disable-next-line no-unused-vars
+    const getBackgroundLayerStyle = _shape => defaultShapeStyle;
+
     const title =
         type === 'lqas'
             ? formatMessage(MESSAGES.lqasResults)
             : formatMessage(MESSAGES.imResults);
-
-    // force Map render when campaign changes, otherwise, shape colors are off
-    useEffect(() => {
-        setRenderCount(count => count + 1);
-    }, [selectedCampaign]);
 
     return (
         <>
@@ -97,22 +125,22 @@ export const LqasImMap = ({
                         />
                     </MapLegendContainer>
                     {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
-                    {((isFetching && isFetchingGeoJson) ||
-                        isFetchingGeoJson) && (
+                    {(isFetching || isFetchingGeoJson) && (
                         <LoadingSpinner fixed={false} absolute />
                     )}
                     <MapComponent
-                        // Use the key to force render
-                        key={`LQASIMMap${round}${renderCount}-${type}`}
                         name={`LQASIMMap${round}-${type}`}
-                        mainLayer={shapes}
+                        backgroundLayer={shapes}
+                        mainLayer={mainLayer}
                         onSelectShape={() => null}
-                        getMainLayerStyle={getShapeStyles}
+                        getMainLayerStyle={getMainLayerStyles}
+                        getBackgroundLayerStyle={getBackgroundLayerStyle}
                         tooltipLabels={{
                             main: 'District',
                             background: 'Region',
                         }}
                         makePopup={makePopup(data, round, selectedCampaign)}
+                        fitBoundsToBackground
                         height={600}
                     />
                     {selectedCampaign && (
@@ -120,6 +148,7 @@ export const LqasImMap = ({
                             type={type}
                             campaign={selectedCampaign}
                             countryId={countryId}
+                            data={disclaimerData}
                         />
                     )}
                 </Paper>
@@ -134,9 +163,15 @@ LqasImMap.propTypes = {
     selectedCampaign: string,
     type: oneOf(['imGlobal', 'imOHH', 'imIHH', 'lqas']).isRequired,
     countryId: number,
+    data: any,
+    isFetching: bool,
+    disclaimerData: object,
 };
 LqasImMap.defaultProps = {
     campaigns: [],
     selectedCampaign: '',
     countryId: null,
+    data: undefined,
+    isFetching: false,
+    disclaimerData: {},
 };

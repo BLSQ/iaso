@@ -9,7 +9,8 @@ import MESSAGES from '../../constants/messages';
 
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 
-import { useLqasIm, useScopeAndDistrictsNotFound } from './requests';
+import { useLqasIm } from './requests';
+import { useDebugData } from '../../hooks/useDebugData.ts';
 
 import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
 import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
@@ -21,6 +22,7 @@ import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
 import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
 import { ImSummary } from '../../components/LQAS-IM/ImSummary.tsx';
 import { HorizontalDivider } from '../../components/HorizontalDivider.tsx';
+import { useConvertedLqasImData } from '../../hooks/useConvertedLqasImData.ts';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -40,21 +42,15 @@ export const ImStats = ({ imType, router }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const { data: imData, isFetching } = useLqasIm(imType, country);
+    const convertedData = useConvertedLqasImData(imData);
+    const { data: campaigns = [], isFetching: campaignsFetching } =
+        useGetCampaigns({
+            countries: [country],
+            enabled: Boolean(country),
+        }).query;
 
-    const { data: campaigns = [] } = useGetCampaigns({
-        countries: [country],
-        enabled: Boolean(country),
-    }).query;
-
-    const countryOfSelectedCampaign = campaigns.filter(
-        campaignOption => campaignOption.obr_name === campaign,
-    )[0]?.top_level_org_unit_id;
-
-    const { data: scopeStatus } = useScopeAndDistrictsNotFound(
-        imType,
-        campaign,
-    );
-    const hasScope = scopeStatus[campaign]?.hasScope;
+    const debugData = useDebugData(imData, campaign);
+    const hasScope = debugData[campaign]?.hasScope;
 
     return (
         <>
@@ -64,7 +60,11 @@ export const ImStats = ({ imType, router }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container className={classes.container}>
-                    <Filters isFetching={isFetching} />
+                    <Filters
+                        isFetching={isFetching}
+                        campaigns={campaigns}
+                        campaignsFetching={campaignsFetching}
+                    />
                     <Grid container item spacing={2} direction="row">
                         <Grid item xs={6}>
                             <Box ml={2}>
@@ -73,14 +73,17 @@ export const ImStats = ({ imType, router }) => {
                                     round="round_1"
                                     campaign={campaign}
                                     type={imType}
-                                    country={country}
+                                    data={convertedData}
                                 />
                                 <LqasImMap
                                     round="round_1"
                                     selectedCampaign={campaign}
                                     type={imType}
-                                    countryId={countryOfSelectedCampaign}
+                                    countryId={parseInt(country, 10)}
                                     campaigns={campaigns}
+                                    data={convertedData}
+                                    isFetching={isFetching}
+                                    disclaimerData={debugData}
                                 />
                             </Box>
                         </Grid>
@@ -91,14 +94,17 @@ export const ImStats = ({ imType, router }) => {
                                     round="round_2"
                                     campaign={campaign}
                                     type={imType}
-                                    country={country}
+                                    data={convertedData}
                                 />
                                 <LqasImMap
                                     round="round_2"
                                     selectedCampaign={campaign}
                                     type={imType}
-                                    countryId={countryOfSelectedCampaign}
+                                    countryId={parseInt(country, 10)}
                                     campaigns={campaigns}
+                                    data={convertedData}
+                                    isFetching={isFetching}
+                                    disclaimerData={debugData}
                                 />
                             </Box>
                         </Grid>
@@ -119,7 +125,9 @@ export const ImStats = ({ imType, router }) => {
                                     type={imType}
                                     round="round_1"
                                     campaign={campaign}
-                                    countryId={countryOfSelectedCampaign}
+                                    countryId={parseInt(country, 10)}
+                                    data={convertedData}
+                                    isLoading={isFetching}
                                 />
                             </Box>
                         </Grid>
@@ -129,7 +137,9 @@ export const ImStats = ({ imType, router }) => {
                                     type={imType}
                                     round="round_2"
                                     campaign={campaign}
-                                    countryId={countryOfSelectedCampaign}
+                                    countryId={parseInt(country, 10)}
+                                    data={convertedData}
+                                    isLoading={isFetching}
                                 />
                             </Box>
                         </Grid>

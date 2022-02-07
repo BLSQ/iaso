@@ -25,6 +25,7 @@ import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
 import { Lqas } from './src/pages/LQAS';
 import { ImStats } from './src/pages/IM';
+import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
 
 const campaignsFilters = [
     {
@@ -51,6 +52,7 @@ const routes = [
         component: props => <Dashboard {...props} />,
         permissions: ['iaso_polio'],
         params: [
+            ...paginationPathParams,
             {
                 isRequired: false,
                 key: 'campaignId',

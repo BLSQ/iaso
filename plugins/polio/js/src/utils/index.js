@@ -101,3 +101,9 @@ export const floatToPercentString = (num = 0) => {
     if (Number.isSafeInteger(num)) return `${parseInt(num, 10)}%`;
     return `${Math.round(num)}%`;
 };
+
+// this is a duplicate of Iaso to avoid import conflicts
+export const convertObjectToString = value =>
+    Object.entries(value)
+        .map(([key, entry]) => `${key}-${String(entry)}`)
+        .toString();

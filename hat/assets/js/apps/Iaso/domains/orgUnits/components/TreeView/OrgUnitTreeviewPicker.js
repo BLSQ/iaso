@@ -1,5 +1,7 @@
 import { func, any, bool, object, oneOfType, string } from 'prop-types';
 import React from 'react';
+import classnames from 'classnames';
+
 import { Paper, InputLabel, Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { FormControl, IconButton, useSafeIntl } from 'bluesquare-components';
@@ -109,14 +111,19 @@ const OrgUnitTreeviewPicker = ({
             <InputLabel
                 shrink={selectedItems.size > 0}
                 required={required}
-                className={classes.inputLabel}
+                className={classnames(classes.inputLabel, 'input-label')}
             >
                 {formattedPlaceholder}
             </InputLabel>
             <Paper variant="outlined" elevation={0} className={className}>
                 {makeTruncatedTrees(selectedItems)}
                 {clearable && resetSelection && selectedItems.size > 0 && (
-                    <Box className={classes.clearButton}>
+                    <Box
+                        className={classnames(
+                            classes.clearButton,
+                            'clear-tree',
+                        )}
+                    >
                         <IconButton
                             icon="clear"
                             size="small"

@@ -101,6 +101,7 @@ const OrgUnitForm = ({
                         </Button>
                     )}
                     <Button
+                        id="save-ou"
                         disabled={!orgUnitModified}
                         variant="contained"
                         className={classes.marginLeft}

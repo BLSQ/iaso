@@ -1,41 +1,8 @@
 /* eslint-disable camelcase */
 import React from 'react';
-import {
-    ConvertedLqasImData,
-    LqasImCampaignData,
-    LqasImData,
-    LqasImMapLegendData,
-    LqasImParams,
-} from '../constants/types';
+import { LqasImMapLegendData, LqasImParams } from '../constants/types';
 import { LqasImPopup } from '../components/LQAS-IM/LqasImPopUp';
 import { convertStatToPercent } from '../pages/LQAS/utils';
-
-const convertRoundDataToArray = roundDataAsDict => {
-    const roundData = Object.entries(roundDataAsDict);
-    return roundData.map((entry: [string, LqasImCampaignData]) => {
-        return {
-            ...entry[1],
-            name: entry[0],
-        };
-    });
-};
-
-export const convertAPIData = (
-    data: LqasImData,
-): Record<string, ConvertedLqasImData> => {
-    if (!data) return {};
-    const { stats } = data;
-    const campaignKeys = Object.keys(stats);
-    const result = {};
-    campaignKeys.forEach(key => {
-        if (stats[key]) {
-            result[key] = {};
-            result[key].round_1 = convertRoundDataToArray(stats[key].round_1);
-            result[key].round_2 = convertRoundDataToArray(stats[key].round_2);
-        }
-    });
-    return result;
-};
 
 export const makePopup =
     (LQASData, round, campaign = '') =>

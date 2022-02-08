@@ -9,7 +9,9 @@ import MESSAGES from '../../constants/messages';
 
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 
-import { useLqasIm, useScopeAndDistrictsNotFound } from '../IM/requests';
+import { useLqasIm } from '../IM/requests';
+import { useDebugData } from '../../hooks/useDebugData.ts';
+import { useConvertedLqasImData } from '../../hooks/useConvertedLqasImData.ts';
 
 import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
 import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
@@ -47,19 +49,16 @@ export const Lqas = ({ router }) => {
         isLoading,
     } = useLqasIm('lqas', country);
 
-    const { data: campaigns = [] } = useGetCampaigns({
-        countries: [country],
-        enabled: Boolean(country),
-    }).query;
-    const countryOfSelectedCampaign = campaigns.filter(
-        campaignOption => campaignOption.obr_name === campaign,
-    )[0]?.top_level_org_unit_id;
+    const convertedData = useConvertedLqasImData(LQASData);
 
-    const { data: scopeStatus } = useScopeAndDistrictsNotFound(
-        'lqas',
-        campaign,
-    );
-    const hasScope = scopeStatus[campaign]?.hasScope;
+    const { data: campaigns = [], isFetching: campaignsFetching } =
+        useGetCampaigns({
+            countries: [country],
+            enabled: Boolean(country),
+        }).query;
+    const debugData = useDebugData(LQASData, campaign);
+
+    const hasScope = debugData[campaign]?.hasScope;
 
     return (
         <>
@@ -69,7 +68,11 @@ export const Lqas = ({ router }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container className={classes.container}>
-                    <Filters isFetching={isFetching} />
+                    <Filters
+                        isFetching={isFetching}
+                        campaigns={campaigns}
+                        campaignsFetching={campaignsFetching}
+                    />
                     <Grid container item spacing={2} direction="row">
                         <Grid item xs={6}>
                             <Box ml={2}>
@@ -77,34 +80,37 @@ export const Lqas = ({ router }) => {
                                 <LqasSummary
                                     round="round_1"
                                     campaign={campaign}
-                                    country={country}
+                                    data={convertedData}
                                 />
                                 <LqasImMap
                                     round="round_1"
                                     selectedCampaign={campaign}
                                     type="lqas"
-                                    countryId={countryOfSelectedCampaign}
+                                    countryId={country}
                                     campaigns={campaigns}
+                                    data={convertedData}
+                                    isFetching={isFetching}
+                                    disclaimerData={debugData}
                                 />
                             </Box>
                         </Grid>
-                        {/* <Grid item>
-                        <Divider orientation="vertical" flexItem />
-                    </Grid> */}
                         <Grid item xs={6} mr={2}>
                             <Box mr={2}>
                                 <LqasImMapHeader round="round_2" />
                                 <LqasSummary
                                     round="round_2"
                                     campaign={campaign}
-                                    country={country}
+                                    data={convertedData}
                                 />
                                 <LqasImMap
                                     round="round_2"
                                     selectedCampaign={campaign}
                                     type="lqas"
-                                    countryId={countryOfSelectedCampaign}
+                                    countryId={country}
                                     campaigns={campaigns}
+                                    data={convertedData}
+                                    isFetching={isFetching}
+                                    disclaimerData={debugData}
                                 />
                             </Box>
                         </Grid>
@@ -129,7 +135,9 @@ export const Lqas = ({ router }) => {
                                     type="lqas"
                                     round="round_1"
                                     campaign={campaign}
-                                    countryId={countryOfSelectedCampaign}
+                                    countryId={parseInt(country, 10)}
+                                    data={convertedData}
+                                    isLoading={isFetching}
                                 />
                             </Box>
                         </Grid>
@@ -139,7 +147,9 @@ export const Lqas = ({ router }) => {
                                     type="lqas"
                                     round="round_2"
                                     campaign={campaign}
-                                    countryId={countryOfSelectedCampaign}
+                                    countryId={parseInt(country, 10)}
+                                    data={convertedData}
+                                    isLoading={isFetching}
                                 />
                             </Box>
                         </Grid>
@@ -201,7 +211,7 @@ export const Lqas = ({ router }) => {
                                     campaign={campaign}
                                     round="round_1"
                                     chartKey="CGTable1"
-                                    country={country}
+                                    data={convertedData}
                                 />
                             </Box>
                         </Grid>
@@ -211,7 +221,7 @@ export const Lqas = ({ router }) => {
                                     campaign={campaign}
                                     round="round_2"
                                     chartKey="CGTable2"
-                                    country={country}
+                                    data={convertedData}
                                 />
                             </Box>
                         </Grid>

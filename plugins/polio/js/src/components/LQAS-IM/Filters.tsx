@@ -9,7 +9,6 @@ import { Grid, Box } from '@material-ui/core';
 import MESSAGES from '../../constants/messages';
 
 import { useGetCountries } from '../../hooks/useGetCountries';
-import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 
 import { makeCampaignsDropDown } from '../../utils/index';
 import { genUrl } from '../../utils/routing';
@@ -28,9 +27,16 @@ type Router = {
 type Props = {
     isFetching: boolean;
     router: Router;
+    campaigns: any[];
+    campaignsFetching: boolean;
 };
 
-const Filters: FunctionComponent<Props> = ({ isFetching, router }) => {
+const Filters: FunctionComponent<Props> = ({
+    isFetching,
+    router,
+    campaigns,
+    campaignsFetching,
+}) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const { params } = router;
@@ -41,11 +47,6 @@ const Filters: FunctionComponent<Props> = ({ isFetching, router }) => {
     });
     const { campaign, country } = filters;
 
-    const { data: campaigns = [], isFetching: campaignsFetching } =
-        useGetCampaigns({
-            countries: [country],
-            enabled: Boolean(country),
-        }).query;
     const { data: countriesData, isFetching: countriesLoading } =
         useGetCountries();
     const countriesList = (countriesData && countriesData.orgUnits) || [];
@@ -79,7 +80,7 @@ const Filters: FunctionComponent<Props> = ({ isFetching, router }) => {
                         loading={countriesLoading}
                         clearable
                         multi={false}
-                        value={country}
+                        value={country?.toString()}
                         options={countriesList.map(c => ({
                             label: c.name,
                             value: c.id,

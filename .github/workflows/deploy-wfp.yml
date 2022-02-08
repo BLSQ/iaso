@@ -27,14 +27,14 @@ jobs:
             DEFAULT_ENVIRONMENT: staging
             DEFAULT_SLACK_CHANNEL: iasops
         run: |
-            echo "::set-output name=GIT_REFERENCE::${{ github.event.inputs.branch || env.DEFAULT_GIT_REFERENCE }}"
+            echo "::set-output name=GIT_REFERENCE::${{ github.ref_name || env.DEFAULT_GIT_REFERENCE }}"
             echo "::set-output name=ENVIRONMENT::${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}"
             echo "::set-output name=SLACK_CHANNEL::${{ github.event.inputs.slack_channel || env.DEFAULT_SLACK_CHANNEL }}"
       - uses: actions/checkout@v2
         with:
           ref: ${{ steps.config.outputs.GIT_REFERENCE }}
           fetch-depth: 0
-      - name: Deployment of ${{ github.ref }} on ${{ steps.config.outputs.ENVIRONMENT }}
+      - name: Deployment of ${{ github.ref_name }} on ${{ steps.config.outputs.ENVIRONMENT }}
         id: version
         run: |
           export GITHUB_BRANCH=${GITHUB_REF##*heads/}

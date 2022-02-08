@@ -2,8 +2,7 @@
 import { Paper, Typography, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
-import { RoundString } from '../../constants/types';
-import { useConvertedLqasImData } from '../../pages/IM/requests';
+import { ConvertedLqasImData, RoundString } from '../../constants/types';
 import { FAIL_COLOR, OK_COLOR } from '../../styles/constants';
 import {
     convertStatToPercent,
@@ -14,7 +13,7 @@ import {
 type Props = {
     campaign?: string;
     round: RoundString;
-    country?: number;
+    data: Record<string, ConvertedLqasImData>;
 };
 
 const style = theme => ({
@@ -44,10 +43,9 @@ const getRatePassedColors = (ratePassed, classes) => {
 export const LqasSummary: FunctionComponent<Props> = ({
     campaign,
     round,
-    country,
+    data,
 }) => {
     const classes = useStyles();
-    const { data } = useConvertedLqasImData('lqas', country);
     const summary = useMemo(() => {
         // eslint-disable-next-line no-unused-vars
         const [passed, failed, _disqualified] = getLqasStatsForRound(
@@ -85,7 +83,6 @@ export const LqasSummary: FunctionComponent<Props> = ({
                         direction="row"
                         className={classes.containerGrid}
                     >
-                        {/* <Grid container item xs={12} sm={6}> */}
                         <Grid item xs={4} sm={3}>
                             <Typography
                                 variant="body1"

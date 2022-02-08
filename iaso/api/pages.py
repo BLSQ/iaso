@@ -24,6 +24,7 @@ class PagesViewSet(ModelViewSet):
     lookup_url_kwarg = "pk"
 
     def get_object(self):
+        # Allow finding by either pk or slug
         if not self.kwargs.get("pk", "").isnumeric():
             self.lookup_field = "slug"
 

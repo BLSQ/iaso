@@ -4,9 +4,8 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import {
     IconButton as IconButtonComponent,
-    LoadingSpinner,
-    Table,
     useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
@@ -17,11 +16,11 @@ import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { getApiParamDateString } from 'Iaso/utils/dates.ts';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateEditDialog';
 import { PageAction } from '../components/Buttons/PageAction';
 import { PageActions } from '../components/Buttons/PageActions';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/useRestoreCampaign';
@@ -30,6 +29,8 @@ import MESSAGES from '../constants/messages';
 
 import ImportLineListDialog from '../components/ImportLineListDialog';
 import { genUrl } from '../utils/routing';
+import { convertObjectToString } from '../utils';
+import { DASHBOARD_BASE_URL } from '../constants/routes';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
@@ -39,28 +40,34 @@ const Dashboard = ({ router }) => {
     const { params } = router;
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
+
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
     const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
-    const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
-    const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
-    const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
-    const { query, exportToCSV } = useGetCampaigns({
-        page,
-        pageSize,
-        order,
-        countries: params.countries,
-        search: params.search,
-        showOnlyDeleted: params.showOnlyDeleted,
-        r1StartFrom: getApiParamDateString(params.r1StartFrom),
-        r1StartTo: getApiParamDateString(params.r1StartTo),
-    });
+    // Add the defaults. put in a memo for comparison.
+    // Need a better way to handle default in the routing
+    const apiParams = useMemo(() => {
+        return {
+            order: params?.order ?? DEFAULT_ORDER,
+            pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,
+            page: params?.page ?? DEFAULT_PAGE,
+            countries: params.countries,
+            search: params.search,
+            r1StartFrom: getApiParamDateString(params.r1StartFrom),
+            r1StartTo: getApiParamDateString(params.r1StartTo),
+            showOnlyDeleted: params.showOnlyDeleted,
+        };
+    }, [params]);
 
-    const { data: campaigns = [], isFetching } = query;
+    const [resetPageToOne, setResetPageToOne] = useState('');
+
+    const { query, exportToCSV } = useGetCampaigns(apiParams);
+
+    const { data: campaigns, isFetching } = query;
 
     const { mutate: removeCampaign } = useRemoveCampaign();
     const { mutate: restoreCampaign } = useRestoreCampaign();
@@ -150,6 +157,20 @@ const Dashboard = ({ router }) => {
         }
     }, []);
 
+    useSkipEffectOnMount(() => {
+        const newParams = {
+            ...apiParams,
+        };
+        delete newParams.page;
+        delete newParams.order;
+        setResetPageToOne(convertObjectToString(newParams));
+    }, [
+        apiParams.pageSize,
+        apiParams.countries,
+        apiParams.search,
+        apiParams.r1StartFrom,
+        apiParams.r1StartTo,
+    ]);
     const columns = useMemo(() => {
         const cols = [
             {
@@ -234,29 +255,6 @@ const Dashboard = ({ router }) => {
         params.showOnlyDeleted,
     ]);
 
-    // The naming is aligned with the names in Table
-    const onTableParamsChange = useCallback(
-        (_baseUrl, newParams) => {
-            if (newParams.page !== page) {
-                setPage(newParams.page);
-            }
-            if (newParams.pageSize !== pageSize) {
-                setPageSize(newParams.pageSize);
-            }
-            if (newParams.order !== order) {
-                setOrder(newParams.order);
-            }
-        },
-        [page, pageSize, order],
-    );
-
-    const tableParams = useMemo(() => {
-        return {
-            pageSize,
-            page,
-            order,
-        };
-    }, [pageSize, page, order]);
     return (
         <>
             <TopBar
@@ -281,7 +279,6 @@ const Dashboard = ({ router }) => {
                 onConfirm={handleRestoreDialogConfirm}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                {isFetching && <LoadingSpinner />}
                 <PageActions params={params}>
                     <PageAction
                         icon={AddIcon}
@@ -303,15 +300,18 @@ const Dashboard = ({ router }) => {
                         )}
                     />
                 </PageActions>
-                <Table
-                    marginTop={false}
-                    params={tableParams}
-                    count={campaigns.count}
-                    pages={Math.ceil(campaigns.count / pageSize)}
-                    baseUrl="/polio"
-                    redirectTo={onTableParamsChange}
+                <TableWithDeepLink
+                    data={campaigns?.campaigns ?? []}
+                    count={campaigns?.count}
+                    pages={campaigns?.pages}
+                    params={params}
                     columns={columns}
-                    data={campaigns.campaigns ?? []}
+                    baseUrl={DASHBOARD_BASE_URL}
+                    marginTop={false}
+                    extraProps={{
+                        loading: isFetching,
+                    }}
+                    resetPageToOne={resetPageToOne}
                 />
             </Box>
         </>

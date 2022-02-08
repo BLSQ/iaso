@@ -1,10 +1,9 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import { RoundString } from '../../constants/types';
+import { ConvertedLqasImData, RoundString } from '../../constants/types';
 import { PercentageChartWithTitle } from './PercentageChartWithTitle';
 import { useGetRegions } from '../../hooks/useGetRegions';
-import { useConvertedLqasImData } from '../../pages/IM/requests';
 import { formatImDataForChart, imTooltipFormatter } from '../../pages/IM/utils';
 import {
     formatLqasDataForChart,
@@ -21,6 +20,8 @@ type Props = {
     round: RoundString;
     campaign: string;
     countryId: number;
+    data: Record<string, ConvertedLqasImData>;
+    isLoading: boolean;
 };
 
 export const LqasImPercentageChart: FunctionComponent<Props> = ({
@@ -28,10 +29,11 @@ export const LqasImPercentageChart: FunctionComponent<Props> = ({
     round,
     campaign,
     countryId,
+    data,
+    isLoading,
 }) => {
     // TODO: add consition on scope
     const { formatMessage } = useSafeIntl();
-    const { data, isLoading } = useConvertedLqasImData(type, countryId);
     const { data: regions = [] } = useGetRegions(countryId);
     const chartData = useMemo(() => {
         if (type === 'lqas') {

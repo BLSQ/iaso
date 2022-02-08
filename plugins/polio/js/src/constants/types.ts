@@ -39,6 +39,7 @@ export type LqasImCampaign = {
     districts_not_found: string[];
     country_id: number;
     country_name?: string;
+    has_scope:boolean
 };
 
 

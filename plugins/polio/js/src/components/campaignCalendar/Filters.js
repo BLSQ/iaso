@@ -35,6 +35,7 @@ const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
                 search: search && search !== '' ? search : undefined,
                 r1StartFrom,
                 r1StartTo,
+                page: null,
                 showOnlyDeleted: showOnlyDeleted || undefined,
             };
             const url = genUrl(router, urlParams);

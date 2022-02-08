@@ -3,7 +3,7 @@ import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import FormsStats from '../domains/forms/stats';
 import OrgUnits from '../domains/orgUnits';
-import Links from '../domains/links';
+import { Links } from '../domains/links';
 import Runs from '../domains/links/Runs';
 import OrgUnitDetail from '../domains/orgUnits/details';
 import Completeness from '../domains/completeness';
@@ -19,6 +19,8 @@ import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
+import { Entities } from '../domains/entities/index.tsx';
+import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
@@ -493,6 +495,41 @@ export const orgUnitTypesPath = {
     ],
 };
 
+export const entitiesPath = {
+    baseUrl: baseUrls.entities,
+    permissions: ['iaso_entities'],
+    component: props => <Entities {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'entityTypes',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+export const entityTypesPath = {
+    baseUrl: baseUrls.entityTypes,
+    permissions: ['iaso_entities'],
+    component: props => <EntityTypes {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+
 export const page401 = {
     baseUrl: baseUrls.error401,
     component: () => <PageError errorCode="401" />,
@@ -532,6 +569,8 @@ export const routeConfigs = [
     devicesPath,
     groupsPath,
     orgUnitTypesPath,
+    entitiesPath,
+    entityTypesPath,
     pagesPath,
     page401,
     page500,

@@ -8,7 +8,6 @@ import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
 import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
 import DnsRoundedIcon from '@material-ui/icons/DnsRounded';
 import DoneAll from '@material-ui/icons/DoneAll';
-import Delete from '@material-ui/icons/Delete';
 import Settings from '@material-ui/icons/Settings';
 import GroupWork from '@material-ui/icons/GroupWork';
 import CategoryIcon from '@material-ui/icons/Category';
@@ -16,6 +15,7 @@ import AssignmentRoundedIcon from '@material-ui/icons/AssignmentRounded';
 import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRounded';
 import BookIcon from '@material-ui/icons/Book';
 import AssessmentIcon from '@material-ui/icons/Assessment';
+import EnityIcon from '@material-ui/icons/Domain';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
@@ -127,6 +127,25 @@ const menuItems = defaultSourceId => [
                         ],
                     },
                 ],
+            },
+        ],
+    },
+    {
+        label: MESSAGES.entitiesTitle,
+        key: 'entities',
+        icon: props => <EnityIcon {...props} />,
+        subMenu: [
+            {
+                label: MESSAGES.list,
+                permissions: paths.entitiesPath.permissions,
+                key: 'list',
+                icon: props => <FormatListBulleted {...props} />,
+            },
+            {
+                label: MESSAGES.entityTypesTitle,
+                permissions: paths.entitiesPath.permissions,
+                key: 'types',
+                icon: props => <CategoryIcon {...props} />,
             },
         ],
     },

@@ -120,7 +120,8 @@
           ],
           "valid-typeof": "warn",
           "no-unused-expressions": "off",
-          "class-methods-use-this": "warn"
+          "class-methods-use-this": "warn",
+          "@typescript-eslint/ban-ts-comment": "off"
         },
         "globals": {
           "describe": "readonly",
@@ -219,6 +220,7 @@
       "class-methods-use-this": "warn"
     },
     "globals": {
+      "URLSearchParams": "readonly",
       "describe": "readonly",
       "it": "readonly",
       "before": "readonly",

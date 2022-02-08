@@ -64,7 +64,7 @@ const styles = theme => ({
         cursor: 'pointer',
     },
     link: {
-        textDecoration: 'none',
+        textDecoration: 'none !important',
         color: 'inherit',
     },
     text: {

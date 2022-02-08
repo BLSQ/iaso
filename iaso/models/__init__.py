@@ -6,3 +6,4 @@ from .project import Project
 from .pages import Page, RAW, TEXT, IFRAME
 from .comment import CommentIaso
 from .import_gpkg import ImportGPKG
+from .entity import EntityType, Entity

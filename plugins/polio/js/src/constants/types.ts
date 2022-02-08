@@ -1,3 +1,5 @@
+import { IntlMessage } from '../../../../../hat/assets/js/apps/Iaso/types/intl';
+
 /* eslint-disable camelcase */
 export type FormatForNFMArgs = {
     data?: Record<string, LqasImCampaign>;
@@ -23,12 +25,6 @@ export type BarChartData = {
     name:string,
     value:number, // value as percentage
     absValue:number // absolute number
-}
-
-export type IntlMessage = {
-    id:string,
-    defaultMessage:string,
-    values?:Record<string,any>
 }
 
 export type LqasImCampaign = {

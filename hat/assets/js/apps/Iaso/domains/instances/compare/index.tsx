@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 const CompareSubmissions: FunctionComponent<Props> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const classes: any = useStyles();
+    const classes: Record<string, string> = useStyles();
 
     const prevPathname: string | undefined = useSelector(
         (state: State) => state.routerCustom.prevPathname,

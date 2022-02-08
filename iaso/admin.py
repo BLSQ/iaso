@@ -38,6 +38,8 @@ from .models import (
     Task,
     Page,
     AccountFeatureFlag,
+    EntityType,
+    Entity,
 )
 
 
@@ -261,6 +263,17 @@ class SourceVersionAdmin(admin.ModelAdmin):
     list_filter = ("data_source",)
 
 
+class EntityAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at",)
+    list_display = (
+        "id",
+        "name",
+        "entity_type",
+    )
+    list_filter = ("entity_type",)
+    raw_id_fields = ("attributes",)
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -288,5 +301,5 @@ admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
 admin.site.register(Page)
 admin.site.register(Task, TaskAdmin)
-# admin.site.unregister(User)
-# admin.site.register(User, UserAdmin)
+admin.site.register(EntityType)
+admin.site.register(Entity, EntityAdmin)

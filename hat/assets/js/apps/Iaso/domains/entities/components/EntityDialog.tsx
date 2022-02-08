@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { ReactNode, FunctionComponent } from 'react';
 import { useFormik, FormikProvider, FormikProps } from 'formik';
 import * as yup from 'yup';
@@ -50,7 +51,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const EntityDialog: FunctionComponent<Props> = ({
+export const EntityDialog: FunctionComponent<Props> = ({
     titleMessage,
     renderTrigger,
     initialData = {
@@ -158,5 +159,3 @@ const EntityDialog: FunctionComponent<Props> = ({
         </FormikProvider>
     );
 };
-
-export default EntityDialog;

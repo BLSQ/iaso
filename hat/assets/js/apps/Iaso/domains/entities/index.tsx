@@ -12,7 +12,7 @@ import {
 
 import TopBar from '../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
-// import EntityDialog from './components/EntityDialog';
+// import { EntityDialog } from './components/EntityDialog';
 import { useGetPaginated, useDelete, useSave } from './hooks/requests';
 
 import { columns, baseUrl } from './config';
@@ -36,7 +36,7 @@ type Props = {
     params: Params;
 };
 
-const Entities: FunctionComponent<Props> = ({ params }) => {
+export const Entities: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -92,4 +92,3 @@ const Entities: FunctionComponent<Props> = ({ params }) => {
         </>
     );
 };
-export default Entities;

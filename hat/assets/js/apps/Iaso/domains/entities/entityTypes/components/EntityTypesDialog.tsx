@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { ReactNode, FunctionComponent } from 'react';
 import { useFormik, FormikProvider, FormikProps } from 'formik';
 import * as yup from 'yup';
@@ -10,17 +11,13 @@ import isEqual from 'lodash/isEqual';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-
+import { IntlMessage } from '../../../../types/intl';
 import { EntityType } from '../types/entityType';
 
 import { baseUrls } from '../../../../constants/urls';
 
 import MESSAGES from '../messages';
 
-type Message = {
-    id: string;
-    defaultMessage: string;
-};
 type RenderTriggerProps = {
     openDialog: () => void;
 };
@@ -31,7 +28,7 @@ type EmptyEntityType = {
 };
 
 type Props = {
-    titleMessage: Message;
+    titleMessage: IntlMessage;
     // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: RenderTriggerProps) => ReactNode;
     initialData: EntityType | EmptyEntityType;
@@ -50,7 +47,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const EntityTypesDialog: FunctionComponent<Props> = ({
+export const EntityTypesDialog: FunctionComponent<Props> = ({
     titleMessage,
     renderTrigger,
     initialData = {
@@ -134,5 +131,3 @@ const EntityTypesDialog: FunctionComponent<Props> = ({
         </FormikProvider>
     );
 };
-
-export default EntityTypesDialog;

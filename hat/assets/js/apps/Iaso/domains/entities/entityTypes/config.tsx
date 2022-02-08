@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import EntityTypesDialog from './components/EntityTypesDialog';
+import { EntityTypesDialog } from './components/EntityTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 
@@ -10,17 +10,13 @@ import { baseUrls } from '../../../constants/urls';
 
 import { EntityType } from './types/entityType';
 import { Column } from '../../../types/table';
+import { IntlMessage } from '../../../types/intl';
 
 export const baseUrl = baseUrls.entityTypes;
 
-type Message = {
-    id: string;
-    defaultMessage: string;
-};
-
 type Props = {
     // eslint-disable-next-line no-unused-vars
-    formatMessage: (msg: Message) => string;
+    formatMessage: (msg: IntlMessage) => string;
     // eslint-disable-next-line no-unused-vars
     deleteEntityType: (e: EntityType) => void;
     // eslint-disable-next-line no-unused-vars

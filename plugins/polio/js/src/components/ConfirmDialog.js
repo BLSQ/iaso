@@ -1,17 +1,12 @@
 import React from 'react';
 
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-} from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogTitle } from '@material-ui/core';
+import PropTypes from 'prop-types';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
 
-export const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
+export const ConfirmDialog = ({ isOpen, onClose, onConfirm, title }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
 
@@ -25,12 +20,7 @@ export const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
                 }
             }}
         >
-            <DialogTitle className={classes.title}>
-                {formatMessage(MESSAGES.deleteWarning)}
-            </DialogTitle>
-            <DialogContent className={classes.content}>
-                {formatMessage(MESSAGES.operationCantBeUndone)}
-            </DialogContent>
+            <DialogTitle className={classes.title}>{title}</DialogTitle>
             <DialogActions className={classes.action}>
                 <Button onClick={onClose} color="primary">
                     {formatMessage(MESSAGES.no)}
@@ -41,4 +31,11 @@ export const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
             </DialogActions>
         </Dialog>
     );
+};
+
+ConfirmDialog.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    onConfirm: PropTypes.func.isRequired,
+    title: PropTypes.string.isRequired,
 };

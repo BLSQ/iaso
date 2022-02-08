@@ -398,6 +398,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.deleteWarning',
         defaultMessage: 'Are you sure you want to delete this campaign?',
     },
+    restoreWarning: {
+        id: 'iaso.polio.label.restoreWarning',
+        defaultMessage: 'Are you sure you want to restore this campaign?',
+    },
     operationCantBeUndone: {
         id: 'iaso.polio.label.operationCantBeUndone',
         defaultMessage: 'This operation cannot be undone',
@@ -924,6 +928,18 @@ const MESSAGES = defineMessages({
     noScopeFound: {
         id: 'iaso.polio.label.noScopeFound',
         defaultMessage: 'No scope found',
+    },
+    showOnlyDeleted: {
+        id: 'iaso.forms.showDeleted',
+        defaultMessage: 'Show deleted',
+    },
+    deleted_at: {
+        id: 'iaso.forms.deleted_at',
+        defaultMessage: 'Deleted',
+    },
+    restoreCampaign: {
+        id: 'iaso.polio.restoreCampaign',
+        defaultMessage: 'Restore campaign',
     },
 });
 

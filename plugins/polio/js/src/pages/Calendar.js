@@ -71,7 +71,7 @@ const Calendar = ({ params }) => {
             )}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box mb={4}>
-                    <Filters disableDates />
+                    <Filters disableDates disableOnlyDeleted />
                 </Box>
 
                 <Grid container spacing={2}>

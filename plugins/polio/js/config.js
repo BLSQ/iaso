@@ -44,6 +44,10 @@ const campaignsFilters = [
         isRequired: false,
         key: 'r1StartTo',
     },
+    {
+        isRequired: false,
+        key: 'showOnlyDeleted',
+    },
 ];
 
 const routes = [

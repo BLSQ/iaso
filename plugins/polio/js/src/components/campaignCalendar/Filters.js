@@ -16,24 +16,29 @@ import { useGetCountries } from '../../hooks/useGetCountries';
 
 import { genUrl } from '../../utils/routing';
 
-const Filters = ({ router, disableDates }) => {
+const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
     const { params } = router;
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [search, setSearch] = useState(params.search);
+    const [showOnlyDeleted, setShowOnlyDeleted] = useState(
+        params.showOnlyDeleted === 'true',
+    );
     const [r1StartFrom, setR1StartFrom] = useState(params.r1StartFrom);
     const [r1StartTo, set1StartTo] = useState(params.r1StartTo);
     const dispatch = useDispatch();
     const handleSearch = () => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
-            const url = genUrl(router, {
+            const urlParams = {
                 countries,
                 search: search && search !== '' ? search : undefined,
                 r1StartFrom,
                 r1StartTo,
                 page: null,
-            });
+                showOnlyDeleted: showOnlyDeleted || undefined,
+            };
+            const url = genUrl(router, urlParams);
             dispatch(replace(url));
         }
     };
@@ -42,7 +47,7 @@ const Filters = ({ router, disableDates }) => {
 
     useEffect(() => {
         setFiltersUpdated(true);
-    }, [countries, search, r1StartFrom, r1StartTo]);
+    }, [countries, search, r1StartFrom, r1StartTo, showOnlyDeleted]);
 
     useEffect(() => {
         setFiltersUpdated(false);
@@ -63,6 +68,17 @@ const Filters = ({ router, disableDates }) => {
                             label={MESSAGES.search}
                             onEnterPressed={handleSearch}
                         />
+                        {!disableOnlyDeleted && (
+                            <InputComponent
+                                keyValue="showOnlyDeleted"
+                                onChange={(key, value) => {
+                                    setShowOnlyDeleted(value);
+                                }}
+                                value={showOnlyDeleted}
+                                type="checkbox"
+                                label={MESSAGES.showOnlyDeleted}
+                            />
+                        )}
                     </Grid>
                     <Grid item xs={3}>
                         <InputComponent
@@ -124,12 +140,14 @@ const Filters = ({ router, disableDates }) => {
 Filters.defaultProps = {
     baseUrl: '',
     disableDates: false,
+    disableOnlyDeleted: false,
 };
 
 Filters.propTypes = {
     baseUrl: PropTypes.string,
     router: PropTypes.object.isRequired,
     disableDates: PropTypes.bool,
+    disableOnlyDeleted: PropTypes.bool,
 };
 
 const wrappedFilters = withRouter(Filters);

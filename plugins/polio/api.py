@@ -518,6 +518,8 @@ class IMStatsViewSet(viewsets.ViewSet):
                 "round_2": defaultdict(base_stats.copy),
                 "round_1_nfm_stats": defaultdict(int),
                 "round_2_nfm_stats": defaultdict(int),
+                "round_1_nfm_abs_stats": defaultdict(int),
+                "round_2_nfm_abs_stats": defaultdict(int),
                 "districts_not_found": [],
                 "has_scope": False,
             }
@@ -532,6 +534,16 @@ class IMStatsViewSet(viewsets.ViewSet):
             "Tot_child_Asleep_HH",
             "Tot_child_Others_HH",
             "Tot_child_VaccinatedRoutine",
+        ]
+        nfm_reason_abs_keys = [
+            "Tot_child_Abs_Parent_Absent",
+            "Tot_child_Abs_Social_event",
+            "Tot_child_Abs_Travelling",
+            "Tot_child_Abs_Play_areas",
+            "Tot_child_Abs_School",
+            "Tot_child_Abs_Market",
+            "Tot_child_Abs_Other",
+            "Tot_child_Abs_Farm",
         ]
         if request.user.iaso_profile.org_units.count() == 0:
             authorized_countries = OrgUnit.objects.filter(org_unit_type_id__category="COUNTRY")
@@ -575,6 +587,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
+                nfm_abs_counts_dict = defaultdict(int)
                 done_something = False
                 if isinstance(form, str):
                     print("------------")
@@ -605,6 +618,10 @@ class IMStatsViewSet(viewsets.ViewSet):
                             for reason in nfm_reason_keys:
                                 nfm_counts_dict[reason] = nfm_counts_dict[reason] + int(
                                     kid.get("HH/group1/" + reason, "0")
+                                )
+                            for reason_abs in nfm_reason_abs_keys:
+                                nfm_abs_counts_dict[reason_abs] = nfm_abs_counts_dict[reason_abs] + int(
+                                    kid.get("HH/group2/" + reason_abs, "0")
                                 )
                             done_something = True
                 else:
@@ -641,9 +658,15 @@ class IMStatsViewSet(viewsets.ViewSet):
                         campaign_stats[campaign_name]["country_name"] = country.name
                         round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
                         round_stats_key = round_key + "_nfm_stats"
+                        round_stats_abs_key = round_key + "_nfm_abs_stats"
                         for key in nfm_counts_dict:
                             campaign_stats[campaign_name][round_stats_key][key] = (
                                 campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
+                            )
+                        for key_abs in nfm_abs_counts_dict:
+                            campaign_stats[campaign_name][round_stats_abs_key][key_abs] = (
+                                campaign_stats[campaign_name][round_stats_abs_key][key_abs]
+                                + nfm_abs_counts_dict[key_abs]
                             )
                         d = campaign_stats[campaign_name][round_key][district_name]
                         d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
@@ -894,6 +917,19 @@ def add_nfm_stats_for_round(campaign_stats, nfm_stats, round_number):
     return campaign_stats
 
 
+# TODO deduplicate
+# Checking for each district for each campaign if LQAS data is not disqualified. If it isn't we add the reasons for absence to the count
+def add_nfm_abs_stats_for_round(campaign_stats, nfm_abs_stats, round_number):
+    for campaign, stats in campaign_stats.items():
+        for district, district_stats in stats[round_number].items():
+            if district_stats["total_child_checked"] == 60:
+                for reason, count in nfm_abs_stats[campaign][round_number][district].items():
+                    stats[round_number + "_nfm_abs_stats"][reason] = (
+                        stats[round_number + "_nfm_abs_stats"][reason] + count
+                    )
+    return campaign_stats
+
+
 def format_caregiver_stats(campaign_stats, round_number):
     for campaign in campaign_stats.values():
         for district in campaign[round_number].values():
@@ -943,14 +979,23 @@ class LQASStatsViewSet(viewsets.ViewSet):
             lambda: {
                 "round_1": defaultdict(base_stats),
                 "round_1_nfm_stats": defaultdict(int),
+                "round_1_nfm_abs_stats": defaultdict(int),
                 "round_2": defaultdict(base_stats),
                 "round_2_nfm_stats": defaultdict(int),
+                "round_2_nfm_abs_stats": defaultdict(int),
                 "districts_not_found": [],
                 "has_scope": [],
             }
         )
         # Storing all "reasons no finger mark" for each campaign in this dict
         nfm_reasons_per_district_per_campaign = defaultdict(
+            lambda: {
+                "round_1": defaultdict(lambda: defaultdict(int)),
+                "round_2": defaultdict(lambda: defaultdict(int)),
+            }
+        )
+        # Same with reasons for absence
+        nfm_abs_reasons_per_district_per_campaign = defaultdict(
             lambda: {
                 "round_1": defaultdict(lambda: defaultdict(int)),
                 "round_2": defaultdict(lambda: defaultdict(int)),
@@ -1051,19 +1096,20 @@ class LQASStatsViewSet(viewsets.ViewSet):
                                 ]
                                 + 1
                             )
+                        if reason == "childabsent" and campaign and round_number:
+                            reason_abs = HH.get("Count_HH/Reason_ABS_NFM", "unknown")
+                            nfm_abs_reasons_per_district_per_campaign[campaign.obr_name][round_key][district_name][
+                                reason_abs
+                            ] = (
+                                nfm_abs_reasons_per_district_per_campaign[campaign.obr_name][round_key][district_name][
+                                    reason_abs
+                                ]
+                                + 1
+                            )
                     total_Child_Checked += int(Child_Checked)
                     # gather caregiver stats
                     caregiver_informed = HH.get("Count_HH/Care_Giver_Informed_SIA", 0)
                     caregiver_source_info = HH.get("Count_HH/Caregiver_Source_Info", None)
-                    # if district_name is None:
-                    #     print('+++++++++++++++++++++++++++')
-                    #     print(region_name, district_id)
-                    #     print('+++++++++++++++++++++++++++')
-                    # if district_name is not None:
-                    #     if district_name.lower() == "kankossa":
-                    #         print("---------------------")
-                    #         print(region_name, caregiver_informed,caregiver_source_info)
-                    #         print("---------------------")
                     if caregiver_informed == "Y":
                         caregiver_counts_dict[district_name]["caregivers_informed"] = (
                             caregiver_counts_dict[district_name]["caregivers_informed"] + 1
@@ -1113,6 +1159,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
         add_nfm_stats_for_round(campaign_stats, nfm_reasons_per_district_per_campaign, "round_1")
         add_nfm_stats_for_round(campaign_stats, nfm_reasons_per_district_per_campaign, "round_2")
+        add_nfm_abs_stats_for_round(campaign_stats, nfm_abs_reasons_per_district_per_campaign, "round_1")
+        add_nfm_abs_stats_for_round(campaign_stats, nfm_abs_reasons_per_district_per_campaign, "round_2")
         format_caregiver_stats(campaign_stats, "round_1")
         format_caregiver_stats(campaign_stats, "round_2")
 

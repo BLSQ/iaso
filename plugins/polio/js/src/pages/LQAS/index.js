@@ -14,16 +14,21 @@ import { useDebugData } from '../../hooks/useDebugData.ts';
 import { useConvertedLqasImData } from '../../hooks/useConvertedLqasImData.ts';
 
 import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
-import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
+// import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 import { Filters } from '../../components/LQAS-IM/Filters.tsx';
 import { CaregiversTable } from '../../components/LQAS-IM/CaregiversTable.tsx';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
-import { LqasImPercentageChart } from '../../components/LQAS-IM/LqasImPercentageChart.tsx';
+import { LqasImHorizontalChart } from '../../components/LQAS-IM/LqasImHorizontalChart.tsx';
 import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
 import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
 import { LqasSummary } from '../../components/LQAS-IM/LqasSummary.tsx';
 import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
 import { HorizontalDivider } from '../../components/HorizontalDivider.tsx';
+import { formatForRfaChart, formatForNfmChart } from '../../utils/LqasIm.tsx';
+import { LqasImVerticalChart } from '../../components/LQAS-IM/LqasImVerticalChart.tsx';
+import { useVerticalChartData } from '../../hooks/useVerticalChartData.ts';
+import { useNfmTitle } from '../../hooks/useNfmTitle.ts';
+import { useRfaTitle } from '../../hooks/useRfaTitle.ts';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
@@ -43,11 +48,7 @@ export const Lqas = ({ router }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const { campaign, country } = router.params;
-    const {
-        data: LQASData,
-        isFetching,
-        isLoading,
-    } = useLqasIm('lqas', country);
+    const { data: LQASData, isFetching } = useLqasIm('lqas', country);
 
     const convertedData = useConvertedLqasImData(LQASData);
 
@@ -59,6 +60,31 @@ export const Lqas = ({ router }) => {
     const debugData = useDebugData(LQASData, campaign);
 
     const hasScope = debugData[campaign]?.hasScope;
+
+    const [nfmRound1, nfmRound2] = useVerticalChartData({
+        data: LQASData?.stats,
+        campaign,
+        formatter: formatForNfmChart,
+        type: 'lqas',
+    });
+    const [nfmTitle1, nfmTitle2] = useNfmTitle({
+        data: LQASData?.stats,
+        campaign,
+        type: 'lqas',
+    });
+
+    const [rfaRound1, rfaRound2] = useVerticalChartData({
+        data: LQASData?.stats,
+        campaign,
+        formatter: formatForRfaChart,
+        type: 'lqas',
+    });
+
+    const [rfaTitle1, rfaTitle2] = useRfaTitle({
+        data: LQASData?.stats,
+        campaign,
+        type: 'lqas',
+    });
 
     return (
         <>
@@ -86,7 +112,7 @@ export const Lqas = ({ router }) => {
                                     round="round_1"
                                     selectedCampaign={campaign}
                                     type="lqas"
-                                    countryId={country}
+                                    countryId={parseInt(country, 10)}
                                     campaigns={campaigns}
                                     data={convertedData}
                                     isFetching={isFetching}
@@ -106,7 +132,7 @@ export const Lqas = ({ router }) => {
                                     round="round_2"
                                     selectedCampaign={campaign}
                                     type="lqas"
-                                    countryId={country}
+                                    countryId={parseInt(country, 10)}
                                     campaigns={campaigns}
                                     data={convertedData}
                                     isFetching={isFetching}
@@ -131,7 +157,7 @@ export const Lqas = ({ router }) => {
                         )}
                         <Grid item xs={6}>
                             <Box ml={2} mt={2}>
-                                <LqasImPercentageChart
+                                <LqasImHorizontalChart
                                     type="lqas"
                                     round="round_1"
                                     campaign={campaign}
@@ -143,7 +169,7 @@ export const Lqas = ({ router }) => {
                         </Grid>
                         <Grid item xs={6} mr={2}>
                             <Box mr={2} mt={2}>
-                                <LqasImPercentageChart
+                                <LqasImHorizontalChart
                                     type="lqas"
                                     round="round_2"
                                     campaign={campaign}
@@ -168,26 +194,56 @@ export const Lqas = ({ router }) => {
                         </Grid>
                         <Grid item xs={6}>
                             <Box ml={2} mt={2}>
-                                <NoFingerMark
-                                    data={LQASData.stats}
-                                    campaign={campaign}
-                                    round="round_1"
-                                    type="LQAS"
+                                <LqasImVerticalChart
+                                    data={nfmRound1}
                                     chartKey="nfmRound1"
-                                    isLoading={isLoading}
+                                    title={nfmTitle1}
+                                    isLoading={isFetching}
                                     showChart={Boolean(campaign)}
                                 />
                             </Box>
                         </Grid>
                         <Grid item xs={6}>
                             <Box mr={2} mt={2}>
-                                <NoFingerMark
-                                    data={LQASData.stats}
-                                    campaign={campaign}
-                                    round="round_2"
-                                    type="LQAS"
+                                <LqasImVerticalChart
+                                    data={nfmRound2}
                                     chartKey="nfmRound2"
-                                    isLoading={isLoading}
+                                    title={nfmTitle2}
+                                    isLoading={isFetching}
+                                    showChart={Boolean(campaign)}
+                                />
+                            </Box>
+                        </Grid>
+                    </Grid>
+                    <Grid container item spacing={2} direction="row">
+                        <Grid item xs={12}>
+                            <Box ml={2} mt={2}>
+                                <GraphTitle
+                                    text={formatMessage(
+                                        MESSAGES.reasonsForAbsence,
+                                    )}
+                                    displayTrigger={campaign && hasScope}
+                                />
+                            </Box>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Box ml={2} mt={2}>
+                                <LqasImVerticalChart
+                                    data={rfaRound1}
+                                    title={rfaTitle1}
+                                    chartKey="rfaRound1"
+                                    isLoading={isFetching}
+                                    showChart={Boolean(campaign)}
+                                />
+                            </Box>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Box mr={2} mt={2}>
+                                <LqasImVerticalChart
+                                    data={rfaRound2}
+                                    title={rfaTitle2}
+                                    chartKey="rfaRound2"
+                                    isLoading={isFetching}
                                     showChart={Boolean(campaign)}
                                 />
                             </Box>

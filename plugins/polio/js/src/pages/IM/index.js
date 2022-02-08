@@ -11,22 +11,26 @@ import { useGetCampaigns } from '../../hooks/useGetCampaigns';
 
 import { useLqasIm } from './requests';
 import { useDebugData } from '../../hooks/useDebugData.ts';
+import { formatForRfaChart, formatForNfmChart } from '../../utils/LqasIm.tsx';
+import { useRfaTitle } from '../../hooks/useRfaTitle.ts';
+import { useNfmTitle } from '../../hooks/useNfmTitle.ts';
 
 import { DistrictsNotFound } from '../../components/LQAS-IM/DistrictsNotFound.tsx';
 import { LqasImMap } from '../../components/LQAS-IM/LqasImMap';
-import { NoFingerMark } from '../../components/LQAS-IM/NoFingerMark.tsx';
 import { Filters } from '../../components/LQAS-IM/Filters.tsx';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
-import { LqasImPercentageChart } from '../../components/LQAS-IM/LqasImPercentageChart.tsx';
+import { LqasImHorizontalChart } from '../../components/LQAS-IM/LqasImHorizontalChart.tsx';
 import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
 import { LqasImMapHeader } from '../../components/LQAS-IM/LqasImMapHeader.tsx';
 import { ImSummary } from '../../components/LQAS-IM/ImSummary.tsx';
 import { HorizontalDivider } from '../../components/HorizontalDivider.tsx';
 import { useConvertedLqasImData } from '../../hooks/useConvertedLqasImData.ts';
+import { LqasImVerticalChart } from '../../components/LQAS-IM/LqasImVerticalChart.tsx';
+import { useVerticalChartData } from '../../hooks/useVerticalChartData.ts';
 
 const styles = theme => ({
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
-    // TODO use styling from commonStyles. overflow-x issue needs to be delat with though
+    // TODO use styling from commonStyles. overflow-x issue needs to be dealt with though
     container: {
         overflowY: 'auto',
         overflowX: 'hidden',
@@ -51,6 +55,29 @@ export const ImStats = ({ imType, router }) => {
 
     const debugData = useDebugData(imData, campaign);
     const hasScope = debugData[campaign]?.hasScope;
+
+    const [nfmRound1, nfmRound2] = useVerticalChartData({
+        data: imData?.stats,
+        campaign,
+        formatter: formatForNfmChart,
+        type: 'im',
+    });
+    const [nfmTitle1, nfmTitle2] = useNfmTitle({
+        data: imData?.stats,
+        campaign,
+        type: 'im',
+    });
+
+    const [rfaRound1, rfaRound2] = useVerticalChartData({
+        data: imData?.stats,
+        campaign,
+        formatter: formatForRfaChart,
+    });
+
+    const [rfaTitle1, rfaTitle2] = useRfaTitle({
+        data: imData?.stats,
+        campaign,
+    });
 
     return (
         <>
@@ -121,7 +148,7 @@ export const ImStats = ({ imType, router }) => {
                         </Grid>
                         <Grid item xs={6} mr={2}>
                             <Box ml={2} mt={2}>
-                                <LqasImPercentageChart
+                                <LqasImHorizontalChart
                                     type={imType}
                                     round="round_1"
                                     campaign={campaign}
@@ -133,7 +160,7 @@ export const ImStats = ({ imType, router }) => {
                         </Grid>
                         <Grid item xs={6} mr={2}>
                             <Box mr={2} mt={2}>
-                                <LqasImPercentageChart
+                                <LqasImHorizontalChart
                                     type={imType}
                                     round="round_2"
                                     campaign={campaign}
@@ -164,27 +191,59 @@ export const ImStats = ({ imType, router }) => {
                                         />
                                     </Box>
                                 </Grid>
-                                <Grid item xs={6} mr={2}>
+                                <Grid item xs={6}>
                                     <Box ml={2} mt={2}>
-                                        <NoFingerMark
-                                            data={imData.stats}
-                                            campaign={campaign}
-                                            round="round_1"
-                                            type="IM"
+                                        <LqasImVerticalChart
+                                            data={nfmRound1}
                                             chartKey="nfmRound1"
+                                            title={nfmTitle1}
                                             isLoading={isFetching}
                                             showChart={Boolean(campaign)}
                                         />
                                     </Box>
                                 </Grid>
-                                <Grid item xs={6} mr={2}>
+                                <Grid item xs={6}>
                                     <Box mr={2} mt={2}>
-                                        <NoFingerMark
-                                            data={imData.stats}
-                                            campaign={campaign}
-                                            round="round_2"
-                                            type="IM"
+                                        <LqasImVerticalChart
+                                            data={nfmRound2}
                                             chartKey="nfmRound2"
+                                            title={nfmTitle2}
+                                            isLoading={isFetching}
+                                            showChart={Boolean(campaign)}
+                                        />
+                                    </Box>
+                                </Grid>
+                            </Grid>
+                            <Grid container item spacing={2} direction="row">
+                                <Grid item xs={12}>
+                                    <Box ml={2} mt={2}>
+                                        <GraphTitle
+                                            text={formatMessage(
+                                                MESSAGES.reasonsForAbsence,
+                                            )}
+                                            displayTrigger={
+                                                campaign && hasScope
+                                            }
+                                        />
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Box ml={2} mt={2}>
+                                        <LqasImVerticalChart
+                                            data={rfaRound1}
+                                            title={rfaTitle1}
+                                            chartKey="rfaRound1"
+                                            isLoading={isFetching}
+                                            showChart={Boolean(campaign)}
+                                        />
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Box mr={2} mt={2}>
+                                        <LqasImVerticalChart
+                                            data={rfaRound2}
+                                            title={rfaTitle2}
+                                            chartKey="rfaRound2"
                                             isLoading={isFetching}
                                             showChart={Boolean(campaign)}
                                         />

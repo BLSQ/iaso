@@ -929,6 +929,70 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.noScopeFound',
         defaultMessage: 'No scope found',
     },
+    childrenNfmAbsent: {
+        id: 'iaso.polio.label.childrenNfmAbsent',
+        defaultMessage: 'Children absent',
+    },
+    reasonsForAbsence: {
+        id: 'iaso.polio.label.reasonsForAbsence',
+        defaultMessage: 'Reasons for absence of non-vaccinated children',
+    },
+    Market: {
+        id: 'iaso.polio.label.market',
+        defaultMessage: 'Market',
+    },
+    Tot_child_Abs_Market: {
+        id: 'iaso.polio.label.market',
+        defaultMessage: 'Market',
+    },
+    In_playground: {
+        id: 'iaso.polio.label.playground',
+        defaultMessage: 'At playground',
+    },
+    Tot_child_Abs_Play_areas: {
+        id: 'iaso.polio.label.playground',
+        defaultMessage: 'At playground',
+    },
+    Farm: {
+        id: 'iaso.polio.label.farm',
+        defaultMessage: 'Farm',
+    },
+    Tot_child_Abs_Farm: {
+        id: 'iaso.polio.label.farm',
+        defaultMessage: 'Farm',
+    },
+    School: {
+        id: 'iaso.polio.label.school',
+        defaultMessage: 'School',
+    },
+    Tot_child_Abs_School: {
+        id: 'iaso.polio.label.school',
+        defaultMessage: 'School',
+    },
+    Travelled: {
+        id: 'iaso.polio.label.travelled',
+        defaultMessage: 'Travelling',
+    },
+    Tot_child_Abs_Travelling: {
+        id: 'iaso.polio.label.travelled',
+        defaultMessage: 'Travelling',
+    },
+    unknown: {
+        id: 'iaso.polio.label.unknown',
+        defaultMessage: 'Unknown',
+    },
+    Tot_child_Abs_Social_event: {
+        id: 'iaso.polio.label.socialEvent',
+        defaultMessage: 'Social event',
+    },
+    Tot_child_Abs_Parent_Absent: {
+        id: 'iaso.polio.label.parentAbsent',
+        defaultMessage: 'Parent absent',
+    },
+    Tot_child_Abs_Other: {
+        id: 'iaso.polio.label.other',
+        defaultMessage: 'Other',
+    },
     showOnlyDeleted: {
         id: 'iaso.forms.showDeleted',
         defaultMessage: 'Show deleted',

@@ -1,11 +1,12 @@
 import { IntlMessage } from '../../../../../hat/assets/js/apps/Iaso/types/intl';
 
 /* eslint-disable camelcase */
-export type FormatForNFMArgs = {
+export type FormatForNFMArgs<T> = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
     round: RoundString;
     formatMessage: IntlFormatMessage;
+    type: T
 };
 export type LqasImData = {
     stats: Record<string, LqasImCampaign>;
@@ -19,6 +20,11 @@ export type RoundString = 'round_1' | 'round_2';
 export enum NfmRoundString {
     'round_1' = 'round_1_nfm_stats',
     'round_2' = 'round_2_nfm_stats',
+}
+
+export enum RfaRoundString {
+    'round_1' = 'round_1_nfm_abs_stats',
+    'round_2' = 'round_2_nfm_abs_stats',
 }
 
 export type BarChartData = {

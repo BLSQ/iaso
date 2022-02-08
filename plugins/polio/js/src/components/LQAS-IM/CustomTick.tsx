@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-export const NfmCustomTick: FunctionComponent<any> = ({ x, y, payload }) => {
+export const CustomTick: FunctionComponent<any> = ({ x, y, payload }) => {
     if (typeof payload.value === 'string') {
         const allWords = payload?.value?.split(' ') ?? [];
         const firstWord = allWords.shift();

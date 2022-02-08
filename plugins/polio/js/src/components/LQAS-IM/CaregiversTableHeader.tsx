@@ -4,8 +4,11 @@ import { Box, Typography } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { ConvertedLqasImData, RoundString } from '../../constants/types';
 import MESSAGES from '../../constants/messages';
-import { totalCaregivers, totalCaregiversInformed } from '../../utils/LqasIm';
-import { convertStatToPercent } from '../../pages/LQAS/utils';
+import {
+    convertStatToPercent,
+    totalCaregivers,
+    totalCaregiversInformed,
+} from '../../utils/LqasIm';
 
 type Props = {
     campaign?: string;

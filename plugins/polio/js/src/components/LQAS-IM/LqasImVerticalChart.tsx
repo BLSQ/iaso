@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, useEffect, useMemo } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { Box, Typography } from '@material-ui/core';
 import {
     Bar,
@@ -11,105 +11,48 @@ import {
     LabelList,
 } from 'recharts';
 import { blue } from '@material-ui/core/colors';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import {
-    BarChartData,
-    LqasImCampaign,
-    RoundString,
-} from '../../constants/types';
+import { BarChartData } from '../../constants/types';
 import { BAR_HEIGHT } from '../PercentageBarChart/constants';
-import {
-    convertStatToPercent,
-    formatLqasDataForNFMChart,
-    lqasNfmTooltipFormatter,
-    sumChildrenChecked,
-    sumChildrenCheckedLqas,
-} from '../../pages/LQAS/utils';
-import { formatImDataForNFMChart } from '../../pages/IM/utils';
-import MESSAGES from '../../constants/messages';
-import { NfmCustomTick } from './NfmCustomTick';
+import { CustomTick } from './CustomTick';
 import { customLabelHorizontal } from '../PercentageBarChart/utils';
 import { NoData } from './NoData';
+import { verticalChartTooltipFormatter } from '../../utils/LqasIm';
 
 type Props = {
     // eslint-disable-next-line react/require-default-props
-    data?: Record<string, LqasImCampaign>;
-    // eslint-disable-next-line react/require-default-props
-    campaign?: string;
-    round: RoundString;
+    data?: BarChartData[];
     chartKey: string;
     isLoading: boolean;
     showChart: boolean;
-    type: 'LQAS' | 'IM';
+    title: string;
 };
 
-export const NoFingerMark: FunctionComponent<Props> = ({
-    data,
+export const LqasImVerticalChart: FunctionComponent<Props> = ({
+    data = [],
     chartKey,
     isLoading,
     showChart,
-    campaign,
-    round,
-    type,
+    title,
 }) => {
-    const { formatMessage } = useSafeIntl();
     const [renderCount, setRenderCount] = useState(0);
-    const dataIsEmpty = data ? Object.keys(data).length === 0 : true;
+    const dataIsEmpty = data.length === 0;
 
-    const formattedData: BarChartData[] = useMemo(() => {
-        if (type === 'IM') {
-            return formatImDataForNFMChart({
-                data,
-                campaign,
-                round,
-                formatMessage,
-            });
-        }
-        if (type === 'LQAS') {
-            return formatLqasDataForNFMChart({
-                data,
-                campaign,
-                round,
-                formatMessage,
-            });
-        }
-        return [];
-    }, [data, campaign, round, formatMessage, type]);
-
-    const childrenNotMarked = formattedData
-        .map(nfmData => nfmData.absValue)
-        .reduce((total, current) => total + current, 0);
-
-    const childrenChecked: number =
-        type === 'LQAS'
-            ? sumChildrenCheckedLqas(round, data, campaign)
-            : sumChildrenChecked(round, data, campaign);
-
-    const ratioUnmarked = convertStatToPercent(
-        childrenNotMarked,
-        childrenChecked,
-    );
     // Force render to avoid visual bug when data has length of 0
     useEffect(() => {
         setRenderCount(count => count + 1);
     }, [data]);
     return (
         <>
-            {isLoading && <LoadingSpinner />}
             {!isLoading && showChart && dataIsEmpty && <NoData />}
             {!isLoading && showChart && !dataIsEmpty && (
                 <>
                     <Box>
-                        <Typography variant="h6">
-                            {`${formatMessage(
-                                MESSAGES.childrenNoMark,
-                            )}: ${ratioUnmarked}`}
-                        </Typography>
+                        <Typography variant="h6">{title}</Typography>
                     </Box>
                     <Box key={`${chartKey}${renderCount}`}>
                         <ResponsiveContainer height={450} width="90%">
                             <BarChart
-                                data={formattedData}
+                                data={data}
                                 layout="horizontal"
                                 margin={{ left: 50 }}
                                 barSize={BAR_HEIGHT}
@@ -120,15 +63,15 @@ export const NoFingerMark: FunctionComponent<Props> = ({
                                     dataKey="name"
                                     interval={0}
                                     height={110}
-                                    tick={<NfmCustomTick />}
+                                    tick={<CustomTick />}
                                 />
                                 <Tooltip
-                                    payload={formattedData}
-                                    formatter={lqasNfmTooltipFormatter}
+                                    payload={data}
+                                    formatter={verticalChartTooltipFormatter}
                                     itemStyle={{ color: 'black' }}
                                 />
                                 <Bar dataKey="value" minPointSize={3}>
-                                    {formattedData.map((_entry, index) => {
+                                    {data.map((_entry, index) => {
                                         return (
                                             <Cell
                                                 key={`cell-${index}`}

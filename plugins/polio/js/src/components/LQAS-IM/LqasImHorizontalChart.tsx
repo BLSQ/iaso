@@ -24,7 +24,7 @@ type Props = {
     isLoading: boolean;
 };
 
-export const LqasImPercentageChart: FunctionComponent<Props> = ({
+export const LqasImHorizontalChart: FunctionComponent<Props> = ({
     type,
     round,
     campaign,

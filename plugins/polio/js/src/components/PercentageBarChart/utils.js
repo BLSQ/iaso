@@ -63,7 +63,7 @@ export const customLabelHorizontal = ({ x, y, value, width }) => {
                     display="flex"
                     style={{ color, textShadow: '1px 1px 2px black' }}
                 >
-                    <Typography>{`${parseInt(value, 10)}%`}</Typography>
+                    <Typography>{`${Math.round(value)}%`}</Typography>
                 </Box>
             </foreignObject>
         </g>

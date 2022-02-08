@@ -66,7 +66,6 @@ export const ImSummary: FunctionComponent<Props> = ({
                         direction="row"
                         style={{ justifyContent: 'space-evenly' }}
                     >
-                        {/* <Grid container item xs={12} sm={6}> */}
                         <Grid item xs={4} sm={3}>
                             <Typography
                                 variant="body1"

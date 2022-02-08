@@ -79,8 +79,31 @@ export const lqasNfmKeys = [
     'Child_is_a_visitor',
 ];
 
+// keys for reasons for absence in LQAS
+export const lqasRfaKeys = [
+    'Market',
+    'School',
+    'In_playground',
+    'Farm',
+    'Other',
+    'Travelled',
+    'unknown',
+];
+
+// keys for reasons for absence in IM
+export const imRfaKeys = [
+    'Tot_child_Abs_Farm',
+    'Tot_child_Abs_Other',
+    'Tot_child_Abs_Market',
+    'Tot_child_Abs_School',
+    'Tot_child_Abs_Play_areas',
+    'Tot_child_Abs_Travelling',
+    'Tot_child_Abs_Social_event',
+    'Tot_child_Abs_Parent_Absent',
+];
+
 // keys of reasons for children not fingermarked in IM
-export const ImNfmKeys = [
+export const imNfmKeys = [
     'Tot_child_Absent_HH',
     'Tot_child_NC_HH',
     'Tot_child_NotVisited_HH',

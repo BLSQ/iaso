@@ -5,10 +5,10 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { ConvertedLqasImData, RoundString } from '../../constants/types';
 import { FAIL_COLOR, OK_COLOR } from '../../styles/constants';
 import {
-    convertStatToPercent,
     getLqasStatsForRound,
     makeCaregiversRatio,
 } from '../../pages/LQAS/utils';
+import { convertStatToPercent } from '../../utils/LqasIm';
 
 type Props = {
     campaign?: string;
@@ -73,7 +73,6 @@ export const LqasSummary: FunctionComponent<Props> = ({
 
     const ratePassedColor = getRatePassedColors(summary.ratePassed, classes);
 
-    // Leaving the commented code with caregiversRatio, in case client asks for it on Monday as it's in PowerBI
     return (
         <>
             {data && campaign && data[campaign] && (
@@ -111,8 +110,6 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${summary.failed}`}
                             </Typography>
                         </Grid>
-                        {/* </Grid> */}
-                        {/* <Grid container item xs={12} sm={6}> */}
                         <Grid item xs={4} sm={3}>
                             <Typography
                                 variant="body1"
@@ -127,16 +124,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${summary.ratePassed}`}
                             </Typography>
                         </Grid>
-                        {/* <Grid item xs={6} sm={3}>
-                                <Typography variant="h6">
-                                    Caregivers informed
-                                </Typography>
-                                <Typography variant="body1">
-                                    {`${summary.caregiversRatio}`}
-                                </Typography>
-                            </Grid> */}
                     </Grid>
-                    {/* </Grid> */}
                 </Paper>
             )}
         </>

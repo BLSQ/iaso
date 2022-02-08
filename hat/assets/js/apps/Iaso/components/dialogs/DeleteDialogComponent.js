@@ -13,6 +13,7 @@ export default function DeleteDialog({
     message,
     onConfirm,
     disabled,
+    keyName,
 }) {
     const closeThenOnConfirm = useCallback(
         closeDialog => {
@@ -35,19 +36,23 @@ export default function DeleteDialog({
                 />
             )}
         >
-            <DialogContentText id="alert-dialog-description">
-                <FormattedMessage {...message} />
-            </DialogContentText>
+            <div id={`delete-dialog-${keyName}`}>
+                <DialogContentText id="alert-dialog-description">
+                    <FormattedMessage {...message} />
+                </DialogContentText>
+            </div>
         </ConfirmCancelDialogComponent>
     );
 }
 
 DeleteDialog.defaultProps = {
     disabled: false,
+    keyName: '-key',
 };
 DeleteDialog.propTypes = {
     titleMessage: PropTypes.object.isRequired,
     message: PropTypes.object.isRequired,
     onConfirm: PropTypes.func.isRequired,
     disabled: PropTypes.bool,
+    keyName: PropTypes.string,
 };

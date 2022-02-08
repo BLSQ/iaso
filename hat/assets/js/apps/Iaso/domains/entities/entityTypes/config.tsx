@@ -77,6 +77,7 @@ export const columns = ({
                 />
                 {settings.row.original.entities_count === 0 && (
                     <DeleteDialog
+                        keyName="entityType"
                         disabled={settings.row.original.instances_count > 0}
                         titleMessage={MESSAGES.deleteTitle}
                         message={MESSAGES.deleteText}

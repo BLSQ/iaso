@@ -87,7 +87,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         handleSubmit,
         resetForm,
     } = formik;
-    const getErrors = k => errors[k] ?? [];
+    const getErrors = k => (errors[k] ? [errors[k]] : []);
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}

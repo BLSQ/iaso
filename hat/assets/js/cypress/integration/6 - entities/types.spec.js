@@ -140,7 +140,7 @@ describe('Entities', () => {
                 cy.get('@actionCol').find('#form-link').should('not.exist');
                 cy.get('@actionCol').find('#edit-button').should('be.visible');
                 cy.get('@actionCol')
-                    .find('#delete-button')
+                    .find('#delete-button-entityType-7')
                     .should('be.visible');
 
                 cy.log('Type only editable');
@@ -149,7 +149,9 @@ describe('Entities', () => {
                 cy.get('@actionCol').find('button').should('have.length', 1);
                 cy.get('@actionCol').find('#form-link').should('not.exist');
                 cy.get('@actionCol').find('#edit-button').should('be.visible');
-                cy.get('@actionCol').find('#delete-button').should('not.exist');
+                cy.get('@actionCol')
+                    .find('#delete-button-entityType-2')
+                    .should('not.exist');
 
                 cy.log('Type with form link');
                 cy.get('@table').find('tbody').find('tr').eq(3).as('row');
@@ -157,7 +159,9 @@ describe('Entities', () => {
                 cy.get('@actionCol').find('button').should('have.length', 2);
                 cy.get('@actionCol').find('#form-link').should('be.visible');
                 cy.get('@actionCol').find('#edit-button').should('be.visible');
-                cy.get('@actionCol').find('#delete-button').should('not.exist');
+                cy.get('@actionCol')
+                    .find('#delete-button-entityType-3')
+                    .should('not.exist');
             });
         });
     });
@@ -244,7 +248,7 @@ describe('Entities', () => {
             const actionCol = row.find('td').last();
             const deleteButton = actionCol.find('button').last();
             deleteButton.click();
-            cy.get('#delete-dialog-entityType').as('deleteDialog');
+            cy.get('#delete-dialog-entityType-7').as('deleteDialog');
         });
         it('should open delete dialog', () => {
             cy.wait('@getEntitiesTypes').then(() => {

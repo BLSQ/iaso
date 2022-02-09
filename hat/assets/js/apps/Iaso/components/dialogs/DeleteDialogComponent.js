@@ -23,6 +23,10 @@ export default function DeleteDialog({
         [onConfirm],
     );
 
+    const iconButtonExtraProps = keyName
+        ? { id: `delete-button-${keyName}` }
+        : {};
+
     return (
         <ConfirmCancelDialogComponent
             titleMessage={titleMessage}
@@ -33,6 +37,7 @@ export default function DeleteDialog({
                     disabled={disabled}
                     icon="delete"
                     tooltipMessage={MESSAGES.delete}
+                    {...iconButtonExtraProps}
                 />
             )}
         >
@@ -47,7 +52,7 @@ export default function DeleteDialog({
 
 DeleteDialog.defaultProps = {
     disabled: false,
-    keyName: '-key',
+    keyName: 'key',
 };
 DeleteDialog.propTypes = {
     titleMessage: PropTypes.object.isRequired,

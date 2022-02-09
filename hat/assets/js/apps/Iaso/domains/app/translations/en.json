@@ -250,6 +250,7 @@
     "iaso.label.field": "Field",
     "iaso.label.filters": "Filters",
     "iaso.label.firstName": "First name",
+    "iaso.label.forbiddenChars": "Characters not allowed: '&', '/','?','\"\"' and '%'",
     "iaso.label.forms": "Forms",
     "iaso.label.from": "From",
     "iaso.label.geo_json": "Geo json shape",

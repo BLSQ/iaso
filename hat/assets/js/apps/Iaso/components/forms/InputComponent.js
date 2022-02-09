@@ -151,6 +151,7 @@ class InputComponent extends Component {
                         keyValue={keyValue}
                         label={labelText}
                         required={required}
+                        errors={errors}
                         disabled={disabled}
                         onEnterPressed={onEnterPressed}
                         isFocused={isFocused}

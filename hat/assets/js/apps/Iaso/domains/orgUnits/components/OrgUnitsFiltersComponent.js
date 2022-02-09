@@ -13,12 +13,12 @@ import classNames from 'classnames';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
+import { SearchFilter } from '../../../components/filters/Search.tsx';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 import { redirectTo } from '../../../routing/actions';
 import { getChipColors } from '../../../constants/chipColors';
 
 import {
-    search,
     status,
     hasInstances,
     orgUnitType,
@@ -34,7 +34,7 @@ import {
 
 import DatesRange from '../../../components/filters/DatesRange';
 
-import { decodeSearch, encodeUriSearches } from '../utils';
+import { decodeSearch } from '../utils';
 import { useOrgUnitsFiltersData } from '../hooks';
 import { baseUrls } from '../../../constants/urls';
 
@@ -68,12 +68,13 @@ const OrgUnitsFiltersComponent = ({
     currentTab,
     onSearch,
 }) => {
-    const decodedSearches = [...decodeSearch(params.searches)];
+    const decodedSearches = [...decodeSearch(decodeURI(params.searches))];
     const [searchParams, setSearchPrams] = useState(
         decodedSearches[searchIndex] ?? {},
     );
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
+    const [textSearchError, setTextSearchError] = useState(false);
     const [fetchingGroups, setFetchingGroups] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(
         searchParams?.levels,
@@ -136,25 +137,13 @@ const OrgUnitsFiltersComponent = ({
         setSearchPrams(decodedSearches[searchIndex]);
     };
 
-    const handleSearchFilterChange = (value, urlKey) => {
-        // Remove the " character to avoid JSON parse to fail in front and back
-        let newValue = value;
-        if (value && value.length > 0) {
-            if (value.slice(-1) === '"') {
-                return null;
-            }
-            newValue = value.replace(new RegExp(/(")/, 'g'), '');
-        }
-        return onChange(newValue, urlKey);
-    };
-
     const handleSearch = () => {
         const searches = [...decodeSearch(params.searches)];
         searches[searchIndex] = searchParams;
         const tempParams = {
             ...params,
             page: 1,
-            searches: encodeUriSearches(searches),
+            searches: JSON.stringify(searches),
         };
         onSearch(tempParams);
     };
@@ -188,19 +177,19 @@ const OrgUnitsFiltersComponent = ({
                         currentColor={currentColor}
                         onChangeColor={color => onChange(color, 'color')}
                     />
+                    <SearchFilter
+                        uid={`search-${searchIndex}`}
+                        onEnterPressed={handleSearch}
+                        onChange={(value, urlKey) => onChange(value, urlKey)}
+                        keyValue="search"
+                        required
+                        value={searchParams.search || ''}
+                        onErrorChange={setTextSearchError}
+                    />
                     <FiltersComponent
                         params={params}
                         baseUrl={baseUrl}
-                        filters={[
-                            extendFilter(
-                                searchParams,
-                                search(),
-                                (value, urlKey) =>
-                                    handleSearchFilterChange(value, urlKey),
-                                searchIndex,
-                            ),
-                            sourceFilter,
-                        ]}
+                        filters={[sourceFilter]}
                         onEnterPressed={() => handleSearch()}
                     />
                 </Grid>
@@ -345,7 +334,8 @@ const OrgUnitsFiltersComponent = ({
                     <Button
                         disabled={
                             (!filtersUpdated && Boolean(params.searchActive)) ||
-                            hasLocationLimitError
+                            hasLocationLimitError ||
+                            textSearchError
                         }
                         id="searchButton"
                         variant="contained"

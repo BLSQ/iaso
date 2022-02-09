@@ -247,6 +247,7 @@
     "iaso.label.field": "Champ",
     "iaso.label.filters": "Filtres",
     "iaso.label.firstName": "Prénom",
+    "iaso.label.forbiddenChars": "Caractères non-autorisés: '&', '/','?','\"\"' and '%'",
     "iaso.label.forms": "Formulaires",
     "iaso.label.from": "De",
     "iaso.label.geo_json": "Forme geo json",

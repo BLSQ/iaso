@@ -39,6 +39,9 @@ export const getOverriddenTheme = theme => {
                         lineHeight: 1,
                         backgroundColor: 'white',
                     },
+                    sup: {
+                        verticalAlign: 'top',
+                    },
                 },
             },
         },

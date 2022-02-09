@@ -7,6 +7,15 @@ import { usePrettyPeriod } from '../domains/periods/utils';
 import { orgUnitLabelString } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';
 
+export const forbiddenCharacters = ['"', '?', '/', '%', '&'];
+
+export const containsForbiddenCharacter = value => {
+    for (let i = 0; i < value.length; i += 1) {
+        if (forbiddenCharacters.includes(value[i])) return true;
+    }
+    return false;
+};
+
 export const search = (urlKey = 'search', withMarginTop = true) => ({
     urlKey,
     label: MESSAGES.textSearch,

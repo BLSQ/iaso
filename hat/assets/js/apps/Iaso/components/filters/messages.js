@@ -25,6 +25,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.clear',
         defaultMessage: 'Clear',
     },
+    forbiddenChars: {
+        id: 'iaso.label.forbiddenChars',
+        defaultMessage: 'Forbidden characters: "&", "/","?"," "" " and "%"',
+    },
+    textSearch: {
+        id: 'iaso.forms.textSearch',
+        defaultMessage: 'Text search',
+    },
 });
 
 export default MESSAGES;

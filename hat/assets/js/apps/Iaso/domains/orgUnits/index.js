@@ -31,12 +31,7 @@ import { redirectTo } from '../../routing/actions';
 
 import { orgUnitsTableColumns } from './config';
 
-import {
-    decodeSearch,
-    mapOrgUnitByLocation,
-    encodeUriParams,
-    encodeUriSearches,
-} from './utils';
+import { decodeSearch, mapOrgUnitByLocation, encodeUriParams } from './utils';
 import { getFromDateString, getToDateString } from '../../utils/dates.ts';
 
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
@@ -171,7 +166,7 @@ const OrgUnits = props => {
             limit: params.pageSize ? params.pageSize : 50,
             order: params.order ? params.order : '-updated_at',
             page: params.page ? params.page : 1,
-            searches: encodeUriSearches(searches),
+            searches: JSON.stringify(searches),
         };
         delete urlParams.tab;
         delete urlParams.searchActive;

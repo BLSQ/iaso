@@ -3,3 +3,6 @@ export type IntlMessage = {
     defaultMessage: string;
     values?: Record<string, any>;
 };
+
+// eslint-disable-next-line no-unused-vars
+export type IntlFormatMessage = (message: IntlMessage) => string;

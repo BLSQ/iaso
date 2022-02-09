@@ -1,4 +1,5 @@
 import React, { ReactElement } from 'react';
+import { Box } from '@material-ui/core';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { EntityTypesDialog } from './components/EntityTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
@@ -57,34 +58,40 @@ export const columns = ({
             // TODO: limit to user permissions
             <section>
                 {settings.row.original?.defining_form && (
-                    <IconButtonComponent
-                        url={`/${baseUrls.formDetail}/formId/${settings.row.original.defining_form}`}
-                        icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.viewForm}
-                    />
+                    <span id="form-link">
+                        <IconButtonComponent
+                            url={`/${baseUrls.formDetail}/formId/${settings.row.original.defining_form}`}
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.viewForm}
+                        />
+                    </span>
                 )}
                 <EntityTypesDialog
                     renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
-                            onClick={openDialog}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
-                        />
+                        <span id="edit-button">
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="edit"
+                                tooltipMessage={MESSAGES.edit}
+                            />
+                        </span>
                     )}
                     initialData={settings.row.original}
                     titleMessage={MESSAGES.updateMessage}
                     saveEntityType={saveEntityType}
                 />
                 {settings.row.original.entities_count === 0 && (
-                    <DeleteDialog
-                        keyName="entityType"
-                        disabled={settings.row.original.instances_count > 0}
-                        titleMessage={MESSAGES.deleteTitle}
-                        message={MESSAGES.deleteText}
-                        onConfirm={() =>
-                            deleteEntityType(settings.row.original)
-                        }
-                    />
+                    <span id="delete-button">
+                        <DeleteDialog
+                            keyName="entityType"
+                            disabled={settings.row.original.instances_count > 0}
+                            titleMessage={MESSAGES.deleteTitle}
+                            message={MESSAGES.deleteText}
+                            onConfirm={() =>
+                                deleteEntityType(settings.row.original)
+                            }
+                        />
+                    </span>
                 )}
             </section>
         ),

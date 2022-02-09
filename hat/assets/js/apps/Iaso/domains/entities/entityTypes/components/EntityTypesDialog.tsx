@@ -116,7 +116,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         />
                     </Box>
                 )}
-                <div className={classes.root} id="entity-dialog">
+                <div className={classes.root} id="entity-types-dialog">
                     <InputComponent
                         keyValue="name"
                         onChange={setFieldValue}

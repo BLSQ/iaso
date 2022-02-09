@@ -1,0 +1,70 @@
+{
+    "count": 6,
+    "entities": [
+        {
+            "id": 3,
+            "name": "Entity 10",
+            "uuid": "7ca97a62-6301-405e-9fd9-390183d464e8",
+            "created_at": 1643632685.921739,
+            "updated_at": 1643800719.878326,
+            "attributes": 9773,
+            "entity_type": 1,
+            "entity_type_name": "Entity type 2"
+        },
+        {
+            "id": 2,
+            "name": "Entity 2",
+            "uuid": "f559008d-4148-4176-86be-0dca8f0ed079",
+            "created_at": 1643631293.277582,
+            "updated_at": 1643718273.229552,
+            "attributes": 9772,
+            "entity_type": 1,
+            "entity_type_name": "Entity type 2"
+        },
+        {
+            "id": 1,
+            "name": "Entity 3",
+            "uuid": "d2bb506c-2a7e-41bb-9d8a-8bd223dfb4fa",
+            "created_at": 1643624800.32361,
+            "updated_at": 1643718282.007407,
+            "attributes": 9771,
+            "entity_type": 2,
+            "entity_type_name": "Entity type"
+        },
+        {
+            "id": 5,
+            "name": "Entity 4",
+            "uuid": "95aed4d9-4ff3-4d08-893b-4fa4a744f521",
+            "created_at": 1643704926.706717,
+            "updated_at": 1643718258.551048,
+            "attributes": 9774,
+            "entity_type": 3,
+            "entity_type_name": "Entity type3"
+        },
+        {
+            "id": 6,
+            "name": "Entity 5",
+            "uuid": "e0f557fa-c41b-429c-adc6-a81afc153802",
+            "created_at": 1643704955.300427,
+            "updated_at": 1643718251.343151,
+            "attributes": 9425,
+            "entity_type": 1,
+            "entity_type_name": "Entity type 2"
+        },
+        {
+            "id": 7,
+            "name": "Entity 6",
+            "uuid": "267f3520-1913-42ef-8987-51f7287fdc22",
+            "created_at": 1643704977.539928,
+            "updated_at": 1643718241.24386,
+            "attributes": 9320,
+            "entity_type": 2,
+            "entity_type_name": "Entity type"
+        }
+    ],
+    "has_next": false,
+    "has_previous": false,
+    "page": 1,
+    "pages": 1,
+    "limit": 20
+}

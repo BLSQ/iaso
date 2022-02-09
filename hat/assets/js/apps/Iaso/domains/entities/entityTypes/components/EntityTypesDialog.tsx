@@ -87,7 +87,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         handleSubmit,
         resetForm,
     } = formik;
-    const getErrors = k => errors[k] ?? [];
+    const getErrors = k => (errors[k] ? [errors[k]] : []);
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -116,7 +116,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         />
                     </Box>
                 )}
-                <div className={classes.root} id="entity-dialog">
+                <div className={classes.root} id="entity-types-dialog">
                     <InputComponent
                         keyValue="name"
                         onChange={setFieldValue}

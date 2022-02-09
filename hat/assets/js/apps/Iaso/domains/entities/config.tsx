@@ -75,6 +75,7 @@ export const columns = ({
                     saveEntity={saveEntity}
                 />
                 <DeleteDialog
+                    keyName="entity"
                     disabled={settings.row.original.instances_count > 0}
                     titleMessage={MESSAGES.deleteTitle}
                     message={MESSAGES.deleteText}

@@ -58,7 +58,7 @@ export const columns = ({
             <section>
                 {settings.row.original?.defining_form && (
                     <IconButtonComponent
-                        id="form-link"
+                        id={`form-link-${settings.row.original.id}`}
                         url={`/${baseUrls.formDetail}/formId/${settings.row.original.defining_form}`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.viewForm}
@@ -67,7 +67,7 @@ export const columns = ({
                 <EntityTypesDialog
                     renderTrigger={({ openDialog }) => (
                         <IconButtonComponent
-                            id="edit-button"
+                            id={`edit-button-${settings.row.original.id}`}
                             onClick={openDialog}
                             icon="edit"
                             tooltipMessage={MESSAGES.edit}

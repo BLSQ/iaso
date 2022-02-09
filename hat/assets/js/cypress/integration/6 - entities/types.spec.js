@@ -134,33 +134,66 @@ describe('Entities', () => {
                 cy.get('table').as('table');
 
                 cy.log('Type deletable');
-                cy.get('@table').find('tbody').find('tr').eq(0).as('row');
+                let rowIndex = 0;
+                cy.get('@table')
+                    .find('tbody')
+                    .find('tr')
+                    .eq(rowIndex)
+                    .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
                 cy.get('@actionCol').find('button').should('have.length', 2);
-                cy.get('@actionCol').find('#form-link').should('not.exist');
-                cy.get('@actionCol').find('#edit-button').should('be.visible');
                 cy.get('@actionCol')
-                    .find('#delete-button-entityType-7')
+                    .find(`#form-link-${listFixture.types[rowIndex].id}`)
+                    .should('not.exist');
+                cy.get('@actionCol')
+                    .find(`#edit-button-${listFixture.types[rowIndex].id}`)
+                    .should('be.visible');
+                cy.get('@actionCol')
+                    .find(
+                        `#delete-button-entityType-${listFixture.types[rowIndex].id}`,
+                    )
                     .should('be.visible');
 
                 cy.log('Type only editable');
-                cy.get('@table').find('tbody').find('tr').eq(1).as('row');
+                rowIndex = 1;
+                cy.get('@table')
+                    .find('tbody')
+                    .find('tr')
+                    .eq(rowIndex)
+                    .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
                 cy.get('@actionCol').find('button').should('have.length', 1);
-                cy.get('@actionCol').find('#form-link').should('not.exist');
-                cy.get('@actionCol').find('#edit-button').should('be.visible');
                 cy.get('@actionCol')
-                    .find('#delete-button-entityType-2')
+                    .find(`#form-link-${listFixture.types[rowIndex].id}`)
+                    .should('not.exist');
+                cy.get('@actionCol')
+                    .find(`#edit-button-${listFixture.types[rowIndex].id}`)
+                    .should('be.visible');
+                cy.get('@actionCol')
+                    .find(
+                        `#delete-button-entityType-${listFixture.types[rowIndex].id}`,
+                    )
                     .should('not.exist');
 
+                rowIndex = 3;
                 cy.log('Type with form link');
-                cy.get('@table').find('tbody').find('tr').eq(3).as('row');
+                cy.get('@table')
+                    .find('tbody')
+                    .find('tr')
+                    .eq(rowIndex)
+                    .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
                 cy.get('@actionCol').find('button').should('have.length', 2);
-                cy.get('@actionCol').find('#form-link').should('be.visible');
-                cy.get('@actionCol').find('#edit-button').should('be.visible');
                 cy.get('@actionCol')
-                    .find('#delete-button-entityType-3')
+                    .find(`#form-link-${listFixture.types[rowIndex].id}`)
+                    .should('be.visible');
+                cy.get('@actionCol')
+                    .find(`#edit-button-${listFixture.types[rowIndex].id}`)
+                    .should('be.visible');
+                cy.get('@actionCol')
+                    .find(
+                        `#delete-button-entityType-${listFixture.types[rowIndex].id}`,
+                    )
                     .should('not.exist');
             });
         });

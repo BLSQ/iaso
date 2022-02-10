@@ -6,28 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polio', '0042_auto_20220121_1434'),
+        ("polio", "0042_auto_20220121_1434"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='round',
-            name='awareness_of_campaign_planning',
+            model_name="round",
+            name="awareness_of_campaign_planning",
             field=models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True),
         ),
         migrations.AlterField(
-            model_name='round',
-            name='im_percentage_children_missed_in_household',
+            model_name="round",
+            name="im_percentage_children_missed_in_household",
             field=models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True),
         ),
         migrations.AlterField(
-            model_name='round',
-            name='im_percentage_children_missed_in_plus_out_household',
+            model_name="round",
+            name="im_percentage_children_missed_in_plus_out_household",
             field=models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True),
         ),
         migrations.AlterField(
-            model_name='round',
-            name='im_percentage_children_missed_out_household',
+            model_name="round",
+            name="im_percentage_children_missed_out_household",
             field=models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True),
         ),
     ]

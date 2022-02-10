@@ -18,7 +18,6 @@ import {
 } from '@material-ui/core/colors';
 
 const colors = [
-    red[500],
     teal[500],
     lightGreen[800],
     purple[800],

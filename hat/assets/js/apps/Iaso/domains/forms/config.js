@@ -220,7 +220,6 @@ const formsTableColumns = ({
                                 {userHasPermission('iaso_forms', user) && (
                                     <DeleteDialog
                                         titleMessage={MESSAGES.deleteFormTitle}
-                                        message={MESSAGES.deleteFormText}
                                         onConfirm={closeDialog =>
                                             deleteForm(
                                                 settings.row.original.id,

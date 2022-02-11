@@ -402,10 +402,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.restoreWarning',
         defaultMessage: 'Are you sure you want to restore this campaign?',
     },
-    operationCantBeUndone: {
-        id: 'iaso.polio.label.operationCantBeUndone',
-        defaultMessage: 'This operation cannot be undone',
-    },
     no: {
         id: 'iaso.polio.label.no',
         defaultMessage: 'No',

@@ -42,9 +42,11 @@ export default function DeleteDialog({
             )}
         >
             <div id={`delete-dialog-${keyName}`}>
-                <DialogContentText id="alert-dialog-description">
-                    <FormattedMessage {...message} />
-                </DialogContentText>
+                {message && (
+                    <DialogContentText id="alert-dialog-description">
+                        <FormattedMessage {...message} />
+                    </DialogContentText>
+                )}
             </div>
         </ConfirmCancelDialogComponent>
     );
@@ -53,10 +55,11 @@ export default function DeleteDialog({
 DeleteDialog.defaultProps = {
     disabled: false,
     keyName: 'key',
+    message: null,
 };
 DeleteDialog.propTypes = {
     titleMessage: PropTypes.object.isRequired,
-    message: PropTypes.object.isRequired,
+    message: PropTypes.object,
     onConfirm: PropTypes.func.isRequired,
     disabled: PropTypes.bool,
     keyName: PropTypes.string,

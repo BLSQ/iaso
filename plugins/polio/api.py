@@ -960,11 +960,14 @@ class LQASStatsViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
     """
-
     def list(self, request):
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="lqas-config")
         requested_country = request.GET.get("country_id", None)
+        skipped_forms_count = 0
+        skipped_forms_list = []
+        skipped_forms = {"count": skipped_forms_count, "forms": skipped_forms_list}
+
         if requested_country is None:
             return HttpResponseBadRequest
         requested_country = int(requested_country)
@@ -1061,6 +1064,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     round_number = "Rnd2"
                 # FIXME ignored forms should be logged somewhere
                 if round_number != "Rnd1" and round_number != "Rnd2":
+                    skipped_forms_count += 1
+                    skipped_forms_list.append(form)
                     continue
                 HH_COUNT = form.get("Count_HH", None)
                 if HH_COUNT is None:
@@ -1169,6 +1174,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             "form_count": form_count,
             "form_campaign_not_found_count": form_campaign_not_found_count,
             "day_country_not_found": day_country_not_found,
+            "skipped_forms": skipped_forms,
         }
         return JsonResponse(response, safe=False)
 

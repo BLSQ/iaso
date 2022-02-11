@@ -960,6 +960,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
     """
+
     def list(self, request):
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="lqas-config")

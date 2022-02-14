@@ -27,10 +27,10 @@ class InstancesAPITestCase(APITestCase):
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
-        cls.jedi_council_endor = m.OrgUnit.objects.create(name="Endor Jedi Council")
+        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Coruscant Jedi Council", source_ref="jedi_council_corruscant_ref")
+        cls.jedi_council_endor = m.OrgUnit.objects.create(name="Endor Jedi Council", source_ref="jedi_council_endor_ref")
         cls.jedi_council_endor_region = m.OrgUnit.objects.create(
-            name="Endor Region Jedi Council", parent=cls.jedi_council_endor
+            name="Endor Region Jedi Council", parent=cls.jedi_council_endor, source_ref="jedi_council_endor_region_ref"
         )
 
         cls.project = m.Project.objects.create(
@@ -353,6 +353,27 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
         self.assertValidInstanceListData(response.json(), 2)
+
+    def test_instance_list_by_search_org_unit_ref(self):
+        """GET /instances/?search=refs:org_unit__source_ref"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            f"/api/instances/", {"search": "refs:"+self.jedi_council_corruscant.source_ref}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 4)
+
+    def test_instance_list_by_search_org_unit_ref_not_found(self):
+        """GET /instances/?search=refs:org_unit__source_ref"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            f"/api/instances/", {"search": "refs:source_ref_not_in"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 0)
+
 
     def test_instance_list_duplicate(self):
         """Regression test for IA-771

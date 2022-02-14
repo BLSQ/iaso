@@ -966,7 +966,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
         config = get_object_or_404(Config, slug="lqas-config")
         requested_country = request.GET.get("country_id", None)
         skipped_forms_list = []
-        skipped_forms = {"count": 0, "forms": skipped_forms_list}
+        skipped_forms = {"count": 0, "forms_id": skipped_forms_list}
 
         if requested_country is None:
             return HttpResponseBadRequest
@@ -1062,9 +1062,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     round_number = "Rnd1"
                 if round_number == "Round2":
                     round_number = "Rnd2"
-                # FIXME ignored forms should be logged somewhere
                 if round_number != "Rnd1" and round_number != "Rnd2":
-                    skipped_forms_list.append(form)
+                    skipped_forms_list.append(form["_id"])
                     skipped_forms.update({"count": len(skipped_forms_list)})
                     continue
                 HH_COUNT = form.get("Count_HH", None)

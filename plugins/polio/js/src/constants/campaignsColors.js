@@ -1,5 +1,4 @@
 import {
-    red,
     pink,
     purple,
     indigo,

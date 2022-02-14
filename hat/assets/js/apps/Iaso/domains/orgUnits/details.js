@@ -561,35 +561,40 @@ class OrgUnitDetail extends Component {
                         </div>
 
                         {tab === 'history' && (
-                            <Logs
-                                params={params}
-                                logObjectId={currentOrgUnit.id}
-                                goToRevision={orgUnitRevision =>
-                                    this.goToRevision(orgUnitRevision)
-                                }
-                            />
+                            <div id="logs-tab">
+                                <Logs
+                                    params={params}
+                                    logObjectId={currentOrgUnit.id}
+                                    goToRevision={orgUnitRevision =>
+                                        this.goToRevision(orgUnitRevision)
+                                    }
+                                />
+                            </div>
                         )}
                         {tab === 'forms' && (
-                            <SingleTable
-                                paramsPrefix="formsParams"
-                                apiParams={{
-                                    orgUnitId: currentOrgUnit.id,
-                                }}
-                                exportButtons={false}
-                                baseUrl={baseUrl}
-                                endPointPath="forms"
-                                propsToWatch={params.tab}
-                                fetchItems={fetchForms}
-                                columns={this.state.tableColumns}
-                                forceRefresh={
-                                    this.state.forceSingleTableRefresh
-                                }
-                                onForceRefreshDone={() =>
-                                    this.resetSingleTableForceRefresh()
-                                }
-                            />
+                            <div id="forms-tab">
+                                <SingleTable
+                                    paramsPrefix="formsParams"
+                                    apiParams={{
+                                        orgUnitId: currentOrgUnit.id,
+                                    }}
+                                    exportButtons={false}
+                                    baseUrl={baseUrl}
+                                    endPointPath="forms"
+                                    propsToWatch={params.tab}
+                                    fetchItems={fetchForms}
+                                    columns={this.state.tableColumns}
+                                    forceRefresh={
+                                        this.state.forceSingleTableRefresh
+                                    }
+                                    onForceRefreshDone={() =>
+                                        this.resetSingleTableForceRefresh()
+                                    }
+                                />
+                            </div>
                         )}
                         <div
+                            id="children-tab"
                             className={
                                 tab === 'children' ? '' : classes.hiddenOpacity
                             }
@@ -621,6 +626,7 @@ class OrgUnitDetail extends Component {
                             />
                         </div>
                         <div
+                            id="links-tab"
                             className={
                                 tab === 'links' ? '' : classes.hiddenOpacity
                             }
@@ -667,19 +673,21 @@ class OrgUnitDetail extends Component {
                             />
                         </div>
                         {tab === 'comments' && (
-                            <Grid
-                                container
-                                justifyContent="center"
-                                className={classes.commentsWrapper}
-                            >
-                                <Grid item xs={6}>
-                                    <OrgUnitsMapComments
-                                        className={classes.comments}
-                                        orgUnit={currentOrgUnit}
-                                        maxPages={4}
-                                    />
+                            <div id="comments-tab">
+                                <Grid
+                                    container
+                                    justifyContent="center"
+                                    className={classes.commentsWrapper}
+                                >
+                                    <Grid item xs={6}>
+                                        <OrgUnitsMapComments
+                                            className={classes.comments}
+                                            orgUnit={currentOrgUnit}
+                                            maxPages={4}
+                                        />
+                                    </Grid>
                                 </Grid>
-                            </Grid>
+                            </div>
                         )}
                     </section>
                 )}

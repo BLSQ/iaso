@@ -179,3 +179,12 @@ Cypress.Commands.add('fillArrayInputField', (id, newValues = []) => {
 Cypress.Commands.add('fillTextField', (id, value = '') => {
     cy.get(id).clear().type(value);
 });
+
+/**
+ * @param {number} tabIndex - the index of the tab
+ * @param {string} parentSelector - DOM selector of the element containing the tabs
+ */
+Cypress.Commands.add('selectTab', (tabIndex, parentSelector = 'body') => {
+    cy.get(parentSelector).find('.MuiTabs-root').as('tabs');
+    cy.get('@tabs').find('button').eq(tabIndex).click();
+});

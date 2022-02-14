@@ -1,7 +1,7 @@
 {
     "name": "Bo",
     "short_name": "Bo",
-    "id": 1250719,
+    "id": 1,
     "sub_source": "Play",
     "sub_source_id": "Play",
     "source_ref": "O6uvpzGd5pu",
@@ -79,15 +79,24 @@
             "source_version": 42
         }
     ],
-    "org_unit_type_name": "Play-Unknown-33",
+    "org_unit_type_name": "Org Unit Type",
     "org_unit_type": {
         "id": 47,
-        "name": "Play-Unknown-33",
-        "short_name": "",
+        "name": "Org Unit Type",
+        "short_name": "Org Unit Type",
         "created_at": 1633954017.101693,
         "updated_at": 1633954017.101713,
         "depth": null,
-        "sub_unit_types": []
+        "sub_unit_types": [
+            {
+                "id": 11,
+                "name": "Org Unit Type 2",
+                "short_name": "Org Unit Type 2",
+                "depth": 4,
+                "created_at": 1561062550.993334,
+                "updated_at": 1632133245.216007
+            }
+        ]
     },
     "source": "Play",
     "source_id": 33,

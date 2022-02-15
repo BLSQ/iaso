@@ -13,9 +13,7 @@ from django.http import HttpResponse
 from django.http.response import HttpResponseBadRequest
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
 from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
@@ -499,7 +497,6 @@ class IMStatsViewSet(viewsets.ViewSet):
        ]
     """
 
-    @method_decorator(cache_page(600), name="dispatch")
     def list(self, request):
 
         cache_response_exists = True
@@ -984,7 +981,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
     """
 
-    @method_decorator(cache_page(600), name="dispatch")
     def list(self, request):
 
         cache_response_exists = True

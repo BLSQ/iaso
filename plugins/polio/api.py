@@ -1,6 +1,6 @@
 import csv
 import json
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from typing import Optional
 
 import requests
@@ -39,7 +39,7 @@ from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
 )
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
-from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round
+from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, LQASIMCache, IMStatsCache
 from .models import CountryUsersGroup
 from .models import URLCache, Preparedness
 from .preparedness.calculator import preparedness_summary
@@ -501,6 +501,17 @@ class IMStatsViewSet(viewsets.ViewSet):
 
     @method_decorator(cache_page(600), name="dispatch")
     def list(self, request):
+
+        cache_response_exists = True
+
+        try:
+            cache_response = IMStatsCache.objects.get(user_id=request.user.id, params=request.query_params)
+            time_delta = datetime.now(timezone.utc) - cache_response.updated_at
+            if time_delta.seconds < 3600:
+                return JsonResponse(cache_response.response, safe=False)
+        except ObjectDoesNotExist:
+            cache_response_exists = False
+
         stats_types = request.GET.get("type", "HH,OHH")
         stats_types = stats_types.split(",")
         campaigns = Campaign.objects.all()
@@ -689,6 +700,15 @@ class IMStatsViewSet(viewsets.ViewSet):
             "form_count": form_count,
             "fully_mapped_form_count": fully_mapped_form_count,
         }
+
+        if not cache_response_exists:
+            IMStatsCache.objects.create(user_id=request.user.pk, response=response, params=request.query_params)
+        else:
+            cache_response = IMStatsCache.objects.get(user_id=request.user.id, params=request.query_params)
+            cache_response.response = response
+            cache_response.updated_at = datetime.now()
+            cache_response.save()
+
         return JsonResponse(response, safe=False)
 
 
@@ -966,6 +986,17 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
     @method_decorator(cache_page(600), name="dispatch")
     def list(self, request):
+
+        cache_response_exists = True
+        # Return cache response if cache is valid.
+        try:
+            cache_response = LQASIMCache.objects.get(user_id=request.user.id, params=request.query_params)
+            time_delta = datetime.now(timezone.utc) - cache_response.updated_at
+            if time_delta.seconds < 3600:
+                return JsonResponse(cache_response.response, safe=False)
+        except ObjectDoesNotExist:
+            cache_response_exists = False
+
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="lqas-config")
         requested_country = request.GET.get("country_id", None)
@@ -1174,6 +1205,14 @@ class LQASStatsViewSet(viewsets.ViewSet):
             "form_campaign_not_found_count": form_campaign_not_found_count,
             "day_country_not_found": day_country_not_found,
         }
+
+        if not cache_response_exists:
+            LQASIMCache.objects.create(user_id=request.user.pk, response=response, params=request.query_params)
+        else:
+            cache_response = LQASIMCache.objects.get(user_id=request.user.id, params=request.query_params)
+            cache_response.response = response
+            cache_response.updated_at = datetime.now()
+            cache_response.save()
         return JsonResponse(response, safe=False)
 
 

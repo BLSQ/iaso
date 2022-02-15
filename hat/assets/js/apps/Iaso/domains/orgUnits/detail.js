@@ -12,6 +12,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { alpha } from '@material-ui/core/styles/colorManipulator';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { redirectToReplace, redirectTo } from '../../routing/actions';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
@@ -24,7 +26,7 @@ import {
     saveOrgUnit,
     createOrgUnit,
 } from './actions';
-import { setAlgorithms, setAlgorithmRuns } from '../links/actions';
+import { setAlgorithmRuns } from '../links/actions';
 
 import formsTableColumns from '../forms/config';
 
@@ -68,6 +70,7 @@ import {
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
+import { useOrgUnitDetailData } from './hooks';
 // import { userHasPermission } from '../users/utils';
 
 const baseUrl = baseUrls.orgUnitDetails;
@@ -129,18 +132,14 @@ const OrgUnitDetail = ({ params, router }) => {
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
 
-    const fetching = useSelector(state => state.orgUnits.fetchingDetail);
+    // const fetching = useSelector(state => state.orgUnits.fetchingDetail);
     const currentOrgUnit = useSelector(state => state.orgUnits.current);
-    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
-    const sources = useSelector(state => state.orgUnits.sources) || [];
+    // const sources = useSelector(state => state.orgUnits.sources) || [];
     const prevPathname =
         useSelector(state => state.routerCustom.prevPathname) || null;
-    const groups = useSelector(state => state.orgUnits.groups);
-    const profiles = useSelector(state => state.users.list);
-    const algorithms = useSelector(state => state.links.algorithmsList);
-    const algorithmRuns = useSelector(state => state.links.algorithmRunsList);
     const currentUser = useSelector(state => state.users.current);
 
+    const [fetching, setFetching] = useState(false);
     const [tab, setTab] = useState(params.tab ? params.tab : 'infos');
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
@@ -201,10 +200,9 @@ const OrgUnitDetail = ({ params, router }) => {
             levels: null,
         };
         dispatch(redirectToReplace(baseUrl, newParams));
-
-        dispatch(setFetchingDetail(true));
+        setFetching(true);
         await fetchDetail();
-        dispatch(setFetchingDetail(false));
+        setFetching(false);
     };
 
     const handleDeleteForm = async formId => {
@@ -328,72 +326,103 @@ const OrgUnitDetail = ({ params, router }) => {
             });
     };
 
+    const {
+        algorithms,
+        algorithmRuns,
+        groups,
+        profiles,
+        orgUnitTypes,
+        links,
+        sources,
+        isFetchingSources,
+    } = useOrgUnitDetailData(isNewOrgunit, params.orgUnitId);
+
     useEffect(() => {
-        dispatch(fetchUsersProfiles());
-        fetchAlgorithms(dispatch).then(algoList =>
-            dispatch(setAlgorithms(algoList)),
-        );
-        fetchAlgorithmRuns(dispatch).then(algoRunsList =>
-            dispatch(setAlgorithmRuns(algoRunsList)),
-        );
-        fetchGroups(dispatch, params.orgUnitId === '0').then(newGroups =>
-            dispatch(setGroups(newGroups)),
-        );
-
-        const promisesArray = [fetchOrgUnitsTypes(dispatch)];
-        if (!isNewOrgunit) {
-            promisesArray.push(
-                fetchAssociatedDataSources(dispatch, params.orgUnitId),
-            );
-            promisesArray.push(
-                fetchLinks(
-                    dispatch,
-                    `/api/links/?orgUnitId=${params.orgUnitId}`,
-                ),
-            );
-        } else {
-            promisesArray.push(fetchSources(dispatch));
-        }
-
-        Promise.all(promisesArray).then(
-            ([newOrgUnitTypes, newSources, { links } = []]) => {
-                dispatch(
-                    setOrgUnitTypes(
-                        newOrgUnitTypes.map((ot, i) => ({
-                            ...ot,
-                            color: getOtChipColors(i),
-                        })),
-                    ),
+        if (
+            !isNewOrgunit &&
+            !currentOrgUnit &&
+            !fetching &&
+            !isFetchingSources
+        ) {
+            setFetching(true);
+            fetchDetail().then(async orgUnit => {
+                const selectedSources = getLinksSources(
+                    links,
+                    sources,
+                    orgUnit,
                 );
-                const coloredSources = newSources.map((s, i) => ({
-                    ...s,
-                    color: getChipColors(i),
-                }));
-                dispatch(setSources(coloredSources));
-                fetchDetail().then(async orgUnit => {
-                    const selectedSources = getLinksSources(
-                        links,
-                        coloredSources,
+                const fullSelectedSources = [];
+                for (let i = 0; i < selectedSources.length; i += 1) {
+                    const ss = selectedSources[i];
+                    // eslint-disable-next-line no-await-in-loop
+                    const detail = await fetchAssociatedOrgUnits(
+                        dispatch,
+                        ss,
                         orgUnit,
                     );
-                    const fullSelectedSources = [];
-                    for (let i = 0; i < selectedSources.length; i += 1) {
-                        const ss = selectedSources[i];
-                        // eslint-disable-next-line no-await-in-loop
-                        const detail = await fetchAssociatedOrgUnits(
-                            dispatch,
-                            ss,
-                            orgUnit,
-                        );
-                        fullSelectedSources.push(detail);
-                    }
-                    dispatch(setCurrentOrgUnit(orgUnit));
-                    setSourcesSelected(fullSelectedSources);
-                    dispatch(setFetchingDetail(false));
-                });
-            },
-        );
-    }, []);
+                    fullSelectedSources.push(detail);
+                }
+                dispatch(setCurrentOrgUnit(orgUnit));
+                setSourcesSelected(fullSelectedSources);
+                setFetching(false);
+            });
+        }
+    }, [
+        links,
+        isFetchingSources,
+        isNewOrgunit,
+        currentOrgUnit,
+        fetching,
+        sources,
+        params.orgUnitId,
+        fetchDetail,
+        dispatch,
+    ]);
+    // useEffect(() => {
+    //     const promisesArray = [];
+    //     if (!isNewOrgunit) {
+    //         promisesArray.push(
+    //             fetchAssociatedDataSources(dispatch, params.orgUnitId),
+    //         );
+    //         promisesArray.push(
+    //             fetchLinks(
+    //                 dispatch,
+    //                 `/api/links/?orgUnitId=${params.orgUnitId}`,
+    //             ),
+    //         );
+    //     } else {
+    //         promisesArray.push(fetchSources(dispatch));
+    //     }
+
+    //     Promise.all(promisesArray).then(([newSources, { links } = []]) => {
+    //         const coloredSources = newSources.map((s, i) => ({
+    //             ...s,
+    //             color: getChipColors(i),
+    //         }));
+    //         dispatch(setSources(coloredSources));
+    //         fetchDetail().then(async orgUnit => {
+    //             const selectedSources = getLinksSources(
+    //                 links,
+    //                 coloredSources,
+    //                 orgUnit,
+    //             );
+    //             const fullSelectedSources = [];
+    //             for (let i = 0; i < selectedSources.length; i += 1) {
+    //                 const ss = selectedSources[i];
+    //                 // eslint-disable-next-line no-await-in-loop
+    //                 const detail = await fetchAssociatedOrgUnits(
+    //                     dispatch,
+    //                     ss,
+    //                     orgUnit,
+    //                 );
+    //                 fullSelectedSources.push(detail);
+    //             }
+    //             dispatch(setCurrentOrgUnit(orgUnit));
+    //             setSourcesSelected(fullSelectedSources);
+    //             dispatch(setFetchingDetail(false));
+    //         });
+    //     });
+    // }, []);
 
     return (
         <section className={classes.root}>
@@ -456,6 +485,8 @@ const OrgUnitDetail = ({ params, router }) => {
                     <div className={tab === 'map' ? '' : classes.hiddenOpacity}>
                         <Box className={classes.containerFullHeight}>
                             <OrgUnitMap
+                                sources={sources}
+                                orgUnitTypes={orgUnitTypes}
                                 sourcesSelected={sourcesSelected}
                                 setSourcesSelected={newSourcesSelected => {
                                     setSourcesSelected(newSourcesSelected);

@@ -16,11 +16,11 @@ const SourcesFilterComponent = ({
     fitToBounds,
     sourcesSelected,
     setSourcesSelected,
+    currentSources,
 }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
-    const currentSources = useSelector(state => state.orgUnits.sources);
     const currentOrgUnit = useSelector(state => state.orgUnits.current);
     if (!currentOrgUnit) return null;
     const sources = getSourcesWithoutCurrentSource(
@@ -82,6 +82,7 @@ SourcesFilterComponent.propTypes = {
     fitToBounds: PropTypes.func.isRequired,
     sourcesSelected: PropTypes.array.isRequired,
     setSourcesSelected: PropTypes.func.isRequired,
+    currentSources: PropTypes.array.isRequired,
 };
 
 export default SourcesFilterComponent;

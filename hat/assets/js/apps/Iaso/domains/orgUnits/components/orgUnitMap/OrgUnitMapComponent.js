@@ -305,6 +305,7 @@ class OrgUnitMapComponent extends Component {
             orgUnitTypes,
             setSourcesSelected,
             sourcesSelected,
+            sources,
         } = this.props;
         const {
             location,
@@ -371,11 +372,13 @@ class OrgUnitMapComponent extends Component {
                     filtersOptionComponent={
                         <>
                             <SourcesFilterComponent
+                                currentSources={sources}
                                 fitToBounds={() => this.fitToBounds()}
                                 sourcesSelected={sourcesSelected}
                                 setSourcesSelected={setSourcesSelected}
                             />
                             <OrgUnitTypeFilterComponent
+                                orgUnitTypes={orgUnitTypes}
                                 fitToBounds={() => this.fitToBounds()}
                                 orgUnitTypesSelected={orgUnitTypesSelected}
                                 setOrgUnitTypesSelected={outypes => {
@@ -704,12 +707,12 @@ OrgUnitMapComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     setSourcesSelected: PropTypes.func.isRequired,
+    sources: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentUser: state.users.current,
     currentTile: state.map.currentTile,
-    orgUnitTypes: state.orgUnits.orgUnitTypes,
 });
 
 const MapDispatchToProps = dispatch => ({

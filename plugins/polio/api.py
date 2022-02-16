@@ -608,7 +608,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                 if round_number != "Rnd1" and round_number != "Rnd2":
                     skipped_forms_list.append(form["_id"])
                     skipped_forms.update({"count": len(skipped_forms_list)})
-                    print("skipped")
                     continue
                 if form.get("HH", None):
                     if "HH" in stats_types:

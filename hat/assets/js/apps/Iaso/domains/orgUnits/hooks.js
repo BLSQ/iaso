@@ -1,18 +1,15 @@
-import omit from 'lodash/omit';
-import { useDispatch } from 'react-redux';
-
-import { useSnackQuery, useSnackMutation } from 'Iaso/libs/apiHooks';
+import {
+    useSnackQuery,
+    useSnackMutation,
+    useSnackQueries,
+} from 'Iaso/libs/apiHooks';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 
-import { redirectToReplace } from '../../routing/actions';
 import { fetchOrgUnitsTypes, fetchGroups } from '../../utils/requests';
 import { setOrgUnitTypes, setGroups } from './actions';
 import { useFetchOnMount } from '../../hooks/fetchOnMount';
 import MESSAGES from './messages';
 import { getOtChipColors, getChipColors } from '../../constants/chipColors';
-import { baseUrls } from '../../constants/urls';
-
-const baseUrl = baseUrls.orgUnitDetails;
 
 export const useOrgUnitsFiltersData = (
     dispatch,
@@ -39,92 +36,99 @@ export const useOrgUnitDetailData = (
     orgUnitId,
     setCurrentOrgUnit,
 ) => {
-    const { data: algorithms = [], isFetching: isFetchingAlgorithm } =
-        useSnackQuery(
-            ['algorithms'],
-            () => getRequest('/api/algorithms/'),
-            MESSAGES.fetchAlgorithmsError,
-        );
-    const { data: algorithmRuns = [], isFetching: isFetchingAlgorithmRuns } =
-        useSnackQuery(
-            ['algorithmRuns'],
-            () => getRequest('/api/algorithmsruns/'),
-            MESSAGES.fetchAlgorithmsError,
-        );
-    const { data: groups = [], isFetching: isFetchingGroups } = useSnackQuery(
-        ['groups'],
-        () =>
-            getRequest(
-                `/api/groups/${isNewOrgunit ? '?&defaultVersion=true' : ''}`,
-            ),
-        MESSAGES.fetchGroupsError,
+    const [
+        { data: algorithms = [], isFetching: isFetchingAlgorithm },
+        { data: algorithmRuns = [], isFetching: isFetchingAlgorithmRuns },
+        { data: groups = [], isFetching: isFetchingGroups },
+        { data: profiles = [], isFetching: isFetchingProfiles },
+        { data: orgUnitTypes = [], isFetching: isFetchingOrgUnitTypes },
+        { data: links = [], isFetching: isFetchingLinks },
         {
-            select: data => data.groups,
+            data: associatedDataSources = [],
+            isFetching: isFetchingAssociatedDataSources,
         },
-    );
-    const { data: profiles = [], isFetching: isFetchingProfiles } =
-        useSnackQuery(
-            ['profiles'],
-            () => getRequest('/api/profiles/'),
-            MESSAGES.fetchProfilesError,
-            {
+        { data: sources = [], isFetching: isFetchingPlainSources },
+    ] = useSnackQueries([
+        {
+            queryKey: ['algorithms'],
+            queryFn: () => getRequest('/api/algorithms/'),
+        },
+        {
+            queryKey: ['algorithmRuns'],
+            queryFn: () => getRequest('/api/algorithmsruns/'),
+            snackErrorMsg: MESSAGES.fetchAlgorithmsError,
+            options: {},
+        },
+        {
+            queryKey: ['groups'],
+            queryFn: () =>
+                getRequest(
+                    `/api/groups/${
+                        isNewOrgunit ? '?&defaultVersion=true' : ''
+                    }`,
+                ),
+            snackErrorMsg: MESSAGES.fetchGroupsError,
+            options: {
+                select: data => data.groups,
+            },
+        },
+        {
+            queryKey: ['profiles'],
+            queryFn: () => getRequest('/api/profiles/'),
+            snackErrorMsg: MESSAGES.fetchProfilesError,
+            options: {
                 select: data => data.profiles,
             },
-        );
-    const { data: orgUnitTypes = [], isFetching: isFetchingOrgUnitTypes } =
-        useSnackQuery(
-            ['orgUnitTypes'],
-            () => getRequest('/api/orgunittypes/'),
-            MESSAGES.fetchOrgUnitTypesError,
-            {
+        },
+        {
+            queryKey: ['orgUnitTypes'],
+            queryFn: () => getRequest('/api/orgunittypes/'),
+            snackErrorMsg: MESSAGES.fetchOrgUnitTypesError,
+            options: {
                 select: data =>
                     data.orgUnitTypes.map((ot, i) => ({
                         ...ot,
                         color: getOtChipColors(i),
                     })),
             },
-        );
-
-    const { data: links = [], isFetching: isFetchingLinks } = useSnackQuery(
-        ['links'],
-        () => getRequest(`/api/links/?orgUnitId=${orgUnitId}`),
-        MESSAGES.fetchLinksError,
-        {
-            select: data => data.links,
-            enabled: !isNewOrgunit,
         },
-    );
-    const {
-        data: associatedDataSources = [],
-        isFetching: isFetchingAssociatedDataSources,
-    } = useSnackQuery(
-        ['associatedDataSources'],
-        () => getRequest(`/api/datasources/?linkedTo=${orgUnitId}`),
-        MESSAGES.fetchSourcesError,
         {
-            select: data =>
-                data.sources.map((s, i) => ({
-                    ...s,
-                    color: getChipColors(i),
-                })),
-            enabled: !isNewOrgunit,
+            queryKey: ['links'],
+            queryFn: () => getRequest(`/api/links/?orgUnitId=${orgUnitId}`),
+            snackErrorMsg: MESSAGES.fetchLinksError,
+            options: {
+                select: data => data.links,
+                enabled: !isNewOrgunit,
+            },
         },
-    );
-
-    const { data: sources = [], isFetching: isFetchingPlainSources } =
-        useSnackQuery(
-            ['associatedDataSources'],
-            () => getRequest('/api/datasources/'),
-            MESSAGES.fetchSourcesError,
-            {
+        {
+            queryKey: ['associatedDataSources'],
+            queryFn: () =>
+                getRequest(`/api/datasources/?linkedTo=${orgUnitId}`),
+            snackErrorMsg: MESSAGES.fetchSourcesError,
+            options: {
                 select: data =>
                     data.sources.map((s, i) => ({
                         ...s,
                         color: getChipColors(i),
                     })),
-                enabled: isNewOrgunit,
+                enabled: !isNewOrgunit,
             },
-        );
+        },
+        {
+            queryKey: ['associatedDataSources'],
+            queryFn: () => getRequest('/api/datasources/'),
+            snackErrorMsg: MESSAGES.fetchSourcesError,
+            options: {
+                select: data =>
+                    data.sources.map((s, i) => ({
+                        ...s,
+                        color: getChipColors(i),
+                    })),
+                enabled: !isNewOrgunit,
+            },
+        },
+    ]);
 
     const isFetchingSources = isNewOrgunit
         ? isFetchingPlainSources

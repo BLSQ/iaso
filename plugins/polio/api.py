@@ -699,6 +699,22 @@ def find_campaign(campaigns, today, country):
     return None
 
 
+def find_campaign_on_day(campaigns, day, country):
+
+    for c in campaigns:
+        if not (c.round_one and c.round_one.started_at):
+            continue
+        round_end = c.round_two.ended_at if (c.round_two and c.round_two.ended_at) else c.round_one.ended_at
+        if round_end:
+            end_date = round_end + timedelta(days=+10)
+        else:
+            end_date = c.round_one.started_at + timedelta(days=+28)
+
+        if c.country_id == country.id and c.round_one.started_at <= day < end_date:
+            return c
+    return None
+
+
 def convert_dicts_to_table(list_of_dicts):
     keys = set()
     for d in list_of_dicts:

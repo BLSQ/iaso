@@ -322,10 +322,12 @@ const OrgUnitDetail = ({ params, router }) => {
                         originalOrgUnit,
                     );
                     fullSelectedSources.push(ous);
+                    if (i + 1 === selectedSources.length) {
+                        setSourcesSelected(fullSelectedSources);
+                    }
                 };
                 fetch();
             }
-            setSourcesSelected(fullSelectedSources);
         }
     }, [originalOrgUnit, dispatch, links, sources, isNewOrgunit]);
 

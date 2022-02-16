@@ -1,12 +1,9 @@
 import csv
 import json
 from datetime import timedelta, datetime
-from typing import Optional
 
 import requests
 from django.conf import settings
-from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import HttpResponse
@@ -37,6 +34,8 @@ from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
 )
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
+from .forma import get_forma_scope_df, fetch_and_match_forma_data, FormAStocksViewSetV2
+from .helpers import get_url_content
 from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round
 from .models import CountryUsersGroup
 from .models import URLCache, Preparedness
@@ -700,6 +699,22 @@ def find_campaign(campaigns, today, country):
     return None
 
 
+def find_campaign_on_day(campaigns, day, country):
+
+    for c in campaigns:
+        if not (c.round_one and c.round_one.started_at):
+            continue
+        round_end = c.round_two.ended_at if (c.round_two and c.round_two.ended_at) else c.round_one.ended_at
+        if round_end:
+            end_date = round_end + timedelta(days=+10)
+        else:
+            end_date = c.round_one.started_at + timedelta(days=+28)
+
+        if c.country_id == country.id and c.round_one.started_at <= day < end_date:
+            return c
+    return None
+
+
 def convert_dicts_to_table(list_of_dicts):
     keys = set()
     for d in list_of_dicts:
@@ -715,19 +730,6 @@ def convert_dicts_to_table(list_of_dicts):
         values.append(l)
 
     return values
-
-
-def get_url_content(url, login, password, minutes=60):
-    cached_response, created = URLCache.objects.get_or_create(url=url)
-    delta = now() - cached_response.updated_at
-    if created or delta > timedelta(minutes=minutes):
-        response = requests.get(url, auth=(login, password))
-        cached_response.content = response.text
-        cached_response.save()
-        j = response.json()
-    else:
-        j = json.loads(cached_response.content)
-    return j
 
 
 def get_facility_id(district_name, facility_name, facilities_dict):
@@ -770,7 +772,7 @@ def handle_ona_request_with_key(request, key):
         for form in forms:
             try:
                 today = datetime.strptime(form["today"], "%Y-%m-%d").date()
-                campaign = find_campaign(campaigns, today, country)
+                campaign = find_campaign_on_day(campaigns, today, country)
                 district_name = form.get("District", None)
                 facility_name = form.get("facility", None)
 
@@ -1182,6 +1184,7 @@ router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")
 router.register(r"polio/lqasstats", LQASStatsViewSet, basename="lqasstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
 router.register(r"polio/forma", FormAStocksViewSet, basename="forma")
+router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")

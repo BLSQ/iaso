@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Box, Typography } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -45,9 +45,9 @@ const OrgUnitTypeFilterComponent = props => {
         setOrgUnitTypesSelected,
         fitToBounds,
         orgUnitTypes,
+        currentOrgUnit,
     } = props;
     const dispatch = useDispatch();
-    const currentOrgUnit = useSelector(state => state.orgUnits.current);
     const [orgUnitTypesList, setOrgUnitTypesList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -156,6 +156,7 @@ OrgUnitTypeFilterComponent.propTypes = {
     orgUnitTypesSelected: PropTypes.array,
     setOrgUnitTypesSelected: PropTypes.func.isRequired,
     fitToBounds: PropTypes.func.isRequired,
+    currentOrgUnit: PropTypes.object.isRequired,
 };
 
 export default OrgUnitTypeFilterComponent;

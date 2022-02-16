@@ -362,6 +362,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchSourcesError',
         defaultMessage: 'An error occurred while fetching sources list',
     },
+    fetchOrgUnitError: {
+        id: 'iaso.snackBar.fetchOrgUnitError',
+        defaultMessage: 'An error occurred while fetching org unit detail',
+    },
+    saveOrgUnitError: {
+        id: 'iaso.snackBar.saveOrgUnitError',
+        defaultMessage: 'An error occurred while saving org unit',
+    },
+    saveOrgUnitSuccesfull: {
+        id: 'iaso.snackBar.saveOrgUnitSuccesfull',
+        defaultMessage: 'Org unit saved successfully',
+    },
+    saveLinkError: {
+        id: 'iaso.snackBar.saveLinkError',
+        defaultMessage: 'An error occurred while saving link',
+    },
 });
 
 export default MESSAGES;

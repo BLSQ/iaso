@@ -2,7 +2,6 @@ import {
     SET_ORG_UNITS,
     SET_ORG_UNITS_LOCATIONS,
     RESET_ORG_UNITS,
-    SET_ORG_UNIT,
     SET_FETCHING,
     SET_ORG_UNIT_TYPES,
     SET_SOURCES,
@@ -11,14 +10,11 @@ import {
     SET_FETCHING_ORG_UNITS_TYPES,
     SET_FILTERS_UPDATED,
     SET_SUB_ORG_UNIT,
-    SET_FETCHING_DETAIL,
 } from './actions';
 
 export const orgUnitsInitialState = {
-    current: null,
     currentSubOrgUnit: null,
     fetchingList: false,
-    fetchingDetail: false,
     fetchingOrgUnitTypes: true,
     orgUnitsPage: {
         list: [],
@@ -57,11 +53,6 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
             };
         }
 
-        case SET_ORG_UNIT: {
-            const current = action.payload;
-            return { ...state, current };
-        }
-
         case SET_SUB_ORG_UNIT: {
             const currentSubOrgUnit = action.payload;
             return { ...state, currentSubOrgUnit };
@@ -97,11 +88,6 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_FETCHING: {
             const fetchingSubOrgUnits = action.payload;
             return { ...state, fetchingSubOrgUnits };
-        }
-
-        case SET_FETCHING_DETAIL: {
-            const fetchingDetail = action.payload;
-            return { ...state, fetchingDetail };
         }
 
         case SET_ORG_UNITS_LOCATIONS: {

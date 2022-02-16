@@ -1,15 +1,12 @@
+import { postRequest } from 'Iaso/libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
-import { postRequest } from 'Iaso/libs/Api';
-import { saveAction, createAction } from '../../redux/actions/formsActions';
 
 export const SET_ORG_UNITS = 'SET_ORG_UNITS';
 export const SET_ORG_UNITS_LOCATIONS = 'SET_ORG_UNITS_LOCATIONS';
 export const RESET_ORG_UNITS = 'RESET_ORG_UNITS';
-export const SET_ORG_UNIT = 'SET_ORG_UNIT';
 export const SET_SUB_ORG_UNIT = 'SET_SUB_ORG_UNIT';
 export const SET_FETCHING = 'SET_FETCHING';
-export const SET_FETCHING_DETAIL = 'SET_FETCHING_DETAIL';
 export const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
 export const SET_SOURCES = 'SET_SOURCES';
 export const SET_GROUPS = 'ORG_UNITS_SET_GROUPS';
@@ -45,11 +42,6 @@ export const resetOrgUnits = () => ({
     type: RESET_ORG_UNITS,
 });
 
-export const setCurrentOrgUnit = orgUnit => ({
-    type: SET_ORG_UNIT,
-    payload: orgUnit,
-});
-
 export const setCurrentSubOrgUnit = orgUnit => ({
     type: SET_SUB_ORG_UNIT,
     payload: orgUnit,
@@ -78,11 +70,6 @@ export const setOrgUnitsListFetching = currentSubOrgUnit => ({
 export const setFetching = fetching => ({
     type: SET_FETCHING,
     payload: fetching,
-});
-
-export const setFetchingDetail = fetchingDetail => ({
-    type: SET_FETCHING_DETAIL,
-    payload: fetchingDetail,
 });
 
 export const setFetchingOrgUnitTypes = fetching => ({
@@ -116,41 +103,3 @@ export const saveMultiEdit = data => dispatch => {
             throw error;
         });
 };
-
-const apiKey = 'orgunits';
-export const saveOrgUnit = orgUnitData => dispatch =>
-    saveAction(
-        dispatch,
-        orgUnitData,
-        apiKey,
-        'saveOrgUnitSuccesfull',
-        'saveOrgUnitError',
-        setFetchingDetail,
-        [400],
-    );
-
-export const createOrgUnit = orgUnitData => dispatch =>
-    createAction(
-        dispatch,
-        {
-            ...orgUnitData,
-            creation_source: 'dashboard',
-        },
-        `${apiKey}/create_org_unit`,
-        'saveOrgUnitSuccesfull',
-        'saveOrgUnitError',
-        setFetchingDetail,
-        [400],
-    );
-
-// export const deleteOrgUnit = (orgUnit, params) => dispatch => deleteAction(
-//     dispatch,
-//     orgUnit,
-//     apiKey,
-//     setOrgUnits,
-//     'deleteOrgUnitSuccesfull',
-//     'deleteOrgUnitError',
-//     'orgUnits',
-//     params,
-//     setIsFetching,
-// );

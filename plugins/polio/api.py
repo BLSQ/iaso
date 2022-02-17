@@ -606,9 +606,12 @@ class IMStatsViewSet(viewsets.ViewSet):
                 if round_number == "Round2":
                     round_number = "Rnd2"
                 if round_number != "Rnd1" and round_number != "Rnd2":
-                    skipped_forms_list.append(form["_id"])
-                    skipped_forms.update({"count": len(skipped_forms_list)})
-                    print("skipped")
+                    try:
+                        skipped_forms_list.append(
+                            {form["_id"]: {"round": form["roundNumber"], "date": form["date_monitored"]}}
+                        )
+                    except KeyError:
+                        skipped_forms_list.append({form["_id"]: {"round": None, "date": form["date_monitored"]}})
                     continue
                 if form.get("HH", None):
                     if "HH" in stats_types:
@@ -682,6 +685,8 @@ class IMStatsViewSet(viewsets.ViewSet):
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
+
+        skipped_forms.update({"count": len(skipped_forms_list)})
 
         response = {
             "stats": campaign_stats,
@@ -1062,14 +1067,19 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
             districts = set()
             for form in forms:
+                print(form)
                 round_number = form.get("roundNumber")
                 if round_number == "Rnd0" or round_number == "Round1":
                     round_number = "Rnd1"
                 if round_number == "Round2":
                     round_number = "Rnd2"
                 if round_number != "Rnd1" and round_number != "Rnd2":
-                    skipped_forms_list.append(form["_id"])
-                    skipped_forms.update({"count": len(skipped_forms_list)})
+                    try:
+                        skipped_forms_list.append(
+                            {form["_id"]: {"round": form["roundNumber"], "date": form["date_monitored"]}}
+                        )
+                    except KeyError:
+                        skipped_forms_list.append({form["_id"]: {"round": None, "date": form["Date_of_LQAS"]}})
                     continue
                 HH_COUNT = form.get("Count_HH", None)
                 if HH_COUNT is None:
@@ -1172,6 +1182,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
         add_nfm_abs_stats_for_round(campaign_stats, nfm_abs_reasons_per_district_per_campaign, "round_2")
         format_caregiver_stats(campaign_stats, "round_1")
         format_caregiver_stats(campaign_stats, "round_2")
+
+        skipped_forms.update({"count": len(skipped_forms_list)})
 
         response = {
             "stats": campaign_stats,

@@ -1076,7 +1076,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 if round_number != "Rnd1" and round_number != "Rnd2":
                     try:
                         skipped_forms_list.append(
-                            {form["_id"]: {"round": form["roundNumber"], "date": form["date_monitored"]}}
+                            {form["_id"]: {"round": form["roundNumber"], "date": form["Date_of_LQAS"]}}
                         )
                     except KeyError:
                         skipped_forms_list.append({form["_id"]: {"round": None, "date": form["Date_of_LQAS"]}})

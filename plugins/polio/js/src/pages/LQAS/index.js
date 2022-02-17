@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { Grid, Box, makeStyles, Paper } from '@material-ui/core';
 
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { Filters } from '../../components/LQAS-IM/Filters.tsx';
 import { CaregiversTable } from '../../components/LQAS-IM/CaregiversTable.tsx';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
@@ -25,7 +25,6 @@ const paperElevation = 2;
 const styles = theme => ({
     ...commonStyles(theme),
     filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
-    divider: { width: '100%' },
 });
 
 const useStyles = makeStyles(styles);
@@ -72,6 +71,7 @@ export const Lqas = ({ router }) => {
                                 isFetching={isFetching}
                                 disclaimerData={debugData}
                                 paperElevation={paperElevation}
+                                type="lqas"
                             />
                         </Grid>
                     ))}
@@ -183,29 +183,31 @@ export const Lqas = ({ router }) => {
                                 </Grid>
                             ))}
                         </Grid>
-                        <DisplayIfUserHasPerm permission="iaso_polio_config">
-                            <HorizontalDivider
-                                mt={2}
-                                mb={4}
-                                ml={-4}
-                                mr={-4}
-                                displayTrigger
-                            />
-                            <Grid container item spacing={2}>
-                                <Grid item xs={4}>
-                                    <DistrictsNotFound
-                                        data={LQASData.stats}
-                                        campaign={campaign}
-                                    />
+                        {Object.keys(convertedData).length > 0 && (
+                            <DisplayIfUserHasPerm permission="iaso_polio_config">
+                                <HorizontalDivider
+                                    mt={2}
+                                    mb={4}
+                                    ml={-4}
+                                    mr={-4}
+                                    displayTrigger
+                                />
+                                <Grid container item spacing={2}>
+                                    <Grid item xs={4}>
+                                        <DistrictsNotFound
+                                            data={LQASData.stats}
+                                            campaign={campaign}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={4}>
+                                        <DatesIgnored
+                                            campaign={campaign}
+                                            data={LQASData}
+                                        />
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={4}>
-                                    <DatesIgnored
-                                        campaign={campaign}
-                                        data={LQASData}
-                                    />
-                                </Grid>
-                            </Grid>
-                        </DisplayIfUserHasPerm>
+                            </DisplayIfUserHasPerm>
+                        )}
                     </>
                 )}
             </Box>

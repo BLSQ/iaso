@@ -17,6 +17,7 @@ type Props = {
     isFetching: boolean;
     debugData: Record<string, unknown> | null | undefined;
     paperElevation: number;
+    type: string;
 };
 export const MapContainer: FunctionComponent<Props> = ({
     round,
@@ -27,6 +28,7 @@ export const MapContainer: FunctionComponent<Props> = ({
     isFetching,
     debugData,
     paperElevation,
+    type,
 }) => {
     return (
         <Paper elevation={paperElevation}>
@@ -36,7 +38,7 @@ export const MapContainer: FunctionComponent<Props> = ({
             <LqasImMap
                 round={round}
                 selectedCampaign={campaign}
-                type="lqas"
+                type={type}
                 countryId={parseInt(country, 10)}
                 campaigns={campaigns}
                 data={data}

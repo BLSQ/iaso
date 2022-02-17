@@ -1,6 +1,8 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { isEqual } from 'lodash';
+import { Box } from '@material-ui/core';
+
 import { ConvertedLqasImData, RoundString } from '../../constants/types';
 import { PercentageChartWithTitle } from './PercentageChartWithTitle';
 import { useGetRegions } from '../../hooks/useGetRegions';
@@ -63,14 +65,16 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
         <>
             {campaign && !hasData && <NoData />}
             {hasData && (
-                <PercentageChartWithTitle
-                    data={chartData}
-                    tooltipFormatter={tooltipFormatter(formatMessage)}
-                    chartKey={`LQASIMChart-${round}-${campaign}-${type}`}
-                    isLoading={isLoading}
-                    showChart={Boolean(campaign)}
-                    colorTresholds={colorTresholds}
-                />
+                <Box p={2}>
+                    <PercentageChartWithTitle
+                        data={chartData}
+                        tooltipFormatter={tooltipFormatter(formatMessage)}
+                        chartKey={`LQASIMChart-${round}-${campaign}-${type}`}
+                        isLoading={isLoading}
+                        showChart={Boolean(campaign)}
+                        colorTresholds={colorTresholds}
+                    />
+                </Box>
             )}
         </>
     );

@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Typography } from '@material-ui/core';
+import { Typography, Box, Chip } from '@material-ui/core';
 import { LqasImData } from '../../constants/types';
 import MESSAGES from '../../constants/messages';
 
@@ -21,15 +21,23 @@ export const DatesIgnored: FunctionComponent<Props> = ({ data, campaign }) => {
     const datesIgnored = currentCountryName
         ? data?.day_country_not_found[currentCountryName] ?? {}
         : {};
-
+    const datesArray = Object.keys(datesIgnored);
     return (
         <>
-            {campaign && (
+            {campaign && datesArray.length !== 0 && (
                 <>
                     <Typography variant="h6">
                         {`${formatMessage(MESSAGES.datesIgnored)}:`}
                     </Typography>
-                    {Object.keys(datesIgnored ?? {}).join(', ')}
+                    {datesArray.map(d => (
+                        <Box mr={1} mb={1} display="inline-block" key={d}>
+                            <Chip
+                                label={d}
+                                variant="outlined"
+                                color="secondary"
+                            />
+                        </Box>
+                    ))}
                 </>
             )}
         </>

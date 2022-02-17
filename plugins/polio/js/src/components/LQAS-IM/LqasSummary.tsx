@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import { Paper, Typography, Grid } from '@material-ui/core';
+import { Box, Typography, Grid, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 import { ConvertedLqasImData, RoundString } from '../../constants/types';
@@ -16,13 +16,7 @@ type Props = {
     data: Record<string, ConvertedLqasImData>;
 };
 
-const style = theme => ({
-    paper: {
-        marginBottom: theme.spacing(1),
-        marginTop: theme.spacing(1),
-        paddingTop: '5px',
-        paddingBottom: '5px',
-    },
+const style = () => ({
     containerGrid: { justifyContent: 'space-evenly' },
     centerText: { textAlign: 'center' },
     boldText: { fontWeight: 'bold' },
@@ -76,7 +70,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
     return (
         <>
             {data && campaign && data[campaign] && (
-                <Paper elevation={1} className={classes.paper}>
+                <Box pt={2} pb={2}>
                     <Grid
                         container
                         direction="row"
@@ -96,6 +90,9 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${summary.passed}`}
                             </Typography>
                         </Grid>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
                         <Grid item xs={4} sm={3}>
                             <Typography
                                 variant="body1"
@@ -110,6 +107,9 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${summary.failed}`}
                             </Typography>
                         </Grid>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
                         <Grid item xs={4} sm={3}>
                             <Typography
                                 variant="body1"
@@ -125,7 +125,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
                             </Typography>
                         </Grid>
                     </Grid>
-                </Paper>
+                </Box>
             )}
         </>
     );

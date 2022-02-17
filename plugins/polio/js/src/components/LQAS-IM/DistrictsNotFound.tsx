@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Typography } from '@material-ui/core';
+import { Typography, Chip, Box } from '@material-ui/core';
 import { LqasImCampaign } from '../../constants/types';
 import MESSAGES from '../../constants/messages';
 
@@ -18,16 +18,26 @@ export const DistrictsNotFound: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const districtsNotFound =
         data && campaign && data[campaign]
-            ? data[campaign]?.districts_not_found?.join(', ')
-            : null;
+            ? data[campaign].districts_not_found
+            : [];
     return (
         <>
-            {campaign && (
+            {campaign && districtsNotFound.length > 0 && (
                 <>
                     <Typography variant="h6">
                         {`${formatMessage(MESSAGES.districtsNotFound)}:`}
                     </Typography>
-                    {districtsNotFound}
+                    <Box mt={2}>
+                        {districtsNotFound.map(d => (
+                            <Box mr={1} mb={1} display="inline-block" key={d}>
+                                <Chip
+                                    label={d}
+                                    variant="outlined"
+                                    color="secondary"
+                                />
+                            </Box>
+                        ))}
+                    </Box>
                 </>
             )}
         </>

@@ -504,7 +504,9 @@ class IMStatsViewSet(viewsets.ViewSet):
         config = get_object_or_404(Config, slug="im-config")
         requested_country = request.GET.get("country_id", None)
         skipped_forms_list = []
-        skipped_forms = {"count": 0, "forms_id": skipped_forms_list}
+        no_round_count = 0
+        unknown_round = 0
+        skipped_forms = {"count": 0, "no_round": 0, "unknown_round": unknown_round, "forms_id": skipped_forms_list}
 
         if requested_country is None:
             return HttpResponseBadRequest
@@ -596,23 +598,25 @@ class IMStatsViewSet(viewsets.ViewSet):
                     print("wrong form format:", form, "in", country.name)
                     print("------------")
                     continue
-                # FIXME dirty workaround to prevent crash
-                round_number = form.get("roundNumber", "Rnd1")
-                if round_number == "MOPUP":
-                    continue
-                # We should confirm that it's ok to treat Rnd0 as Rnd1
-                if round_number == "Rnd0" or round_number == "Round1":
-                    round_number = "Rnd1"
-                if round_number == "Round2":
-                    round_number = "Rnd2"
-                if round_number != "Rnd1" and round_number != "Rnd2":
-                    try:
+                try:
+                    round_number = form["roundNumber"]
+                    if round_number == "Rnd0":
                         skipped_forms_list.append(
                             {form["_id"]: {"round": form["roundNumber"], "date": form["date_monitored"]}}
                         )
-                    except KeyError:
-                        skipped_forms_list.append({form["_id"]: {"round": None, "date": form["date_monitored"]}})
+                        unknown_round += 1
+                        continue
+                    if round_number == "MOPUP":
+                        continue
+                except KeyError:
+                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form["date_monitored"]}})
+                    no_round_count += 1
                     continue
+                round_number = form["roundNumber"]
+                if round_number == "Round1":
+                    round_number = "Rnd1"
+                if round_number == "Round2":
+                    round_number = "Rnd2"
                 if form.get("HH", None):
                     if "HH" in stats_types:
                         for kid in form.get("HH", []):
@@ -686,7 +690,9 @@ class IMStatsViewSet(viewsets.ViewSet):
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
 
-        skipped_forms.update({"count": len(skipped_forms_list)})
+        skipped_forms.update(
+            {"count": len(skipped_forms_list), "no_round": no_round_count, "unknown_round": unknown_round}
+        )
 
         response = {
             "stats": campaign_stats,
@@ -976,7 +982,9 @@ class LQASStatsViewSet(viewsets.ViewSet):
         config = get_object_or_404(Config, slug="lqas-config")
         requested_country = request.GET.get("country_id", None)
         skipped_forms_list = []
-        skipped_forms = {"count": 0, "forms_id": skipped_forms_list}
+        no_round_count = 0
+        unknown_round = 0
+        skipped_forms = {"count": 0, "no_round": 0, "unknown_round": unknown_round, "forms_id": skipped_forms_list}
 
         if requested_country is None:
             return HttpResponseBadRequest
@@ -1068,7 +1076,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             districts = set()
             for form in forms:
                 round_number = form.get("roundNumber")
-                if round_number == "Rnd0" or round_number == "Round1":
+                if round_number == "Round1":
                     round_number = "Rnd1"
                 if round_number == "Round2":
                     round_number = "Rnd2"
@@ -1077,8 +1085,10 @@ class LQASStatsViewSet(viewsets.ViewSet):
                         skipped_forms_list.append(
                             {form["_id"]: {"round": form["roundNumber"], "date": form["Date_of_LQAS"]}}
                         )
+                        unknown_round += 1
                     except KeyError:
                         skipped_forms_list.append({form["_id"]: {"round": None, "date": form["Date_of_LQAS"]}})
+                        no_round_count += 1
                     continue
                 HH_COUNT = form.get("Count_HH", None)
                 if HH_COUNT is None:
@@ -1182,7 +1192,9 @@ class LQASStatsViewSet(viewsets.ViewSet):
         format_caregiver_stats(campaign_stats, "round_1")
         format_caregiver_stats(campaign_stats, "round_2")
 
-        skipped_forms.update({"count": len(skipped_forms_list)})
+        skipped_forms.update(
+            {"count": len(skipped_forms_list), "no_round": no_round_count, "unknown_round": unknown_round}
+        )
 
         response = {
             "stats": campaign_stats,

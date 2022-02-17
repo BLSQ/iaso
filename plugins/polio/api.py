@@ -1067,7 +1067,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
             districts = set()
             for form in forms:
-                print(form)
                 round_number = form.get("roundNumber")
                 if round_number == "Rnd0" or round_number == "Round1":
                     round_number = "Rnd1"

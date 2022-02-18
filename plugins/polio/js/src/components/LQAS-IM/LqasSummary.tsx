@@ -2,13 +2,16 @@
 import { Box, Typography, Grid, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { ConvertedLqasImData, RoundString } from '../../constants/types';
+
 import { FAIL_COLOR, OK_COLOR } from '../../styles/constants';
 import {
     getLqasStatsForRound,
     makeCaregiversRatio,
 } from '../../pages/LQAS/utils';
 import { convertStatToPercent } from '../../utils/LqasIm';
+import MESSAGES from '../../constants/messages';
 
 type Props = {
     campaign?: string;
@@ -16,14 +19,14 @@ type Props = {
     data: Record<string, ConvertedLqasImData>;
 };
 
-const style = () => ({
+const style = {
     containerGrid: { justifyContent: 'space-evenly' },
     centerText: { textAlign: 'center' },
     boldText: { fontWeight: 'bold' },
     pass: { color: OK_COLOR },
     fail: { color: FAIL_COLOR },
     warning: { color: 'rgb(255,196,53)' },
-});
+};
 
 const useStyles = makeStyles(style);
 
@@ -39,6 +42,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
     round,
     data,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const summary = useMemo(() => {
         // eslint-disable-next-line no-unused-vars
@@ -81,7 +85,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 variant="body1"
                                 className={classes.centerText}
                             >
-                                Passed
+                                {formatMessage(MESSAGES.passing)}
                             </Typography>
                             <Typography
                                 variant="h6"
@@ -98,7 +102,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 variant="body1"
                                 className={classes.centerText}
                             >
-                                Failed
+                                {formatMessage(MESSAGES.failing)}
                             </Typography>
                             <Typography
                                 variant="h6"
@@ -115,7 +119,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 variant="body1"
                                 className={classes.centerText}
                             >
-                                Passed (%)
+                                {`${formatMessage(MESSAGES.passing)} (%)`}
                             </Typography>
                             <Typography
                                 variant="h6"

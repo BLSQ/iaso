@@ -7,6 +7,7 @@ import { LqasImMap } from './LqasImMap';
 import { LqasSummary } from './LqasSummary';
 import { LqasImMapHeader } from './LqasImMapHeader';
 import { RoundString, ConvertedLqasImData } from '../../constants/types';
+import { ImSummary } from './ImSummary';
 
 type Props = {
     round: RoundString;
@@ -17,7 +18,7 @@ type Props = {
     isFetching: boolean;
     debugData: Record<string, unknown> | null | undefined;
     paperElevation: number;
-    type: string;
+    type: 'lqas' | 'imIHH' | 'imOHH' | 'imGlobal';
 };
 export const MapContainer: FunctionComponent<Props> = ({
     round,
@@ -34,7 +35,17 @@ export const MapContainer: FunctionComponent<Props> = ({
         <Paper elevation={paperElevation}>
             <LqasImMapHeader round={round} />
             <Divider />
-            <LqasSummary round={round} campaign={campaign} data={data} />
+            {type === 'lqas' && (
+                <LqasSummary round={round} campaign={campaign} data={data} />
+            )}
+            {type !== 'lqas' && (
+                <ImSummary
+                    round={round}
+                    campaign={campaign}
+                    data={data}
+                    type={type}
+                />
+            )}
             <LqasImMap
                 round={round}
                 selectedCampaign={campaign}

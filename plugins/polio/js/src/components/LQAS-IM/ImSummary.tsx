@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import { Grid, makeStyles, Paper, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, makeStyles, Typography } from '@material-ui/core';
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { ConvertedLqasImData, RoundString } from '../../constants/types';
@@ -14,20 +14,14 @@ type Props = {
     data: Record<string, ConvertedLqasImData>;
 };
 
-const style = theme => ({
-    paper: {
-        marginBottom: theme.spacing(1),
-        marginTop: theme.spacing(1),
-        paddingTop: '5px',
-        paddingBottom: '5px',
-    },
+const style = {
     containerGrid: { justifyContent: 'space-evenly' },
     centerText: { textAlign: 'center' },
     boldText: { fontWeight: 'bold' },
     pass: { color: OK_COLOR },
     fail: { color: FAIL_COLOR },
     warning: { color: 'rgb(255,196,53)' },
-});
+};
 
 const useStyles = makeStyles(style);
 
@@ -60,13 +54,13 @@ export const ImSummary: FunctionComponent<Props> = ({
     return (
         <>
             {data && campaign && data[campaign] && (
-                <Paper elevation={1} className={classes.paper}>
+                <Box pt={2} pb={2}>
                     <Grid
                         container
                         direction="row"
-                        style={{ justifyContent: 'space-evenly' }}
+                        className={classes.containerGrid}
                     >
-                        <Grid item xs={4} sm={3}>
+                        <Grid item xs={3} sm={2}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -80,7 +74,10 @@ export const ImSummary: FunctionComponent<Props> = ({
                                 {childrenChecked.value}
                             </Typography>
                         </Grid>
-                        <Grid item xs={4} sm={3}>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
+                        <Grid item xs={3} sm={2}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -94,7 +91,10 @@ export const ImSummary: FunctionComponent<Props> = ({
                                 {sitesVisited.value}
                             </Typography>
                         </Grid>
-                        <Grid item xs={4} sm={3}>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
+                        <Grid item xs={3} sm={2}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -108,7 +108,10 @@ export const ImSummary: FunctionComponent<Props> = ({
                                 {`${reportingDistricts.value}`}
                             </Typography>
                         </Grid>
-                        <Grid item xs={4} sm={3}>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
+                        <Grid item xs={3} sm={2}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -123,7 +126,7 @@ export const ImSummary: FunctionComponent<Props> = ({
                             </Typography>
                         </Grid>
                     </Grid>
-                </Paper>
+                </Box>
             )}
         </>
     );

@@ -14,7 +14,11 @@ export const GraphTitle: FunctionComponent<Props> = ({
     return (
         <>
             {displayTrigger && (
-                <Typography variant="h6" className={classes.graphTitle}>
+                <Typography
+                    variant="h6"
+                    className={classes.graphTitle}
+                    color="primary"
+                >
                     {text}
                 </Typography>
             )}

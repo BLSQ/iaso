@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { oneOf, string, array, number, bool, object } from 'prop-types';
-import { Box, Paper } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { any } from 'lodash/fp';
@@ -116,42 +116,40 @@ export const LqasImMap = ({
     return (
         <>
             <Box position="relative">
-                <Paper elevation={2}>
-                    <MapLegendContainer>
-                        <MapLegend
-                            title={title}
-                            legendItems={legendItems}
-                            width="lg"
-                        />
-                    </MapLegendContainer>
-                    {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
-                    {(isFetching || isFetchingGeoJson) && (
-                        <LoadingSpinner fixed={false} absolute />
-                    )}
-                    <MapComponent
-                        name={`LQASIMMap${round}-${type}`}
-                        backgroundLayer={shapes}
-                        mainLayer={mainLayer}
-                        onSelectShape={() => null}
-                        getMainLayerStyle={getMainLayerStyles}
-                        getBackgroundLayerStyle={getBackgroundLayerStyle}
-                        tooltipLabels={{
-                            main: 'District',
-                            background: 'Region',
-                        }}
-                        makePopup={makePopup(data, round, selectedCampaign)}
-                        fitBoundsToBackground
-                        height={600}
+                <MapLegendContainer>
+                    <MapLegend
+                        title={title}
+                        legendItems={legendItems}
+                        width="lg"
                     />
-                    {selectedCampaign && (
-                        <ScopeAndDNFDisclaimer
-                            type={type}
-                            campaign={selectedCampaign}
-                            countryId={countryId}
-                            data={disclaimerData}
-                        />
-                    )}
-                </Paper>
+                </MapLegendContainer>
+                {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
+                {(isFetching || isFetchingGeoJson) && (
+                    <LoadingSpinner fixed={false} absolute />
+                )}
+                <MapComponent
+                    name={`LQASIMMap${round}-${type}`}
+                    backgroundLayer={shapes}
+                    mainLayer={mainLayer}
+                    onSelectShape={() => null}
+                    getMainLayerStyle={getMainLayerStyles}
+                    getBackgroundLayerStyle={getBackgroundLayerStyle}
+                    tooltipLabels={{
+                        main: 'District',
+                        background: 'Region',
+                    }}
+                    makePopup={makePopup(data, round, selectedCampaign)}
+                    fitBoundsToBackground
+                    height={600}
+                />
+                {selectedCampaign && (
+                    <ScopeAndDNFDisclaimer
+                        type={type}
+                        campaign={selectedCampaign}
+                        countryId={countryId}
+                        data={disclaimerData}
+                    />
+                )}
             </Box>
         </>
     );

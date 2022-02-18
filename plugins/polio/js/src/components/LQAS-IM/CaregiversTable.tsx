@@ -5,7 +5,7 @@ import React, {
     useCallback,
     useMemo,
 } from 'react';
-import { Box, Paper } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import { useSafeIntl, Table } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
 import {
@@ -30,6 +30,7 @@ type Props = {
     round: RoundString;
     data: Record<string, ConvertedLqasImData>;
     isLoading: boolean;
+    paperElevation: number;
 };
 
 type SortValues = 'district_name' | 'region_name';
@@ -74,6 +75,7 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     round,
     data,
     isLoading,
+    paperElevation,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [page, setPage] = useState(0);
@@ -167,22 +169,22 @@ export const CaregiversTable: FunctionComponent<Props> = ({
                         campaign={campaign}
                         round={round}
                         data={data}
+                        paperElevation={paperElevation}
                     />
-                    <Box mt={marginTop ? 4 : 0} mb={4}>
-                        <Paper elevation={3}>
-                            <Table
-                                countOnTop={false}
-                                data={sortedData}
-                                pages={pages}
-                                defaultSorted={defaultSorted}
-                                columns={columns(formatMessage)}
-                                marginTop={false}
-                                count={data?.length ?? 0}
-                                params={params}
-                                resetPageToOne={resetPageToOne}
-                                onTableParamsChange={handleTableParamsChange}
-                            />
-                        </Paper>
+                    <Box mt={marginTop ? 4 : 0}>
+                        <Table
+                            countOnTop={false}
+                            data={sortedData}
+                            pages={pages}
+                            defaultSorted={defaultSorted}
+                            columns={columns(formatMessage)}
+                            marginTop={false}
+                            count={data?.length ?? 0}
+                            params={params}
+                            resetPageToOne={resetPageToOne}
+                            onTableParamsChange={handleTableParamsChange}
+                            elevation={paperElevation}
+                        />
                     </Box>
                 </>
             )}

@@ -71,8 +71,8 @@ const Filters: FunctionComponent<Props> = ({
         dispatch(replace(url));
     };
     return (
-        <Box px={2} mt={2} width="100%">
-            <Grid container item spacing={4}>
+        <Box mt={2} width="100%">
+            <Grid container item spacing={2}>
                 <Grid item xs={4}>
                     <Select
                         keyValue="countries"

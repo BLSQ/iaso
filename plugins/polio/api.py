@@ -600,23 +600,24 @@ class IMStatsViewSet(viewsets.ViewSet):
                     continue
                 try:
                     round_number = form["roundNumber"]
-                    if round_number == "Rnd0":
-                        skipped_forms_list.append(
-                            {form["_id"]: {"round": form["roundNumber"], "date": form["date_monitored"]}}
-                        )
-                        unknown_round += 1
-                        continue
-                    if round_number == "MOPUP":
+                    if round_number.upper() == "MOPUP":
                         continue
                 except KeyError:
                     skipped_forms_list.append({form["_id"]: {"round": None, "date": form["date_monitored"]}})
                     no_round_count += 1
                     continue
                 round_number = form["roundNumber"]
-                if round_number == "Round1":
-                    round_number = "Rnd1"
-                if round_number == "Round2":
-                    round_number = "Rnd2"
+                if round_number.endswith("1") or round_number.endswith("2"):
+                    if round_number.endswith("1"):
+                        round_number = "Rnd1"
+                    if round_number.endswith("2"):
+                        round_number = "Rnd2"
+                else:
+                    skipped_forms_list.append(
+                        {form["_id"]: {"round": form["roundNumber"], "date": form["date_monitored"]}}
+                    )
+                    unknown_round += 1
+                    continue
                 if form.get("HH", None):
                     if "HH" in stats_types:
                         for kid in form.get("HH", []):
@@ -1075,20 +1076,25 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
             districts = set()
             for form in forms:
-                round_number = form.get("roundNumber")
-                if round_number == "Round1":
-                    round_number = "Rnd1"
-                if round_number == "Round2":
-                    round_number = "Rnd2"
-                if round_number != "Rnd1" and round_number != "Rnd2":
-                    try:
-                        skipped_forms_list.append(
-                            {form["_id"]: {"round": form["roundNumber"], "date": form["Date_of_LQAS"]}}
-                        )
-                        unknown_round += 1
-                    except KeyError:
-                        skipped_forms_list.append({form["_id"]: {"round": None, "date": form["Date_of_LQAS"]}})
-                        no_round_count += 1
+                try:
+                    round_number = form["roundNumber"]
+                    if round_number.upper() == "MOPUP":
+                        continue
+                except KeyError:
+                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form["Date_of_LQAS"]}})
+                    no_round_count += 1
+                    continue
+                round_number = form["roundNumber"]
+                if round_number.endswith("1") or round_number.endswith("2"):
+                    if round_number.endswith("1"):
+                        round_number = "Rnd1"
+                    if round_number.endswith("2"):
+                        round_number = "Rnd2"
+                else:
+                    skipped_forms_list.append(
+                        {form["_id"]: {"round": form["roundNumber"], "date": form["Date_of_LQAS"]}}
+                    )
+                    unknown_round += 1
                     continue
                 HH_COUNT = form.get("Count_HH", None)
                 if HH_COUNT is None:

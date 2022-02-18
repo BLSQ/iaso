@@ -608,10 +608,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                     continue
                 round_number = form["roundNumber"]
                 if round_number.endswith("1") or round_number.endswith("2"):
-                    if round_number.endswith("1"):
-                        round_number = "Rnd1"
-                    if round_number.endswith("2"):
-                        round_number = "Rnd2"
+                    round_number = "Rnd" + round_number[-1]
                 else:
                     skipped_forms_list.append(
                         {form["_id"]: {"round": form["roundNumber"], "date": form["date_monitored"]}}
@@ -1086,10 +1083,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     continue
                 round_number = form["roundNumber"]
                 if round_number.endswith("1") or round_number.endswith("2"):
-                    if round_number.endswith("1"):
-                        round_number = "Rnd1"
-                    if round_number.endswith("2"):
-                        round_number = "Rnd2"
+                    round_number = "Rnd" + round_number[-1]
                 else:
                     skipped_forms_list.append(
                         {form["_id"]: {"round": form["roundNumber"], "date": form["Date_of_LQAS"]}}

@@ -188,3 +188,20 @@ Cypress.Commands.add('selectTab', (tabIndex, parentSelector = 'body') => {
     cy.get(parentSelector).find('.MuiTabs-root').as('tabs');
     cy.get('@tabs').find('button').eq(tabIndex).click();
 });
+
+// index based, so 1st row = 0
+Cypress.Commands.add('findTableCell', (row, column) => {
+    const selectedRow = cy.get('table').find('tbody').find('tr').eq(row);
+    return selectedRow.find('td').eq(column);
+});
+
+Cypress.Commands.add('findTableHead', column => {
+    const selectedRow = cy.get('table').find('thead').find('tr').eq(0);
+    return selectedRow.find('th').eq(column);
+});
+
+Cypress.Commands.add('assertTooltipDiplay', identifier => {
+    cy.get(`@${identifier}`).should('exist');
+    cy.get(`@${identifier}`).trigger('mouseover');
+    cy.get(`@${identifier}`).invoke('attr', 'aria-describedby').should('exist');
+});

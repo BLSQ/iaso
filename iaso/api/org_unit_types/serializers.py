@@ -2,7 +2,7 @@ import typing
 from django.db.models import Q
 from rest_framework import serializers
 
-from iaso.models import OrgUnitType, OrgUnit, Project
+from iaso.models import OrgUnitType, OrgUnit, Project, Form
 from ..common import TimestampField, DynamicFieldsModelSerializer
 from ..projects.serializers import ProjectSerializer
 
@@ -26,6 +26,8 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
             "created_at",
             "updated_at",
             "units_count",
+            "form_defining",
+            "form_defining_id",
         ]
         read_only_fields = ["id", "projects", "sub_unit_types", "created_at", "updated_at", "units_count"]
 
@@ -40,6 +42,10 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     units_count = serializers.SerializerMethodField(read_only=True)
+
+    form_defining_id = serializers.PrimaryKeyRelatedField(
+        source="form_defining", write_only=True, many=False, queryset=Form.objects.all()
+    )
 
     def get_units_count(self, obj: OrgUnitType):
         orgUnits = OrgUnit.objects.filter_for_user_and_app_id(

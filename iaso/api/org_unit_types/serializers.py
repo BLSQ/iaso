@@ -5,6 +5,7 @@ from rest_framework import serializers
 from iaso.models import OrgUnitType, OrgUnit, Project, Form
 from ..common import TimestampField, DynamicFieldsModelSerializer
 from ..projects.serializers import ProjectSerializer
+from ..forms import FormSerializer
 
 
 class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
@@ -42,7 +43,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     units_count = serializers.SerializerMethodField(read_only=True)
-
+    form_defining = serializers.SerializerMethodField(read_only=True)
     form_defining_id = serializers.PrimaryKeyRelatedField(
         source="form_defining", write_only=True, required=False, many=False, queryset=Form.objects.all()
     )
@@ -53,6 +54,16 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         ).filter(Q(validated=True) & Q(org_unit_type__id=obj.id))
         orgunits_count = orgUnits.count()
         return orgunits_count
+
+    def get_form_defining(self, obj: Form):
+        app_id = self.context["request"].query_params.get("app_id")
+        form_def = Form.objects.filter(id=obj.form_defining_id, projects__app_id=app_id)
+        return FormSerializer(
+            form_def,
+            fields=["id", "form_id", "created_at", "updated_at", "projects"],
+            many=False,
+            context=self.context,
+        ).data
 
     def get_sub_unit_types(self, obj: OrgUnitType):
         unit_types = obj.sub_unit_types.all()

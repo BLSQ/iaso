@@ -44,7 +44,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
     units_count = serializers.SerializerMethodField(read_only=True)
 
     form_defining_id = serializers.PrimaryKeyRelatedField(
-        source="form_defining", write_only=True, many=False, queryset=Form.objects.all()
+        source="form_defining", write_only=True, required=False, many=False, queryset=Form.objects.all()
     )
 
     def get_units_count(self, obj: OrgUnitType):

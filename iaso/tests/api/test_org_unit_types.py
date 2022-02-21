@@ -17,6 +17,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         cls.org_unit_type_1 = m.OrgUnitType.objects.create(name="Plop", short_name="Pl")
         cls.org_unit_type_2 = m.OrgUnitType.objects.create(name="Boom", short_name="Bo")
         cls.ead.unit_types.set([cls.org_unit_type_1, cls.org_unit_type_2])
+        cls.form_defining = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
     def test_org_unit_types_list_without_auth_or_app_id(self):
         """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
@@ -86,6 +87,47 @@ class OrgUnitTypesAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "project_ids", "Invalid project ids")
+
+    def test_org_unit_type_create_with_not_existing_form_defining_ok(self):
+        """POST /orgunittypes/ with auth: 201 OK"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.post(
+            "/api/orgunittypes/",
+            data={
+                "name": "Bimbam",
+                "short_name": "Bi",
+                "depth": 1,
+                "project_ids": [self.ead.id],
+                "sub_unit_type_ids": [],
+                "form_defining_id": 100
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+        self.assertHasError(response.json(), "form_defining_id", 'Invalid pk "100" - object does not exist.')
+
+    def test_org_unit_type_create_with_form_defining_ok(self):
+        """POST /orgunittypes/ with auth: 201 OK"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.post(
+            "/api/orgunittypes/",
+            data={
+                "name": "Bimbam",
+                "short_name": "Bi",
+                "depth": 1,
+                "project_ids": [self.ead.id],
+                "sub_unit_type_ids": [],
+                "form_defining_id": self.form_defining.id
+            },
+            format="json",
+        )
+
+        org_unit_type_data = response.json()
+        self.assertJSONResponse(response, 201)
+        self.assertValidOrgUnitTypeData(org_unit_type_data)
+        self.assertEqual(1, len(org_unit_type_data["projects"]))
 
     def test_org_unit_type_create_ok(self):
         """POST /orgunittypes/ with auth: 201 OK"""

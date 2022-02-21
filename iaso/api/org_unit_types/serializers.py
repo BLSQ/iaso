@@ -59,7 +59,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         app_id = self.context["request"].query_params.get("app_id")
         form_def = Form.objects.filter(id=obj.form_defining_id, projects__app_id=app_id)
         return FormSerializer(
-            form_def,
+            form_def.first(),
             fields=["id", "form_id", "created_at", "updated_at", "projects"],
             many=False,
             context=self.context,

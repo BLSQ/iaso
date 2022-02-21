@@ -1,11 +1,28 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import MESSAGES from '../messages';
 
-const ProjectFeatureFlags = ({
+import { FeatureFlag } from '../types/featureFlag';
+
+type Form = {
+    value: Array<string>;
+    errors: Array<string>;
+};
+
+type ProjectForm = {
+    feature_flags: Form;
+};
+
+type Props = {
+    // eslint-disable-next-line no-unused-vars
+    setFieldValue: (key: string, value: string) => void;
+    currentProject: ProjectForm;
+    featureFlags: Array<FeatureFlag>;
+};
+
+const ProjectFeatureFlags: FunctionComponent<Props> = ({
     setFieldValue,
     currentProject,
     featureFlags,
@@ -30,10 +47,4 @@ const ProjectFeatureFlags = ({
     );
 };
 
-ProjectFeatureFlags.propTypes = {
-    setFieldValue: PropTypes.func.isRequired,
-    currentProject: PropTypes.object.isRequired,
-    featureFlags: PropTypes.array.isRequired,
-};
-
-export default ProjectFeatureFlags;
+export { ProjectFeatureFlags };

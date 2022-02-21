@@ -6,7 +6,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.create',
     },
     newOrgUnit: {
-        defaultMessage: 'Create a org unit',
+        defaultMessage: 'Create an org unit',
         id: 'iaso.orgUnits.new',
     },
     action: {

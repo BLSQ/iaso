@@ -212,9 +212,6 @@ def fetch_and_match_forma_data():
 
     dfs = []
     for config in conf.content:
-        # FIXME Temporary
-        if config["country"] not in ["Senegal", "Mauritania"]:
-            continue
         submissions = get_content_for_config(config)
         country = OrgUnit.objects.get(id=config["country_id"])
         df = handle_country(submissions, country, campaign_qs)

@@ -240,7 +240,7 @@ describe('Entities', () => {
                     req => {
                         interceptFlag = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                             body: listFixture.types[entityTypeIndex],
                         });
                     },
@@ -256,7 +256,7 @@ describe('Entities', () => {
                     req => {
                         interceptFlagEntities = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                             body: listFixture.types[entityTypeIndex],
                         });
                     },
@@ -300,7 +300,7 @@ describe('Entities', () => {
                     req => {
                         interceptFlag = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                         });
                     },
                 ).as('deleteEntityType');
@@ -314,7 +314,7 @@ describe('Entities', () => {
                     req => {
                         interceptFlagEntities = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                             body: listFixture.types[entityTypeIndex],
                         });
                     },

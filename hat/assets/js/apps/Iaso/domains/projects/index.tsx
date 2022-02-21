@@ -68,7 +68,9 @@ export const Projects: FunctionComponent<Props> = ({ params }) => {
                     <ProjectsDialog
                         titleMessage={MESSAGES.create}
                         renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent onClick={openDialog} />
+                            <div id="add-button-container">
+                                <AddButtonComponent onClick={openDialog} />
+                            </div>
                         )}
                         featureFlags={featureFlags}
                         saveProject={saveProject}

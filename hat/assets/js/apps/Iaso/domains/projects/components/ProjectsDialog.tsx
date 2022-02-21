@@ -4,6 +4,7 @@ import React, {
     useState,
     useEffect,
     useCallback,
+    useMemo,
 } from 'react';
 import get from 'lodash/get';
 import { Tabs, Tab, makeStyles } from '@material-ui/core';
@@ -144,9 +145,21 @@ const ProjectsDialog: FunctionComponent<Props> = ({
     useEffect(() => {
         setProject(initialProject(initialData));
     }, [initialData, initialProject]);
+
+    const allowConfirm = useMemo(
+        () =>
+            project &&
+            project.name &&
+            project.name.value !== '' &&
+            project.app_id &&
+            project.app_id.value !== '',
+        [project],
+    );
+
     return (
         // @ts-ignore
         <ConfirmCancelDialogComponent
+            allowConfirm={allowConfirm}
             titleMessage={titleMessage}
             onConfirm={closeDialog => onConfirm(closeDialog)}
             cancelMessage={MESSAGES.cancel}
@@ -158,29 +171,29 @@ const ProjectsDialog: FunctionComponent<Props> = ({
                 classNames: classes.dialog,
             }}
         >
-            <Tabs
-                value={tab}
-                classes={{
-                    root: classes.tabs,
-                }}
-                onChange={(event, newtab) => setTab(newtab)}
-            >
-                <Tab
+            <div className={classes.root} id="project-dialog">
+                <Tabs
+                    value={tab}
                     classes={{
-                        root: classes.tab,
+                        root: classes.tabs,
                     }}
-                    value="infos"
-                    label={formatMessage(MESSAGES.infos)}
-                />
-                <Tab
-                    classes={{
-                        root: classes.tab,
-                    }}
-                    value="feature_flags"
-                    label={formatMessage(MESSAGES.featureFlags)}
-                />
-            </Tabs>
-            <div className={classes.root}>
+                    onChange={(event, newtab) => setTab(newtab)}
+                >
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="infos"
+                        label={formatMessage(MESSAGES.infos)}
+                    />
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="feature_flags"
+                        label={formatMessage(MESSAGES.featureFlags)}
+                    />
+                </Tabs>
                 {tab === 'infos' && (
                     <ProjectInfos
                         setFieldValue={(key, value) =>

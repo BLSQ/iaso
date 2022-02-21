@@ -83,5 +83,11 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         for project in data.get("projects", []):
             if self.context["request"].user.iaso_profile.account != project.account:
                 raise serializers.ValidationError({"project_ids": "Invalid project ids"})
+        # validate if form is linked to the right project
+        form_defining = data.get("form_defining", None)
+        if form_defining:
+            projects_form = Form.objects.filter(id=form_defining.id, projects__in=data.get("projects", []))
+            if not projects_form:
+                raise serializers.ValidationError({"form_defining_id": "Invalid form defining id"})
 
         return data

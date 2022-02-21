@@ -24,6 +24,10 @@ class OrgUnitTypesAPITestCase(APITestCase):
         cls.org_unit_type_2 = m.OrgUnitType.objects.create(name="Boom", short_name="Bo")
         cls.ead.unit_types.set([cls.org_unit_type_1, cls.org_unit_type_2])
 
+        cls.ead.forms.add(cls.form_defining)
+        cls.ead.forms.add(cls.form_defining_update)
+        cls.ead.save()
+
     def test_org_unit_types_list_without_auth_or_app_id(self):
         """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
 

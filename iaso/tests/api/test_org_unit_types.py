@@ -18,6 +18,9 @@ class OrgUnitTypesAPITestCase(APITestCase):
         cls.form_defining_update = m.Form.objects.create(
             name="Form defining update", period_type=m.MONTH, single_per_period=True
         )
+        cls.form_defining_wrong_project = m.Form.objects.create(
+            name="Form defining with wrong project", period_type=m.MONTH, single_per_period=True
+        )
         cls.org_unit_type_1 = m.OrgUnitType.objects.create(
             name="Plop", short_name="Pl", form_defining_id=cls.form_defining_update.id
         )
@@ -27,6 +30,9 @@ class OrgUnitTypesAPITestCase(APITestCase):
         cls.ead.forms.add(cls.form_defining)
         cls.ead.forms.add(cls.form_defining_update)
         cls.ead.save()
+
+        cls.esd.forms.add(cls.form_defining_wrong_project)
+        cls.esd.save()
 
     def test_org_unit_types_list_without_auth_or_app_id(self):
         """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
@@ -137,6 +143,26 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 201)
         self.assertValidOrgUnitTypeData(org_unit_type_data)
         self.assertEqual(self.form_defining.id, org_unit_type_data["form_defining"]["id"])
+
+    def test_org_unit_type_create_with_form_defining_wrong_project(self):
+        """POST /orgunittypes/ with Invalid form defining id"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.post(
+            "/api/orgunittypes/",
+            data={
+                "name": "Bimbam",
+                "short_name": "Bi",
+                "depth": 1,
+                "project_ids": [self.ead.id],
+                "sub_unit_type_ids": [],
+                "form_defining_id": self.form_defining_wrong_project.id,
+            },
+            format="json",
+        )
+
+        self.assertJSONResponse(response, 400)
+        self.assertHasError(response.json(), "form_defining_id", "Invalid form defining id")
 
     def test_org_unit_type_create_ok(self):
         """POST /orgunittypes/ with auth: 201 OK"""

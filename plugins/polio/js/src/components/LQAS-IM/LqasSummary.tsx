@@ -1,14 +1,17 @@
 /* eslint-disable react/require-default-props */
-import { Paper, Typography, Grid } from '@material-ui/core';
+import { Box, Typography, Grid, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { ConvertedLqasImData, RoundString } from '../../constants/types';
+
 import { FAIL_COLOR, OK_COLOR } from '../../styles/constants';
 import {
     getLqasStatsForRound,
     makeCaregiversRatio,
 } from '../../pages/LQAS/utils';
 import { convertStatToPercent } from '../../utils/LqasIm';
+import MESSAGES from '../../constants/messages';
 
 type Props = {
     campaign?: string;
@@ -16,20 +19,14 @@ type Props = {
     data: Record<string, ConvertedLqasImData>;
 };
 
-const style = theme => ({
-    paper: {
-        marginBottom: theme.spacing(1),
-        marginTop: theme.spacing(1),
-        paddingTop: '5px',
-        paddingBottom: '5px',
-    },
+const style = {
     containerGrid: { justifyContent: 'space-evenly' },
     centerText: { textAlign: 'center' },
     boldText: { fontWeight: 'bold' },
     pass: { color: OK_COLOR },
     fail: { color: FAIL_COLOR },
     warning: { color: 'rgb(255,196,53)' },
-});
+};
 
 const useStyles = makeStyles(style);
 
@@ -45,6 +42,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
     round,
     data,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const summary = useMemo(() => {
         // eslint-disable-next-line no-unused-vars
@@ -76,7 +74,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
     return (
         <>
             {data && campaign && data[campaign] && (
-                <Paper elevation={1} className={classes.paper}>
+                <Box pt={2} pb={2}>
                     <Grid
                         container
                         direction="row"
@@ -87,7 +85,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 variant="body1"
                                 className={classes.centerText}
                             >
-                                Passed
+                                {formatMessage(MESSAGES.passing)}
                             </Typography>
                             <Typography
                                 variant="h6"
@@ -96,12 +94,15 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${summary.passed}`}
                             </Typography>
                         </Grid>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
                         <Grid item xs={4} sm={3}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
                             >
-                                Failed
+                                {formatMessage(MESSAGES.failing)}
                             </Typography>
                             <Typography
                                 variant="h6"
@@ -110,12 +111,15 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${summary.failed}`}
                             </Typography>
                         </Grid>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
                         <Grid item xs={4} sm={3}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
                             >
-                                Passed (%)
+                                {`${formatMessage(MESSAGES.passing)} (%)`}
                             </Typography>
                             <Typography
                                 variant="h6"
@@ -125,7 +129,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
                             </Typography>
                         </Grid>
                     </Grid>
-                </Paper>
+                </Box>
             )}
         </>
     );

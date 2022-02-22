@@ -434,6 +434,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                 apiParams={{
                                     orgUnitId: currentOrgUnit.id,
                                 }}
+                                hideGpkg
                                 exportButtons={false}
                                 baseUrl={baseUrl}
                                 endPointPath="forms"
@@ -492,6 +493,7 @@ const OrgUnitDetail = ({ params, router }) => {
                             apiParams={{
                                 orgUnitId: currentOrgUnit.id,
                             }}
+                            hideGpkg
                             propsToWatch={params.tab}
                             filters={linksFiltersWithPrefix(
                                 'linksParams',

@@ -178,6 +178,8 @@ const OrgUnitsFiltersComponent = ({
                         onChangeColor={color => onChange(color, 'color')}
                     />
                     <SearchFilter
+                        // FIXME withMarginTop: this logic is inverted in bluesquare-component in FormControl.js
+                        withMarginTop
                         uid={`search-${searchIndex}`}
                         onEnterPressed={handleSearch}
                         onChange={(value, urlKey) => onChange(value, urlKey)}

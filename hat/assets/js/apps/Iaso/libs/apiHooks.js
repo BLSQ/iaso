@@ -1,5 +1,5 @@
 import { useDispatch } from 'react-redux';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueries, useQueryClient } from 'react-query';
 import { defineMessages } from 'react-intl';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
@@ -89,6 +89,7 @@ export const useSnackMutation = (
  * @param {string} snackErrorMsg.id
  *  Translatable Formatjs Message object. null to suppress, undefined for default.
  * @param {UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>)} options
+ * @param {boolean} dispatchOnError
  * @returns UseQueryResult<TData, TError>;
  */
 
@@ -116,4 +117,43 @@ export const useSnackQuery = (
     };
     const query = useQuery(queryKey, queryFn, newOptions);
     return query;
+};
+
+/**
+ * Mix a useQueries from react-query and snackbar message in case of error
+ * @param {Array.<
+ *      queryKey: string[],
+ *      queryFn: {((context: QueryFunctionContext<*>) => (Promise<TQueryFnData> | TQueryFnData))|UseQueryOptions<TQueryFnData, TError, TData, *>},
+ *      snackErrorMsg: {Object|null},
+ *      options: {UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>)}
+ *      dispatchOnError: boolean
+ * >} queries
+ */
+
+export const useSnackQueries = queries => {
+    const dispatch = useDispatch();
+    const newQueries = queries.map(query => {
+        const {
+            options,
+            dispatchOnError,
+            snackErrorMsg = MESSAGES.defaultQueryApiSuccess,
+        } = query;
+        const newOptions = {
+            ...options,
+            onError: (error, variables, context) => {
+                if (dispatchOnError) {
+                    dispatch(
+                        enqueueSnackbar(
+                            errorSnackBar(null, snackErrorMsg, error),
+                        ),
+                    );
+                }
+                if (options.onError) {
+                    options.onError(error, variables, context);
+                }
+            },
+        };
+        return { ...query, ...newOptions };
+    });
+    return useQueries(newQueries);
 };

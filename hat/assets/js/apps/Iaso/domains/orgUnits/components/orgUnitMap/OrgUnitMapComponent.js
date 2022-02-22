@@ -305,6 +305,8 @@ class OrgUnitMapComponent extends Component {
             orgUnitTypes,
             setSourcesSelected,
             sourcesSelected,
+            sources,
+            currentOrgUnit,
         } = this.props;
         const {
             location,
@@ -371,11 +373,15 @@ class OrgUnitMapComponent extends Component {
                     filtersOptionComponent={
                         <>
                             <SourcesFilterComponent
+                                currentOrgUnit={currentOrgUnit}
+                                currentSources={sources}
                                 fitToBounds={() => this.fitToBounds()}
                                 sourcesSelected={sourcesSelected}
                                 setSourcesSelected={setSourcesSelected}
                             />
                             <OrgUnitTypeFilterComponent
+                                currentOrgUnit={currentOrgUnit}
+                                orgUnitTypes={orgUnitTypes}
                                 fitToBounds={() => this.fitToBounds()}
                                 orgUnitTypesSelected={orgUnitTypesSelected}
                                 setOrgUnitTypesSelected={outypes => {
@@ -385,6 +391,7 @@ class OrgUnitMapComponent extends Component {
                                 }}
                             />
                             <FormsFilterComponent
+                                currentOrgUnit={currentOrgUnit}
                                 formsSelected={formsSelected}
                                 setFormsSelected={forms => {
                                     this.setState({ formsSelected: forms });
@@ -704,12 +711,13 @@ OrgUnitMapComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     setSourcesSelected: PropTypes.func.isRequired,
+    sources: PropTypes.array.isRequired,
+    currentOrgUnit: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentUser: state.users.current,
     currentTile: state.map.currentTile,
-    orgUnitTypes: state.orgUnits.orgUnitTypes,
 });
 
 const MapDispatchToProps = dispatch => ({

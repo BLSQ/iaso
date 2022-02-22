@@ -787,10 +787,10 @@ def handle_ona_request_with_key(request, key):
             try:
                 today = datetime.strptime(form["today"], "%Y-%m-%d").date()
                 campaign = find_campaign_on_day(campaigns, today, country)
-                district_name = form.get("District", None)
+                district_name = form.get("District", "")
                 facility_name = form.get("facility", None)
 
-                if district_name and facility_name:
+                if facility_name:
                     form["facility_id"] = get_facility_id(district_name, facility_name, facilities_dict)
                 else:
                     form["facility_id"] = None

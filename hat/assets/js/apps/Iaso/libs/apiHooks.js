@@ -89,6 +89,7 @@ export const useSnackMutation = (
  * @param {string} snackErrorMsg.id
  *  Translatable Formatjs Message object. null to suppress, undefined for default.
  * @param {UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>)} options
+ * @param {boolean} dispatchOnError
  * @returns UseQueryResult<TData, TError>;
  */
 
@@ -125,6 +126,7 @@ export const useSnackQuery = (
  *      queryFn: {((context: QueryFunctionContext<*>) => (Promise<TQueryFnData> | TQueryFnData))|UseQueryOptions<TQueryFnData, TError, TData, *>},
  *      snackErrorMsg: {Object|null},
  *      options: {UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>)}
+ *      dispatchOnError: boolean
  * >} queries
  */
 

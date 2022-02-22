@@ -162,10 +162,13 @@ const OrgUnitDetail = ({ params, router }) => {
         queryClient.invalidateQueries('currentOrgUnit');
     };
 
-    const handleDeleteForm = async formId => {
-        await deleteForm(dispatch, formId);
-        setForceSingleTableRefresh(true);
-    };
+    const handleDeleteForm = useCallback(
+        async formId => {
+            await deleteForm(dispatch, formId);
+            setForceSingleTableRefresh(true);
+        },
+        [dispatch],
+    );
 
     const resetSingleTableForceRefresh = () => {
         setForceSingleTableRefresh(false);
@@ -235,50 +238,57 @@ const OrgUnitDetail = ({ params, router }) => {
         isFetchingDetail,
     } = useOrgUnitDetailData(isNewOrgunit, params.orgUnitId, setCurrentOrgUnit);
 
-    const goToRevision = (orgUnitRevision, onSuccess) => {
-        const mappedRevision = {
-            ...currentOrgUnit,
-            ...orgUnitRevision.fields,
-            geo_json: null,
-            aliases: orgUnitRevision.fields.aliases
-                ? getAliasesArrayFromString(orgUnitRevision.fields.aliases)
-                : currentOrgUnit.aliases,
-            id: currentOrgUnit.id,
-        };
-        // Retrieve only the group ids as it's what the API expect
-        const group_ids = mappedRevision.groups.map(g => g.id);
-        mappedRevision.groups = group_ids;
-        saveOu(mappedRevision).then(() => {
-            dispatch(resetOrgUnits());
-            onSuccess();
-        });
-    };
-
-    const handleSaveOrgUnit = (newOrgUnit = {}, onSuccess, onError) => {
-        let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
-        orgUnitPayload = {
-            ...orgUnitPayload,
-            groups:
-                orgUnitPayload.groups.length > 0 && !orgUnitPayload.groups[0].id
-                    ? orgUnitPayload.groups
-                    : orgUnitPayload.groups.map(g => g.id),
-        };
-        saveOu(orgUnitPayload)
-            .then(ou => {
-                setOrgUnitLocationModified(false);
+    const goToRevision = useCallback(
+        (orgUnitRevision, onSuccess) => {
+            const mappedRevision = {
+                ...currentOrgUnit,
+                ...orgUnitRevision.fields,
+                geo_json: null,
+                aliases: orgUnitRevision.fields.aliases
+                    ? getAliasesArrayFromString(orgUnitRevision.fields.aliases)
+                    : currentOrgUnit.aliases,
+                id: currentOrgUnit.id,
+            };
+            // Retrieve only the group ids as it's what the API expect
+            const group_ids = mappedRevision.groups.map(g => g.id);
+            mappedRevision.groups = group_ids;
+            saveOu(mappedRevision).then(() => {
                 dispatch(resetOrgUnits());
-                if (isNewOrgunit) {
-                    dispatch(
-                        redirectToReplace(baseUrl, {
-                            ...params,
-                            orgUnitId: ou.id,
-                        }),
-                    );
-                }
-                onSuccess(ou);
-            })
-            .catch(onError);
-    };
+                onSuccess();
+            });
+        },
+        [currentOrgUnit, dispatch, saveOu],
+    );
+
+    const handleSaveOrgUnit = useCallback(
+        (newOrgUnit = {}, onSuccess, onError) => {
+            let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
+            orgUnitPayload = {
+                ...orgUnitPayload,
+                groups:
+                    orgUnitPayload.groups.length > 0 &&
+                    !orgUnitPayload.groups[0].id
+                        ? orgUnitPayload.groups
+                        : orgUnitPayload.groups.map(g => g.id),
+            };
+            saveOu(orgUnitPayload)
+                .then(ou => {
+                    setOrgUnitLocationModified(false);
+                    dispatch(resetOrgUnits());
+                    if (isNewOrgunit) {
+                        dispatch(
+                            redirectToReplace(baseUrl, {
+                                ...params,
+                                orgUnitId: ou.id,
+                            }),
+                        );
+                    }
+                    onSuccess(ou);
+                })
+                .catch(onError);
+        },
+        [currentOrgUnit, dispatch, isNewOrgunit, params, saveOu],
+    );
 
     useEffect(() => {
         if (isNewOrgunit) {

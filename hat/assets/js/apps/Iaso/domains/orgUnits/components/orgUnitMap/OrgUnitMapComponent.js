@@ -473,6 +473,21 @@ class OrgUnitMapComponent extends Component {
                             }
                             url={currentTile.url}
                         />
+                        {orgUnit.parent_geo_json && (
+                            <Pane
+                                name="parent-shape"
+                                style={{
+                                    zIndex: 700,
+                                }}
+                            >
+                                <GeoJSON
+                                    data={orgUnit.parent_geo_json}
+                                    style={() => ({
+                                        color: 'pink',
+                                    })}
+                                />
+                            </Pane>
+                        )}
                         {!location.edit && (
                             <>
                                 {mappedSourcesSelected.map(ms => {

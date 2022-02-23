@@ -315,7 +315,7 @@ const OrgUnitDetail = ({ params, router }) => {
 
     // Set selected sources for current org unit
     useEffect(() => {
-        if (originalOrgUnit && !isNewOrgunit) {
+        if (originalOrgUnit && !isNewOrgunit && !sourcesSelected) {
             const selectedSources = getLinksSources(
                 links,
                 sources,
@@ -339,7 +339,14 @@ const OrgUnitDetail = ({ params, router }) => {
                 fetch();
             }
         }
-    }, [originalOrgUnit, dispatch, links, sources, isNewOrgunit]);
+    }, [
+        originalOrgUnit,
+        dispatch,
+        links,
+        sources,
+        isNewOrgunit,
+        sourcesSelected,
+    ]);
 
     return (
         <section className={classes.root}>

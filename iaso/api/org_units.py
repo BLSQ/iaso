@@ -527,6 +527,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None
         res["catchment"] = None
+        if org_unit.parent and org_unit.parent.simplified_geom:
+            geo_queryset = self.get_queryset().filter(id=org_unit.parent.id)
+            res["parent_geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
         if org_unit.simplified_geom or org_unit.catchment:
             geo_queryset = self.get_queryset().filter(id=org_unit.id)
             if org_unit.simplified_geom:

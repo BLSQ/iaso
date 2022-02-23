@@ -183,38 +183,6 @@ describe('Projects', () => {
                 );
             });
         });
-        it('should create correctly', () => {
-            goToPage();
-            cy.wait('@getProjects').then(() => {
-                const theIndex = 0;
-                cy.get('#add-button-container').find('button').click();
-                const newProject = {
-                    name: 'create',
-                    app_id: 'project',
-                    feature_flags: [
-                        listfeatureFlags.featureflags[0],
-                        listfeatureFlags.featureflags[1],
-                    ],
-                };
-                const newList = {
-                    ...listFixture,
-                };
-                newList.projects.push(newProject);
-
-                testDialogContent(newProject, [0, 1], false);
-                mockSaveCall('POST', theIndex, '/api/apps/', newProject);
-                mockListCall('getProjectsAfterCreate', newList);
-
-                cy.get('.MuiDialogActions-root').find('button').last().click();
-                cy.wait('@saveProject').then(() => {
-                    cy.wrap(interceptFlag).should('eq', true);
-                });
-                cy.wait('@getProjectsAfterCreate').then(() => {
-                    cy.wrap(interceptFlagProjects).should('eq', true);
-                    testRowContent(6, newProject);
-                });
-            });
-        });
 
         it('should save correctly', () => {
             goToPage();
@@ -253,10 +221,42 @@ describe('Projects', () => {
                 cy.get('.MuiDialogActions-root').find('button').last().click();
                 cy.wait('@saveProject').then(() => {
                     cy.wrap(interceptFlag).should('eq', true);
+                    cy.wait('@getProjectsAfterSave').then(() => {
+                        cy.wrap(interceptFlagProjects).should('eq', true);
+                        testRowContent(0, newProject);
+                    });
                 });
-                cy.wait('@getProjectsAfterSave').then(() => {
-                    cy.wrap(interceptFlagProjects).should('eq', true);
-                    testRowContent(0, newProject);
+            });
+        });
+        it('should create correctly', () => {
+            goToPage();
+            cy.wait('@getProjects').then(() => {
+                const theIndex = 0;
+                cy.get('#add-button-container').find('button').click();
+                const newProject = {
+                    name: 'create',
+                    app_id: 'project',
+                    feature_flags: [
+                        listfeatureFlags.featureflags[0],
+                        listfeatureFlags.featureflags[1],
+                    ],
+                };
+                const newList = {
+                    ...listFixture,
+                };
+                newList.projects.unshift(newProject);
+
+                testDialogContent(newProject, [0, 1], false);
+                mockSaveCall('POST', theIndex, '/api/apps/', newProject);
+                mockListCall('getProjectsAfterCreate', newList);
+
+                cy.get('.MuiDialogActions-root').find('button').last().click();
+                cy.wait('@saveProject').then(() => {
+                    cy.wrap(interceptFlag).should('eq', true);
+                    cy.wait('@getProjectsAfterCreate').then(() => {
+                        cy.wrap(interceptFlagProjects).should('eq', true);
+                        testRowContent(0, newProject);
+                    });
                 });
             });
         });

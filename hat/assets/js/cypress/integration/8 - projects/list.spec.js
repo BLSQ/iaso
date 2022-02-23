@@ -5,7 +5,6 @@ import listfeatureFlags from '../../fixtures/featureflags/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 
 import { testTablerender } from '../../support/testTableRender';
-import { testPagination } from '../../support/testPagination';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 let interceptFlagProjects = false;
@@ -132,13 +131,6 @@ describe('Projects', () => {
             goToPage();
         });
         testTablerender(baseUrl, listFixture.projects.length, 4);
-        testPagination({
-            baseUrl,
-            apiPath: '/api/projects/**',
-            apiKey: 'projects',
-            withSearch: false,
-            fixture: listFixture,
-        });
         it('should render correct row infos', () => {
             cy.wait('@getProjects').then(() => {
                 testRowContent(0);

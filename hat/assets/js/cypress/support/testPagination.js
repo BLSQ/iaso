@@ -18,44 +18,40 @@ export const testPagination = ({
                     },
                 },
                 fixture,
-            ).as('getData');
+            );
             cy.visit(baseUrl);
             if (withSearch) cy.get('#searchButton').click();
         });
         it('click on next should display next page', () => {
-            cy.wait('@getData').then(() => {
-                cy.get('.pagination-page-select input')
-                    .as('pageInput')
-                    .should('have.value', 1);
+            cy.get('.pagination-page-select input')
+                .as('pageInput')
+                .should('have.value', 1);
 
-                cy.get('button.pagination-previous')
-                    .as('previousButton')
-                    .should('be.disabled');
-                cy.get('button.pagination-first')
-                    .as('firstButton')
-                    .should('be.disabled');
-                cy.get('.pagination-count').should(
-                    'contain',
-                    `${formatThousand(fixture.count)}`,
-                );
+            cy.get('button.pagination-previous')
+                .as('previousButton')
+                .should('be.disabled');
+            cy.get('button.pagination-first')
+                .as('firstButton')
+                .should('be.disabled');
+            cy.get('.pagination-count').should(
+                'contain',
+                `${formatThousand(fixture.count)}`,
+            );
 
-                cy.get('button.pagination-next').click();
-                cy.get('@pageInput').should('have.value', 2);
-                cy.get('@previousButton').should('not.be.disabled');
-                cy.get('@firstButton').should('not.be.disabled');
-            });
+            cy.get('button.pagination-next').click();
+            cy.get('@pageInput').should('have.value', 2);
+            cy.get('@previousButton').should('not.be.disabled');
+            cy.get('@firstButton').should('not.be.disabled');
         });
         it('click on last should display last page', () => {
-            cy.wait('@getData').then(() => {
-                cy.get('.pagination-page-select input')
-                    .as('pageInput')
-                    .should('have.value', 1);
+            cy.get('.pagination-page-select input')
+                .as('pageInput')
+                .should('have.value', 1);
 
-                cy.get('button.pagination-last').as('lastButton').click();
+            cy.get('button.pagination-last').as('lastButton').click();
 
-                cy.get('@lastButton').should('be.disabled');
-                cy.get('@pageInput').should('have.value', fixture.pages);
-            });
+            cy.get('@lastButton').should('be.disabled');
+            cy.get('@pageInput').should('have.value', fixture.pages);
         });
         it('click on first should display first page', () => {
             cy.get('.pagination-page-select input')

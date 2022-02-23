@@ -789,6 +789,9 @@ def handle_ona_request_with_key(request, key):
                 campaign = find_campaign_on_day(campaigns, today, country)
                 district_name = form.get("District", "")
                 facility_name = form.get("facility", None)
+                # some form version for Senegal had their facility column as Facility with an uppercase.
+                if not facility_name:
+                    facility_name = form.get("Facility", "")
 
                 if facility_name:
                     form["facility_id"] = get_facility_id(district_name, facility_name, facilities_dict)

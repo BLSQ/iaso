@@ -22,20 +22,14 @@ import { columns, baseUrl } from './config';
 import MESSAGES from './messages';
 
 import { redirectTo } from '../../routing/actions';
+import { UrlParams } from '../../types/table';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-};
-
 type Props = {
-    params: Params;
+    params: UrlParams;
 };
 
 export const Projects: FunctionComponent<Props> = ({ params }) => {
@@ -52,12 +46,12 @@ export const Projects: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <>
-            {isLoading && <LoadingSpinner />}
             <TopBar
                 title={formatMessage(MESSAGES.projects)}
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
+                {isLoading && <LoadingSpinner absolute />}
                 <Grid
                     container
                     spacing={0}

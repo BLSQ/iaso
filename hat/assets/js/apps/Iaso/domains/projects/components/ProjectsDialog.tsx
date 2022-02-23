@@ -23,6 +23,7 @@ import MESSAGES from '../messages';
 type RenderTriggerProps = {
     openDialog: () => void;
 };
+type Tab = 'infos' | 'feature_flags';
 
 type Props = {
     titleMessage: IntlMessage;
@@ -91,7 +92,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
         [initialData],
     );
     const [project, setProject] = useState(initialProject(null));
-    const [tab, setTab] = useState('infos');
+    const [tab, setTab] = useState<Tab>('infos');
 
     const onClosed = () => {
         setProject(initialProject(null));
@@ -177,7 +178,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
                     classes={{
                         root: classes.tabs,
                     }}
-                    onChange={(event, newtab) => setTab(newtab)}
+                    onChange={(_event, newtab) => setTab(newtab)}
                 >
                     <Tab
                         classes={{
@@ -204,7 +205,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
                 )}
                 {tab === 'feature_flags' && (
                     <ProjectFeatureFlags
-                        setFieldValue={(key, value) =>
+                        setFieldValue={(_key, value) =>
                             setFieldValue('feature_flags', value)
                         }
                         currentProject={project}

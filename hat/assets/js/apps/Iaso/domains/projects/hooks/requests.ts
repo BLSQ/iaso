@@ -4,25 +4,12 @@ import { useSnackQuery, useSnackMutation } from '../../../libs/apiHooks';
 
 import { PaginatedProjects } from '../types/paginatedProjects';
 import { FeatureFlag } from '../types/featureFlag';
-
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-};
-
-type NewParams = {
-    limit: string;
-    order: string;
-    page: string;
-    search?: string;
-};
+import { UrlParams, ApiParams } from '../../../types/table';
 
 export const useGetProjectsPaginated = (
-    params: Params,
+    params: UrlParams,
 ): UseQueryResult<PaginatedProjects, Error> => {
-    const newParams: NewParams = {
+    const newParams: ApiParams = {
         limit: params.pageSize || '10',
         order: params.order || 'id',
         page: params.page || '1',

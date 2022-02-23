@@ -4,6 +4,9 @@ import listFixture from '../../fixtures/projects/list.json';
 import listfeatureFlags from '../../fixtures/featureflags/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 
+import { testTablerender } from '../../support/testTableRender';
+import { testPagination } from '../../support/testPagination';
+
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 let interceptFlagProjects = false;
 
@@ -59,7 +62,6 @@ const openDialogForIndex = index => {
 const testRowContent = (index, p = listFixture.projects[index]) => {
     cy.get('table').as('table');
     cy.get('@table').find('tbody').find('tr').eq(index).as('row');
-    cy.get('@row').find('td').should('have.length', 4);
     cy.get('@row').find('td').eq(0).should('contain', p.name);
     cy.get('@row').find('td').eq(1).should('contain', p.app_id);
     cy.get('@row').find('td').eq(2).as('ffCol');
@@ -126,22 +128,24 @@ describe('Projects', () => {
     });
 
     describe('Table', () => {
-        it('should render results', () => {
+        beforeEach(() => {
             goToPage();
+        });
+        testTablerender(baseUrl, listFixture.projects.length, 4);
+        testPagination({
+            baseUrl,
+            apiPath: '/api/projects/**',
+            apiKey: 'projects',
+            withSearch: false,
+            fixture: listFixture,
+        });
+        it('should render correct row infos', () => {
             cy.wait('@getProjects').then(() => {
-                cy.get('table').as('table');
-                cy.get('@table').should('have.length', 1);
-                cy.get('@table').find('tbody').find('tr').as('rows');
-                cy.get('@rows').should(
-                    'have.length',
-                    listFixture.projects.length,
-                );
                 testRowContent(0);
             });
         });
 
         it('should display correct amount of buttons on action column', () => {
-            goToPage();
             cy.wait('@getProjects').then(() => {
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(1);
@@ -151,7 +155,7 @@ describe('Projects', () => {
         });
     });
 
-    describe.only('Dialog', () => {
+    describe('Dialog', () => {
         it('should display empty project dialog', () => {
             // this will be tested when creation will be enabled
             goToPage();

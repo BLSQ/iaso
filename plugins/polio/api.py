@@ -34,7 +34,13 @@ from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
 )
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
-from .forma import get_forma_scope_df, fetch_and_match_forma_data, FormAStocksViewSetV2
+from .forma import (
+    get_forma_scope_df,
+    fetch_and_match_forma_data,
+    FormAStocksViewSetV2,
+    make_orgunits_cache,
+    find_orgunit_in_cache,
+)
 from .helpers import get_url_content
 from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round
 from .models import CountryUsersGroup
@@ -746,21 +752,6 @@ def convert_dicts_to_table(list_of_dicts):
     return values
 
 
-def get_facility_id(district_name, facility_name, facilities_dict):
-    facility_list = facilities_dict.get(facility_name)
-    if facility_list is None:
-        return None
-    if len(facility_list) == 1:
-        return facility_list[0].id
-    if len(facility_list) > 1:
-
-        for facility in facility_list:
-            if facility.parent.name.lower() == district_name.lower() or district_name in facility.parent.aliases:
-                return facility.id
-
-    return None
-
-
 def handle_ona_request_with_key(request, key):
     as_csv = request.GET.get("format", None) == "csv"
     config = get_object_or_404(Config, slug=key)
@@ -779,9 +770,7 @@ def handle_ona_request_with_key(request, key):
             .only("name", "id", "parent")
             .prefetch_related("parent")
         )
-        facilities_dict = defaultdict(list)
-        for f in facilities:
-            facilities_dict[f.name].append(f)
+        cache = make_orgunits_cache(facilities)
 
         for form in forms:
             try:
@@ -794,7 +783,8 @@ def handle_ona_request_with_key(request, key):
                     facility_name = form.get("Facility", "")
 
                 if facility_name:
-                    form["facility_id"] = get_facility_id(district_name, facility_name, facilities_dict)
+                    facility = find_orgunit_in_cache(cache, facility_name, district_name)
+                    form["facility_id"] = facility.id if facility else None
                 else:
                     form["facility_id"] = None
 

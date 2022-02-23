@@ -14,7 +14,7 @@ const emptyFixture = 'projects/empty.json';
 let table;
 let row;
 const defautlQuery = {
-    limit: '20',
+    limit: '10',
     order: 'id',
     page: '1',
 };

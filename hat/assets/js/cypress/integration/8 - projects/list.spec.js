@@ -211,7 +211,7 @@ describe('Projects', () => {
                 });
                 cy.wait('@getProjectsAfterCreate').then(() => {
                     cy.wrap(interceptFlagProjects).should('eq', true);
-                    testRowContent(2, newProject);
+                    testRowContent(6, newProject);
                 });
             });
         });

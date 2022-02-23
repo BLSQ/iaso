@@ -23,7 +23,7 @@ export const useGetProjectsPaginated = (
     params: Params,
 ): UseQueryResult<PaginatedProjects, Error> => {
     const newParams: NewParams = {
-        limit: params.pageSize || '20',
+        limit: params.pageSize || '10',
         order: params.order || 'id',
         page: params.page || '1',
     };

@@ -26,14 +26,18 @@ class HasProfilePermission(permissions.BasePermission):
 class ProfilesViewSet(viewsets.ViewSet):
     """Profiles API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_users" permission, with one
-    exception: GET /api/profiles/me is accessible to any authenticated user.
+    This API is restricted to authenticated users having the "menupermissions.iaso_users" permission for write permission
+    Read access is accessible to any authenticated users as it necessary to list profile or display a particular one in
+    the interface.
+
+    Any logged user can also edit his profile to set his language.
+
 
     GET /api/profiles/
     GET /api/profiles/me => current user
     GET /api/profiles/<id>
     POST /api/profiles/
-    POST /api/profiles/me => current user, can only set language field
+    PATCH /api/profiles/me => current user, can only set language field
     PATCH /api/profiles/<id>
     DELETE /api/profiles/<id>
     """

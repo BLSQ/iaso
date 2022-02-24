@@ -63,6 +63,7 @@ const TableColumns = (formatMessage, component) => [
                             onClick={openDialog}
                             icon="edit"
                             tooltipMessage={MESSAGES.edit}
+                            id={`edit-button-${settings.row.original.id}`}
                         />
                     )}
                     orgUnitType={settings.row.original}
@@ -72,6 +73,7 @@ const TableColumns = (formatMessage, component) => [
                     onConfirmed={() => component.fetchOrgUnitTypes()}
                 />
                 <DeleteDialog
+                    keyName={settings.row.original.id.toString()}
                     disabled={
                         parseInt(settings.row.original.units_count, 10) > 0
                     }

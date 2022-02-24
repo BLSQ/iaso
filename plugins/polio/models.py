@@ -90,17 +90,15 @@ class Round(models.Model):
     target_population = models.IntegerField(null=True, blank=True)
     cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, null=True, blank=True)
     im_percentage_children_missed_in_household = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
+        max_digits=10, decimal_places=2, null=True, blank=True
     )
     im_percentage_children_missed_out_household = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
+        max_digits=10, decimal_places=2, null=True, blank=True
     )
     im_percentage_children_missed_in_plus_out_household = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
+        max_digits=10, decimal_places=2, null=True, blank=True
     )
-    awareness_of_campaign_planning = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
-    )
+    awareness_of_campaign_planning = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     main_awareness_problem = models.CharField(max_length=255, null=True, blank=True)
     lqas_district_passing = models.IntegerField(null=True, blank=True)
     lqas_district_failing = models.IntegerField(null=True, blank=True)

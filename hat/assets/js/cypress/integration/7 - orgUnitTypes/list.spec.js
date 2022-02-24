@@ -40,7 +40,7 @@ describe('Org unit types', () => {
     });
     describe('When mounting', () => {
         testPermission(baseUrl);
-        testTopBar(baseUrl, 'Organisation unit types');
+        testTopBar(baseUrl, 'Organisation unit types', false);
         it('Displays "Create" button', () => {
             cy.visit(baseUrl);
             cy.wait('@getOrgUnitTypes');

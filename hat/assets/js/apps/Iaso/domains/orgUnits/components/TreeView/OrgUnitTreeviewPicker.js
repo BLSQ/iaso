@@ -4,9 +4,8 @@ import classnames from 'classnames';
 
 import { Paper, InputLabel, Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { FormControl, IconButton, useSafeIntl } from 'bluesquare-components';
+import { FormControl, IconButton, useSafeIntl,TruncatedTreeview } from 'bluesquare-components';
 import { MESSAGES } from './messages';
-import { TruncatedTreeview } from './TruncatedTreeview';
 
 const styles = theme => ({
     placeholder: {

@@ -11,8 +11,7 @@ import {
 } from 'prop-types';
 import { isEqual } from 'lodash';
 import { makeStyles } from '@material-ui/core/styles';
-import { TreeViewWithSearch } from './TreeViewWithSearch';
-// import { TreeViewWithSearch } from 'bluesquare-components';
+import { TreeViewWithSearch } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { MESSAGES } from './messages';
 import { getRootData, getChildrenData, searchOrgUnits } from './requests';
@@ -114,7 +113,7 @@ const OrgUnitTreeviewModal = ({
 
     const searchOrgUnitsWithSource = useCallback(
         async (value, count) => {
-            return searchOrgUnits(value, count, source, version);
+            return searchOrgUnits({value, count, source, version});
         },
         [source, version],
     );
@@ -199,10 +198,11 @@ const OrgUnitTreeviewModal = ({
                 preexpanded={selectedOrgUnitParents}
                 selectedData={selectedOrgUnits}
                 onUpdate={onUpdate}
-                // allowSelection={item => {
-                //     // console.log(item);
-                //     return true;
-                // }}
+                allowSelection={item => {
+                    if (allowedTypes.length === 0) return true;
+                    if (allowedTypes.includes(item.org_unit_type_id)) return true;
+                    return false;
+                }}
             />
         </ConfirmCancelDialogComponent>
     );

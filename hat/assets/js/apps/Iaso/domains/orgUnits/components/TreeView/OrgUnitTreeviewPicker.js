@@ -1,11 +1,16 @@
 import { func, any, bool, object, oneOfType, string } from 'prop-types';
 import React from 'react';
 import classnames from 'classnames';
-
 import { Paper, InputLabel, Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { FormControl, IconButton, useSafeIntl,TruncatedTreeview } from 'bluesquare-components';
+import {
+    FormControl,
+    IconButton,
+    useSafeIntl,
+    TruncatedTreeview,
+} from 'bluesquare-components';
 import { MESSAGES } from './messages';
+import { baseUrls } from '../../../../constants/urls';
 
 const styles = theme => ({
     placeholder: {
@@ -92,13 +97,18 @@ const OrgUnitTreeviewPicker = ({
             );
         const treeviews = [];
         treesData.forEach((value, key) => {
-            // console.log(value, key);
             const treeview = (
                 <TruncatedTreeview
                     onClick={disabled ? noOp : onClick}
                     selectedItems={value}
                     key={`TruncatedTree${key.toString()}`}
                     label={label}
+                    redirect={id =>
+                        window.open(
+                            `/dashboard/${baseUrls.orgUnitDetails}/orgUnitId/${id}`,
+                            '_blank',
+                        )
+                    }
                 />
             );
             treeviews.push(treeview);

@@ -1,9 +1,9 @@
 {
     "count": 13,
-    "has_next": true,
-    "has_previous": false,
+    "has_next": false,
+    "has_previous": true,
     "limit": 10,
-    "page": 1,
+    "page": 2,
     "pages": 2,
     "projects": [{
             "app_id": "app_id_2",
@@ -47,33 +47,7 @@
             "name": "Projet 3",
             "needs_authentication": false,
             "updated_at": 1643364006.59441
-        },
-        {
-            "app_id": "app_id_4",
-            "created_at": 1643364006.484612,
-            "feature_flags": [],
-            "id": 4,
-            "name": "Projet 4",
-            "needs_authentication": false,
-            "updated_at": 1643364006.59441
-        },
-        {
-            "app_id": "app_id_5",
-            "created_at": 1643364006.484612,
-            "feature_flags": [],
-            "id": 5,
-            "name": "Projet 5",
-            "needs_authentication": false,
-            "updated_at": 1643364006.59441
-        },
-        {
-            "app_id": "app_id_6",
-            "created_at": 1643364006.484612,
-            "feature_flags": [],
-            "id": 5,
-            "name": "Projet 6",
-            "needs_authentication": false,
-            "updated_at": 1643364006.59441
         }
+
     ]
 }

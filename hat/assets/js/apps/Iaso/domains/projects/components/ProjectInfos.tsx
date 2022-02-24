@@ -1,11 +1,29 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 
 import InputComponent from '../../../components/forms/InputComponent';
 
 import MESSAGES from '../messages';
 
-const ProjectInfos = ({ setFieldValue, currentProject }) => (
+type Form = {
+    value: string | null;
+    errors: Array<string>;
+};
+
+type ProjectForm = {
+    app_id: Form;
+    name: Form;
+};
+
+type Props = {
+    // eslint-disable-next-line no-unused-vars
+    setFieldValue: (key: string, value: string) => void;
+    currentProject: ProjectForm;
+};
+
+const ProjectInfos: FunctionComponent<Props> = ({
+    setFieldValue,
+    currentProject,
+}) => (
     <>
         <InputComponent
             keyValue="name"
@@ -28,9 +46,4 @@ const ProjectInfos = ({ setFieldValue, currentProject }) => (
     </>
 );
 
-ProjectInfos.propTypes = {
-    setFieldValue: PropTypes.func.isRequired,
-    currentProject: PropTypes.object.isRequired,
-};
-
-export default ProjectInfos;
+export { ProjectInfos };

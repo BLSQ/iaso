@@ -131,21 +131,27 @@ Cypress.Commands.add('testMultiSelect', (id, options, accessor = 'name') => {
 /**
  * @param {number} id - Base id used to select DOM element
  * @param {array} selectedOptions - list of options selected ids
+ * @param {boolean} clear - clear the input before
  */
-Cypress.Commands.add('fillMultiSelect', (id, selectedOptions = []) => {
-    cy.get(id).as('multiSelect');
-    cy.get('@multiSelect').click();
-    cy.get('@multiSelect')
-        .parent()
-        .find('.MuiAutocomplete-clearIndicator')
-        .click();
-    selectedOptions.forEach((selectedOption, index) => {
-        cy.get(`${id}-option-${selectedOption}`).click();
-        if (index + 1 < selectedOptions.length) {
-            cy.get('@multiSelect').click();
+Cypress.Commands.add(
+    'fillMultiSelect',
+    (id, selectedOptions = [], clear = true) => {
+        cy.get(id).as('multiSelect');
+        cy.get('@multiSelect').click();
+        if (clear) {
+            cy.get('@multiSelect')
+                .parent()
+                .find('.MuiAutocomplete-clearIndicator')
+                .click();
         }
-    });
-});
+        selectedOptions.forEach((selectedOption, index) => {
+            cy.get(`${id}-option-${selectedOption}`).click();
+            if (index + 1 < selectedOptions.length) {
+                cy.get('@multiSelect').click();
+            }
+        });
+    },
+);
 
 /**
  * @param {number} id - Base id used to select DOM element

@@ -6,7 +6,7 @@ import { testPermission } from '../../support/testPermission';
 import { testTablerender } from '../../support/testTableRender';
 import { testTopBar } from '../../support/testTopBar';
 import orgUnitTypes from '../../fixtures/orgunittypes/page1_limit20.json';
-import outypesList from '../../fixtures/orgunittypes/list.json';
+import outypesList from '../../fixtures/orgunittypes/dummy-list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 

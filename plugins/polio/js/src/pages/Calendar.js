@@ -37,6 +37,7 @@ const Calendar = ({ params }) => {
         order: orders,
         countries: params.countries,
         search: params.search,
+        campaignType: params.campaignType,
     });
 
     const { data: campaigns = [], isLoading } = query;

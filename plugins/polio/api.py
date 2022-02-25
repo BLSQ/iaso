@@ -122,11 +122,17 @@ class CampaignViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        campaign_type = self.request.query_params.get('campaign_type');
+        campaigns = Campaign.objects.all()
+        if campaign_type == 'preventive':
+            campaigns = campaigns.filter(is_preventive=True)
+        if campaign_type == 'regular':
+            campaigns = campaigns.filter(is_preventive=False)
         if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-            return Campaign.objects.filter(initial_org_unit__in=org_units)
+            return campaigns.filter(initial_org_unit__in=org_units)
         else:
-            return Campaign.objects.filter()
+            return campaigns.filter()
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):

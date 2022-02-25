@@ -48,6 +48,10 @@ const campaignsFilters = [
         isRequired: false,
         key: 'showOnlyDeleted',
     },
+    {
+        isRequired: false,
+        key: 'campaignType',
+    },
 ];
 
 const routes = [

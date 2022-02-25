@@ -15,35 +15,35 @@
                     "created_at": 1569421335.103325,
                     "id": 4,
                     "updated_at": 1593536394.803384,
-                    "name": "Project 4",
+                    "name": "Projet 4",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565605612.058998,
                     "id": 2,
                     "updated_at": 1600269581.499623,
-                    "name": "Project 2",
+                    "name": "Projet 2",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1569421302.872019,
                     "id": 3,
                     "updated_at": 1619018408.484339,
-                    "name": "Project 3",
+                    "name": "Projet 3",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565543915.39389,
                     "id": 1,
                     "updated_at": 1619796925.963041,
-                    "name": "Project 1",
+                    "name": "Projet 1",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1608902722.82422,
-                    "id": 10,
+                    "id": 5,
                     "updated_at": 1626968563.310184,
-                    "name": "Project 10",
+                    "name": "Projet 5",
                     "needs_authentication": false
                 }
             ],
@@ -84,35 +84,35 @@
                     "created_at": 1569421335.103325,
                     "id": 4,
                     "updated_at": 1593536394.803384,
-                    "name": "Project 4",
+                    "name": "Projet 4",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565605612.058998,
                     "id": 2,
                     "updated_at": 1600269581.499623,
-                    "name": "Project 2",
+                    "name": "Projet 2",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1569421302.872019,
                     "id": 3,
                     "updated_at": 1619018408.484339,
-                    "name": "Project 3",
+                    "name": "Projet 3",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565543915.39389,
                     "id": 1,
                     "updated_at": 1619796925.963041,
-                    "name": "Project 1",
+                    "name": "Projet 1",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1608902722.82422,
-                    "id": 10,
+                    "id": 5,
                     "updated_at": 1626968563.310184,
-                    "name": "Project 10",
+                    "name": "Projet 5",
                     "needs_authentication": false
                 }
             ],
@@ -136,7 +136,7 @@
             "short_name": "T3",
             "projects": [{
                 "id": 16,
-                "name": "Project 16"
+                "name": "Projet 16"
             }],
             "sub_unit_types": []
         },
@@ -152,7 +152,7 @@
                 "created_at": 1625476574.863976,
                 "id": 16,
                 "updated_at": 1625476574.863997,
-                "name": "Project 16",
+                "name": "Projet 16",
                 "needs_authentication": false
             }],
             "sub_unit_types": []
@@ -168,21 +168,21 @@
                     "created_at": 1569421335.103325,
                     "id": 4,
                     "updated_at": 1593536394.803384,
-                    "name": "Project 4",
+                    "name": "Projet 4",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565605612.058998,
                     "id": 2,
                     "updated_at": 1600269581.499623,
-                    "name": "Project 2",
+                    "name": "Projet 2",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565543915.39389,
                     "id": 1,
                     "updated_at": 1619796925.963041,
-                    "name": "Project 1",
+                    "name": "Projet 1",
                     "needs_authentication": true
                 }
             ],
@@ -201,28 +201,28 @@
                     "created_at": 1569421335.103325,
                     "id": 4,
                     "updated_at": 1593536394.803384,
-                    "name": "Project 4",
+                    "name": "Projet 4",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565605612.058998,
                     "id": 2,
                     "updated_at": 1600269581.499623,
-                    "name": "Project 2",
+                    "name": "Projet 2",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1569421302.872019,
                     "id": 3,
                     "updated_at": 1619018408.484339,
-                    "name": "Project 3",
+                    "name": "Projet 3",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565543915.39389,
                     "id": 1,
                     "updated_at": 1619796925.963041,
-                    "name": "Project 1",
+                    "name": "Projet 1",
                     "needs_authentication": true
                 }
             ],
@@ -239,7 +239,7 @@
                 "created_at": 1565543915.39389,
                 "id": 1,
                 "updated_at": 1619796925.963041,
-                "name": "Project 1",
+                "name": "Projet 1",
                 "needs_authentication": true
             }],
             "sub_unit_types": [],
@@ -256,7 +256,7 @@
                 "created_at": 1565543915.39389,
                 "id": 1,
                 "updated_at": 1619796925.963041,
-                "name": "Project 1",
+                "name": "Projet 1",
                 "needs_authentication": true
             }],
             "sub_unit_types": [],
@@ -274,28 +274,28 @@
                     "created_at": 1569421335.103325,
                     "id": 4,
                     "updated_at": 1593536394.803384,
-                    "name": "Project 4",
+                    "name": "Projet 4",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565605612.058998,
                     "id": 2,
                     "updated_at": 1600269581.499623,
-                    "name": "Project 2",
+                    "name": "Projet 2",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1569421302.872019,
                     "id": 3,
                     "updated_at": 1619018408.484339,
-                    "name": "Project 3",
+                    "name": "Projet 3",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565543915.39389,
                     "id": 1,
                     "updated_at": 1619796925.963041,
-                    "name": "Project 1",
+                    "name": "Projet 1",
                     "needs_authentication": true
                 }
             ],
@@ -329,7 +329,7 @@
                 "created_at": 1625476574.863976,
                 "id": 16,
                 "updated_at": 1625476574.863997,
-                "name": "Project 16",
+                "name": "Projet 16",
                 "feature_flags": [],
                 "needs_authentication": false
             }],
@@ -346,28 +346,28 @@
                     "created_at": 1569421335.103325,
                     "id": 4,
                     "updated_at": 1593536394.803384,
-                    "name": "Project 4",
+                    "name": "Projet 4",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565605612.058998,
                     "id": 2,
                     "updated_at": 1600269581.499623,
-                    "name": "Project 2",
+                    "name": "Projet 2",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1569421302.872019,
                     "id": 3,
                     "updated_at": 1619018408.484339,
-                    "name": "Project 3",
+                    "name": "Projet 3",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565543915.39389,
                     "id": 1,
                     "updated_at": 1619796925.963041,
-                    "name": "Project 1",
+                    "name": "Projet 1",
                     "needs_authentication": true
                 }
             ],
@@ -393,7 +393,7 @@
                 "created_at": 1569421302.872019,
                 "id": 3,
                 "updated_at": 1619018408.484339,
-                "name": "Project 3",
+                "name": "Projet 3",
                 "needs_authentication": true
             }],
             "sub_unit_types": [{
@@ -416,28 +416,28 @@
                     "created_at": 1569421335.103325,
                     "id": 4,
                     "updated_at": 1593536394.803384,
-                    "name": "Project 4",
+                    "name": "Projet 4",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565605612.058998,
                     "id": 2,
                     "updated_at": 1600269581.499623,
-                    "name": "Project 2",
+                    "name": "Projet 2",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1569421302.872019,
                     "id": 3,
                     "updated_at": 1619018408.484339,
-                    "name": "Project 3",
+                    "name": "Projet 3",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565543915.39389,
                     "id": 1,
                     "updated_at": 1619796925.963041,
-                    "name": "Project 1",
+                    "name": "Projet 1",
                     "needs_authentication": true
                 }
             ],
@@ -456,21 +456,21 @@
                     "created_at": 156942335.103325,
                     "id": 4,
                     "updated_at": 1593536394.803384,
-                    "name": "Project 4",
+                    "name": "Projet 4",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565605612.058998,
                     "id": 2,
                     "updated_at": 1600269581.499623,
-                    "name": "Project 2",
+                    "name": "Projet 2",
                     "needs_authentication": true
                 },
                 {
                     "created_at": 1565543915.39389,
                     "id": 1,
                     "updated_at": 1619796925.963041,
-                    "name": "Project 1",
+                    "name": "Projet 1",
                     "needs_authentication": true
                 }
             ],
@@ -495,7 +495,7 @@
                 "created_at": 1569421302.872019,
                 "id": 4,
                 "updated_at": 1619018408.484339,
-                "name": "Project 4",
+                "name": "Projet 4",
                 "needs_authentication": true
             }],
             "sub_unit_types": [{
@@ -519,7 +519,7 @@
                 "created_at": 1569421302.872019,
                 "id": 3,
                 "updated_at": 1619018408.484339,
-                "name": "Project 3",
+                "name": "Projet 3",
                 "needs_authentication": true
             }],
             "sub_unit_types": []
@@ -536,7 +536,7 @@
                 "created_at": 1569421302.872019,
                 "id": 3,
                 "updated_at": 1619018408.484339,
-                "name": "Project 3",
+                "name": "Projet 3",
                 "needs_authentication": true
             }],
             "sub_unit_types": []
@@ -553,7 +553,7 @@
                 "created_at": 1569421302.872019,
                 "id": 3,
                 "updated_at": 1619018408.484339,
-                "name": "Project 3",
+                "name": "Projet 3",
                 "needs_authentication": true
             }],
             "sub_unit_types": []
@@ -570,7 +570,7 @@
                 "created_at": 1569421302.872019,
                 "id": 3,
                 "updated_at": 1619018408.484339,
-                "name": "Project 3",
+                "name": "Projet 3",
                 "needs_authentication": true
             }],
             "sub_unit_types": []
@@ -578,7 +578,7 @@
         {
             "created_at": 1625737697.200525,
             "depth": 0,
-            "id": 15,
+            "id": 14,
             "units_count": 0,
             "updated_at": 1625735687.200548,
             "name": "Type15",
@@ -587,7 +587,7 @@
                 "created_at": 1569421302.872019,
                 "id": 3,
                 "updated_at": 1619018408.484339,
-                "name": "Project 3",
+                "name": "Projet 3",
                 "needs_authentication": true
             }],
             "sub_unit_types": []

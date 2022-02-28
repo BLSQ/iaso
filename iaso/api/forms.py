@@ -6,7 +6,7 @@ from django.utils.dateparse import parse_date
 from rest_framework import serializers, permissions
 from rest_framework.request import Request
 
-from iaso.models import Form, Project, OrgUnitType
+from iaso.models import Form, Project, OrgUnitType, Profile, OrgUnit
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
@@ -172,7 +172,6 @@ class FormsViewSet(ModelViewSet):
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
 
     def get_queryset(self):
-
         form_objects = Form.objects
         if self.request.query_params.get("only_deleted", None):
             form_objects = Form.objects_only_deleted
@@ -186,12 +185,34 @@ class FormsViewSet(ModelViewSet):
             queryset = queryset.filter(instances__org_unit__id=org_unit_id)
 
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
-        queryset = queryset.annotate(
-            instances_count=Count(
-                "instances",
-                filter=(~Q(instances__file="") & ~Q(instances__device__test_device=True) & ~Q(instances__deleted=True)),
+
+        if not self.request.user.is_anonymous:
+            profile = self.request.user.iaso_profile
+        else:
+            profile = False
+
+        if profile and profile.org_units.exists():
+            orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+            queryset = queryset.annotate(
+                instances_count=Count(
+                    "instances",
+                    filter=(
+                        ~Q(instances__file="")
+                        & ~Q(instances__device__test_device=True)
+                        & ~Q(instances__deleted=True)
+                        & Q(instances__org_unit__in=orgunits)
+                    ),
+                )
             )
-        )
+        else:
+            queryset = queryset.annotate(
+                instances_count=Count(
+                    "instances",
+                    filter=(
+                        ~Q(instances__file="") & ~Q(instances__device__test_device=True) & ~Q(instances__deleted=True)
+                    ),
+                )
+            )
 
         from_date = self.request.query_params.get("date_from", None)
         if from_date:

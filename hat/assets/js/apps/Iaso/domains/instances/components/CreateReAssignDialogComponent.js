@@ -15,7 +15,7 @@ const CreateReAssignDialogComponent = ({
     formType,
     currentInstance,
     onCreateOrReAssign,
-    orgUnitTypes
+    orgUnitTypes,
 }) => {
     const formatPeriod = usePrettyPeriod();
     const currentFormOrInstanceProp = currentInstance || formType;
@@ -101,32 +101,35 @@ const CreateReAssignDialogComponent = ({
                     (!isPeriodDisabled && Boolean(fieldValue.period.value)))
             }
         >
-            <InputComponent
-                disabled={
-                    currentFormOrInstance.period === undefined ||
-                    currentFormOrInstance.period === null
-                }
-                clearable={false}
-                keyValue="period"
-                onChange={(_key, value) =>
-                    setFieldValue({
-                        ...fieldValue,
-                        period: {
-                            ...fieldValue.period,
-                            value,
-                        },
-                    })
-                }
-                value={fieldValue.period.value}
-                errors={fieldValue.period.errors}
-                type="select"
-                options={allPeriods.map(p => ({
-                    label: formatPeriod(p),
-                    value: p,
-                }))}
-                label={MESSAGES.period}
-                required
-            />
+            {currentFormOrInstance.period !== undefined &&
+                currentFormOrInstance.period !== null && (
+                    <InputComponent
+                        disabled={
+                            currentFormOrInstance.period === undefined ||
+                            currentFormOrInstance.period === null
+                        }
+                        clearable={false}
+                        keyValue="period"
+                        onChange={(_key, value) =>
+                            setFieldValue({
+                                ...fieldValue,
+                                period: {
+                                    ...fieldValue.period,
+                                    value,
+                                },
+                            })
+                        }
+                        value={fieldValue.period.value}
+                        errors={fieldValue.period.errors}
+                        type="select"
+                        options={allPeriods.map(p => ({
+                            label: formatPeriod(p),
+                            value: p,
+                        }))}
+                        label={MESSAGES.period}
+                        required
+                    />
+                )}
             <>
                 <OrgUnitTreeviewModal
                     required
@@ -156,7 +159,7 @@ CreateReAssignDialogComponent.defaultProps = {
     currentInstance: undefined,
     cancelMessage: MESSAGES.cancel,
     confirmMessage: MESSAGES.ok,
-    orgUnitTypes:[]
+    orgUnitTypes: [],
 };
 
 CreateReAssignDialogComponent.propTypes = {
@@ -167,7 +170,7 @@ CreateReAssignDialogComponent.propTypes = {
     currentInstance: PropTypes.object,
     onCreateOrReAssign: PropTypes.func.isRequired,
     renderTrigger: PropTypes.func.isRequired,
-    orgUnitTypes:PropTypes.array
+    orgUnitTypes: PropTypes.array,
 };
 
 export default CreateReAssignDialogComponent;

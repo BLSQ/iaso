@@ -1,31 +1,26 @@
 {
-    "orgUnitTypes": [
-        {
+    "orgUnitTypes": [{
             "id": 47,
             "name": "Org Unit Type",
             "short_name": "",
             "depth": null,
-            "projects": [
-                {
-                    "id": 19,
-                    "name": "test",
-                    "app_id": "demoexport",
-                    "feature_flags": [],
-                    "created_at": 1633953959.931199,
-                    "updated_at": 1633953959.931219,
-                    "needs_authentication": false
-                }
-            ],
-            "sub_unit_types": [
-                {
-                    "id": 11,
-                    "name": "Org Unit Type 2",
-                    "short_name": "Org Unit Type 2",
-                    "depth": 4,
-                    "created_at": 1561062550.993334,
-                    "updated_at": 1632133245.216007
-                }
-            ],
+            "projects": [{
+                "id": 19,
+                "name": "test",
+                "app_id": "demoexport",
+                "feature_flags": [],
+                "created_at": 1633953959.931199,
+                "updated_at": 1633953959.931219,
+                "needs_authentication": false
+            }],
+            "sub_unit_types": [{
+                "id": 11,
+                "name": "Org Unit Type 2",
+                "short_name": "Org Unit Type 2",
+                "depth": 4,
+                "created_at": 1561062550.993334,
+                "updated_at": 1632133245.216007
+            }],
             "created_at": 1633954017.101693,
             "updated_at": 1633954017.101713,
             "units_count": 2665
@@ -35,13 +30,11 @@
             "name": "Org Unit Type 2",
             "short_name": "Org Unit Type 2",
             "depth": 4,
-            "projects": [
-                {
+            "projects": [{
                     "id": 4,
                     "name": "Carte Sanitaire",
                     "app_id": "org.bluesquarehub.iaso.drchfr",
-                    "feature_flags": [
-                        {
+                    "feature_flags": [{
                             "id": 2,
                             "name": "gps tracking",
                             "code": "GPS_TRACKING",
@@ -82,8 +75,7 @@
                     "id": 2,
                     "name": "WASH",
                     "app_id": "org.bluesquarehub.iaso.ihpwash",
-                    "feature_flags": [
-                        {
+                    "feature_flags": [{
                             "id": 2,
                             "name": "gps tracking",
                             "code": "GPS_TRACKING",
@@ -116,8 +108,7 @@
                     "id": 1,
                     "name": "EDL",
                     "app_id": "org.bluesquarehub.iaso",
-                    "feature_flags": [
-                        {
+                    "feature_flags": [{
                             "id": 2,
                             "name": "gps tracking",
                             "code": "GPS_TRACKING",

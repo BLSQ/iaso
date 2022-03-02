@@ -6,6 +6,7 @@ import { testPermission } from '../../support/testPermission';
 import { testTablerender } from '../../support/testTableRender';
 import { testTopBar } from '../../support/testTopBar';
 import orgUnitTypes from '../../fixtures/orgunittypes/page1_limit20.json';
+import outypesList from '../../fixtures/orgunittypes/dummy-list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -18,6 +19,7 @@ describe('Org unit types', () => {
     beforeEach(() => {
         cy.login();
         // cy.intercept('GET', '/sockjs-node/**');
+        cy.intercept('GET', '/api/orgunittypes/', outypesList);
         interceptList.forEach(i => {
             cy.intercept('GET', `/api/${i}/**`, {
                 fixture: `${i}/list.json`,
@@ -41,10 +43,37 @@ describe('Org unit types', () => {
     describe('When mounting', () => {
         testPermission(baseUrl);
         testTopBar(baseUrl, 'Organisation unit types', false);
-        it('Displays "Create" button', () => {
-            cy.visit(baseUrl);
-            cy.wait('@getOrgUnitTypes');
-            cy.get('#create-ou-type').should('exist');
+        describe('"Create" button', () => {
+            beforeEach(() => {
+                cy.visit(baseUrl);
+                cy.wait('@getOrgUnitTypes');
+                cy.get('#create-ou-type').as('create-button');
+            });
+            it('exists', () => {
+                cy.get('@create-button').should('exist');
+            });
+            it('opens modal', () => {
+                cy.get('@create-button')
+                    .click()
+                    .then(() => {
+                        cy.getAndAssert('#OuTypes-modal', 'modal');
+                    });
+            });
+            it('has all modal fields empty', () => {
+                cy.get('@create-button')
+                    .click()
+                    .then(() => {
+                        cy.get('#OuTypes-modal')
+                            .as('modal')
+                            .then(() => {
+                                cy.testInputValue('#input-text-name', '');
+                                cy.testInputValue('#input-text-short_name', '');
+                                cy.testInputValue('#input-text-depth', '0');
+                                cy.testMultiSelect('#sub_unit_type_ids', []);
+                                cy.testMultiSelect('#project_ids', []);
+                            });
+                    });
+            });
         });
         testTablerender(baseUrl, 20, 8);
         it('displays tooltip when hovering over info icon', () => {
@@ -61,14 +90,50 @@ describe('Org unit types', () => {
             fixture: orgUnitTypes,
         });
         describe('edit button', () => {
-            it('displays tooltip when hovering', () => {
+            beforeEach(() => {
                 cy.visit(baseUrl);
                 cy.wait('@getOrgUnitTypes');
                 cy.get('#edit-button-1').as('editIcon');
+            });
+            it('exists', () => {
+                cy.get('@editIcon').should('exist');
+            });
+            it('displays tooltip when hovering', () => {
                 cy.assertTooltipDiplay('editIcon');
             });
+            it('opens modal when clicked', () => {
+                cy.get('@editIcon')
+                    .click()
+                    .then(() => {
+                        cy.getAndAssert('#OuTypes-modal', 'modal');
+                    });
+            });
+            it('prefills modal with OU type data', () => {
+                cy.get('@editIcon')
+                    .click()
+                    .then(() => {
+                        cy.get('#OuTypes-modal')
+                            .as('modal')
+                            .then(() => {
+                                cy.testInputValue('#input-text-name', 'Type1');
+                                cy.testInputValue(
+                                    '#input-text-short_name',
+                                    'T1',
+                                );
+                                cy.testInputValue('#input-text-depth', '2');
+                                cy.testMultiSelect(
+                                    '#sub_unit_type_ids',
+                                    outypesList.orgUnitTypes[0].sub_unit_types,
+                                );
+                                cy.testMultiSelect(
+                                    '#project_ids',
+                                    outypesList.orgUnitTypes[0].projects,
+                                );
+                            });
+                    });
+            });
         });
-        // This test assumes the first type in the fixture has org units, and the secoind doesn't
+        // This test assumes the first type in the fixture has org units, and the second doesn't
         // It also assumes the type ids are in in descending order
         describe('delete button', () => {
             it('displays tooltip when hovering type with no org units', () => {
@@ -113,6 +178,19 @@ describe('Org unit types', () => {
                     .invoke('attr', 'disabled')
                     .should('not.exist');
             });
+        });
+        describe.skip('Modal', () => {
+            beforeEach(() => {
+                cy.visit(baseUrl);
+                cy.wait('@getOrgUnitTypes');
+                cy.get('#edit-button-1').as('editIcon');
+                cy.get('@editIcon')
+                    .click()
+                    .then(() => {
+                        cy.get('#OuTypes-modal').as('modal');
+                    });
+            });
+            it('sends payload to API', () => {});
         });
     });
 });

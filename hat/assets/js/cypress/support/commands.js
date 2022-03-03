@@ -1,3 +1,5 @@
+import { getCoordinates } from './utils';
+
 // ***********************************************
 // This example commands.js shows you how to
 // create various custom commands and overwrite
@@ -129,21 +131,27 @@ Cypress.Commands.add('testMultiSelect', (id, options, accessor = 'name') => {
 /**
  * @param {number} id - Base id used to select DOM element
  * @param {array} selectedOptions - list of options selected ids
+ * @param {boolean} clear - clear the input before
  */
-Cypress.Commands.add('fillMultiSelect', (id, selectedOptions = []) => {
-    cy.get(id).as('multiSelect');
-    cy.get('@multiSelect').click();
-    cy.get('@multiSelect')
-        .parent()
-        .find('.MuiAutocomplete-clearIndicator')
-        .click();
-    selectedOptions.forEach((selectedOption, index) => {
-        cy.get(`${id}-option-${selectedOption}`).click();
-        if (index + 1 < selectedOptions.length) {
-            cy.get('@multiSelect').click();
+Cypress.Commands.add(
+    'fillMultiSelect',
+    (id, selectedOptions = [], clear = true) => {
+        cy.get(id).as('multiSelect');
+        cy.get('@multiSelect').click();
+        if (clear) {
+            cy.get('@multiSelect')
+                .parent()
+                .find('.MuiAutocomplete-clearIndicator')
+                .click();
         }
-    });
-});
+        selectedOptions.forEach((selectedOption, index) => {
+            cy.get(`${id}-option-${selectedOption}`).click();
+            if (index + 1 < selectedOptions.length) {
+                cy.get('@multiSelect').click();
+            }
+        });
+    },
+);
 
 /**
  * @param {number} id - Base id used to select DOM element
@@ -204,4 +212,50 @@ Cypress.Commands.add('assertTooltipDiplay', identifier => {
     cy.get(`@${identifier}`).should('exist');
     cy.get(`@${identifier}`).trigger('mouseover');
     cy.get(`@${identifier}`).invoke('attr', 'aria-describedby').should('exist');
+});
+
+Cypress.Commands.add('getAndAssert', (selector, identifier) => {
+    if (identifier) {
+        return cy.get(selector).as(identifier).should('exist');
+    }
+    return cy.get(selector).should('exist');
+});
+
+Cypress.Commands.add('getCoordinates', identifier => {
+    const identifierRootText = identifier.replace('@', '').replace('#', '');
+    return cy
+        .get(identifier)
+        .then(cyElement => {
+            // console.log(cyElement[0].getBoundingClientRect());
+            return cy.wrap(cyElement[0].getBoundingClientRect());
+        })
+        .as(`${identifierRootText}-coordinates`);
+});
+Cypress.Commands.add('isAbove', (topElement, bottomElement) => {
+    cy.get(topElement)
+        .then(getCoordinates)
+        .then(topCoordinates => {
+            cy.get(bottomElement)
+                .then(getCoordinates)
+                .then(bottomCoordinates =>
+                    cy
+                        .wrap(topCoordinates)
+                        .its('y')
+                        .should('be.lt', bottomCoordinates.y),
+                );
+        });
+});
+Cypress.Commands.add('isLeftOf', (leftElement, rightElement) => {
+    cy.get(leftElement)
+        .then(getCoordinates)
+        .then(leftCoordinates => {
+            cy.get(rightElement)
+                .then(getCoordinates)
+                .then(rightCoordinates =>
+                    cy
+                        .wrap(leftCoordinates)
+                        .its('x')
+                        .should('be.lt', rightCoordinates.x),
+                );
+        });
 });

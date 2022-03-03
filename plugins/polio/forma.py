@@ -34,7 +34,7 @@ def forma_find_campaign_on_day(campaigns, day, country):
     return None
 
 
-def _find_orgunit_in_cache(cache_dict, name, parent_name=None):
+def find_orgunit_in_cache(cache_dict, name, parent_name=None):
     if not name or pd.isna(name):
         return None
     name = name.lower()
@@ -118,13 +118,13 @@ def make_find_orgunit_for_campaign(cs):
 
     def find_orgunit(country, region, district, facility):
         if facility and not pd.isna(facility):
-            return _find_orgunit_in_cache(facilities_cache, facility, district)
+            return find_orgunit_in_cache(facilities_cache, facility, district)
         if district and not pd.isna(district):
-            return _find_orgunit_in_cache(districts_cache, district, facility)
+            return find_orgunit_in_cache(districts_cache, district, facility)
         if region and not pd.isna(region):
-            return _find_orgunit_in_cache(regions_cache, region, district)
+            return find_orgunit_in_cache(regions_cache, region, district)
         if country and not pd.isna(country):
-            return _find_orgunit_in_cache(countries_cache, country)
+            return find_orgunit_in_cache(countries_cache, country)
 
     return find_orgunit
 

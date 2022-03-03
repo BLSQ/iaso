@@ -34,13 +34,15 @@ describe('OrgUnits', () => {
     });
     describe('table', () => {
         it('should work on empty results', () => {
-            cy.intercept('/api/orgunits/**', {
+            cy.intercept('GET', '/api/orgunits/**', {
                 fixture: 'tasks/empty-list.json',
-            });
+            }).as('getOrgunits');
             cy.visit(baseUrl);
             cy.contains('.MuiGrid-container button', 'Search').click();
-            const table = cy.get('table');
-            table.should('have.length', 1);
+            cy.wait('@getOrgunits').then(() => {
+                const table = cy.get('table');
+                table.should('have.length', 1);
+            });
         });
 
         it('should render results', () => {

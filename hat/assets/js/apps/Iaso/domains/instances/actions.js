@@ -47,14 +47,18 @@ export const fetchEditUrl = (currentInstance, location) => dispatch => {
 export const fetchInstanceDetail = instanceId => dispatch => {
     dispatch(setInstancesFetching(true));
     return getRequest(`/api/instances/${instanceId}/`)
-        .then(res => dispatch(setCurrentInstance(res)))
+        .then(res => {
+            dispatch(setCurrentInstance(res));
+            return res;
+        })
         .catch(err =>
             dispatch(
                 enqueueSnackbar(errorSnackBar('fetchInstanceError', null, err)),
             ),
         )
-        .then(() => {
+        .then(res => {
             dispatch(setInstancesFetching(false));
+            return res;
         });
 };
 

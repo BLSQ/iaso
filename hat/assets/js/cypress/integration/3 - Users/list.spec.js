@@ -217,7 +217,7 @@ describe('Users', () => {
                     req => {
                         interceptFlag = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                             body: listFixture.profiles[userIndex],
                         });
                     },
@@ -233,7 +233,7 @@ describe('Users', () => {
                     req => {
                         interceptFlagUsers = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                             body: listFixture.profiles[userIndex],
                         });
                     },

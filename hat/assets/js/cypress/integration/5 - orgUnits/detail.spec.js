@@ -219,6 +219,7 @@ describe('OrgUnits detail', () => {
                 cy.fillTreeView('#ou-tree-input', newSourceIndex);
 
                 cy.get('#save-ou').click();
+                // FIXME this is flaky and will sometimes timeout and fail while running npm run test:e2e
                 cy.wait('@saveOu').then(() => {
                     cy.wrap(interceptFlag).should('eq', true);
                     testEditableInfos(newOu, 'VALIDATED');

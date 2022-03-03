@@ -2,7 +2,18 @@ import gspread.utils
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from .models import Campaign, Preparedness, Surge, Round, Config, CountryUsersGroup, URLCache, SpreadSheetImport
+from .models import (
+    Campaign,
+    Preparedness,
+    Surge,
+    Round,
+    Config,
+    CountryUsersGroup,
+    URLCache,
+    SpreadSheetImport,
+    LQASIMCache,
+    IMStatsCache,
+)
 
 
 class CampaignAdmin(admin.ModelAdmin):
@@ -68,3 +79,5 @@ admin.site.register(Round)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
+admin.site.register(LQASIMCache)
+admin.site.register(IMStatsCache)

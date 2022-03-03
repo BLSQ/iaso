@@ -78,6 +78,7 @@ class OrgUnitTypes extends Component {
                 <TopBar
                     title={formatMessage(MESSAGES.orgUnitsTypes)}
                     displayBackButton={false}
+                    id="orgunittype-topbar"
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <Table
@@ -100,7 +101,10 @@ class OrgUnitTypes extends Component {
                         <OrgUnitsTypesDialog
                             titleMessage={MESSAGES.create}
                             renderTrigger={({ openDialog }) => (
-                                <AddButtonComponent onClick={openDialog} />
+                                <AddButtonComponent
+                                    onClick={openDialog}
+                                    id="create-ou-type"
+                                />
                             )}
                             params={params}
                             onConfirmed={() => this.fetchOrgUnitTypes()}

@@ -94,11 +94,11 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
     org_unit_types = serializers.SerializerMethodField()
     org_unit_type_ids = serializers.PrimaryKeyRelatedField(
-        source="org_unit_types", write_only=True, many=True, allow_empty=True, queryset=OrgUnitType.objects.all()
+        source="org_unit_types", many=True, allow_empty=True, queryset=OrgUnitType.objects.all()
     )
     projects = ProjectSerializer(read_only=True, many=True)
     project_ids = serializers.PrimaryKeyRelatedField(
-        source="projects", write_only=True, many=True, allow_empty=False, queryset=Project.objects.all()
+        source="projects", many=True, allow_empty=False, queryset=Project.objects.all()
     )
     latest_form_version = serializers.SerializerMethodField()  # TODO: use FormSerializer
     instances_count = serializers.IntegerField(read_only=True)

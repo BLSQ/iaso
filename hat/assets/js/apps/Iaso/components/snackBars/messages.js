@@ -315,6 +315,19 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.exportToDHIS2Error',
         defaultMessage: 'An error occurred while exporting to DHIS2',
     },
+    getRootDataError: {
+        id: 'iaso.snackBar.getRootDataError',
+        defaultMessage: 'An error occurred while fetching Treeview items',
+    },
+    getChildrenDataError: {
+        id: 'iaso.snackBar.getChildrenDataError',
+        defaultMessage:
+            'An error occurred while fetching Treeview item children',
+    },
+    searchOrgUnitsError: {
+        id: 'iaso.snackBar.searchOrgUnitsError',
+        defaultMessage: 'An error occurred while searching org units',
+    },
 });
 
 export default MESSAGES;

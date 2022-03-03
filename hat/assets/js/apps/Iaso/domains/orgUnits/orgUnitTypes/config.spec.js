@@ -36,6 +36,7 @@ describe('Org unit types config', () => {
             short_name: 'GANONDORF',
             depth: 0,
             projects: [],
+            id: 1,
         });
         cols.forEach(c => {
             if (c.Cell) {
@@ -56,6 +57,7 @@ describe('Org unit types config', () => {
             actionColumn.Cell(
                 colOriginal({
                     projects: [],
+                    id: 1,
                 }),
             ),
         );
@@ -87,6 +89,7 @@ describe('Org unit types config', () => {
             actionColumn.Cell(
                 colOriginal({
                     projects: [],
+                    id: 1,
                 }),
             ),
         );

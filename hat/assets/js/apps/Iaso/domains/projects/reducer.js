@@ -2,12 +2,10 @@ import {
     SET_ALL_PROJECTS,
     SET_ALL_APPS,
     SET_IS_FETCHING_PROJECTS,
-    SET_ALL_FEATURE_FLAGS,
 } from './actions';
 
 export const projectsInitialState = {
     allProjects: undefined,
-    allFeatureFlags: [],
     list: [],
     current: null,
     fetching: false,
@@ -21,12 +19,6 @@ export const projectsReducer = (state = projectsInitialState, action = {}) => {
             return {
                 ...state,
                 allProjects: action.payload,
-            };
-        }
-        case SET_ALL_FEATURE_FLAGS: {
-            return {
-                ...state,
-                allFeatureFlags: action.payload,
             };
         }
         case SET_ALL_APPS: {

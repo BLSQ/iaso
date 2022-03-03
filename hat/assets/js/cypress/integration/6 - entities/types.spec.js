@@ -51,7 +51,7 @@ const openDialogForIndex = index => {
     editButton.click();
     cy.get('#entity-types-dialog').should('be.visible');
 };
-describe('Entities', () => {
+describe('Entities types', () => {
     describe('Page', () => {
         it('should redirect to url with pagination params', () => {
             goToPage();
@@ -240,7 +240,7 @@ describe('Entities', () => {
                     req => {
                         interceptFlag = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                             body: listFixture.types[entityTypeIndex],
                         });
                     },
@@ -256,7 +256,7 @@ describe('Entities', () => {
                     req => {
                         interceptFlagEntities = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                             body: listFixture.types[entityTypeIndex],
                         });
                     },
@@ -300,7 +300,7 @@ describe('Entities', () => {
                     req => {
                         interceptFlag = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                         });
                     },
                 ).as('deleteEntityType');
@@ -314,7 +314,7 @@ describe('Entities', () => {
                     req => {
                         interceptFlagEntities = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                             body: listFixture.types[entityTypeIndex],
                         });
                     },

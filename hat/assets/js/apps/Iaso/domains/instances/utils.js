@@ -17,7 +17,7 @@ import {
     apiDateFormat,
     getFromDateString,
     getToDateString,
-} from '../../utils/dates';
+} from '../../utils/dates.ts';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 import { baseUrls } from '../../constants/urls';
 

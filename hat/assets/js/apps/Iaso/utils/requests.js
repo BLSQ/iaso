@@ -199,24 +199,6 @@ export const fetchSources = dispatch =>
             console.error('Error while fetching source list:', error);
         });
 
-export const fetchAssociatedDataSources = (dispatch, orgUnitId) => {
-    const url = `/api/datasources/?linkedTo=${orgUnitId}`;
-    return getRequest(url)
-        .then(res => res.sources)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchAssociatedDataSources', null, error),
-                ),
-            );
-            console.error(
-                'Error while fetching associated data sources',
-                error,
-            );
-            throw error;
-        });
-};
-
 export const fetchForms = (dispatch, url = '/api/forms') =>
     getRequest(url)
         .then(forms => forms)
@@ -237,6 +219,19 @@ export const fetchFormDetail = (dispatch, formId) =>
             );
             console.error('Error while fetching form detail:', error);
             throw error;
+        });
+
+export const fetchFormOrgUnitTypes = (dispatch, formId) =>
+    getRequest(`/api/forms/${formId}/?fields=org_unit_type_ids`)
+        .then(form => form)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(errorSnackBar('fetchFormError', null, error)),
+            );
+            console.error(
+                "Error while fetching form's org unit type ids:",
+                error,
+            );
         });
 
 export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>

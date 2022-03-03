@@ -19,6 +19,7 @@ const InstanceDetailsExportRequests = ({
     intl: { formatMessage },
 }) => (
     <WidgetPaper
+        id="export-requests"
         padded
         title={formatMessage(MESSAGES.exportRequests)}
         IconButton={IconButtonComponent}

@@ -12,7 +12,9 @@ import MESSAGES from '../messages';
 const initialFormState = orgUnit => {
     return {
         name: orgUnit.name,
-        org_unit_type_id: orgUnit.org_unit_type_id,
+        org_unit_type_id: orgUnit.org_unit_type_id
+            ? `${orgUnit.org_unit_type_id}`
+            : null,
         groups: orgUnit.groups?.map(g => g.id) ?? [],
         sub_source: orgUnit.sub_source,
         validation_status: orgUnit.validation_status,
@@ -43,18 +45,20 @@ const OrgUnitForm = ({
         const newOrgUnit = mapValues(formState, v =>
             Object.prototype.hasOwnProperty.call(v, 'value') ? v.value : v,
         );
-        saveOrgUnit(newOrgUnit)
-            .then(savedOrgUnit => {
+        saveOrgUnit(
+            newOrgUnit,
+            savedOrgUnit => {
                 setOrgUnitModified(false);
                 setFormState(initialFormState(savedOrgUnit));
-            })
-            .catch(error => {
+            },
+            error => {
                 if (error.status === 400) {
                     error.details.forEach(entry => {
                         setFieldErrors(entry.errorKey, [entry.errorMessage]);
                     });
                 }
-            });
+            },
+        );
     };
 
     const handleChangeInfo = (key, value) => {

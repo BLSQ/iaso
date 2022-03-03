@@ -63,6 +63,7 @@ export default function OrgUnitsTypesDialog({
 
     return (
         <ConfirmCancelDialogComponent
+            id="OuTypes-modal"
             titleMessage={titleMessage}
             onConfirm={onConfirm}
             cancelMessage={MESSAGES.cancel}

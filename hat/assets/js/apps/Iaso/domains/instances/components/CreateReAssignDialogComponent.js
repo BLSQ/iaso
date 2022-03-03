@@ -15,6 +15,7 @@ const CreateReAssignDialogComponent = ({
     formType,
     currentInstance,
     onCreateOrReAssign,
+    orgUnitTypes
 }) => {
     const formatPeriod = usePrettyPeriod();
     const currentFormOrInstanceProp = currentInstance || formType;
@@ -143,6 +144,7 @@ const CreateReAssignDialogComponent = ({
                     }}
                     multiselect={false}
                     initialSelection={fieldValue.orgUnit.value}
+                    allowedTypes={orgUnitTypes}
                 />
             </>
         </ConfirmCancelDialogComponent>
@@ -154,6 +156,7 @@ CreateReAssignDialogComponent.defaultProps = {
     currentInstance: undefined,
     cancelMessage: MESSAGES.cancel,
     confirmMessage: MESSAGES.ok,
+    orgUnitTypes:[]
 };
 
 CreateReAssignDialogComponent.propTypes = {
@@ -164,6 +167,7 @@ CreateReAssignDialogComponent.propTypes = {
     currentInstance: PropTypes.object,
     onCreateOrReAssign: PropTypes.func.isRequired,
     renderTrigger: PropTypes.func.isRequired,
+    orgUnitTypes:PropTypes.array
 };
 
 export default CreateReAssignDialogComponent;

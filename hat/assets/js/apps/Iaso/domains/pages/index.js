@@ -1,7 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-    Table,
-    LoadingSpinner,
     useSafeIntl,
     commonStyles,
     IconButton as IconButtonComponent,
@@ -9,6 +7,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
+import PropTypes from 'prop-types';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { useGetPages } from './hooks/useGetPages';
@@ -20,6 +19,7 @@ import PageActions from './components/PageActions';
 import PageAction from './components/PageAction';
 import { PAGES_TYPES } from './constants';
 import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -29,16 +29,21 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Pages = () => {
+const Pages = ({ params }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
-    const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
-    const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
-    const [order, setOrder] = useState(DEFAULT_ORDER);
     const [selectedPageSlug, setSelectedPageSlug] = useState();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
+
+    const tableParams = useMemo(() => {
+        return {
+            order: params.order ?? DEFAULT_ORDER,
+            pageSize: params.pageSize ?? DEFAULT_PAGE_SIZE,
+            page: params.page ?? DEFAULT_PAGE,
+        };
+    }, [params]);
 
     const openCreateEditDialog = useCallback(() => {
         setIsCreateEditDialogOpen(true);
@@ -80,11 +85,7 @@ const Pages = () => {
         [setSelectedPageSlug, openDeleteConfirmDialog],
     );
 
-    const { data: pages = [], status } = useGetPages({
-        page,
-        pageSize,
-        order,
-    });
+    const { data: pages, isFetching } = useGetPages(tableParams);
 
     const selectedPage = pages?.results?.find(
         result => result.slug === selectedPageSlug,
@@ -166,29 +167,6 @@ const Pages = () => {
         [handleClickDeleteRow, handleClickEditRow],
     );
 
-    const onTableParamsChange = useCallback(
-        (baseUrl, newParams) => {
-            if (newParams.page !== page) {
-                setPage(newParams.page);
-            }
-            if (newParams.pageSize !== pageSize) {
-                setPageSize(newParams.pageSize);
-            }
-            if (newParams.order !== order) {
-                setOrder(newParams.order);
-            }
-        },
-        [page, pageSize, order],
-    );
-
-    const tableParams = useMemo(() => {
-        return {
-            pageSize,
-            page,
-            order,
-        };
-    }, [pageSize, page, order]);
-
     return (
         <>
             <CreateEditDialog
@@ -203,7 +181,6 @@ const Pages = () => {
             />
             <TopBar title={intl.formatMessage(MESSAGES.pages)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                {status === 'loading' && <LoadingSpinner />}
                 <PageActions>
                     <PageAction
                         icon={AddIcon}
@@ -212,20 +189,28 @@ const Pages = () => {
                         {intl.formatMessage(MESSAGES.create)}
                     </PageAction>
                 </PageActions>
-                {status === 'success' && (
-                    <Table
-                        params={tableParams}
-                        count={pages.count}
-                        pages={Math.ceil(pages.count / pageSize)}
-                        baseUrl="/polio"
-                        redirectTo={onTableParamsChange}
-                        columns={columns}
-                        data={pages.results}
-                    />
-                )}
+                <TableWithDeepLink
+                    data={pages?.results ?? []}
+                    pages={pages?.pages}
+                    count={pages?.count}
+                    params={tableParams}
+                    columns={columns}
+                    baseUrl="/pages"
+                    extraProps={{
+                        loading: isFetching,
+                    }}
+                />
             </Box>
         </>
     );
+};
+
+Pages.propTypes = {
+    params: PropTypes.shape({
+        order: PropTypes.string,
+        page: PropTypes.string,
+        pageSize: PropTypes.string,
+    }).isRequired,
 };
 
 export default Pages;

@@ -42,7 +42,7 @@ const getRequestParams = (url, params) => {
 
 const defaultOrder = 'created_at';
 
-const Tasks = params => {
+const Tasks = ({ params }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
 

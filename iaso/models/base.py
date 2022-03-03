@@ -1,6 +1,7 @@
 import random
 import operator
 import typing
+import re
 from copy import copy
 from urllib.request import urlopen
 from functools import reduce
@@ -745,6 +746,13 @@ class InstanceQuerySet(models.QuerySet):
                 except:
                     queryset = queryset.filter(id__in=[])
                     print("Failed parsing ids in search", search)
+            elif search.startswith("refs:"):
+                s = search.replace("refs:", "")
+                try:
+                    refs = re.findall("[A-Za-z0-9_-]+", s)
+                    queryset = queryset.filter(org_unit__source_ref__in=refs)
+                except:
+                    print("Failed parsing refs in search", search)
             else:
                 queryset = queryset.filter(
                     Q(org_unit__name__icontains=search) | Q(org_unit__aliases__contains=[search])

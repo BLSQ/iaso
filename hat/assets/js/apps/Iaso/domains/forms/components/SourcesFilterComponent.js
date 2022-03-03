@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@material-ui/core';
@@ -16,12 +16,12 @@ const SourcesFilterComponent = ({
     fitToBounds,
     sourcesSelected,
     setSourcesSelected,
+    currentSources,
+    currentOrgUnit,
 }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
-    const currentSources = useSelector(state => state.orgUnits.sources);
-    const currentOrgUnit = useSelector(state => state.orgUnits.current);
     if (!currentOrgUnit) return null;
     const sources = getSourcesWithoutCurrentSource(
         currentSources,
@@ -82,6 +82,8 @@ SourcesFilterComponent.propTypes = {
     fitToBounds: PropTypes.func.isRequired,
     sourcesSelected: PropTypes.array.isRequired,
     setSourcesSelected: PropTypes.func.isRequired,
+    currentSources: PropTypes.array.isRequired,
+    currentOrgUnit: PropTypes.object.isRequired,
 };
 
 export default SourcesFilterComponent;

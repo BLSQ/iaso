@@ -10,7 +10,6 @@ import {
 import MESSAGES from '../messages';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import InstanceDetailsField from './InstanceDetailsField';
-import { getDisplayedDateHourFormat } from '../../../utils/dates';
 
 const formatUnixTimestamp = unix =>
     unix ? moment.unix(unix).format('LTS') : textPlaceholder;
@@ -20,6 +19,7 @@ const InstanceDetailsExportRequests = ({
     intl: { formatMessage },
 }) => (
     <WidgetPaper
+        id="export-requests"
         padded
         title={formatMessage(MESSAGES.exportRequests)}
         IconButton={IconButtonComponent}

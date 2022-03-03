@@ -31,12 +31,14 @@ function TopBar(props) {
     } = props;
     // Set the page title from the top bar title.
     React.useEffect(() => {
-        document.title = `Iaso ${title}`;
+        document.title = `${process.env.REACT_APP_TITLE} ${
+            title ? `| ${title}` : ''
+        }`;
     }, [title]);
 
     return (
         <>
-            <AppBar position="relative" color="primary">
+            <AppBar position="relative" color="primary" id="top-bar">
                 <Toolbar>
                     {!displayBackButton && (
                         <IconButton
@@ -44,6 +46,7 @@ function TopBar(props) {
                             color="inherit"
                             aria-label="Menu"
                             onClick={toggleSidebar}
+                            id="menu-button"
                         >
                             <MenuIcon />
                         </IconButton>
@@ -54,11 +57,12 @@ function TopBar(props) {
                             color="inherit"
                             aria-label="Back"
                             onClick={goBack}
+                            id="top-bar-back-button"
                         >
                             <ArrowBackIcon />
                         </IconButton>
                     )}
-                    <Typography variant="h6" color="inherit">
+                    <Typography variant="h6" color="inherit" id="top-bar-title">
                         {title}
                     </Typography>
                 </Toolbar>

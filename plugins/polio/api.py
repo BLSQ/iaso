@@ -1,14 +1,15 @@
 import csv
 import json
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
+from typing import Optional
 
 import requests
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import HttpResponse
+from django.http.response import HttpResponseBadRequest
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
@@ -35,7 +36,15 @@ from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
 )
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
-from .models import Campaign, Config, LineListImport, SpreadSheetImport
+from .forma import (
+    get_forma_scope_df,
+    fetch_and_match_forma_data,
+    FormAStocksViewSetV2,
+    make_orgunits_cache,
+    find_orgunit_in_cache,
+)
+from .helpers import get_url_content
+from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, LQASIMCache, IMStatsCache
 from .models import CountryUsersGroup
 from .models import URLCache, Preparedness
 from .preparedness.calculator import preparedness_summary
@@ -68,7 +77,7 @@ class CustomFilterBackend(filters.BaseFilterBackend):
 
 class CampaignFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        query_param = request.query_params.get("campaigns")
+        query_param = request.query_params.get("deletion_status", "active")
 
         if query_param == "deleted":
             query = Q(deleted_at__isnull=False)
@@ -78,11 +87,12 @@ class CampaignFilterBackend(filters.BaseFilterBackend):
             query = Q(deleted_at__isnull=True)
             return queryset.filter(query)
 
+        if query_param == "all":
+            return queryset
         return queryset
 
 
 class CampaignViewSet(ModelViewSet):
-
     results_key = "campaigns"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend, CampaignFilterBackend]
@@ -267,23 +277,13 @@ def score_for_x_day_before(ssi_for_campaign, ref_date: datetime.date, n_day: int
     return ssi.created_at, day, score
 
 
-def history_for_campaign(c, round: RoundNumber):
-    spread_id = extract_id_from_url(c.preperadness_spreadsheet_url)
-    ssi = SpreadSheetImport.objects.filter(spread_id=spread_id)
-    # quickfix remove when we have sheet per round
-    if round == RoundNumber.round2 and c.round_two and c.round_two.started_at:
-        ref_date = c.round_two.started_at
-    elif round == RoundNumber.round1 and c.round_one and c.round_one.started_at:
-        ref_date = c.round_one.started_at
-    elif c.round_two and c.round_two.started_at:
-        ref_date = c.round_two.started_at
-    elif c.round_one and c.round_one.started_at:
-        ref_date = c.round_one.started_at
-    else:
-        return {"error": "No round start found"}
+def history_for_campaign(ssi_qs, round: Round):
+    ref_date = round.started_at
+    if not ref_date:
+        return {"error": f"Please configure a start date for the round {round}"}
     r = []
     for n_day, target in DAYS_EVOLUTION:
-        sync_time, day, score = score_for_x_day_before(ssi, ref_date, n_day)
+        sync_time, day, score = score_for_x_day_before(ssi_qs, ref_date, n_day)
         r.append(
             {
                 "days_before": n_day,
@@ -296,41 +296,60 @@ def history_for_campaign(c, round: RoundNumber):
     return r
 
 
+def _make_prep(c: Campaign, round: Round, round_number: RoundNumber):
+    url = round.preparedness_spreadsheet_url
+    if not url:
+        return None
+    campaign_prep = {
+        "campaign_id": c.id,
+        "campaign_obr_name": c.obr_name,
+        "indicators": {},
+        "round": round_number,
+        "round_id": round.id,
+        "round_start": round.started_at,
+        "round_end": round.ended_at,
+    }
+    try:
+        spread_id = extract_id_from_url(url)
+        ssi_qs = SpreadSheetImport.objects.filter(spread_id=spread_id)
+
+        if not ssi_qs:
+            # No import yet
+            campaign_prep["status"] = "not_sync"
+            campaign_prep["details"] = "This spreadsheet has not been synchronised yet"
+            return None
+        campaign_prep["date"] = ssi_qs.last().created_at
+        cs = ssi_qs.last().cached_spreadsheet
+        last_p = get_preparedness(cs)
+        campaign_prep.update(preparedness_summary(last_p))
+        if round_number != last_p["national"]["round"]:
+            logger.info(f"Round mismatch on {c} {round}")
+
+        campaign_prep["history"] = history_for_campaign(ssi_qs, round)
+    except Exception as e:
+        campaign_prep["status"] = "error"
+        campaign_prep["details"] = str(e)
+        logger.exception(e)
+    return campaign_prep
+
+
 class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
 
         r = []
-        qs = Campaign.objects.filter(preperadness_spreadsheet_url__isnull=False)
+        qs = Campaign.objects.all()
         if request.query_params.get("campaign"):
             qs = qs.filter(obr_name=request.query_params.get("campaign"))
 
         for c in qs:
-            campaign_prep = {
-                "campaign_id": c.id,
-                "campaign_obr_name": c.obr_name,
-                "indicators": {},
-            }
-            try:
-                spread_id = extract_id_from_url(c.preperadness_spreadsheet_url)
-                ssi = SpreadSheetImport.objects.filter(spread_id=spread_id)
-
-                if not ssi:
-                    # No import yet
-                    campaign_prep["status"] = "not_sync"
-                    continue
-                campaign_prep["date"] = ssi.last().created_at
-                cs = ssi.last().cached_spreadsheet
-                last_p = get_preparedness(cs)
-                campaign_prep.update(preparedness_summary(last_p))
-                campaign_prep["round"] = last_p["national"]["round"]
-
-                campaign_prep["history"] = history_for_campaign(c, last_p["national"]["round"])
-            except Exception as e:
-                campaign_prep["status"] = "error"
-                campaign_prep["details"] = str(e)
-                logger.exception(e)
-
-            r.append(campaign_prep)
+            if c.round_one:
+                p = _make_prep(c, c.round_one, RoundNumber.round1)
+                if p:
+                    r.append(p)
+            if c.round_two:
+                p = _make_prep(c, c.round_two, RoundNumber.round2)
+                if p:
+                    r.append(p)
         return Response(r)
 
 
@@ -447,6 +466,16 @@ class IMViewSet(viewsets.ViewSet):
             return response
 
 
+def _build_district_cache(districts_qs):
+    district_dict = defaultdict(list)
+    for f in districts_qs:
+        district_dict[f.name.lower()].append(f)
+        if f.aliases:
+            for alias in f.aliases:
+                district_dict[alias.lower()].append(f)
+    return district_dict
+
+
 class IMStatsViewSet(viewsets.ViewSet):
     """
            Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA. Very custom to the polio project.
@@ -476,10 +505,32 @@ class IMStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
+
+        cache_response_exists = True
+
+        try:
+            cache_response = IMStatsCache.objects.get(user_id=request.user.id, params=request.query_params)
+            time_delta = datetime.now(timezone.utc) - cache_response.updated_at
+            if time_delta.seconds < 3600:
+                return JsonResponse(cache_response.response, safe=False)
+        except ObjectDoesNotExist:
+            cache_response_exists = False
+
         stats_types = request.GET.get("type", "HH,OHH")
         stats_types = stats_types.split(",")
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="im-config")
+        requested_country = request.GET.get("country_id", None)
+        skipped_forms_list = []
+        no_round_count = 0
+        unknown_round = 0
+        skipped_forms = {"count": 0, "no_round": 0, "unknown_round": unknown_round, "forms_id": skipped_forms_list}
+
+        if requested_country is None:
+            return HttpResponseBadRequest
+
+        requested_country = int(requested_country)
+
         form_count = 0
         fully_mapped_form_count = 0
         base_stats = {"total_child_fmd": 0, "total_child_checked": 0, "total_sites_visited": 0}
@@ -489,7 +540,10 @@ class IMStatsViewSet(viewsets.ViewSet):
                 "round_2": defaultdict(base_stats.copy),
                 "round_1_nfm_stats": defaultdict(int),
                 "round_2_nfm_stats": defaultdict(int),
+                "round_1_nfm_abs_stats": defaultdict(int),
+                "round_2_nfm_abs_stats": defaultdict(int),
                 "districts_not_found": [],
+                "has_scope": False,
             }
         )
         day_country_not_found = defaultdict(lambda: defaultdict(int))
@@ -503,6 +557,16 @@ class IMStatsViewSet(viewsets.ViewSet):
             "Tot_child_Others_HH",
             "Tot_child_VaccinatedRoutine",
         ]
+        nfm_reason_abs_keys = [
+            "Tot_child_Abs_Parent_Absent",
+            "Tot_child_Abs_Social_event",
+            "Tot_child_Abs_Travelling",
+            "Tot_child_Abs_Play_areas",
+            "Tot_child_Abs_School",
+            "Tot_child_Abs_Market",
+            "Tot_child_Abs_Other",
+            "Tot_child_Abs_Farm",
+        ]
         if request.user.iaso_profile.org_units.count() == 0:
             authorized_countries = OrgUnit.objects.filter(org_unit_type_id__category="COUNTRY")
         else:
@@ -512,17 +576,15 @@ class IMStatsViewSet(viewsets.ViewSet):
             country = OrgUnit.objects.get(id=country_config["country_id"])
             if country not in authorized_countries:
                 continue
+            if country.id != requested_country:
+                continue
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
                 .filter(org_unit_type_id__category="DISTRICT")
                 .only("name", "id", "parent", "aliases")
                 .prefetch_related("parent")
             )
-            district_dict = defaultdict(list)
-            for f in districts_qs:
-                district_dict[f.name].append(f)
-
-            districts = set()
+            district_dict = _build_district_cache(districts_qs)
 
             cached_response, created = URLCache.objects.get_or_create(url=country_config["url"])
             delta = now() - cached_response.updated_at
@@ -547,7 +609,30 @@ class IMStatsViewSet(viewsets.ViewSet):
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 nfm_counts_dict = defaultdict(int)
+                nfm_abs_counts_dict = defaultdict(int)
                 done_something = False
+                if isinstance(form, str):
+                    print("------------")
+                    print("wrong form format:", form, "in", country.name)
+                    print("------------")
+                    continue
+                try:
+                    round_number = form["roundNumber"]
+                    if round_number.upper() == "MOPUP":
+                        continue
+                except KeyError:
+                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form["date_monitored"]}})
+                    no_round_count += 1
+                    continue
+                round_number = form["roundNumber"]
+                if round_number.endswith("1") or round_number.endswith("2"):
+                    round_number = "Rnd" + round_number[-1]
+                else:
+                    skipped_forms_list.append(
+                        {form["_id"]: {"round": form["roundNumber"], "date": form["date_monitored"]}}
+                    )
+                    unknown_round += 1
+                    continue
                 if form.get("HH", None):
                     if "HH" in stats_types:
                         for kid in form.get("HH", []):
@@ -560,6 +645,10 @@ class IMStatsViewSet(viewsets.ViewSet):
                             for reason in nfm_reason_keys:
                                 nfm_counts_dict[reason] = nfm_counts_dict[reason] + int(
                                     kid.get("HH/group1/" + reason, "0")
+                                )
+                            for reason_abs in nfm_reason_abs_keys:
+                                nfm_abs_counts_dict[reason_abs] = nfm_abs_counts_dict[reason_abs] + int(
+                                    kid.get("HH/group2/" + reason_abs, "0")
                                 )
                             done_something = True
                 else:
@@ -574,38 +663,42 @@ class IMStatsViewSet(viewsets.ViewSet):
                             done_something = True
                 if not done_something:
                     continue
-                district_id = "%s - %s" % (form.get("District"), form.get("Region"))
-                districts.add(district_id)
                 today_string = form["today"]
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
                 campaign = find_campaign(campaigns, today, country)
                 region_name = form.get("Region")
                 district_name = form.get("District")
-                # FIXME dirty workaround to prevent crash
-                round_number = form.get("roundNumber", "Rnd1")
-                if round_number == "Rnd0":
-                    round_number = "Rnd1"
 
                 if campaign:
                     campaign_name = campaign.obr_name
-                    campaign_stats[campaign_name]["country_id"] = country.id
-                    campaign_stats[campaign_name]["country_name"] = country.name
-                    round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
-                    round_stats_key = round_key + "_nfm_stats"
-                    for key in nfm_counts_dict:
-                        campaign_stats[campaign_name][round_stats_key][key] = (
-                            campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
-                        )
-                    d = campaign_stats[campaign_name][round_key][district_name]
-                    d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
-                    d["total_child_checked"] = d["total_child_checked"] + total_Child_Checked
-                    d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
-                    district = find_district(district_name, region_name, districts_qs, district_dict)
+                    scope = campaign.group.org_units.values_list("id", flat=True) if campaign.group else []
+                    campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
+                    district = find_district(district_name, region_name, district_dict)
                     if not district:
                         district_long_name = "%s - %s" % (district_name, region_name)
                         if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
                             campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
-                    else:
+                    # Sending district info if it exists and either the district is in scope or there's no scope (in which case we send all ifo for all distrcits found)
+                    if district is not None and (district.id in scope or len(scope) == 0):
+
+                        campaign_stats[campaign_name]["country_id"] = country.id
+                        campaign_stats[campaign_name]["country_name"] = country.name
+                        round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
+                        round_stats_key = round_key + "_nfm_stats"
+                        round_stats_abs_key = round_key + "_nfm_abs_stats"
+                        for key in nfm_counts_dict:
+                            campaign_stats[campaign_name][round_stats_key][key] = (
+                                campaign_stats[campaign_name][round_stats_key][key] + nfm_counts_dict[key]
+                            )
+                        for key_abs in nfm_abs_counts_dict:
+                            campaign_stats[campaign_name][round_stats_abs_key][key_abs] = (
+                                campaign_stats[campaign_name][round_stats_abs_key][key_abs]
+                                + nfm_abs_counts_dict[key_abs]
+                            )
+                        d = campaign_stats[campaign_name][round_key][district_name]
+                        d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
+                        d["total_child_checked"] = d["total_child_checked"] + total_Child_Checked
+                        d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
                         d["district"] = district.id
                         d["region_name"] = district.parent.name
                         fully_mapped_form_count += 1
@@ -613,13 +706,27 @@ class IMStatsViewSet(viewsets.ViewSet):
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
 
+        skipped_forms.update(
+            {"count": len(skipped_forms_list), "no_round": no_round_count, "unknown_round": unknown_round}
+        )
+
         response = {
             "stats": campaign_stats,
             "form_campaign_not_found_count": form_campaign_not_found_count,
             "day_country_not_found": day_country_not_found,
             "form_count": form_count,
             "fully_mapped_form_count": fully_mapped_form_count,
+            "skipped_forms": skipped_forms,
         }
+
+        if not cache_response_exists:
+            IMStatsCache.objects.create(user_id=request.user.pk, response=response, params=request.query_params)
+        else:
+            cache_response = IMStatsCache.objects.get(user_id=request.user.id, params=request.query_params)
+            cache_response.response = response
+            cache_response.updated_at = datetime.now()
+            cache_response.save()
+
         return JsonResponse(response, safe=False)
 
 
@@ -630,6 +737,22 @@ def find_campaign(campaigns, today, country):
         if c.country_id == country.id and c.round_one.started_at <= today < c.round_one.started_at + timedelta(
             days=+28
         ):
+            return c
+    return None
+
+
+def find_campaign_on_day(campaigns, day, country):
+
+    for c in campaigns:
+        if not (c.round_one and c.round_one.started_at):
+            continue
+        round_end = c.round_two.ended_at if (c.round_two and c.round_two.ended_at) else c.round_one.ended_at
+        if round_end:
+            end_date = round_end + timedelta(days=+10)
+        else:
+            end_date = c.round_one.started_at + timedelta(days=+28)
+
+        if c.country_id == country.id and c.round_one.started_at <= day < end_date:
             return c
     return None
 
@@ -651,34 +774,6 @@ def convert_dicts_to_table(list_of_dicts):
     return values
 
 
-def get_url_content(url, login, password, minutes=60):
-    cached_response, created = URLCache.objects.get_or_create(url=url)
-    delta = now() - cached_response.updated_at
-    if created or delta > timedelta(minutes=minutes):
-        response = requests.get(url, auth=(login, password))
-        cached_response.content = response.text
-        cached_response.save()
-        j = response.json()
-    else:
-        j = json.loads(cached_response.content)
-    return j
-
-
-def get_facility_id(district_name, facility_name, facilities_dict):
-    facility_list = facilities_dict.get(facility_name)
-    if facility_list is None:
-        return None
-    if len(facility_list) == 1:
-        return facility_list[0].id
-    if len(facility_list) > 1:
-
-        for facility in facility_list:
-            if facility.parent.name.lower() == district_name.lower() or district_name in facility.parent.aliases:
-                return facility.id
-
-    return None
-
-
 def handle_ona_request_with_key(request, key):
     as_csv = request.GET.get("format", None) == "csv"
     config = get_object_or_404(Config, slug=key)
@@ -697,19 +792,21 @@ def handle_ona_request_with_key(request, key):
             .only("name", "id", "parent")
             .prefetch_related("parent")
         )
-        facilities_dict = defaultdict(list)
-        for f in facilities:
-            facilities_dict[f.name].append(f)
+        cache = make_orgunits_cache(facilities)
 
         for form in forms:
             try:
                 today = datetime.strptime(form["today"], "%Y-%m-%d").date()
-                campaign = find_campaign(campaigns, today, country)
-                district_name = form.get("District", None)
+                campaign = find_campaign_on_day(campaigns, today, country)
+                district_name = form.get("District", "")
                 facility_name = form.get("facility", None)
+                # some form version for Senegal had their facility column as Facility with an uppercase.
+                if not facility_name:
+                    facility_name = form.get("Facility", "")
 
-                if district_name and facility_name:
-                    form["facility_id"] = get_facility_id(district_name, facility_name, facilities_dict)
+                if facility_name:
+                    facility = find_orgunit_in_cache(cache, facility_name, district_name)
+                    form["facility_id"] = facility.id if facility else None
                 else:
                     form["facility_id"] = None
 
@@ -827,19 +924,17 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
             return JsonResponse(res, safe=False)
 
 
-def find_district(district_name, region_name, districts, district_dict):
-    district_list = district_dict.get(district_name)
+def find_district(district_name, region_name, district_dict):
+    district_name_lower = district_name.lower() if district_name else None
+    district_list = district_dict.get(district_name_lower)
     if district_list and len(district_list) == 1:
         return district_list[0]
     elif district_list and len(district_list) > 1:
         for di in district_list:
-            if di.parent.name.lower() == region_name.lower() or region_name in di.parent.aliases:
+            if di.parent.name.lower() == region_name.lower() or (
+                di.parent.aliases and region_name in di.parent.aliases
+            ):
                 return di
-    else:
-        for d in districts:
-            if d.aliases and district_name in d.aliases:
-                district_dict[district_name] = [d]
-                return d
     return None
 
 
@@ -853,6 +948,19 @@ def add_nfm_stats_for_round(campaign_stats, nfm_stats, round_number):
     return campaign_stats
 
 
+# TODO deduplicate
+# Checking for each district for each campaign if LQAS data is not disqualified. If it isn't we add the reasons for absence to the count
+def add_nfm_abs_stats_for_round(campaign_stats, nfm_abs_stats, round_number):
+    for campaign, stats in campaign_stats.items():
+        for district, district_stats in stats[round_number].items():
+            if district_stats["total_child_checked"] == 60:
+                for reason, count in nfm_abs_stats[campaign][round_number][district].items():
+                    stats[round_number + "_nfm_abs_stats"][reason] = (
+                        stats[round_number + "_nfm_abs_stats"][reason] + count
+                    )
+    return campaign_stats
+
+
 def format_caregiver_stats(campaign_stats, round_number):
     for campaign in campaign_stats.values():
         for district in campaign[round_number].values():
@@ -861,6 +969,8 @@ def format_caregiver_stats(campaign_stats, round_number):
                 key: all_care_givers_stats[key]
                 for key in sorted(all_care_givers_stats, key=all_care_givers_stats.get, reverse=True)
             }
+            if "caregivers_informed" not in sorted_care_givers_stats.keys():
+                continue
             total_informed = sorted_care_givers_stats.pop("caregivers_informed")
             best_result_key = next(iter(sorted_care_givers_stats))
             best_result = sorted_care_givers_stats[best_result_key]
@@ -883,8 +993,28 @@ class LQASStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
+
+        cache_response_exists = True
+        # Return cache response if cache is valid.
+        try:
+            cache_response = LQASIMCache.objects.get(user_id=request.user.id, params=request.query_params)
+            time_delta = datetime.now(timezone.utc) - cache_response.updated_at
+            if time_delta.seconds < 3600:
+                return JsonResponse(cache_response.response, safe=False)
+        except ObjectDoesNotExist:
+            cache_response_exists = False
+
         campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="lqas-config")
+        requested_country = request.GET.get("country_id", None)
+        skipped_forms_list = []
+        no_round_count = 0
+        unknown_round = 0
+        skipped_forms = {"count": 0, "no_round": 0, "unknown_round": unknown_round, "forms_id": skipped_forms_list}
+
+        if requested_country is None:
+            return HttpResponseBadRequest
+        requested_country = int(requested_country)
 
         base_stats = lambda: {
             "total_child_fmd": 0,
@@ -896,13 +1026,23 @@ class LQASStatsViewSet(viewsets.ViewSet):
             lambda: {
                 "round_1": defaultdict(base_stats),
                 "round_1_nfm_stats": defaultdict(int),
+                "round_1_nfm_abs_stats": defaultdict(int),
                 "round_2": defaultdict(base_stats),
                 "round_2_nfm_stats": defaultdict(int),
+                "round_2_nfm_abs_stats": defaultdict(int),
                 "districts_not_found": [],
+                "has_scope": [],
             }
         )
         # Storing all "reasons no finger mark" for each campaign in this dict
         nfm_reasons_per_district_per_campaign = defaultdict(
+            lambda: {
+                "round_1": defaultdict(lambda: defaultdict(int)),
+                "round_2": defaultdict(lambda: defaultdict(int)),
+            }
+        )
+        # Same with reasons for absence
+        nfm_abs_reasons_per_district_per_campaign = defaultdict(
             lambda: {
                 "round_1": defaultdict(lambda: defaultdict(int)),
                 "round_2": defaultdict(lambda: defaultdict(int)),
@@ -932,7 +1072,11 @@ class LQASStatsViewSet(viewsets.ViewSet):
             authorized_countries = request.user.iaso_profile.org_units.filter(org_unit_type_id__category="COUNTRY")
         for country_config in config.content:
             country = OrgUnit.objects.get(id=country_config["country_id"])
+
             if country not in authorized_countries:
+                continue
+
+            if country.id != requested_country:
                 continue
 
             districts_qs = (
@@ -941,9 +1085,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 .only("name", "id", "parent", "aliases")
                 .prefetch_related("parent")
             )
-            district_dict = defaultdict(list)
-            for f in districts_qs:
-                district_dict[f.name].append(f)
+            district_dict = _build_district_cache(districts_qs)
 
             cached_response, created = URLCache.objects.get_or_create(url=country_config["url"])
             delta = now() - cached_response.updated_at
@@ -959,9 +1101,22 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
             districts = set()
             for form in forms:
-                # Ignoring Mop up for now
-                round_number = form.get("roundNumber")
-                if round_number == "MOPUP":
+                try:
+                    round_number = form["roundNumber"]
+                    if round_number.upper() == "MOPUP":
+                        continue
+                except KeyError:
+                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form["Date_of_LQAS"]}})
+                    no_round_count += 1
+                    continue
+                round_number = form["roundNumber"]
+                if round_number.endswith("1") or round_number.endswith("2"):
+                    round_number = "Rnd" + round_number[-1]
+                else:
+                    skipped_forms_list.append(
+                        {form["_id"]: {"round": form["roundNumber"], "date": form["Date_of_LQAS"]}}
+                    )
+                    unknown_round += 1
                     continue
                 HH_COUNT = form.get("Count_HH", None)
                 if HH_COUNT is None:
@@ -997,6 +1152,16 @@ class LQASStatsViewSet(viewsets.ViewSet):
                                 ]
                                 + 1
                             )
+                        if reason == "childabsent" and campaign and round_number:
+                            reason_abs = HH.get("Count_HH/Reason_ABS_NFM", "unknown")
+                            nfm_abs_reasons_per_district_per_campaign[campaign.obr_name][round_key][district_name][
+                                reason_abs
+                            ] = (
+                                nfm_abs_reasons_per_district_per_campaign[campaign.obr_name][round_key][district_name][
+                                    reason_abs
+                                ]
+                                + 1
+                            )
                     total_Child_Checked += int(Child_Checked)
                     # gather caregiver stats
                     caregiver_informed = HH.get("Count_HH/Care_Giver_Informed_SIA", 0)
@@ -1021,24 +1186,26 @@ class LQASStatsViewSet(viewsets.ViewSet):
                                 )
                 if campaign:
                     campaign_name = campaign.obr_name
-                    campaign_stats[campaign_name]["country_id"] = country.id
-                    campaign_stats[campaign_name]["country_name"] = country.name
-                    d = campaign_stats[campaign_name][round_key][district_name]
-
-                    for key in caregiver_counts_dict[district_name]:
-                        d["care_giver_stats"][key] += caregiver_counts_dict[district_name][key]
-
-                    d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
-                    d["total_child_checked"] = d["total_child_checked"] + len(form.get("Count_HH", []))
-                    d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
-                    district = find_district(district_name, region_name, districts_qs, district_dict)
+                    scope = campaign.group.org_units.values_list("id", flat=True) if campaign.group else []
+                    campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
+                    district = find_district(district_name, region_name, district_dict)
                     if not district:
                         district_long_name = "%s - %s" % (district_name, region_name)
-                        d["region_name"] = region_name
 
                         if district_long_name not in campaign_stats[campaign_name]["districts_not_found"]:
                             campaign_stats[campaign_name]["districts_not_found"].append(district_long_name)
-                    else:
+                    # Sending district info if it exists and either the district is in scope or there's no scope (in which case we send all ifo for all distrcits found)
+                    if district is not None and (district.id in scope or len(scope) == 0):
+                        campaign_stats[campaign_name]["country_id"] = country.id
+                        campaign_stats[campaign_name]["country_name"] = country.name
+                        d = campaign_stats[campaign_name][round_key][district_name]
+
+                        for key in caregiver_counts_dict[district_name]:
+                            d["care_giver_stats"][key] += caregiver_counts_dict[district_name][key]
+
+                        d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
+                        d["total_child_checked"] = d["total_child_checked"] + len(form.get("Count_HH", []))
+                        d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
                         d["district"] = district.id
                         d["region_name"] = district.parent.name
                 else:
@@ -1048,15 +1215,30 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
         add_nfm_stats_for_round(campaign_stats, nfm_reasons_per_district_per_campaign, "round_1")
         add_nfm_stats_for_round(campaign_stats, nfm_reasons_per_district_per_campaign, "round_2")
+        add_nfm_abs_stats_for_round(campaign_stats, nfm_abs_reasons_per_district_per_campaign, "round_1")
+        add_nfm_abs_stats_for_round(campaign_stats, nfm_abs_reasons_per_district_per_campaign, "round_2")
         format_caregiver_stats(campaign_stats, "round_1")
         format_caregiver_stats(campaign_stats, "round_2")
+
+        skipped_forms.update(
+            {"count": len(skipped_forms_list), "no_round": no_round_count, "unknown_round": unknown_round}
+        )
 
         response = {
             "stats": campaign_stats,
             "form_count": form_count,
             "form_campaign_not_found_count": form_campaign_not_found_count,
             "day_country_not_found": day_country_not_found,
+            "skipped_forms": skipped_forms,
         }
+
+        if not cache_response_exists:
+            LQASIMCache.objects.create(user_id=request.user.pk, response=response, params=request.query_params)
+        else:
+            cache_response = LQASIMCache.objects.get(user_id=request.user.id, params=request.query_params)
+            cache_response.response = response
+            cache_response.updated_at = datetime.now()
+            cache_response.save()
         return JsonResponse(response, safe=False)
 
 
@@ -1069,6 +1251,7 @@ router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")
 router.register(r"polio/lqasstats", LQASStatsViewSet, basename="lqasstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
 router.register(r"polio/forma", FormAStocksViewSet, basename="forma")
+router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")

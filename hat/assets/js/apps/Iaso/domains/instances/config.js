@@ -23,16 +23,6 @@ const instancesTableColumns = (formatMessage = () => ({}), user) => {
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.view}
                     />
-                    <IconButtonComponent
-                        onClick={() =>
-                            window.open(
-                                settings.row.original.file_url,
-                                '_blank',
-                            )
-                        }
-                        icon="xml"
-                        tooltipMessage={MESSAGES.downloadXml}
-                    />
                     {settings.row.original.org_unit &&
                         userHasPermission('iaso_org_units', user) && (
                             <IconButtonComponent
@@ -51,6 +41,7 @@ const instancesTableColumns = (formatMessage = () => ({}), user) => {
         columns.push({
             Header: formatMessage(MESSAGES[f.key]),
             accessor: f.accessor || f.key,
+            sortable: f.sortable !== false,
             Cell:
                 f.Cell ||
                 (settings =>

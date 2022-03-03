@@ -1,35 +1,32 @@
 /* eslint-disable react/require-default-props */
-import { Paper, Typography, Grid } from '@material-ui/core';
+import { Box, Typography, Grid, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
-import { RoundString } from '../../constants/types';
-import { useConvertedLqasImData } from '../../pages/IM/requests';
-import { FAIL_COLOR, OK_COLOR, WARNING_COLOR } from '../../styles/constants';
+import { useSafeIntl } from 'bluesquare-components';
+import { ConvertedLqasImData, RoundString } from '../../constants/types';
+
+import { FAIL_COLOR, OK_COLOR } from '../../styles/constants';
 import {
-    convertStatToPercent,
     getLqasStatsForRound,
     makeCaregiversRatio,
 } from '../../pages/LQAS/utils';
+import { convertStatToPercent } from '../../utils/LqasIm';
+import MESSAGES from '../../constants/messages';
 
 type Props = {
     campaign?: string;
     round: RoundString;
+    data: Record<string, ConvertedLqasImData>;
 };
 
-const style = theme => ({
-    paper: {
-        marginBottom: theme.spacing(1),
-        marginTop: theme.spacing(1),
-        paddingTop: '5px',
-        paddingBottom: '5px',
-    },
+const style = {
     containerGrid: { justifyContent: 'space-evenly' },
     centerText: { textAlign: 'center' },
     boldText: { fontWeight: 'bold' },
-    pass: { color: OK_COLOR, textShadow: '1px 1px 2px black' },
-    fail: { color: FAIL_COLOR, textShadow: '1px 1px 2px black' },
-    warning: { color: WARNING_COLOR, textShadow: '1px 1px 2px black' },
-});
+    pass: { color: OK_COLOR },
+    fail: { color: FAIL_COLOR },
+    warning: { color: 'rgb(255,196,53)' },
+};
 
 const useStyles = makeStyles(style);
 
@@ -40,9 +37,13 @@ const getRatePassedColors = (ratePassed, classes) => {
     return classes.fail;
 };
 
-export const LqasSummary: FunctionComponent<Props> = ({ campaign, round }) => {
+export const LqasSummary: FunctionComponent<Props> = ({
+    campaign,
+    round,
+    data,
+}) => {
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data } = useConvertedLqasImData('lqas');
     const summary = useMemo(() => {
         // eslint-disable-next-line no-unused-vars
         const [passed, failed, _disqualified] = getLqasStatsForRound(
@@ -70,23 +71,21 @@ export const LqasSummary: FunctionComponent<Props> = ({ campaign, round }) => {
 
     const ratePassedColor = getRatePassedColors(summary.ratePassed, classes);
 
-    // Leaving the commented code with caregiversRatio, in case client asks for it on Monday as it's in PowerBI
     return (
         <>
             {data && campaign && data[campaign] && (
-                <Paper elevation={1} className={classes.paper}>
+                <Box pt={2} pb={2}>
                     <Grid
                         container
                         direction="row"
                         className={classes.containerGrid}
                     >
-                        {/* <Grid container item xs={12} sm={6}> */}
                         <Grid item xs={4} sm={3}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
                             >
-                                Passed
+                                {formatMessage(MESSAGES.passing)}
                             </Typography>
                             <Typography
                                 variant="h6"
@@ -95,12 +94,15 @@ export const LqasSummary: FunctionComponent<Props> = ({ campaign, round }) => {
                                 {`${summary.passed}`}
                             </Typography>
                         </Grid>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
                         <Grid item xs={4} sm={3}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
                             >
-                                Failed
+                                {formatMessage(MESSAGES.failing)}
                             </Typography>
                             <Typography
                                 variant="h6"
@@ -109,14 +111,15 @@ export const LqasSummary: FunctionComponent<Props> = ({ campaign, round }) => {
                                 {`${summary.failed}`}
                             </Typography>
                         </Grid>
-                        {/* </Grid> */}
-                        {/* <Grid container item xs={12} sm={6}> */}
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
                         <Grid item xs={4} sm={3}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
                             >
-                                Passed (%)
+                                {`${formatMessage(MESSAGES.passing)} (%)`}
                             </Typography>
                             <Typography
                                 variant="h6"
@@ -125,17 +128,8 @@ export const LqasSummary: FunctionComponent<Props> = ({ campaign, round }) => {
                                 {`${summary.ratePassed}`}
                             </Typography>
                         </Grid>
-                        {/* <Grid item xs={6} sm={3}>
-                                <Typography variant="h6">
-                                    Caregivers informed
-                                </Typography>
-                                <Typography variant="body1">
-                                    {`${summary.caregiversRatio}`}
-                                </Typography>
-                            </Grid> */}
                     </Grid>
-                    {/* </Grid> */}
-                </Paper>
+                </Box>
             )}
         </>
     );

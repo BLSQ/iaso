@@ -13,7 +13,7 @@ import {
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useStyles } from '../campaignCalendar/Styles';
 
-import { IntlMessage } from '../../constants/types';
+import { IntlMessage } from '../../../../../../hat/assets/js/apps/Iaso/types/intl';
 import MESSAGES from '../../constants/messages';
 import { convertWidth } from '../../utils';
 

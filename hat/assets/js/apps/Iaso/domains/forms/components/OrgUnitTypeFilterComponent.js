@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Box, Typography } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -40,11 +40,14 @@ const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList = []) => {
 
 const OrgUnitTypeFilterComponent = props => {
     const { formatMessage } = useSafeIntl();
-    const { orgUnitTypesSelected, setOrgUnitTypesSelected, fitToBounds } =
-        props;
+    const {
+        orgUnitTypesSelected,
+        setOrgUnitTypesSelected,
+        fitToBounds,
+        orgUnitTypes,
+        currentOrgUnit,
+    } = props;
     const dispatch = useDispatch();
-    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
-    const currentOrgUnit = useSelector(state => state.orgUnits.current);
     const [orgUnitTypesList, setOrgUnitTypesList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -111,7 +114,7 @@ const OrgUnitTypeFilterComponent = props => {
         updateOrgUnitTypesSelected(newOrgUnitTypesSelected, false);
         setOrgUnitTypesList(newOrgUnitTypesList);
         return () => setOrgUnitTypesSelected([]);
-    }, []);
+    }, [orgUnitTypes]);
 
     return (
         <Box m={4}>
@@ -145,12 +148,15 @@ const OrgUnitTypeFilterComponent = props => {
 
 OrgUnitTypeFilterComponent.defaultProps = {
     orgUnitTypesSelected: [],
+    orgUnitTypes: [],
 };
 
 OrgUnitTypeFilterComponent.propTypes = {
+    orgUnitTypes: PropTypes.array,
     orgUnitTypesSelected: PropTypes.array,
     setOrgUnitTypesSelected: PropTypes.func.isRequired,
     fitToBounds: PropTypes.func.isRequired,
+    currentOrgUnit: PropTypes.object.isRequired,
 };
 
 export default OrgUnitTypeFilterComponent;

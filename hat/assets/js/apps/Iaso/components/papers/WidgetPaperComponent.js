@@ -54,6 +54,7 @@ const WidgetPaper = ({
     iconButtonProps,
     expandable,
     isExpanded,
+    id,
 }) => {
     const [open, setOpen] = useState(isExpanded);
     const handleClick = () => {
@@ -62,7 +63,7 @@ const WidgetPaper = ({
         }
     };
     return (
-        <Paper elevation={1} className={classes.root}>
+        <Paper elevation={1} className={classes.root} id={id}>
             <div className={classes.paperTitle}>
                 <Grid xs={IconButton ? 10 : 12} item>
                     <Box
@@ -101,7 +102,12 @@ const WidgetPaper = ({
             <Divider />
 
             <Collapse in={open} timeout="auto" unmountOnExit>
-                <div className={padded ? classes.padded : null}>{children}</div>
+                <div
+                    className={padded ? classes.padded : null}
+                    id={id ? `${id}-body` : undefined}
+                >
+                    {children}
+                </div>
             </Collapse>
         </Paper>
     );
@@ -113,6 +119,7 @@ WidgetPaper.defaultProps = {
     iconButtonProps: {},
     expandable: false,
     isExpanded: true,
+    id: undefined,
 };
 
 WidgetPaper.propTypes = {
@@ -124,6 +131,7 @@ WidgetPaper.propTypes = {
     iconButtonProps: PropTypes.object,
     expandable: PropTypes.bool,
     isExpanded: PropTypes.bool,
+    id: PropTypes.string,
 };
 
 export default withStyles(styles)(WidgetPaper);

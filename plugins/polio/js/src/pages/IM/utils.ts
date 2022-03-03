@@ -2,12 +2,15 @@ import MESSAGES from '../../constants/messages';
 import {
     BarChartData,
     FormatForNFMArgs,
+    LqasImCampaign,
+    LqasImCampaignData,
     NfmRoundString,
+    RoundString,
 } from '../../constants/types';
-import { IM_PASS, IM_FAIL, IM_WARNING, ImNfmKeys } from './constants';
+import { IM_PASS, IM_FAIL, IM_WARNING, imNfmKeys } from './constants';
 import { makeLegendItem } from '../../utils';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
-import { convertStatToPercentNumber } from '../LQAS/utils';
+import { sortGraphKeys, convertStatToPercentNumber } from '../../utils/LqasIm';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -58,11 +61,12 @@ export const makeImMapLegendItems =
 
 export const formatImDataForChart = ({ data, campaign, round, regions }) => {
     const dataForRound = data[campaign] ? [...data[campaign][round]] : [];
-    return regions
-        .map(region => {
-            const regionData = dataForRound.filter(
-                district => district.region_name === region.name,
-            );
+    const regionsList: any[] = [];
+    regions.forEach(region => {
+        const regionData = dataForRound.filter(
+            district => district.region_name === region.name,
+        );
+        if (regionData.length > 0) {
             const aggregatedData = regionData
                 .map(district => ({
                     marked: district.total_child_fmd,
@@ -79,17 +83,20 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
                 );
             const { checked, marked } = aggregatedData;
             // forcing aggregatedData.checked to 1 to avoid dividing by 0
-            const markedRatio = (marked / (checked || 1)) * 100;
-            return {
+            const markedRatio = (marked / checked) * 100;
+            regionsList.push({
                 name: region.name,
                 value: Number.isSafeInteger(markedRatio)
                     ? markedRatio
-                    : markedRatio.toFixed(2),
+                    : Math.round(markedRatio),
                 marked: aggregatedData.marked,
                 checked: aggregatedData.checked,
-            };
-        })
-        .sort((a, b) => parseFloat(b.value) - parseFloat(a.value));
+            });
+        }
+    });
+    return regionsList.sort(
+        (a, b) => parseFloat(b.value) - parseFloat(a.value),
+    );
 };
 
 export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
@@ -98,14 +105,12 @@ export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
     return [ratio, formatMessage(MESSAGES.vaccinated)];
 };
 
-const sortImNfmKeys = (a, b) => b.absValue - a.absValue;
-
 export const formatImDataForNFMChart = ({
     data,
     campaign,
     round,
     formatMessage,
-}: FormatForNFMArgs): BarChartData[] => {
+}: FormatForNFMArgs<'lqas' | 'im'>): BarChartData[] => {
     if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
     const roundString: string = NfmRoundString[round];
     const campaignData: Record<string, number> = data[campaign][roundString];
@@ -123,17 +128,32 @@ export const formatImDataForNFMChart = ({
             nfmKey: name,
         };
     });
-    if (convertedEntries.length === ImNfmKeys.length)
-        return convertedEntries.sort(sortImNfmKeys);
+    if (convertedEntries.length === imNfmKeys.length)
+        return convertedEntries.sort(sortGraphKeys);
 
     const dataKeys = Object.keys(campaignData);
-    const missingEntries = ImNfmKeys.filter(
-        nfmKey => !dataKeys.includes(nfmKey),
-    ).map(nfmKey => ({
-        name: formatMessage(MESSAGES[nfmKey]),
-        value: convertStatToPercentNumber(0, totalChildrenNotMarked),
-        absValue: 0,
-        nfmKey,
-    }));
-    return [...convertedEntries, ...missingEntries].sort(sortImNfmKeys);
+    const missingEntries = imNfmKeys
+        .filter(nfmKey => !dataKeys.includes(nfmKey))
+        .map(nfmKey => ({
+            name: formatMessage(MESSAGES[nfmKey]),
+            value: convertStatToPercentNumber(0, totalChildrenNotMarked),
+            absValue: 0,
+            nfmKey,
+        }));
+    return [...convertedEntries, ...missingEntries].sort(sortGraphKeys);
+};
+
+export const sumChildrenCheckedIm = (
+    round: RoundString,
+    data?: Record<string, LqasImCampaign>,
+    campaign?: string,
+): number => {
+    if (!data || !campaign || !data[campaign]) return 0;
+    const roundData: LqasImCampaignData[] = Object.values(
+        data[campaign][round],
+    );
+    return roundData.reduce(
+        (total, current) => total + current.total_child_checked,
+        0,
+    );
 };

@@ -23,7 +23,7 @@ import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
 import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
 
 import MenuItem from './MenuItemComponent';
-import LogoSvg from './LogoSvgComponent';
+import { Logo } from './Logo.tsx';
 import LanguageSwitch from './LanguageSwitchComponent';
 
 import getMenuItems from '../../../constants/menu';
@@ -36,10 +36,6 @@ import { PluginsContext } from '../../../utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    logo: {
-        height: 35,
-        width: 90,
-    },
     toolbar: {
         ...theme.mixins.toolbar,
         display: 'flex',
@@ -68,8 +64,14 @@ const styles = theme => ({
         cursor: 'pointer',
     },
     link: {
-        textDecoration: 'none',
+        textDecoration: 'none !important',
         color: 'inherit',
+    },
+    text: {
+        fontFamily: '"DINAlternate-Bold", "DIN Alternate", sans-serif',
+        fontWeight: '700',
+        fontSize: 23,
+        marginLeft: theme.spacing(2),
     },
 });
 
@@ -98,7 +100,7 @@ const SidebarMenu = ({
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>
-                <LogoSvg className={classes.logo} />
+                <Logo />
                 <IconButton
                     className={classes.menuButton}
                     color="inherit"

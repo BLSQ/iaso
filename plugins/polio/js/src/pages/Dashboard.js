@@ -1,11 +1,11 @@
 /* eslint-disable camelcase */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import moment from 'moment';
 import PropTypes from 'prop-types';
 import {
     IconButton as IconButtonComponent,
-    LoadingSpinner,
-    Table,
     useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
@@ -15,19 +15,22 @@ import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { getApiParamDateString } from 'Iaso/utils/dates';
+import { getApiParamDateString } from 'Iaso/utils/dates.ts';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateEditDialog';
 import { PageAction } from '../components/Buttons/PageAction';
 import { PageActions } from '../components/Buttons/PageActions';
-import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
-
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
+import { useRestoreCampaign } from '../hooks/useRestoreCampaign';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 
 import ImportLineListDialog from '../components/ImportLineListDialog';
 import { genUrl } from '../utils/routing';
+import { convertObjectToString } from '../utils';
+import { DASHBOARD_BASE_URL } from '../constants/routes';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
@@ -37,28 +40,37 @@ const Dashboard = ({ router }) => {
     const { params } = router;
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
+
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
         useState(false);
+    const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
-    const [page, setPage] = useState(parseInt(DEFAULT_PAGE, 10));
-    const [pageSize, setPageSize] = useState(parseInt(DEFAULT_PAGE_SIZE, 10));
-    const [order, setOrder] = useState(DEFAULT_ORDER);
     const classes = useStyles();
 
-    const { query, exportToCSV } = useGetCampaigns({
-        page,
-        pageSize,
-        order,
-        countries: params.countries,
-        search: params.search,
-        r1StartFrom: getApiParamDateString(params.r1StartFrom),
-        r1StartTo: getApiParamDateString(params.r1StartTo),
-    });
+    // Add the defaults. put in a memo for comparison.
+    // Need a better way to handle default in the routing
+    const apiParams = useMemo(() => {
+        return {
+            order: params?.order ?? DEFAULT_ORDER,
+            pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,
+            page: params?.page ?? DEFAULT_PAGE,
+            countries: params.countries,
+            search: params.search,
+            r1StartFrom: getApiParamDateString(params.r1StartFrom),
+            r1StartTo: getApiParamDateString(params.r1StartTo),
+            showOnlyDeleted: params.showOnlyDeleted,
+        };
+    }, [params]);
 
-    const { data: campaigns = [], status } = query;
+    const [resetPageToOne, setResetPageToOne] = useState('');
+
+    const { query, exportToCSV } = useGetCampaigns(apiParams);
+
+    const { data: campaigns, isFetching } = query;
 
     const { mutate: removeCampaign } = useRemoveCampaign();
+    const { mutate: restoreCampaign } = useRestoreCampaign();
 
     const selectedCampaign = campaigns?.campaigns?.find(
         campaign => campaign.id === selectedCampaignId,
@@ -91,11 +103,21 @@ const Dashboard = ({ router }) => {
     const closeDeleteConfirmDialog = () => {
         setIsConfirmDeleteDialogOpen(false);
     };
+    const closeRestoreConfirmDialog = () => {
+        setIsRestoreDialogOpen(false);
+    };
 
     const handleDeleteConfirmDialogConfirm = () => {
         removeCampaign(selectedCampaign.id, {
             onSuccess: () => {
                 closeDeleteConfirmDialog();
+            },
+        });
+    };
+    const handleRestoreDialogConfirm = () => {
+        restoreCampaign(selectedCampaign.id, {
+            onSuccess: () => {
+                closeRestoreConfirmDialog();
             },
         });
     };
@@ -115,6 +137,13 @@ const Dashboard = ({ router }) => {
         },
         [setSelectedCampaignId, openDeleteConfirmDialog],
     );
+    const handleClickRestoreRow = useCallback(
+        id => {
+            setSelectedCampaignId(id);
+            setIsRestoreDialogOpen(true);
+        },
+        [setSelectedCampaignId, setIsRestoreDialogOpen],
+    );
 
     const handleClickCreateButton = () => {
         setSelectedCampaignId(undefined);
@@ -128,8 +157,22 @@ const Dashboard = ({ router }) => {
         }
     }, []);
 
-    const columns = useMemo(
-        () => [
+    useSkipEffectOnMount(() => {
+        const newParams = {
+            ...apiParams,
+        };
+        delete newParams.page;
+        delete newParams.order;
+        setResetPageToOne(convertObjectToString(newParams));
+    }, [
+        apiParams.pageSize,
+        apiParams.countries,
+        apiParams.search,
+        apiParams.r1StartFrom,
+        apiParams.r1StartTo,
+    ]);
+    const columns = useMemo(() => {
+        const cols = [
             {
                 Header: formatMessage(MESSAGES.country),
                 id: 'country__name',
@@ -165,46 +208,53 @@ const Dashboard = ({ router }) => {
                 sortable: false,
                 Cell: settings => (
                     <>
-                        <IconButtonComponent
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
-                            onClick={() => handleClickEditRow(settings.value)}
-                        />
-                        <IconButtonComponent
-                            icon="delete"
-                            tooltipMessage={MESSAGES.delete}
-                            onClick={() => handleClickDeleteRow(settings.value)}
-                        />
+                        {!params.showOnlyDeleted && (
+                            <>
+                                <IconButtonComponent
+                                    icon="edit"
+                                    tooltipMessage={MESSAGES.edit}
+                                    onClick={() =>
+                                        handleClickEditRow(settings.value)
+                                    }
+                                />
+                                <IconButtonComponent
+                                    icon="delete"
+                                    tooltipMessage={MESSAGES.delete}
+                                    onClick={() =>
+                                        handleClickDeleteRow(settings.value)
+                                    }
+                                />
+                            </>
+                        )}
+                        {params.showOnlyDeleted && (
+                            <IconButtonComponent
+                                icon="restore-from-trash"
+                                tooltipMessage={MESSAGES.restoreCampaign}
+                                onClick={() =>
+                                    handleClickRestoreRow(settings.value)
+                                }
+                            />
+                        )}
                     </>
                 ),
             },
-        ],
-        [handleClickDeleteRow, handleClickEditRow, formatMessage],
-    );
+        ];
+        if (params.showOnlyDeleted) {
+            cols.unshift({
+                Header: formatMessage(MESSAGES.deleted_at),
+                accessor: 'deleted_at',
+                Cell: settings =>
+                    moment(settings.row.original.deleted_at).format('LTS'),
+            });
+        }
+        return cols;
+    }, [
+        handleClickDeleteRow,
+        handleClickEditRow,
+        formatMessage,
+        params.showOnlyDeleted,
+    ]);
 
-    // The naming is aligned with the names in Table
-    const onTableParamsChange = useCallback(
-        (_baseUrl, newParams) => {
-            if (newParams.page !== page) {
-                setPage(newParams.page);
-            }
-            if (newParams.pageSize !== pageSize) {
-                setPageSize(newParams.pageSize);
-            }
-            if (newParams.order !== order) {
-                setOrder(newParams.order);
-            }
-        },
-        [page, pageSize, order],
-    );
-
-    const tableParams = useMemo(() => {
-        return {
-            pageSize,
-            page,
-            order,
-        };
-    }, [pageSize, page, order]);
     return (
         <>
             <TopBar
@@ -216,13 +266,19 @@ const Dashboard = ({ router }) => {
                 isOpen={isCreateEditDialogOpen}
                 onClose={closeCreateEditDialog}
             />
-            <DeleteConfirmDialog
+            <ConfirmDialog
+                title={formatMessage(MESSAGES.deleteWarning)}
                 isOpen={isConfirmDeleteDialogOpen}
                 onClose={closeDeleteConfirmDialog}
                 onConfirm={handleDeleteConfirmDialogConfirm}
             />
+            <ConfirmDialog
+                title={formatMessage(MESSAGES.restoreWarning)}
+                isOpen={isRestoreDialogOpen}
+                onClose={closeRestoreConfirmDialog}
+                onConfirm={handleRestoreDialogConfirm}
+            />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                {status === 'loading' && <LoadingSpinner />}
                 <PageActions params={params}>
                     <PageAction
                         icon={AddIcon}
@@ -244,18 +300,19 @@ const Dashboard = ({ router }) => {
                         )}
                     />
                 </PageActions>
-                {status === 'success' && (
-                    <Table
-                        marginTop={false}
-                        params={tableParams}
-                        count={campaigns.count}
-                        pages={Math.ceil(campaigns.count / pageSize)}
-                        baseUrl="/polio"
-                        redirectTo={onTableParamsChange}
-                        columns={columns}
-                        data={campaigns.campaigns}
-                    />
-                )}
+                <TableWithDeepLink
+                    data={campaigns?.campaigns ?? []}
+                    count={campaigns?.count}
+                    pages={campaigns?.pages}
+                    params={params}
+                    columns={columns}
+                    baseUrl={DASHBOARD_BASE_URL}
+                    marginTop={false}
+                    extraProps={{
+                        loading: isFetching,
+                    }}
+                    resetPageToOne={resetPageToOne}
+                />
             </Box>
         </>
     );

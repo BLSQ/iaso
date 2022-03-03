@@ -3,6 +3,7 @@ import red from '@material-ui/core/colors/red';
 
 const cellHeight = 50;
 const smallCellHeight = 20;
+export const vaccineOpacity = 0.6;
 export const useStyles = makeStyles(theme => ({
     tableContainer: {
         overflow: 'auto',
@@ -178,6 +179,7 @@ export const useStyles = makeStyles(theme => ({
         borderRadius: theme.spacing(3),
         height: theme.spacing(3),
         width: theme.spacing(3),
+        opacity: vaccineOpacity,
         border: `2px solid ${theme.palette.ligthGray.border}`,
     },
     mapLegendLabel: {

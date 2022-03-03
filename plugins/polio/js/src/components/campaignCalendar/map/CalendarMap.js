@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { LoadingSpinner } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
@@ -12,13 +12,29 @@ import { VaccinesLegend } from './VaccinesLegend';
 import { CampaignsLegend } from './CampaignsLegend';
 import MESSAGES from '../../../constants/messages';
 import { appId } from '../../../constants/app';
-import { useStyles } from '../Styles';
+import { useStyles, vaccineOpacity } from '../Styles';
 import { findRegion } from '../../../utils';
 
 import 'leaflet/dist/leaflet.css';
 
+const defaultViewport = {
+    center: [1, 20],
+    zoom: 3.25,
+};
+const boundariesZoomLimit = 6;
+
+const getGeoJsonStyle = (cs, viewport) => {
+    return {
+        color: cs.campaign.color,
+        fillOpacity: vaccineOpacity,
+        fillColor: cs.vacine?.color,
+        weight: viewport.zoom > boundariesZoomLimit ? 2 : 0,
+    };
+};
+
 const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const classes = useStyles();
+    const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
     const shapesQueries = useQueries(
         campaigns
@@ -92,7 +108,9 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
         <Box position="relative">
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
             <div className={classes.mapLegend}>
-                <CampaignsLegend campaigns={campaignsShapes} />
+                {viewport.zoom > boundariesZoomLimit && (
+                    <CampaignsLegend campaigns={campaignsShapes} />
+                )}
                 <Box display="flex" justifyContent="flex-end">
                     <VaccinesLegend />
                 </Box>
@@ -101,9 +119,10 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                 zoomSnap={0.25}
                 ref={map}
                 style={{ height: '72vh' }}
-                center={[1, 20]}
-                zoom={3.25}
+                center={defaultViewport.center}
+                zoom={defaultViewport.zoom}
                 scrollWheelZoom={false}
+                onViewportChanged={v => setViewPort(v)}
             >
                 <TileLayer
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -119,15 +138,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                                 <GeoJSON
                                     key={shape.id}
                                     data={shape.geo_json}
-                                    style={() => {
-                                        return {
-                                            color: cs.campaign.color,
-                                            opacity: 0.6,
-                                            fillOpacity: 0.6,
-                                            fillColor: cs.vacine?.color,
-                                            weight: '2',
-                                        };
-                                    }}
+                                    style={() => getGeoJsonStyle(cs, viewport)}
                                 >
                                     <Tooltip>
                                         <div>

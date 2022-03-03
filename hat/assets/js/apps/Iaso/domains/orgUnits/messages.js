@@ -6,7 +6,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.create',
     },
     newOrgUnit: {
-        defaultMessage: 'Create a org unit',
+        defaultMessage: 'Create an org unit',
         id: 'iaso.orgUnits.new',
     },
     action: {
@@ -337,6 +337,46 @@ const MESSAGES = defineMessages({
     statusRejected: {
         id: 'iaso.orgUnits.statusRejected',
         defaultMessage: 'Validation status: REJECTED',
+    },
+    bulkChangeCount: {
+        id: 'iaso.orgUnits.bulkChangeCount',
+        defaultMessage: 'You are about to change {count} Org units',
+    },
+    fetchAlgorithmsError: {
+        id: 'iaso.snackBar.fetchAlgorithmsError',
+        defaultMessage: 'An error occurred while fetching algorithms list',
+    },
+    fetchGroupsError: {
+        id: 'iaso.snackBar.fetchGroupsError',
+        defaultMessage: 'An error occurred while fetching groups list',
+    },
+    fetchProfilesError: {
+        id: 'iaso.snackBar.fetchProfilesError',
+        defaultMessage: 'An error occurred while fetching profiles list',
+    },
+    fetchOrgUnitTypesError: {
+        id: 'iaso.snackBar.fetchOrgUnitTypesError',
+        defaultMessage: 'An error occurred while fetching org unit types list',
+    },
+    fetchSourcesError: {
+        id: 'iaso.snackBar.fetchSourcesError',
+        defaultMessage: 'An error occurred while fetching sources list',
+    },
+    fetchOrgUnitError: {
+        id: 'iaso.snackBar.fetchOrgUnitError',
+        defaultMessage: 'An error occurred while fetching org unit detail',
+    },
+    saveOrgUnitError: {
+        id: 'iaso.snackBar.saveOrgUnitError',
+        defaultMessage: 'An error occurred while saving org unit',
+    },
+    saveOrgUnitSuccesfull: {
+        id: 'iaso.snackBar.saveOrgUnitSuccesfull',
+        defaultMessage: 'Org unit saved successfully',
+    },
+    saveLinkError: {
+        id: 'iaso.snackBar.saveLinkError',
+        defaultMessage: 'An error occurred while saving link',
     },
 });
 

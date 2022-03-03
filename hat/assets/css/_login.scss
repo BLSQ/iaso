@@ -4,12 +4,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: $dark-blue;
+  background: $primary-background;
   -webkit-font-smoothing: antialiased;
 }
 
 .auth__header {
-  color: white;
   text-align: center;
   margin-bottom: $padding-unit/1.5;
 }
@@ -17,6 +16,10 @@
 .auth__heading {
   font-size: $font-size-xl;
   margin-bottom: $padding-unit/4;
+
+  img {
+    height: 80px;
+  }
 }
 
 .auth__content {
@@ -29,17 +32,18 @@
     line-height: 1.3;
   }
 }
+
 .errorlist {
   color: $red;
   padding: 0 0 $padding-unit / 2 $padding-unit / 2;
   font-size: 14px !important;
 }
+
 .auth__form {
   background: white;
-  border-radius: 4px;
   padding: $padding-unit;
   padding-top: calc(#{$padding-unit} - 1em);
-  box-shadow: inset 0 3px 0 0 $blue, 0 0 10px 10px rgba(black, 0.15);
+  box-shadow: inset 0 3px 0 0 $primary;
   position: relative;
 
   * {
@@ -59,6 +63,21 @@
     width: 100%;
     display: block;
   }
+}
+
+.iaso {
+
+  .auth__container input[type="text"],
+  .auth__container input[type="time"],
+  .auth__container input[type="number"],
+  .auth__container input[type="email"],
+  .auth__container input[type="password"],
+  .auth__container textarea,
+  .auth__container input[type="date"] {
+    box-shadow: none !important;
+    height: 45px;
+  }
+
 }
 
 [class^="auth__text"] {
@@ -83,9 +102,17 @@ $right-icon-position : 40px;
 
 #display-password {
   position: absolute;
-  width: auto;
-  bottom: 131px;
-  right: $right-icon-position;
+  width: 30px;
+  bottom: 132px;
+  border: 1px solid $primary;
+  right: 40px;
+  background-color: white;
+  border-radius: 100%;
+  height: 30px;
+  cursor: pointer;
+  &:hover {
+    border: 1px solid darken($primary, 10%);
+  }
 
   .hidden {
     display: none;
@@ -95,6 +122,10 @@ $right-icon-position : 40px;
     width: auto;
     height: 15px;
     margin-bottom: -2px;
+    fill: $primary;
+    &:hover {
+      fill: darken($primary, 10%);
+    }
   }
 }
 
@@ -102,12 +133,20 @@ $right-icon-position : 40px;
   background: white;
   border-radius: 4px;
   padding: $padding-unit;
-  box-shadow: inset 0 3px 0 0 $blue, 0 0 10px 10px rgba(black, 0.15);
+  box-shadow: inset 0 3px 0 0 $primary, 0 0 10px 10px rgba(black, 0.15);
 }
 
 .login-link {
   margin: 10px 0;
   text-align: right;
+
+  a {
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
 .language-picker {
@@ -116,6 +155,7 @@ $right-icon-position : 40px;
   margin-top: 10px;
   margin-left: auto;
   display: block;
-  border: 1px solid $blue;
   border-radius: 5px;
+  background-color: white;
+  border: 1px solid #ccc;
 }

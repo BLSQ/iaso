@@ -1,9 +1,12 @@
+import { IntlMessage } from '../../../../../hat/assets/js/apps/Iaso/types/intl';
+
 /* eslint-disable camelcase */
-export type FormatForNFMArgs = {
+export type FormatForNFMArgs<T> = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
     round: RoundString;
     formatMessage: IntlFormatMessage;
+    type: T
 };
 export type LqasImData = {
     stats: Record<string, LqasImCampaign>;
@@ -19,16 +22,15 @@ export enum NfmRoundString {
     'round_2' = 'round_2_nfm_stats',
 }
 
+export enum RfaRoundString {
+    'round_1' = 'round_1_nfm_abs_stats',
+    'round_2' = 'round_2_nfm_abs_stats',
+}
+
 export type BarChartData = {
     name:string,
     value:number, // value as percentage
     absValue:number // absolute number
-}
-
-export type IntlMessage = {
-    id:string,
-    defaultMessage:string,
-    values?:Record<string,any>
 }
 
 export type LqasImCampaign = {
@@ -39,6 +41,7 @@ export type LqasImCampaign = {
     districts_not_found: string[];
     country_id: number;
     country_name?: string;
+    has_scope:boolean
 };
 
 

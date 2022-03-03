@@ -10,6 +10,7 @@ export const LQAS_POC_URL = '/api/polio/lqasstats/';
 export const LQAS_PASS = '1lqasOK';
 export const LQAS_DISQUALIFIED = '2lqasDisqualified';
 export const LQAS_FAIL = '3lqasFail';
+export const IN_SCOPE = 'inScope';
 
 export const imDistrictColors = {
     [IM_PASS]: {
@@ -29,6 +30,13 @@ export const imDistrictColors = {
         weight: '2',
         opacity: '1',
         zIndex: 999,
+    },
+    [IN_SCOPE]: {
+        color: 'grey',
+        opacity: '1',
+        fillColor: 'grey',
+        weight: '2',
+        zIndex: 1,
     },
 };
 
@@ -51,6 +59,13 @@ export const lqasDistrictColors = {
         opacity: '1',
         zIndex: 999,
     },
+    [IN_SCOPE]: {
+        color: 'grey',
+        opacity: '1',
+        fillColor: 'grey',
+        weight: '2',
+        zIndex: 1,
+    },
 };
 
 // keys of reasons for children not fingermarked in LQAS
@@ -64,8 +79,31 @@ export const lqasNfmKeys = [
     'Child_is_a_visitor',
 ];
 
+// keys for reasons for absence in LQAS
+export const lqasRfaKeys = [
+    'Market',
+    'School',
+    'In_playground',
+    'Farm',
+    'Other',
+    'Travelled',
+    'unknown',
+];
+
+// keys for reasons for absence in IM
+export const imRfaKeys = [
+    'Tot_child_Abs_Farm',
+    'Tot_child_Abs_Other',
+    'Tot_child_Abs_Market',
+    'Tot_child_Abs_School',
+    'Tot_child_Abs_Play_areas',
+    'Tot_child_Abs_Travelling',
+    'Tot_child_Abs_Social_event',
+    'Tot_child_Abs_Parent_Absent',
+];
+
 // keys of reasons for children not fingermarked in IM
-export const ImNfmKeys = [
+export const imNfmKeys = [
     'Tot_child_Absent_HH',
     'Tot_child_NC_HH',
     'Tot_child_NotVisited_HH',

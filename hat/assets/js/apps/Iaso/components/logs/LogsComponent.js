@@ -38,7 +38,7 @@ const Logs = ({ goToRevision, logObjectId }) => {
                     <LogsDetails
                         logId={log.id}
                         goToRevision={revision => {
-                            goToRevision(revision).then(() => {
+                            goToRevision(revision, () => {
                                 setForceRefresh(true);
                             });
                         }}

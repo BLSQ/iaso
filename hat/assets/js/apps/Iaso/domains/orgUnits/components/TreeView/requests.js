@@ -1,17 +1,33 @@
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { getRequest } from '../../../../libs/Api';
+import { dispatch } from '../../../../redux/store';
+import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
+import { errorSnackBar } from '../../../../constants/snackBars';
 
-const getChildrenData = async id => {
-    const response = await getRequest(
+export const getChildrenData = id => {
+    return getRequest(
         `/api/orgunits/?&parent_id=${id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`,
-    );
-    const usableData = response.orgunits.map(orgUnit => {
-        return {
-            ...orgUnit,
-            id: orgUnit.id.toString(),
-        };
-    });
-    return usableData;
+    )
+        .then(response => {
+            return response.orgunits.map(orgUnit => {
+                return {
+                    ...orgUnit,
+                    id: orgUnit.id.toString(),
+                };
+            });
+        })
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('getChildrenDataError', null, error),
+                ),
+            );
+            console.error(
+                'Error while fetching Treeview item children:',
+                error,
+            );
+            throw error;
+        });
 };
 
 const makeUrl = (id, type) => {
@@ -25,53 +41,68 @@ const makeUrl = (id, type) => {
 };
 
 // mapping the request result here i.o in the useRootData hook to keep the hook more generic
-const getRootData = async (id, type = 'source') => {
-    const response = await getRequest(makeUrl(id, type));
-    const usableData = response.orgunits.map(orgUnit => {
-        return {
-            ...orgUnit,
-            id: orgUnit.id.toString(),
-        };
-    });
-    return usableData;
+export const getRootData = (id, type = 'source') => {
+    return getRequest(makeUrl(id, type))
+        .then(response => {
+            return response.orgunits.map(orgUnit => {
+                return {
+                    ...orgUnit,
+                    id: orgUnit.id.toString(),
+                };
+            });
+        })
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(errorSnackBar('getRootDataError', null, error)),
+            );
+            console.error('Error while fetching Treeview items:', error);
+            throw error;
+        });
 };
+
+
+const endpoint = '/api/orgunits/';
+const search = (input1, input2, type) => {
+    switch(type){
+        case 'source':
+            return `searches=[{"validation_status":"all","search":"${input1}","source":${input2}}]`;
+        case 'version':
+            return `searches=[{"validation_status":"all","search":"${input1}","version":${input2}}]`;
+        default:
+            return `searches=[{"validation_status":"all","search":"${input1}","defaultVersion":"true"}]`;
+    }
+}
+const sortingAndPaging = resultsCount => `order=name&page=1&limit=${resultsCount}&smallSearch=true`;
+
+const makeSearchUrl = ({value,count,source,version}) => {
+    if (source) {
+        return `${endpoint}?${search(value,source,'source')}&${sortingAndPaging(count)}`;
+    }
+    if (version) {
+        return `${endpoint}?${search(value,version,'version')}&${sortingAndPaging(count)}`;
+    }
+    return`${endpoint}?${search(value)}&${sortingAndPaging(count)}`;
+}
 
 /**
  * @param {string} searchValue
  * @param {number} resultsCount
  */
-
-const searchOrgUnits = async (searchValue, resultsCount, source, version) => {
-    let url = `/api/orgunits/?searches=[{"validation_status":"all","search":"${searchValue}","defaultVersion":"true"}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
-    if (source) {
-        url = `/api/orgunits/?searches=[{"validation_status":"all","search":"${searchValue}","source":${source}}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
-    }
-    if (version) {
-        url = `/api/orgunits/?searches=[{"validation_status":"all","search":"${searchValue}","version":${version}}]&order=name&page=1&limit=${resultsCount}&smallSearch=true`;
-    }
-    const result = await getRequest(url);
-    return result.orgunits;
+export const searchOrgUnits = ({value, count, source, version}) => {
+   const url = makeSearchUrl({value,count,source,version});
+    return getRequest(url)
+        .then(result => result.orgunits)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('searchOrgUnitsError', null, error),
+                ),
+            );
+            console.error('Error while searching org units:', error);
+        });
 };
 
-export const useTreeviewSearch = (
-    request,
-    searchValue,
-    resultsCount,
-    enabled,
-) => {
-    return useSnackQuery(
-        ['TreeviewSearch', request, searchValue, resultsCount],
-        async () => {
-            const queryResult = await request(searchValue, resultsCount);
-            return queryResult;
-        },
-        undefined,
-        // keepPreviousData=true avoids flicker when changing resultsCount
-        { enabled, initialData: [], keepPreviousData: true },
-    );
-};
-
-const useGetOrgUnit = OrgUnitId =>
+export const useGetOrgUnit = OrgUnitId =>
     useSnackQuery(
         ['orgunits', OrgUnitId],
         async () => getRequest(`/api/orgunits/${OrgUnitId}/`),
@@ -80,20 +111,3 @@ const useGetOrgUnit = OrgUnitId =>
             enabled: OrgUnitId !== undefined && OrgUnitId !== null,
         },
     );
-
-export const useChildrenData = (request, id, enabled) =>
-    useSnackQuery(
-        ['getChildrenData', request, id],
-        async () => {
-            return request(id);
-        },
-        undefined,
-        { enabled },
-    );
-
-export const useRootData = request =>
-    useSnackQuery(['getRootData', request], async () => request(), undefined, {
-        keepPreviousData: false,
-    });
-
-export { getRootData, getChildrenData, searchOrgUnits, useGetOrgUnit };

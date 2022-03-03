@@ -24,6 +24,7 @@ const goToPage = (
 ) => {
     cy.login();
     interceptFlag = false;
+    cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
     const options = {
         method: 'GET',
@@ -216,7 +217,7 @@ describe('Users', () => {
                     req => {
                         interceptFlag = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                             body: listFixture.profiles[userIndex],
                         });
                     },
@@ -232,7 +233,7 @@ describe('Users', () => {
                     req => {
                         interceptFlagUsers = true;
                         req.reply({
-                            statusCode: 200, // default
+                            statusCode: 200,
                             body: listFixture.profiles[userIndex],
                         });
                     },

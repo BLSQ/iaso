@@ -43,6 +43,7 @@ import { getInstancesFilesList } from './utils';
 import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
+import { fetchFormOrgUnitTypes } from '../../utils/requests';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -51,7 +52,7 @@ const styles = theme => ({
     },
 });
 
-const actions = (currentInstance, reAssignInstance) => [
+const actions = (currentInstance, reAssignInstance, orgUnitTypes) => [
     {
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
@@ -83,6 +84,7 @@ const actions = (currentInstance, reAssignInstance) => [
                 titleMessage={MESSAGES.reAssignInstance}
                 confirmMessage={MESSAGES.reAssignInstanceAction}
                 currentInstance={currentInstance}
+                orgUnitTypes={orgUnitTypes}
                 onCreateOrReAssign={reAssignInstance}
                 renderTrigger={({ openDialog }) => (
                     <UpdateIcon onClick={openDialog} />
@@ -106,18 +108,27 @@ const actions = (currentInstance, reAssignInstance) => [
     },
 ];
 
+
 class InstanceDetails extends Component {
     constructor(props) {
         super(props);
         props.setCurrentInstance(null);
+        this.state = {
+            orgUnitTypeIds:[]
+        }
     }
 
     componentDidMount() {
         const {
             params: { instanceId },
             fetchInstanceDetail,
+            dispatch
         } = this.props;
-        fetchInstanceDetail(instanceId);
+        fetchInstanceDetail(instanceId).then(instanceDetails=>{
+            fetchFormOrgUnitTypes(dispatch,instanceDetails.form_id).then(orgUnitTypeIds => {
+                this.setState({...this.state, orgUnitTypeIds:orgUnitTypeIds.org_unit_type_ids})
+            })
+        });
     }
 
     onActionSelected(action) {
@@ -181,7 +192,7 @@ class InstanceDetails extends Component {
                 {currentInstance && (
                     <Box className={classes.containerFullHeightNoTabPadded}>
                         <SpeedDialInstanceActions
-                            actions={actions(currentInstance, reAssignInstance)}
+                            actions={actions(currentInstance, reAssignInstance, this.state.orgUnitTypeIds)}
                             onActionSelected={action =>
                                 this.onActionSelected(action)
                             }
@@ -210,6 +221,7 @@ class InstanceDetails extends Component {
                                 <WidgetPaper
                                     title={formatMessage(MESSAGES.infos)}
                                     padded
+                                    id="infos"
                                 >
                                     <InstanceDetailsInfos
                                         currentInstance={currentInstance}
@@ -217,6 +229,7 @@ class InstanceDetails extends Component {
                                 </WidgetPaper>
                                 <WidgetPaper
                                     title={formatMessage(MESSAGES.location)}
+                                    id="location"
                                 >
                                     <InstanceDetailsLocation
                                         currentInstance={currentInstance}
@@ -230,6 +243,7 @@ class InstanceDetails extends Component {
                                     <WidgetPaper
                                         title={formatMessage(MESSAGES.files)}
                                         padded
+                                        id="files"
                                     >
                                         <InstancesFilesList
                                             fetchDetails={false}
@@ -244,6 +258,7 @@ class InstanceDetails extends Component {
 
                             <Grid xs={12} md={7} item>
                                 <WidgetPaper
+                                    id="form-contents"
                                     title={formatMessage(MESSAGES.form)}
                                     IconButton={IconButtonComponent}
                                     iconButtonProps={{

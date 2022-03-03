@@ -48,10 +48,7 @@ const InstancesTopBar = ({
     const handleChangeVisibleColmuns = cols => {
         const newParams = {
             ...params,
-            columns: cols
-                .filter(c => c.active)
-                .map(c => c.key)
-                .join(','),
+            columns: cols.map(c => c.key).join(','),
         };
         setTableColumns(
             getInstancesColumns(
@@ -91,7 +88,7 @@ const InstancesTopBar = ({
             });
             handleChangeVisibleColmuns(cols);
         }
-    }, [instances]);
+    }, [instances, possibleFields]);
 
     let title = formatMessage(MESSAGES.titleMulti);
     if (formIds?.length === 1) {

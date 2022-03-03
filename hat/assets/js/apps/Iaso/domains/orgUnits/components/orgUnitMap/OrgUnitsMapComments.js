@@ -9,8 +9,8 @@ import { Box, Typography, makeStyles } from '@material-ui/core';
 
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { useGetComments, sendComment } from '../../../../utils/requests';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { useGetComments, sendComment } from '../../../../utils/requests';
 
 import MESSAGES from '../../messages';
 
@@ -138,7 +138,9 @@ const OrgUnitsMapComments = ({
                     />
                 )}
             </Box>
-            <div className={`${className} ${classes.commentsBlock}`}>
+            <div
+                className={`comments-list ${className} ${classes.commentsBlock}`}
+            >
                 {formatComments(comments?.results)}
             </div>
             {comments?.count > 1 && (

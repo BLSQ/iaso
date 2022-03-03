@@ -117,6 +117,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.validator.error.positiveInteger',
         defaultMessage: 'Please use a positive integer',
     },
+    positiveNumber: {
+        id: 'iaso.polio.form.validator.error.positiveNumber',
+        defaultMessage: 'Please use a positive number',
+    },
     noCampaign: {
         id: 'iaso.polio.noCampaign',
         defaultMessage: 'No campaign to display',
@@ -398,9 +402,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.deleteWarning',
         defaultMessage: 'Are you sure you want to delete this campaign?',
     },
-    operationCantBeUndone: {
-        id: 'iaso.polio.label.operationCantBeUndone',
-        defaultMessage: 'This operation cannot be undone',
+    restoreWarning: {
+        id: 'iaso.polio.label.restoreWarning',
+        defaultMessage: 'Are you sure you want to restore this campaign?',
     },
     no: {
         id: 'iaso.polio.label.no',
@@ -908,6 +912,98 @@ const MESSAGES = defineMessages({
     mainCaregiverInfoSource: {
         id: 'iaso.polio.label.mainCaregiverInfoSource',
         defaultMessage: 'Main source of information',
+    },
+    totalCaregiversSurveyed: {
+        id: 'iaso.polio.label.totalCaregiversSurveyed',
+        defaultMessage: 'Caregivers surveyed',
+    },
+    noScope: {
+        id: 'iaso.polio.label.noScope',
+        defaultMessage: 'Plese select a scope for the campaign',
+    },
+    districtsNeedMatching: {
+        id: 'iaso.polio.label.districtsNeedMatching',
+        defaultMessage: 'Some districts need matching. Please contact an admin',
+    },
+    noScopeFound: {
+        id: 'iaso.polio.label.noScopeFound',
+        defaultMessage: 'No scope found',
+    },
+    childrenNfmAbsent: {
+        id: 'iaso.polio.label.childrenNfmAbsent',
+        defaultMessage: 'Children absent',
+    },
+    reasonsForAbsence: {
+        id: 'iaso.polio.label.reasonsForAbsence',
+        defaultMessage: 'Reasons for absence of non-vaccinated children',
+    },
+    Market: {
+        id: 'iaso.polio.label.market',
+        defaultMessage: 'Market',
+    },
+    Tot_child_Abs_Market: {
+        id: 'iaso.polio.label.market',
+        defaultMessage: 'Market',
+    },
+    In_playground: {
+        id: 'iaso.polio.label.playground',
+        defaultMessage: 'At playground',
+    },
+    Tot_child_Abs_Play_areas: {
+        id: 'iaso.polio.label.playground',
+        defaultMessage: 'At playground',
+    },
+    Farm: {
+        id: 'iaso.polio.label.farm',
+        defaultMessage: 'Farm',
+    },
+    Tot_child_Abs_Farm: {
+        id: 'iaso.polio.label.farm',
+        defaultMessage: 'Farm',
+    },
+    School: {
+        id: 'iaso.polio.label.school',
+        defaultMessage: 'School',
+    },
+    Tot_child_Abs_School: {
+        id: 'iaso.polio.label.school',
+        defaultMessage: 'School',
+    },
+    Travelled: {
+        id: 'iaso.polio.label.travelled',
+        defaultMessage: 'Travelling',
+    },
+    Tot_child_Abs_Travelling: {
+        id: 'iaso.polio.label.travelled',
+        defaultMessage: 'Travelling',
+    },
+    unknown: {
+        id: 'iaso.polio.label.unknown',
+        defaultMessage: 'Unknown',
+    },
+    Tot_child_Abs_Social_event: {
+        id: 'iaso.polio.label.socialEvent',
+        defaultMessage: 'Social event',
+    },
+    Tot_child_Abs_Parent_Absent: {
+        id: 'iaso.polio.label.parentAbsent',
+        defaultMessage: 'Parent absent',
+    },
+    Tot_child_Abs_Other: {
+        id: 'iaso.polio.label.other',
+        defaultMessage: 'Other',
+    },
+    showOnlyDeleted: {
+        id: 'iaso.forms.showDeleted',
+        defaultMessage: 'Show deleted',
+    },
+    deleted_at: {
+        id: 'iaso.forms.deleted_at',
+        defaultMessage: 'Deleted',
+    },
+    restoreCampaign: {
+        id: 'iaso.polio.restoreCampaign',
+        defaultMessage: 'Restore campaign',
     },
 });
 

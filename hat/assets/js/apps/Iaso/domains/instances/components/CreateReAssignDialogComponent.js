@@ -15,6 +15,7 @@ const CreateReAssignDialogComponent = ({
     formType,
     currentInstance,
     onCreateOrReAssign,
+    orgUnitTypes
 }) => {
     const formatPeriod = usePrettyPeriod();
     const currentFormOrInstanceProp = currentInstance || formType;
@@ -95,7 +96,7 @@ const CreateReAssignDialogComponent = ({
             cancelMessage={cancelMessage}
             maxWidth="xs"
             allowConfirm={
-                fieldValue.orgUnit.value !== undefined &&
+                Boolean(fieldValue.orgUnit.value) &&
                 (Boolean(isPeriodDisabled) ||
                     (!isPeriodDisabled && Boolean(fieldValue.period.value)))
             }
@@ -128,6 +129,8 @@ const CreateReAssignDialogComponent = ({
             />
             <>
                 <OrgUnitTreeviewModal
+                    required
+                    clearable={false}
                     titleMessage={MESSAGES.selectedOrgUnit}
                     toggleOnLabelClick={false}
                     onConfirm={orgUnit => {
@@ -141,6 +144,7 @@ const CreateReAssignDialogComponent = ({
                     }}
                     multiselect={false}
                     initialSelection={fieldValue.orgUnit.value}
+                    allowedTypes={orgUnitTypes}
                 />
             </>
         </ConfirmCancelDialogComponent>
@@ -152,6 +156,7 @@ CreateReAssignDialogComponent.defaultProps = {
     currentInstance: undefined,
     cancelMessage: MESSAGES.cancel,
     confirmMessage: MESSAGES.ok,
+    orgUnitTypes:[]
 };
 
 CreateReAssignDialogComponent.propTypes = {
@@ -162,6 +167,7 @@ CreateReAssignDialogComponent.propTypes = {
     currentInstance: PropTypes.object,
     onCreateOrReAssign: PropTypes.func.isRequired,
     renderTrigger: PropTypes.func.isRequired,
+    orgUnitTypes:PropTypes.array
 };
 
 export default CreateReAssignDialogComponent;

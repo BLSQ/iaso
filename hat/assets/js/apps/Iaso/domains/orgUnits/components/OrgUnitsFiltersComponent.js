@@ -13,12 +13,12 @@ import classNames from 'classnames';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
+import { SearchFilter } from '../../../components/filters/Search.tsx';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 import { redirectTo } from '../../../routing/actions';
 import { getChipColors } from '../../../constants/chipColors';
 
 import {
-    search,
     status,
     hasInstances,
     orgUnitType,
@@ -34,7 +34,7 @@ import {
 
 import DatesRange from '../../../components/filters/DatesRange';
 
-import { decodeSearch, encodeUriSearches } from '../utils';
+import { decodeSearch } from '../utils';
 import { useOrgUnitsFiltersData } from '../hooks';
 import { baseUrls } from '../../../constants/urls';
 
@@ -65,13 +65,16 @@ const OrgUnitsFiltersComponent = ({
     params,
     baseUrl,
     searchIndex,
-    onSearch,
     currentTab,
+    onSearch,
 }) => {
-    const initalSearches = [...decodeSearch(params.searches)];
-    const searchParams = initalSearches[searchIndex];
+    const decodedSearches = [...decodeSearch(decodeURI(params.searches))];
+    const [searchParams, setSearchPrams] = useState(
+        decodedSearches[searchIndex] ?? {},
+    );
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
+    const [textSearchError, setTextSearchError] = useState(false);
     const [fetchingGroups, setFetchingGroups] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(
         searchParams?.levels,
@@ -122,47 +125,27 @@ const OrgUnitsFiltersComponent = ({
                 dispatch(setOrgUnitsLocations(orgUnitsLocations));
             }, 100);
         }
-        const searches = [...decodeSearch(params.searches)];
 
-        searches[searchIndex] = {
-            ...searches[searchIndex],
+        decodedSearches[searchIndex] = {
+            ...searchParams,
             [urlKey]: value,
         };
         if (urlKey === 'hasInstances' && value === 'false') {
-            delete searches[searchIndex].dateFrom;
-            delete searches[searchIndex].dateTo;
+            delete decodedSearches[searchIndex].dateFrom;
+            delete decodedSearches[searchIndex].dateTo;
         }
-
-        const tempParams = {
-            ...params,
-            searches: encodeUriSearches(searches),
-        };
-        dispatch(redirectTo(baseUrl, tempParams));
-    };
-
-    const handleSearchFilterChange = (value, urlKey) => {
-        // Remove the " character to avoid JSON parse to fail in front and back
-        let newValue = value;
-        if (value && value.length > 0) {
-            if (value.slice(-1) === '"') {
-                return null;
-            }
-            newValue = value.replace(new RegExp(/(")/, 'g'), '');
-        }
-        return onChange(newValue, urlKey);
+        setSearchPrams(decodedSearches[searchIndex]);
     };
 
     const handleSearch = () => {
         const searches = [...decodeSearch(params.searches)];
-        if (filtersUpdated) {
-            dispatch(setFiltersUpdated(false));
-            const tempParams = {
-                ...params,
-                searches: encodeUriSearches(searches),
-            };
-            dispatch(redirectTo(baseUrl, tempParams));
-        }
-        onSearch();
+        searches[searchIndex] = searchParams;
+        const tempParams = {
+            ...params,
+            page: 1,
+            searches: JSON.stringify(searches),
+        };
+        onSearch(tempParams);
     };
 
     const handleLocationLimitChange = locationLimit => {
@@ -171,7 +154,7 @@ const OrgUnitsFiltersComponent = ({
             ...params,
             locationLimit,
         };
-        dispatch(redirectTo(baseUrl, tempParams));
+        onSearch(tempParams);
     };
     const currentColor = searchParams.color
         ? `#${searchParams.color}`
@@ -194,19 +177,21 @@ const OrgUnitsFiltersComponent = ({
                         currentColor={currentColor}
                         onChangeColor={color => onChange(color, 'color')}
                     />
+                    <SearchFilter
+                        // FIXME withMarginTop: this logic is inverted in bluesquare-component in FormControl.js
+                        withMarginTop
+                        uid={`search-${searchIndex}`}
+                        onEnterPressed={handleSearch}
+                        onChange={(value, urlKey) => onChange(value, urlKey)}
+                        keyValue="search"
+                        required
+                        value={searchParams.search || ''}
+                        onErrorChange={setTextSearchError}
+                    />
                     <FiltersComponent
                         params={params}
                         baseUrl={baseUrl}
-                        filters={[
-                            extendFilter(
-                                searchParams,
-                                search(),
-                                (value, urlKey) =>
-                                    handleSearchFilterChange(value, urlKey),
-                                searchIndex,
-                            ),
-                            sourceFilter,
-                        ]}
+                        filters={[sourceFilter]}
                         onEnterPressed={() => handleSearch()}
                     />
                 </Grid>
@@ -351,8 +336,10 @@ const OrgUnitsFiltersComponent = ({
                     <Button
                         disabled={
                             (!filtersUpdated && Boolean(params.searchActive)) ||
-                            hasLocationLimitError
+                            hasLocationLimitError ||
+                            textSearchError
                         }
+                        id="searchButton"
                         variant="contained"
                         className={classes.button}
                         color="primary"

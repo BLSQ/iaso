@@ -24,6 +24,7 @@ class PagesViewSet(ModelViewSet):
     lookup_url_kwarg = "pk"
 
     def get_object(self):
+        # Allow finding by either pk or slug
         if not self.kwargs.get("pk", "").isnumeric():
             self.lookup_field = "slug"
 
@@ -33,4 +34,4 @@ class PagesViewSet(ModelViewSet):
         user = self.request.user
         order = self.request.query_params.get("order", "created_at").split(",")
         users = User.objects.filter(iaso_profile__account=user.iaso_profile.account)
-        return Page.objects.filter(users__in=users).order_by(*order)
+        return Page.objects.filter(users__in=users).order_by(*order).distinct()

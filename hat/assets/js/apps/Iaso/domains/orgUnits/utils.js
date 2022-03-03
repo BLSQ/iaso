@@ -117,7 +117,11 @@ export const getColorsFromParams = params => {
 };
 
 export const decodeSearch = search => {
-    return JSON.parse(search);
+    try {
+        return JSON.parse(search);
+    } catch (e) {
+        return [];
+    }
 };
 
 export const encodeUriSearches = searches => {

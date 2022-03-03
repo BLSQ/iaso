@@ -11,6 +11,9 @@ import {
     DialogActions,
     Button,
     withStyles,
+    Box,
+    Grid,
+    Typography,
 } from '@material-ui/core';
 
 import {
@@ -311,9 +314,28 @@ const OrgUnitsMultiActionsDialog = ({
                     <ConfirmDialog
                         btnMessage={<FormattedMessage {...MESSAGES.validate} />}
                         question={
-                            <FormattedMessage
-                                {...MESSAGES.confirmMultiChange}
-                            />
+                            <Grid direction="column" container>
+                                <Grid item>
+                                    <Box>
+                                        <FormattedMessage
+                                            {...MESSAGES.confirmMultiChange}
+                                        />
+                                        <>🚨</>
+                                    </Box>
+                                </Grid>
+                                <Grid item>
+                                    <Box>
+                                        <Typography variant="body2">
+                                            <FormattedMessage
+                                                {...MESSAGES.bulkChangeCount}
+                                                values={{
+                                                    count: selectCount ?? 0,
+                                                }}
+                                            />
+                                        </Typography>
+                                    </Box>
+                                </Grid>
+                            </Grid>
                         }
                         confirm={() => saveAndReset()}
                         btnDisabled={isSaveDisabled()}

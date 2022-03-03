@@ -15,6 +15,7 @@ import { getColumns } from '../config';
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../../../components/snackBars/messages';
+import { usePrettyPeriod } from '../../periods/utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -59,6 +60,7 @@ const CompletenessPeriodComponent = ({
     activePeriodType,
 }) => {
     const dispatch = useDispatch();
+    const formatPeriod = usePrettyPeriod();
 
     const derivedInstanceMutation = useSnackMutation(
         derivedrequest => postRequest('/api/derivedinstances/', derivedrequest),
@@ -112,7 +114,7 @@ const CompletenessPeriodComponent = ({
                     alignItems="center"
                 >
                     <Typography variant="h5" gutterBottom>
-                        {period.toCode()}
+                        {formatPeriod(period.periodString)}
                     </Typography>
                 </Grid>
             </Grid>

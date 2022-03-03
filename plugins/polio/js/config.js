@@ -25,6 +25,7 @@ import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
 import { Lqas } from './src/pages/LQAS';
 import { ImStats } from './src/pages/IM';
+import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
 
 const campaignsFilters = [
     {
@@ -43,6 +44,10 @@ const campaignsFilters = [
         isRequired: false,
         key: 'r1StartTo',
     },
+    {
+        isRequired: false,
+        key: 'showOnlyDeleted',
+    },
 ];
 
 const routes = [
@@ -51,6 +56,7 @@ const routes = [
         component: props => <Dashboard {...props} />,
         permissions: ['iaso_polio'],
         params: [
+            ...paginationPathParams,
             {
                 isRequired: false,
                 key: 'campaignId',
@@ -78,7 +84,16 @@ const routes = [
         baseUrl: LQAS_BASE_URL,
         component: props => <Lqas {...props} />,
         permissions: ['iaso_polio'],
-        params: [],
+        params: [
+            {
+                isRequired: false,
+                key: 'campaign',
+            },
+            {
+                isRequired: false,
+                key: 'country',
+            },
+        ],
     },
     {
         baseUrl: IM_OHH,
@@ -89,19 +104,45 @@ const routes = [
                 isRequired: false,
                 key: 'imType',
             },
+            {
+                isRequired: false,
+                key: 'campaign',
+            },
+            {
+                isRequired: false,
+                key: 'country',
+            },
         ],
     },
     {
         baseUrl: IM_IHH,
         component: props => <ImStats {...props} imType="imIHH" />,
         permissions: ['iaso_polio'],
-        params: [],
+        params: [
+            {
+                isRequired: false,
+                key: 'campaign',
+            },
+            {
+                isRequired: false,
+                key: 'country',
+            },
+        ],
     },
     {
         baseUrl: IM_GLOBAL,
         component: props => <ImStats {...props} imType="imGlobal" />,
         permissions: ['iaso_polio'],
-        params: [],
+        params: [
+            {
+                isRequired: false,
+                key: 'campaign',
+            },
+            {
+                isRequired: false,
+                key: 'country',
+            },
+        ],
     },
     {
         baseUrl: CONFIG_BASE_URL,
@@ -178,16 +219,16 @@ const menu = [
                         icon: props => <HomeWorkIcon {...props} />,
                     },
                     {
-                        label: MESSAGES.imOHH,
-                        key: 'ohh',
-                        permissions: ['iaso_polio'],
-                        icon: props => <StorefrontIcon {...props} />,
-                    },
-                    {
                         label: MESSAGES.imIHH,
                         key: 'ihh',
                         permissions: ['iaso_polio'],
                         icon: props => <HomeIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.imOHH,
+                        key: 'ohh',
+                        permissions: ['iaso_polio'],
+                        icon: props => <StorefrontIcon {...props} />,
                     },
                 ],
             },

@@ -18,6 +18,7 @@ const goToPage = (
 ) => {
     cy.login();
     interceptFlag = false;
+    cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
     // TODO remove times: 2 cf hat/assets/js/apps/Iaso/components/tables/SingleTable.js l 80
     const options = {
@@ -40,7 +41,7 @@ const goToPage = (
     }
 
     cy.intercept('GET', '/api/orgunittypes/**', {
-        fixture: 'orgUnitTypes/list.json',
+        fixture: 'orgunittypes/list.json',
     });
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',

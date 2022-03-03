@@ -234,10 +234,28 @@ class PolioAPITestCase(APITestCase):
         for c in campaigns[:8]:
             self.client.delete("/api/polio/campaigns/{0}/".format(c.id))
 
-        response = self.client.get("/api/polio/campaigns/?campaigns=deleted", format="json")
+        response = self.client.get("/api/polio/campaigns/?deletion_status=deleted", format="json")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 8)
+
+        # test that it return all
+        response = self.client.get("/api/polio/campaigns/?deletion_status=all", format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 10)
+
+        # per defaut it return undeleted
+        response = self.client.get("/api/polio/campaigns/", format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 2)
+
+        # filter on active
+        response = self.client.get("/api/polio/campaigns/?deletion_status=active", format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 2)
 
     def test_return_only_active_campaigns(self):
 

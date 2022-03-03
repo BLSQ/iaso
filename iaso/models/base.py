@@ -1042,6 +1042,7 @@ class Profile(models.Model):
     external_user_id = models.CharField(max_length=512, null=True, blank=True)
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
     language = models.CharField(max_length=512, null=True, blank=True)
+    dhis2_id = models.CharField(max_length=128, null=True, blank=True)
 
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)

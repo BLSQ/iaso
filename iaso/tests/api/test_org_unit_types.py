@@ -289,6 +289,3 @@ class OrgUnitTypesAPITestCase(APITestCase):
         if "sub_unit_types" in org_unit_type_data:
             for sub_org_unit_type_data in org_unit_type_data["sub_unit_types"]:
                 self.assertValidOrgUnitTypeData(sub_org_unit_type_data)
-
-        if "form_defining" in org_unit_type_data:
-            print(org_unit_type_data)

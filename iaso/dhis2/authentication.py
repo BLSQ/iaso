@@ -1,26 +1,29 @@
 import os
 
 import requests
+from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from requests.auth import HTTPBasicAuth
 
-from iaso.models import Profile
+from iaso.models import Profile, ExternalCredentials
 
 
-def dhis2_callback(request):
+def dhis2_callback(request, dhis2_id):
     if request.GET.get("code"):
 
-        DHIS2_SERVER_URL = os.environ.get("DHIS2_SERVER_URL")
-        REDIRECT_URI = os.environ.get("IASO_AUTH_DHIS2_URI")
-        IASO_DHIS2_SECRET = os.environ.get("IASO_DHIS2_SECRET")
+        ext_credentials = ExternalCredentials.objects.get(name=dhis2_id)
+
+        DHIS2_SERVER_URL = ext_credentials.login
+        REDIRECT_URI = ext_credentials.url
+        IASO_DHIS2_SECRET = ext_credentials.password
 
         code = request.GET.get("code", None)
 
         payload = {
             "code": code,
             "grant_type": "authorization_code",
-            "redirect_uri": REDIRECT_URI + "api/Oauth/dhis2/",
+            "redirect_uri": REDIRECT_URI + "api/dhis2/{0}/login/".format(dhis2_id),
             "client_id": "iaso-org",
         }
 
@@ -40,8 +43,9 @@ def dhis2_callback(request):
         dhis2_id = user_info.json()["userCredentials"]["id"]
 
         try:
-            user = Profile.objects.get(dhis2_id=dhis2_id)
-            return JsonResponse(user.as_dict())
+            user = Profile.objects.get(dhis2_id=dhis2_id).user
+            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+            return HttpResponseRedirect(redirect_to="/")
         except ObjectDoesNotExist:
             return HttpResponse(
                 "Iaso User with DHIS2 credentials < {0} > does not exists.".format(

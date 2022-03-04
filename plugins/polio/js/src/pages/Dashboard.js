@@ -60,6 +60,7 @@ const Dashboard = ({ router }) => {
             r1StartFrom: getApiParamDateString(params.r1StartFrom),
             r1StartTo: getApiParamDateString(params.r1StartTo),
             showOnlyDeleted: params.showOnlyDeleted,
+            campaignType: params.campaignType,
         };
     }, [params]);
 

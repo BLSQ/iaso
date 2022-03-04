@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -7,7 +7,7 @@ import { replace } from 'react-router-redux';
 import { Grid, Button, Box } from '@material-ui/core';
 import FiltersIcon from '@material-ui/icons/FilterList';
 import { withRouter } from 'react-router';
-
+import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import DatesRange from 'Iaso/components/filters/DatesRange';
 
@@ -16,10 +16,18 @@ import { useGetCountries } from '../../hooks/useGetCountries';
 
 import { genUrl } from '../../utils/routing';
 
+const campaignTypeOptions = formatMessage => [
+    { label: formatMessage(MESSAGES.all), value: 'all' },
+    { label: formatMessage(MESSAGES.preventiveShort), value: 'preventive' },
+    { label: formatMessage(MESSAGES.regular), value: 'regular' },
+];
+
 const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
+    const { formatMessage } = useSafeIntl();
     const { params } = router;
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
+    const [campaignType, setCampaignType] = useState(params.campaignType);
     const [search, setSearch] = useState(params.search);
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
@@ -27,7 +35,7 @@ const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
     const [r1StartFrom, setR1StartFrom] = useState(params.r1StartFrom);
     const [r1StartTo, set1StartTo] = useState(params.r1StartTo);
     const dispatch = useDispatch();
-    const handleSearch = () => {
+    const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const urlParams = {
@@ -36,18 +44,36 @@ const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
                 r1StartFrom,
                 r1StartTo,
                 page: null,
+                campaignType,
                 showOnlyDeleted: showOnlyDeleted || undefined,
             };
             const url = genUrl(router, urlParams);
             dispatch(replace(url));
         }
-    };
+    }, [
+        filtersUpdated,
+        countries,
+        search,
+        r1StartFrom,
+        r1StartTo,
+        campaignType,
+        showOnlyDeleted,
+        router,
+        dispatch,
+    ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const countriesList = (data && data.orgUnits) || [];
 
     useEffect(() => {
         setFiltersUpdated(true);
-    }, [countries, search, r1StartFrom, r1StartTo, showOnlyDeleted]);
+    }, [
+        countries,
+        search,
+        r1StartFrom,
+        r1StartTo,
+        showOnlyDeleted,
+        campaignType,
+    ]);
 
     useEffect(() => {
         setFiltersUpdated(false);
@@ -98,8 +124,22 @@ const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
                             label={MESSAGES.country}
                         />
                     </Grid>
+                    <Grid item xs={!disableDates ? 2 : 3}>
+                        <InputComponent
+                            loading={isFetchingCountries}
+                            keyValue="campaignType"
+                            clearable
+                            onChange={(_key, value) => {
+                                setCampaignType(value);
+                            }}
+                            value={campaignType}
+                            type="select"
+                            options={campaignTypeOptions(formatMessage)}
+                            label={MESSAGES.campaignType}
+                        />
+                    </Grid>
                     {!disableDates && (
-                        <Grid item xs={6}>
+                        <Grid item xs={4}>
                             <DatesRange
                                 onChangeDate={(key, value) => {
                                     if (key === 'dateFrom') {

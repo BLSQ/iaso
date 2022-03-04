@@ -15,7 +15,7 @@ class CopyVersionSerializer(serializers.Serializer):
     source_source_id = serializers.IntegerField(required=True)
     source_version_number = serializers.IntegerField(required=True)
     destination_source_id = serializers.IntegerField(required=False, default=None)
-    destination_version_number = serializers.CharField(max_length=200, required=False, default = None)
+    destination_version_number = serializers.CharField(max_length=200, required=False, default=None)
     force = serializers.BooleanField(required=False, default=False)
 
     def validate(self, attrs):
@@ -61,7 +61,6 @@ class CopyVersionSerializer(serializers.Serializer):
 class CopyVersionViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]
     serializer_class = CopyVersionSerializer
-   
 
     def create(self, request):
         data = request.data
@@ -70,14 +69,14 @@ class CopyVersionViewSet(viewsets.ViewSet):
             context={"request": request},
         )
         serializer.is_valid(raise_exception=True)
-        
+
         source_source_id = data["source_source_id"]
         source_version_number = data["source_version_number"]
         destination_source_id = data["destination_source_id"]
         destination_version_number = data["destination_version_number"]
 
         force = data.get("force", False)
-        if not destination_source_id  and not destination_version_number:
+        if not destination_source_id and not destination_version_number:
 
             versions = list(
                 map(lambda x: x.number, list(SourceVersion.objects.filter(data_source_id=source_source_id)))
@@ -87,8 +86,6 @@ class CopyVersionViewSet(viewsets.ViewSet):
 
             destination_source_id = source_source_id
             destination_version_number = latest_version + 1
-
-
 
         task = copy_version(
             source_source_id,

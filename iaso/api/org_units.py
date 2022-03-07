@@ -387,9 +387,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if instance_defining_id:
             instance = Instance.objects.get(pk=instance_defining_id)
-            orgUnitTypeFormDefining = get_object_or_404(
-                OrgUnitType, id=org_unit_type_id, form_defining_id=instance.form_id
-            )
+            try:
+                orgUnitTypeFormDefining = OrgUnitType.objects.get(
+                    pk=org_unit_type_id, form_defining_id=instance.form_id
+                )
+            except Exception as e:
+                orgUnitTypeFormDefining = None
+
             if orgUnitTypeFormDefining:
                 org_unit.instance_defining = instance
 

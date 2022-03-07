@@ -9,10 +9,10 @@ from requests.auth import HTTPBasicAuth
 from iaso.models import Profile, ExternalCredentials
 
 
-def dhis2_callback(request, dhis2_id):
+def dhis2_callback(request, dhis2_slug):
     if request.GET.get("code"):
 
-        ext_credentials = ExternalCredentials.objects.get(name=dhis2_id)
+        ext_credentials = ExternalCredentials.objects.get(name=dhis2_slug)
 
         DHIS2_SERVER_URL = ext_credentials.login
         REDIRECT_URI = ext_credentials.url
@@ -23,7 +23,7 @@ def dhis2_callback(request, dhis2_id):
         payload = {
             "code": code,
             "grant_type": "authorization_code",
-            "redirect_uri": REDIRECT_URI + "api/dhis2/{0}/login/".format(dhis2_id),
+            "redirect_uri": REDIRECT_URI + "api/dhis2/{0}/login/".format(dhis2_slug),
             "client_id": "iaso-org",
         }
 
@@ -37,13 +37,13 @@ def dhis2_callback(request, dhis2_id):
         access_token = response.json()["access_token"]
 
         user_info = requests.get(
-            DHIS2_SERVER_URL + "api/33/me", headers={"Authorization": "Bearer {0}".format(access_token)}
+            DHIS2_SERVER_URL + "api/me", headers={"Authorization": "Bearer {0}".format(access_token)}
         )
 
-        dhis2_id = user_info.json()["userCredentials"]["id"]
+        user_dhis2_id = user_info.json()["userCredentials"]["id"]
 
         try:
-            user = Profile.objects.get(dhis2_id=dhis2_id).user
+            user = Profile.objects.get(dhis2_id=user_dhis2_id).user
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             return HttpResponseRedirect(redirect_to="/")
         except ObjectDoesNotExist:

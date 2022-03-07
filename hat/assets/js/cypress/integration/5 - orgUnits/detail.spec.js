@@ -226,6 +226,36 @@ describe('OrgUnits detail', () => {
                 });
             });
         });
+        describe('aliases', () => {
+            it('should prevent saving empty alias', () => {
+                cy.intercept(
+                    'GET',
+                    `/api/orgunits/?&rootsForUser=true&source=${orgUnit.source_id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`,
+                    {
+                        fixture: 'orgunits/list.json',
+                    },
+                );
+                cy.visit(baseUrl);
+                cy.fillArrayInputField('aliases', ['']);
+                cy.get('#save-ou').as('saveButton').should('be.disabled');
+                cy.get('@addButton').should('be.disabled');
+                cy.fillArrayInputField('aliases', ['TOAD']);
+                cy.get('@saveButton').should('be.enabled');
+                cy.get('@addButton').should('be.enabled');
+                cy.fillArrayInputField('aliases', ['TOAD', 'BOWSER']);
+                cy.get('@saveButton').should('be.enabled');
+                cy.get('@addButton').should('be.enabled');
+                cy.deleteLastFieldInArrayInputField('@arrayInputFieldList');
+                cy.get('@saveButton').should('be.enabled');
+                cy.get('@addButton').should('be.enabled');
+                cy.fillArrayInputField('aliases', ['BEAU']);
+                cy.get('@saveButton').should('be.disabled');
+                cy.get('@addButton').should('be.enabled');
+                cy.deleteLastFieldInArrayInputField('@arrayInputFieldList');
+                cy.get('@saveButton').should('be.enabled');
+                cy.get('@addButton').should('be.enabled');
+            });
+        });
     });
 
     /**

@@ -176,8 +176,25 @@ Cypress.Commands.add('fillArrayInputField', (id, newValues = []) => {
         .as('addButton');
     newValues.forEach((a, i) => {
         cy.get('@addButton').click();
-        cy.get(`#${id}-${i}`).type(a);
+        // enables testing for empty string
+        if (a !== '') cy.get(`#${id}-${i}`).type(a);
     });
+});
+
+Cypress.Commands.add('deleteLastFieldInArrayInputField', selector => {
+    let arrayInput = null;
+    if (selector.includes('@')) {
+        arrayInput = cy.get(selector);
+    } else {
+        arrayInput = cy.get(`#array-input-field-list-${id}`);
+    }
+    arrayInput.find('li').last().prev().find('button').click();
+    // reassigning addButton
+    cy.get('@arrayInputFieldList')
+        .find('li')
+        .last()
+        .find('button')
+        .as('addButton');
 });
 
 /**

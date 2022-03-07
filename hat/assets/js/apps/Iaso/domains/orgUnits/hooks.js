@@ -4,6 +4,7 @@ import {
     useSnackQueries,
 } from 'Iaso/libs/apiHooks';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
+import { useQueryClient } from 'react-query';
 
 import { fetchOrgUnitsTypes, fetchGroups } from '../../utils/requests';
 import { setOrgUnitTypes, setGroups } from './actions';
@@ -136,7 +137,7 @@ export const useOrgUnitDetailData = (
 
     const { data: originalOrgUnit, isFetching: isFetchingDetail } =
         useSnackQuery(
-            ['currentOrgUnit'],
+            ['currentOrgUnit', orgUnitId],
             () => getRequest(`/api/orgunits/${orgUnitId}/`),
             MESSAGES.fetchOrgUnitError,
             {
@@ -167,7 +168,7 @@ export const useOrgUnitDetailData = (
     };
 };
 
-export const useSaveOrgUnit = () =>
+export const useSaveOrgUnit = onSuccess =>
     useSnackMutation(
         body =>
             body.id
@@ -175,5 +176,11 @@ export const useSaveOrgUnit = () =>
                 : postRequest('/api/orgunits/create_org_unit/', body),
         MESSAGES.saveOrgUnitSuccesfull,
         MESSAGES.saveOrgUnitError,
-        ['currentOrgUnit'],
+        undefined,
+        { onSuccess },
     );
+
+export const useRefreshOrgUnit = () => {
+    const queryClient = useQueryClient();
+    return data => queryClient.setQueryData(['forms', data.id], data);
+};

@@ -50,7 +50,11 @@ import {
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
-import { useOrgUnitDetailData, useSaveOrgUnit } from './hooks';
+import {
+    useOrgUnitDetailData,
+    useRefreshOrgUnit,
+    useSaveOrgUnit,
+} from './hooks';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -114,6 +118,7 @@ const OrgUnitDetail = ({ params, router }) => {
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
+    const refreshOrgUnitQueryCache = useRefreshOrgUnit();
 
     const prevPathname =
         useSelector(state => state.routerCustom.prevPathname) || null;
@@ -252,12 +257,13 @@ const OrgUnitDetail = ({ params, router }) => {
             // Retrieve only the group ids as it's what the API expect
             const group_ids = mappedRevision.groups.map(g => g.id);
             mappedRevision.groups = group_ids;
-            saveOu(mappedRevision).then(() => {
+            saveOu(mappedRevision).then(res => {
                 dispatch(resetOrgUnits());
+                refreshOrgUnitQueryCache(res);
                 onSuccess();
             });
         },
-        [currentOrgUnit, dispatch, saveOu],
+        [currentOrgUnit, dispatch, refreshOrgUnitQueryCache, saveOu],
     );
 
     const handleSaveOrgUnit = useCallback(
@@ -283,17 +289,26 @@ const OrgUnitDetail = ({ params, router }) => {
                             }),
                         );
                     }
+                    refreshOrgUnitQueryCache(ou);
                     onSuccess(ou);
                 })
                 .catch(onError);
         },
-        [currentOrgUnit, dispatch, isNewOrgunit, params, saveOu],
+        [
+            currentOrgUnit,
+            dispatch,
+            isNewOrgunit,
+            params,
+            refreshOrgUnitQueryCache,
+            saveOu,
+        ],
     );
 
     useEffect(() => {
         if (isNewOrgunit) {
             setCurrentOrgUnit(initialOrgUnit);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Set levels params in the url

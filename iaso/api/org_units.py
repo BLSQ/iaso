@@ -375,8 +375,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
         else:
             org_unit.location = None
+        # doing reassignment below to avoid a test fail. Assigning a default value doesn't prevent the test to fail
+        aliases = request.data.get("aliases")
+        if aliases is None:
+            aliases = []
 
-        org_unit.aliases = request.data.get("aliases", "")
+        org_unit.aliases = list(filter(lambda x: x != "", aliases))
 
         if org_unit_type_id:
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
@@ -487,7 +491,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups", [])
 
-        org_unit.aliases = request.data.get("aliases", [])
+        org_unit.aliases = list(filter(lambda x: x != "", request.data.get("aliases", [])))
 
         geom = request.data.get("geom")
         if geom:

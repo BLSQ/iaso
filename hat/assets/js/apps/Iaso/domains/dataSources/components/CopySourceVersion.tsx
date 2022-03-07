@@ -2,9 +2,12 @@
 import React, { FunctionComponent, ReactNode, useCallback } from 'react';
 import { Grid, Box, Typography, Divider } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
+import { useDispatch } from 'react-redux';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../messages';
 import { useCopyDataSourceVersion } from '../requests';
+import { redirectTo } from '../../../routing/actions';
+import { baseUrls } from '../../../constants/urls';
 
 type Props = {
     // eslint-disable-next-line no-unused-vars
@@ -20,7 +23,8 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     dataSourceId,
     dataSourceVersionNumber,
 }) => {
-    const { mutate: copyVersion } = useCopyDataSourceVersion();
+    const { mutateAsync: copyVersion } = useCopyDataSourceVersion();
+    const dispatch = useDispatch();
 
     const onConfirm = useCallback(
         closeDialog => {
@@ -28,6 +32,19 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             closeDialog();
         },
         [copyVersion, dataSourceId, dataSourceVersionNumber],
+    );
+
+    const onRedirect = useCallback(
+        async closeDialog => {
+            await copyVersion({ dataSourceId, dataSourceVersionNumber });
+            closeDialog();
+            dispatch(
+                redirectTo(baseUrls.tasks, {
+                    order: '-created_at',
+                }),
+            );
+        },
+        [copyVersion, dataSourceId, dataSourceVersionNumber, dispatch],
     );
 
     return (
@@ -46,12 +63,12 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                     versionNumber: dataSourceVersionNumber,
                 },
             }}
+            additionalButton
+            additionalMessage={MESSAGES.goToCurrentTask}
+            allowConfimAdditionalButton
+            onAdditionalButtonClick={onRedirect}
             // Not defining these props makes TS unhappy (probably something with TS and PropTypes)
-            additionalButton={false}
             onCancel={undefined}
-            additionalMessage={undefined}
-            onAdditionalButtonClick={undefined}
-            allowConfimAdditionalButton={undefined}
         >
             <Grid container spacing={2}>
                 <Grid item spacing={2} xs={12}>

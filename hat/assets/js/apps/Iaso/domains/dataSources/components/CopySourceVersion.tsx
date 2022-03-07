@@ -1,9 +1,8 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent, ReactNode, useCallback } from 'react';
-// import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-import { Grid } from '@material-ui/core';
+import { Grid, Box, Typography, Divider } from '@material-ui/core';
+import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-// import { ModalSubTitle } from '../../../components/forms/ModalSubTitle';
 import MESSAGES from '../messages';
 import { useCopyDataSourceVersion } from '../requests';
 
@@ -12,14 +11,15 @@ type Props = {
     renderTrigger: ({ openDialog }) => ReactNode;
     dataSourceId: number;
     dataSourceVersionNumber: number;
+    dataSourceName: string;
 };
 
 export const CopySourceVersion: FunctionComponent<Props> = ({
     renderTrigger,
+    dataSourceName,
     dataSourceId,
     dataSourceVersionNumber,
 }) => {
-    // const { formatMessage } = useSafeIntl();
     const { mutate: copyVersion } = useCopyDataSourceVersion();
 
     const onConfirm = useCallback(
@@ -35,16 +35,17 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             id="copySourceVersionModal"
             renderTrigger={renderTrigger}
             onConfirm={onConfirm}
-            // onClosed={reset}
             confirmMessage={MESSAGES.copy}
             cancelMessage={MESSAGES.close}
             maxWidth="md"
             allowConfirm
-            // titleMessage={{
-            //     ...MESSAGES.exportDataSource,
-            //     values: { dataSourceName },
-            // }}
-            titleMessage={MESSAGES.copyVersion}
+            titleMessage={{
+                ...MESSAGES.copyVersionWithName,
+                values: {
+                    sourceName: dataSourceName,
+                    versionNumber: dataSourceVersionNumber,
+                },
+            }}
             // Not defining these props makes TS unhappy (probably something with TS and PropTypes)
             additionalButton={false}
             onCancel={undefined}
@@ -53,8 +54,21 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             allowConfimAdditionalButton={undefined}
         >
             <Grid container spacing={2}>
-                <Grid container item spacing={2}>
-                    <div>WARNING MESSAGE WITH RED ICON</div>
+                <Grid item spacing={2} xs={12}>
+                    <Divider />
+                </Grid>
+                <Grid item spacing={2} xs={12} justifyContent="space-around">
+                    <Box mt={2}>
+                        <Typography>
+                            <FormattedMessage
+                                values={{
+                                    sourceName: dataSourceName,
+                                    versionNumber: dataSourceVersionNumber,
+                                }}
+                                {...MESSAGES.copyVersionWarning}
+                            />
+                        </Typography>
+                    </Box>
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>

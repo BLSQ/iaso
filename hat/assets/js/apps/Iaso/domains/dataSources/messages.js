@@ -236,6 +236,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.button.label.copy',
         defaultMessage: 'Copy',
     },
+    copyVersionWithName: {
+        id: 'iaso.datasources.title.copyVersionWithName',
+        defaultMessage: 'Copy {sourceName} version {versionNumber} ?',
+    },
+    copyVersionWarning: {
+        id: 'iaso.datasources.title.copyVersionWarning',
+        defaultMessage:
+            'This will create a new version for {sourceName} and copy version {versionNumber} into it. Do you wish to proceed?',
+    },
 });
 
 export default MESSAGES;

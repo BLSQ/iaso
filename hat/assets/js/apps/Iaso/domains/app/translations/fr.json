@@ -65,6 +65,8 @@
     "iaso.datasources.options.label.name": "Nom",
     "iaso.datasources.options.label.parent": "Parent",
     "iaso.datasources.options.label.version": "Version",
+    "iaso.datasources.title.copyVersionWarning": "Cette action va créer une nouvelle version de {sourceName} et y copier la version {versionNumber}. Continuer?",
+    "iaso.datasources.title.copyVersionWithName": "Copier {sourceName} version {versionNumber} ?",
     "iaso.datasources.title.dhis2ExportSure": "Êtes vous sûr? \nCeci pourrait faire beaucoup de changements dans DHIS2.",
     "iaso.datasources.title.export": "Unités d'org. à exporter",
     "iaso.datasources.title.sourceDataSource": "Unités d'org. à comparer pour générer l'export",

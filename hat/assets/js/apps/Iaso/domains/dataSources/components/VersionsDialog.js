@@ -131,6 +131,7 @@ const tableColumns = source => [
                             )}
                             dataSourceId={source.id}
                             dataSourceVersionNumber={settings.row.original.number}
+                            dataSourceName={source.name}
                     />
                 </>))}
             

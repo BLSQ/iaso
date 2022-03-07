@@ -10,7 +10,12 @@ logger = logging.getLogger(__name__)
 
 @task_decorator(task_name="copy_version")
 def copy_version(
-    source_source_id, source_version_number, destination_source_id = None, destination_version_number = None, force = False, task=None
+    source_source_id,
+    source_version_number,
+    destination_source_id=None,
+    destination_version_number=None,
+    force=False,
+    task=None,
 ):
 
     the_task = task
@@ -18,13 +23,13 @@ def copy_version(
     source_version = SourceVersion.objects.get(number=source_version_number, data_source=source_source)
     logger.debug("source_version", source_version)
     logger.debug("copying source_version %s" % str(source_version))
-    
-    if not destination_source_id  and not destination_version_number:
+
+    if not destination_source_id and not destination_version_number:
         version = SourceVersion.objects.filter(data_source_id=source_source_id).latest("number")
         latest_version = version.number
         destination_source_id = source_source_id
         destination_version_number = latest_version + 1
-        
+
     destination_source = DataSource.objects.get(id=destination_source_id)
     destination_version, created = SourceVersion.objects.get_or_create(
         number=destination_version_number, data_source=destination_source
@@ -96,7 +101,9 @@ def copy_version(
             unit.groups.add(matching_group)
 
         if index % 100 == 0:
-            the_task.report_progress_and_stop_if_killed(progress_value=index, end_value=source_units_count, progress_message=_("Copying org units"))
+            the_task.report_progress_and_stop_if_killed(
+                progress_value=index, end_value=source_units_count, progress_message=_("Copying org units")
+            )
 
     index = 0
     for unit in new_units:

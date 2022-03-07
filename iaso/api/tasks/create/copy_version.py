@@ -70,13 +70,12 @@ class CopyVersionViewSet(viewsets.ViewSet):
         )
         serializer.is_valid(raise_exception=True)
 
-        source_source_id = data.get("source_source_id",None)
-        source_version_number = data.get("source_version_number",None)
-        destination_source_id = data.get("destination_source_id",None)
-        destination_version_number = data.get("destination_version_number",None)
+        source_source_id = data.get("source_source_id", None)
+        source_version_number = data.get("source_version_number", None)
+        destination_source_id = data.get("destination_source_id", None)
+        destination_version_number = data.get("destination_version_number", None)
 
         force = data.get("force", False)
-      
 
         task = copy_version(
             source_source_id,

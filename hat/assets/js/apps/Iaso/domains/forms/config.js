@@ -81,13 +81,13 @@ const formsTableColumns = ({
     showDeleted,
 }) => {
     const getActionsColWidth = () => {
-        const baseWitdth = 50;
-        let width = baseWitdth * 2;
+        const baseWidth = 50;
+        let width = baseWidth * 2;
         if (userHasPermission('iaso_submissions', user)) {
-            width += baseWitdth;
+            width += baseWidth;
         }
         if (userHasPermission('iaso_forms', user)) {
-            width += baseWitdth * 3;
+            width += baseWidth * 3;
         }
         return width;
     };

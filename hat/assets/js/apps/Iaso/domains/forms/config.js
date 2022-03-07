@@ -80,6 +80,17 @@ const formsTableColumns = ({
     restoreForm = () => null,
     showDeleted,
 }) => {
+    const getActionsColWidth = () => {
+        const baseWitdth = 50;
+        let width = baseWitdth * 2;
+        if (userHasPermission('iaso_submissions', user)) {
+            width += baseWitdth;
+        }
+        if (userHasPermission('iaso_forms', user)) {
+            width += baseWitdth * 3;
+        }
+        return width;
+    };
     const cols = [
         {
             Header: formatMessage(MESSAGES.name),
@@ -172,7 +183,7 @@ const formsTableColumns = ({
             Header: formatMessage(MESSAGES.actions),
             resizable: false,
             sortable: false,
-            width: 250,
+            width: getActionsColWidth(),
             accessor: 'actions',
             Cell: settings => {
                 let urlToInstances = `${baseUrls.instances}/formIds/${settings.row.original.id}`;

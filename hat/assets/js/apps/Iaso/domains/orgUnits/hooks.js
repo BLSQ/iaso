@@ -158,20 +158,32 @@ export const useSaveOrgUnit = onSuccess =>
         undefined,
         { onSuccess },
     );
-export const useOrgUnitsFiltersData = dataSourceId => {
+
+const makeGroupsQueryParams = ({ dataSourceId, sourceVersionId }) => {
+    if (sourceVersionId) return `?version=${sourceVersionId}`;
+    if (dataSourceId) return `?dataSource=${dataSourceId}`;
+    return '?defaultVersion=true';
+};
+
+export const useOrgUnitsFiltersData = ({ dataSourceId, sourceVersionId }) => {
     const [enabled, setEnabled] = useState(false);
-    const queryParams = dataSourceId ? `?dataSource=${dataSourceId}` : '';
+    const groupsQueryParams = makeGroupsQueryParams({
+        dataSourceId,
+        sourceVersionId,
+    });
+
     useEffect(() => {
         if (dataSourceId) setEnabled(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataSourceId]);
+
     const [
         { data: groups, isFetching: isFetchingGroups },
         { data: orgUnitTypes, isFetching: isFetchingorgUnitTypes },
     ] = useSnackQueries([
         {
-            queryKey: ['groups', dataSourceId],
-            queryFn: () => getRequest(`/api/groups/${queryParams}`),
+            queryKey: ['groups', dataSourceId, groupsQueryParams],
+            queryFn: () => getRequest(`/api/groups/${groupsQueryParams}`),
             snackErrorMsg: MESSAGES.fetchGroupsError,
             enabled,
             options: {

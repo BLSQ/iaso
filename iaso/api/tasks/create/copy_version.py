@@ -76,16 +76,7 @@ class CopyVersionViewSet(viewsets.ViewSet):
         destination_version_number = data["destination_version_number"]
 
         force = data.get("force", False)
-        if not destination_source_id and not destination_version_number:
-
-            versions = list(
-                map(lambda x: x.number, list(SourceVersion.objects.filter(data_source_id=source_source_id)))
-            )
-            versions.sort(reverse=True)
-            latest_version = versions[0]
-
-            destination_source_id = source_source_id
-            destination_version_number = latest_version + 1
+      
 
         task = copy_version(
             source_source_id,

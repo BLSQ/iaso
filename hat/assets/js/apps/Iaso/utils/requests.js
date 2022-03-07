@@ -52,18 +52,6 @@ export const fetchOrgUnitsTypes = dispatch =>
             console.error('Error while fetching org unit types list:', error);
             throw error;
         });
-export const fetchGroups = (dispatch, defaultVersion = false) => {
-    const url = `/api/groups/${defaultVersion ? '?&defaultVersion=true' : ''}`;
-    return getRequest(url)
-        .then(res => res.groups)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchGroupsError', null, error)),
-            );
-            console.error('Error while fetching group list:', error);
-            throw error;
-        });
-};
 
 export const fetchDevices = dispatch =>
     getRequest('/api/devices/')

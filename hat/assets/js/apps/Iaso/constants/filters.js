@@ -152,10 +152,11 @@ export const source = (
     isMultiSelect,
     displayColor,
     isClearable: true,
-    options: sourceList.map(s => ({
+    options: sourceList?.map(s => ({
         label: displayColor ? renderColoredOption(s) : s.name,
         value: s.id,
     })),
+
     label: labelString !== '' ? null : label,
     type: 'select',
     labelString,
@@ -363,12 +364,18 @@ export const group = (groupList, urlKey = 'group') => ({
     urlKey,
     isMultiSelect: true,
     isClearable: true,
-    options: groupList.map(a => ({
-        label: a.source_version
-            ? `${a.name} - ${a.source_version.data_source.name} ${a.source_version.number}`
-            : a.name,
-        value: a.id,
-    })),
+    options: groupList
+        .map(a => ({
+            label: a.source_version
+                ? `${a.name} - ${a.source_version.data_source.name} ${a.source_version.number}`
+                : a.name,
+            value: a.id,
+        }))
+        .sort((a, b) =>
+            a.label.localeCompare(b.label, undefined, {
+                sensitivity: 'accent',
+            }),
+        ),
     label: MESSAGES.group,
     type: 'select',
 });

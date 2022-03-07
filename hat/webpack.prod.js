@@ -10,8 +10,8 @@ const LOCALE = 'fr';
 
 dotenv.config();
 // Application customizations
-const primaryColor = process.env.THEME_PRIMARY_COLOR || '#3f51b5';
-const secondaryColor = process.env.THEME_SECONDARY_COLOR || '#f50057';
+const primaryColor = process.env.THEME_PRIMARY_COLOR || '#006699';
+const secondaryColor = process.env.THEME_SECONDARY_COLOR || '#0066CC';
 const primaryBackgroundColor =
     process.env.THEME_PRIMARY_BACKGROUND_COLOR || '#F5F5F5';
 const appTitle = process.env.APP_TITLE || 'Iaso';

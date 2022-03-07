@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { makeStyles, Theme } from '@material-ui/core';
-import LogoSvg from './LogoSvgComponent';
+import { LogoSvg } from './LogoSvg';
 
 const useStyles = makeStyles((theme: Theme) => ({
     text: {
@@ -27,5 +27,10 @@ export const Logo: FunctionComponent = () => {
             </>
         );
     }
-    return <LogoSvg />;
+    return (
+        <>
+            <LogoSvg />
+            <span className={classes.text}>Iaso</span>
+        </>
+    );
 };

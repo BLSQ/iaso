@@ -11,6 +11,7 @@ import {
 } from '@material-ui/core';
 import Public from '@material-ui/icons/Public';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { FormattedMessage } from 'react-intl';
 import {
     commonStyles,
@@ -19,6 +20,7 @@ import {
     Table,
 } from 'bluesquare-components';
 import 'react-table';
+import { CopySourceVersion } from './CopySourceVersion.tsx';
 
 import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
@@ -88,8 +90,8 @@ const tableColumns = source => [
         Header: <FormattedMessage id="iaso.label.actions" />,
         accessor: 'actions',
         sortable: false,
-        Cell: settings =>
-            source.read_only ? (
+        Cell: settings =>{
+            return (source.read_only ? (
                 <FormattedMessage id="Read Only" />
             ) : (
                 <>
@@ -118,8 +120,20 @@ const tableColumns = source => [
                         versionNumber={settings.row.original.number}
                         projects={source.projects.flat()}
                     />
-                </>
-            ),
+                       <CopySourceVersion
+                            renderTrigger={({ openDialog }) => (
+                                <IconButtonComponent
+                                    onClick={openDialog}
+                                    overrideIcon={FileCopyIcon}
+                                    tooltipMessage={MESSAGES.copyVersion}
+                                />
+
+                            )}
+                            dataSourceId={source.id}
+                            dataSourceVersionNumber={settings.row.original.number}
+                    />
+                </>))}
+            
     },
 ];
 
@@ -156,6 +170,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                 columns={tableColumns(source)}
                 redirectTo={() => {}}
                 pages={0}
+                elevation={0}
             />
             {source.versions.length === 0 && (
                 <Typography style={{ padding: 5 }}>

@@ -168,8 +168,9 @@ const MESSAGES = defineMessages({
     },
     dhis2ExportSure: {
         id: 'iaso.datasources.title.dhis2ExportSure',
-        defaultMessage: 'Are you sure? \n' +
-          'This might make a lot of changes in DHIS2.',
+        defaultMessage:
+            // eslint-disable-next-line no-useless-concat
+            'Are you sure? \n' + 'This might make a lot of changes in DHIS2.',
     },
     default: {
         id: 'iaso.datasources.options.label.default',
@@ -226,6 +227,14 @@ const MESSAGES = defineMessages({
     noCredentialsForExport: {
         id: 'iaso.datasources.noCredentialsForExport',
         defaultMessage: 'Please configure DHIS2 on source to enable export',
+    },
+    copyVersion: {
+        id: 'iaso.datasources.copyVersion',
+        defaultMessage: 'Copy source version',
+    },
+    copy: {
+        id: 'iaso.datasources.button.label.copy',
+        defaultMessage: 'Copy',
     },
 });
 

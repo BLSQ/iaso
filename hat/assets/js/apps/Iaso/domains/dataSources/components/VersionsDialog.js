@@ -90,6 +90,7 @@ const tableColumns = source => [
         Header: <FormattedMessage id="iaso.label.actions" />,
         accessor: 'actions',
         sortable: false,
+        width:200,
         Cell: settings =>{
             return (source.read_only ? (
                 <FormattedMessage id="Read Only" />

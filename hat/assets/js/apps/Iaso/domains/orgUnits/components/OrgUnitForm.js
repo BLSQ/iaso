@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
 import { withStyles, Button, Grid } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 
 import { commonStyles } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import { useFormState } from '../../../hooks/form';
 import OrgUnitInfos from './OrgUnitInfosComponent';
 import MESSAGES from '../messages';
@@ -39,7 +40,6 @@ const OrgUnitForm = ({
 }) => {
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(initialFormState(orgUnit));
-
     const [orgUnitModified, setOrgUnitModified] = useState(false);
     const handleSave = () => {
         const newOrgUnit = mapValues(formState, v =>
@@ -61,10 +61,41 @@ const OrgUnitForm = ({
         );
     };
 
-    const handleChangeInfo = (key, value) => {
-        setOrgUnitModified(true);
-        setFieldValue(key, value);
-    };
+    const handleChangeField = useCallback(
+        (key, value) => {
+            setOrgUnitModified(true);
+            setFieldValue(key, value);
+        },
+        [setFieldValue],
+    );
+
+    // TODO change compoenent in blsq-comp library to avoid separate handler
+    // This fix assumes we can only add one alias at a time
+    const handleChangeAlias = useCallback(
+        (key, value) => {
+            const orgUnitAliases = orgUnit.aliases ?? [];
+            const newAlias = value[value.length - 1];
+            const actualAliases = value.filter(alias => alias !== '');
+            if (newAlias !== '' && !isEqual(actualAliases, orgUnitAliases)) {
+                setOrgUnitModified(true);
+            } else {
+                setOrgUnitModified(false);
+            }
+            setFieldValue(key, value);
+        },
+        [orgUnit.aliases, setFieldValue],
+    );
+
+    const handleChangeInfo = useCallback(
+        (key, value) => {
+            if (key === 'aliases') {
+                handleChangeAlias(key, value);
+            } else {
+                handleChangeField(key, value);
+            }
+        },
+        [handleChangeAlias, handleChangeField],
+    );
 
     const handleReset = () => {
         setOrgUnitModified(false);

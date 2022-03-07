@@ -7,8 +7,8 @@ export const getOverriddenTheme = theme => {
     const primaryBackgroundColor = Color(
         process.env.REACT_THEME_PRIMARY_BACKGROUND_COLOR,
     );
-    const primaryContrastText = primaryColor.isDark() ? '#fff' : '#000';
     const secondaryColor = Color(process.env.REACT_THEME_SECONDARY_COLOR);
+    const primaryContrastText = primaryColor.isDark() ? '#fff' : '#000';
     const secondaryContrastText = secondaryColor.isDark() ? '#fff' : '#000';
     return {
         ...theme,

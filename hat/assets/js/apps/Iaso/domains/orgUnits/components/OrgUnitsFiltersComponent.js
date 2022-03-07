@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
@@ -11,12 +11,14 @@ import Add from '@material-ui/icons/Add';
 import Search from '@material-ui/icons/Search';
 import classNames from 'classnames';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { decodeSearch } from '../utils';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { SearchFilter } from '../../../components/filters/Search.tsx';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 import { redirectTo } from '../../../routing/actions';
 import { getChipColors } from '../../../constants/chipColors';
+import { useOrgUnitsFiltersData } from '../hooks';
 
 import {
     status,
@@ -29,13 +31,10 @@ import {
 import {
     setFiltersUpdated,
     setOrgUnitsLocations,
-    setFetchingOrgUnitTypes,
 } from '../actions';
 
 import DatesRange from '../../../components/filters/DatesRange';
 
-import { decodeSearch } from '../utils';
-import { useOrgUnitsFiltersData } from '../hooks';
 import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from '../messages';
@@ -43,6 +42,7 @@ import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from './TreeView/requests';
 
 import { LocationLimit } from '../../../utils/map/LocationLimit';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -69,13 +69,15 @@ const OrgUnitsFiltersComponent = ({
     onSearch,
 }) => {
     const decodedSearches = [...decodeSearch(decodeURI(params.searches))];
-    const [searchParams, setSearchPrams] = useState(
+    const [searchParams, setSearchParams] = useState(
         decodedSearches[searchIndex] ?? {},
     );
 
+    // get user in order to get dataSourceId
+    const currentUser = useCurrentUser();
+    const [dataSourceId, setDataSourceId] = useState();
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [textSearchError, setTextSearchError] = useState(false);
-    const [fetchingGroups, setFetchingGroups] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(
         searchParams?.levels,
     );
@@ -83,28 +85,25 @@ const OrgUnitsFiltersComponent = ({
     const intl = useSafeIntl();
     const classes = useStyles();
     const filtersUpdated = useSelector(state => state.orgUnits.filtersUpdated);
-    const groups = useSelector(state => state.orgUnits.groups) || [];
+    const {
+        groups,
+        orgUnitTypes,
+        isFetchingGroups,
+        isFetchingorgUnitTypes,
+    } = useOrgUnitsFiltersData(dataSourceId);
     const orgUnitsLocations = useSelector(
         state => state.orgUnits.orgUnitsLocations,
     );
     const isClusterActive = useSelector(state => state.map.isClusterActive);
-    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
-    const sources = useSelector(state => state.orgUnits.sources);
-    const fetchingOrgUnitTypes = useSelector(
-        state => state.orgUnits.fetchingOrgUnitTypes,
-    );
+    // not replacing with useQuery as it creates a double call, and the redux state value is used elsewhere
+    const sources = useSelector(state => state.orgUnits.sources); 
 
     const dispatch = useDispatch();
-
-    useOrgUnitsFiltersData(
-        dispatch,
-        setFetchingOrgUnitTypes,
-        setFetchingGroups,
-    );
 
     const onChange = (value, urlKey) => {
         if (urlKey === 'source') {
             setInitialOrgUnitId(null);
+            setDataSourceId(value);
         }
         if (urlKey === 'levels') {
             setInitialOrgUnitId(value);
@@ -126,19 +125,19 @@ const OrgUnitsFiltersComponent = ({
             }, 100);
         }
 
-        decodedSearches[searchIndex] = {
+        const updatedSearch = {
             ...searchParams,
             [urlKey]: value,
         };
         if (urlKey === 'hasInstances' && value === 'false') {
-            delete decodedSearches[searchIndex].dateFrom;
-            delete decodedSearches[searchIndex].dateTo;
+            delete updatedSearch.dateFrom;
+            delete updatedSearch.dateTo;
         }
-        setSearchPrams(decodedSearches[searchIndex]);
+        setSearchParams(updatedSearch);
     };
 
     const handleSearch = () => {
-        const searches = [...decodeSearch(params.searches)];
+        const searches = [...decodedSearches];
         searches[searchIndex] = searchParams;
         const tempParams = {
             ...params,
@@ -163,12 +162,22 @@ const OrgUnitsFiltersComponent = ({
     const sourceFilter = extendFilter(
         searchParams,
         {
-            ...source(sources || [], false),
+            ...source(sources ?? [], false),
             loading: !sources,
         },
         (value, urlKey) => onChange(value, urlKey),
         searchIndex,
     );
+    useEffect(() => {
+        if (
+            !dataSourceId &&
+            currentUser?.account?.default_version?.data_source?.id
+        ) {
+            setDataSourceId(
+                currentUser?.account?.default_version?.data_source?.id,
+            );
+        }
+    }, []);
     return (
         <div className={classes.root}>
             <Grid container spacing={4}>
@@ -192,7 +201,6 @@ const OrgUnitsFiltersComponent = ({
                         params={params}
                         baseUrl={baseUrl}
                         filters={[sourceFilter]}
-                        onEnterPressed={() => handleSearch()}
                     />
                 </Grid>
 
@@ -205,8 +213,8 @@ const OrgUnitsFiltersComponent = ({
                                 extendFilter(
                                     searchParams,
                                     {
-                                        ...orgUnitType(orgUnitTypes),
-                                        loading: fetchingOrgUnitTypes,
+                                        ...orgUnitType(orgUnitTypes ?? []),
+                                        loading: isFetchingorgUnitTypes,
                                     },
                                     (value, urlKey) => onChange(value, urlKey),
                                     searchIndex,
@@ -214,8 +222,8 @@ const OrgUnitsFiltersComponent = ({
                                 extendFilter(
                                     searchParams,
                                     {
-                                        ...group(groups),
-                                        loading: fetchingGroups,
+                                        ...group(groups ?? []),
+                                        loading: isFetchingGroups,
                                     },
                                     (value, urlKey) => onChange(value, urlKey),
                                     searchIndex,

@@ -1005,6 +1005,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.restoreCampaign',
         defaultMessage: 'Restore campaign',
     },
+    all: {
+        id: 'iaso.polio.label.all',
+        defaultMessage: 'All',
+    },
+    regular: {
+        id: 'iaso.polio.label.regular',
+        defaultMessage: 'Regular',
+    },
+    campaignType: {
+        id: 'iaso.polio.label.campaignType',
+        defaultMessage: 'Campaign type',
+    },
 });
 
 export default MESSAGES;

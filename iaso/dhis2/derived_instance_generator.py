@@ -70,16 +70,7 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
         agg_filter = filter_out_blanks
         # Additional filter that can be passed to the aggregate
         for condition in aggregation.get("where", []):
-            # Check JSONField.get_lookups() for valid operator
-            lookup = condition["operator"]
-            cond_fieldname = "json__" + condition["questionName"]
-            cond_value = condition["value"]
-            negated = False
-            if lookup.startswith("~"):
-                negated = True
-                lookup = lookup[1:]
-            fieldname_lookup = cond_fieldname + "__" + lookup
-            q = Q(**{fieldname_lookup: cond_value}, _negated=negated)
+            q = condition_to_q(condition)
             agg_filter &= q
 
         if aggregation["aggregationType"] == "sum":
@@ -120,6 +111,27 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
         + str(progress)
     )
     return progress
+
+
+def condition_to_q(condition):
+    """This is our custom format to filter on a question value in the json field.
+
+    It takes 3 parameter, the questionName, the operator (e.g exact) and the value (attention type matter don't quote
+    if you want to filter an int
+    Check JSONField.get_lookups() for valid operators. You can prepend ~ to negate them.
+
+
+    """
+    lookup = condition["operator"]
+    cond_fieldname = "json__" + condition["questionName"]
+    cond_value = condition["value"]
+    negated = False
+    if lookup.startswith("~"):
+        negated = True
+        lookup = lookup[1:]
+    fieldname_lookup = cond_fieldname + "__" + lookup
+    q = Q(**{fieldname_lookup: cond_value}, _negated=negated)
+    return q
 
 
 @transaction.atomic

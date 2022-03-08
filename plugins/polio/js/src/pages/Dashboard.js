@@ -185,7 +185,7 @@ const Dashboard = ({ router }) => {
                 accessor: 'obr_name',
             },
             {
-                Header: formatMessage(MESSAGES.cvdpv2NotificationDate),
+                Header: formatMessage(MESSAGES.virusNotificationDate),
                 accessor: 'cvdpv2_notified_at',
             },
             {

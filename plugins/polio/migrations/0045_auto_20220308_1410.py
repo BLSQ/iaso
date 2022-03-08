@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polio', '0044_merge_20220224_1136'),
+        ("polio", "0044_merge_20220224_1136"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='campaign',
-            name='virus',
-            field=models.CharField(blank=True, choices=[('PV1', 'PV1'), ('PV2', 'PV2'), ('PV3', 'PV3'), ('cVDPV2', 'cVDPV2'), ('WPV1', 'WPV1')], max_length=6, null=True),
+            model_name="campaign",
+            name="virus",
+            field=models.CharField(
+                blank=True,
+                choices=[("PV1", "PV1"), ("PV2", "PV2"), ("PV3", "PV3"), ("cVDPV2", "cVDPV2"), ("WPV1", "WPV1")],
+                max_length=6,
+                null=True,
+            ),
         ),
     ]

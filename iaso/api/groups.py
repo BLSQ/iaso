@@ -85,8 +85,11 @@ class GroupsViewSet(ModelViewSet):
             queryset = queryset.annotate(org_unit_count=Count("org_units"))
 
         version = self.request.query_params.get("version", None)
+        data_source_id = self.request.GET.get("dataSource", None)
         if version:
             queryset = queryset.filter(source_version=version)
+        elif data_source_id:
+            queryset = queryset.filter(source_version__data_source__id=data_source_id)
         else:
             default_version = self.request.GET.get("defaultVersion", None)
             if default_version == "true":

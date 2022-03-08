@@ -11,7 +11,6 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Avg, Count, FloatField, Sum, Exists, OuterRef, Q
 from django.db.models.functions import Cast
-from django.db.models.expressions import RawSQL
 from iaso.models import Instance
 import logging
 

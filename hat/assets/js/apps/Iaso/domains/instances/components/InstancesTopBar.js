@@ -120,7 +120,10 @@ const InstancesTopBar = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     useSkipEffectOnMount(() => {
-        if (!isEqual(updatedParams, params)) {
+        if (
+            params?.columns &&
+            !isEqual(updatedParams?.columns, params?.columns)
+        ) {
             if (instances || tableColumns.length === 0) {
                 const cols = makeColumns();
                 handleChangeVisibleColmuns(cols);
@@ -138,7 +141,6 @@ const InstancesTopBar = ({
     // Separated the redirect from handleChangeVisibleColumns to avoid an infinite loop
     useEffect(() => {
         if (!isEqual(updatedParams, params)) {
-            console.log('redirect', updatedParams);
             dispatch(redirectToReplace(baseUrl, updatedParams ?? {}));
         }
     }, [baseUrl, updatedParams, dispatch, params]);

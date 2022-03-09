@@ -42,7 +42,7 @@ def dhis2_callback(request, dhis2_slug):
         user_dhis2_id = user_info.json()["userCredentials"]["id"]
 
         try:
-            user = Profile.objects.get(dhis2_id=user_dhis2_id).user
+            user = Profile.objects.get(dhis2_id=user_dhis2_id, account=ext_credentials.account).user
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             return HttpResponseRedirect(redirect_to="/")
         except ObjectDoesNotExist:

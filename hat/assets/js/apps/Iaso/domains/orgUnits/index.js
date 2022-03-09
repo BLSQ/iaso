@@ -51,6 +51,7 @@ import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { locationLimitMax } from './constants/orgUnitConstants';
 import { convertObjectToString } from '../../utils';
+import { useGetOrgUnitTypes} from './hooks';
 
 const baseUrl = baseUrls.orgUnits;
 
@@ -95,9 +96,10 @@ const OrgUnits = props => {
         state => state.orgUnits.orgUnitsPage.counts,
     );
     const fetchingList = useSelector(state => state.orgUnits.fetchingList);
-    const fetchingOrgUnitTypes = useSelector(
-        state => state.orgUnits.fetchingOrgUnitTypes,
-    );
+    const { data: orgUnitTypes,isFetching: fetchingOrgUnitTypes } = useGetOrgUnitTypes()
+    // const fetchingOrgUnitTypes = useSelector(
+    //     state => state.orgUnits.fetchingOrgUnitTypes,
+    // );
     const filtersUpdated = useSelector(state => state.orgUnits.filtersUpdated);
     const currentUser = useSelector(state => state.users.current);
 
@@ -503,7 +505,7 @@ const OrgUnits = props => {
                                                 classes.containerMarginNeg
                                             }
                                         >
-                                            <OrgunitsMap params={params} />
+                                            <OrgunitsMap params={params}  />
                                         </div>
                                     </div>
                                 )}

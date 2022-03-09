@@ -183,7 +183,7 @@ export const useGetGroups = ({ dataSourceId, sourceVersionId }) => {
 
     const { data: groups, isFetching: isFetchingGroups } = useSnackQuery(
         ['groups', dataSourceId, groupsQueryParams],
-        () => () => getRequest(`/api/groups/${groupsQueryParams}`),
+        () => getRequest(`/api/groups/${groupsQueryParams}`),
         MESSAGES.fetchGroupsError,
         {
             enabled,

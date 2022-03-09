@@ -34,7 +34,11 @@ import {
     group,
     geography,
 } from '../../../constants/filters';
-import { setFiltersUpdated, setOrgUnitsLocations, setFetchingOrgUnitTypes, } from '../actions';
+import {
+    setFiltersUpdated,
+    setOrgUnitsLocations,
+    setFetchingOrgUnitTypes,
+} from '../actions';
 
 import DatesRange from '../../../components/filters/DatesRange';
 
@@ -91,14 +95,16 @@ const OrgUnitsFiltersComponent = ({
     const intl = useSafeIntl();
     const classes = useStyles();
     const filtersUpdated = useSelector(state => state.orgUnits.filtersUpdated);
-    const { groups, isFetchingGroups } =
-        useGetGroups({ dataSourceId, sourceVersionId });
+    const { groups, isFetchingGroups } = useGetGroups({
+        dataSourceId,
+        sourceVersionId,
+    });
     const orgUnitsLocations = useSelector(
         state => state.orgUnits.orgUnitsLocations,
     );
     const isClusterActive = useSelector(state => state.map.isClusterActive);
     // not replacing with useQuery as it creates a double call, and the redux state value is used elsewhere
-    const sources = useSelector(state => state.orgUnits.sources);   
+    const sources = useSelector(state => state.orgUnits.sources);
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
     const isFetchingOrgUnitTypes = useSelector(
         state => state.orgUnits.fetchingOrgUnitTypes,
@@ -116,10 +122,7 @@ const OrgUnitsFiltersComponent = ({
     }, [dataSourceId, sources]);
     const dispatch = useDispatch();
 
-    useOrgUnitsFiltersData(
-        dispatch,
-        setFetchingOrgUnitTypes,
-    );
+    useOrgUnitsFiltersData(dispatch, setFetchingOrgUnitTypes);
 
     const onChange = (value, urlKey) => {
         if (urlKey === 'version') {

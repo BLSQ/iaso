@@ -4,7 +4,8 @@ import { Map, TileLayer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
 import isEqual from 'lodash/isEqual';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'leaflet-draw';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
+import deepPurple from '@material-ui/core/colors/deepPurple';
 
 import { Grid } from '@material-ui/core';
 
@@ -28,6 +29,7 @@ import OrgUnitTypeFilterComponent from '../../../forms/components/OrgUnitTypeFil
 import SourcesFilterComponent from '../../../forms/components/SourcesFilterComponent';
 import MarkerComponent from '../../../../components/maps/markers/MarkerComponent';
 import InnerDrawer from '../../../../components/nav/InnerDrawer';
+import { MapLegend } from '../../../../components/maps/MapLegend.tsx';
 
 import OrgUnitPopupComponent from '../OrgUnitPopupComponent';
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
@@ -131,7 +133,6 @@ class OrgUnitMapComponent extends Component {
             tooltipMessage: formatMessage(MESSAGES.catchment),
             onAdd: () => this.toggleAddShape('catchment'),
         });
-        this.fitToBounds();
     }
 
     componentDidUpdate(prevProps) {
@@ -140,6 +141,12 @@ class OrgUnitMapComponent extends Component {
             intl: { formatMessage },
             orgUnit,
         } = this.props;
+        if (
+            prevProps.loadingSelectedSources === true &&
+            this.props.loadingSelectedSources === false
+        ) {
+            this.fitToBounds();
+        }
         if (!isEqual(prevProps.orgUnit.geo_json, orgUnit.geo_json)) {
             locationGroup.updateShape(
                 getleafletGeoJson(orgUnit.geo_json),
@@ -309,6 +316,7 @@ class OrgUnitMapComponent extends Component {
             currentOrgUnit,
             loadingSelectedSources,
             intl: { formatMessage },
+            theme,
         } = this.props;
         const {
             location,
@@ -453,6 +461,20 @@ class OrgUnitMapComponent extends Component {
                         />
                     }
                 >
+                    <MapLegend
+                        options={[
+                            {
+                                value: 'ouCurrent',
+                                label: formatMessage(MESSAGES.ouCurrent),
+                                color: theme.palette.primary.main,
+                            },
+                            {
+                                value: 'ouParent',
+                                label: formatMessage(MESSAGES.ouParent),
+                                color: deepPurple['900'],
+                            },
+                        ]}
+                    />
                     <Map
                         scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
@@ -477,7 +499,7 @@ class OrgUnitMapComponent extends Component {
                             }
                             url={currentTile.url}
                         />
-                        {orgUnit.parent_geo_json && (
+                        {!location.edit && orgUnit.parent_geo_json && (
                             <Pane
                                 name="parent-shape"
                                 style={{
@@ -487,7 +509,7 @@ class OrgUnitMapComponent extends Component {
                                 <GeoJSON
                                     data={orgUnit.parent_geo_json}
                                     style={() => ({
-                                        color: 'pink',
+                                        color: deepPurple['900'],
                                     })}
                                 >
                                     <OrgUnitPopupComponent
@@ -743,6 +765,7 @@ OrgUnitMapComponent.propTypes = {
     sources: PropTypes.array.isRequired,
     currentOrgUnit: PropTypes.object.isRequired,
     loadingSelectedSources: PropTypes.bool.isRequired,
+    theme: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -760,4 +783,4 @@ const MapDispatchToProps = dispatch => ({
 export default connect(
     MapStateToProps,
     MapDispatchToProps,
-)(withStyles(styles)(injectIntl(OrgUnitMapComponent)));
+)(withStyles(styles)(withTheme(injectIntl(OrgUnitMapComponent))));

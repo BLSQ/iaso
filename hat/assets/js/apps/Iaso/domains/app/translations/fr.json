@@ -213,6 +213,7 @@
     "iaso.label.created_at": "Création",
     "iaso.label.creationDateFrom": "Création à partir de",
     "iaso.label.creationDateTo": "Création jusqu'à",
+    "iaso.label.currentOu": "Unité d'org. courrante",
     "iaso.label.dashboard": "Tableau de bord",
     "iaso.label.dataSources": "Sources de données",
     "iaso.label.date": "Date",

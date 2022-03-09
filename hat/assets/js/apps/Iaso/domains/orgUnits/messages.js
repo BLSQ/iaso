@@ -390,6 +390,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.ouTypesHelperTextSingular',
         defaultMessage: 'Children org unit',
     },
+    ouCurrent: {
+        id: 'iaso.label.currentOu',
+        defaultMessage: 'Current org unit',
+    },
 });
 
 export default MESSAGES;

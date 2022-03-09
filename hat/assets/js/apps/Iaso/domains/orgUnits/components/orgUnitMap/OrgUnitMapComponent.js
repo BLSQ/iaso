@@ -307,6 +307,8 @@ class OrgUnitMapComponent extends Component {
             sourcesSelected,
             sources,
             currentOrgUnit,
+            loadingSelectedSources,
+            intl: { formatMessage },
         } = this.props;
         const {
             location,
@@ -347,6 +349,7 @@ class OrgUnitMapComponent extends Component {
                 onClick={() => this.fetchSubOrgUnitDetail(o)}
             >
                 <OrgUnitPopupComponent
+                    titleMessage={formatMessage(MESSAGES.ouLinked)}
                     displayUseLocation
                     useLocation={selectedOrgUnit =>
                         this.useOrgUnitLocation(selectedOrgUnit)
@@ -373,6 +376,7 @@ class OrgUnitMapComponent extends Component {
                     filtersOptionComponent={
                         <>
                             <SourcesFilterComponent
+                                loadingSelectedSources={loadingSelectedSources}
                                 currentOrgUnit={currentOrgUnit}
                                 currentSources={sources}
                                 fitToBounds={() => this.fitToBounds()}
@@ -477,7 +481,7 @@ class OrgUnitMapComponent extends Component {
                             <Pane
                                 name="parent-shape"
                                 style={{
-                                    zIndex: 700,
+                                    zIndex: 350,
                                 }}
                             >
                                 <GeoJSON
@@ -485,7 +489,14 @@ class OrgUnitMapComponent extends Component {
                                     style={() => ({
                                         color: 'pink',
                                     })}
-                                />
+                                >
+                                    <OrgUnitPopupComponent
+                                        titleMessage={formatMessage(
+                                            MESSAGES.ouParent,
+                                        )}
+                                        currentOrgUnit={orgUnit.parent}
+                                    />
+                                </GeoJSON>
                             </Pane>
                         )}
                         {!location.edit && (
@@ -553,6 +564,9 @@ class OrgUnitMapComponent extends Component {
                                                                 })}
                                                             >
                                                                 <OrgUnitPopupComponent
+                                                                    titleMessage={formatMessage(
+                                                                        MESSAGES.ouChild,
+                                                                    )}
                                                                     displayUseLocation
                                                                     useLocation={selectedOrgUnit =>
                                                                         this.useOrgUnitLocation(
@@ -590,7 +604,7 @@ class OrgUnitMapComponent extends Component {
                                 }
                             >
                                 <Pane
-                                    name={`${orgunitsPane}-markers-${ot.id}`}
+                                    name={`${orgunitsPane}-markers-${ot.id}-${ot.name}`}
                                     style={{ zIndex: 698 }}
                                 >
                                     {getMarkerList({
@@ -728,6 +742,7 @@ OrgUnitMapComponent.propTypes = {
     setSourcesSelected: PropTypes.func.isRequired,
     sources: PropTypes.array.isRequired,
     currentOrgUnit: PropTypes.object.isRequired,
+    loadingSelectedSources: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
 import PropTypes from 'prop-types';
@@ -18,10 +18,14 @@ const SourcesFilterComponent = ({
     setSourcesSelected,
     currentSources,
     currentOrgUnit,
+    loadingSelectedSources,
 }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(loadingSelectedSources);
+    useEffect(() => {
+        setIsLoading(loadingSelectedSources);
+    }, [loadingSelectedSources]);
     if (!currentOrgUnit) return null;
     const sources = getSourcesWithoutCurrentSource(
         currentSources,
@@ -84,6 +88,7 @@ SourcesFilterComponent.propTypes = {
     setSourcesSelected: PropTypes.func.isRequired,
     currentSources: PropTypes.array.isRequired,
     currentOrgUnit: PropTypes.object.isRequired,
+    loadingSelectedSources: PropTypes.bool.isRequired,
 };
 
 export default SourcesFilterComponent;

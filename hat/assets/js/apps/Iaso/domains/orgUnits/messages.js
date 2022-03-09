@@ -378,6 +378,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.saveLinkError',
         defaultMessage: 'An error occurred while saving link',
     },
+    ouParent: {
+        id: 'iaso.label.parentOu',
+        defaultMessage: 'Parent org Unit',
+    },
+    ouLinked: {
+        id: 'iaso.orgUnits.sourcesHelperTextSingular',
+        defaultMessage: 'Linked org unit',
+    },
+    ouChild: {
+        id: 'iaso.orgUnits.ouTypesHelperTextSingular',
+        defaultMessage: 'Children org unit',
+    },
 });
 
 export default MESSAGES;

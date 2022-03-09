@@ -18,6 +18,33 @@
       "name": "sum of budget",
       "questionName": "cs_304",
       "aggregationType": "sum"
+    },
+    {
+      "id": "satisfaction_score_count_gt_eleven",
+      "name": "Number of submissions with answered survey with answer > 11",
+      "questionName": "satisfaction_score",
+      "aggregationType": "count",
+      "where": [
+        {
+          "questionName": "satisfaction_score",
+          "operator": "gt",
+          "value": 11
+        }
+      ]
+    },
+    {
+      "id": "satisfaction_score_sum",
+      "name": "sum of budget",
+      "questionName": "satisfaction_score",
+      "aggregationType": "sum",
+      "defaultValue": 0
+    },
+    {
+      "id": "satisfaction_score_sum_with_default",
+      "name": "sum of budget",
+      "questionName": "never_filled_question",
+      "aggregationType": "sum",
+      "defaultValue": 0
     }
   ]
 }

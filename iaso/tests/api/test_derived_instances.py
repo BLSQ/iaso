@@ -1,4 +1,3 @@
-from django.test import tag
 from math import floor
 from iaso.test import APITestCase
 from iaso import models as m
@@ -101,6 +100,32 @@ class DerivedInstancesTests(APITestCase):
                         "aggregationType": "count",
                     },
                     {
+                        "id": "satisfaction_score_count_ten",
+                        "name": "Number of submissions with answered survey with answer = 10",
+                        "questionName": "satisfaction_score",
+                        "aggregationType": "count",
+                        "where": [
+                            {
+                                "questionName": "satisfaction_score",
+                                "operator": "exact",
+                                "value": 10,
+                            }
+                        ],
+                    },
+                    {
+                        "id": "satisfaction_score_count_gt_eleven",
+                        "name": "Number of submissions with answered survey with answer > 11",
+                        "questionName": "satisfaction_score",
+                        "aggregationType": "count",
+                        "where": [
+                            {
+                                "questionName": "satisfaction_score",
+                                "operator": "gt",
+                                "value": 11,
+                            }
+                        ],
+                    },
+                    {
                         "id": "satisfaction_score_sum",
                         "name": "sum of budget",
                         "questionName": "satisfaction_score",
@@ -146,6 +171,8 @@ class DerivedInstancesTests(APITestCase):
                 "_version": "1",
                 "satisfaction_score_avg": 54,
                 "satisfaction_score_count": 4,
+                "satisfaction_score_count_gt_eleven": 3,
+                "satisfaction_score_count_ten": 1,
                 "satisfaction_score_sum": 216,
                 "satisfaction_score_sum_with_default": 0,
             },
@@ -165,6 +192,8 @@ class DerivedInstancesTests(APITestCase):
                 "_version": "1",
                 "satisfaction_score_avg": 86,
                 "satisfaction_score_count": 2,
+                "satisfaction_score_count_gt_eleven": 2,
+                "satisfaction_score_count_ten": 0,
                 "satisfaction_score_sum": 173,
                 "satisfaction_score_sum_with_default": 0,
             },
@@ -206,6 +235,8 @@ class DerivedInstancesTests(APITestCase):
                 "satisfaction_score_avg": None,
                 "satisfaction_score_sum": None,
                 "satisfaction_score_count": None,
+                "satisfaction_score_count_gt_eleven": None,
+                "satisfaction_score_count_ten": None,
                 "satisfaction_score_sum_with_default": None,
             },
         )
@@ -228,6 +259,8 @@ class DerivedInstancesTests(APITestCase):
                 "_version": "1",
                 "satisfaction_score_avg": 54,
                 "satisfaction_score_count": 4,
+                "satisfaction_score_count_gt_eleven": 3,
+                "satisfaction_score_count_ten": 1,
                 "satisfaction_score_sum": 216,
                 "satisfaction_score_sum_with_default": 0,
             },

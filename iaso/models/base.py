@@ -455,6 +455,7 @@ class Group(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = DefaultGroupManager()
+    all_objects = models.Manager()
     domain_objects = DomainGroupManager()
 
     def __str__(self):

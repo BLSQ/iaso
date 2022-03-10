@@ -140,7 +140,7 @@ const InstancesTopBar = ({
 
     // Separated the redirect from handleChangeVisibleColumns to avoid an infinite loop
     useEffect(() => {
-        if (!isEqual(updatedParams, params)) {
+        if (!isEqual(updatedParams?.columns, params?.columns)) {
             dispatch(redirectToReplace(baseUrl, updatedParams ?? {}));
         }
     }, [baseUrl, updatedParams, dispatch, params]);

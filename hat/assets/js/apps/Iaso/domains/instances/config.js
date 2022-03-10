@@ -37,7 +37,7 @@ const instancesTableColumns = (formatMessage = () => ({}), user) => {
     ];
     let metaFields = INSTANCE_METAS_FIELDS.filter(f => Boolean(f.tableOrder));
     metaFields = orderBy(metaFields, [f => f.tableOrder], ['asc']);
-    metaFields.forEach(f => {
+    metaFields.forEach(f =>
         columns.push({
             Header: formatMessage(MESSAGES[f.key]),
             accessor: f.accessor || f.key,
@@ -48,8 +48,8 @@ const instancesTableColumns = (formatMessage = () => ({}), user) => {
                     f.render
                         ? f.render(settings.row.original[f.key])
                         : settings.row.original[f.key]),
-        });
-    });
+        }),
+    );
     return columns;
 };
 

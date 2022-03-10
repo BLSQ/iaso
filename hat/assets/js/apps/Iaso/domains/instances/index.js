@@ -108,7 +108,7 @@ const Instances = ({ params }) => {
     const labelKeys = formDetails?.label_keys ?? [];
     const formName = formDetails?.name ?? '';
     const periodType = formDetails?.period_type;
-    const orgUnitTypes = formDetails?.org_unit_type_ids ?? [];
+    const orgUnitTypes = formDetails?.org_unit_type_ids??[];
 
     const { data: possibleFields } = useSnackQuery(
         ['possibleFieldForForm', formId],
@@ -254,7 +254,6 @@ const Instances = ({ params }) => {
                             loading: fetchingList,
                         }}
                         resetPageToOne={resetPageToOne}
-                        defaultSorted={[{ id: 'updated_at', desc: true }]}
                     />
                 )}
                 {tab === 'map' && (

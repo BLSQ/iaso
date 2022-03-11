@@ -3,21 +3,34 @@ import orange from '@material-ui/core/colors/orange';
 import red from '@material-ui/core/colors/red';
 
 const polioViruses = [
+    // Legacy values
+    // {
+    //     value: 'PV1',
+    //     label: 'PV1',
+    // },
+    // {
+    //     value: 'PV2',
+    //     label: 'PV2',
+    // },
+    // {
+    //     value: 'PV3',
+    //     label: 'PV3',
+    // },
     {
         value: 'PV1',
-        label: 'PV1',
-    },
-    {
-        value: 'PV2',
-        label: 'PV2',
+        label: 'cVDPV1',
     },
     {
         value: 'PV3',
-        label: 'PV3',
+        label: 'cVDPV3',
     },
     {
         value: 'cVDPV2',
         label: 'cVDPV2',
+    },
+    {
+        value: 'WPV1',
+        label: 'WPV1',
     },
 ];
 

@@ -1,14 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { makeStyles, Grid, Tabs, Tab } from '@material-ui/core';
-import {
-    commonStyles,
-    useSafeIntl,
-    useSkipEffectOnMount,
-} from 'bluesquare-components';
-import { isEqual } from 'lodash';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
 
 import { redirectToReplace } from '../../../routing/actions';
@@ -46,52 +41,44 @@ const InstancesTopBar = ({
     const dispatch = useDispatch();
     const currentUser = useSelector(state => state.users.current);
     const [visibleColumns, setVisibleColumns] = useState([]);
-    const [updatedParams, setUpdatedParams] = useState();
     const { formatMessage } = useSafeIntl();
+
     const formIds = params.formIds?.split(',');
 
-    const handleChangeVisibleColmuns = useCallback(
-        cols => {
-            const newParams = {
-                ...params,
-                columns: cols.map(c => c.key).join(','),
-            };
-            setUpdatedParams(newParams);
-            setVisibleColumns(cols);
-            setTableColumns(
-                getInstancesColumns(
-                    formatMessage,
-                    cols,
-                    params.showDeleted === 'true',
-                    currentUser,
-                ),
-            );
-        },
-        [currentUser, formatMessage, params, setTableColumns, setUpdatedParams],
-    );
+    const handleChangeVisibleColmuns = cols => {
+        const newParams = {
+            ...params,
+            columns: cols.map(c => c.key).join(','),
+        };
+        setTableColumns(
+            getInstancesColumns(
+                formatMessage,
+                cols,
+                params.showDeleted === 'true',
+                currentUser,
+            ),
+        );
+        setVisibleColumns(cols);
+        dispatch(redirectToReplace(baseUrl, newParams));
+    };
 
-    const makeColumns = useCallback(
-        (onMount = false) => {
+    useEffect(() => {
+        if (instances || tableColumns.length === 0) {
             const enrichedParams = { ...params };
             let columns = INSTANCE_METAS_FIELDS.filter(f =>
                 Boolean(f.tableOrder),
             ).map(f => f.accessor || f.key);
-            if (formIds?.length === 1) {
+            if (formIds && formIds.length === 1) {
                 columns = columns.filter(c => c !== 'form__name');
                 if (periodType === null) {
                     columns = columns.filter(c => c !== 'period');
                 }
             }
-            if (onMount)
-                columns = columns.filter(
-                    c => c !== 'formVersion' && c !== 'created_at',
-                );
 
             columns = columns.join(',');
             const columnsWithLabelKeys = `${columns},${labelKeys.join(',')}`;
-
             enrichedParams.columns = columnsWithLabelKeys;
-            return getInstancesVisibleColumns({
+            const cols = getInstancesVisibleColumns({
                 formatMessage,
                 instance: instances && instances[0],
                 columns: enrichedParams.columns,
@@ -99,49 +86,9 @@ const InstancesTopBar = ({
                 defaultOrder,
                 possibleFields,
             });
-        },
-        [
-            formIds?.length,
-            formatMessage,
-            instances,
-            labelKeys,
-            params,
-            periodType,
-            possibleFields,
-        ],
-    );
-
-    // Have a separate effect on mount to filter out source and version from columns
-    useEffect(() => {
-        if (instances || tableColumns.length === 0) {
-            const cols = makeColumns(true);
             handleChangeVisibleColmuns(cols);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    useSkipEffectOnMount(() => {
-        if (!isEqual(updatedParams, params)) {
-            if (instances || tableColumns.length === 0) {
-                const cols = makeColumns();
-                handleChangeVisibleColmuns(cols);
-            }
-        }
-    }, [
-        handleChangeVisibleColmuns,
-        instances,
-        makeColumns,
-        params,
-        tableColumns.length,
-        updatedParams,
-    ]);
-
-    // Separated the redirect from handleChangeVisibleColumns to avoid an infinite loop
-    useEffect(() => {
-        if (!isEqual(updatedParams, params)) {
-            console.log('redirect', updatedParams);
-            dispatch(redirectToReplace(baseUrl, updatedParams ?? {}));
-        }
-    }, [baseUrl, updatedParams, dispatch, params]);
+    }, [instances, possibleFields]);
 
     let title = formatMessage(MESSAGES.titleMulti);
     if (formIds?.length === 1) {

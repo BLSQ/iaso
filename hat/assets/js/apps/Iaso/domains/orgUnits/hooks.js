@@ -5,9 +5,12 @@ import {
     useSnackQueries,
 } from 'Iaso/libs/apiHooks';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
-import { useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import MESSAGES from './messages';
 import { getOtChipColors, getChipColors } from '../../constants/chipColors';
+import { fetchOrgUnitsTypes } from '../../utils/requests';
+import { setOrgUnitTypes } from './actions';
+import { useFetchOnMount } from '../../hooks/fetchOnMount';
 
 export const useOrgUnitDetailData = (
     isNewOrgunit,
@@ -158,46 +161,60 @@ export const useSaveOrgUnit = onSuccess =>
         undefined,
         { onSuccess },
     );
-export const useOrgUnitsFiltersData = dataSourceId => {
+
+const makeGroupsQueryParams = ({ dataSourceId, sourceVersionId }) => {
+    if (sourceVersionId) return `?version=${sourceVersionId}`;
+    if (dataSourceId) return `?dataSource=${dataSourceId}`;
+    return '?defaultVersion=true';
+};
+const getOrgUnitTypes = () => getRequest(`/api/orgunittypes/`);
+
+export const useGetGroups = ({ dataSourceId, sourceVersionId }) => {
     const [enabled, setEnabled] = useState(false);
-    const queryParams = dataSourceId ? `?dataSource=${dataSourceId}` : '';
+    const groupsQueryParams = makeGroupsQueryParams({
+        dataSourceId,
+        sourceVersionId,
+    });
+
     useEffect(() => {
         if (dataSourceId) setEnabled(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataSourceId]);
-    const [
-        { data: groups, isFetching: isFetchingGroups },
-        { data: orgUnitTypes, isFetching: isFetchingorgUnitTypes },
-    ] = useSnackQueries([
+
+    const { data: groups, isFetching: isFetchingGroups } = useSnackQuery(
+        ['groups', dataSourceId, groupsQueryParams],
+        () => getRequest(`/api/groups/${groupsQueryParams}`),
+        MESSAGES.fetchGroupsError,
         {
-            queryKey: ['groups', dataSourceId],
-            queryFn: () => getRequest(`/api/groups/${queryParams}`),
-            snackErrorMsg: MESSAGES.fetchGroupsError,
             enabled,
-            options: {
-                select: data => data?.groups,
-            },
+            select: data => data?.groups,
         },
-        {
-            queryKey: ['orgUnitTypes', dataSourceId],
-            queryFn: () => getRequest(`/api/orgunittypes/`),
-            snackErrorMsg: MESSAGES.fetchOrgUnitTypesError,
-            enabled,
-            options: {
-                select: data => data?.orgUnitTypes,
-            },
-        },
-    ]);
+    );
 
     return {
         groups,
-        orgUnitTypes,
         isFetchingGroups,
-        isFetchingorgUnitTypes,
     };
 };
 
 export const useRefreshOrgUnit = () => {
     const queryClient = useQueryClient();
     return data => queryClient.setQueryData(['forms', data.id], data);
+};
+
+export const useGetOrgUnitTypes = () => {
+    return useQuery(['orgUnitTypes'], getOrgUnitTypes, {
+        select: data => data.orgUnitTypes,
+    });
+};
+
+export const useOrgUnitsFiltersData = (dispatch, setFetchingOrgUnitTypes) => {
+    useFetchOnMount([
+        {
+            fetch: fetchOrgUnitsTypes,
+            setFetching: fetching =>
+                dispatch(setFetchingOrgUnitTypes(fetching)),
+            setData: setOrgUnitTypes,
+        },
+    ]);
 };

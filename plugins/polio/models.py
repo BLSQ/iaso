@@ -16,6 +16,7 @@ VIRUSES = [
     ("PV2", _("PV2")),
     ("PV3", _("PV3")),
     ("cVDPV2", _("cVDPV2")),
+    ("WPV1", _("WPV1")),
 ]
 
 VACINES = [

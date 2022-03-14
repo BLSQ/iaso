@@ -1,10 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Button, Box, makeStyles, Divider } from '@material-ui/core';
+import {
+    Button,
+    Box,
+    makeStyles,
+    Divider,
+    Typography,
+} from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 
 import Add from '@material-ui/icons/Add';
@@ -18,7 +24,7 @@ import { SearchFilter } from '../../../components/filters/Search.tsx';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 import { redirectTo } from '../../../routing/actions';
 import { getChipColors } from '../../../constants/chipColors';
-import { useOrgUnitsFiltersData } from '../hooks';
+import { useOrgUnitsFiltersData, useGetGroups } from '../hooks';
 
 import {
     status,
@@ -28,7 +34,11 @@ import {
     group,
     geography,
 } from '../../../constants/filters';
-import { setFiltersUpdated, setOrgUnitsLocations } from '../actions';
+import {
+    setFiltersUpdated,
+    setOrgUnitsLocations,
+    setFetchingOrgUnitTypes,
+} from '../actions';
 
 import DatesRange from '../../../components/filters/DatesRange';
 
@@ -65,6 +75,7 @@ const OrgUnitsFiltersComponent = ({
     currentTab,
     onSearch,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const decodedSearches = [...decodeSearch(decodeURI(params.searches))];
     const [searchParams, setSearchParams] = useState(
         decodedSearches[searchIndex] ?? {},
@@ -72,7 +83,9 @@ const OrgUnitsFiltersComponent = ({
 
     // get user in order to get dataSourceId
     const currentUser = useCurrentUser();
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
     const [dataSourceId, setDataSourceId] = useState();
+    const [sourceVersionId, setSourceVersionId] = useState();
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [textSearchError, setTextSearchError] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(
@@ -82,21 +95,43 @@ const OrgUnitsFiltersComponent = ({
     const intl = useSafeIntl();
     const classes = useStyles();
     const filtersUpdated = useSelector(state => state.orgUnits.filtersUpdated);
-    const { groups, orgUnitTypes, isFetchingGroups, isFetchingorgUnitTypes } =
-        useOrgUnitsFiltersData(dataSourceId);
+    const { groups, isFetchingGroups } = useGetGroups({
+        dataSourceId,
+        sourceVersionId,
+    });
     const orgUnitsLocations = useSelector(
         state => state.orgUnits.orgUnitsLocations,
     );
     const isClusterActive = useSelector(state => state.map.isClusterActive);
     // not replacing with useQuery as it creates a double call, and the redux state value is used elsewhere
     const sources = useSelector(state => state.orgUnits.sources);
-
+    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
+    const isFetchingOrgUnitTypes = useSelector(
+        state => state.orgUnits.fetchingOrgUnitTypes,
+    );
+    const versionsDropDown = useMemo(() => {
+        if (!sources || !dataSourceId) return [];
+        return (
+            sources
+                .filter(src => src.id === dataSourceId)[0]
+                ?.versions.map(version => ({
+                    label: version.number.toString(),
+                    value: version.id.toString(),
+                })) ?? []
+        );
+    }, [dataSourceId, sources]);
     const dispatch = useDispatch();
 
+    useOrgUnitsFiltersData(dispatch, setFetchingOrgUnitTypes);
+
     const onChange = (value, urlKey) => {
+        if (urlKey === 'version') {
+            setSourceVersionId(value);
+        }
         if (urlKey === 'source') {
             setInitialOrgUnitId(null);
             setDataSourceId(value);
+            setSourceVersionId(null);
         }
         if (urlKey === 'levels') {
             setInitialOrgUnitId(value);
@@ -167,9 +202,15 @@ const OrgUnitsFiltersComponent = ({
             currentUser?.account?.default_version?.data_source?.id
         ) {
             setDataSourceId(
-                currentUser?.account?.default_version?.data_source?.id,
+                searchParams?.source ??
+                    currentUser?.account?.default_version?.data_source?.id,
+            );
+            setSourceVersionId(
+                searchParams?.version ??
+                    currentUser?.account?.default_version?.id,
             );
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return (
         <div className={classes.root}>
@@ -195,6 +236,46 @@ const OrgUnitsFiltersComponent = ({
                         baseUrl={baseUrl}
                         filters={[sourceFilter]}
                     />
+                    {!showAdvancedSettings && (
+                        <Typography
+                            className={classes.advancedSettings}
+                            variant="overline"
+                            onClick={() => setShowAdvancedSettings(true)}
+                        >
+                            {formatMessage(MESSAGES.showAdvancedSettings)}
+                        </Typography>
+                    )}
+                    {showAdvancedSettings && (
+                        <>
+                            <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                filters={[
+                                    {
+                                        urlKey: 'version',
+                                        isMultiSelect: false,
+                                        isClearable: true,
+                                        type: 'select',
+                                        label: MESSAGES.sourceVersion,
+                                        displayColor: false,
+                                        value: sourceVersionId,
+                                        uid: 'version-filter',
+                                        loading: !source,
+                                        callback: (value, urlKey) =>
+                                            onChange(value, urlKey),
+                                        options: versionsDropDown,
+                                    },
+                                ]}
+                            />
+                            <Typography
+                                className={classes.advancedSettings}
+                                variant="overline"
+                                onClick={() => setShowAdvancedSettings(false)}
+                            >
+                                {formatMessage(MESSAGES.hideAdvancedSettings)}
+                            </Typography>
+                        </>
+                    )}
                 </Grid>
 
                 <Grid item xs={4}>
@@ -207,7 +288,7 @@ const OrgUnitsFiltersComponent = ({
                                     searchParams,
                                     {
                                         ...orgUnitType(orgUnitTypes ?? []),
-                                        loading: isFetchingorgUnitTypes,
+                                        loading: isFetchingOrgUnitTypes,
                                     },
                                     (value, urlKey) => onChange(value, urlKey),
                                     searchIndex,
@@ -255,7 +336,8 @@ const OrgUnitsFiltersComponent = ({
                                 // TODO rename levels in to parent
                                 onChange(orgUnit?.id, 'levels');
                             }}
-                            source={sourceFilter.value}
+                            source={dataSourceId}
+                            version={sourceVersionId}
                             initialSelection={initialOrgUnit}
                         />
                     </Box>

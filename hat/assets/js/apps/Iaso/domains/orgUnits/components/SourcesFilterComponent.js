@@ -8,9 +8,9 @@ import { Select, useSafeIntl, renderTags } from 'bluesquare-components';
 
 import { fetchAssociatedOrgUnits } from '../../../utils/requests';
 
-import { getSourcesWithoutCurrentSource } from '../../orgUnits/utils';
+import { getSourcesWithoutCurrentSource } from '../utils';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../../forms/messages';
 
 const SourcesFilterComponent = ({
     fitToBounds,

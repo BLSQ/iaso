@@ -234,7 +234,7 @@ export const getMarkerList = ({
             PopupComponent={PopupComponent}
             popupProps={{
                 displayUseLocation: true,
-                useLocation: selectedOrgUnit =>
+                replaceLocation: selectedOrgUnit =>
                     useOrgUnitLocation(selectedOrgUnit),
             }}
             isCircle

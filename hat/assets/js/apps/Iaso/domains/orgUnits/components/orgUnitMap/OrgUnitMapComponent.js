@@ -5,7 +5,7 @@ import isEqual from 'lodash/isEqual';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'leaflet-draw';
 import { withStyles, withTheme } from '@material-ui/core/styles';
-import deepPurple from '@material-ui/core/colors/deepPurple';
+import pink from '@material-ui/core/colors/pink';
 
 import { Grid } from '@material-ui/core';
 
@@ -26,7 +26,7 @@ import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../OrgunitOptionSaveComponent';
 import FormsFilterComponent from '../../../forms/components/FormsFilterComponent';
 import OrgUnitTypeFilterComponent from '../../../forms/components/OrgUnitTypeFilterComponent';
-import SourcesFilterComponent from '../../../forms/components/SourcesFilterComponent';
+import SourcesFilterComponent from '../SourcesFilterComponent';
 import MarkerComponent from '../../../../components/maps/markers/MarkerComponent';
 import InnerDrawer from '../../../../components/nav/InnerDrawer';
 import { MapLegend } from '../../../../components/maps/MapLegend.tsx';
@@ -363,7 +363,7 @@ class OrgUnitMapComponent extends Component {
                 <OrgUnitPopupComponent
                     titleMessage={formatMessage(MESSAGES.ouLinked)}
                     displayUseLocation
-                    useLocation={selectedOrgUnit =>
+                    replaceLocation={selectedOrgUnit =>
                         this.useOrgUnitLocation(selectedOrgUnit)
                     }
                 />
@@ -475,7 +475,7 @@ class OrgUnitMapComponent extends Component {
                             {
                                 value: 'ouParent',
                                 label: formatMessage(MESSAGES.ouParent),
-                                color: deepPurple['900'],
+                                color: pink['300'],
                             },
                         ]}
                     />
@@ -513,7 +513,7 @@ class OrgUnitMapComponent extends Component {
                                 <GeoJSON
                                     data={orgUnit.parent_geo_json}
                                     style={() => ({
-                                        color: deepPurple['900'],
+                                        color: pink['300'],
                                     })}
                                 >
                                     <OrgUnitPopupComponent
@@ -594,7 +594,7 @@ class OrgUnitMapComponent extends Component {
                                                                         MESSAGES.ouChild,
                                                                     )}
                                                                     displayUseLocation
-                                                                    useLocation={selectedOrgUnit =>
+                                                                    replaceLocation={selectedOrgUnit =>
                                                                         this.useOrgUnitLocation(
                                                                             selectedOrgUnit,
                                                                         )

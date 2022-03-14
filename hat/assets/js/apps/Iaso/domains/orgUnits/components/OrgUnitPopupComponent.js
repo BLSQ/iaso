@@ -61,7 +61,7 @@ const useStyles = makeStyles(theme => ({
 
 const OrgUnitPopupComponent = ({
     displayUseLocation,
-    useLocation,
+    replaceLocation,
     titleMessage,
     currentOrgUnit,
 }) => {
@@ -71,20 +71,20 @@ const OrgUnitPopupComponent = ({
     const reduxCurrentOrgUnit = useSelector(
         state => state.orgUnits.currentSubOrgUnit,
     );
-    const ou = currentOrgUnit || reduxCurrentOrgUnit;
+    const activeOrgUnit = currentOrgUnit || reduxCurrentOrgUnit;
     const confirmDialog = () => {
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        useLocation(ou);
+        replaceLocation(activeOrgUnit);
         popup.current.leafletElement.options.leaflet.map.closePopup();
     };
     let groups = null;
-    if (ou && ou.groups.length > 0) {
-        groups = ou.groups.map(g => g.name).join(', ');
+    if (activeOrgUnit && activeOrgUnit.groups.length > 0) {
+        groups = activeOrgUnit.groups.map(g => g.name).join(', ');
     }
     return (
         <Popup className={classes.popup} ref={popup}>
-            {!ou && <LoadingSpinner />}
-            {ou && (
+            {!activeOrgUnit && <LoadingSpinner />}
+            {activeOrgUnit && (
                 <Card className={classes.popupCard}>
                     <CardContent
                         className={classNames(
@@ -105,11 +105,11 @@ const OrgUnitPopupComponent = ({
                         )}
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.name)}
-                            value={ou.name}
+                            value={activeOrgUnit.name}
                         />
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.type)}
-                            value={ou.org_unit_type_name}
+                            value={activeOrgUnit.org_unit_type_name}
                         />
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.groups)}
@@ -117,27 +117,33 @@ const OrgUnitPopupComponent = ({
                         />
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.source)}
-                            value={ou.source}
+                            value={activeOrgUnit.source}
                         />
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.parent)}
-                            value={ou.parent ? ou.parent.name : textPlaceholder}
+                            value={
+                                activeOrgUnit.parent
+                                    ? activeOrgUnit.parent.name
+                                    : textPlaceholder
+                            }
                         />
-                        {!ou.has_geo_json && (
+                        {!activeOrgUnit.has_geo_json && (
                             <>
                                 <PopupItemComponent
                                     label={formatMessage(MESSAGES.latitude)}
-                                    value={ou.latitude}
+                                    value={activeOrgUnit.latitude}
                                 />
                                 <PopupItemComponent
                                     label={formatMessage(MESSAGES.longitude)}
-                                    value={ou.longitude}
+                                    value={activeOrgUnit.longitude}
                                 />
                             </>
                         )}
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.created_at)}
-                            value={moment.unix(ou.created_at).format('LTS')}
+                            value={moment
+                                .unix(activeOrgUnit.created_at)
+                                .format('LTS')}
                         />
                         <Box className={classes.actionBox}>
                             <Grid
@@ -171,7 +177,7 @@ const OrgUnitPopupComponent = ({
                                 >
                                     <Link
                                         target="_blank"
-                                        to={`${baseUrls.orgUnitDetails}/orgUnitId/${ou.id}/tab/infos`}
+                                        to={`${baseUrls.orgUnitDetails}/orgUnitId/${activeOrgUnit.id}/tab/infos`}
                                         className={classes.linkButton}
                                     >
                                         <FormattedMessage {...MESSAGES.see} />
@@ -189,14 +195,14 @@ const OrgUnitPopupComponent = ({
 OrgUnitPopupComponent.defaultProps = {
     currentOrgUnit: null,
     displayUseLocation: false,
-    useLocation: () => {},
+    replaceLocation: () => {},
     titleMessage: null,
 };
 
 OrgUnitPopupComponent.propTypes = {
     currentOrgUnit: PropTypes.object,
     displayUseLocation: PropTypes.bool,
-    useLocation: PropTypes.func,
+    replaceLocation: PropTypes.func,
     titleMessage: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
 };
 

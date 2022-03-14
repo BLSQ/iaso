@@ -82,13 +82,17 @@ const SourcesFilterComponent = ({
     );
 };
 
+SourcesFilterComponent.defaultProps = {
+    loadingSelectedSources: false,
+};
+
 SourcesFilterComponent.propTypes = {
     fitToBounds: PropTypes.func.isRequired,
     sourcesSelected: PropTypes.array.isRequired,
     setSourcesSelected: PropTypes.func.isRequired,
     currentSources: PropTypes.array.isRequired,
     currentOrgUnit: PropTypes.object.isRequired,
-    loadingSelectedSources: PropTypes.bool.isRequired,
+    loadingSelectedSources: PropTypes.bool,
 };
 
 export default SourcesFilterComponent;

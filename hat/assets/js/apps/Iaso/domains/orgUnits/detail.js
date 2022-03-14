@@ -127,7 +127,8 @@ const OrgUnitDetail = ({ params, router }) => {
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [tab, setTab] = useState(params.tab ? params.tab : 'infos');
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
-    const [loadingSelectedSources, setLoadingSelectedSources] = useState(false);
+    const [loadingSelectedSources, setLoadingSelectedSources] =
+        useState(undefined);
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
         useState(false);
     const [forceSingleTableRefresh, setForceSingleTableRefresh] =
@@ -338,6 +339,9 @@ const OrgUnitDetail = ({ params, router }) => {
                 originalOrgUnit,
             );
             const fullSelectedSources = [];
+            if (selectedSources.length === 0) {
+                setLoadingSelectedSources(false);
+            }
             for (let i = 0; i < selectedSources.length; i += 1) {
                 const ss = selectedSources[i];
                 setLoadingSelectedSources(true);

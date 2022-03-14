@@ -140,14 +140,18 @@ class OrgUnitMapComponent extends Component {
         const {
             intl: { formatMessage },
             orgUnit,
+            sourcesSelected,
         } = this.props;
+        // When no linked org unit from other sources
         if (
-            prevProps.loadingSelectedSources === true &&
-            this.props.loadingSelectedSources === false
+            (prevProps.loadingSelectedSources === true &&
+                this.props.loadingSelectedSources === false) ||
+            (this.props.loadingSelectedSources === false &&
+                sourcesSelected.length === 0)
         ) {
             this.fitToBounds();
-        }
-        if (!isEqual(prevProps.orgUnit.geo_json, orgUnit.geo_json)) {
+            // When linked org unit from other sources, fetch shape first
+        } else if (!isEqual(prevProps.orgUnit.geo_json, orgUnit.geo_json)) {
             locationGroup.updateShape(
                 getleafletGeoJson(orgUnit.geo_json),
                 'primary',
@@ -741,6 +745,7 @@ class OrgUnitMapComponent extends Component {
 
 OrgUnitMapComponent.defaultProps = {
     sourcesSelected: [],
+    loadingSelectedSources: undefined,
 };
 
 OrgUnitMapComponent.propTypes = {
@@ -764,7 +769,7 @@ OrgUnitMapComponent.propTypes = {
     setSourcesSelected: PropTypes.func.isRequired,
     sources: PropTypes.array.isRequired,
     currentOrgUnit: PropTypes.object.isRequired,
-    loadingSelectedSources: PropTypes.bool.isRequired,
+    loadingSelectedSources: PropTypes.bool,
     theme: PropTypes.object.isRequired,
 };
 

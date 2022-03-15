@@ -82,7 +82,11 @@ export const INSTANCE_METAS_FIELDS = [
                     domComponent="span"
                 >
                     <>
-                        <OrgUnitLabel orgUnit={value} withType />
+                        <OrgUnitLabel
+                            orgUnit={value}
+                            withType
+                            withSource={false}
+                        />
                     </>
                 </OrgUnitTooltip>
             );

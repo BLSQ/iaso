@@ -127,6 +127,8 @@ const OrgUnitDetail = ({ params, router }) => {
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [tab, setTab] = useState(params.tab ? params.tab : 'infos');
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
+    const [loadingSelectedSources, setLoadingSelectedSources] =
+        useState(undefined);
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
         useState(false);
     const [forceSingleTableRefresh, setForceSingleTableRefresh] =
@@ -330,15 +332,19 @@ const OrgUnitDetail = ({ params, router }) => {
 
     // Set selected sources for current org unit
     useEffect(() => {
-        if (originalOrgUnit && !isNewOrgunit) {
+        if (originalOrgUnit && !isNewOrgunit && !sourcesSelected) {
             const selectedSources = getLinksSources(
                 links,
                 sources,
                 originalOrgUnit,
             );
             const fullSelectedSources = [];
+            if (selectedSources.length === 0) {
+                setLoadingSelectedSources(false);
+            }
             for (let i = 0; i < selectedSources.length; i += 1) {
                 const ss = selectedSources[i];
+                setLoadingSelectedSources(true);
                 // eslint-disable-next-line no-await-in-loop
                 const fetch = async () => {
                     const ous = await fetchAssociatedOrgUnits(
@@ -349,12 +355,20 @@ const OrgUnitDetail = ({ params, router }) => {
                     fullSelectedSources.push(ous);
                     if (i + 1 === selectedSources.length) {
                         setSourcesSelected(fullSelectedSources);
+                        setLoadingSelectedSources(false);
                     }
                 };
                 fetch();
             }
         }
-    }, [originalOrgUnit, dispatch, links, sources, isNewOrgunit]);
+    }, [
+        originalOrgUnit,
+        dispatch,
+        links,
+        sources,
+        isNewOrgunit,
+        sourcesSelected,
+    ]);
 
     return (
         <section className={classes.root}>
@@ -417,6 +431,7 @@ const OrgUnitDetail = ({ params, router }) => {
                     <div className={tab === 'map' ? '' : classes.hiddenOpacity}>
                         <Box className={classes.containerFullHeight}>
                             <OrgUnitMap
+                                loadingSelectedSources={loadingSelectedSources}
                                 currentOrgUnit={currentOrgUnit}
                                 sources={sources}
                                 orgUnitTypes={orgUnitTypes}

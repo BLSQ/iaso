@@ -390,6 +390,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.label.sourceVersion',
         defaultMessage: 'Source version',
     },
+    ouParent: {
+        id: 'iaso.label.parentOu',
+        defaultMessage: 'Parent org Unit',
+    },
+    ouLinked: {
+        id: 'iaso.orgUnits.sourcesHelperTextSingular',
+        defaultMessage: 'Linked org unit',
+    },
+    ouChild: {
+        id: 'iaso.orgUnits.ouTypesHelperTextSingular',
+        defaultMessage: 'Children org unit',
+    },
+    ouCurrent: {
+        id: 'iaso.label.currentOu',
+        defaultMessage: 'Current org unit',
+    },
 });
 
 export default MESSAGES;

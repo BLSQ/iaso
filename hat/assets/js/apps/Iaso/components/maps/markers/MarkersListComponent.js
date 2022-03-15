@@ -70,7 +70,7 @@ MarkersListComponent.defaultProps = {
 MarkersListComponent.propTypes = {
     items: PropTypes.array,
     onMarkerClick: PropTypes.func.isRequired,
-    PopupComponent: PropTypes.object,
+    PopupComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     TooltipComponent: PropTypes.elementType,
     customMarker: PropTypes.object,
     tooltipProps: PropTypes.func,

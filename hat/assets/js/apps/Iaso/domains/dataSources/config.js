@@ -101,6 +101,7 @@ const dataSourcesTableColumns = (
                             settings.row.original?.default_version?.id
                         }
                     />
+                 
                 </section>
             );
         },

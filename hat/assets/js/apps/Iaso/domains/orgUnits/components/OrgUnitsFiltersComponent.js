@@ -114,7 +114,8 @@ const OrgUnitsFiltersComponent = ({
         return (
             sources
                 .filter(src => src.id === dataSourceId)[0]
-                ?.versions.map(version => ({
+                ?.versions.sort((a,b)=>a.number-b.number)
+                .map(version => ({
                     label: version.number.toString(),
                     value: version.id.toString(),
                 })) ?? []

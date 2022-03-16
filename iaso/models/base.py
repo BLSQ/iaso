@@ -780,6 +780,18 @@ class InstanceQuerySet(models.QuerySet):
 
         return self.filter(query)
 
+    def filter_for_user(self, user):
+        profile = user.iaso_profile
+        from .org_unit import OrgUnit
+
+        # If user is restricted to some org unit, filter on thoses
+        if profile.org_units.exists():
+            orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+
+            self = self.filter(org_unit__in=orgunits)
+        self = self.filter(project__account=profile.account)
+        return self
+
 
 class Instance(models.Model):
     """A series of answers by an individual for a specific form"""

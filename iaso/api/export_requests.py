@@ -57,7 +57,10 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             selection["selected_ids"] = self.context["request"].data.get("selected_ids", None)
             selection["unselected_ids"] = self.context["request"].data.get("unselected_ids", None)
             return ExportRequestBuilder().build_export_request(
-                filters=validated_data, launcher=user, force_export=force_export, selection=selection
+                filters=validated_data,
+                launcher=user,
+                force_export=force_export,
+                selection=selection,
             )
         except Exception as e:
             # warn the client will use this as part of the translation key

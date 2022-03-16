@@ -88,19 +88,23 @@ class InstancesAPITestCase(APITestCase):
         form_2_file_mock.name = "test.xml"
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.form_2.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(form=cls.form_2, period="202001", org_unit=cls.jedi_council_corruscant)
+        cls.create_form_instance(
+            form=cls.form_2, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project
+        )
         cls.form_2.save()
 
         # Instance saved without period
         cls.form_3.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.form_3.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(form=cls.form_3, org_unit=cls.jedi_council_corruscant)
+        cls.create_form_instance(form=cls.form_3, org_unit=cls.jedi_council_corruscant, project=cls.project)
         cls.form_3.save()
 
         # A deleted Instance
         cls.form_4.form_versions.create(file=form_2_file_mock, version_id="2020022402")
         cls.form_4.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(form=cls.form_4, period="2020Q1", org_unit=cls.jedi_council_corruscant, deleted=True)
+        cls.create_form_instance(
+            form=cls.form_4, period="2020Q1", org_unit=cls.jedi_council_corruscant, project=cls.project, deleted=True
+        )
         cls.form_4.save()
 
         cls.project.unit_types.add(cls.jedi_council)
@@ -365,7 +369,7 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/", {"search": "refs:" + self.jedi_council_corruscant.source_ref})
         self.assertJSONResponse(response, 200)
 
-        self.assertValidInstanceListData(response.json(), 4)
+        self.assertValidInstanceListData(response.json(), 6)
 
     def test_instance_list_by_search_org_unit_ref_not_found(self):
         """GET /instances/?search=refs:org_unit__source_ref"""
@@ -537,7 +541,7 @@ class InstancesAPITestCase(APITestCase):
         # not restricted yet, can list all instances
         response = self.client.get(f"/api/instances/")
         self.assertJSONResponse(response, 200)
-        self.assertValidInstanceListData(response.json(), 7)
+        self.assertValidInstanceListData(response.json(), 9)
         # restrict user to endor region, can only see one instance. Not instance without org unit
         restricted = self.create_user_with_profile(
             username="restricted", account=self.star_wars, permissions=["iaso_submissions"]
@@ -566,7 +570,7 @@ class InstancesAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/instances/")
         self.assertJSONResponse(response, 200)
-        self.assertValidInstanceListData(response.json(), 5)
+        self.assertValidInstanceListData(response.json(), 7)
 
         # Check org unit without submissions return empty
         restricted.iaso_profile.org_units.set([org_unit_without_submissions])

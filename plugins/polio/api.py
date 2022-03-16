@@ -671,7 +671,8 @@ class IMStatsViewSet(viewsets.ViewSet):
                     continue
                 today_string = form["today"]
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
-                campaign = find_campaign(campaigns, today, country)
+                round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
+                campaign = find_lqas_im_campaign(campaigns, today, country, round_key, "im")
                 region_name = form.get("Region")
                 district_name = form.get("District")
 
@@ -689,7 +690,6 @@ class IMStatsViewSet(viewsets.ViewSet):
 
                         campaign_stats[campaign_name]["country_id"] = country.id
                         campaign_stats[campaign_name]["country_name"] = country.name
-                        round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
                         round_stats_key = round_key + "_nfm_stats"
                         round_stats_abs_key = round_key + "_nfm_abs_stats"
                         for key in nfm_counts_dict:
@@ -744,6 +744,33 @@ def find_campaign(campaigns, today, country):
             days=+28
         ):
             return c
+    return None
+
+
+def find_lqas_im_campaign(campaigns, today, country, round_key, type):
+    lqas_im_start = type + "_started_at"
+    lqas_im_end = type + "_ended_at"
+    if round_key == "round_1":
+        round_number = "round_one"
+    if round_key == "round_2":
+        round_number = "round_two"
+    for campaign in campaigns:
+        # We're skipping forms for a given round if the round dates have not been input ion the dashboard
+        if not (campaign[round_number] and campaign[round_number].started_at and campaign[round_number].ended_at):
+            continue
+        current_round = campaign[round_number]
+        reference_start_date = current_round.started_at
+        reference_end_date = current_round.ended_at
+        if current_round[lqas_im_start]:
+            # What if IM start date is after round end date?
+            reference_start_date = current_round[lqas_im_start]
+        if current_round[lqas_im_end]:
+            reference_end_date = current_round[lqas_im_end]
+        # Temporary answer to question above
+        if reference_end_date < reference_start_date:
+            reference_end_date = reference_start_date+timedelta(days=+10)
+        if campaign.country_id == country.id and reference_start_date <= today < reference_end_date:
+            return campaign
     return None
 
 
@@ -1138,8 +1165,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 districts.add(district_id)
                 today_string = form["today"]
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
-                campaign = find_campaign(campaigns, today, country)
                 round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
+                campaign = find_lqas_im_campaign(campaigns, today, country, round_key, "lqas")
                 for HH in form.get("Count_HH", []):
                     total_sites_visited += 1
                     # check finger

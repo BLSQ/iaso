@@ -411,6 +411,31 @@ by selecting the 3 dots in the top right corner and select "change server url". 
 all data and your app will be ready and connected to your development server.
 
 
+SSO with DHIS2
+--------------------------
+You can use DHIS2 as identity provider to login on Iaso. It requires a little configuration on DHIS2 and Iaso in order
+to achieve that. 
+
+### 1 - Setup OAuth2 clients in DHIS2
+In DHIS2 settings you must setup your Iaso instance as Oauth2 Clients. Client ID and Grant types must be :
+* Client ID : iaso-org
+* Grant Types : Authorization code
+
+Redirect URIs is your iaso server followed by : ```/api/dhis2/{your_dhis2_name}/login/```
+
+For example : https://myiaso.com/api/dhis2/dhis2_sandbox/login/
+
+### 2 - Setup OAuth2 clients in DHIS2
+In iaso you must setup your dhis2 server credentials. 
+To do so, go to ```/admin``` and setup as follow :  
+
+* Name: {your_dhis2_name} ( It must be exactly as it is in your DHIS2 Redirect URIs)
+* Login: Your DHIS2 url (Ex : https://sandbox.dhis2.org/ )
+* Password: The secret provided by DHIS2 when you created your OAuth2 client.
+* Url: Your Iaso Url (Ex: https://myiaso.com/)
+
+Don't forget the ```/``` at the end of the urls.
+
 Live Bluesquare components
 --------------------------
 

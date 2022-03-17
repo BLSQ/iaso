@@ -39,7 +39,6 @@ def dhis2_callback(request, dhis2_slug):
             DHIS2_SERVER_URL + "api/me", headers={"Authorization": "Bearer {0}".format(access_token)}
         )
 
-        print(user_info.json())
         user_dhis2_id = user_info.json()["id"]
 
         try:

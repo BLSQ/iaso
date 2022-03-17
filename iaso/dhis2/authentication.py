@@ -39,11 +39,13 @@ def dhis2_callback(request, dhis2_slug):
             DHIS2_SERVER_URL + "api/me", headers={"Authorization": "Bearer {0}".format(access_token)}
         )
 
-        user_dhis2_id = user_info.json()["userCredentials"]["id"]
+        print(user_info.json())
+        user_dhis2_id = user_info.json()["id"]
 
         try:
             user = Profile.objects.get(dhis2_id=user_dhis2_id, account=ext_credentials.account).user
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+            request.session.set_expiry(3600 * 24)
             return HttpResponseRedirect(redirect_to="/")
         except ObjectDoesNotExist:
             return HttpResponse(

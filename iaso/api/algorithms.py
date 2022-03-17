@@ -1,9 +1,7 @@
-from django.contrib.auth.models import User
 from rest_framework import viewsets, permissions, serializers
-from rest_framework.response import Response
 
-from iaso.models import MatchingAlgorithm
-from .common import HasPermission
+from iaso.models import MatchingAlgorithm, Project
+
 
 
 class AlgorithmsSerializer(serializers.ModelSerializer):
@@ -28,6 +26,6 @@ class AlgorithmsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        users = User.objects.filter(iaso_profile__account=user.iaso_profile.account)
-        algos = MatchingAlgorithm.objects.filter(users__in=users).order_by("id").distinct()
+        project = Project.objects.get(account=user.iaso_profile.account)
+        algos = MatchingAlgorithm.objects.filter(projects=project).order_by("id").distinct()
         return algos

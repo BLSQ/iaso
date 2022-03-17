@@ -85,14 +85,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.dateTo',
         defaultMessage: 'End date',
     },
-    startDateDefault: {
-        id: 'iaso.label.startDateDefault',
-        defaultMessage: 'Start date (default value)',
-    },
-    endDateDefault: {
-        id: 'iaso.label.endDateDefault',
-        defaultMessage: 'End date (default value)',
-    },
     name: {
         id: 'iaso.polio.label.obrName',
         defaultMessage: 'Name',
@@ -1024,6 +1016,11 @@ const MESSAGES = defineMessages({
     campaignType: {
         id: 'iaso.polio.label.campaignType',
         defaultMessage: 'Campaign type',
+    },
+    lqasImDateTooltip: {
+        id: 'iaso.polio.tooltip.label.lqasImDate',
+        defaultMessage:
+            'No date found in campaign data, using default value based on round date',
     },
 });
 

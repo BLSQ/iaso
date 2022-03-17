@@ -20,6 +20,7 @@ const styles = theme => ({
         padding: theme.spacing(2),
         fontWeight: 'bold',
     },
+    label: { fontWeight: 'bold' },
 });
 
 const useStyles = makeStyles(styles);
@@ -37,9 +38,9 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
         ? MESSAGES.endDateDefault
         : MESSAGES.endDate;
     return (
-        <Grid container direction="row">
-            <Grid item xs={6}>
-                <Box>
+        <Box>
+            <Grid container direction="row">
+                <Grid item xs={6}>
                     <Typography
                         variant="h5"
                         className={classes.lqasImMapHeader}
@@ -47,25 +48,37 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
                     >
                         {`${formatMessage(MESSAGES[round])}`}
                     </Typography>
+                </Grid>
+                <Box>
+                    <Divider orientation="vertical" />
                 </Box>
+                <Grid container item xs={5}>
+                    <Grid
+                        container
+                        item
+                        direction="row"
+                        xs={6}
+                        alignContent="center"
+                    >
+                        <Grid item className={classes.label}>
+                            {`${formatMessage(startDateMessage)}`}
+                        </Grid>
+                        <Grid item>{`: ${startDate.date}`}</Grid>
+                    </Grid>
+                    <Grid
+                        container
+                        item
+                        direction="row"
+                        xs={6}
+                        alignContent="center"
+                    >
+                        <Grid item className={classes.label}>
+                            {`${formatMessage(endDateMessage)} `}
+                        </Grid>
+                        <Grid item>{`: ${endDate.date}`}</Grid>
+                    </Grid>
+                </Grid>
             </Grid>
-            <Box>
-                <Divider orientation="vertical" />
-            </Box>
-            <Grid item xs={5}>
-                <Box mt={1} ml={2}>
-                    <Typography>
-                        {`${formatMessage(startDateMessage)}: ${
-                            startDate.date
-                        }`}
-                    </Typography>
-                    {/* </Box> */}
-                    {/* <Box> */}
-                    <Typography>
-                        {`${formatMessage(endDateMessage)}: ${endDate.date}`}
-                    </Typography>
-                </Box>
-            </Grid>
-        </Grid>
+        </Box>
     );
 };

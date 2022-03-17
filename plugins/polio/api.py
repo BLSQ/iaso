@@ -756,16 +756,20 @@ def find_lqas_im_campaign(campaigns, today, country, round_key, type):
         round_number = "round_two"
     for campaign in campaigns:
         # We're skipping forms for a given round if the round dates have not been input ion the dashboard
-        if not (campaign[round_number] and campaign[round_number].started_at and campaign[round_number].ended_at):
+        if not (
+            campaign.get_item_by_key(round_number)
+            and campaign.get_item_by_key(round_number).started_at
+            and campaign.get_item_by_key(round_number).ended_at
+        ):
             continue
-        current_round = campaign[round_number]
+        current_round = campaign.get_item_by_key(round_number)
         reference_start_date = current_round.started_at
         reference_end_date = current_round.ended_at
-        if current_round[lqas_im_start]:
+        if current_round.get_item_by_key(lqas_im_start):
             # What if IM start date is after round end date?
-            reference_start_date = current_round[lqas_im_start]
-        if current_round[lqas_im_end]:
-            reference_end_date = current_round[lqas_im_end]
+            reference_start_date = current_round.get_item_by_key(lqas_im_start)
+        if current_round.get_item_by_key(lqas_im_end):
+            reference_end_date = current_round.get_item_by_key(lqas_im_end)
         # Temporary answer to question above
         if reference_end_date < reference_start_date:
             reference_end_date = reference_start_date + timedelta(days=+10)

@@ -1,17 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import {
-    Typography,
-    Box,
-    makeStyles,
-    Divider,
-    Grid,
-    Tooltip,
-} from '@material-ui/core';
+import { Typography, Box, makeStyles, Divider, Grid } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import MESSAGES from '../../constants/messages';
 import { RoundString } from '../../constants/types';
-import { OK_COLOR, WARNING_COLOR } from '../../styles/constants';
+import { LqasImDates } from './LqasImDates';
 
 export type LqasImRefDate = {
     date: string;
@@ -28,26 +20,6 @@ const styles = theme => ({
     lqasImMapHeader: {
         padding: theme.spacing(2),
         fontWeight: 'bold',
-    },
-    label: {
-        fontWeight: 'bold',
-        marginLeft: theme.spacing(2),
-        // paddingRight: theme.spacing(1),
-        fontSize: '1rem',
-    },
-    infoIcon: {
-        fontSize: 14,
-        marginLeft: theme.spacing(1),
-    },
-    dateTextOK: {
-        color: OK_COLOR,
-        fontSize: '1rem',
-        marginLeft: theme.spacing(2),
-    },
-    dateTextDefault: {
-        color: WARNING_COLOR,
-        fontSize: '1rem',
-        marginLeft: theme.spacing(2),
     },
 });
 
@@ -86,32 +58,7 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
                             xs={6}
                             alignItems="center"
                         >
-                            <Grid item className={classes.label}>
-                                {`${formatMessage(MESSAGES.startDate)}: `}
-                            </Grid>
-                            <Grid
-                                item
-                                className={
-                                    startDate?.isDefault
-                                        ? classes.dateTextDefault
-                                        : classes.dateTextOK
-                                }
-                            >
-                                {`${startDate.date}`}
-                            </Grid>
-                            {startDate?.isDefault && (
-                                <Grid item>
-                                    <Tooltip
-                                        title={formatMessage(
-                                            MESSAGES.lqasImDateTooltip,
-                                        )}
-                                    >
-                                        <InfoOutlinedIcon
-                                            className={classes.infoIcon}
-                                        />
-                                    </Tooltip>
-                                </Grid>
-                            )}
+                            <LqasImDates type="start" date={startDate} />
                         </Grid>
                         <Grid
                             container
@@ -120,32 +67,7 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
                             xs={6}
                             alignItems="center"
                         >
-                            <Grid item className={classes.label}>
-                                {`${formatMessage(MESSAGES.endDate)}:`}
-                            </Grid>
-                            <Grid
-                                item
-                                className={
-                                    startDate?.isDefault
-                                        ? classes.dateTextDefault
-                                        : classes.dateTextOK
-                                }
-                            >
-                                {`${endDate.date}`}
-                            </Grid>
-                            {endDate.isDefault && (
-                                <Grid item>
-                                    <Tooltip
-                                        title={formatMessage(
-                                            MESSAGES.lqasImDateTooltip,
-                                        )}
-                                    >
-                                        <InfoOutlinedIcon
-                                            className={classes.infoIcon}
-                                        />
-                                    </Tooltip>
-                                </Grid>
-                            )}
+                            <LqasImDates type="end" date={endDate} />
                         </Grid>
                     </Grid>
                 </Grid>

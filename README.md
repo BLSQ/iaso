@@ -385,6 +385,43 @@ cd Projects/blsq/iaso
 docker-compose up dhis2 db_dhis2
 ```
 
+### Setting up Single Sign On (SSO) with you local DHIS2
+If you want to test the feature with your local dhis2 you can use the following step. This assume you are running everything in Dockers
+
+0. Launch DHIS2 with iaso within docker compose
+`docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up`
+ With the defaut docker compose setup, iaso is on port 8081 and dhis2 on port 8081 on your machine
+1. These step assume you have loaded your DHIS2 with the play test data but it's not mandatory. To see how to do it, look at previous section
+2. Add a oauth client it, open http://localhost:8080/dhis-web-settings/index.html#/oauth2
+3. Add new client:
+   - Name : what you want
+   - ClientId: iaso-org
+   - Client Secret : there is one generated, copy it and save it for a latter step
+   - Grant Type: check Authorization code
+   - Redirect URI : http://localhost:8081/api/dhis2/local_dhis2/login/
+
+4. Setup external credential in iaso
+   1. open admin http://localhost:8081/admin/
+   2. go to External Credentials | http://localhost:8081/admin/iaso/externalcredentials/
+   3. Add external credentials on the top right | http://localhost:8081/admin/iaso/externalcredentials/add/
+   4. Account: The account for which you want to enable dhis2 auth
+   - Name : local_dhis2
+   - Login : http://dhis2:8080/
+   - Password: the client secret you saved in step 2
+   - Url: http://localhost:8081/
+
+5 Create a new user in Iaso, grant it some right
+
+6. In DHIS2 retrieve the id for the user
+     - Current way I have found it is to go to http://localhost:8080/api/me and copy the id field
+     - But you can also find a user here and it's in the url http://localhost:8080/dhis-web-user/index.html#/users
+
+7. Add the dhis2 id to the Iaso user : Open the target user in the iaso Admin http://localhost:8081/admin/iaso/profile/ and add it to the dhis2 id field, save.
+
+8. Unlog from iaso or in a separate session/container
+9. Try the featyre by opening : http://localhost:8080/uaa/oauth/authorize?client_id=iaso-org&response_type=code
+
+
 Test and serving forms from Iaso mobile application
 -----------
 

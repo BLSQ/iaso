@@ -221,7 +221,6 @@ class MatchingAlgorithm(models.Model):
     name = models.TextField()
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    users = models.ManyToManyField(User, related_name="algorithms", blank=True)
 
     def __str__(self):
         return "%s - %s %s" % (

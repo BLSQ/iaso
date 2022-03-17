@@ -747,25 +747,29 @@ def find_campaign(campaigns, today, country):
     return None
 
 
-def find_lqas_im_campaign(campaigns, today, country, round_key, type):
-    lqas_im_start = type + "_started_at"
-    lqas_im_end = type + "_ended_at"
+def find_lqas_im_campaign(campaigns, today, country, round_key, kind):
+    lqas_im_start = kind + "_started_at"
+    lqas_im_end = kind + "_ended_at"
     if round_key == "round_1":
         round_number = "round_one"
     if round_key == "round_2":
         round_number = "round_two"
     for campaign in campaigns:
         # We're skipping forms for a given round if the round dates have not been input ion the dashboard
-        if not (campaign[round_number] and campaign[round_number].started_at and campaign[round_number].ended_at):
+        if not (
+            campaign.get_item_by_key(round_number)
+            and campaign.get_item_by_key(round_number).started_at
+            and campaign.get_item_by_key(round_number).ended_at
+        ):
             continue
-        current_round = campaign[round_number]
+        current_round = campaign.get_item_by_key(round_number)
         reference_start_date = current_round.started_at
         reference_end_date = current_round.ended_at
-        if current_round[lqas_im_start]:
+        if current_round.get_item_by_key(lqas_im_start):
             # What if IM start date is after round end date?
-            reference_start_date = current_round[lqas_im_start]
-        if current_round[lqas_im_end]:
-            reference_end_date = current_round[lqas_im_end]
+            reference_start_date = current_round.get_item_by_key(lqas_im_start)
+        if current_round.get_item_by_key(lqas_im_end):
+            reference_end_date = current_round.get_item_by_key(lqas_im_end)
         # Temporary answer to question above
         if reference_end_date < reference_start_date:
             reference_end_date = reference_start_date + timedelta(days=+10)
@@ -1027,27 +1031,35 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
     def list(self, request):
 
+        requested_country = request.GET.get("country_id", None)
+        if requested_country is None:
+            return HttpResponseBadRequest
+        requested_country = int(requested_country)
+
+        campaigns = Campaign.objects.filter(country_id=requested_country)
+        if campaigns:
+            latest_campaign_update = campaigns.latest("updated_at").updated_at
+        else:
+            latest_campaign_update = None
+
         cache_response_exists = True
         # Return cache response if cache is valid.
         try:
             cache_response = LQASIMCache.objects.get(user_id=request.user.id, params=request.query_params)
             time_delta = datetime.now(timezone.utc) - cache_response.updated_at
-            if time_delta.seconds < 3600:
+            if time_delta.seconds < 3600 and (
+                not latest_campaign_update or cache_response.updated_at > latest_campaign_update
+            ):
+                print("using cache", cache_response.id)
                 return JsonResponse(cache_response.response, safe=False)
         except ObjectDoesNotExist:
             cache_response_exists = False
 
-        campaigns = Campaign.objects.all()
         config = get_object_or_404(Config, slug="lqas-config")
-        requested_country = request.GET.get("country_id", None)
         skipped_forms_list = []
         no_round_count = 0
         unknown_round = 0
         skipped_forms = {"count": 0, "no_round": 0, "unknown_round": unknown_round, "forms_id": skipped_forms_list}
-
-        if requested_country is None:
-            return HttpResponseBadRequest
-        requested_country = int(requested_country)
 
         base_stats = lambda: {
             "total_child_fmd": 0,

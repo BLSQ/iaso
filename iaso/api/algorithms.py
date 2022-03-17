@@ -3,7 +3,6 @@ from rest_framework import viewsets, permissions, serializers
 from iaso.models import MatchingAlgorithm, Project
 
 
-
 class AlgorithmsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchingAlgorithm

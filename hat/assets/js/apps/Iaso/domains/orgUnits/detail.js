@@ -370,6 +370,11 @@ const OrgUnitDetail = ({ params, router }) => {
         sourcesSelected,
     ]);
 
+    useEffect(() => {
+        if (tab !== params.tab && params.tab) {
+            setTab(params.tab);
+        }
+    }, [tab, params.tab]);
     return (
         <section className={classes.root}>
             <TopBar
@@ -478,7 +483,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                 exportButtons={false}
                                 baseUrl={baseUrl}
                                 endPointPath="forms"
-                                propsToWatch={params.tab}
+                                propsToWatch={params.orgUnitId}
                                 fetchItems={fetchForms}
                                 columns={formsTableColumns({
                                     formatMessage,
@@ -508,7 +513,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                     params.orgUnitId,
                                 ),
                             }}
-                            propsToWatch={params.tab}
+                            propsToWatch={params.orgUnitId}
                             baseUrl={baseUrl}
                             endPointPath="orgunits"
                             fetchItems={fetchOrgUnitsList}
@@ -534,7 +539,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                 orgUnitId: currentOrgUnit.id,
                             }}
                             hideGpkg
-                            propsToWatch={params.tab}
+                            propsToWatch={params.orgUnitId}
                             filters={linksFiltersWithPrefix(
                                 'linksParams',
                                 algorithmRuns,

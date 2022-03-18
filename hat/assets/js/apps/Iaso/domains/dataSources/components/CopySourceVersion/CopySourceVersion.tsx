@@ -1,15 +1,24 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useState,
+    useMemo,
+} from 'react';
 import { Grid, Box, Divider } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import {
+    IconButton as IconButtonComponent,
+    useSafeIntl,
+} from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../messages';
 import {
     useCopyDataSourceVersion,
     useDataSourceAsDropDown,
+    useDataSourceVersions,
 } from '../../requests';
 import { redirectTo } from '../../../../routing/actions';
 import { baseUrls } from '../../../../constants/urls';
@@ -39,11 +48,33 @@ const change = setter => (_keyValue, value) => {
     setter(value);
 };
 
+const makeVersionsDropDown = (sourceVersions, dataSourceId, formatMessage) => {
+    const existingVersions = sourceVersions
+        .filter(sourceVersion => sourceVersion.data_source === dataSourceId)
+        .map(sourceVersion => {
+            return {
+                label: sourceVersion.number.toString(),
+                value: sourceVersion.number.toString(),
+            };
+        })
+        .sort((a, b) => parseInt(a.number, 10) > parseInt(b.number, 10));
+    return [
+        ...existingVersions,
+        {
+            label: `${formatMessage(MESSAGES.nextVersion)}: ${(
+                existingVersions.length + 1
+            ).toString()}`,
+            value: (existingVersions.length + 1).toString(),
+        },
+    ];
+};
+
 export const CopySourceVersion: FunctionComponent<Props> = ({
     dataSourceName,
     dataSourceId,
     dataSourceVersionNumber,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const [destinationSourceId, setDestinationSourceId] = useState(null);
     const [destinationVersionNumber, setDestinationVersionNumber] =
         useState(null);
@@ -52,6 +83,16 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     const { mutateAsync: copyVersion } = useCopyDataSourceVersion();
     const dispatch = useDispatch();
     const { data: datasourcesDropdown } = useDataSourceAsDropDown();
+    const { data: allSourceVersions } = useDataSourceVersions();
+    const sourceVersionsDropDown = useMemo(
+        () =>
+            makeVersionsDropDown(
+                allSourceVersions,
+                dataSourceId,
+                formatMessage,
+            ),
+        [allSourceVersions, dataSourceId, formatMessage],
+    );
     const onConfirm = useCallback(
         closeDialog => {
             copyVersion({
@@ -158,18 +199,17 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                         <Grid container item xs={6}>
                             <Grid item xs={12}>
                                 {/* MarginBottom needed to align type number with type select, as number is not wrapped in a Box in library source code */}
-                                <Box mb={1}>
-                                    <InputComponent
-                                        keyValue={destinationVersionKey}
-                                        type="number"
-                                        labelString="destination version"
-                                        onChange={change(
-                                            setDestinationVersionNumber,
-                                        )}
-                                        value={destinationVersionNumber}
-                                        disabled={!chooseVersionNumber}
-                                    />
-                                </Box>
+                                <InputComponent
+                                    keyValue={destinationVersionKey}
+                                    type="select"
+                                    labelString="destination version"
+                                    onChange={change(
+                                        setDestinationVersionNumber,
+                                    )}
+                                    options={sourceVersionsDropDown}
+                                    value={destinationVersionNumber}
+                                    disabled={!chooseVersionNumber}
+                                />
                             </Grid>
 
                             <Grid item xs={12}>

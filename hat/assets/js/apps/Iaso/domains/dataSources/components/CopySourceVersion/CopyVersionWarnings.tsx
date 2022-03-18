@@ -15,7 +15,7 @@ type Props = {
 
 const warningStyle = theme => ({
     source: { fontWeight: 'bold' },
-    destination: { fontWeight: 'bold', color: theme.palette.primary.main },
+    destination: { fontWeight: 'bold' },
 });
 
 const useWarningStyles = makeStyles(warningStyle);
@@ -27,9 +27,9 @@ const NoDestinationVersionNumber = ({
 }) => {
     const classes = useWarningStyles();
     return (
-        <Grid container item spacing={1}>
+        <Grid container item spacing={1} justifyContent="center">
             <Grid item>
-                <Typography className={classes.source}>
+                <Typography className={classes.source} variant="h6">
                     <FormattedMessage
                         {...MESSAGES.copiedVersion}
                         values={{
@@ -40,12 +40,12 @@ const NoDestinationVersionNumber = ({
                 </Typography>
             </Grid>
             <Grid item>
-                <Typography>
+                <Typography variant="h6">
                     <FormattedMessage {...MESSAGES.willBeCopied} />
                 </Typography>
             </Grid>
             <Grid item>
-                <Typography className={classes.destination}>
+                <Typography className={classes.destination} variant="h6">
                     <FormattedMessage
                         {...MESSAGES.copyToNextVersion}
                         values={{
@@ -70,7 +70,7 @@ const WithDestinationVersionNumber = ({
     return (
         <Grid container item spacing={1}>
             <Grid item>
-                <Typography className={classes.source}>
+                <Typography className={classes.source} variant="h6">
                     <FormattedMessage
                         {...MESSAGES.copiedVersion}
                         values={{
@@ -81,12 +81,12 @@ const WithDestinationVersionNumber = ({
                 </Typography>
             </Grid>
             <Grid item>
-                <Typography>
+                <Typography variant="h6">
                     <FormattedMessage {...MESSAGES.willBeCopied} />
                 </Typography>
             </Grid>
             <Grid item>
-                <Typography className={classes.destination}>
+                <Typography className={classes.destination} variant="h6">
                     <FormattedMessage
                         {...MESSAGES.copyToSourceWithVersion}
                         values={{
@@ -98,7 +98,7 @@ const WithDestinationVersionNumber = ({
             </Grid>
             {forceOverwrite && (
                 <Grid item>
-                    <Typography>
+                    <Typography variant="h6">
                         <FormattedMessage {...MESSAGES.overwriteWarning} />{' '}
                     </Typography>
                 </Grid>

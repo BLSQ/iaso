@@ -24,10 +24,12 @@ def copy_version(
     logger.debug("source_version", source_version)
     logger.debug("copying source_version %s" % str(source_version))
 
-    if not destination_source_id and not destination_version_number:
-        version = SourceVersion.objects.filter(data_source_id=source_source_id).latest("number")
-        latest_version = version.number
+    if not destination_source_id:
         destination_source_id = source_source_id
+
+    if not destination_version_number:
+        version = SourceVersion.objects.filter(data_source_id=destination_source_id).latest("number")
+        latest_version = version.number
         destination_version_number = latest_version + 1
 
     destination_source = DataSource.objects.get(id=destination_source_id)

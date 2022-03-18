@@ -245,6 +245,28 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'This will create a new version for {sourceName} and copy version {versionNumber} into it. Do you wish to proceed?',
     },
+    copiedVersion: {
+        id: 'iaso.datasources.message.copiedVersion',
+        defaultMessage: '{sourceName} - version {versionNumber} ',
+    },
+    willBeCopied: {
+        id: 'iaso.datasources.message.willBeCopied',
+        defaultMessage: 'will be copied to ',
+    },
+
+    copyToNextVersion: {
+        id: 'iaso.datasources.message.copiedVersion',
+        defaultMessage: 'a new version of {sourceName}',
+    },
+    copyToSourceWithVersion: {
+        id: 'iaso.datasources.message.copyToSourceWithVersion',
+        defaultMessage: '{sourceName} - version {versionNumber}',
+    },
+    overwriteWarning: {
+        id: 'iaso.datasources.message.overwriteWarning',
+        defaultMessage:
+            'Warning: if a version with the selected number already exists, it will be overwritten',
+    },
 });
 
 export default MESSAGES;

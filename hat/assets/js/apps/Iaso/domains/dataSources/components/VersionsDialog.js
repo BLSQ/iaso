@@ -19,7 +19,7 @@ import {
     Table,
 } from 'bluesquare-components';
 import 'react-table';
-import { CopySourceVersion } from './CopySourceVersion.tsx';
+import { CopySourceVersion } from './CopySourceVersion/CopySourceVersion.tsx';
 
 import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';

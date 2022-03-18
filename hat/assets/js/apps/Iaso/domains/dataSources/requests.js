@@ -278,6 +278,21 @@ export const useDataSourceForVersion = sourceVersion =>
                 }
                 return null;
             },
+            staleTime: 60000,
+        },
+    );
+export const useDataSourceAsDropDown = () =>
+    useSnackQuery(
+        ['dataSources'],
+        () => getRequest('/api/datasources/'),
+        snackBarMessages.fetchSourcesError,
+        {
+            select: data =>
+                data?.sources.map(datasource => ({
+                    label: datasource.name,
+                    value: datasource.id,
+                })) ?? [],
+            staleTime: 60000,
         },
     );
 
@@ -298,5 +313,8 @@ export const useCopyDataSourceVersion = () => {
                 force: forceOverwrite,
             });
         },
+        undefined,
+        undefined,
+        'dataSources',
     );
 };

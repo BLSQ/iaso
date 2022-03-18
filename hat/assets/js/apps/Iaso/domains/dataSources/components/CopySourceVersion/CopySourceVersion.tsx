@@ -1,17 +1,20 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable camelcase */
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Grid, Box, Typography, Divider } from '@material-ui/core';
-import { FormattedMessage } from 'react-intl';
+import { Grid, Box, Divider } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import MESSAGES from '../messages';
-import { useCopyDataSourceVersion } from '../requests';
-import { redirectTo } from '../../../routing/actions';
-import { baseUrls } from '../../../constants/urls';
-import InputComponent from '../../../components/forms/InputComponent';
+import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
+import MESSAGES from '../../messages';
+import {
+    useCopyDataSourceVersion,
+    useDataSourceAsDropDown,
+} from '../../requests';
+import { redirectTo } from '../../../../routing/actions';
+import { baseUrls } from '../../../../constants/urls';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { WarningMessage } from './CopyVersionWarnings';
 
 type Props = {
     dataSourceId: number;
@@ -32,6 +35,10 @@ const destinationVersionKey = 'destinationVersion';
 const chooseVersionKey = 'chooseVersion';
 const forceOverwriteKey = 'forceOverwrite';
 
+const change = setter => (_keyValue, value) => {
+    setter(value);
+};
+
 export const CopySourceVersion: FunctionComponent<Props> = ({
     dataSourceName,
     dataSourceId,
@@ -44,10 +51,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     const [forceOverwrite, setForceOverwrite] = useState(false);
     const { mutateAsync: copyVersion } = useCopyDataSourceVersion();
     const dispatch = useDispatch();
-    const change = setter => (_keyValue, value) => {
-        setter(value);
-    };
-
+    const { data: datasourcesDropdown } = useDataSourceAsDropDown();
     const onConfirm = useCallback(
         closeDialog => {
             copyVersion({
@@ -120,7 +124,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             onCancel={undefined}
         >
             <>
-                <Box>
+                <Box mb={2}>
                     <Divider />
                 </Box>
                 <Grid
@@ -134,7 +138,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                             <InputComponent
                                 keyValue={destinationSourceKey}
                                 type="select"
-                                options={[]}
+                                options={datasourcesDropdown}
                                 labelString="destination source"
                                 onChange={change(setDestinationSourceId)}
                                 value={destinationSourceId}
@@ -180,9 +184,15 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                             </Grid>
                         </Grid>
                     )}
-                    {/* <Grid container item xs={12}>
-                        <div>Warning message</div>
-                    </Grid> */}
+                    <Grid container item xs={12}>
+                        <WarningMessage
+                            dataSourceName={dataSourceName}
+                            dataSourceVersionNumber={dataSourceVersionNumber}
+                            destinationSourceId={destinationSourceId}
+                            destinationVersionNumber={destinationVersionNumber}
+                            forceOverwrite={forceOverwrite}
+                        />
+                    </Grid>
                 </Grid>
             </>
         </ConfirmCancelDialogComponent>

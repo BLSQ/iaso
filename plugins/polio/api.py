@@ -1251,18 +1251,20 @@ class LQASStatsViewSet(viewsets.ViewSet):
 class CampaignsShapeViewSet(viewsets.ViewSet):
     def list(self, request):
         all_campaigns = Campaign.objects.filter(deleted_at=None)
-        response = {}
-        campaigns_shapes = list()
-        gc = GeometryCollection(GEOSGeometry("POINT EMPTY", srid=4326))
+        features = []
         for c in all_campaigns:
             union_geom = GEOSGeometry("POINT EMPTY", srid=4326)
             for d in c.group.org_units.all():
                 union_geom = d.geom.union(union_geom)
-            campaigns_shapes.append(union_geom)
-            response[str(c.id)] = union_geom.geojson
-            gc = gc.union(union_geom)
 
-        return Response(json.loads(gc.json))
+            if union_geom.json:
+                s = CampaignSerializer(c)
+                union_geom.normalize()
+                union_geom = union_geom.simplify(0.1)
+                feature = {"type": "Feature", "geometry": json.loads(union_geom.json), "properties": s.data}
+                features.append(feature)
+        res = {"type": "FeatureCollection", "features": features}
+        return JsonResponse(res)
 
 
 router = routers.SimpleRouter()

@@ -1250,7 +1250,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
 class CampaignsShapeViewSet(viewsets.ViewSet):
     def list(self, request):
-        all_campaigns = Campaign.objects.filter(deleted_at=None)
+        all_campaigns = Campaign.objects.filter(deleted_at=None).exclude(group=None)
         features = []
         for c in all_campaigns:
             union_geom = GEOSGeometry("POINT EMPTY", srid=4326)

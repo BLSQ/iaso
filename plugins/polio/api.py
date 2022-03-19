@@ -20,7 +20,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Value, TextField, UUIDField
 from collections import defaultdict
-from django.contrib.gis.geos import GEOSGeometry, GeometryCollection
+from django.contrib.gis.geos import GEOSGeometry, GeometryCollection, GEOSException
 
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
@@ -1255,8 +1255,10 @@ class CampaignsShapeViewSet(viewsets.ViewSet):
         for c in all_campaigns:
             union_geom = GEOSGeometry("POINT EMPTY", srid=4326)
             for d in c.group.org_units.all():
-                union_geom = d.geom.union(union_geom)
-
+                try:
+                    union_geom = d.geom.union(union_geom)
+                except GEOSException as e:
+                    pass
             if union_geom.json:
                 s = CampaignSerializer(c)
                 union_geom.normalize()

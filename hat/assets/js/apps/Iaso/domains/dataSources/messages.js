@@ -267,6 +267,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Warning: if a version with the selected number already exists, it will be overwritten',
     },
+    nextVersion: {
+        id: 'iaso.datasources.label.nextVersion',
+        defaultMessage: 'Next version',
+    },
 });
 
 export default MESSAGES;

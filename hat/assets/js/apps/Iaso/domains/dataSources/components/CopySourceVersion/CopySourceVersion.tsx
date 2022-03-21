@@ -5,6 +5,7 @@ import React, {
     useCallback,
     useState,
     useMemo,
+    useEffect,
 } from 'react';
 import { Grid, Box, Divider } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
@@ -61,7 +62,7 @@ const makeVersionsDropDown = (sourceVersions, dataSourceId, formatMessage) => {
     // can't deduce the last version number from the index, since there can be a version 0
     const lastVersionIndex = existingVersions.length - 1;
     const nextVersionNumber =
-        parseInt(existingVersions[lastVersionIndex].value, 10) + 1;
+        parseInt(existingVersions[lastVersionIndex]?.value ?? 0, 10) + 1;
     return [
         ...existingVersions,
         {
@@ -81,10 +82,14 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const [destinationSourceId, setDestinationSourceId] =
         useState(dataSourceId);
-
+    const [sourceVersionErrors, setSourceVersionsErrors] = useState<string[]>(
+        [],
+    );
     const [chooseVersionNumber, setChooseVersionNumber] = useState(false);
     const [forceOverwrite, setForceOverwrite] = useState(false);
-    const { mutateAsync: copyVersion } = useCopyDataSourceVersion();
+    const { mutateAsync: copyVersion } = useCopyDataSourceVersion(
+        setSourceVersionsErrors,
+    );
     const dispatch = useDispatch();
     const { data: datasourcesDropdown } = useDataSourceAsDropDown();
     const { data: allSourceVersions } = useDataSourceVersions();
@@ -92,10 +97,10 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         () =>
             makeVersionsDropDown(
                 allSourceVersions,
-                dataSourceId,
+                destinationSourceId,
                 formatMessage,
             ),
-        [allSourceVersions, dataSourceId, formatMessage],
+        [allSourceVersions, destinationSourceId, formatMessage],
     );
     const nextVersionNumber =
         sourceVersionsDropDown[sourceVersionsDropDown?.length - 1].value ?? 1;
@@ -103,14 +108,15 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         useState(nextVersionNumber);
 
     const onConfirm = useCallback(
-        closeDialog => {
-            copyVersion({
+        async closeDialog => {
+            await copyVersion({
                 dataSourceId,
                 dataSourceVersionNumber,
                 destinationSourceId,
                 destinationVersionNumber,
                 forceOverwrite,
             });
+
             closeDialog();
         },
         [
@@ -161,6 +167,11 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         [dataSourceId, nextVersionNumber],
     );
 
+    useEffect(() => {
+        if (!chooseVersionNumber)
+            setDestinationVersionNumber(nextVersionNumber);
+    }, [chooseVersionNumber, nextVersionNumber]);
+
     return (
         <ConfirmCancelDialogComponent
             id="copySourceVersionModal"
@@ -169,7 +180,6 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             confirmMessage={MESSAGES.copy}
             cancelMessage={MESSAGES.close}
             maxWidth="md"
-            allowConfirm
             titleMessage={{
                 ...MESSAGES.copyVersionWithName,
                 values: {
@@ -180,6 +190,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             additionalButton
             additionalMessage={MESSAGES.goToCurrentTask}
             allowConfimAdditionalButton
+            allowConfirm
             onAdditionalButtonClick={onRedirect}
             onCancel={onCancel}
         >
@@ -225,6 +236,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                                     onChange={change(
                                         setDestinationVersionNumber,
                                     )}
+                                    errors={sourceVersionErrors}
                                     options={sourceVersionsDropDown}
                                     value={destinationVersionNumber}
                                     disabled={!chooseVersionNumber}
@@ -239,7 +251,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                                     onChange={change(setForceOverwrite)}
                                     value={forceOverwrite}
                                     disabled={
-                                        !chooseVersionNumber ||
+                                        !destinationVersionNumber ||
                                         destinationVersionNumber ===
                                             nextVersionNumber
                                     }

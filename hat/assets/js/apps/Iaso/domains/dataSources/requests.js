@@ -296,7 +296,7 @@ export const useDataSourceAsDropDown = () =>
         },
     );
 
-export const useCopyDataSourceVersion = () => {
+export const useCopyDataSourceVersion = setSourceVersionsErrors => {
     return useSnackMutation(
         ({
             dataSourceId,
@@ -316,5 +316,12 @@ export const useCopyDataSourceVersion = () => {
         undefined,
         undefined,
         'dataSources',
+        {
+            onError: error => {
+                setSourceVersionsErrors(
+                    error.details?.non_field_errors ?? 'Error ',
+                );
+            },
+        },
     );
 };

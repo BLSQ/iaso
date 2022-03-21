@@ -57,7 +57,7 @@ export const WarningMessage: FunctionComponent<Props> = ({
                     <FormattedMessage
                         {...MESSAGES.copyToSourceWithVersion}
                         values={{
-                            sourceName: destinationSourceName,
+                            sourceName: destinationSourceName ?? dataSourceName,
                             versionNumber: destinationVersionNumber,
                         }}
                     />{' '}

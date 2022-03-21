@@ -13,59 +13,27 @@ type Props = {
     forceOverwrite: boolean;
 };
 
-const warningStyle = theme => ({
+const warningStyle = {
     source: { fontWeight: 'bold' },
     destination: { fontWeight: 'bold' },
-});
+};
 
 const useWarningStyles = makeStyles(warningStyle);
 
-const NoDestinationVersionNumber = ({
-    sourceName,
-    sourceVersion,
-    destinationName,
-}) => {
-    const classes = useWarningStyles();
-    return (
-        <Grid container item spacing={1} justifyContent="center">
-            <Grid item>
-                <Typography className={classes.source} variant="h6">
-                    <FormattedMessage
-                        {...MESSAGES.copiedVersion}
-                        values={{
-                            sourceName,
-                            versionNumber: sourceVersion,
-                        }}
-                    />
-                </Typography>
-            </Grid>
-            <Grid item>
-                <Typography variant="h6">
-                    <FormattedMessage {...MESSAGES.willBeCopied} />
-                </Typography>
-            </Grid>
-            <Grid item>
-                <Typography className={classes.destination} variant="h6">
-                    <FormattedMessage
-                        {...MESSAGES.copyToNextVersion}
-                        values={{
-                            sourceName: destinationName,
-                        }}
-                    />
-                </Typography>
-            </Grid>
-        </Grid>
-    );
-};
-
-const WithDestinationVersionNumber = ({
-    sourceName,
-    sourceVersion,
-    destinationName,
+export const WarningMessage: FunctionComponent<Props> = ({
+    dataSourceName,
+    dataSourceVersionNumber,
+    destinationSourceId,
     destinationVersionNumber,
     forceOverwrite,
 }) => {
+    const { data: dataSources } = useDataSourceAsDropDown();
     const classes = useWarningStyles();
+    const destinationSourceName = destinationSourceId
+        ? dataSources.filter(
+              dataSource => dataSource.value === destinationSourceId,
+          )[0]?.label
+        : null;
     return (
         <Grid container item spacing={1} justifyContent="center">
             <Grid item>
@@ -73,8 +41,8 @@ const WithDestinationVersionNumber = ({
                     <FormattedMessage
                         {...MESSAGES.copiedVersion}
                         values={{
-                            sourceName,
-                            versionNumber: sourceVersion,
+                            sourceName: dataSourceName,
+                            versionNumber: dataSourceVersionNumber,
                         }}
                     />
                 </Typography>
@@ -89,7 +57,7 @@ const WithDestinationVersionNumber = ({
                     <FormattedMessage
                         {...MESSAGES.copyToSourceWithVersion}
                         values={{
-                            sourceName: destinationName,
+                            sourceName: destinationSourceName,
                             versionNumber: destinationVersionNumber,
                         }}
                     />{' '}
@@ -103,42 +71,5 @@ const WithDestinationVersionNumber = ({
                 </Grid>
             )}
         </Grid>
-    );
-};
-
-export const WarningMessage: FunctionComponent<Props> = ({
-    dataSourceName,
-    dataSourceVersionNumber,
-    destinationSourceId,
-    destinationVersionNumber,
-    forceOverwrite,
-}) => {
-    const { data: dataSources } = useDataSourceAsDropDown();
-    const destinationSourceName = destinationSourceId
-        ? dataSources.filter(
-              dataSource => dataSource.value === destinationSourceId,
-          )[0]?.label
-        : null;
-    if (destinationVersionNumber) {
-        return (
-            <WithDestinationVersionNumber
-                sourceName={dataSourceName}
-                sourceVersion={dataSourceVersionNumber}
-                destinationName={
-                    destinationSourceId ? destinationSourceName : dataSourceName
-                }
-                destinationVersionNumber={destinationVersionNumber}
-                forceOverwrite={forceOverwrite}
-            />
-        );
-    }
-    return (
-        <NoDestinationVersionNumber
-            sourceName={dataSourceName}
-            sourceVersion={dataSourceVersionNumber}
-            destinationName={
-                destinationSourceId ? destinationSourceName : dataSourceName
-            }
-        />
     );
 };

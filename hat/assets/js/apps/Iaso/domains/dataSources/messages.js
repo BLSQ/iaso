@@ -240,11 +240,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.title.copyVersionWithName',
         defaultMessage: 'Copy {sourceName} version {versionNumber} ?',
     },
-    copyVersionWarning: {
-        id: 'iaso.datasources.title.copyVersionWarning',
-        defaultMessage:
-            'This will create a new version for {sourceName} and copy version {versionNumber} into it. Do you wish to proceed?',
-    },
     copiedVersion: {
         id: 'iaso.datasources.message.copiedVersion',
         defaultMessage: '{sourceName} - version {versionNumber} ',
@@ -254,10 +249,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'will be copied to ',
     },
 
-    copyToNextVersion: {
-        id: 'iaso.datasources.message.copiedVersion',
-        defaultMessage: 'a new version of {sourceName}',
-    },
     copyToSourceWithVersion: {
         id: 'iaso.datasources.message.copyToSourceWithVersion',
         defaultMessage: '{sourceName} - version {versionNumber}',

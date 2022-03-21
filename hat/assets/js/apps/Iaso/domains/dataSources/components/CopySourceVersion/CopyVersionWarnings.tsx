@@ -66,7 +66,6 @@ const WithDestinationVersionNumber = ({
     forceOverwrite,
 }) => {
     const classes = useWarningStyles();
-
     return (
         <Grid container item spacing={1}>
             <Grid item>

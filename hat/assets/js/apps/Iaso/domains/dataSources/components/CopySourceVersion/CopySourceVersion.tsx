@@ -58,13 +58,17 @@ const makeVersionsDropDown = (sourceVersions, dataSourceId, formatMessage) => {
             };
         })
         .sort((a, b) => parseInt(a.number, 10) > parseInt(b.number, 10));
+    // can't deduce the last version number from the index, since there can be a version 0
+    const lastVersionIndex = existingVersions.length - 1;
+    const nextVersionNumber =
+        parseInt(existingVersions[lastVersionIndex].value, 10) + 1;
     return [
         ...existingVersions,
         {
-            label: `${formatMessage(MESSAGES.nextVersion)}: ${(
-                existingVersions.length + 1
-            ).toString()}`,
-            value: (existingVersions.length + 1).toString(),
+            label: `${formatMessage(
+                MESSAGES.nextVersion,
+            )}: ${nextVersionNumber.toString()}`,
+            value: nextVersionNumber.toString(),
         },
     ];
 };
@@ -75,9 +79,9 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     dataSourceVersionNumber,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [destinationSourceId, setDestinationSourceId] = useState(null);
-    const [destinationVersionNumber, setDestinationVersionNumber] =
-        useState(null);
+    const [destinationSourceId, setDestinationSourceId] =
+        useState(dataSourceId);
+
     const [chooseVersionNumber, setChooseVersionNumber] = useState(false);
     const [forceOverwrite, setForceOverwrite] = useState(false);
     const { mutateAsync: copyVersion } = useCopyDataSourceVersion();
@@ -93,6 +97,11 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             ),
         [allSourceVersions, dataSourceId, formatMessage],
     );
+    const nextVersionNumber =
+        sourceVersionsDropDown[sourceVersionsDropDown?.length - 1].value ?? 1;
+    const [destinationVersionNumber, setDestinationVersionNumber] =
+        useState(nextVersionNumber);
+
     const onConfirm = useCallback(
         closeDialog => {
             copyVersion({

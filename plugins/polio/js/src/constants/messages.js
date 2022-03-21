@@ -1017,6 +1017,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.campaignType',
         defaultMessage: 'Campaign type',
     },
+    lqasImDateTooltip: {
+        id: 'iaso.polio.tooltip.label.lqasImDate',
+        defaultMessage:
+            'No date found in campaign data, using default value based on round date',
+    },
+    noDateFound: {
+        id: 'iaso.polio.placeholder.noDateFound',
+        defaultMessage: 'No date found',
+    },
 });
 
 export default MESSAGES;

@@ -441,6 +441,56 @@ class OrgUnitAPITestCase(APITestCase):
             ou.groups.all().order_by("name"), ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"]
         )
 
+    def test_create_org_unit_with_instance_defining(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={
+                "id": None,
+                "name": "Test ou with defining instance",
+                "org_unit_type_id": self.jedi_council.pk,
+                "instance_defining_id": self.instance_related_to_form_defining.id,
+                "groups": [],
+                "sub_source": "",
+                "status": False,
+                "aliases": ["my alias"],
+                "validation_status": "NEW",
+                "parent_id": "",
+                "source_ref": "",
+                "creation_source": "dashboard",
+            },
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertEqual(ou.instance_defining, self.instance_related_to_form_defining)
+
+    def test_create_org_unit_with_not_linked_instance_defining(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={
+                "id": None,
+                "name": "Test ou with no defining instance",
+                "org_unit_type_id": self.jedi_council.pk,
+                "instance_defining_id": self.instance_not_related_to_form_defining.id,
+                "groups": [],
+                "sub_source": "",
+                "status": False,
+                "aliases": ["my alias"],
+                "validation_status": "NEW",
+                "parent_id": "",
+                "source_ref": "",
+                "creation_source": "dashboard",
+            },
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertEqual(ou.instance_defining, None)
+
     def test_edit_org_unit_retrieve_put(self):
         """Retrieve a orgunit data and then resend back mostly unmodified and ensure that nothing burn
 

@@ -498,6 +498,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)
 
+        instance_defining_id = request.data.get("instance_defining_id", None)
+
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups", [])
 
@@ -547,6 +549,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
+
+        if instance_defining_id and org_unit_type:
+            instance = Instance.objects.get(pk=instance_defining_id)
+            # Check if the instance has as form the form_defining for the orgUnittype
+            # if the form_defining is the same as the form related to the instance one,
+            # assign the instance to the orgUnit as instance defining
+            if org_unit_type.form_defining == instance.form:
+                org_unit.instance_defining = instance
+
         org_unit.save()
         org_unit.groups.set(new_groups)
 

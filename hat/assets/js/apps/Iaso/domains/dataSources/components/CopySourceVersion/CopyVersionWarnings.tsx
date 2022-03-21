@@ -67,7 +67,7 @@ const WithDestinationVersionNumber = ({
 }) => {
     const classes = useWarningStyles();
     return (
-        <Grid container item spacing={1}>
+        <Grid container item spacing={1} justifyContent="center">
             <Grid item>
                 <Typography className={classes.source} variant="h6">
                     <FormattedMessage

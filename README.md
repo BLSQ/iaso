@@ -158,7 +158,15 @@ docker-compose up db
 ``` {.sourceCode .bash}
 docker-compose run --rm iaso manage migrate
 ```
-
+(If you get a message saying that the database iaso does not exist, you can connect to your postgres instance using 
+```
+psql -h localhost -p 5433 -u postgres
+```
+then type 
+```
+create database iaso; 
+```
+to create the missing database.)
 ### 5. Start the server
 
 To start all the containers (backend, frontend, db)

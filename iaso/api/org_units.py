@@ -391,14 +391,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if instance_defining_id:
             instance = Instance.objects.get(pk=instance_defining_id)
-            try:
-                orgUnitTypeFormDefining = OrgUnitType.objects.get(
-                    pk=org_unit_type_id, form_defining_id=instance.form_id
-                )
-            except Exception as e:
-                orgUnitTypeFormDefining = None
-
-            if orgUnitTypeFormDefining:
+            # Check if the instance has as form the form_defining for the orgUnittype
+            # if the form_defining is the same as the form related to the instance one,
+            # assign the instance to the orgUnit as instance defining
+            if org_unit.org_unit_type.form_defining == instance.form:
                 org_unit.instance_defining = instance
 
         if parent_id != org_unit.parent_id:

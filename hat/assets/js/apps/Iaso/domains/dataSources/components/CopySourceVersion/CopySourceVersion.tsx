@@ -150,6 +150,17 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         ],
     );
 
+    const onCancel = useCallback(
+        async closeDialog => {
+            setDestinationSourceId(dataSourceId);
+            setDestinationVersionNumber(nextVersionNumber);
+            setForceOverwrite(false);
+            setChooseVersionNumber(false);
+            closeDialog();
+        },
+        [dataSourceId, nextVersionNumber],
+    );
+
     return (
         <ConfirmCancelDialogComponent
             id="copySourceVersionModal"
@@ -170,8 +181,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             additionalMessage={MESSAGES.goToCurrentTask}
             allowConfimAdditionalButton
             onAdditionalButtonClick={onRedirect}
-            // Not defining these props makes TS unhappy (probably something with TS and PropTypes)
-            onCancel={undefined}
+            onCancel={onCancel}
         >
             <>
                 <Box mb={2}>
@@ -228,7 +238,11 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                                     labelString="force overwrite?"
                                     onChange={change(setForceOverwrite)}
                                     value={forceOverwrite}
-                                    disabled={!chooseVersionNumber}
+                                    disabled={
+                                        !chooseVersionNumber ||
+                                        destinationVersionNumber ===
+                                            nextVersionNumber
+                                    }
                                 />
                             </Grid>
                         </Grid>
@@ -238,7 +252,9 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                             dataSourceName={dataSourceName}
                             dataSourceVersionNumber={dataSourceVersionNumber}
                             destinationSourceId={destinationSourceId}
-                            destinationVersionNumber={destinationVersionNumber}
+                            destinationVersionNumber={
+                                destinationVersionNumber ?? nextVersionNumber
+                            }
                             forceOverwrite={forceOverwrite}
                         />
                     </Grid>

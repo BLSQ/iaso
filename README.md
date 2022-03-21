@@ -160,7 +160,7 @@ docker-compose run --rm iaso manage migrate
 ```
 (If you get a message saying that the database iaso does not exist, you can connect to your postgres instance using 
 ```
-psql -h localhost -p 5433 -u postgres
+psql -h localhost -p 5433 -U postgres
 ```
 then type 
 ```

@@ -65,6 +65,14 @@ const UsersInfos = ({ setFieldValue, currentUser, initialData }) => (
                 };
             })}
         />
+        <InputComponent
+            keyValue="dhis2_id"
+            onChange={(key, value) => setFieldValue(key, value)}
+            value={currentUser.dhis2_id.value}
+            errors={currentUser.dhis2_id.errors}
+            type="text"
+            label={MESSAGES.dhis2_id}
+        />
     </>
 );
 

@@ -23,34 +23,37 @@ def dhis2_callback(request, dhis2_slug):
             "code": code,
             "grant_type": "authorization_code",
             "redirect_uri": REDIRECT_URI + "api/dhis2/{0}/login/".format(dhis2_slug),
-            "client_id": "iaso-org",
+            "client_id": dhis2_slug,
         }
 
         response = requests.post(
             DHIS2_SERVER_URL + "uaa/oauth/token",
-            auth=HTTPBasicAuth("iaso-org", IASO_DHIS2_SECRET),
+            auth=HTTPBasicAuth(dhis2_slug, IASO_DHIS2_SECRET),
             headers={"Content-Type": "Accept: application/json"},
             params=payload,
         )
 
-        access_token = response.json()["access_token"]
-
-        user_info = requests.get(
-            DHIS2_SERVER_URL + "api/me", headers={"Authorization": "Bearer {0}".format(access_token)}
-        )
-
-        user_dhis2_id = user_info.json()["id"]
-
         try:
-            user = Profile.objects.get(dhis2_id=user_dhis2_id, account=ext_credentials.account).user
-            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-            request.session.set_expiry(3600 * 24)
-            return HttpResponseRedirect(redirect_to="/")
-        except ObjectDoesNotExist:
-            return HttpResponse(
-                "Iaso User with DHIS2 credentials < {0} > does not exists.".format(
-                    user_info.json()["userCredentials"]["name"]
-                )
+            access_token = response.json()["access_token"]
+
+            user_info = requests.get(
+                DHIS2_SERVER_URL + "api/me", headers={"Authorization": "Bearer {0}".format(access_token)}
             )
+
+            user_dhis2_id = user_info.json()["id"]
+
+            try:
+                user = Profile.objects.get(dhis2_id=user_dhis2_id, account=ext_credentials.account).user
+                login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+                request.session.set_expiry(3600 * 24)
+                return HttpResponseRedirect(redirect_to="/")
+            except ObjectDoesNotExist:
+                return HttpResponse(
+                    "Iaso User with DHIS2 credentials < {0} > does not exists.".format(
+                        user_info.json()["userCredentials"]["name"]
+                    )
+                )
+        except KeyError:
+            return HttpResponse("Error: {0}".format(response.json()))
 
     return HttpResponse("ok")

@@ -779,7 +779,7 @@ def find_lqas_im_campaign(campaigns, today, country, round_key, kind):
         # Temporary answer to question above
         if reference_end_date < reference_start_date:
             reference_end_date = reference_start_date + timedelta(days=+10)
-        if campaign.country_id == country.id and reference_start_date <= today < reference_end_date:
+        if campaign.country_id == country.id and reference_start_date <= today <= reference_end_date:
             return campaign
     return None
 

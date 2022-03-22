@@ -19,6 +19,7 @@ const currentUser = {
     is_superuser: true,
     org_units: [],
     language: { value: 'fr', errors: [] },
+    dhis2_id: '1',
 };
 
 const renderComponent = initialData => {
@@ -33,7 +34,7 @@ const renderComponent = initialData => {
     );
 };
 
-describe('UsersInfos', () => {
+describe.only('UsersInfos', () => {
     beforeEach(() => {
         renderComponent();
         component.update();
@@ -51,7 +52,7 @@ describe('UsersInfos', () => {
                 target: { value: 'en' },
             });
         }
-        expect(setFieldValue.getCalls().length).to.equal(5);
+        expect(setFieldValue.getCalls().length).to.equal(6);
     });
     it('triggerd callback when changing language', () => {
         const select = component.find(Select).at(0);

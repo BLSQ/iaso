@@ -51,6 +51,14 @@ const UsersInfos = ({ setFieldValue, currentUser, initialData }) => (
             required={!initialData}
         />
         <InputComponent
+            keyValue="dhis2_id"
+            onChange={(key, value) => setFieldValue(key, value)}
+            value={currentUser.dhis2_id.value}
+            errors={currentUser.dhis2_id.errors}
+            type="text"
+            label={MESSAGES.dhis2_id}
+        />
+        <InputComponent
             keyValue="language"
             onChange={(key, value) => setFieldValue(key, value)}
             value={currentUser.language.value}
@@ -64,14 +72,6 @@ const UsersInfos = ({ setFieldValue, currentUser, initialData }) => (
                     label: locale.label,
                 };
             })}
-        />
-        <InputComponent
-            keyValue="dhis2_id"
-            onChange={(key, value) => setFieldValue(key, value)}
-            value={currentUser.dhis2_id.value}
-            errors={currentUser.dhis2_id.errors}
-            type="text"
-            label={MESSAGES.dhis2_id}
         />
     </>
 );

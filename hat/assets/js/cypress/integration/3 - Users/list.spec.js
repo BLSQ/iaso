@@ -50,7 +50,13 @@ const openDialogForUserIndex = index => {
     editButton.click();
     cy.get('#user-profile-dialog').should('be.visible');
 };
-const userInfosFields = ['user_name', 'first_name', 'last_name', 'email'];
+const userInfosFields = [
+    'user_name',
+    'first_name',
+    'last_name',
+    'email',
+    'dhis2_id',
+];
 describe('Users', () => {
     describe('Page', () => {
         it('should redirect to url with pagination params', () => {

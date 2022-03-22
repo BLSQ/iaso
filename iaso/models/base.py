@@ -1084,6 +1084,7 @@ class Profile(models.Model):
             "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
             "language": self.language,
             "user_id": self.user.id,
+            "dhis2_id": self.dhis2_id,
         }
 
     def as_short_dict(self):

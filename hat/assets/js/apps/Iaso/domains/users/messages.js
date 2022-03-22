@@ -152,6 +152,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.delete_successful',
         defaultMessage: 'Deleted successfully',
     },
+    dhis2_id: {
+        id: 'iaso.label.dhis2Id',
+        defaultMessage: 'DHIS2 id',
+    },
 });
 
 export default MESSAGES;

@@ -1,14 +1,13 @@
+from django.db.models import Q
 from rest_framework import viewsets, permissions, serializers
-from rest_framework.response import Response
 
-from iaso.models import MatchingAlgorithm
-from .common import HasPermission
+from iaso.models import MatchingAlgorithm, Project
 
 
 class AlgorithmsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchingAlgorithm
-        fields = ["id", "name", "description", "created_at"]
+        fields = ["id", "name", "description", "created_at", "projects"]
         read_only_fields = ["created_at"]
 
 
@@ -26,6 +25,7 @@ class AlgorithmsViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "head", "options", "trace", "delete"]
 
     def get_queryset(self):
-        algos = MatchingAlgorithm.objects.all()
-
-        return algos.order_by("id")
+        user = self.request.user
+        projects = Project.objects.filter(account=user.iaso_profile.account)
+        algos = MatchingAlgorithm.objects.filter(Q(projects__in=projects) | Q(projects=None)).order_by("id").distinct()
+        return algos

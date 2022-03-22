@@ -31,6 +31,7 @@ from plugins.polio.serializers import (
     LineListImportSerializer,
     AnonymousCampaignSerializer,
     PreparednessSerializer,
+    SmallCampaignSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -1256,13 +1257,17 @@ class CampaignsShapeViewSet(viewsets.ViewSet):
             union_geom = GEOSGeometry("POINT EMPTY", srid=4326)
             for d in c.group.org_units.all():
                 try:
-                    union_geom = d.geom.union(union_geom)
+                    district_geom = d.geom.buffer(0)
+                    union_geom = district_geom.union(union_geom)
                 except GEOSException as e:
+                    import traceback
+
+                    traceback.print_exc()
                     pass
             if union_geom.json:
-                s = CampaignSerializer(c)
+                s = SmallCampaignSerializer(c)
                 union_geom.normalize()
-                union_geom = union_geom.simplify(0.1)
+                union_geom = union_geom.simplify(0.01)
                 feature = {"type": "Feature", "geometry": json.loads(union_geom.json), "properties": s.data}
                 features.append(feature)
         res = {"type": "FeatureCollection", "features": features}

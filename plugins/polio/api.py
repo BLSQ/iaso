@@ -20,7 +20,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Value, TextField, UUIDField
 from collections import defaultdict
-
+from django.contrib.gis.geos import GEOSGeometry, GeometryCollection, GEOSException
 
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
@@ -31,6 +31,7 @@ from plugins.polio.serializers import (
     LineListImportSerializer,
     AnonymousCampaignSerializer,
     PreparednessSerializer,
+    SmallCampaignSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -1248,11 +1249,37 @@ class LQASStatsViewSet(viewsets.ViewSet):
         return JsonResponse(response, safe=False)
 
 
+class CampaignsShapeViewSet(viewsets.ViewSet):
+    def list(self, request):
+        all_campaigns = Campaign.objects.filter(deleted_at=None).exclude(group=None)
+        features = []
+        for c in all_campaigns:
+            union_geom = GEOSGeometry("POINT EMPTY", srid=4326)
+            for d in c.group.org_units.all():
+                try:
+                    district_geom = d.geom.buffer(0)
+                    union_geom = district_geom.union(union_geom)
+                except GEOSException as e:
+                    import traceback
+
+                    traceback.print_exc()
+                    pass
+            if union_geom.json:
+                s = SmallCampaignSerializer(c)
+                union_geom.normalize()
+                union_geom = union_geom.simplify(0.01)
+                feature = {"type": "Feature", "geometry": json.loads(union_geom.json), "properties": s.data}
+                features.append(feature)
+        res = {"type": "FeatureCollection", "features": features}
+        return JsonResponse(res)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/preparedness", PreparednessViewSet)
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/im", IMViewSet, basename="IM")
+router.register(r"polio/campaignshapes", CampaignsShapeViewSet, basename="campaignshapes")
 router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")
 router.register(r"polio/lqasstats", LQASStatsViewSet, basename="lqasstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")

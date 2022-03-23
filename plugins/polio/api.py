@@ -229,6 +229,40 @@ Timeline tracker Automated message
         else:
             return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
 
+    @action(
+        methods=["GET", "HEAD"],
+        detail=False,
+        url_path="merged_shapes.geojson",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def shapes(self, request):
+        features = []
+        all_campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted and campaign with missing group
+        all_campaigns = all_campaigns.filter(deleted_at=None).exclude(group=None)
+
+        for c in all_campaigns:
+            union_geom = GEOSGeometry("POINT EMPTY", srid=4326)
+            for d in c.group.org_units.all():
+                try:
+                    district_geom = d.geom.buffer(0)
+                    union_geom = district_geom.union(union_geom)
+                except GEOSException as e:
+                    import traceback
+
+                    traceback.print_exc()
+                    logger.exception(e)
+                    union_geom = None
+                    break
+            if union_geom and union_geom.json:
+                s = SmallCampaignSerializer(c)
+                union_geom.normalize()
+                union_geom = union_geom.simplify(0.01)
+                feature = {"type": "Feature", "geometry": json.loads(union_geom.json), "properties": s.data}
+                features.append(feature)
+        res = {"type": "FeatureCollection", "features": features}
+        return JsonResponse(res)
+
 
 class CountryUsersGroupViewSet(ModelViewSet):
     serializer_class = CountryUsersGroupSerializer
@@ -749,7 +783,6 @@ def find_campaign(campaigns, today, country):
 
 
 def find_campaign_on_day(campaigns, day, country):
-
     for c in campaigns:
         if not (c.round_one and c.round_one.started_at):
             continue
@@ -1249,37 +1282,11 @@ class LQASStatsViewSet(viewsets.ViewSet):
         return JsonResponse(response, safe=False)
 
 
-class CampaignsShapeViewSet(viewsets.ViewSet):
-    def list(self, request):
-        all_campaigns = Campaign.objects.filter(deleted_at=None).exclude(group=None)
-        features = []
-        for c in all_campaigns:
-            union_geom = GEOSGeometry("POINT EMPTY", srid=4326)
-            for d in c.group.org_units.all():
-                try:
-                    district_geom = d.geom.buffer(0)
-                    union_geom = district_geom.union(union_geom)
-                except GEOSException as e:
-                    import traceback
-
-                    traceback.print_exc()
-                    pass
-            if union_geom.json:
-                s = SmallCampaignSerializer(c)
-                union_geom.normalize()
-                union_geom = union_geom.simplify(0.01)
-                feature = {"type": "Feature", "geometry": json.loads(union_geom.json), "properties": s.data}
-                features.append(feature)
-        res = {"type": "FeatureCollection", "features": features}
-        return JsonResponse(res)
-
-
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/preparedness", PreparednessViewSet)
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/im", IMViewSet, basename="IM")
-router.register(r"polio/campaignshapes", CampaignsShapeViewSet, basename="campaignshapes")
 router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")
 router.register(r"polio/lqasstats", LQASStatsViewSet, basename="lqasstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")

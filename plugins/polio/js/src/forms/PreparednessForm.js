@@ -114,9 +114,9 @@ const PreparednessSummary = ({ preparedness }) => {
 const PreparednessConfig = ({ roundKey, campaign }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const endDate = campaign && campaign[roundKey]?.ended_at;
-    const isLockedForEdition = endDate
-        ? moment().isAfter(moment(endDate, 'YYYY-MM-DD', 'day'))
+    const roundStartDate = campaign && campaign[roundKey]?.started_at;
+    const isLockedForEdition = roundStartDate
+        ? moment().isAfter(moment(roundStartDate, 'YYYY-MM-DD', 'day'))
         : false;
     const { values, setFieldValue, dirty } = useFormikContext();
     const {
@@ -149,12 +149,13 @@ const PreparednessConfig = ({ roundKey, campaign }) => {
         });
     };
 
+    const message = isLockedForEdition
+        ? formatMessage(MESSAGES.preparednessRoundStarted)
+        : formatMessage(MESSAGES.preparednessIntro);
+
     return (
         <Grid container spacing={2}>
-            <Grid item>
-                Configure the Google Sheets that will be used to import the
-                preparedness data for the campaign.
-            </Grid>
+            <Grid item>{message}</Grid>
             <Grid container direction="row" item spacing={2}>
                 <Grid xs={12} md={8} item>
                     <Field
@@ -226,7 +227,8 @@ const PreparednessConfig = ({ roundKey, campaign }) => {
                                     disabled={
                                         isGeneratingSpreadsheet ||
                                         dirty ||
-                                        !values.id
+                                        !values.id ||
+                                        isLockedForEdition
                                     }
                                     onClick={generateSpreadsheet}
                                 >

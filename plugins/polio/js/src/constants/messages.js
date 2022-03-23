@@ -1017,6 +1017,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.campaignType',
         defaultMessage: 'Campaign type',
     },
+    preparednessIntro: {
+        id: 'iaso.polio.preparednessIntro',
+        defaultMessage:
+            'Configure the Google Sheets that will be used to import the preparedness data for the campaign.',
+    },
+    preparednessRoundStarted: {
+        id: 'iaso.polio.preparednessRoundStarted',
+        defaultMessage: "Preparedness can't be edited if round already started",
+    },
 });
 
 export default MESSAGES;

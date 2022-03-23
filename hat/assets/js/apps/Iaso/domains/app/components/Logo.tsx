@@ -1,6 +1,7 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useContext } from 'react';
 import { makeStyles, Theme } from '@material-ui/core';
 import { LogoSvg } from './LogoSvg';
+import { ThemeConfigContext } from '../contexts/ThemeConfigContext';
 
 const useStyles = makeStyles((theme: Theme) => ({
     text: {
@@ -11,19 +12,15 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export const Logo: FunctionComponent = () => {
+    const { LOGO_PATH, APP_TITLE } = useContext(ThemeConfigContext);
     const classes = useStyles();
     // @ts-ignore
     const staticUrl = window.STATIC_URL ?? '/static/';
-    if (process.env.REACT_LOGO_PATH) {
+    if (LOGO_PATH) {
         return (
             <>
-                <img
-                    alt="logo"
-                    src={`${staticUrl}${process.env.REACT_LOGO_PATH}`}
-                />
-                <span className={classes.text}>
-                    {process.env.REACT_APP_TITLE}
-                </span>
+                <img alt="logo" src={`${staticUrl}${LOGO_PATH}`} />
+                <span className={classes.text}>{APP_TITLE}</span>
             </>
         );
     }

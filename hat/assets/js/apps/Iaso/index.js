@@ -12,6 +12,7 @@ import { store, history } from './redux/store';
 import { addRoutes } from './routing/redirections';
 import { getPlugins, PluginsContext } from './utils';
 import { getOverriddenTheme } from './styles';
+import { ThemeConfigContext } from './domains/app/contexts/ThemeConfigContext.tsx';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -22,7 +23,6 @@ const queryClient = new QueryClient({
 });
 
 export default function iasoApp(element, enabledPluginsName, themeConfig) {
-    console.log(themeConfig);
     const plugins = getPlugins(enabledPluginsName);
     const allRoutesConfigs = [
         ...routeConfigs,
@@ -36,14 +36,14 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
                 routeConfig.allowAnonymous
                     ? routeConfig.component
                     : props => (
-                        <ProtectedRoute
-                              {...props}
-                              featureFlag={routeConfig.featureFlag}
-                              permissions={routeConfig.permissions}
-                              component={routeConfig.component(props)}
-                              isRootUrl={routeConfig.isRootUrl}
-                              allRoutes={allRoutesConfigs}
-                          />
+                          <ProtectedRoute
+                            {...props}
+                            featureFlag={routeConfig.featureFlag}
+                            permissions={routeConfig.permissions}
+                            component={routeConfig.component(props)}
+                            isRootUrl={routeConfig.isRootUrl}
+                            allRoutes={allRoutesConfigs}
+                        />
                       )
             }
         />
@@ -53,10 +53,14 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>
-                <MuiThemeProvider theme={getOverriddenTheme(theme)}>
-                    <CssBaseline />
-                    <App store={store} routes={routes} history={history} />
-                </MuiThemeProvider>
+                <ThemeConfigContext.Provider value={themeConfig}>
+                    <MuiThemeProvider
+                        theme={getOverriddenTheme(theme, themeConfig)}
+                    >
+                        <CssBaseline />
+                        <App store={store} routes={routes} history={history} />
+                    </MuiThemeProvider>
+                </ThemeConfigContext.Provider>
             </PluginsContext.Provider>
         </QueryClientProvider>,
         element,

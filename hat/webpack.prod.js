@@ -9,21 +9,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const LOCALE = 'fr';
 
 dotenv.config();
-// Application customizations
-const primaryColor = process.env.THEME_PRIMARY_COLOR || '#006699';
-const secondaryColor = process.env.THEME_SECONDARY_COLOR || '#0066CC';
-const primaryBackgroundColor =
-    process.env.THEME_PRIMARY_BACKGROUND_COLOR || '#F5F5F5';
-const appTitle = process.env.APP_TITLE || 'Iaso';
-const envVariables = {
-    REACT_THEME_PRIMARY_COLOR: `"${primaryColor}"`,
-    REACT_THEME_SECONDARY_COLOR: `"${secondaryColor}"`,
-    REACT_THEME_PRIMARY_BACKGROUND_COLOR: `"${primaryBackgroundColor}"`,
-    REACT_APP_TITLE: `"${appTitle}"`,
-};
-if (process.env.LOGO_PATH) {
-    envVariables.REACT_LOGO_PATH = `"${process.env.LOGO_PATH}"`;
-}
+
 module.exports = {
     // fail the entire build on 'module not found'
     bail: true,
@@ -58,7 +44,6 @@ module.exports = {
         new MiniCssExtractPlugin({ filename: '[name]-[chunkhash].css' }),
         new webpack.DefinePlugin({
             'process.env': {
-                ...envVariables,
                 // This has effect on the react lib size
                 // need to do JSON stringify on all vars here to take effect,
                 // see https://github.com/eHealthAfrica/guinea-connect-universal-app/blob/development/webpack/prod.config.js

@@ -221,6 +221,7 @@ class MatchingAlgorithm(models.Model):
     name = models.TextField()
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    projects = models.ManyToManyField("Project", related_name="match_algos", blank=True)
 
     def __str__(self):
         return "%s - %s %s" % (
@@ -455,6 +456,7 @@ class Group(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = DefaultGroupManager()
+    all_objects = models.Manager()
     domain_objects = DomainGroupManager()
 
     def __str__(self):
@@ -780,6 +782,18 @@ class InstanceQuerySet(models.QuerySet):
 
         return self.filter(query)
 
+    def filter_for_user(self, user):
+        profile = user.iaso_profile
+        from .org_unit import OrgUnit
+
+        # If user is restricted to some org unit, filter on thoses
+        if profile.org_units.exists():
+            orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+
+            self = self.filter(org_unit__in=orgunits)
+        self = self.filter(project__account=profile.account)
+        return self
+
 
 class Instance(models.Model):
     """A series of answers by an individual for a specific form"""
@@ -1050,6 +1064,7 @@ class Profile(models.Model):
     external_user_id = models.CharField(max_length=512, null=True, blank=True)
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
     language = models.CharField(max_length=512, null=True, blank=True)
+    dhis2_id = models.CharField(max_length=128, null=True, blank=True, help_text="Dhis2 user ID for SSO Auth")
 
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
@@ -1069,6 +1084,7 @@ class Profile(models.Model):
             "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
             "language": self.language,
             "user_id": self.user.id,
+            "dhis2_id": self.dhis2_id,
         }
 
     def as_short_dict(self):

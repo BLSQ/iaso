@@ -1,14 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { makeStyles, Grid, Tabs, Tab } from '@material-ui/core';
-import {
-    commonStyles,
-    useSafeIntl,
-    useSkipEffectOnMount,
-} from 'bluesquare-components';
-import { isEqual } from 'lodash';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
 
 import { redirectToReplace } from '../../../routing/actions';
@@ -36,112 +31,91 @@ const InstancesTopBar = ({
     params,
     periodType,
     setTableColumns,
-    tableColumns,
     baseUrl,
     labelKeys,
     possibleFields,
-    instances,
+    formDetails,
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
     const currentUser = useSelector(state => state.users.current);
     const [visibleColumns, setVisibleColumns] = useState([]);
-    const [updatedParams, setUpdatedParams] = useState();
     const { formatMessage } = useSafeIntl();
+
     const formIds = params.formIds?.split(',');
 
-    const handleChangeVisibleColmuns = useCallback(
-        cols => {
-            const newParams = {
-                ...params,
-                columns: cols.map(c => c.key).join(','),
-            };
-            setUpdatedParams(newParams);
-            setVisibleColumns(cols);
-            setTableColumns(
-                getInstancesColumns(
-                    formatMessage,
-                    cols,
-                    params.showDeleted === 'true',
-                    currentUser,
-                ),
-            );
-        },
-        [currentUser, formatMessage, params, setTableColumns, setUpdatedParams],
-    );
+    const handleChangeVisibleColmuns = (cols, withRedirect = true) => {
+        const newParams = {
+            ...params,
+            columns: cols
+                .filter(c => c.active)
+                .map(c => c.key)
+                .join(','),
+        };
+        setTableColumns(
+            getInstancesColumns(
+                formatMessage,
+                cols,
+                params.showDeleted === 'true',
+                currentUser,
+            ),
+        );
+        setVisibleColumns(cols);
+        if (withRedirect) {
+            dispatch(redirectToReplace(baseUrl, newParams));
+        }
+    };
 
-    const makeColumns = useCallback(
-        (onMount = false) => {
-            const enrichedParams = { ...params };
-            let columns = INSTANCE_METAS_FIELDS.filter(f =>
-                Boolean(f.tableOrder),
+    useEffect(() => {
+        let newColsString;
+        if (params.columns) {
+            newColsString = params.columns;
+        } else {
+            newColsString = INSTANCE_METAS_FIELDS.filter(
+                f => Boolean(f.tableOrder) && f.active,
             ).map(f => f.accessor || f.key);
-            if (formIds?.length === 1) {
-                columns = columns.filter(c => c !== 'form__name');
+            if (formIds && formIds.length === 1) {
+                newColsString = newColsString.filter(c => c !== 'form__name');
                 if (periodType === null) {
-                    columns = columns.filter(c => c !== 'period');
+                    newColsString = newColsString.filter(c => c !== 'period');
                 }
             }
-            if (onMount)
-                columns = columns.filter(
-                    c => c !== 'formVersion' && c !== 'created_at',
-                );
-
-            columns = columns.join(',');
-            const columnsWithLabelKeys = `${columns},${labelKeys.join(',')}`;
-
-            enrichedParams.columns = columnsWithLabelKeys;
-            return getInstancesVisibleColumns({
-                formatMessage,
-                instance: instances && instances[0],
-                columns: enrichedParams.columns,
-                order: enrichedParams.order,
-                defaultOrder,
-                possibleFields,
-            });
-        },
-        [
-            formIds?.length,
-            formatMessage,
-            instances,
-            labelKeys,
-            params,
-            periodType,
-            possibleFields,
-        ],
-    );
-
-    // Have a separate effect on mount to filter out source and version from columns
-    useEffect(() => {
-        if (instances || tableColumns.length === 0) {
-            const cols = makeColumns(true);
-            handleChangeVisibleColmuns(cols);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    useSkipEffectOnMount(() => {
-        if (!isEqual(updatedParams, params)) {
-            if (instances || tableColumns.length === 0) {
-                const cols = makeColumns();
-                handleChangeVisibleColmuns(cols);
+            newColsString = newColsString.join(',');
+            if (labelKeys.length > 0) {
+                newColsString = `${newColsString},${labelKeys.join(',')}`;
             }
         }
-    }, [
-        handleChangeVisibleColmuns,
-        instances,
-        makeColumns,
-        params,
-        tableColumns.length,
-        updatedParams,
-    ]);
-
-    // Separated the redirect from handleChangeVisibleColumns to avoid an infinite loop
-    useEffect(() => {
-        if (!isEqual(updatedParams, params)) {
-            console.log('redirect', updatedParams);
-            dispatch(redirectToReplace(baseUrl, updatedParams ?? {}));
+        let newCols = [];
+        // single form
+        if (formIds?.length === 1) {
+            // if detail loaded
+            if (formDetails) {
+                // possibleFields set by default to null, array if fetched
+                if (possibleFields) {
+                    newCols = getInstancesVisibleColumns({
+                        formatMessage,
+                        columns: newColsString,
+                        order: params.order,
+                        defaultOrder,
+                        possibleFields,
+                    });
+                }
+            } else if (visibleColumns.length > 0) {
+                // remove columns while reloading
+                handleChangeVisibleColmuns([], false);
+            }
+            // multi forms
+        } else {
+            newCols = getInstancesVisibleColumns({
+                formatMessage,
+                columns: newColsString,
+                order: params.order,
+                defaultOrder,
+            });
         }
-    }, [baseUrl, updatedParams, dispatch, params]);
+        handleChangeVisibleColmuns(newCols, !params.columns);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [possibleFields, formDetails]);
 
     let title = formatMessage(MESSAGES.titleMulti);
     if (formIds?.length === 1) {
@@ -193,7 +167,7 @@ InstancesTopBar.defaultProps = {
     possibleFields: null,
     tableColumns: [],
     labelKeys: [],
-    instances: undefined,
+    formDetails: null,
 };
 
 InstancesTopBar.propTypes = {
@@ -207,7 +181,7 @@ InstancesTopBar.propTypes = {
     baseUrl: PropTypes.string.isRequired,
     possibleFields: PropTypes.any,
     labelKeys: PropTypes.array,
-    instances: PropTypes.array,
+    formDetails: PropTypes.object,
 };
 
 export { InstancesTopBar };

@@ -8,36 +8,36 @@ import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
 import { userHasPermission } from '../users/utils';
 
-const instancesTableColumns = (formatMessage = () => ({}), user) => {
-    const columns = [
-        {
-            Header: formatMessage(MESSAGES.actions),
-            accessor: 'actions',
-            resizable: false,
-            sortable: false,
-            width: 150,
-            Cell: settings => (
-                <section>
+export const actionTableColumn = (formatMessage = () => ({}), user) => ({
+    Header: formatMessage(MESSAGES.actions),
+    accessor: 'actions',
+    resizable: false,
+    sortable: false,
+    width: 150,
+    Cell: settings => (
+        <section>
+            <IconButtonComponent
+                url={`${baseUrls.instanceDetail}/instanceId/${settings.row.original.id}`}
+                icon="remove-red-eye"
+                tooltipMessage={MESSAGES.view}
+            />
+            {settings.row.original.org_unit &&
+                userHasPermission('iaso_org_units', user) && (
                     <IconButtonComponent
-                        url={`${baseUrls.instanceDetail}/instanceId/${settings.row.original.id}`}
-                        icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.view}
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.org_unit.id}`}
+                        icon="orgUnit"
+                        tooltipMessage={MESSAGES.viewOrgUnit}
                     />
-                    {settings.row.original.org_unit &&
-                        userHasPermission('iaso_org_units', user) && (
-                            <IconButtonComponent
-                                url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.org_unit.id}`}
-                                icon="orgUnit"
-                                tooltipMessage={MESSAGES.viewOrgUnit}
-                            />
-                        )}
-                </section>
-            ),
-        },
-    ];
+                )}
+        </section>
+    ),
+});
+
+const instancesTableColumns = (formatMessage = () => ({})) => {
+    const columns = [];
     let metaFields = INSTANCE_METAS_FIELDS.filter(f => Boolean(f.tableOrder));
     metaFields = orderBy(metaFields, [f => f.tableOrder], ['asc']);
-    metaFields.forEach(f => {
+    metaFields.forEach(f =>
         columns.push({
             Header: formatMessage(MESSAGES[f.key]),
             accessor: f.accessor || f.key,
@@ -48,8 +48,8 @@ const instancesTableColumns = (formatMessage = () => ({}), user) => {
                     f.render
                         ? f.render(settings.row.original[f.key])
                         : settings.row.original[f.key]),
-        });
-    });
+        }),
+    );
     return columns;
 };
 

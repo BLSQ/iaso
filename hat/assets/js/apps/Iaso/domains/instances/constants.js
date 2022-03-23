@@ -31,6 +31,7 @@ export const INSTANCE_METAS_FIELDS = [
     {
         key: 'form_name',
         accessor: 'form__name',
+        active: true,
         tableOrder: 1,
         type: 'info',
         renderValue: data => (
@@ -46,6 +47,7 @@ export const INSTANCE_METAS_FIELDS = [
     {
         key: 'version',
         accessor: 'formVersion',
+        active: false,
         sortable: false,
         tableOrder: 2,
         type: 'info',
@@ -57,13 +59,15 @@ export const INSTANCE_METAS_FIELDS = [
     {
         key: 'updated_at',
         render: value => displayDateFromTimestamp(value),
+        active: true,
         tableOrder: 3,
         type: 'info',
     },
     {
         key: 'created_at',
+        active: false,
         render: value => displayDateFromTimestamp(value),
-        tableOrder: 4,
+        tableOrder: 5,
         type: 'info',
     },
     {
@@ -82,12 +86,17 @@ export const INSTANCE_METAS_FIELDS = [
                     domComponent="span"
                 >
                     <>
-                        <OrgUnitLabel orgUnit={value} withType />
+                        <OrgUnitLabel
+                            orgUnit={value}
+                            withType
+                            withSource={false}
+                        />
                     </>
                 </OrgUnitTooltip>
             );
         },
-        tableOrder: 3,
+        active: true,
+        tableOrder: 4,
         type: 'location',
     },
     {
@@ -102,6 +111,7 @@ export const INSTANCE_METAS_FIELDS = [
         key: 'period',
         render: value => <PrettyPeriod value={value} />,
         tableOrder: 3,
+        active: true,
         type: 'info',
     },
     {
@@ -112,7 +122,8 @@ export const INSTANCE_METAS_FIELDS = [
             ) : (
                 '-'
             ),
-        tableOrder: 5,
+        active: true,
+        tableOrder: 6,
         type: 'info',
     },
 ];

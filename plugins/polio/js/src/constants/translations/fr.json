@@ -1,5 +1,4 @@
 {
-    "iaso.form.label.sourceVersion": "Version de la source",
     "iaso.instance.title": "Soumissions",
     "iaso.polio.PREPARING": "En préparation",
     "iaso.polio.ROUND1DONE": "Round 1 terminé",
@@ -30,7 +29,6 @@
     "iaso.polio.form.label.costPerChildTotal": "Coût par enfant Total: $",
     "iaso.polio.form.label.costRoundOne": "Coût Round 1",
     "iaso.polio.form.label.costRoundTwo": "Coût Round 2",
-    "iaso.polio.form.label.cvdpv2NotificationDate": "Date de notification cVDPV2",
     "iaso.polio.form.label.dateOfOnset": "Date de début",
     "iaso.polio.form.label.description": "Description",
     "iaso.polio.form.label.dgAuthorization": "Autorisation du DG",
@@ -74,6 +72,7 @@
     "iaso.polio.form.label.threelevelCall": "Réunion 3 niveaux",
     "iaso.polio.form.label.verificationScore": "Score de vérification (/20)",
     "iaso.polio.form.label.virus": "Virus",
+    "iaso.polio.form.label.virusNotificationDate": "Date de notification virus",
     "iaso.polio.form.title.baseInfoFormTitle": "Entrer les informations sur la nouvelle campagne",
     "iaso.polio.form.validator.error.endDateBeforeStartDate": "La date de fin ne peut être avant la date de début",
     "iaso.polio.form.validator.error.positiveInteger": "Veuillez remplir avec un nombre entier positif",

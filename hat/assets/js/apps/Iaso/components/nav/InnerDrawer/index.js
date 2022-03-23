@@ -27,6 +27,7 @@ const styles = theme => ({
         marginBottom: 0,
         height: `calc(100vh - ${menuHeight}px)`,
         overflow: 'hidden',
+        position: 'relative',
     },
     innerDrawerTab: {
         ...commonStyles(theme).innerDrawerTab,

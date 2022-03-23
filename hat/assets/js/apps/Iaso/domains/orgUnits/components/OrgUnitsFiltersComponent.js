@@ -24,7 +24,7 @@ import { SearchFilter } from '../../../components/filters/Search.tsx';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 import { redirectTo } from '../../../routing/actions';
 import { getChipColors } from '../../../constants/chipColors';
-import { useOrgUnitsFiltersData } from '../hooks';
+import { useOrgUnitsFiltersData, useGetGroups } from '../hooks';
 
 import {
     status,
@@ -34,7 +34,11 @@ import {
     group,
     geography,
 } from '../../../constants/filters';
-import { setFiltersUpdated, setOrgUnitsLocations } from '../actions';
+import {
+    setFiltersUpdated,
+    setOrgUnitsLocations,
+    setFetchingOrgUnitTypes,
+} from '../actions';
 
 import DatesRange from '../../../components/filters/DatesRange';
 
@@ -91,26 +95,35 @@ const OrgUnitsFiltersComponent = ({
     const intl = useSafeIntl();
     const classes = useStyles();
     const filtersUpdated = useSelector(state => state.orgUnits.filtersUpdated);
-    const { groups, orgUnitTypes, isFetchingGroups, isFetchingorgUnitTypes } =
-        useOrgUnitsFiltersData({ dataSourceId, sourceVersionId });
+    const { groups, isFetchingGroups } = useGetGroups({
+        dataSourceId,
+        sourceVersionId,
+    });
     const orgUnitsLocations = useSelector(
         state => state.orgUnits.orgUnitsLocations,
     );
     const isClusterActive = useSelector(state => state.map.isClusterActive);
     // not replacing with useQuery as it creates a double call, and the redux state value is used elsewhere
     const sources = useSelector(state => state.orgUnits.sources);
+    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
+    const isFetchingOrgUnitTypes = useSelector(
+        state => state.orgUnits.fetchingOrgUnitTypes,
+    );
     const versionsDropDown = useMemo(() => {
         if (!sources || !dataSourceId) return [];
         return (
             sources
                 .filter(src => src.id === dataSourceId)[0]
-                ?.versions.map(version => ({
+                ?.versions.sort((a,b)=>a.number-b.number)
+                .map(version => ({
                     label: version.number.toString(),
                     value: version.id.toString(),
                 })) ?? []
         );
     }, [dataSourceId, sources]);
     const dispatch = useDispatch();
+
+    useOrgUnitsFiltersData(dispatch, setFetchingOrgUnitTypes);
 
     const onChange = (value, urlKey) => {
         if (urlKey === 'version') {
@@ -276,7 +289,7 @@ const OrgUnitsFiltersComponent = ({
                                     searchParams,
                                     {
                                         ...orgUnitType(orgUnitTypes ?? []),
-                                        loading: isFetchingorgUnitTypes,
+                                        loading: isFetchingOrgUnitTypes,
                                     },
                                     (value, urlKey) => onChange(value, urlKey),
                                     searchIndex,

@@ -46,7 +46,7 @@ class InstancePopupComponent extends Component {
     }
 
     confirmDialog() {
-        this.props.useLocation(this.props.currentInstance);
+        this.props.replaceLocation(this.props.currentInstance);
         this.popup.current.leafletElement.options.leaflet.map.closePopup();
     }
 
@@ -158,7 +158,7 @@ class InstancePopupComponent extends Component {
 InstancePopupComponent.defaultProps = {
     currentInstance: null,
     displayUseLocation: false,
-    useLocation: () => {},
+    replaceLocation: () => {},
 };
 
 InstancePopupComponent.propTypes = {
@@ -166,7 +166,7 @@ InstancePopupComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     currentInstance: PropTypes.object,
     displayUseLocation: PropTypes.bool,
-    useLocation: PropTypes.func,
+    replaceLocation: PropTypes.func,
 };
 
 const MapStateToProps = state => ({

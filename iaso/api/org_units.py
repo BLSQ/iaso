@@ -1,14 +1,12 @@
 import json
 from copy import deepcopy
 from time import gmtime, strftime
-from datetime import datetime
 
 from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import Q, IntegerField, Value
-from django.http import StreamingHttpResponse, HttpResponse, JsonResponse
+from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -23,7 +21,6 @@ from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSeri
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance
 from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
-from iaso.models.org_unit import OrgunitAsLocationCache
 from iaso.utils import geojson_queryset
 
 
@@ -87,17 +84,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
          These parameter can totally conflict and the result is undocumented
         """
-
-        cache_location_exists = True
-
-        try:
-            cache_response = OrgunitAsLocationCache.objects.get(user_id=request.user.id, params=request.query_params)
-            time_delta = datetime.now(timezone.utc) - cache_response.updated_at
-            if time_delta.seconds < 3600:
-                return JsonResponse(cache_response.response, safe=False)
-        except ObjectDoesNotExist:
-            cache_location_exists = False
-
         queryset = self.get_queryset()
 
         forms = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
@@ -174,6 +160,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     "pages": paginator.num_pages,
                     "limit": limit,
                 }
+
                 return Response(res)
             elif tree_search:
                 org_units = OrgUnitTreeSearchSerializer(queryset, many=True).data
@@ -200,19 +187,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         shape_queryset = self.get_queryset().filter(id=temp_org_unit["id"])
                         temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
                     org_units.append(temp_org_unit)
-
-                if not cache_location_exists:
-                    OrgunitAsLocationCache.objects.create(
-                        user_id=request.user.id, params=request.query_params, response=org_units
-                    )
-                else:
-                    response_cache = OrgunitAsLocationCache.objects.get(
-                        user_id=request.user.id, params=request.query_params
-                    )
-                    response_cache.user_id = request.user.id
-                    response_cache.params = request.query_params
-                    response_cache.response = org_units
-                    response_cache.save()
                 return Response(org_units)
             else:
                 queryset = queryset.select_related("org_unit_type")
@@ -573,11 +547,21 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
-        org_unit = get_object_or_404(self.get_queryset(), pk=pk)
+        org_unit: OrgUnit = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, org_unit)
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None
         res["catchment"] = None
+        # Had first geojson of parent so we can add it to map, caution we stop after the first
+        ancestor = org_unit.parent
+        ancestor_dict = res["parent"]
+        while ancestor:
+            if ancestor.simplified_geom:
+                geo_queryset = self.get_queryset().filter(id=ancestor.id)
+                ancestor_dict["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
+                break
+            ancestor = ancestor.parent
+            ancestor_dict = ancestor_dict["parent"]
         if org_unit.simplified_geom or org_unit.catchment:
             geo_queryset = self.get_queryset().filter(id=org_unit.id)
             if org_unit.simplified_geom:

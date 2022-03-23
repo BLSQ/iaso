@@ -14,6 +14,7 @@ import {
     setTableSelection,
     selectionInitialState,
     commonStyles,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 
 import Filters from './TableFilters';
@@ -176,6 +177,12 @@ const SingleTable = ({
         }
     }, [forceRefresh, handleFetch, onForceRefreshDone]);
 
+    useSkipEffectOnMount(() => {
+        if (propsToWatch) {
+            handleFetch();
+        }
+    }, [propsToWatch]);
+
     // Override state if prop changes
     // Should only have an impact if built-in filters are used with filters in parent
     useEffect(() => {
@@ -186,7 +193,6 @@ const SingleTable = ({
     const extraProps = {
         loading,
         defaultPageSize: defaultPageSize || limit,
-        propsToWatch, // IA-763: pass an extra props that will be watched in table component to force the render
     };
     if (subComponent) {
         extraProps.SubComponent = original =>

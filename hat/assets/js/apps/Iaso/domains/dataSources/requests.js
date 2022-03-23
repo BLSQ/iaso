@@ -280,3 +280,14 @@ export const useDataSourceForVersion = sourceVersion =>
             },
         },
     );
+
+export const useCopyDataSourceVersion = () => {
+    return useSnackMutation(({dataSourceId, dataSourceVersionNumber}) => {
+        console.log('args:',dataSourceId, dataSourceVersionNumber)
+        return postRequest('/api/copyversion/', {
+            source_source_id: dataSourceId,
+            source_version_number: dataSourceVersionNumber,
+            }
+        );
+    })
+}

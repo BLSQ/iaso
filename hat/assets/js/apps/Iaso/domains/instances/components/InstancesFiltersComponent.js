@@ -80,11 +80,23 @@ const InstancesFiltersComponent = ({
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
             dispatch(setInstancesFilterUpdated(false));
-            onSearch({
+            const searchParams = {
                 ...params,
                 ...getInstancesFilterValues(formState),
                 page: 1,
-            });
+            };
+            // removing columns params to refetch correct columns
+            const newFormIdsString = formState.formIds.value;
+            if (newFormIdsString) {
+                const newFormIds = formState.formIds.value.split(',');
+                if (
+                    formState.formIds.value !== params?.formIds &&
+                    newFormIds.length === 1
+                ) {
+                    delete searchParams.columns;
+                }
+            }
+            onSearch(searchParams);
         }
     }, [params, onSearch, dispatch, formState, isInstancesFilterUpdated]);
 

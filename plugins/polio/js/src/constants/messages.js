@@ -162,9 +162,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.dateOfOnset',
         defaultMessage: 'Date of onset',
     },
-    cvdpv2NotificationDate: {
-        id: 'iaso.polio.form.label.cvdpv2NotificationDate',
-        defaultMessage: 'cVDPV2 notification date',
+    virusNotificationDate: {
+        id: 'iaso.polio.form.label.virusNotificationDate',
+        defaultMessage: 'Virus notification date',
     },
     pv2NotificationDate: {
         id: 'iaso.polio.form.label.pv2NotificationDate',

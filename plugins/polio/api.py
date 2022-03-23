@@ -20,7 +20,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Value, TextField, UUIDField
 from collections import defaultdict
-
+from django.contrib.gis.geos import GEOSGeometry, GeometryCollection, GEOSException
 
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
@@ -31,6 +31,7 @@ from plugins.polio.serializers import (
     LineListImportSerializer,
     AnonymousCampaignSerializer,
     PreparednessSerializer,
+    SmallCampaignSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -227,6 +228,40 @@ Timeline tracker Automated message
             return Response(campaign.id, status=status.HTTP_200_OK)
         else:
             return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
+
+    @action(
+        methods=["GET", "HEAD"],
+        detail=False,
+        url_path="merged_shapes.geojson",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def shapes(self, request):
+        features = []
+        all_campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted and campaign with missing group
+        all_campaigns = all_campaigns.filter(deleted_at=None).exclude(group=None)
+
+        for c in all_campaigns:
+            union_geom = GEOSGeometry("POINT EMPTY", srid=4326)
+            for d in c.group.org_units.all():
+                try:
+                    district_geom = d.geom.buffer(0)
+                    union_geom = district_geom.union(union_geom)
+                except GEOSException as e:
+                    import traceback
+
+                    traceback.print_exc()
+                    logger.exception(e)
+                    union_geom = None
+                    break
+            if union_geom and union_geom.json:
+                s = SmallCampaignSerializer(c)
+                union_geom.normalize()
+                union_geom = union_geom.simplify(0.01)
+                feature = {"type": "Feature", "geometry": json.loads(union_geom.json), "properties": s.data}
+                features.append(feature)
+        res = {"type": "FeatureCollection", "features": features}
+        return JsonResponse(res)
 
 
 class CountryUsersGroupViewSet(ModelViewSet):
@@ -748,7 +783,6 @@ def find_campaign(campaigns, today, country):
 
 
 def find_campaign_on_day(campaigns, day, country):
-
     for c in campaigns:
         if not (c.round_one and c.round_one.started_at):
             continue

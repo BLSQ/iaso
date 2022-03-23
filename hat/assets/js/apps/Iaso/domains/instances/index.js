@@ -99,8 +99,8 @@ const Instances = ({ params }) => {
     const formIds = params.formIds?.split(',');
     const formId = formIds?.length === 1 ? formIds[0] : undefined;
 
-    const { data: formDetails } = useSnackQuery(
-        ['formDetailsForInstance', formId],
+    const { data: formDetails, fetching: fetchingDetail } = useSnackQuery(
+        ['formDetailsForInstance', `${formId}`],
         () => fetchFormDetailsForInstance(formId),
         undefined,
         { enabled: Boolean(formId) },
@@ -140,7 +140,7 @@ const Instances = ({ params }) => {
         [dispatch],
     );
 
-    const fetching = loadingMap || loadingList;
+    const fetching = loadingMap || loadingList || fetchingDetail;
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -150,11 +150,10 @@ const Instances = ({ params }) => {
                 params={params}
                 periodType={periodType}
                 setTableColumns={newCols => setTableColumns(newCols)}
-                tableColumns={tableColumns}
                 baseUrl={baseUrl}
                 labelKeys={labelKeys}
                 possibleFields={possibleFields}
-                instances={data?.instances}
+                formDetails={formDetails}
             />
 
             {fetching && <LoadingSpinner />}
@@ -228,6 +227,7 @@ const Instances = ({ params }) => {
                         columns={tableColumns}
                         baseUrl={baseUrl}
                         multiSelect
+                        defaultSorted={[{ id: 'updated_at', desc: true }]}
                         selectionActions={getSelectionActions(
                             formatMessage,
                             getFilters(params),
@@ -254,7 +254,6 @@ const Instances = ({ params }) => {
                             loading: fetchingList,
                         }}
                         resetPageToOne={resetPageToOne}
-                        defaultSorted={[{ id: 'updated_at', desc: true }]}
                     />
                 )}
                 {tab === 'map' && (

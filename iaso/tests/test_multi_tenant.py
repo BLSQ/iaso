@@ -148,7 +148,7 @@ class MultiTenantTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)  # yoda authorized to see Star Wars data
 
         response = raccoon_client.get("/api/instances/%s/" % instance.id, accept="application/json")
-        self.assertEqual(response.status_code, 403)  # raccoon not authorized to see Star Wars data
+        self.assertEqual(response.status_code, 404)  # raccoon not authorized to see Star Wars data
 
         # now uploading the file content, so that it will appear in /instances/ for the Star Wars account
         with open("iaso/tests/fixtures/hydroponics_test_upload.xml") as fp:

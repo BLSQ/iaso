@@ -39,7 +39,7 @@ export const DetectionForm = () => {
                         component={DateInput}
                     />
                     <Field
-                        label={formatMessage(MESSAGES.cvdpv2NotificationDate)}
+                        label={formatMessage(MESSAGES.virusNotificationDate)}
                         fullWidth
                         name="cvdpv2_notified_at"
                         component={DateInput}

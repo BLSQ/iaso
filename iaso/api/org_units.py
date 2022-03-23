@@ -19,7 +19,7 @@ from hat.audit import models as audit_models
 from iaso.api.common import safe_api_import
 from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form
+from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance
 from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
 from iaso.utils import geojson_queryset
 
@@ -321,6 +321,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         catchment = request.data.get("catchment", None)
         simplified_geom = request.data.get("simplified_geom", None)
         org_unit_type_id = request.data.get("org_unit_type_id", None)
+        instance_defining_id = request.data.get("instance_defining_id", None)
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups")
 
@@ -361,6 +362,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.org_unit_type = org_unit_type
         else:
             errors.append({"errorKey": "org_unit_type_id", "errorMessage": _("Org unit type is required")})
+
+        if instance_defining_id:
+            instance = Instance.objects.get(pk=instance_defining_id)
+            # Check if the instance has as form the form_defining for the orgUnittype
+            # if the form_defining is the same as the form related to the instance one,
+            # assign the instance to the orgUnit as instance defining
+            if org_unit.org_unit_type.form_defining == instance.form:
+                org_unit.instance_defining = instance
 
         if parent_id != org_unit.parent_id:
             # This check is a fix for when a user is restricted to certain org units hierarchy.
@@ -462,6 +471,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.validation_status = validation_status
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)
+
+        instance_defining_id = request.data.get("instance_defining_id", None)
+
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups", [])
 
@@ -511,6 +523,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
+
+        if instance_defining_id and org_unit_type:
+            instance = Instance.objects.get(pk=instance_defining_id)
+            # Check if the instance has as form the form_defining for the orgUnittype
+            # if the form_defining is the same as the form related to the instance one,
+            # assign the instance to the orgUnit as instance defining
+            if org_unit_type.form_defining == instance.form:
+                org_unit.instance_defining = instance
+
         org_unit.save()
         org_unit.groups.set(new_groups)
 

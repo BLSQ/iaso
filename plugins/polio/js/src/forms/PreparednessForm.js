@@ -111,9 +111,13 @@ const PreparednessSummary = ({ preparedness }) => {
     );
 };
 
-const PreparednessConfig = ({ roundKey }) => {
+const PreparednessConfig = ({ roundKey, campaign }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+    const endDate = campaign && campaign[roundKey]?.ended_at;
+    const isLockedForEdition = endDate
+        ? moment().isAfter(moment(endDate, 'YYYY-MM-DD', 'day'))
+        : false;
     const { values, setFieldValue, dirty } = useFormikContext();
     const {
         mutate: generateSpreadsheetMutation,
@@ -163,7 +167,9 @@ const PreparednessConfig = ({ roundKey }) => {
                         name={key}
                         component={TextInput}
                         disabled={
-                            previewMutation.isLoading || isGeneratingSpreadsheet
+                            previewMutation.isLoading ||
+                            isGeneratingSpreadsheet ||
+                            isLockedForEdition
                         }
                         className={classes.input}
                     />
@@ -183,7 +189,10 @@ const PreparednessConfig = ({ roundKey }) => {
                             <Button
                                 variant="contained"
                                 color="primary"
-                                disabled={previewMutation.isLoading}
+                                disabled={
+                                    previewMutation.isLoading ||
+                                    isLockedForEdition
+                                }
                                 onClick={refreshData}
                             >
                                 {formatMessage(
@@ -262,7 +271,7 @@ PreparednessConfig.propTypes = {
     roundKey: PropTypes.string.isRequired,
 };
 
-export const PreparednessForm = () => {
+export const PreparednessForm = ({ campaign }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setErrors } = useFormikContext();
@@ -308,10 +317,16 @@ export const PreparednessForm = () => {
                     />
                 </TabList>
                 <TabPanel value="round_one">
-                    <PreparednessConfig roundKey="round_one" />
+                    <PreparednessConfig
+                        roundKey="round_one"
+                        campaign={campaign}
+                    />
                 </TabPanel>
                 <TabPanel value="round_two">
-                    <PreparednessConfig roundKey="round_two" />
+                    <PreparednessConfig
+                        roundKey="round_two"
+                        campaign={campaign}
+                    />
                 </TabPanel>
             </TabContext>
 

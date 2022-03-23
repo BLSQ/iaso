@@ -111,7 +111,8 @@ $right-icon-position : 40px;
   height: 30px;
   cursor: pointer;
   &:hover {
-    border: 1px solid darken($primary, 10%);
+    border: 1px solid;
+    filter: brightness(0.90);
   }
 
   .hidden {
@@ -124,7 +125,7 @@ $right-icon-position : 40px;
     margin-bottom: -2px;
     fill: $primary;
     &:hover {
-      fill: darken($primary, 10%);
+      filter: brightness(0.90);
     }
   }
 }

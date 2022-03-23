@@ -2,7 +2,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
-// Switch here for french. This is set to 'en' in dev to not get react-intl warnings
+// Switch here for French. This is set to 'en' in dev to not get react-intl warnings
 // remember to switch in webpack.prod.js and
 // django settings as well
 const LOCALE = 'fr';
@@ -175,15 +175,7 @@ module.exports = {
                 use: [
                     { loader: 'style-loader' },
                     { loader: 'css-loader' },
-                    {
-                        loader: 'sass-loader',
-                        options: {
-                            additionalData:
-                                `$primary: ${primaryColor};` +
-                                `$primary-background: ${primaryBackgroundColor};` +
-                                `$secondary: ${secondaryColor};`,
-                        },
-                    },
+                    { loader: 'sass-loader' },
                 ],
             },
             // font files

@@ -161,15 +161,7 @@ module.exports = {
                 use: [
                     { loader: MiniCssExtractPlugin.loader },
                     { loader: 'css-loader' },
-                    {
-                        loader: 'sass-loader',
-                        options: {
-                            additionalData:
-                                `$primary: ${primaryColor};` +
-                                `$primary-background: ${primaryBackgroundColor};` +
-                                `$secondary: ${secondaryColor};`,
-                        },
-                    },
+                    { loader: 'sass-loader' },
                 ],
             },
             {

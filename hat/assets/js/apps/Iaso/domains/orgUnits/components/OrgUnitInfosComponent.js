@@ -8,13 +8,15 @@ import moment from 'moment';
 import {
     injectIntl,
     FormControl as FormControlComponent,
+    IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 import MESSAGES from '../../forms/messages';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
-
+import InstanceFileContent from '../../instances/components/InstanceFileContent';
+import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 // reformatting orgUnit name so the OU can be passed to the treeview modal
 // and selecting the parent for display
 const reformatOrgUnit = orgUnit => {
@@ -165,9 +167,31 @@ const OrgUnitInfosComponent = ({
                 type="arrayInput"
             />
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={orgUnit.instance_defining ? 6 : 4}>
         {(orgUnit.id && !orgUnit.instance_defining) && (
             <OrgUnitCreationDetails org_unit={orgUnit}/>
+        )}
+
+        {orgUnit.instance_defining && (
+          <WidgetPaper
+              id="form-contents"
+              title={formatMessage(MESSAGES.form)}
+              IconButton={IconButtonComponent}
+              iconButtonProps={{
+                  onClick: () =>
+                      window.open(
+                          orgUnit.instance_defining.file_url,
+                          '_blank',
+                      ),
+                  icon: 'xml',
+                  color: 'secondary',
+                  tooltipMessage: MESSAGES.downloadXml,
+              }}
+          >
+            <InstanceFileContent
+                instance={orgUnit.instance_defining}
+            />
+          </WidgetPaper>
         )}
         </Grid>
     </Grid>

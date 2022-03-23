@@ -22,3 +22,16 @@ def favicon_path(request: HttpRequest) -> Dict[str, str]:
 
 def logo_path(request: HttpRequest) -> Dict[str, str]:
     return {"logo_path": settings.LOGO_PATH}
+
+
+def theme(request: HttpRequest) -> Dict[str, str]:
+    return {
+        "THEME_PRIMARY_COLOR": settings.THEME_PRIMARY_COLOR,
+        "THEME_SECONDARY_COLOR": settings.THEME_SECONDARY_COLOR,
+        "THEME_PRIMARY_BACKGROUND_COLOR": settings.THEME_PRIMARY_BACKGROUND_COLOR,
+        "theme": {
+            "THEME_PRIMARY_COLOR": settings.THEME_PRIMARY_COLOR,
+            "THEME_SECONDARY_COLOR": settings.THEME_SECONDARY_COLOR,
+            "THEME_PRIMARY_BACKGROUND_COLOR": settings.THEME_PRIMARY_BACKGROUND_COLOR,
+        },
+    }

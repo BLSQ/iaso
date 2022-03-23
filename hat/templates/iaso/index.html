@@ -13,7 +13,9 @@
       <script>
         window.STATIC_URL = "{{ STATIC_URL }}";
         const PLUGINS_ENABLED = {{ PLUGINS_ENABLED|safe }};
-        window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED);
+        // From context processor
+        const THEME = {{ theme|safe }};
+        window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME);
       </script>
     {% endblock %}
   </section>

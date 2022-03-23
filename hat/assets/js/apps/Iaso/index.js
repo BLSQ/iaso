@@ -21,7 +21,8 @@ const queryClient = new QueryClient({
     },
 });
 
-export default function iasoApp(element, enabledPluginsName) {
+export default function iasoApp(element, enabledPluginsName, themeConfig) {
+    console.log(themeConfig);
     const plugins = getPlugins(enabledPluginsName);
     const allRoutesConfigs = [
         ...routeConfigs,

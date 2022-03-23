@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import { Grid } from '@material-ui/core';
 
@@ -32,6 +32,28 @@ const reformatOrgUnit = orgUnit => {
     }
     return copy;
 };
+const OrgUnitCreationDetails = ({
+  org_unit
+}) => (
+  <Fragment>
+    <InputComponent
+        keyValue="source"
+        value={org_unit.source}
+        disabled
+        label={MESSAGES.source}
+    />
+    <InputComponent
+        keyValue="created_at"
+        value={moment.unix(org_unit.created_at).format('LTS')}
+        disabled
+    />
+    <InputComponent
+        keyValue="updated_at"
+        value={moment.unix(org_unit.updated_at).format('LTS')}
+        disabled
+    />
+  </Fragment>
+);
 
 const OrgUnitInfosComponent = ({
     orgUnit,
@@ -112,14 +134,6 @@ const OrgUnitInfosComponent = ({
                 onChange={onChangeInfo}
                 errors={orgUnit.source_ref.errors}
             />
-            <InputComponent
-                keyValue="aliases"
-                onChange={onChangeInfo}
-                value={orgUnit.aliases.value}
-                type="arrayInput"
-            />
-        </Grid>
-        <Grid item xs={4} container>
             <FormControlComponent
                 errors={orgUnit.parent_id.errors}
                 marginTopZero
@@ -141,27 +155,21 @@ const OrgUnitInfosComponent = ({
                     resetTrigger={resetTrigger}
                 />
             </FormControlComponent>
+            {orgUnit.instance_defining && (
+              <OrgUnitCreationDetails org_unit={orgUnit}/>
+            )}
+            <InputComponent
+                keyValue="aliases"
+                onChange={onChangeInfo}
+                value={orgUnit.aliases.value}
+                type="arrayInput"
+            />
         </Grid>
-        {orgUnit.id && (
-            <Grid item xs={4}>
-                <InputComponent
-                    keyValue="source"
-                    value={orgUnit.source}
-                    disabled
-                    label={MESSAGES.source}
-                />
-                <InputComponent
-                    keyValue="created_at"
-                    value={moment.unix(orgUnit.created_at).format('LTS')}
-                    disabled
-                />
-                <InputComponent
-                    keyValue="updated_at"
-                    value={moment.unix(orgUnit.updated_at).format('LTS')}
-                    disabled
-                />
-            </Grid>
+        <Grid item xs={4}>
+        {(orgUnit.id && !orgUnit.instance_defining) && (
+            <OrgUnitCreationDetails org_unit={orgUnit}/>
         )}
+        </Grid>
     </Grid>
 );
 

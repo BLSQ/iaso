@@ -345,6 +345,7 @@ class OrgUnit(TreeModel):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
+            "instance_defining_id": self.instance_defining_id,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -353,6 +354,7 @@ class OrgUnit(TreeModel):
             res["source"] = self.version.data_source.name if self.version else None
             res["source_id"] = self.version.data_source.id if self.version else None
             res["version"] = self.version.number if self.version else None
+            res["instance_defining"] = self.instance_defining.as_dict() if self.instance_defining else None
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
 

@@ -417,13 +417,3 @@ class OrgUnit(TreeModel):
         if len(path_components) > 0:
             return "/" + ("/".join(path_components))
         return None
-
-
-class OrgunitAsLocationCache(models.Model):
-    user_id = models.IntegerField()
-    response = models.JSONField()
-    updated_at = models.DateTimeField(auto_now=True, editable=True, blank=True, null=True)
-    params = models.TextField()
-
-    def __str__(self):
-        return str(self.params)

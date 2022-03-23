@@ -426,3 +426,5 @@ SOCIALACCOUNT_PROVIDERS = {
         "AUTH_PARAMS": {"code_challenge": CODE_CHALLENGE},
     }
 }
+
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache_table"}}

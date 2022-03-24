@@ -153,7 +153,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
                 </Tabs>
                 <FormikProvider value={formik}>
                     <Form>
-                        <CurrentForm campaign={selectedCampaign} />
+                        <CurrentForm />
                     </Form>
                     <Grid container justifyContent="flex-end">
                         <Grid item md={6}>

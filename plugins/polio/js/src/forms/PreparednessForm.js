@@ -111,14 +111,14 @@ const PreparednessSummary = ({ preparedness }) => {
     );
 };
 
-const PreparednessConfig = ({ roundKey, campaign }) => {
+const PreparednessConfig = ({ roundKey }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const roundStartDate = campaign && campaign[roundKey]?.started_at;
+    const { values, setFieldValue, dirty } = useFormikContext();
+    const roundStartDate = values && values[roundKey]?.started_at;
     const isLockedForEdition = roundStartDate
         ? moment().isAfter(moment(roundStartDate, 'YYYY-MM-DD', 'day'))
         : false;
-    const { values, setFieldValue, dirty } = useFormikContext();
     const {
         mutate: generateSpreadsheetMutation,
         isLoading: isGeneratingSpreadsheet,
@@ -273,7 +273,7 @@ PreparednessConfig.propTypes = {
     roundKey: PropTypes.string.isRequired,
 };
 
-export const PreparednessForm = ({ campaign }) => {
+export const PreparednessForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setErrors } = useFormikContext();
@@ -319,16 +319,10 @@ export const PreparednessForm = ({ campaign }) => {
                     />
                 </TabList>
                 <TabPanel value="round_one">
-                    <PreparednessConfig
-                        roundKey="round_one"
-                        campaign={campaign}
-                    />
+                    <PreparednessConfig roundKey="round_one" />
                 </TabPanel>
                 <TabPanel value="round_two">
-                    <PreparednessConfig
-                        roundKey="round_two"
-                        campaign={campaign}
-                    />
+                    <PreparednessConfig roundKey="round_two" />
                 </TabPanel>
             </TabContext>
 

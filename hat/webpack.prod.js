@@ -1,4 +1,3 @@
-const dotenv = require('dotenv');
 const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
@@ -7,8 +6,6 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // remember to switch in webpack.dev.js and
 // django settings as well
 const LOCALE = 'fr';
-
-dotenv.config();
 
 module.exports = {
     // fail the entire build on 'module not found'

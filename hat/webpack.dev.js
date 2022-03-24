@@ -1,4 +1,3 @@
-const dotenv = require('dotenv');
 const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
@@ -7,8 +6,6 @@ const BundleTracker = require('webpack-bundle-tracker');
 // django settings as well
 const LOCALE = 'fr';
 const WEBPACK_URL = 'http://localhost:3000';
-
-dotenv.config();
 
 module.exports = {
     context: __dirname,

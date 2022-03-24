@@ -33,7 +33,9 @@ def theme(request: HttpRequest) -> Dict[str, str]:
             "THEME_PRIMARY_COLOR": settings.THEME_PRIMARY_COLOR,
             "THEME_SECONDARY_COLOR": settings.THEME_SECONDARY_COLOR,
             "THEME_PRIMARY_BACKGROUND_COLOR": settings.THEME_PRIMARY_BACKGROUND_COLOR,
-            "LOGO_PATH": settings.FAVICON_PATH,
+            "LOGO_PATH": settings.LOGO_PATH,
+            "FAVICON_PATH": settings.FAVICON_PATH,
             "APP_TITLE": settings.APP_TITLE,
+            "SHOW_LOGO_WITH_NAME": settings.SHOW_LOGO_WITH_NAME,
         },
     }

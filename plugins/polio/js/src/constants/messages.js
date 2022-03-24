@@ -1020,7 +1020,7 @@ const MESSAGES = defineMessages({
     preparednessIntro: {
         id: 'iaso.polio.preparednessIntro',
         defaultMessage:
-            'Configure the Google Sheets that will be used to import the preparedness data for the campaign.',
+            'Configure the Google Sheets that will be used to import the preparedness data for the round.',
     },
     preparednessRoundStarted: {
         id: 'iaso.polio.preparednessRoundStarted',

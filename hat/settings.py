@@ -407,6 +407,8 @@ LOGO_PATH = os.environ.get("LOGO_PATH", "images/logo.png")
 THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
 THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#0066CC")
 THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
+SHOW_LOGO_WITH_NAME = os.environ.get("SHOW_LOGO_WITH_NAME", "yes")
+
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",

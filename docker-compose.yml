@@ -44,6 +44,7 @@ services:
       FAVICON_PATH:
       LOGO_PATH:
       APP_TITLE:
+      SHOW_LOGO_WITH_NAME:
       RDS_USERNAME: postgres
       RDS_PASSWORD: postgres
       DB_READONLY_USERNAME: postgres

@@ -98,6 +98,7 @@ jobs:
           APP_TITLE: "Coda 2"
           FAVICON_PATH: "images/coda/favicon.png"
           LOGO_PATH: "images/coda/logo.svg"
+          SHOW_LOGO_WITH_NAME: "yes"
 
       - name: deploy to beanstalk
         run: python scripts/eb_deploy.py ${{ steps.config.outputs.ENVIRONMENT }}

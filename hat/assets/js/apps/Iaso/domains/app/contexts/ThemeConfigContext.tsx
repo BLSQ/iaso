@@ -7,7 +7,7 @@ type ThemeConfig = {
     THEME_PRIMARY_BACKGROUND_COLOR: string;
     LOGO_PATH: string;
     FAVICON_PATH: string;
-    SHOW_LOGO_WITH_NAME: 'yes' | 'no';
+    SHOW_NAME_WITH_LOGO: 'yes' | 'no';
 };
 
 const defaultContextValue: ThemeConfig = {
@@ -17,7 +17,7 @@ const defaultContextValue: ThemeConfig = {
     THEME_PRIMARY_BACKGROUND_COLOR: '',
     LOGO_PATH: '',
     FAVICON_PATH: '',
-    SHOW_LOGO_WITH_NAME: 'yes',
+    SHOW_NAME_WITH_LOGO: 'yes',
 };
 
 export const ThemeConfigContext =

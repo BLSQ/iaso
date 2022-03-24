@@ -12,10 +12,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export const Logo: FunctionComponent = () => {
-    const { LOGO_PATH, APP_TITLE, SHOW_LOGO_WITH_NAME } =
+    const { LOGO_PATH, APP_TITLE, SHOW_NAME_WITH_LOGO } =
         useContext(ThemeConfigContext);
     const classes = useStyles();
-    const showAppName = SHOW_LOGO_WITH_NAME === 'yes';
+    const showAppName = SHOW_NAME_WITH_LOGO === 'yes';
     // @ts-ignore
     const staticUrl = window.STATIC_URL ?? '/static/';
     if (LOGO_PATH && APP_TITLE !== 'Iaso') {

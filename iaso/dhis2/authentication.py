@@ -39,10 +39,6 @@ def dhis2_callback(request, dhis2_slug):
 
             access_token = response.json()["access_token"]
 
-        user_info = requests.get(
-            DHIS2_SERVER_URL + "api/me", headers={"Authorization": "Bearer {0}".format(access_token)}
-        )
-
             user_info = requests.get(
                 DHIS2_SERVER_URL + "api/me", headers={"Authorization": "Bearer {0}".format(access_token)}
             )

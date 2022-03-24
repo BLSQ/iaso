@@ -175,7 +175,7 @@ const OrgUnitInfosComponent = ({
         {orgUnit.instance_defining && (
           <WidgetPaper
               id="form-contents"
-              title={formatMessage(MESSAGES.form)}
+              title={formatMessage(MESSAGES.detailTitle)}
               IconButton={IconButtonComponent}
               iconButtonProps={{
                   onClick: () =>

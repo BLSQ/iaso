@@ -354,7 +354,6 @@ class OrgUnit(TreeModel):
             res["source"] = self.version.data_source.name if self.version else None
             res["source_id"] = self.version.data_source.id if self.version else None
             res["version"] = self.version.number if self.version else None
-            res["instance_defining"] = self.instance_defining.as_dict() if self.instance_defining else None
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
 

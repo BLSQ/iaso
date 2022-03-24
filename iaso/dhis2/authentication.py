@@ -33,8 +33,15 @@ def dhis2_callback(request, dhis2_slug):
             params=payload,
         )
 
-        try:
+        response.raise_for_status()
+
+        if response.json()["access_token"]:
+
             access_token = response.json()["access_token"]
+
+        user_info = requests.get(
+            DHIS2_SERVER_URL + "api/me", headers={"Authorization": "Bearer {0}".format(access_token)}
+        )
 
             user_info = requests.get(
                 DHIS2_SERVER_URL + "api/me", headers={"Authorization": "Bearer {0}".format(access_token)}
@@ -53,7 +60,7 @@ def dhis2_callback(request, dhis2_slug):
                         user_info.json()["userCredentials"]["name"]
                     )
                 )
-        except KeyError:
+        else:
             return HttpResponse("Error: {0}".format(response.json()))
 
     return HttpResponse("ok")

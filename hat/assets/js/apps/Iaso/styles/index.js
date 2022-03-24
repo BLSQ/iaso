@@ -28,6 +28,13 @@ export const getOverriddenTheme = theme => {
                 main: secondaryColor.hex(),
             },
         },
+        typography: {
+            ...theme.typography,
+            button: {
+                ...theme.typography.button,
+                fontFamily: '"Roboto", "Arial", sans-serif',
+            },
+        },
         overrides: {
             MuiCssBaseline: {
                 '@global': {

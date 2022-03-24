@@ -2,12 +2,12 @@ import Color from 'color';
 import { styles as mapCluster } from './mapCluster';
 import { styles as mapCustomControl } from './mapCustomControl';
 
-export const getOverriddenTheme = theme => {
-    const primaryColor = Color(process.env.REACT_THEME_PRIMARY_COLOR);
+export const getOverriddenTheme = (theme, themeConfig) => {
+    const primaryColor = Color(themeConfig.THEME_PRIMARY_COLOR);
     const primaryBackgroundColor = Color(
-        process.env.REACT_THEME_PRIMARY_BACKGROUND_COLOR,
+        themeConfig.THEME_PRIMARY_BACKGROUND_COLOR,
     );
-    const secondaryColor = Color(process.env.REACT_THEME_SECONDARY_COLOR);
+    const secondaryColor = Color(themeConfig.THEME_SECONDARY_COLOR);
     const primaryContrastText = primaryColor.isDark() ? '#fff' : '#000';
     const secondaryContrastText = secondaryColor.isDark() ? '#fff' : '#000';
     return {

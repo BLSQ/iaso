@@ -2,7 +2,13 @@
 {% extends 'iaso/base.html' %}
 {% block head %}
   {% load render_bundle from webpack_loader %}
-
+  <style>
+      :root {
+          --primary-color: {{ THEME_PRIMARY_COLOR }};
+          --secondary-color: {{ THEME_SECONDARY_COLOR}};
+          --primary-background-color: {{ THEME_PRIMARY_BACKGROUND_COLOR}};
+      }
+  </style>
   {% if DEV_SERVER %}
     <!-- this is for CSS Hot reloading in DEV -->
     {% render_bundle 'styles' %}

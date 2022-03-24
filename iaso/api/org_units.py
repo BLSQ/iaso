@@ -103,11 +103,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         tree_search = request.GET.get("treeSearch", None)
         direct_children = request.GET.get("onlyDirectChildren", False)
 
-        if as_location and not request.user.is_anonymous:
-            ou_key_cache = request.GET.get("orgUnitParentId", None)
-            if cache.get("{0}-{1}-OU".format(request.user.id, ou_key_cache)):
-                cached_response = cache.get("{0}-{1}-OU".format(request.user.id, ou_key_cache))
-                return Response(cached_response)
+        if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
 
         # Annotate number of instance per org unit to sort by it
@@ -192,9 +188,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         shape_queryset = self.get_queryset().filter(id=temp_org_unit["id"])
                         temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
                     org_units.append(temp_org_unit)
-                if not request.user.is_anonymous:
-                    ou_key_cache = request.GET.get("orgUnitParentId", None)
-                    cache.set("{0}-{1}-OU".format(request.user.id, ou_key_cache), org_units, 3600)
                 return Response(org_units)
             else:
                 queryset = queryset.select_related("org_unit_type")

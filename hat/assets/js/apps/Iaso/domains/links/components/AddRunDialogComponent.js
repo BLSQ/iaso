@@ -184,7 +184,10 @@ class AddRunDialogComponent extends Component {
                                     disabled={!sourceOriginId}
                                     keyValue="versionOrigin"
                                     onChange={(key, value) =>
-                                        this.onChange('versionOrigin', value)
+                                        this.onChange(
+                                            'versionOrigin',
+                                            `${value}`,
+                                        )
                                     }
                                     value={versionOrigin}
                                     type="select"
@@ -234,7 +237,7 @@ class AddRunDialogComponent extends Component {
                                     onChange={(key, value) =>
                                         this.onChange(
                                             'versionDestination',
-                                            value,
+                                            `${value}`,
                                         )
                                     }
                                     value={versionDestination}

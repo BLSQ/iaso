@@ -53,7 +53,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     def list(self, request):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
-        orders = request.GET.get("order", "user__user_name").split(",")
+        orders = request.GET.get("order", "user__username").split(",")
         search = request.GET.get("search", None)
 
         queryset = self.get_queryset()

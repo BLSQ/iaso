@@ -398,15 +398,15 @@ If you want to test the feature with your local dhis2 you can use the following 
 
 0. Launch DHIS2 with iaso within docker compose
 `docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up`
- With the defaut docker compose setup, iaso is on port 8081 and dhis2 on port 8081 on your machine
+ With the default docker compose setup, iaso is on port 8081 and dhis2 on port 8081 on your machine
 1. These step assume you have loaded your DHIS2 with the play test data but it's not mandatory. To see how to do it, look at previous section
-2. Add a oauth client it, open http://localhost:8080/dhis-web-settings/index.html#/oauth2
+2. Configure an Oauth client in DHIS2: open http://localhost:8080/dhis-web-settings/index.html#/oauth2
 3. Add new client:
    - Name : what you want
    - ClientId: What you want (must be the same as your external credential in Iaso)
    - Client Secret : there is one generated, copy it and save it for a latter step
    - Grant Type: check Authorization code
-   - Redirect URI : http://localhost:8081/api/dhis2/local_dhis2/login/
+   - Redirect URI : http://localhost:8081/api/dhis2/{same as client id}/login/
 
 4. Setup external credential in iaso
    1. open admin http://localhost:8081/admin/
@@ -427,7 +427,7 @@ If you want to test the feature with your local dhis2 you can use the following 
 7. Add the dhis2 id to the Iaso user : Open the target user in the iaso Admin http://localhost:8081/admin/iaso/profile/ and add it to the dhis2 id field, save.
 
 8. Unlog from iaso or in a separate session/container
-9. Try the featyre by opening : http://localhost:8080/uaa/oauth/authorize?client_id={your_dhis2_client_id}&response_type=code
+9. Try the feature by opening : http://localhost:8080/uaa/oauth/authorize?client_id={your_dhis2_client_id}&response_type=code
 
 
 Test and serving forms from Iaso mobile application

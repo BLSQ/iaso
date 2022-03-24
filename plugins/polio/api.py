@@ -556,6 +556,8 @@ class IMStatsViewSet(viewsets.ViewSet):
                 "round_2_nfm_abs_stats": defaultdict(int),
                 "districts_not_found": [],
                 "has_scope": False,
+                # Submission where it says a certain round but the date place it in another round
+                "bad_round_number": 0,
             }
         )
         day_country_not_found = defaultdict(lambda: defaultdict(int))
@@ -679,6 +681,12 @@ class IMStatsViewSet(viewsets.ViewSet):
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
                 round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
                 campaign = find_lqas_im_campaign(campaigns, today, country, round_key, "im")
+                if not campaign:
+                    other_round_key = "round_2" if round_key == "round_1" else "round_2"
+                    campaign = find_lqas_im_campaign(campaigns, today, country, other_round_key, "im")
+                    if campaign:
+                        campaign_name = campaign.obr_name
+                        campaign_stats[campaign_name]["bad_round_number"] += 1
                 region_name = form.get("Region")
                 district_name = form.get("District")
 
@@ -777,9 +785,9 @@ def find_lqas_im_campaign(campaigns, today, country, round_key, kind):
         if current_round.get_item_by_key(lqas_im_end):
             reference_end_date = current_round.get_item_by_key(lqas_im_end)
         # Temporary answer to question above
-        if reference_end_date < reference_start_date:
+        if reference_end_date <= reference_start_date:
             reference_end_date = reference_start_date + timedelta(days=+10)
-        if campaign.country_id == country.id and reference_start_date <= today < reference_end_date:
+        if campaign.country_id == country.id and reference_start_date <= today <= reference_end_date:
             return campaign
     return None
 
@@ -1082,6 +1090,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 "round_2_nfm_abs_stats": defaultdict(int),
                 "districts_not_found": [],
                 "has_scope": [],
+                # Submission where it says a certain round but the date place it in another round
+                "bad_round_number": 0,
             }
         )
         # Storing all "reasons no finger mark" for each campaign in this dict
@@ -1184,6 +1194,13 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
                 round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
                 campaign = find_lqas_im_campaign(campaigns, today, country, round_key, "lqas")
+                if not campaign:
+                    other_round_key = "round_2" if round_key == "round_1" else "round_2"
+                    campaign = find_lqas_im_campaign(campaigns, today, country, other_round_key, "lqas")
+                    if campaign:
+                        campaign_name = campaign.obr_name
+                        campaign_stats[campaign_name]["bad_round_number"] += 1
+
                 for HH in form.get("Count_HH", []):
                     total_sites_visited += 1
                     # check finger

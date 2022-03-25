@@ -171,6 +171,7 @@ const FormVersionsDialogComponent = ({
                             </span>
                         )}
                         <PeriodPicker
+                            keyName="startPeriod"
                             hasError={Boolean(periodsErrors.start)}
                             periodType={periodType}
                             title={intl.formatMessage(MESSAGES.startPeriod)}
@@ -198,6 +199,7 @@ const FormVersionsDialogComponent = ({
                             </Box>
                         )}
                         <PeriodPicker
+                            keyName="endPeriod"
                             hasError={Boolean(periodsErrors.end)}
                             periodType={periodType}
                             title={intl.formatMessage(MESSAGES.endPeriod)}

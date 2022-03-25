@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useCallback} from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button, Grid, Typography } from '@material-ui/core';
 import { useSelector } from 'react-redux';
@@ -13,14 +13,13 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useFormState } from '../../../hooks/form';
 import { useCheckDhis2Mutation, useSaveDataSource } from '../requests';
 
-const ProjectSelectorIds = ({ keyValue, value, onChange, errors, label }) => {
+const ProjectSelectorIds = ({ keyValue, value, onChange, errors, label, fieldHasBeenChanged }) => {
     const { formatMessage } = useSafeIntl();
     const projects = useSelector(state => state.projects.allProjects ?? []);
     const allErrors = [...errors];
-    if (value.length === 0) {
+    if (value.length === 0 && fieldHasBeenChanged) {
         allErrors.unshift(formatMessage(MESSAGES.emptyProjectsError));
     }
-    // FIXME error don't show up
     return (
         <InputComponent
             keyValue={keyValue}
@@ -112,6 +111,7 @@ export const DataSourceDialogComponent = ({
     );
     const { saveDataSource, isSaving } = useSaveDataSource(setFieldErrors);
     const checkDhis2 = useCheckDhis2Mutation(setFieldErrors);
+    const [fieldHasBeenChanged, setFieldHasBeenChanged] = useState(false)
 
     const onConfirm = async closeDialog => {
         await saveDataSource(form);
@@ -129,6 +129,13 @@ export const DataSourceDialogComponent = ({
         };
         setFieldValue('credentials', newCredentials);
     };
+
+    const onChangeProjects = useCallback((keyValue, newValue)=>{
+        setFieldValue(keyValue, newValue)
+        if(!fieldHasBeenChanged){
+            setFieldHasBeenChanged(true)
+        }
+    },[fieldHasBeenChanged, setFieldValue])
 
     return (
         <ConfirmCancelDialogComponent
@@ -178,10 +185,11 @@ export const DataSourceDialogComponent = ({
                     <Box>
                         <ProjectSelectorIds
                             keyValue="project_ids"
-                            onChange={setFieldValue}
+                            onChange={onChangeProjects}
                             value={form.project_ids.value}
                             errors={form.project_ids.error}
                             label={MESSAGES.projects}
+                            fieldHasBeenChanged={fieldHasBeenChanged}
                         />
                     </Box>
                     {form.id.value && (

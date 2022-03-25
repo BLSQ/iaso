@@ -18,6 +18,7 @@ import { MapContainer } from '../../components/LQAS-IM/MapContainer.tsx';
 import { useImData } from '../../hooks/useImData.ts';
 
 import MESSAGES from '../../constants/messages';
+import { BadRoundNumbers } from '../../components/LQAS-IM/BadRoundNumber';
 
 const rounds = ['round_1', 'round_2'];
 const paperElevation = 2;
@@ -191,6 +192,11 @@ export const ImStats = ({ imType, router }) => {
                                         <DatesIgnored
                                             campaign={campaign}
                                             data={imData}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={4}>
+                                        <BadRoundNumbers
+                                            formsWithBadRoundNumber={imData?.stats[campaign]?.bad_round_number??0}
                                         />
                                     </Grid>
                                 </Grid>

@@ -1035,6 +1035,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.preparednessRoundStarted',
         defaultMessage: "Preparedness can't be edited if round already started",
     },
+    badRoundNumbers: {
+        id: 'iaso.polio.badRoundNumbers',
+        defaultMessage: 'Forms with the wrong round number',
+    },
 });
 
 export default MESSAGES;

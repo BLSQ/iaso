@@ -5,6 +5,7 @@
     "iaso.polio.ROUND1START": "Round 1 commencé",
     "iaso.polio.ROUND2DONE": "Round 2 terminé",
     "iaso.polio.ROUND2START": "Round 2 commencé",
+    "iaso.polio.badRoundNumbers": "Formulaires avec un mauvais numéro de round",
     "iaso.polio.budgetStatus": "Statut budget",
     "iaso.polio.button.label.import": "Importer",
     "iaso.polio.button.label.removeDistrict": "Déselectionner district",

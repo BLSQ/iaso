@@ -73,10 +73,11 @@ describe('Forms', () => {
                 goToPage();
             });
             it('should enabled search button', () => {
-                cy.get('#search-search').type(search);
                 cy.get('#search-button')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
+                    .as('search-button')
+                    .should('be.disabled');
+                cy.get('#search-search').type(search);
+                cy.get('@search-button').should('not.be.disabled');
             });
             it('should deep link search', () => {
                 cy.get('#search-search').type(search);

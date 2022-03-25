@@ -43,6 +43,7 @@ const PeriodPicker = ({
     onChange,
     activePeriodString,
     hasError,
+    keyName,
 }) => {
     const classes = useStyles();
     const theme = useTheme();
@@ -62,12 +63,12 @@ const PeriodPicker = ({
         setCurrentPeriodType(periodType);
     }, [periodType, currentPeriodType]);
 
-    const handleChange = (keyName, value) => {
+    const handleChange = (changedKeyName, value) => {
         let newPeriod = {
             ...currentPeriod,
-            [keyName]: value,
+            [changedKeyName]: value,
         };
-        if (keyName === 'year' && !value) {
+        if (changedKeyName === 'year' && !value) {
             newPeriod = null;
         }
         setCurrentPeriod(newPeriod);
@@ -88,6 +89,7 @@ const PeriodPicker = ({
     };
     return (
         <Box
+            id={keyName}
             mt={2}
             p={currentPeriodType === PERIOD_TYPE_DAY ? 0 : 1}
             mb={2}
@@ -240,6 +242,7 @@ PeriodPicker.propTypes = {
         PropTypes.object,
     ]),
     hasError: PropTypes.bool,
+    keyName: PropTypes.string.isRequired,
 };
 
 export default PeriodPicker;

@@ -65,10 +65,16 @@ export const testPagination = ({
                         page: `${fixture.pages}`,
                     },
                 },
-                fixture,
+                {
+                    ...fixture,
+                    has_next: false,
+                    has_previous: true,
+                    page: 2,
+                },
             ).as('getData');
             cy.get('button.pagination-last').click();
             cy.wait('@getData').then(() => {
+                cy.wait(100);
                 cy.get('button.pagination-first').click();
                 cy.get('@pageInput').should('have.value', 1);
             });

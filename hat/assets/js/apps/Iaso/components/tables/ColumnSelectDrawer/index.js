@@ -85,6 +85,7 @@ const ColumnsSelectDrawer = ({
         <>
             <IconButtonComponent
                 onClick={toggleDrawer(true)}
+                id="ColumnsSelectDrawer-toggleDrawer"
                 icon="filter-list"
                 color="white"
                 tooltipMessage={MESSAGES.columnSelectTooltip}
@@ -112,6 +113,7 @@ const ColumnsSelectDrawer = ({
                                         MESSAGES.search,
                                     ),
                                     className: classes.input,
+                                    id: 'ColumnsSelectDrawer-search',
                                 }}
                             />
                         </div>
@@ -119,14 +121,17 @@ const ColumnsSelectDrawer = ({
                             <Tooltip
                                 title={formatMessage(MESSAGES.resetSearch)}
                             >
-                                <IconButton onClick={handleSearch(true)}>
+                                <IconButton
+                                    onClick={handleSearch(true)}
+                                    id="ColumnsSelectDrawer-search-empty"
+                                >
                                     <Close />
                                 </IconButton>
                             </Tooltip>
                         )}
                     </div>
                     <Divider />
-                    <div className={classes.list}>
+                    <div className={classes.list} id="ColumnsSelectDrawer-list">
                         <List>
                             {displayedOptions.map(o => (
                                 <InView key={o.key}>

@@ -234,6 +234,7 @@
     "iaso.label.details": "Détails",
     "iaso.label.deviceField": "Nom du champ \"device\"",
     "iaso.label.devices": "Appareils",
+    "iaso.label.dhis2Id": "DHIS2 id",
     "iaso.label.dhis2Mappings": "Correspondances avec DHIS2",
     "iaso.label.display": "Afficher",
     "iaso.label.displayPassword": "Afficher le mot de passe",

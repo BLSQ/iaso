@@ -206,6 +206,8 @@
     "iaso.polio.label.yes": "Yes",
     "iaso.polio.noCampaign": "No campaign to display",
     "iaso.polio.placeholder.noDateFound": "None",
+    "iaso.polio.preparednessIntro": "Configure the Google Sheets that will be used to import the preparedness data for the round.",
+    "iaso.polio.preparednessRoundStarted": "Preparedness can't be edited if round already started",
     "iaso.polio.raStatus": "RA Status",
     "iaso.polio.restoreCampaign": "Restore campaign",
     "iaso.polio.select.label.selectLanguage": "Select language",

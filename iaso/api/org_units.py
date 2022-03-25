@@ -19,7 +19,7 @@ from hat.audit import models as audit_models
 from iaso.api.common import safe_api_import
 from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form
+from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance
 from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
 from iaso.utils import geojson_queryset
 
@@ -321,6 +321,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         catchment = request.data.get("catchment", None)
         simplified_geom = request.data.get("simplified_geom", None)
         org_unit_type_id = request.data.get("org_unit_type_id", None)
+        instance_defining_id = request.data.get("instance_defining_id", None)
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups")
 
@@ -361,6 +362,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.org_unit_type = org_unit_type
         else:
             errors.append({"errorKey": "org_unit_type_id", "errorMessage": _("Org unit type is required")})
+
+        if instance_defining_id:
+            instance = Instance.objects.get(pk=instance_defining_id)
+            # Check if the instance has as form the form_defining for the orgUnittype
+            # if the form_defining is the same as the form related to the instance one,
+            # assign the instance to the orgUnit as instance defining
+            if org_unit.org_unit_type.form_defining == instance.form:
+                org_unit.instance_defining = instance
 
         if parent_id != org_unit.parent_id:
             # This check is a fix for when a user is restricted to certain org units hierarchy.
@@ -462,6 +471,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.validation_status = validation_status
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)
+
+        instance_defining_id = request.data.get("instance_defining_id", None)
+
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups", [])
 
@@ -511,6 +523,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
+
+        if instance_defining_id and org_unit_type:
+            instance = Instance.objects.get(pk=instance_defining_id)
+            # Check if the instance has as form the form_defining for the orgUnittype
+            # if the form_defining is the same as the form related to the instance one,
+            # assign the instance to the orgUnit as instance defining
+            if org_unit_type.form_defining == instance.form:
+                org_unit.instance_defining = instance
+
         org_unit.save()
         org_unit.groups.set(new_groups)
 
@@ -526,14 +547,21 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
-        org_unit = get_object_or_404(self.get_queryset(), pk=pk)
+        org_unit: OrgUnit = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, org_unit)
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None
         res["catchment"] = None
-        if org_unit.parent and org_unit.parent.simplified_geom:
-            geo_queryset = self.get_queryset().filter(id=org_unit.parent.id)
-            res["parent_geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
+        # Had first geojson of parent so we can add it to map, caution we stop after the first
+        ancestor = org_unit.parent
+        ancestor_dict = res["parent"]
+        while ancestor:
+            if ancestor.simplified_geom:
+                geo_queryset = self.get_queryset().filter(id=ancestor.id)
+                ancestor_dict["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
+                break
+            ancestor = ancestor.parent
+            ancestor_dict = ancestor_dict["parent"]
         if org_unit.simplified_geom or org_unit.catchment:
             geo_queryset = self.get_queryset().filter(id=org_unit.id)
             if org_unit.simplified_geom:

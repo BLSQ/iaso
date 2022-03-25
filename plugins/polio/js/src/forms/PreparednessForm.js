@@ -115,6 +115,10 @@ const PreparednessConfig = ({ roundKey }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, dirty } = useFormikContext();
+    const roundStartDate = values && values[roundKey]?.started_at;
+    const isLockedForEdition = roundStartDate
+        ? moment().isAfter(moment(roundStartDate, 'YYYY-MM-DD', 'day'))
+        : false;
     const {
         mutate: generateSpreadsheetMutation,
         isLoading: isGeneratingSpreadsheet,
@@ -145,12 +149,13 @@ const PreparednessConfig = ({ roundKey }) => {
         });
     };
 
+    const message = isLockedForEdition
+        ? formatMessage(MESSAGES.preparednessRoundStarted)
+        : formatMessage(MESSAGES.preparednessIntro);
+
     return (
         <Grid container spacing={2}>
-            <Grid item>
-                Configure the Google Sheets that will be used to import the
-                preparedness data for the campaign.
-            </Grid>
+            <Grid item>{message}</Grid>
             <Grid container direction="row" item spacing={2}>
                 <Grid xs={12} md={8} item>
                     <Field
@@ -163,7 +168,9 @@ const PreparednessConfig = ({ roundKey }) => {
                         name={key}
                         component={TextInput}
                         disabled={
-                            previewMutation.isLoading || isGeneratingSpreadsheet
+                            previewMutation.isLoading ||
+                            isGeneratingSpreadsheet ||
+                            isLockedForEdition
                         }
                         className={classes.input}
                     />
@@ -183,7 +190,10 @@ const PreparednessConfig = ({ roundKey }) => {
                             <Button
                                 variant="contained"
                                 color="primary"
-                                disabled={previewMutation.isLoading}
+                                disabled={
+                                    previewMutation.isLoading ||
+                                    isLockedForEdition
+                                }
                                 onClick={refreshData}
                             >
                                 {formatMessage(
@@ -217,7 +227,8 @@ const PreparednessConfig = ({ roundKey }) => {
                                     disabled={
                                         isGeneratingSpreadsheet ||
                                         dirty ||
-                                        !values.id
+                                        !values.id ||
+                                        isLockedForEdition
                                     }
                                     onClick={generateSpreadsheet}
                                 >

@@ -25,6 +25,7 @@ const SpeedDialInstanceActions = props => {
         intl: { formatMessage },
         actions,
         onActionSelected,
+        speedDialProps
     } = props;
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
@@ -45,7 +46,7 @@ const SpeedDialInstanceActions = props => {
         <div className={classes.root}>
             <SpeedDial
                 ariaLabel="Instance actions"
-                className={classes.speedDial}
+                className={`${classes.speedDial} ${speedDialProps}`}
                 icon={<EditIcon />}
                 onClose={handleClose}
                 onOpen={handleOpen}

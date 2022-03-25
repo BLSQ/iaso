@@ -27,11 +27,8 @@ import EnketoIcon from '../../instances/components/EnketoIcon';
 // and selecting the parent for display
 
 const useStyles = makeStyles(theme => ({
-    speedDial: {
-        position: 'absolute',
-        zIndex: 1000000,
-        top: theme.spacing(20),
-        right: theme.spacing(2),
+    speedDialTop: {
+        top: theme.spacing(12.5)
     }
 }));
 
@@ -105,7 +102,7 @@ const OrgUnitInfosComponent = ({
         <Grid container spacing={4}>
             {orgUnit.instance_defining && (
               <SpeedDialInstanceActions
-                  speedDialProps={classes.speedDial}
+                  speedDialProps={classes.speedDialTop}
                   actions={actions(orgUnit.instance_defining)}
                   onActionSelected={action =>
                       onActionSelected(fetchEditUrl, action, orgUnit.instance_defining)

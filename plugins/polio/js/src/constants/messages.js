@@ -1025,6 +1025,7 @@ const MESSAGES = defineMessages({
     noDateFound: {
         id: 'iaso.polio.placeholder.noDateFound',
         defaultMessage: 'No date found',
+    },
     preparednessIntro: {
         id: 'iaso.polio.preparednessIntro',
         defaultMessage:

@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db.models import Q
+from django.db.models.expressions import RawSQL
 from django.http import HttpResponse
 from django.http.response import HttpResponseBadRequest
 from django.http import JsonResponse
@@ -237,28 +238,22 @@ Timeline tracker Automated message
     )
     def shapes(self, request):
         features = []
-        all_campaigns = self.filter_queryset(self.get_queryset())
+        queryset = self.filter_queryset(self.get_queryset())
         # Remove deleted and campaign with missing group
-        all_campaigns = all_campaigns.filter(deleted_at=None).exclude(group=None)
-
-        for c in all_campaigns:
-            union_geom = GEOSGeometry("POINT EMPTY", srid=4326)
-            for d in c.group.org_units.all():
-                try:
-                    district_geom = d.geom.buffer(0)
-                    union_geom = district_geom.union(union_geom)
-                except GEOSException as e:
-                    import traceback
-
-                    traceback.print_exc()
-                    logger.exception(e)
-                    union_geom = None
-                    break
-            if union_geom and union_geom.json:
+        queryset = queryset.filter(deleted_at=None).exclude(group=None)
+        queryset = queryset.annotate(
+            geom=RawSQL(
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+from iaso_orgunit
+         right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+where group_id = polio_campaign.group_id""",
+                [],
+            )
+        )
+        for c in queryset:
+            if c.geom:
                 s = SmallCampaignSerializer(c)
-                union_geom.normalize()
-                union_geom = union_geom.simplify(0.01)
-                feature = {"type": "Feature", "geometry": json.loads(union_geom.json), "properties": s.data}
+                feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
                 features.append(feature)
         res = {"type": "FeatureCollection", "features": features}
         return JsonResponse(res)

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useQueryClient } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import { Box, Button, makeStyles } from '@material-ui/core';
@@ -28,7 +29,7 @@ import FormForm from './components/FormFormComponent';
 
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../constants/snackBars';
-import { useGetForm, useRefreshForm } from './requests';
+import { useGetForm } from './requests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -80,11 +81,11 @@ const formatFormData = value => {
 };
 
 const FormDetail = ({ router, params }) => {
+    const queryClient = useQueryClient();
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
     const allProjects = useSelector(state => state.projects.allProjects);
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
-    const refreshForm = useRefreshForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
@@ -117,7 +118,6 @@ const FormDetail = ({ router, params }) => {
         let savedFormData;
         try {
             savedFormData = await saveForm;
-            refreshForm(savedFormData);
             dispatch(enqueueSnackbar(succesfullSnackBar()));
             if (!isUpdate) {
                 dispatch(
@@ -126,6 +126,11 @@ const FormDetail = ({ router, params }) => {
                     }),
                 );
                 setForceRefreshVersions(true);
+            } else {
+                queryClient.resetQueries([
+                    'formDetailsForInstance',
+                    `${savedFormData.id}`,
+                ]);
             }
         } catch (error) {
             if (error.status === 400) {

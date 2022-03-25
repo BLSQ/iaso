@@ -1022,6 +1022,15 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'No date found in campaign data, using default value based on round date',
     },
+    preparednessIntro: {
+        id: 'iaso.polio.preparednessIntro',
+        defaultMessage:
+            'Configure the Google Sheets that will be used to import the preparedness data for the round.',
+    },
+    preparednessRoundStarted: {
+        id: 'iaso.polio.preparednessRoundStarted',
+        defaultMessage: "Preparedness can't be edited if round already started",
+    },
 });
 
 export default MESSAGES;

@@ -246,6 +246,7 @@
     "iaso.label.details": "Details",
     "iaso.label.deviceField": "Device field",
     "iaso.label.devices": "Devices",
+    "iaso.label.dhis2Id": "DHIS2 id",
     "iaso.label.dhis2Mappings": "DHIS mappings",
     "iaso.label.display": "Display",
     "iaso.label.displayPassword": "Display the password",

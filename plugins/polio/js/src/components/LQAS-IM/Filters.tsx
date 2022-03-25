@@ -1,11 +1,12 @@
-import React, { useMemo, useState, FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Select, useSafeIntl } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { replace } from 'react-router-redux';
 
-import { Grid, Box } from '@material-ui/core';
+import { Box, Grid, IconButton } from '@material-ui/core';
 
+import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import MESSAGES from '../../constants/messages';
 
 import { useGetCountries } from '../../hooks/useGetCountries';
@@ -70,6 +71,11 @@ const Filters: FunctionComponent<Props> = ({
         const url = genUrl(router, newFilters);
         dispatch(replace(url));
     };
+    const campaignObj = campaigns.find(c => c.obr_name === campaign);
+    const campaignLink = campaignObj
+        ? `/dashboard/polio/list/campaignId/${campaignObj.id}/`
+        : null;
+
     return (
         <Box mt={2} width="100%">
             <Grid container item spacing={2}>
@@ -102,6 +108,17 @@ const Filters: FunctionComponent<Props> = ({
                         disabled={Boolean(!country) && isFetching}
                     />
                 </Grid>
+                {campaignLink && (
+                    <Grid item md={1}>
+                        <IconButton
+                            target="_blank"
+                            href={campaignLink}
+                            color="primary"
+                        >
+                            <OpenInNewIcon />
+                        </IconButton>
+                    </Grid>
+                )}
             </Grid>
         </Box>
     );

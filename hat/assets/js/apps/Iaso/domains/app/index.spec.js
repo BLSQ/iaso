@@ -2,7 +2,7 @@ import React from 'react';
 
 import App from './index';
 
-describe('App', () => {
+describe.only('App', () => {
     it('render properly', () => {
         const wrapper = shallow(
             <App

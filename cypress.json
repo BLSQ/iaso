@@ -1,4 +1,5 @@
 {
+    "projectId": "Iaso",
     "fixturesFolder": "hat/assets/js/cypress/fixtures",
     "integrationFolder": "hat/assets/js/cypress/integration",
     "pluginsFile": "hat/assets/js/cypress/plugins/index.js",

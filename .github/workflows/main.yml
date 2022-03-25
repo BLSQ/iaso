@@ -154,7 +154,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:
-          start: python manage.py testserver --noinput iaso/fixtures/user.yaml
+          start: CYPRESS_PROJECT_ID=Iaso python manage.py testserver --noinput iaso/fixtures/user.yaml
           wait-on: 'http://localhost:8000'
           parallel: true
           record: true

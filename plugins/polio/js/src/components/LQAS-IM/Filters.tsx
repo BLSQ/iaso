@@ -1,18 +1,18 @@
-import React, { useMemo, useState, FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Select, useSafeIntl } from 'bluesquare-components';
-import { Link, withRouter } from 'react-router';
+import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { replace } from 'react-router-redux';
 
-import { Grid, Box, Button, IconButton } from '@material-ui/core';
+import { Box, Grid, IconButton } from '@material-ui/core';
 
+import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import MESSAGES from '../../constants/messages';
 
 import { useGetCountries } from '../../hooks/useGetCountries';
 
 import { makeCampaignsDropDown } from '../../utils/index';
 import { genUrl } from '../../utils/routing';
-import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 
 type Params = {
     campaign: string | undefined;

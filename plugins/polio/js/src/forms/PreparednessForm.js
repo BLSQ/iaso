@@ -22,8 +22,8 @@ import { useStyles } from '../styles/theme';
 import {
     useGeneratePreparednessSheet,
     useGetPreparednessData,
-    useGetPreparednessRefreshData,
-    useSurgeData,
+    useFetchPreparedness,
+    useFetchSurgeData,
 } from '../hooks/useGetPreparednessData';
 import MESSAGES from '../constants/messages';
 
@@ -142,7 +142,7 @@ const PreparednessConfig = ({ roundKey }) => {
     const key = `${roundKey}.preparedness_spreadsheet_url`;
     const lastKey = `${roundKey}.last_preparedness`;
 
-    const previewMutation = useGetPreparednessRefreshData();
+    const previewMutation = useFetchPreparedness();
 
     const refreshData = () => {
         previewMutation.mutate(preparedness_spreadsheet_url, {
@@ -292,7 +292,7 @@ export const PreparednessForm = () => {
     const { values, setFieldValue, setErrors } = useFormikContext();
     const { last_surge: lastSurge } = values;
 
-    const surgeMutation = useSurgeData();
+    const surgeMutation = useFetchSurgeData();
     const refreshSurgeData = () => {
         surgeMutation.mutate(
             {

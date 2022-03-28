@@ -15,11 +15,13 @@ import moment from 'moment';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import PropTypes from 'prop-types';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
+
 import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import {
     useGeneratePreparednessSheet,
     useGetPreparednessData,
+    useGetPreparednessRefreshData,
     useSurgeData,
 } from '../hooks/useGetPreparednessData';
 import MESSAGES from '../constants/messages';
@@ -34,7 +36,12 @@ const formatIndicator = indicatorValue => {
 };
 const PreparednessSummary = ({ preparedness }) => {
     const { formatMessage } = useSafeIntl();
-    if (!preparedness) return null;
+    if (
+        !preparedness ||
+        (Object.keys(preparedness).length === 0 &&
+            Object.getPrototypeOf(preparedness) === Object.prototype)
+    )
+        return null;
     if (preparedness.status === 'error')
         return <Typography>Error: {preparedness.details}</Typography>;
 
@@ -126,12 +133,20 @@ const PreparednessConfig = ({ roundKey }) => {
     } = useGeneratePreparednessSheet(values.id);
     const {
         preparedness_spreadsheet_url,
-        last_preparedness: lastPreparedness,
+        last_preparedness: preparednessForm,
     } = values[roundKey];
+    const { id: campaignId } = values;
+    const { data: lastPreparedness, isLoading } = useGetPreparednessData(
+        campaignId,
+        roundKey,
+    );
+
+    const preparednessData = preparednessForm ?? lastPreparedness;
+
     const key = `${roundKey}.preparedness_spreadsheet_url`;
     const lastKey = `${roundKey}.last_preparedness`;
 
-    const previewMutation = useGetPreparednessData();
+    const previewMutation = useGetPreparednessRefreshData();
 
     const refreshData = () => {
         previewMutation.mutate(preparedness_spreadsheet_url, {
@@ -242,7 +257,9 @@ const PreparednessConfig = ({ roundKey }) => {
                 )}
                 {/* the padding bottom is a horrible quick fix to remove */}
                 <Grid xd={12} item style={{ paddingBottom: 20 }}>
-                    {previewMutation.isLoading || isGeneratingSpreadsheet ? (
+                    {isLoading ||
+                    previewMutation.isLoading ||
+                    isGeneratingSpreadsheet ? (
                         <CircularProgress />
                     ) : (
                         <>
@@ -259,7 +276,7 @@ const PreparednessConfig = ({ roundKey }) => {
                                 </Typography>
                             )}
                             <PreparednessSummary
-                                preparedness={lastPreparedness}
+                                preparedness={preparednessData}
                             />
                         </>
                     )}

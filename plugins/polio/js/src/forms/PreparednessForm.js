@@ -16,6 +16,7 @@ import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import PropTypes from 'prop-types';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 
+import { isEmpty } from 'lodash';
 import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import {
@@ -36,12 +37,7 @@ const formatIndicator = indicatorValue => {
 };
 const PreparednessSummary = ({ preparedness }) => {
     const { formatMessage } = useSafeIntl();
-    if (
-        !preparedness ||
-        (Object.keys(preparedness).length === 0 &&
-            Object.getPrototypeOf(preparedness) === Object.prototype)
-    )
-        return null;
+    if (!preparedness || isEmpty(preparedness)) return null;
     if (preparedness.status === 'error')
         return <Typography>Error: {preparedness.details}</Typography>;
 

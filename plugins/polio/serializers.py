@@ -163,31 +163,9 @@ class RoundSerializer(serializers.ModelSerializer):
         model = Round
         fields = "__all__"
 
-    last_preparedness = serializers.SerializerMethodField()
 
-    def get_last_preparedness(self, round: Round):
-        r = {}
-        try:
-            spreadsheet_url = round.preparedness_spreadsheet_url
-            last_ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
-            if not last_ssi:
-                return None
-
-            r["created_at"] = last_ssi.created_at
-            cached_spreadsheet = last_ssi.cached_spreadsheet
-            r["title"] = cached_spreadsheet.title
-            last_p = get_preparedness(cached_spreadsheet)
-            r.update(get_preparedness_score(last_p))
-            r.update(preparedness_summary(last_p))
-        except Exception as e:
-            r["status"] = "error"
-            r["details"] = str(e)
-            logger.exception(e)
-        return r
-
-
-# Don't display the url for Anyomous users
-class RoundAnonymouSerializer(RoundSerializer):
+# Don't display the url for Anonymous users
+class RoundAnonymousSerializer(RoundSerializer):
     class Meta:
         model = Round
         exclude = ["preparedness_spreadsheet_url"]
@@ -209,26 +187,49 @@ class SurgeSerializer(serializers.Serializer):
     unicef_completed_recruitment = serializers.IntegerField()
 
 
+def preparedness_from_url(spreadsheet_url, force_refresh=False):
+    try:
+        if force_refresh:
+            ssi = SpreadSheetImport.create_for_url(spreadsheet_url)
+        else:
+            ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
+        if not ssi:
+            return {}
+
+        cs = ssi.cached_spreadsheet
+        r = {}
+        preparedness_data = get_preparedness(cs)
+        r.update(preparedness_data)
+        r["title"] = cs.title
+        r["created_at"] = ssi.created_at
+        r.update(get_preparedness_score(preparedness_data))
+        r.update(preparedness_summary(preparedness_data))
+        return r
+    except InvalidFormatError as e:
+        raise serializers.ValidationError(e.args[0])
+    except APIError as e:
+        raise serializers.ValidationError(e.args[0].get("message"))
+
+
+def get_current_preparedness(campaign, roundNumber):
+    if roundNumber == "round_one":
+        round = campaign.round_one
+    elif roundNumber == "round_two":
+        round = campaign.round_two
+    else:
+        raise serializers.ValidationError("Invalid round")
+    if not (round and round.preparedness_spreadsheet_url):
+        return {}
+    spreadsheet_url = round.preparedness_spreadsheet_url
+    return preparedness_from_url(spreadsheet_url)
+
+
 class PreparednessPreviewSerializer(serializers.Serializer):
     google_sheet_url = serializers.URLField()
 
     def validate(self, attrs):
-        try:
-            ssi = SpreadSheetImport.create_for_url(attrs.get("google_sheet_url"))
-            # ssi = SpreadSheetImport.last_for_url(attrs.get("google_sheet_url"))
-            cs = ssi.cached_spreadsheet
-            r = {}
-            preparedness_data = get_preparedness(cs)
-            r.update(preparedness_data)
-            r["title"] = cs.title
-            r["created_at"] = ssi.created_at
-            r.update(get_preparedness_score(preparedness_data))
-            r.update(preparedness_summary(preparedness_data))
-            return r
-        except InvalidFormatError as e:
-            raise serializers.ValidationError(e.args[0])
-        except APIError as e:
-            raise serializers.ValidationError(e.args[0].get("message"))
+        spreadsheet_url = attrs.get("google_sheet_url")
+        return preparedness_from_url(spreadsheet_url, force_refresh=True)
 
     def to_representation(self, instance):
         return instance
@@ -287,6 +288,8 @@ class OrgUnitSerializer(serializers.ModelSerializer):
 
 
 class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
+    """Serializer used to CREATE Preparedness spreadsheet from template"""
+
     campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all(), write_only=True)
     url = serializers.URLField(read_only=True)
 
@@ -332,16 +335,6 @@ class CampaignSerializer(serializers.ModelSerializer):
         return PREPARING
 
     group = GroupSerializer(required=False, allow_null=True)
-
-    last_preparedness = serializers.SerializerMethodField()
-
-    def get_last_preparedness(self, campaign):
-        # Provided for compat but would be nice if we could move the client to use the one on round directly
-        if campaign.round_two and campaign.round_two.preparedness_spreadsheet_url:
-            return RoundSerializer().get_last_preparedness(campaign.round_two)
-        elif campaign.round_one and campaign.round_one.preparedness_spreadsheet_url:
-            return RoundSerializer().get_last_preparedness(campaign.round_one)
-        return {}
 
     last_surge = SurgeSerializer(
         required=False,
@@ -401,7 +394,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campaign
         fields = "__all__"
-        read_only_fields = ["last_preparedness", "last_surge", "preperadness_sync_status", "creation_email_send_at"]
+        read_only_fields = ["last_surge", "preperadness_sync_status", "creation_email_send_at"]
 
 
 class SmallCampaignSerializer(CampaignSerializer):
@@ -463,8 +456,8 @@ class SmallCampaignSerializer(CampaignSerializer):
 
 
 class AnonymousCampaignSerializer(CampaignSerializer):
-    round_one = RoundAnonymouSerializer()
-    round_two = RoundAnonymouSerializer()
+    round_one = RoundAnonymousSerializer()
+    round_two = RoundAnonymousSerializer()
 
     class Meta:
         model = Campaign

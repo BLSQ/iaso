@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable react/require-default-props */
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
@@ -31,7 +32,7 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const { hasScope, districtsNotFound } = data[campaign] ?? {};
-    const allDistrictsFound = !districtsNotFound?.length;
+    const allDistrictsFound = districtsNotFound?.length === 0;
     return (
         <Grid container direction="column" className={classes.centerText}>
             {!hasScope && (

@@ -70,7 +70,7 @@ export const ImStats = ({ imType, router }) => {
                                 country={country}
                                 data={convertedData}
                                 isFetching={isFetching}
-                                disclaimerData={debugData}
+                                debugData={debugData}
                                 paperElevation={paperElevation}
                                 type={imType}
                             />
@@ -196,7 +196,10 @@ export const ImStats = ({ imType, router }) => {
                                     </Grid>
                                     <Grid item xs={4}>
                                         <BadRoundNumbers
-                                            formsWithBadRoundNumber={imData?.stats[campaign]?.bad_round_number??0}
+                                            formsWithBadRoundNumber={
+                                                imData?.stats[campaign]
+                                                    ?.bad_round_number ?? 0
+                                            }
                                         />
                                     </Grid>
                                 </Grid>

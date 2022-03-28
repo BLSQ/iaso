@@ -133,6 +133,7 @@ class CampaignViewSet(ModelViewSet):
         user = self.request.user
         campaign_type = self.request.query_params.get("campaign_type")
         campaigns = Campaign.objects.all()
+        campaigns.prefetch_related("round_one", "round_two", "group")
         if campaign_type == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
         if campaign_type == "regular":

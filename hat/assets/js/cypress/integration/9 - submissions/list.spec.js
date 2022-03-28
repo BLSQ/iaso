@@ -11,7 +11,6 @@ import { testTablerender } from '../../support/testTableRender';
 import { testPagination } from '../../support/testPagination';
 import { testTableSort } from '../../support/testTableSort';
 import { testPageFilters } from '../../support/testPageFilters';
-import { testPermission } from '../../support/testPermission';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -217,6 +216,7 @@ describe('Submissions', () => {
                         .should('have.length', 2);
                 });
             });
+            // This test is flakey
             it('buttons should link to submission', () => {
                 cy.wait('@getSubmissions').then(() => {
                     getActionCol(5);

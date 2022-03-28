@@ -1,9 +1,11 @@
 // Won't work if table is combined with a search feature
 // TODO wrap in describe
-export const testTablerender = (baseUrl, rows, columns) =>
+export const testTablerender = (baseUrl, rows, columns, withVisit = true) =>
     describe('When table renders', () => {
         it('Displays Table with right amount of rows and columns', () => {
-            cy.visit(baseUrl);
+            if (withVisit) {
+                cy.visit(baseUrl);
+            }
             const table = cy.get('table');
             table.should('have.length', 1);
             const tableRows = table.find('tbody').find('tr');

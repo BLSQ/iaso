@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
 import { withStyles, Button, Grid } from '@material-ui/core';
@@ -12,6 +12,7 @@ import MESSAGES from '../messages';
 
 const initialFormState = orgUnit => {
     return {
+        id: orgUnit.id,
         name: orgUnit.name,
         org_unit_type_id: orgUnit.org_unit_type_id
             ? `${orgUnit.org_unit_type_id}`
@@ -104,6 +105,13 @@ const OrgUnitForm = ({
     };
 
     const isNewOrgunit = orgUnit && !orgUnit.id;
+
+    useEffect(() => {
+        if (orgUnit.id !== formState.id.value) {
+            setFormState(initialFormState(orgUnit));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [orgUnit.id]);
     return (
         <>
             <OrgUnitInfos

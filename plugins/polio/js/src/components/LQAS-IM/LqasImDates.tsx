@@ -3,7 +3,7 @@ import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import MESSAGES from '../../constants/messages';
-import { OK_COLOR, WARNING_COLOR } from '../../styles/constants';
+import { OK_COLOR, FAIL_COLOR } from '../../styles/constants';
 import { LqasImRefDate } from './LqasImMapHeader';
 
 type Props = {
@@ -12,14 +12,19 @@ type Props = {
 };
 
 const styles = theme => ({
-    label: {
+    labelStart: {
+        fontWeight: 'bold',
+        marginLeft: theme.spacing(2),
+        fontSize: '1rem',
+    },
+    labelEnd: {
         fontWeight: 'bold',
         marginLeft: theme.spacing(2),
         fontSize: '1rem',
     },
     infoIcon: {
         fontSize: 14,
-        marginLeft: theme.spacing(1),
+        marginLeft: '4px',
     },
     dateTextOK: {
         color: OK_COLOR,
@@ -27,7 +32,7 @@ const styles = theme => ({
         marginLeft: theme.spacing(2),
     },
     dateTextDefault: {
-        color: WARNING_COLOR,
+        color: FAIL_COLOR,
         fontSize: '1rem',
         marginLeft: theme.spacing(2),
     },
@@ -39,9 +44,16 @@ export const LqasImDates: FunctionComponent<Props> = ({ type, date }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const label = type === 'start' ? MESSAGES.startDate : MESSAGES.endDate;
+    const displayedDate = date?.date ?? formatMessage(MESSAGES.noDateFound);
     return (
         <>
-            <Grid item className={classes.label}>
+            <Grid
+                item
+                className={
+                    type === 'start' ? classes.labelStart : classes.labelEnd
+                }
+                xs={12}
+            >
                 {`${formatMessage(label)}: `}
             </Grid>
             <Grid
@@ -52,7 +64,7 @@ export const LqasImDates: FunctionComponent<Props> = ({ type, date }) => {
                         : classes.dateTextOK
                 }
             >
-                {`${date.date}`}
+                {`${displayedDate}`}
             </Grid>
             {date?.isDefault && (
                 <Grid item>

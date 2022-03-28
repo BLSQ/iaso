@@ -21,6 +21,8 @@ const styles = theme => ({
         padding: theme.spacing(2),
         fontWeight: 'bold',
     },
+    // setting marginRight to prevent Divider from breaking the grid, marginLeft to prevent misalignment
+    verticalDivider: { marginRight: -1, marginLeft: -1 },
 });
 
 const useStyles = makeStyles(styles);
@@ -44,10 +46,9 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
                             {`${formatMessage(MESSAGES[round])}`}
                         </Typography>
                     </Grid>
-                    {/* setting marginRight to prevent Divider from breaking the grid */}
                     <Divider
                         orientation="vertical"
-                        style={{ marginRight: '-1px' }}
+                        className={classes.verticalDivider}
                         flexItem
                     />
                     <Grid container item xs={6}>
@@ -60,6 +61,11 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
                         >
                             <LqasImDates type="start" date={startDate} />
                         </Grid>
+                        <Divider
+                            orientation="vertical"
+                            className={classes.verticalDivider}
+                            flexItem
+                        />
                         <Grid
                             container
                             item

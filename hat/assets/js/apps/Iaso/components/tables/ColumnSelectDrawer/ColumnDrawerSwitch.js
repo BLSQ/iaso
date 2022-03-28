@@ -23,6 +23,7 @@ export const ColumnDrawerSwitch = ({
                 color="primary"
                 inputProps={{
                     'aria-label': primaryText,
+                    'data-test-column-switch': secondaryText,
                 }}
                 className={className}
             />

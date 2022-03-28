@@ -82,6 +82,9 @@ const DatesRange = ({
                         InputLabelProps={{
                             shrink: Boolean(from),
                         }}
+                        InputProps={{
+                            'data-test': 'start-date',
+                        }}
                         KeyboardButtonProps={{
                             size: 'small',
                         }}
@@ -134,6 +137,9 @@ const DatesRange = ({
                         }
                         InputLabelProps={{
                             shrink: Boolean(to),
+                        }}
+                        InputProps={{
+                            'data-test': 'end-date',
                         }}
                         KeyboardButtonProps={{
                             size: 'small',

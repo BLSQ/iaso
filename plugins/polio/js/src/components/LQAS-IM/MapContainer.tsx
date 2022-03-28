@@ -33,7 +33,8 @@ const determineLqasImDates = (
         round === 'round_1' ? campaign.round_one : campaign.round_two;
     const lqasImStart =
         type === 'lqas' ? roundData.lqas_started_at : roundData.im_started_at;
-    const lqasImEnd = type === 'lqas' ? roundData.ended_at : roundData.ended_at;
+    const lqasImEnd =
+        type === 'lqas' ? roundData.lqas_ended_at : roundData.im_ended_at;
     const roundStart = roundData.started_at;
     const roundEnd = roundData.ended_at;
     const startDate = lqasImStart ?? roundStart;
@@ -42,9 +43,12 @@ const determineLqasImDates = (
     return {
         start: {
             date: startDate,
-            isDefault: !startDate === lqasImStart,
+            isDefault: !lqasImStart,
         },
-        end: { date: endDate, isDefault: !endDate === lqasImEnd },
+        end: {
+            date: endDate,
+            isDefault: !lqasImEnd,
+        },
     };
 };
 
@@ -59,8 +63,9 @@ export const MapContainer: FunctionComponent<Props> = ({
     paperElevation,
     type,
 }) => {
-    const campaignObject = campaigns.filter(c => c.obr_name === campaign)[0];
-    console.log('campaign', campaignObject);
+    const campaignObject = campaigns.filter(
+        (c: Record<string, unknown>) => c.obr_name === campaign,
+    )[0];
     const { start: startDate, end: endDate } = determineLqasImDates(
         campaignObject,
         round,

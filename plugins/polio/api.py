@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db.models import Q
+from django.db.models.expressions import RawSQL
 from django.http import HttpResponse
 from django.http.response import HttpResponseBadRequest
 from django.http import JsonResponse
@@ -20,7 +21,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Value, TextField, UUIDField
 from collections import defaultdict
-
+from django.contrib.gis.geos import GEOSGeometry, GeometryCollection, GEOSException
 
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
@@ -31,6 +32,7 @@ from plugins.polio.serializers import (
     LineListImportSerializer,
     AnonymousCampaignSerializer,
     PreparednessSerializer,
+    SmallCampaignSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -227,6 +229,34 @@ Timeline tracker Automated message
             return Response(campaign.id, status=status.HTTP_200_OK)
         else:
             return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
+
+    @action(
+        methods=["GET", "HEAD"],
+        detail=False,
+        url_path="merged_shapes.geojson",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def shapes(self, request):
+        features = []
+        queryset = self.filter_queryset(self.get_queryset())
+        # Remove deleted and campaign with missing group
+        queryset = queryset.filter(deleted_at=None).exclude(group=None)
+        queryset = queryset.annotate(
+            geom=RawSQL(
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+from iaso_orgunit
+         right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+where group_id = polio_campaign.group_id""",
+                [],
+            )
+        )
+        for c in queryset:
+            if c.geom:
+                s = SmallCampaignSerializer(c)
+                feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
+                features.append(feature)
+        res = {"type": "FeatureCollection", "features": features}
+        return JsonResponse(res)
 
 
 class CountryUsersGroupViewSet(ModelViewSet):
@@ -556,6 +586,8 @@ class IMStatsViewSet(viewsets.ViewSet):
                 "round_2_nfm_abs_stats": defaultdict(int),
                 "districts_not_found": [],
                 "has_scope": False,
+                # Submission where it says a certain round but the date place it in another round
+                "bad_round_number": 0,
             }
         )
         day_country_not_found = defaultdict(lambda: defaultdict(int))
@@ -679,6 +711,12 @@ class IMStatsViewSet(viewsets.ViewSet):
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
                 round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
                 campaign = find_lqas_im_campaign(campaigns, today, country, round_key, "im")
+                if not campaign:
+                    other_round_key = "round_2" if round_key == "round_1" else "round_2"
+                    campaign = find_lqas_im_campaign(campaigns, today, country, other_round_key, "im")
+                    if campaign:
+                        campaign_name = campaign.obr_name
+                        campaign_stats[campaign_name]["bad_round_number"] += 1
                 region_name = form.get("Region")
                 district_name = form.get("District")
 
@@ -777,7 +815,7 @@ def find_lqas_im_campaign(campaigns, today, country, round_key, kind):
         if current_round.get_item_by_key(lqas_im_end):
             reference_end_date = current_round.get_item_by_key(lqas_im_end)
         # Temporary answer to question above
-        if reference_end_date < reference_start_date:
+        if reference_end_date <= reference_start_date:
             reference_end_date = reference_start_date + timedelta(days=+10)
         if campaign.country_id == country.id and reference_start_date <= today <= reference_end_date:
             return campaign
@@ -785,7 +823,6 @@ def find_lqas_im_campaign(campaigns, today, country, round_key, kind):
 
 
 def find_campaign_on_day(campaigns, day, country):
-
     for c in campaigns:
         if not (c.round_one and c.round_one.started_at):
             continue
@@ -1082,6 +1119,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 "round_2_nfm_abs_stats": defaultdict(int),
                 "districts_not_found": [],
                 "has_scope": [],
+                # Submission where it says a certain round but the date place it in another round
+                "bad_round_number": 0,
             }
         )
         # Storing all "reasons no finger mark" for each campaign in this dict
@@ -1184,6 +1223,13 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
                 round_key = {"Rnd1": "round_1", "Rnd2": "round_2"}[round_number]
                 campaign = find_lqas_im_campaign(campaigns, today, country, round_key, "lqas")
+                if not campaign:
+                    other_round_key = "round_2" if round_key == "round_1" else "round_2"
+                    campaign = find_lqas_im_campaign(campaigns, today, country, other_round_key, "lqas")
+                    if campaign:
+                        campaign_name = campaign.obr_name
+                        campaign_stats[campaign_name]["bad_round_number"] += 1
+
                 for HH in form.get("Count_HH", []):
                     total_sites_visited += 1
                     # check finger

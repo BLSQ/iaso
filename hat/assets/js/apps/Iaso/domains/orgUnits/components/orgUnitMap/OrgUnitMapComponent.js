@@ -351,6 +351,18 @@ class OrgUnitMapComponent extends Component {
             catchment.edit ||
             catchment.delete ||
             catchment.add;
+        let ancestorWithGeoJson = null;
+        for (
+            let ancestor = orgUnit.parent;
+            ancestor;
+            ancestor = ancestor.parent
+        ) {
+            if (ancestor.geo_json) {
+                ancestorWithGeoJson = ancestor;
+                break;
+            }
+        }
+
         const getSourceShape = (s, o) => (
             <GeoJSON
                 style={{
@@ -503,7 +515,7 @@ class OrgUnitMapComponent extends Component {
                             }
                             url={currentTile.url}
                         />
-                        {!location.edit && orgUnit.parent_geo_json && (
+                        {!location.edit && ancestorWithGeoJson && (
                             <Pane
                                 name="parent-shape"
                                 style={{
@@ -511,7 +523,7 @@ class OrgUnitMapComponent extends Component {
                                 }}
                             >
                                 <GeoJSON
-                                    data={orgUnit.parent_geo_json}
+                                    data={ancestorWithGeoJson.geo_json}
                                     style={() => ({
                                         color: pink['300'],
                                     })}
@@ -520,7 +532,7 @@ class OrgUnitMapComponent extends Component {
                                         titleMessage={formatMessage(
                                             MESSAGES.ouParent,
                                         )}
-                                        currentOrgUnit={orgUnit.parent}
+                                        currentOrgUnit={ancestorWithGeoJson}
                                     />
                                 </GeoJSON>
                             </Pane>

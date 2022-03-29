@@ -177,7 +177,7 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.forms}
                         loading={fetchingForms}
                     />
-                    <Box mt={-1}>
+                    <Box mt={-1} id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
                             titleMessage={MESSAGES.org_unit}
@@ -301,6 +301,7 @@ const InstancesFiltersComponent = ({
                         activePeriodString={formState.startPeriod.value}
                         periodType={formState.periodType.value}
                         title={formatMessage(MESSAGES.startPeriod)}
+                        keyName="startPeriod"
                         onChange={startPeriod =>
                             handleFormChange('startPeriod', startPeriod)
                         }
@@ -311,6 +312,7 @@ const InstancesFiltersComponent = ({
                         activePeriodString={formState.endPeriod.value}
                         periodType={formState.periodType.value}
                         title={formatMessage(MESSAGES.endPeriod)}
+                        keyName="endPeriod"
                         onChange={endPeriod =>
                             handleFormChange('endPeriod', endPeriod)
                         }
@@ -352,6 +354,7 @@ const InstancesFiltersComponent = ({
                         variant="contained"
                         className={classes.button}
                         color="primary"
+                        id="search-button"
                         onClick={() => handleSearch()}
                     >
                         <Search className={classes.buttonIcon} />

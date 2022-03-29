@@ -108,6 +108,9 @@ class Round(models.Model):
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
     preparedness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
 
+    def get_item_by_key(self, key):
+        return getattr(self, key)
+
 
 class Campaign(SoftDeletableModel):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
@@ -302,6 +305,9 @@ class Campaign(SoftDeletableModel):
 
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
+
+    def get_item_by_key(self, key):
+        return getattr(self, key)
 
     def get_districts(self):
         if self.group is None:

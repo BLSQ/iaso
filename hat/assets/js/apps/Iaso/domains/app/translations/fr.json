@@ -56,8 +56,6 @@
     "iaso.datasources.label.destinationSource": "Source de destination",
     "iaso.datasources.label.destinationVersion": "Version de destination",
     "iaso.datasources.label.fieldsToExport": "Champs à exporter",
-    "iaso.datasources.label.forceOverwrite": "Forcer l'écrasement",
-    "iaso.datasources.label.mustForceOverwrite": "Cochez \"Forcer l'écrasement\" pour copier dans une version existante",
     "iaso.datasources.label.nextVersion": "Version suivante",
     "iaso.datasources.label.orgUnitTypes": "Types d'unité d'organisation",
     "iaso.datasources.label.project": "Project",

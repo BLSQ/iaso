@@ -1,12 +1,12 @@
 export const makePaginatedResponse = ({
-    hasPrevious,
-    hasNext,
-    count,
-    page,
-    pages,
-    limit,
+    hasPrevious = false,
+    hasNext = false,
+    count = 0,
+    page = 1,
+    pages = 1,
+    limit = 10,
     dataKey,
-    data,
+    data = [],
 }) => {
     return {
         hasPrevious,
@@ -107,13 +107,17 @@ export const makeSourceVersionsFromSeed = datasourceSeed => {
     });
     return { versions: versions.flat() };
 };
-
+export const defaultProject = {
+    id: 1,
+    name: 'Test Project',
+    app_id: 'test.bluesquarehub.iaso',
+};
 export const makeDataSource = ({
     dataSourceId,
     dataSourceName,
-    description = '',
-    projects,
     versions,
+    description = '',
+    projects = [defaultProject],
     createdAt = CREATED_AT,
     updatedAt = UPDATED_AT,
     url = null,
@@ -132,6 +136,28 @@ export const makeDataSource = ({
         default_version: defaultVersion,
         credentials,
     };
+};
+
+export const makeDataSourcesFromSeed = (datasourceSeed = [], versions) => {
+    let actualVersions = versions;
+    if (!versions) {
+        actualVersions = makeSourceVersionsFromSeed(datasourceSeed);
+    }
+    const sources = datasourceSeed.map(seed => {
+        const sourceVersionsForSeed = actualVersions.filter(
+            sourceversion => sourceversion.data_source === seed.id,
+        );
+        return makeDataSource({
+            dataSourceId: seed.id,
+            dataSourceName: seed.name,
+            versions: sourceVersionsForSeed,
+            defaultVersion: sourceVersionsForSeed.filter(
+                sourceVersion => seed.defaultVersion === sourceVersion.number,
+            )[0],
+        });
+    });
+
+    return { sources };
 };
 
 export const makeProject = ({ id, name }) => {

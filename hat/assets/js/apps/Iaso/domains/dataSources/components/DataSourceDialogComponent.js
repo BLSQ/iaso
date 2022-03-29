@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button, Grid, Typography } from '@material-ui/core';
 import { useSelector } from 'react-redux';
@@ -13,7 +13,14 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useFormState } from '../../../hooks/form';
 import { useCheckDhis2Mutation, useSaveDataSource } from '../requests';
 
-const ProjectSelectorIds = ({ keyValue, value, onChange, errors, label, fieldHasBeenChanged }) => {
+const ProjectSelectorIds = ({
+    keyValue,
+    value,
+    onChange,
+    errors,
+    label,
+    fieldHasBeenChanged,
+}) => {
     const { formatMessage } = useSafeIntl();
     const projects = useSelector(state => state.projects.allProjects ?? []);
     const allErrors = [...errors];
@@ -111,7 +118,7 @@ export const DataSourceDialogComponent = ({
     );
     const { saveDataSource, isSaving } = useSaveDataSource(setFieldErrors);
     const checkDhis2 = useCheckDhis2Mutation(setFieldErrors);
-    const [fieldHasBeenChanged, setFieldHasBeenChanged] = useState(false)
+    const [fieldHasBeenChanged, setFieldHasBeenChanged] = useState(false);
 
     const onConfirm = async closeDialog => {
         await saveDataSource(form);
@@ -130,15 +137,19 @@ export const DataSourceDialogComponent = ({
         setFieldValue('credentials', newCredentials);
     };
 
-    const onChangeProjects = useCallback((keyValue, newValue)=>{
-        setFieldValue(keyValue, newValue)
-        if(!fieldHasBeenChanged){
-            setFieldHasBeenChanged(true)
-        }
-    },[fieldHasBeenChanged, setFieldValue])
+    const onChangeProjects = useCallback(
+        (keyValue, newValue) => {
+            setFieldValue(keyValue, newValue);
+            if (!fieldHasBeenChanged) {
+                setFieldHasBeenChanged(true);
+            }
+        },
+        [fieldHasBeenChanged, setFieldValue],
+    );
 
     return (
         <ConfirmCancelDialogComponent
+            dataTestId="datasource-modal"
             renderTrigger={renderTrigger}
             titleMessage={
                 initialData

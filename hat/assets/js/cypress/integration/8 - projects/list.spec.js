@@ -137,7 +137,12 @@ describe('Projects', () => {
                 page2,
             );
         });
-        testTablerender(baseUrl, listFixture.projects.length, 4);
+        testTablerender({
+            baseUrl,
+            rows: listFixture.projects.length,
+            columns: 4,
+            apiKey: 'projects',
+        });
         testPagination({
             baseUrl,
             apiPath: '/api/projects/**',

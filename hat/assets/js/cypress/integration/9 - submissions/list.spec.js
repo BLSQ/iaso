@@ -11,7 +11,6 @@ import { testTablerender } from '../../support/testTableRender';
 import { testPagination } from '../../support/testPagination';
 import { testTableSort } from '../../support/testTableSort';
 import { testPageFilters } from '../../support/testPageFilters';
-import { testPermission } from '../../support/testPermission';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -194,7 +193,13 @@ describe('Submissions', () => {
                 page2,
             );
         });
-        testTablerender(baseUrl, listFixture.instances.length, 7, false);
+        testTablerender({
+            baseUrl,
+            rows: listFixture.instances.length,
+            columns: 7,
+            withVisit: false,
+            apiKey: 'instances',
+        });
         testPagination({
             baseUrl,
             apiPath: '/api/instances/**',

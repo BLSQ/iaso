@@ -1,6 +1,15 @@
 // Won't work if table is combined with a search feature
+
+import { makePaginatedResponse } from './dummyData';
+
 // TODO wrap in describe
-export const testTablerender = (baseUrl, rows, columns, withVisit = true) =>
+export const testTablerender = ({
+    baseUrl,
+    rows,
+    columns,
+    apiKey,
+    withVisit = true,
+}) =>
     describe('When table renders', () => {
         it('Displays Table with right amount of rows and columns', () => {
             if (withVisit) {
@@ -16,12 +25,11 @@ export const testTablerender = (baseUrl, rows, columns, withVisit = true) =>
         it("Displays an empty table when there's no data", () => {
             cy.intercept(
                 'GET',
-                '/api/orgunittypes/?order=name&limit=20&page=1',
-                {
-                    fixture: 'orgunittypes/empty-list.json',
-                },
-            );
+                `/api/${apiKey}/*`,
+                makePaginatedResponse({ dataKey: apiKey }),
+            ).as('fetch');
             cy.visit(baseUrl);
+            cy.wait('@fetch');
             cy.get('table').should('have.length', 1);
         });
     });

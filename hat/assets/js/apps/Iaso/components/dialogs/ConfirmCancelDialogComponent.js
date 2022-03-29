@@ -90,11 +90,13 @@ export default function ConfirmCancelDialogComponent({
     onAdditionalButtonClick,
     allowConfimAdditionalButton,
     id,
+    dataTestId,
     ...dialogProps
 }) {
     return (
         <DialogComponent
             id={id}
+            dataTestId={dataTestId}
             renderActions={({ closeDialog }) => (
                 <ConfirmCancelActions
                     allowConfirm={allowConfirm}
@@ -126,6 +128,7 @@ ConfirmCancelDialogComponent.defaultProps = {
     onAdditionalButtonClick: null,
     allowConfimAdditionalButton: null,
     id: undefined,
+    dataTestId: '',
 };
 ConfirmCancelDialogComponent.propTypes = {
     allowConfirm: PropTypes.bool,
@@ -141,4 +144,5 @@ ConfirmCancelDialogComponent.propTypes = {
     onAdditionalButtonClick: PropTypes.func || null,
     allowConfimAdditionalButton: PropTypes.bool,
     id: PropTypes.string,
+    dataTestId: PropTypes.string,
 };

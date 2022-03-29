@@ -17,7 +17,7 @@ let interceptFlag = false;
 const emptyFixture = 'projects/empty.json';
 let table;
 let row;
-const defautlQuery = {
+const defaultQuery = {
     limit: '10',
     order: 'id',
     page: '1',
@@ -39,7 +39,7 @@ const goToPage = (
         pathname: '/api/projects',
     };
     const query = {
-        ...defautlQuery,
+        ...defaultQuery,
         ...formQuery,
     };
     cy.intercept({ ...options, query }, req => {
@@ -86,7 +86,7 @@ const mockListCall = (keyName, body) => {
         {
             method: 'GET',
             pathname: '/api/projects',
-            query: defautlQuery,
+            query: defaultQuery,
         },
         req => {
             interceptFlagProjects = true;

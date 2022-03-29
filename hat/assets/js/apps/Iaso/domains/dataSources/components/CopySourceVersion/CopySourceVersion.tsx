@@ -13,7 +13,6 @@ import FileCopyIcon from '@material-ui/icons/FileCopy';
 import {
     IconButton as IconButtonComponent,
     useSafeIntl,
-    Select,
 } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../messages';
@@ -42,9 +41,6 @@ const renderTrigger = ({ openDialog }) => (
 );
 
 const destinationSourceKey = 'destinationSource';
-const destinationVersionKey = 'destinationVersion';
-const chooseVersionKey = 'chooseVersion';
-const forceOverwriteKey = 'forceOverwrite';
 
 const change = setter => (_keyValue, value) => {
     setter(value);
@@ -75,9 +71,6 @@ const makeVersionsDropDown = (sourceVersions, dataSourceId, formatMessage) => {
     ];
 };
 
-const WITH_ERROR = ['Error'];
-const EMPTY_ERROR: string[] = [];
-
 export const CopySourceVersion: FunctionComponent<Props> = ({
     dataSourceName,
     dataSourceId,
@@ -86,11 +79,6 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const [destinationSourceId, setDestinationSourceId] =
         useState(dataSourceId);
-    const [sourceVersionErrors, setSourceVersionsErrors] = useState<string[]>(
-        [],
-    );
-    const [chooseVersionNumber, setChooseVersionNumber] = useState(false);
-    const [forceOverwrite, setForceOverwrite] = useState(false);
     const { mutateAsync: copyVersion } = useCopyDataSourceVersion();
     const dispatch = useDispatch();
     const { data: datasourcesDropdown } = useDataSourceAsDropDown();
@@ -110,17 +98,9 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         useState(nextVersionNumber);
     const warningVersionNumber = destinationVersionNumber ?? nextVersionNumber;
 
-    const preventConfirm =
-        warningVersionNumber !== nextVersionNumber && !forceOverwrite;
-    const errorMessage = preventConfirm
-        ? formatMessage(MESSAGES.mustForceOverwrite)
-        : '';
-
     const reset = useCallback(() => {
         setDestinationSourceId(dataSourceId);
         setDestinationVersionNumber(nextVersionNumber);
-        setForceOverwrite(false);
-        setChooseVersionNumber(false);
     }, [dataSourceId, nextVersionNumber]);
 
     const copyAndReset = useCallback(async () => {
@@ -129,7 +109,6 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             dataSourceVersionNumber,
             destinationSourceId,
             destinationVersionNumber,
-            forceOverwrite,
         });
         reset();
     }, [
@@ -138,7 +117,6 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         dataSourceVersionNumber,
         destinationSourceId,
         destinationVersionNumber,
-        forceOverwrite,
         reset,
     ]);
 
@@ -172,17 +150,9 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     );
 
     useEffect(() => {
-        if (!chooseVersionNumber)
+        if (destinationVersionNumber !== nextVersionNumber)
             setDestinationVersionNumber(nextVersionNumber);
-    }, [chooseVersionNumber, nextVersionNumber]);
-
-    useEffect(() => {
-        if (preventConfirm) {
-            setSourceVersionsErrors(WITH_ERROR);
-        } else if (sourceVersionErrors.length > 0) {
-            setSourceVersionsErrors(EMPTY_ERROR);
-        }
-    }, [preventConfirm, sourceVersionErrors.length]);
+    }, [destinationVersionNumber, nextVersionNumber]);
 
     return (
         <ConfirmCancelDialogComponent
@@ -201,10 +171,10 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             }}
             additionalButton
             additionalMessage={MESSAGES.goToCurrentTask}
-            allowConfimAdditionalButton={!preventConfirm}
-            allowConfirm={!preventConfirm}
             onAdditionalButtonClick={onRedirect}
             onCancel={onCancel}
+            allowConfirm
+            allowConfimAdditionalButton
         >
             <>
                 <Box mb={2}>
@@ -229,66 +199,13 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                                 value={destinationSourceId}
                             />
                         </Grid>
-                        <Grid item xs={12}>
-                            <InputComponent
-                                keyValue={chooseVersionKey}
-                                type="checkbox"
-                                labelString={formatMessage(
-                                    MESSAGES.chooseVersionNumber,
-                                )}
-                                onChange={change(setChooseVersionNumber)}
-                                value={chooseVersionNumber}
-                            />
-                        </Grid>
                     </Grid>
-                    {chooseVersionNumber && (
-                        <Grid container item xs={6}>
-                            <Grid item xs={12}>
-                                {/* MarginBottom needed to align type number with type select, as number is not wrapped in a Box in library source code */}
-                                <Select
-                                    keyValue={destinationVersionKey}
-                                    type="select"
-                                    labelString={formatMessage(
-                                        MESSAGES.destinationVersion,
-                                    )}
-                                    onChange={value => {
-                                        setDestinationVersionNumber(
-                                            value ?? `${nextVersionNumber}`,
-                                        );
-                                    }}
-                                    errors={sourceVersionErrors}
-                                    options={sourceVersionsDropDown}
-                                    value={destinationVersionNumber}
-                                    disabled={!chooseVersionNumber}
-                                    helperText={errorMessage}
-                                />
-                            </Grid>
-
-                            <Grid item xs={12}>
-                                <InputComponent
-                                    keyValue={forceOverwriteKey}
-                                    type="checkbox"
-                                    labelString={formatMessage(
-                                        MESSAGES.forceOverwrite,
-                                    )}
-                                    onChange={change(setForceOverwrite)}
-                                    value={forceOverwrite}
-                                    disabled={
-                                        !destinationVersionNumber ||
-                                        destinationVersionNumber ===
-                                            nextVersionNumber
-                                    }
-                                />
-                            </Grid>
-                        </Grid>
-                    )}
                     <Grid container item xs={12}>
                         <WarningMessage
                             dataSourceName={dataSourceName}
                             dataSourceVersionNumber={dataSourceVersionNumber}
                             destinationSourceId={destinationSourceId}
                             destinationVersionNumber={warningVersionNumber}
-                            forceOverwrite={forceOverwrite}
                         />
                     </Grid>
                 </Grid>

@@ -12,7 +12,7 @@ let interceptFlag = false;
 const emptyFixture = 'profiles/empty.json';
 let table;
 let row;
-const defautlQuery = {
+const defaultQuery = {
     limit: '20',
     order: 'user__username',
     page: '1',
@@ -31,7 +31,7 @@ const goToPage = (
         pathname: '/api/profiles',
     };
     const query = {
-        ...defautlQuery,
+        ...defaultQuery,
         ...formQuery,
     };
     cy.intercept({ ...options, query }, req => {
@@ -234,7 +234,7 @@ describe('Users', () => {
                     {
                         method: 'GET',
                         pathname: '/api/profiles',
-                        query: defautlQuery,
+                        query: defaultQuery,
                     },
                     req => {
                         interceptFlagUsers = true;

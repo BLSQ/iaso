@@ -10,7 +10,6 @@ type Props = {
     dataSourceVersionNumber: string | number | null;
     destinationSourceId: string | number | null;
     destinationVersionNumber: string | number | null;
-    forceOverwrite: boolean;
 };
 
 const warningStyle = {
@@ -25,7 +24,6 @@ export const WarningMessage: FunctionComponent<Props> = ({
     dataSourceVersionNumber,
     destinationSourceId,
     destinationVersionNumber,
-    forceOverwrite,
 }) => {
     const { data: dataSources } = useDataSourceAsDropDown();
     const classes = useWarningStyles();
@@ -63,13 +61,6 @@ export const WarningMessage: FunctionComponent<Props> = ({
                     />{' '}
                 </Typography>
             </Grid>
-            {forceOverwrite && (
-                <Grid item>
-                    <Typography variant="h6">
-                        <FormattedMessage {...MESSAGES.overwriteWarning} />{' '}
-                    </Typography>
-                </Grid>
-            )}
         </Grid>
     );
 };

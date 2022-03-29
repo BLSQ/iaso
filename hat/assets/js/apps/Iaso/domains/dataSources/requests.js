@@ -303,25 +303,17 @@ export const useCopyDataSourceVersion = () => {
             dataSourceVersionNumber,
             destinationSourceId,
             destinationVersionNumber,
-            forceOverwrite = false,
         }) => {
             return postRequest('/api/copyversion/', {
                 source_source_id: dataSourceId,
                 source_version_number: dataSourceVersionNumber,
                 destination_source_id: destinationSourceId,
                 destination_version_number: destinationVersionNumber,
-                force: forceOverwrite,
+                force: false,
             });
         },
         undefined,
         undefined,
         'dataSources',
-        // {
-        //     onError: error => {
-        //         setSourceVersionsErrors(
-        //             error.details?.non_field_errors ?? 'Error ',
-        //         );
-        //     },
-        // },
     );
 };

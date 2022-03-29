@@ -190,7 +190,7 @@ describe('Org unit types', () => {
                         cy.get('#OuTypes-modal').as('modal');
                     });
             });
-            it('sends payload to API', () => {});
+            it('sends payload to API', () => { });
         });
     });
 });

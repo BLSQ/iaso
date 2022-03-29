@@ -1066,6 +1066,9 @@ class Profile(models.Model):
     language = models.CharField(max_length=512, null=True, blank=True)
     dhis2_id = models.CharField(max_length=128, null=True, blank=True, help_text="Dhis2 user ID for SSO Auth")
 
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
+
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
 

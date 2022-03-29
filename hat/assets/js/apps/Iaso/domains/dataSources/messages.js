@@ -262,15 +262,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.nextVersion',
         defaultMessage: 'Next version',
     },
-    mustForceOverwrite: {
-        id: 'iaso.datasources.label.mustForceOverwrite',
-        defaultMessage:
-            'You must select "Force overwrite" to copy on an existing version',
-    },
-    forceOverwrite: {
-        id: 'iaso.datasources.label.forceOverwrite',
-        defaultMessage: 'Force overwrite',
-    },
     destinationVersion: {
         id: 'iaso.datasources.label.destinationVersion',
         defaultMessage: 'Destination version',

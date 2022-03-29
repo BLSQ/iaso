@@ -245,7 +245,7 @@
     "iaso.polio.title.roundOne": "Round 1",
     "iaso.polio.title.roundTwo": "Round 2",
     "iaso.polio.title.scope": "Périmètre",
-    "iaso.polio.tooltip.label.lqasImDate": "Aucune date trouvée dans les données de la campagne, une date par défaiut basée sur la date du round est utilisée",
+    "iaso.polio.tooltip.label.lqasImDate": "Aucune date trouvée dans les données de la campagne, une date par défaut basée sur la date du round est utilisée",
     "iaso.polio.vaccine": "Vaccin",
     "iaso.polio.vaccines": "Vaccins"
 }

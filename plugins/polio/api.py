@@ -33,6 +33,7 @@ from plugins.polio.serializers import (
     AnonymousCampaignSerializer,
     PreparednessSerializer,
     SmallCampaignSerializer,
+    get_current_preparedness,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -132,6 +133,7 @@ class CampaignViewSet(ModelViewSet):
         user = self.request.user
         campaign_type = self.request.query_params.get("campaign_type")
         campaigns = Campaign.objects.all()
+        campaigns.prefetch_related("round_one", "round_two", "group")
         if campaign_type == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
         if campaign_type == "regular":
@@ -147,6 +149,12 @@ class CampaignViewSet(ModelViewSet):
         serializer = PreparednessPreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
+    @action(methods=["GET"], detail=True, serializer_class=serializers.Serializer)
+    def preparedness(self, request, **kwargs):
+        campaign = self.get_object()
+        roundNumber = request.query_params.get("round", "")
+        return Response(get_current_preparedness(campaign, roundNumber))
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request, pk=None, **kwargs):

@@ -14,7 +14,7 @@ from django.http import HttpResponse
 from django.http.response import HttpResponseBadRequest
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.utils.timezone import now
+from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend
 from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
@@ -551,11 +551,26 @@ class IMStatsViewSet(viewsets.ViewSet):
 
     def list(self, request):
 
-        if not request.user.is_anonymous and cache.get(
-            "{0}-{1}-IM".format(request.user.id, request.query_params["country_id"])
-        ):
-            cached_response = cache.get("{0}-{1}-IM".format(request.user.id, request.query_params["country_id"]))
-            return JsonResponse(json.loads(cached_response))
+        requested_country = request.GET.get("country_id", None)
+        if requested_country is None:
+            return HttpResponseBadRequest
+
+        requested_country = int(requested_country)
+        campaigns = Campaign.objects.filter(country_id=requested_country)
+        if campaigns:
+            latest_campaign_update = campaigns.latest("updated_at").updated_at
+        else:
+            latest_campaign_update = None
+
+        cached_response = cache.get("{0}-{1}-IM".format(request.user.id, request.query_params["country_id"]))
+
+        if not request.user.is_anonymous and cached_response:
+            response = json.loads(cached_response)
+
+            cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
+
+            if latest_campaign_update and cached_date < latest_campaign_update:
+                return JsonResponse(response)
 
         stats_types = request.GET.get("type", "HH,OHH")
         stats_types = stats_types.split(",")
@@ -759,6 +774,7 @@ class IMStatsViewSet(viewsets.ViewSet):
             "form_count": form_count,
             "fully_mapped_form_count": fully_mapped_form_count,
             "skipped_forms": skipped_forms,
+            "cache_creation_date": datetime.utcnow().timestamp(),
         }
 
         if not request.user.is_anonymous:
@@ -1063,11 +1079,24 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
     def list(self, request):
 
-        if not request.user.is_anonymous and cache.get(
-            "{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"])
-        ):
-            cached_response = cache.get("{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]))
-            return JsonResponse(json.loads(cached_response))
+        requested_country = request.GET.get("country_id", None)
+        if requested_country is None:
+            return HttpResponseBadRequest
+        requested_country = int(requested_country)
+
+        campaigns = Campaign.objects.filter(country_id=requested_country)
+        if campaigns:
+            latest_campaign_update = campaigns.latest("updated_at").updated_at
+        else:
+            latest_campaign_update = None
+
+        cached_response = cache.get("{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]))
+
+        if not request.user.is_anonymous and cached_response:
+            response = json.loads(cached_response)
+            cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
+            if latest_campaign_update and cached_date < latest_campaign_update:
+                return JsonResponse(response)
 
         config = get_object_or_404(Config, slug="lqas-config")
         skipped_forms_list = []
@@ -1298,6 +1327,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             "form_campaign_not_found_count": form_campaign_not_found_count,
             "day_country_not_found": day_country_not_found,
             "skipped_forms": skipped_forms,
+            "cache_creation_date": datetime.utcnow().timestamp(),
         }
 
         if not request.user.is_anonymous:

@@ -12,7 +12,7 @@ let interceptFlag = false;
 const emptyFixture = 'entities/empty.json';
 let table;
 let row;
-const defautlQuery = {
+const defaultQuery = {
     limit: '20',
     order: 'name',
     page: '1',
@@ -34,7 +34,7 @@ const goToPage = (
         pathname: '/api/entity',
     };
     const query = {
-        ...defautlQuery,
+        ...defaultQuery,
         ...formQuery,
     };
     cy.intercept({ ...options, query }, req => {
@@ -154,7 +154,7 @@ describe('Entities', () => {
             // this will be tested when creation will be enabled
             goToPage();
             cy.wait('@getEntities').then(() => {
-                cy.get('#add-button-container').find('button').click();
+                cy.get('[data-test="add-entity-button"]').click();
                 cy.get('#entity-dialog').should('be.visible');
 
                 cy.testInputValue('#input-text-name', '');
@@ -206,7 +206,7 @@ describe('Entities', () => {
                     {
                         method: 'GET',
                         pathname: '/api/entity',
-                        query: defautlQuery,
+                        query: defaultQuery,
                     },
                     req => {
                         interceptFlagEntities = true;
@@ -264,7 +264,7 @@ describe('Entities', () => {
                     {
                         method: 'GET',
                         pathname: '/api/entity',
-                        query: defautlQuery,
+                        query: defaultQuery,
                     },
                     req => {
                         interceptFlagEntities = true;

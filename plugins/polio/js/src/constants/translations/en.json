@@ -4,6 +4,7 @@
     "iaso.polio.ROUND1START": "Round 1 started",
     "iaso.polio.ROUND2DONE": "Round 2 completed",
     "iaso.polio.ROUND2START": "Round 2 started",
+    "iaso.polio.badRoundNumbers": "Forms with the wrong round number",
     "iaso.polio.budgetStatus": "Budget status",
     "iaso.polio.button.label.import": "Import",
     "iaso.polio.button.label.removeDistrict": "Unselect district",
@@ -205,6 +206,7 @@
     "iaso.polio.label.whoToRecruit": "WHO To Recruit",
     "iaso.polio.label.yes": "Yes",
     "iaso.polio.noCampaign": "No campaign to display",
+    "iaso.polio.placeholder.noDateFound": "None",
     "iaso.polio.preparednessIntro": "Configure the Google Sheets that will be used to import the preparedness data for the round.",
     "iaso.polio.preparednessRoundStarted": "Preparedness can't be edited if round already started",
     "iaso.polio.raStatus": "RA Status",
@@ -233,6 +235,7 @@
     "iaso.polio.title.roundOne": "Round 1",
     "iaso.polio.title.roundTwo": "Round 2",
     "iaso.polio.title.scope": "Scope",
+    "iaso.polio.tooltip.label.lqasImDate": "No date found in campaign data, using default value based on round date",
     "iaso.polio.vaccine": "Vaccine",
     "iaso.polio.vaccines": "Vaccines"
 }

@@ -7,13 +7,22 @@ from django.db.models import Q
 from django.utils.timezone import now
 
 from plugins.polio.models import Campaign, CountryUsersGroup
-from plugins.polio.serializers import CampaignSerializer
+from plugins.polio.serializers import preparedness_from_url
 
 logger = getLogger(__name__)
 
 # TODO Add to message SOPs : Standard operating procedure
 #  As per the outbreak response plan the\
 #  country has completed (activity done as per SOPs) and is now looking forward to (Next activity on SOPs).
+
+
+def get_last_preparedness(campaign):
+    # Provided for compat but would be nice if we could move the client to use the one on round directly
+    if campaign.round_two and campaign.round_two.preparedness_spreadsheet_url:
+        return preparedness_from_url(campaign.round_two.preparedness_spreadsheet_url)
+    elif campaign.round_one and campaign.round_one.preparedness_spreadsheet_url:
+        return preparedness_from_url(campaign.round_one.preparedness_spreadsheet_url)
+    return {}
 
 
 def send_notification_email(campaign):
@@ -45,7 +54,7 @@ def send_notification_email(campaign):
     # format thousand
     target_population = f"{c.round_one.target_population:,}" if c.round_one and c.round_one.target_population else ""
 
-    preparedness = CampaignSerializer().get_last_preparedness(campaign)
+    preparedness = get_last_preparedness(campaign)
 
     email_text = f"""Dear GPEI coordinator – {country.name},
 

@@ -79,18 +79,16 @@ const Forms = ({ params }) => {
                 onForceRefreshDone={() => setForceRefresh(false)}
                 extraComponent={
                     userHasFormsPermission && (
-                        <div id="add-button-container">
-                            <AddButtonComponent
-                                id="add-form-button"
-                                onClick={() => {
-                                    dispatch(
-                                        redirectTo(baseUrls.formDetail, {
-                                            formId: '0',
-                                        }),
-                                    );
-                                }}
-                            />
-                        </div>
+                        <AddButtonComponent
+                            dataTestId="add-form-button"
+                            onClick={() => {
+                                dispatch(
+                                    redirectTo(baseUrls.formDetail, {
+                                        formId: '0',
+                                    }),
+                                );
+                            }}
+                        />
                     )
                 }
                 toggleActiveSearch

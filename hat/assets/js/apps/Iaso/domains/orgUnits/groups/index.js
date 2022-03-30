@@ -98,7 +98,10 @@ class Groups extends Component {
                         <GroupsDialog
                             titleMessage={MESSAGES.create}
                             renderTrigger={({ openDialog }) => (
-                                <AddButtonComponent onClick={openDialog} />
+                                <AddButtonComponent
+                                    dataTestId="add-group-button"
+                                    onClick={openDialog}
+                                />
                             )}
                             params={params}
                         />

@@ -102,7 +102,7 @@ const OrgUnitInfosComponent = ({
         <Grid container spacing={4}>
             {orgUnit.instance_defining && (
               <SpeedDialInstanceActions
-                  speedDialProps={classes.speedDialTop}
+                  speedDialClasses={classes.speedDialTop}
                   actions={actions(orgUnit.instance_defining)}
                   onActionSelected={action =>
                       onActionSelected(fetchEditUrl, action, orgUnit.instance_defining)

@@ -1017,6 +1017,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.campaignType',
         defaultMessage: 'Campaign type',
     },
+    lqasImDateTooltip: {
+        id: 'iaso.polio.tooltip.label.lqasImDate',
+        defaultMessage:
+            'No date found in campaign data, using default value based on round date',
+    },
+    noDateFound: {
+        id: 'iaso.polio.placeholder.noDateFound',
+        defaultMessage: 'No date found',
+    },
     preparednessIntro: {
         id: 'iaso.polio.preparednessIntro',
         defaultMessage:
@@ -1025,6 +1034,10 @@ const MESSAGES = defineMessages({
     preparednessRoundStarted: {
         id: 'iaso.polio.preparednessRoundStarted',
         defaultMessage: "Preparedness can't be edited if round already started",
+    },
+    badRoundNumbers: {
+        id: 'iaso.polio.badRoundNumbers',
+        defaultMessage: 'Forms with the wrong round number',
     },
 });
 

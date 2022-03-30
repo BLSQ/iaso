@@ -51,7 +51,7 @@ import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { locationLimitMax } from './constants/orgUnitConstants';
 import { convertObjectToString } from '../../utils';
-import { useGetOrgUnitTypes} from './hooks';
+import { useGetOrgUnitTypes } from './hooks';
 
 const baseUrl = baseUrls.orgUnits;
 
@@ -96,7 +96,7 @@ const OrgUnits = props => {
         state => state.orgUnits.orgUnitsPage.counts,
     );
     const fetchingList = useSelector(state => state.orgUnits.fetchingList);
-    const { data: orgUnitTypes,isFetching: fetchingOrgUnitTypes } = useGetOrgUnitTypes()
+    const { isFetching: fetchingOrgUnitTypes } = useGetOrgUnitTypes();
     // const fetchingOrgUnitTypes = useSelector(
     //     state => state.orgUnits.fetchingOrgUnitTypes,
     // );
@@ -319,13 +319,12 @@ const OrgUnits = props => {
                 });
             });
             dispatch(setSources(sources));
-            if (params.searchActive) {
+            if (params.searchActive && orgunits.length === 0) {
                 fetchOrgUnits();
             }
             setShouldRenderFilters(true);
         });
         return () => {
-            dispatch(setOrgUnits(null, true, params, 0, 1, []));
             dispatch(closeFixedSnackbar('locationLimitWarning'));
         };
         // Leaving empty to run the effect only on mount
@@ -505,7 +504,7 @@ const OrgUnits = props => {
                                                 classes.containerMarginNeg
                                             }
                                         >
-                                            <OrgunitsMap params={params}  />
+                                            <OrgunitsMap params={params} />
                                         </div>
                                     </div>
                                 )}

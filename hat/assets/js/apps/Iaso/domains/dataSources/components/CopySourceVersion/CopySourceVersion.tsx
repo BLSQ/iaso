@@ -175,6 +175,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             onCancel={onCancel}
             allowConfirm
             allowConfimAdditionalButton
+            dataTestId="copy-source-version-modal"
         >
             <>
                 <Box mb={2}>

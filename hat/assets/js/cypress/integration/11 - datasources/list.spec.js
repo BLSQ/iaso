@@ -74,6 +74,11 @@ describe('Data sources', () => {
             '/api/datasources/?&limit=10&page=1&order=name',
             sourcesPage1,
         ).as('page1');
+        cy.intercept(
+            'GET',
+            '/api/datasources/?&limit=10&page=2&order=name',
+            sourcesPage2,
+        ).as('page2');
         cy.intercept('GET', '/api/profiles/me/**', superUser);
     });
     describe('When mounting', () => {
@@ -133,6 +138,24 @@ describe('Data sources', () => {
                             });
                     });
             });
+        });
+    });
+    describe.only('Copy Version', () => {
+        beforeEach(() => {
+            cy.visit(baseUrl);
+        });
+        describe('When user copies in same datasource and goes to Task', () => {
+            it('opens CopyVersion modal', () => {
+                cy.wait('@page1');
+                cy.wait('@allDatasources');
+                cy.wait('@sourceVersions');
+                cy.wait('@orgUnitTypes');
+                cy.get('[data-test=open-versions-dialog-button-1]')
+                    .as('openVersionsButton')
+                    .click();
+            });
+            it('displays correct warning message', () => {});
+            it('makes API call and redirects to Tasks page');
         });
     });
     describe.skip("'Create' modal", () => {

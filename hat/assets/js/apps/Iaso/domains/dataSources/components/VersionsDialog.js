@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
     Button,
@@ -52,7 +52,7 @@ const tableColumns = source => [
                 defaultMessage="Number"
             />
         ),
-        sortable: false,
+        sortable: true,
         accessor: 'number',
     },
     {
@@ -131,8 +131,96 @@ const tableColumns = source => [
     },
 ];
 
+const sortByNumberAsc = (sourceA, sourceB) => {
+    return sourceA.number - sourceB.number;
+};
+const sortByNumberDesc = (sourceA, sourceB) => {
+    return sourceB.number - sourceA.number;
+};
+const sortByOrgUnitsAsc = (sourceA, sourceB) => {
+    return sourceA.org_units_count - sourceB.org_units_count;
+};
+const sortByOrgUnitsDesc = (sourceA, sourceB) => {
+    return sourceB.org_units_count - sourceA.org_units_count;
+};
+
 const VersionsDialog = ({ renderTrigger, source }) => {
     const classes = useStyles();
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [sortBy, setSortBy] = useState('asc');
+    const [sortFocus, setSortFocus] = useState('number');
+    const [resetPageToOne, setResetPageToOne] = useState(`${rowsPerPage}`);
+    const dataForTable = useMemo(
+        () => source?.versions ?? [],
+        [source?.versions],
+    );
+    const handleSort = useCallback(
+        focus => {
+            if (sortFocus !== focus) {
+                setSortFocus(focus);
+                setSortBy('asc');
+            } else if (sortBy === 'asc') {
+                setSortBy('desc');
+            } else {
+                setSortBy('asc');
+            }
+        },
+        [sortBy, sortFocus],
+    );
+
+    const handleTableParamsChange = params => {
+        if (params.order) {
+            handleSort(params.order.replace('-', ''));
+        }
+        if (params.pageSize) {
+            setResetPageToOne(`${params.pageSize}`);
+            setRowsPerPage(parseInt(params.pageSize, 10));
+        }
+        if (params.page) {
+            setPage(parseInt(params.page, 10) - 1);
+        }
+    };
+
+    const formatDataForTable = useCallback(
+        (tableData, sortFunc) =>
+            tableData
+                .sort(sortFunc)
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+        [page, rowsPerPage],
+    );
+    const sortedData = useMemo(() => {
+        if (sortFocus === 'number' && sortBy === 'asc') {
+            return formatDataForTable(dataForTable, sortByNumberAsc);
+        }
+        if (sortFocus === 'number' && sortBy === 'desc') {
+            return formatDataForTable(dataForTable, sortByNumberDesc);
+        }
+        if (sortFocus === 'org_units_count' && sortBy === 'asc') {
+            return formatDataForTable(dataForTable, sortByOrgUnitsAsc);
+        }
+        if (sortFocus === 'org_units_count' && sortBy === 'desc') {
+            return formatDataForTable(dataForTable, sortByOrgUnitsDesc);
+        }
+        console.warn(
+            `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and number|org_units_count`,
+        );
+        return [];
+    }, [sortBy, sortFocus, dataForTable, formatDataForTable]);
+
+    const pages = useMemo(() => {
+        return dataForTable.length
+            ? Math.ceil(dataForTable.length / rowsPerPage)
+            : 0;
+    }, [dataForTable.length, rowsPerPage]);
+
+    const params = useMemo(
+        () => ({
+            pageSize: rowsPerPage,
+            page,
+        }),
+        [rowsPerPage, page],
+    );
 
     const titleMessage = (
         <FormattedMessage
@@ -159,12 +247,15 @@ const VersionsDialog = ({ renderTrigger, source }) => {
             )}
         >
             <Table
-                data={source.versions}
-                baseUrl=""
+                data={sortedData}
                 columns={tableColumns(source)}
                 redirectTo={() => {}}
-                pages={0}
+                params={params}
+                resetPageToOne={resetPageToOne}
+                pages={pages}
                 elevation={0}
+                count={source?.versions.length ?? 0}
+                onTableParamsChange={handleTableParamsChange}
             />
             {source.versions.length === 0 && (
                 <Typography style={{ padding: 5 }}>

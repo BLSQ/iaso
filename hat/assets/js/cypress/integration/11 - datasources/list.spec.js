@@ -140,7 +140,7 @@ describe('Data sources', () => {
             });
         });
     });
-    describe.only('Copy Version', () => {
+    describe('Copy Version', () => {
         beforeEach(() => {
             cy.visit(baseUrl);
         });
@@ -153,6 +153,20 @@ describe('Data sources', () => {
                 cy.get('[data-test=open-versions-dialog-button-1]')
                     .as('openVersionsButton')
                     .click();
+                cy.getAndAssert(
+                    '[data-test=copyversion-button]',
+                    'copyVersionButton',
+                );
+                cy.get('@copyVersionButton').first().click();
+                cy.getAndAssert('#destinationSource');
+
+                // Move table test in another test
+                // testTablerender({
+                //     baseUrl,
+                //     rows: 4,
+                //     columns: 6,
+                //     apiKey: 'sourceversions',
+                // });
             });
             it('displays correct warning message', () => {});
             it('makes API call and redirects to Tasks page');

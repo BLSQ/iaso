@@ -234,6 +234,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
 
     return (
         <DialogComponent
+            dataTestId="versions-dialog-modal"
             renderTrigger={renderTrigger}
             titleMessage={titleMessage}
             classes={classes}

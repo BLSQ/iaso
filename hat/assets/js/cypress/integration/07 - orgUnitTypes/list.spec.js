@@ -18,7 +18,7 @@ const interceptList = ['profiles', 'projects'];
 describe('Org unit types', () => {
     beforeEach(() => {
         cy.login();
-        // cy.intercept('GET', '/sockjs-node/**');
+        cy.intercept('GET', '/sockjs-node/**');
         cy.intercept('GET', '/api/orgunittypes/', outypesList);
         interceptList.forEach(i => {
             cy.intercept('GET', `/api/${i}/**`, {

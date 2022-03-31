@@ -28,7 +28,7 @@ const defaultQuery = {
 };
 
 const goToPage = ({
-    formQuery,
+    formQuery = {},
     fakeUser = superUser,
     fixture = listFixture,
 }) => {

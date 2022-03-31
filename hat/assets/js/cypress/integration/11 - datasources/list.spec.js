@@ -146,10 +146,10 @@ describe('Data sources', () => {
         });
         describe('When user copies in same datasource and goes to Task', () => {
             it('opens CopyVersion modal', () => {
-                cy.wait('@page1');
-                cy.wait('@allDatasources');
-                cy.wait('@sourceVersions');
-                cy.wait('@orgUnitTypes');
+                // cy.wait('@page1');
+                // cy.wait('@allDatasources');
+                // cy.wait('@sourceVersions');
+                // cy.wait('@orgUnitTypes');
                 cy.get('[data-test=open-versions-dialog-button-1]')
                     .as('openVersionsButton')
                     .click();
@@ -158,7 +158,15 @@ describe('Data sources', () => {
                     'copyVersionButton',
                 );
                 cy.get('@copyVersionButton').first().click();
-                cy.getAndAssert('#destinationSource');
+                cy.getAndAssert('#destinationSource').should(
+                    'have.value',
+                    'datasource-1',
+                );
+
+                cy.getAndAssert(
+                    '[data-test=copy-source-version-modal] h2',
+                    'modal-title',
+                ).should('have.text', 'Copy datasource-1 version 0 ?');
 
                 // Move table test in another test
                 // testTablerender({
@@ -168,8 +176,46 @@ describe('Data sources', () => {
                 //     apiKey: 'sourceversions',
                 // });
             });
-            it('displays correct warning message', () => {});
-            it('makes API call and redirects to Tasks page');
+            it('displays correct warning message', () => {
+                cy.get('[data-test=open-versions-dialog-button-1]')
+                    .as('openVersionsButton')
+                    .click();
+                cy.getAndAssert(
+                    '[data-test=copyversion-button]',
+                    'copyVersionButton',
+                );
+                cy.get('@copyVersionButton').first().click();
+                cy.get('[data-test=copyversion-warning-datasource-1]')
+                    .as('warningMessage')
+                    .should(
+                        'have.text',
+                        'datasource-1 - version 0 will be copied to datasource-1 - version 4 ',
+                    );
+            });
+            it('makes API call and redirects to Tasks page', () => {
+                const body = {
+                    destination_source_id: 1,
+                    destination_version_number: '4',
+                    force: false,
+                    source_source_id: 1,
+                    source_version_number: 0,
+                };
+                cy.intercept('POST', '/api/copyversion').as('copy');
+                cy.get('[data-test=open-versions-dialog-button-1]')
+                    .as('openVersionsButton')
+                    .click();
+                cy.getAndAssert(
+                    '[data-test=copyversion-button]',
+                    'copyVersionButton',
+                );
+                cy.get('@copyVersionButton').first().click();
+                cy.getAndAssert(
+                    '[data-test=additional-button]',
+                    'launchTaskButton',
+                ).click();
+                cy.wait('@copy').its('request.body').as('request');
+                cy.get('@request').its('destination_source_id').should('eq', 1);
+            });
         });
     });
     describe.skip("'Create' modal", () => {

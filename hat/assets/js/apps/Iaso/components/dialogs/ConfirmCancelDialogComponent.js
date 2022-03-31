@@ -28,10 +28,15 @@ function RawConfirmCancelActions({
 }) {
     return (
         <DialogActions className={classes.action}>
-            <Button onClick={() => onCancel(closeDialog)} color="primary">
+            <Button
+                onClick={() => onCancel(closeDialog)}
+                color="primary"
+                data-test="cancel-button"
+            >
                 <FormattedMessage {...cancelMessage} />
             </Button>
             <Button
+                data-test="confirm-button"
                 onClick={() => onConfirm(closeDialog)}
                 disabled={!allowConfirm}
                 color="primary"
@@ -41,6 +46,7 @@ function RawConfirmCancelActions({
             </Button>
             {additionalButton && additionalMessage && onAdditionalButtonClick && (
                 <Button
+                    data-test="additional-button"
                     onClick={() => onAdditionalButtonClick(closeDialog)}
                     color="primary"
                     disabled={

@@ -11,36 +11,6 @@ from django.contrib.postgres.operations import CITextExtension
 
 
 class Migration(migrations.Migration):
-
-    replaces = [
-        ("iaso", "0001_initial"),
-        ("iaso", "0002_auto_20190617_1232"),
-        ("iaso", "0003_auto_20190617_1347"),
-        ("iaso", "0004_form"),
-        ("iaso", "0005_auto_20190619_1334"),
-        ("iaso", "0006_auto_20190624_0938"),
-        ("iaso", "0007_auto_20190624_1155"),
-        ("iaso", "0008_auto_20190627_2052"),
-        ("iaso", "0009_auto_20190628_0933"),
-        ("iaso", "0010_orgunit_uuid"),
-        ("iaso", "0011_orgunit_custom"),
-        ("iaso", "0012_orgunit_validated"),
-        ("iaso", "0013_auto_20190628_1342"),
-        ("iaso", "0014_account_device_deviceownership_project"),
-        ("iaso", "0015_instance_uuid"),
-        ("iaso", "0016_instance_name"),
-        ("iaso", "0017_auto_20190809_1205"),
-        ("iaso", "0018_instance_json"),
-        ("iaso", "0019_instancefile_device"),
-        ("iaso", "0020_auto_20190814_2327"),
-        ("iaso", "0021_auto_20190815_2254"),
-        ("iaso", "0022_link_matchingalgorithm"),
-        ("iaso", "0023_datasource_version"),
-        ("iaso", "0024_altering_fields_on_sources"),
-        ("iaso", "0025_creating_trypelim_source"),
-        ("iaso", "0026_adding_indexes_on_org_unit"),
-    ]
-
     initial = True
 
     dependencies = [migrations.swappable_dependency(settings.AUTH_USER_MODEL)]

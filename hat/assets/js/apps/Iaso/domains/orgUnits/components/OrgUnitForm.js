@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
 import { withStyles, Button, Grid } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 
 import { commonStyles } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import { useFormState } from '../../../hooks/form';
 import OrgUnitInfos from './OrgUnitInfosComponent';
 import MESSAGES from '../messages';
 
 const initialFormState = orgUnit => {
     return {
+        id: orgUnit.id,
         name: orgUnit.name,
-        org_unit_type_id: orgUnit.org_unit_type_id,
+        org_unit_type_id: orgUnit.org_unit_type_id
+            ? `${orgUnit.org_unit_type_id}`
+            : null,
         groups: orgUnit.groups?.map(g => g.id) ?? [],
         sub_source: orgUnit.sub_source,
         validation_status: orgUnit.validation_status,
@@ -37,30 +41,62 @@ const OrgUnitForm = ({
 }) => {
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(initialFormState(orgUnit));
-
     const [orgUnitModified, setOrgUnitModified] = useState(false);
     const handleSave = () => {
         const newOrgUnit = mapValues(formState, v =>
             Object.prototype.hasOwnProperty.call(v, 'value') ? v.value : v,
         );
-        saveOrgUnit(newOrgUnit)
-            .then(savedOrgUnit => {
+        saveOrgUnit(
+            newOrgUnit,
+            savedOrgUnit => {
                 setOrgUnitModified(false);
                 setFormState(initialFormState(savedOrgUnit));
-            })
-            .catch(error => {
+            },
+            error => {
                 if (error.status === 400) {
                     error.details.forEach(entry => {
                         setFieldErrors(entry.errorKey, [entry.errorMessage]);
                     });
                 }
-            });
+            },
+        );
     };
 
-    const handleChangeInfo = (key, value) => {
-        setOrgUnitModified(true);
-        setFieldValue(key, value);
-    };
+    const handleChangeField = useCallback(
+        (key, value) => {
+            setOrgUnitModified(true);
+            setFieldValue(key, value);
+        },
+        [setFieldValue],
+    );
+
+    // TODO change compoenent in blsq-comp library to avoid separate handler
+    // This fix assumes we can only add one alias at a time
+    const handleChangeAlias = useCallback(
+        (key, value) => {
+            const orgUnitAliases = orgUnit.aliases ?? [];
+            const newAlias = value[value.length - 1];
+            const actualAliases = value.filter(alias => alias !== '');
+            if (newAlias !== '' && !isEqual(actualAliases, orgUnitAliases)) {
+                setOrgUnitModified(true);
+            } else {
+                setOrgUnitModified(false);
+            }
+            setFieldValue(key, value);
+        },
+        [orgUnit.aliases, setFieldValue],
+    );
+
+    const handleChangeInfo = useCallback(
+        (key, value) => {
+            if (key === 'aliases') {
+                handleChangeAlias(key, value);
+            } else {
+                handleChangeField(key, value);
+            }
+        },
+        [handleChangeAlias, handleChangeField],
+    );
 
     const handleReset = () => {
         setOrgUnitModified(false);
@@ -69,6 +105,13 @@ const OrgUnitForm = ({
     };
 
     const isNewOrgunit = orgUnit && !orgUnit.id;
+
+    useEffect(() => {
+        if (orgUnit.id !== formState.id.value) {
+            setFormState(initialFormState(orgUnit));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [orgUnit.id]);
     return (
         <>
             <OrgUnitInfos
@@ -101,6 +144,7 @@ const OrgUnitForm = ({
                         </Button>
                     )}
                     <Button
+                        id="save-ou"
                         disabled={!orgUnitModified}
                         variant="contained"
                         className={classes.marginLeft}

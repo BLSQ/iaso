@@ -1,10 +1,16 @@
 import { func, any, bool, object, oneOfType, string } from 'prop-types';
 import React from 'react';
+import classnames from 'classnames';
 import { Paper, InputLabel, Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { FormControl, IconButton, useSafeIntl } from 'bluesquare-components';
+import {
+    FormControl,
+    IconButton,
+    useSafeIntl,
+    TruncatedTreeview,
+} from 'bluesquare-components';
 import { MESSAGES } from './messages';
-import { TruncatedTreeview } from './TruncatedTreeview';
+import { baseUrls } from '../../../../constants/urls';
 
 const styles = theme => ({
     placeholder: {
@@ -59,6 +65,7 @@ const OrgUnitTreeviewPicker = ({
     required,
     disabled,
     label,
+    clearable,
 }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
@@ -90,13 +97,18 @@ const OrgUnitTreeviewPicker = ({
             );
         const treeviews = [];
         treesData.forEach((value, key) => {
-            // console.log(value, key);
             const treeview = (
                 <TruncatedTreeview
                     onClick={disabled ? noOp : onClick}
                     selectedItems={value}
                     key={`TruncatedTree${key.toString()}`}
                     label={label}
+                    redirect={id =>
+                        window.open(
+                            `/dashboard/${baseUrls.orgUnitDetails}/orgUnitId/${id}`,
+                            '_blank',
+                        )
+                    }
                 />
             );
             treeviews.push(treeview);
@@ -108,14 +120,19 @@ const OrgUnitTreeviewPicker = ({
             <InputLabel
                 shrink={selectedItems.size > 0}
                 required={required}
-                className={classes.inputLabel}
+                className={classnames(classes.inputLabel, 'input-label')}
             >
                 {formattedPlaceholder}
             </InputLabel>
             <Paper variant="outlined" elevation={0} className={className}>
                 {makeTruncatedTrees(selectedItems)}
-                {resetSelection && selectedItems.size > 0 && (
-                    <Box className={classes.clearButton}>
+                {clearable && resetSelection && selectedItems.size > 0 && (
+                    <Box
+                        className={classnames(
+                            classes.clearButton,
+                            'clear-tree',
+                        )}
+                    >
                         <IconButton
                             icon="clear"
                             size="small"
@@ -149,6 +166,7 @@ OrgUnitTreeviewPicker.propTypes = {
     required: bool,
     disabled: bool,
     label: func.isRequired,
+    clearable: bool,
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: [],
@@ -157,6 +175,7 @@ OrgUnitTreeviewPicker.defaultProps = {
     placeholder: null,
     required: false,
     disabled: false,
+    clearable: true,
 };
 
 export { OrgUnitTreeviewPicker };

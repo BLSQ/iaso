@@ -39,14 +39,30 @@ const useRoundShape = () => {
         cost: number().nullable().min(0).integer(),
         lqas_district_passing: number()
             .nullable()
-            .positive()
             .integer()
+            .min(0)
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         lqas_district_failing: number()
             .nullable()
-            .positive()
             .integer()
-            .typeError(formatMessage(MESSAGES.positiveInteger)),
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
+        im_percentage_children_missed_in_household: number()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
+        im_percentage_children_missed_out_household: number()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
+        im_percentage_children_missed_in_plus_out_household: number()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
+        awareness_of_campaign_planning: number()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
     });
 };
 

@@ -17,7 +17,7 @@ import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
 import { linksInitialState } from '../../apps/Iaso/domains/links/reducer';
 import { usersInitialState } from '../../apps/Iaso/domains/users/reducer';
 import { groupsInitialState } from '../../apps/Iaso/domains/orgUnits/groups/reducer';
-import { orgUnitsTypesInitialState } from '../../apps/Iaso/domains/orgUnits/types/reducer';
+import { orgUnitsTypesInitialState } from '../../apps/Iaso/domains/orgUnits/orgUnitTypes/reducer';
 
 import { renderWithIntl } from './intl';
 

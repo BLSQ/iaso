@@ -109,7 +109,7 @@ export const BaseInfoForm = () => {
                         />
                         <Field
                             label={formatMessage(
-                                MESSAGES.cvdpv2NotificationDate,
+                                MESSAGES.virusNotificationDate,
                             )}
                             fullWidth
                             name="cvdpv2_notified_at"

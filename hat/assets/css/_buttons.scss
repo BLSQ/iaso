@@ -7,7 +7,7 @@
     -webkit-font-smoothing: antialiased;
 }
 
-@mixin button($color: $blue) {
+@mixin button($color: $primary) {
     display: inline-block;
     width: auto;
     padding: 0.75em 1.5em;
@@ -20,7 +20,7 @@
     transition: all .25s cubic-bezier(0.250, 0.460, 0.450, 0.940);
     cursor: pointer;
     &:hover {
-        background: darken($color, 10%);
+        filter: brightness(0.90);
     }
 }
 

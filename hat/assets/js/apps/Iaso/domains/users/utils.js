@@ -77,6 +77,6 @@ export const getFirstAllowedUrl = (rootPermissions, user, routes) => {
             newRoot = p;
         }
     });
-    const newPath = routes.find(p => p.permission === newRoot);
+    const newPath = routes.find(p => p.permissions?.some(kp => kp === newRoot));
     return newPath?.baseUrl;
 };

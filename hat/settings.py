@@ -17,6 +17,14 @@ from django.utils.translation import ugettext_lazy as _
 
 from sentry_sdk.integrations.django import DjangoIntegration
 
+import base64
+import hashlib
+import html
+import re
+import urllib.parse
+
+from plugins.wfp.wfp_pkce_generator import generate_pkce
+
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
@@ -118,6 +126,10 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "django.contrib.postgres",
     "django.contrib.sites",  # needed by contrib-comments
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.auth0",
     "storages",
     "corsheaders",
     "rest_framework",
@@ -177,6 +189,10 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "hat.common.context_processors.appversions",
                 "hat.common.context_processors.environment",
+                "hat.common.context_processors.app_title",
+                "hat.common.context_processors.favicon_path",
+                "hat.common.context_processors.logo_path",
+                "hat.common.context_processors.theme",
             ]
         },
     }
@@ -269,7 +285,6 @@ AUTH_CLASSES = [
     "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
     "rest_framework_simplejwt.authentication.JWTAuthentication",
 ]
-
 
 # Needed for PowerBI, used for the Polio project, which only support support BasicAuth.
 if "polio" in PLUGINS:
@@ -383,3 +398,37 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_PORT = os.environ.get("EMAIL_PORT", "8025")
 EMAIL_USE_TLS = os.environ.get("EMAIL_TLS", "true") == "true"
+
+
+# Application customizations
+APP_TITLE = os.environ.get("APP_TITLE", "Iaso")
+FAVICON_PATH = os.environ.get("FAVICON_PATH", "images/iaso-favicon.png")
+LOGO_PATH = os.environ.get("LOGO_PATH", "images/logo.png")
+THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
+THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#0066CC")
+THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
+SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
+
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+SITE_ID = 1
+
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+CODE_CHALLENGE = generate_pkce()
+
+# handle wfp login
+SOCIALACCOUNT_PROVIDERS = {
+    "auth0": {
+        "AUTH0_URL": "https://ciam.auth.wfp.org/oauth2",
+        "APP": {
+            "client_id": os.environ.get("IASO_WFP_ID"),
+            "secret": os.environ.get("WFP_SECRET_KEY"),
+        },
+        "AUTH_PARAMS": {"code_challenge": CODE_CHALLENGE},
+    }
+}

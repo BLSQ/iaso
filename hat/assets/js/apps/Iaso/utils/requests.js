@@ -52,18 +52,6 @@ export const fetchOrgUnitsTypes = dispatch =>
             console.error('Error while fetching org unit types list:', error);
             throw error;
         });
-export const fetchGroups = (dispatch, defaultVersion = false) => {
-    const url = `/api/groups/${defaultVersion ? '?&defaultVersion=true' : ''}`;
-    return getRequest(url)
-        .then(res => res.groups)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchGroupsError', null, error)),
-            );
-            console.error('Error while fetching group list:', error);
-            throw error;
-        });
-};
 
 export const fetchDevices = dispatch =>
     getRequest('/api/devices/')
@@ -197,26 +185,7 @@ export const fetchSources = dispatch =>
                 ),
             );
             console.error('Error while fetching source list:', error);
-            throw error;
         });
-
-export const fetchAssociatedDataSources = (dispatch, orgUnitId) => {
-    const url = `/api/datasources/?linkedTo=${orgUnitId}`;
-    return getRequest(url)
-        .then(res => res.sources)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchAssociatedDataSources', null, error),
-                ),
-            );
-            console.error(
-                'Error while fetching associated data sources',
-                error,
-            );
-            throw error;
-        });
-};
 
 export const fetchForms = (dispatch, url = '/api/forms') =>
     getRequest(url)
@@ -238,6 +207,19 @@ export const fetchFormDetail = (dispatch, formId) =>
             );
             console.error('Error while fetching form detail:', error);
             throw error;
+        });
+
+export const fetchFormOrgUnitTypes = (dispatch, formId) =>
+    getRequest(`/api/forms/${formId}/?fields=org_unit_type_ids`)
+        .then(form => form)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(errorSnackBar('fetchFormError', null, error)),
+            );
+            console.error(
+                "Error while fetching form's org unit type ids:",
+                error,
+            );
         });
 
 export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>
@@ -487,17 +469,6 @@ export const fetchCompleteness = (dispatch, url) =>
                 'Error while fetching  while fetching completness:',
                 error,
             );
-            throw error;
-        });
-
-export const fetchTasks = (dispatch, url) =>
-    getRequest(url)
-        .then(data => data)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchTasksError', null, error)),
-            );
-            console.error('Error while fetching tasks list:', error);
             throw error;
         });
 

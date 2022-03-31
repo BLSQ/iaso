@@ -14,7 +14,7 @@ module.exports = {
     mode: 'production',
     target: ['web', 'es2020'],
     entry: {
-        common: ['react', 'react-dom', 'react-intl','typescript'],
+        common: ['react', 'react-dom', 'react-intl', 'typescript'],
         styles: './assets/css/index.scss',
         iaso: './assets/js/apps/Iaso/index',
     },
@@ -122,7 +122,7 @@ module.exports = {
                                 '@babel/preset-react',
                             ],
                             plugins: [
-                                ['@babel/transform-runtime'], 
+                                ['@babel/transform-runtime'],
                                 [
                                     'formatjs',
                                     {
@@ -131,7 +131,7 @@ module.exports = {
                                             '/assets/messages',
                                         ),
                                     },
-                                ]
+                                ],
                             ],
                         },
                     },
@@ -140,7 +140,11 @@ module.exports = {
             // Extract Sass files
             {
                 test: /\.scss$/,
-                use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+                use: [
+                    { loader: MiniCssExtractPlugin.loader },
+                    { loader: 'css-loader' },
+                    { loader: 'sass-loader' },
+                ],
             },
             {
                 test: /\.css$/,

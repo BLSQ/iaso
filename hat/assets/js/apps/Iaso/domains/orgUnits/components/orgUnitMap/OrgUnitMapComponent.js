@@ -4,7 +4,8 @@ import { Map, TileLayer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
 import isEqual from 'lodash/isEqual';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'leaflet-draw';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
+import pink from '@material-ui/core/colors/pink';
 
 import { Grid } from '@material-ui/core';
 
@@ -25,9 +26,10 @@ import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../OrgunitOptionSaveComponent';
 import FormsFilterComponent from '../../../forms/components/FormsFilterComponent';
 import OrgUnitTypeFilterComponent from '../../../forms/components/OrgUnitTypeFilterComponent';
-import SourcesFilterComponent from '../../../forms/components/SourcesFilterComponent';
+import SourcesFilterComponent from '../SourcesFilterComponent';
 import MarkerComponent from '../../../../components/maps/markers/MarkerComponent';
 import InnerDrawer from '../../../../components/nav/InnerDrawer';
+import { MapLegend } from '../../../../components/maps/MapLegend.tsx';
 
 import OrgUnitPopupComponent from '../OrgUnitPopupComponent';
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
@@ -131,7 +133,6 @@ class OrgUnitMapComponent extends Component {
             tooltipMessage: formatMessage(MESSAGES.catchment),
             onAdd: () => this.toggleAddShape('catchment'),
         });
-        this.fitToBounds();
     }
 
     componentDidUpdate(prevProps) {
@@ -139,8 +140,18 @@ class OrgUnitMapComponent extends Component {
         const {
             intl: { formatMessage },
             orgUnit,
+            sourcesSelected,
         } = this.props;
-        if (!isEqual(prevProps.orgUnit.geo_json, orgUnit.geo_json)) {
+        // When no linked org unit from other sources
+        if (
+            (prevProps.loadingSelectedSources === true &&
+                this.props.loadingSelectedSources === false) ||
+            (this.props.loadingSelectedSources === false &&
+                sourcesSelected.length === 0)
+        ) {
+            this.fitToBounds();
+            // When linked org unit from other sources, fetch shape first
+        } else if (!isEqual(prevProps.orgUnit.geo_json, orgUnit.geo_json)) {
             locationGroup.updateShape(
                 getleafletGeoJson(orgUnit.geo_json),
                 'primary',
@@ -305,6 +316,11 @@ class OrgUnitMapComponent extends Component {
             orgUnitTypes,
             setSourcesSelected,
             sourcesSelected,
+            sources,
+            currentOrgUnit,
+            loadingSelectedSources,
+            intl: { formatMessage },
+            theme,
         } = this.props;
         const {
             location,
@@ -335,6 +351,18 @@ class OrgUnitMapComponent extends Component {
             catchment.edit ||
             catchment.delete ||
             catchment.add;
+        let ancestorWithGeoJson = null;
+        for (
+            let ancestor = orgUnit.parent;
+            ancestor;
+            ancestor = ancestor.parent
+        ) {
+            if (ancestor.geo_json) {
+                ancestorWithGeoJson = ancestor;
+                break;
+            }
+        }
+
         const getSourceShape = (s, o) => (
             <GeoJSON
                 style={{
@@ -345,8 +373,9 @@ class OrgUnitMapComponent extends Component {
                 onClick={() => this.fetchSubOrgUnitDetail(o)}
             >
                 <OrgUnitPopupComponent
+                    titleMessage={formatMessage(MESSAGES.ouLinked)}
                     displayUseLocation
-                    useLocation={selectedOrgUnit =>
+                    replaceLocation={selectedOrgUnit =>
                         this.useOrgUnitLocation(selectedOrgUnit)
                     }
                 />
@@ -371,11 +400,16 @@ class OrgUnitMapComponent extends Component {
                     filtersOptionComponent={
                         <>
                             <SourcesFilterComponent
+                                loadingSelectedSources={loadingSelectedSources}
+                                currentOrgUnit={currentOrgUnit}
+                                currentSources={sources}
                                 fitToBounds={() => this.fitToBounds()}
                                 sourcesSelected={sourcesSelected}
                                 setSourcesSelected={setSourcesSelected}
                             />
                             <OrgUnitTypeFilterComponent
+                                currentOrgUnit={currentOrgUnit}
+                                orgUnitTypes={orgUnitTypes}
                                 fitToBounds={() => this.fitToBounds()}
                                 orgUnitTypesSelected={orgUnitTypesSelected}
                                 setOrgUnitTypesSelected={outypes => {
@@ -385,6 +419,7 @@ class OrgUnitMapComponent extends Component {
                                 }}
                             />
                             <FormsFilterComponent
+                                currentOrgUnit={currentOrgUnit}
                                 formsSelected={formsSelected}
                                 setFormsSelected={forms => {
                                     this.setState({ formsSelected: forms });
@@ -442,6 +477,20 @@ class OrgUnitMapComponent extends Component {
                         />
                     }
                 >
+                    <MapLegend
+                        options={[
+                            {
+                                value: 'ouCurrent',
+                                label: formatMessage(MESSAGES.ouCurrent),
+                                color: theme.palette.primary.main,
+                            },
+                            {
+                                value: 'ouParent',
+                                label: formatMessage(MESSAGES.ouParent),
+                                color: pink['300'],
+                            },
+                        ]}
+                    />
                     <Map
                         scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
@@ -466,6 +515,28 @@ class OrgUnitMapComponent extends Component {
                             }
                             url={currentTile.url}
                         />
+                        {!location.edit && ancestorWithGeoJson && (
+                            <Pane
+                                name="parent-shape"
+                                style={{
+                                    zIndex: 350,
+                                }}
+                            >
+                                <GeoJSON
+                                    data={ancestorWithGeoJson.geo_json}
+                                    style={() => ({
+                                        color: pink['300'],
+                                    })}
+                                >
+                                    <OrgUnitPopupComponent
+                                        titleMessage={formatMessage(
+                                            MESSAGES.ouParent,
+                                        )}
+                                        currentOrgUnit={ancestorWithGeoJson}
+                                    />
+                                </GeoJSON>
+                            </Pane>
+                        )}
                         {!location.edit && (
                             <>
                                 {mappedSourcesSelected.map(ms => {
@@ -531,8 +602,11 @@ class OrgUnitMapComponent extends Component {
                                                                 })}
                                                             >
                                                                 <OrgUnitPopupComponent
+                                                                    titleMessage={formatMessage(
+                                                                        MESSAGES.ouChild,
+                                                                    )}
                                                                     displayUseLocation
-                                                                    useLocation={selectedOrgUnit =>
+                                                                    replaceLocation={selectedOrgUnit =>
                                                                         this.useOrgUnitLocation(
                                                                             selectedOrgUnit,
                                                                         )
@@ -568,7 +642,7 @@ class OrgUnitMapComponent extends Component {
                                 }
                             >
                                 <Pane
-                                    name={`${orgunitsPane}-markers-${ot.id}`}
+                                    name={`${orgunitsPane}-markers-${ot.id}-${ot.name}`}
                                     style={{ zIndex: 698 }}
                                 >
                                     {getMarkerList({
@@ -683,6 +757,7 @@ class OrgUnitMapComponent extends Component {
 
 OrgUnitMapComponent.defaultProps = {
     sourcesSelected: [],
+    loadingSelectedSources: undefined,
 };
 
 OrgUnitMapComponent.propTypes = {
@@ -704,12 +779,15 @@ OrgUnitMapComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     setSourcesSelected: PropTypes.func.isRequired,
+    sources: PropTypes.array.isRequired,
+    currentOrgUnit: PropTypes.object.isRequired,
+    loadingSelectedSources: PropTypes.bool,
+    theme: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentUser: state.users.current,
     currentTile: state.map.currentTile,
-    orgUnitTypes: state.orgUnits.orgUnitTypes,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -722,4 +800,4 @@ const MapDispatchToProps = dispatch => ({
 export default connect(
     MapStateToProps,
     MapDispatchToProps,
-)(withStyles(styles)(injectIntl(OrgUnitMapComponent)));
+)(withStyles(styles)(withTheme(injectIntl(OrgUnitMapComponent))));

@@ -182,6 +182,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Export requests',
         id: 'iaso.label.exportRequests',
     },
+    compare: {
+        defaultMessage: 'Compare',
+        id: 'iaso.label.compare',
+    },
     search: {
         defaultMessage: 'Search',
         id: 'iaso.search',
@@ -376,6 +380,11 @@ const MESSAGES = defineMessages({
     periodError: {
         id: 'iaso.formversions.chronologicalPeriodError',
         defaultMessage: 'Start period should be before end period',
+    },
+    restricted_submissions_by_orgunits: {
+        id: 'iaso.restricted_submissions_by_orgunits',
+        defaultMessage:
+            'Your user can only see submissions for the following orgunits: ',
     },
 });
 

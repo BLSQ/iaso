@@ -19,13 +19,14 @@ const LocationLimit = ({ keyValue, label, onChange, value, setHasError }) => {
     const [errors, setErrors] = useState([]);
     const { formatMessage } = useSafeIntl();
     const handleChange = newValue => {
-        if (!newValue || newValue < 1) {
+        const valueAsInt = parseInt(newValue, 10);
+        if (!valueAsInt || valueAsInt < 1) {
             setHasError(true);
             setErrors([formatMessage(MESSAGES.error)]);
         } else {
             setHasError(false);
             setErrors([]);
-            onChange(keyValue, newValue);
+            onChange(keyValue, valueAsInt);
         }
     };
     return (

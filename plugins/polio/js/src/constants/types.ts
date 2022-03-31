@@ -1,9 +1,12 @@
+import { IntlMessage } from '../../../../../hat/assets/js/apps/Iaso/types/intl';
+
 /* eslint-disable camelcase */
-export type FormatForNFMArgs = {
-    data: Record<string, LqasImCampaign>;
-    campaign: string;
+export type FormatForNFMArgs<T> = {
+    data?: Record<string, LqasImCampaign>;
+    campaign?: string;
     round: RoundString;
     formatMessage: IntlFormatMessage;
+    type: T
 };
 export type LqasImData = {
     stats: Record<string, LqasImCampaign>;
@@ -19,15 +22,15 @@ export enum NfmRoundString {
     'round_2' = 'round_2_nfm_stats',
 }
 
-export type BarChartData = {
-    name:string,
-    value:number
+export enum RfaRoundString {
+    'round_1' = 'round_1_nfm_abs_stats',
+    'round_2' = 'round_2_nfm_abs_stats',
 }
 
-export type IntlMessage = {
-    id:string,
-    defaultMessage:string,
-    values?:Record<string,any>
+export type BarChartData = {
+    name:string,
+    value:number, // value as percentage
+    absValue:number // absolute number
 }
 
 export type LqasImCampaign = {
@@ -38,6 +41,7 @@ export type LqasImCampaign = {
     districts_not_found: string[];
     country_id: number;
     country_name?: string;
+    has_scope:boolean
 };
 
 
@@ -46,11 +50,12 @@ export type LqasImCampaignData = {
     total_child_checked: number;
     care_giver_stats: Record<string, number>;
     district?: number;
+    total_sites_visited:number;
 };
 
 export type LqasImCampaignDataWithNameAndRegion = LqasImCampaignData & {
     name: string;
-    region: string | null;
+    region_name: string | null;
 };
 export type ConvertedLqasImData = {
     round_1: LqasImCampaignDataWithNameAndRegion[];
@@ -58,3 +63,20 @@ export type ConvertedLqasImData = {
 };
 
 export type IntlFormatMessage = (message:IntlMessage)=>string
+
+export type LqasIMtype = 'imGlobal'|'imIHH'|'imOHH'|'lqas'
+
+export type LqasImMapLegendData = {
+    reportingDistricts: number,
+    total_child_checked: number,
+    total_child_fmd?: number,
+    total_sites_visited: number,
+    ratioUnvaccinated?:string
+}
+
+export type LqasImParams = {
+    type: LqasIMtype;
+    data?: Record<string, ConvertedLqasImData>;
+    campaign?: string;
+    round: RoundString;
+}

@@ -37,6 +37,7 @@ const Calendar = ({ params }) => {
         order: orders,
         countries: params.countries,
         search: params.search,
+        campaignType: params.campaignType,
     });
 
     const { data: campaigns = [], isLoading } = query;
@@ -71,7 +72,7 @@ const Calendar = ({ params }) => {
             )}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box mb={4}>
-                    <Filters disableDates />
+                    <Filters disableDates disableOnlyDeleted />
                 </Box>
 
                 <Grid container spacing={2}>

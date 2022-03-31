@@ -104,6 +104,9 @@ const adaptForApi = data => {
     if (data.ref_status === 'ALL') {
         adaptedData.ref_status = '';
     }
+    if (data.source_status === 'ALL') {
+        adaptedData.source_status = '';
+    }
     return adaptedData;
 };
 
@@ -275,5 +278,42 @@ export const useDataSourceForVersion = sourceVersion =>
                 }
                 return null;
             },
+            staleTime: 60000,
         },
     );
+export const useDataSourceAsDropDown = () =>
+    useSnackQuery(
+        ['dataSources'],
+        () => getRequest('/api/datasources/'),
+        snackBarMessages.fetchSourcesError,
+        {
+            select: data =>
+                data?.sources.map(datasource => ({
+                    label: datasource.name,
+                    value: datasource.id,
+                })) ?? [],
+            staleTime: 60000,
+        },
+    );
+
+export const useCopyDataSourceVersion = () => {
+    return useSnackMutation(
+        ({
+            dataSourceId,
+            dataSourceVersionNumber,
+            destinationSourceId,
+            destinationVersionNumber,
+        }) => {
+            return postRequest('/api/copyversion/', {
+                source_source_id: dataSourceId,
+                source_version_number: dataSourceVersionNumber,
+                destination_source_id: destinationSourceId,
+                destination_version_number: destinationVersionNumber,
+                force: false,
+            });
+        },
+        undefined,
+        undefined,
+        'dataSources',
+    );
+};

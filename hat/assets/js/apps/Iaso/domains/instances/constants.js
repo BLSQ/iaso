@@ -2,13 +2,11 @@ import React from 'react';
 
 import { FormattedMessage } from 'react-intl';
 import { displayDateFromTimestamp } from 'bluesquare-components';
-import { Link } from 'react-router';
-import { useSelector } from 'react-redux';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { usePrettyPeriod } from '../periods/utils';
 import { OrgUnitLabel } from '../orgUnits/utils';
 import MESSAGES from './messages';
-import { userHasPermission } from '../users/utils';
+import { LinkToForm } from '../forms/components/LinkToForm.tsx';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -25,21 +23,7 @@ const PrettyPeriod = ({ value }) => {
     return formatPeriod(value);
 };
 
-const LinkToForm = ({ formId, formName }) => {
-    const user = useSelector(state => state.users.current);
-    if (userHasPermission('iaso_forms', user)) {
-        const formUrl = `/forms/detail/formId/${formId}`;
-        return <Link to={formUrl}>{formName}</Link>;
-    }
-    return formName;
-};
-
 export const INSTANCE_METAS_FIELDS = [
-    {
-        labelKey: 'version',
-        key: 'file_content._version',
-        type: 'info',
-    },
     {
         key: 'uuid',
         type: 'info',
@@ -47,8 +31,12 @@ export const INSTANCE_METAS_FIELDS = [
     {
         key: 'form_name',
         accessor: 'form__name',
+        active: true,
         tableOrder: 1,
         type: 'info',
+        renderValue: data => (
+            <LinkToForm formId={data.form_id} formName={data.form_name} />
+        ),
         Cell: settings => {
             const data = settings.row.original;
             return (
@@ -57,13 +45,27 @@ export const INSTANCE_METAS_FIELDS = [
         },
     },
     {
+        key: 'version',
+        accessor: 'formVersion',
+        active: false,
+        sortable: false,
+        tableOrder: 2,
+        type: 'info',
+        Cell: settings => {
+            const data = settings.row.original;
+            return data.file_content?._version || '--';
+        },
+    },
+    {
         key: 'updated_at',
         render: value => displayDateFromTimestamp(value),
-        tableOrder: 2,
+        active: true,
+        tableOrder: 3,
         type: 'info',
     },
     {
         key: 'created_at',
+        active: false,
         render: value => displayDateFromTimestamp(value),
         tableOrder: 5,
         type: 'info',
@@ -84,12 +86,17 @@ export const INSTANCE_METAS_FIELDS = [
                     domComponent="span"
                 >
                     <>
-                        <OrgUnitLabel orgUnit={value} withType />
+                        <OrgUnitLabel
+                            orgUnit={value}
+                            withType
+                            withSource={false}
+                        />
                     </>
                 </OrgUnitTooltip>
             );
         },
-        tableOrder: 3,
+        active: true,
+        tableOrder: 4,
         type: 'location',
     },
     {
@@ -104,6 +111,7 @@ export const INSTANCE_METAS_FIELDS = [
         key: 'period',
         render: value => <PrettyPeriod value={value} />,
         tableOrder: 3,
+        active: true,
         type: 'info',
     },
     {
@@ -114,7 +122,8 @@ export const INSTANCE_METAS_FIELDS = [
             ) : (
                 '-'
             ),
-        tableOrder: 5,
+        active: true,
+        tableOrder: 6,
         type: 'info',
     },
 ];

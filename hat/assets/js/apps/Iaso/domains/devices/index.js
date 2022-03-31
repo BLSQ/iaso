@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useSafeIntl } from 'bluesquare-components';
 import SingleTable from '../../components/tables/SingleTable';
 import TopBar from '../../components/nav/TopBarComponent';
 
@@ -7,7 +8,6 @@ import { baseUrls } from '../../constants/urls';
 
 import devicesTableColumns from './config';
 import MESSAGES from './messages';
-import { useSafeIntl } from 'bluesquare-components';
 import { fetchDevicesAsDict } from '../../utils/requests';
 
 const baseUrl = baseUrls.devices;

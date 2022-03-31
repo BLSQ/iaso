@@ -19,7 +19,7 @@ import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.common.utils import queryset_iterator
-from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile
+from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile, InstanceQuerySet
 from iaso.utils import timestamp_to_datetime
 from . import common
 from .common import safe_api_import, TimestampField
@@ -92,12 +92,15 @@ class InstancesViewSet(viewsets.ViewSet):
 
     permission_classes = [HasInstancePermission]
 
+    def get_queryset(self):
+        request = self.request
+        queryset: InstanceQuerySet = Instance.objects.order_by("-id")
+        queryset = queryset.filter_for_user(request.user)
+        return queryset
+
     @action(["GET"], detail=False)
     def attachments(self, request):
-        instances = Instance.objects.order_by("-id")
-        profile = request.user.iaso_profile
-        instances = instances.filter(project__account=profile.account)
-
+        instances = self.get_queryset()
         filters = parse_instance_filters(request.GET)
         instances = instances.for_filters(**filters)
         queryset = InstanceFile.objects.filter(instance__in=instances)
@@ -120,11 +123,7 @@ class InstancesViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         filters = parse_instance_filters(request.GET)
 
-        queryset = Instance.objects.order_by("-id")
-
-        profile = request.user.iaso_profile
-        queryset = queryset.filter(project__account=profile.account)
-
+        queryset = self.get_queryset()
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
 
         queryset = queryset.prefetch_related("org_unit")
@@ -132,6 +131,7 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("form")
         queryset = queryset.for_filters(**filters)
         queryset = queryset.order_by(*orders)
+        # IA-1023 = allow to sort instances by form version
 
         if csv_format is None and xlsx_format is None:
             if limit:
@@ -167,6 +167,7 @@ class InstancesViewSet(viewsets.ViewSet):
         else:
             columns = [
                 {"title": "ID du formulaire", "width": 20},
+                {"title": "Version du formulaire", "width": 20},
                 {"title": "Export id", "width": 20},
                 {"title": "Latitude", "width": 40},
                 {"title": "Longitude", "width": 20},
@@ -226,8 +227,11 @@ class InstancesViewSet(viewsets.ViewSet):
                 created_at = timestamp_to_datetime(idict.get("created_at"))
                 updated_at = timestamp_to_datetime(idict.get("updated_at"))
                 org_unit = idict.get("org_unit")
+                file_content = idict.get("file_content")
+
                 instance_values = [
                     idict.get("id"),
+                    file_content.get("_version") if file_content else None,
                     idict.get("export_id"),
                     idict.get("latitude"),
                     idict.get("longitude"),
@@ -284,20 +288,20 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response({"res": "ok"})
 
     def retrieve(self, request, pk=None):
-        instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
 
         return Response(instance.as_full_model())
 
     def delete(self, request, pk=None):
-        instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
         instance.soft_delete(request.user)
         return Response(instance.as_full_model())
 
     def patch(self, request, pk=None):
-        original = get_object_or_404(Instance.objects.with_status(), pk=pk)
-        instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        original = get_object_or_404(self.get_queryset(), pk=pk)
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
         instance_serializer = InstanceSerializer(
             instance, data=request.data, partial=True, context={"request": self.request}
@@ -315,9 +319,7 @@ class InstancesViewSet(viewsets.ViewSet):
         unselected_ids = request.data.get("unselected_ids", None)
         is_deletion = request.data.get("is_deletion", True)
         filters = parse_instance_filters(request.data)
-        instances_query = Instance.objects.order_by("-id")
-        profile = request.user.iaso_profile
-        instances_query = instances_query.filter(project__account=profile.account)
+        instances_query = self.get_queryset()
         instances_query = instances_query.prefetch_related("form")
         instances_query = instances_query.exclude(file="").exclude(device__test_device=True)
         instances_query = instances_query.for_filters(**filters)

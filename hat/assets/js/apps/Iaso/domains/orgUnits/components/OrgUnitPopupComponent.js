@@ -1,25 +1,28 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import React, { createRef } from 'react';
+import { useSelector } from 'react-redux';
 
+import PropTypes from 'prop-types';
 import { Popup } from 'react-leaflet';
 import { Link } from 'react-router';
 import { FormattedMessage } from 'react-intl';
+import classNames from 'classnames';
 
 import {
-    withStyles,
+    makeStyles,
     Card,
     CardContent,
     Button,
     Grid,
     Box,
+    Typography,
+    Divider,
 } from '@material-ui/core';
 
-import PropTypes from 'prop-types';
 import moment from 'moment';
 
 import {
     textPlaceholder,
-    injectIntl,
+    useSafeIntl,
     LoadingSpinner,
     commonStyles,
     mapPopupStyles,
@@ -31,7 +34,7 @@ import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from '../messages';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     ...mapPopupStyles(theme),
     fileList: {
@@ -47,156 +50,160 @@ const styles = theme => ({
     actionBox: {
         padding: theme.spacing(1, 0, 0, 0),
     },
-});
+    titleMessage: {
+        fontSize: 16,
+        marginBottom: theme.spacing(1),
+    },
+    popupCardContentWithTitle: {
+        marginTop: theme.spacing(1),
+    },
+}));
 
-class OrgUnitPopupComponent extends Component {
-    constructor(props) {
-        super(props);
-        this.popup = React.createRef();
+const OrgUnitPopupComponent = ({
+    displayUseLocation,
+    replaceLocation,
+    titleMessage,
+    currentOrgUnit,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
+    const popup = createRef();
+    const reduxCurrentOrgUnit = useSelector(
+        state => state.orgUnits.currentSubOrgUnit,
+    );
+    const activeOrgUnit = currentOrgUnit || reduxCurrentOrgUnit;
+    const confirmDialog = () => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        replaceLocation(activeOrgUnit);
+        popup.current.leafletElement.options.leaflet.map.closePopup();
+    };
+    let groups = null;
+    if (activeOrgUnit && activeOrgUnit.groups.length > 0) {
+        groups = activeOrgUnit.groups.map(g => g.name).join(', ');
     }
-
-    confirmDialog() {
-        this.props.useLocation(this.props.currentOrgUnit);
-        this.popup.current.leafletElement.options.leaflet.map.closePopup();
-    }
-
-    render() {
-        const {
-            classes,
-            currentOrgUnit,
-            displayUseLocation,
-            intl: { formatMessage },
-        } = this.props;
-        let groups = null;
-        if (currentOrgUnit && currentOrgUnit.groups.length > 0) {
-            groups = currentOrgUnit.groups.map(g => g.name).join(', ');
-        }
-        return (
-            <Popup className={classes.popup} ref={this.popup}>
-                {!currentOrgUnit && <LoadingSpinner />}
-                {currentOrgUnit && (
-                    <Card className={classes.popupCard}>
-                        <CardContent className={classes.popupCardContent}>
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.name)}
-                                value={currentOrgUnit.name}
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.type)}
-                                value={currentOrgUnit.org_unit_type_name}
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.groups)}
-                                value={groups}
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.source)}
-                                value={currentOrgUnit.source}
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.parent)}
-                                value={
-                                    currentOrgUnit.parent
-                                        ? currentOrgUnit.parent.name
-                                        : textPlaceholder
-                                }
-                            />
-                            {!currentOrgUnit.has_geo_json && (
-                                <>
-                                    <PopupItemComponent
-                                        label={formatMessage(MESSAGES.latitude)}
-                                        value={currentOrgUnit.latitude}
-                                    />
-                                    <PopupItemComponent
-                                        label={formatMessage(
-                                            MESSAGES.longitude,
-                                        )}
-                                        value={currentOrgUnit.longitude}
-                                    />
-                                </>
-                            )}
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.created_at)}
-                                value={moment
-                                    .unix(currentOrgUnit.created_at)
-                                    .format('LTS')}
-                            />
-                            <Box className={classes.actionBox}>
-                                <Grid
-                                    container
-                                    spacing={0}
-                                    justifyContent={
-                                        displayUseLocation
-                                            ? 'center'
-                                            : 'flex-end'
-                                    }
-                                    alignItems="center"
+    return (
+        <Popup className={classes.popup} ref={popup}>
+            {!activeOrgUnit && <LoadingSpinner />}
+            {activeOrgUnit && (
+                <Card className={classes.popupCard}>
+                    <CardContent
+                        className={classNames(
+                            classes.popupCardContent,
+                            titleMessage && classes.popupCardContentWithTitle,
+                        )}
+                    >
+                        {titleMessage && (
+                            <Box mb={2}>
+                                <Typography
+                                    variant="h6"
+                                    className={classes.titleMessage}
                                 >
-                                    {displayUseLocation && (
-                                        <ConfirmDialog
-                                            btnSize="small"
-                                            btnMessage={formatMessage(
-                                                MESSAGES.associate,
-                                            )}
-                                            question={formatMessage(
-                                                MESSAGES.question,
-                                            )}
-                                            message={formatMessage(
-                                                MESSAGES.message,
-                                            )}
-                                            confirm={() => this.confirmDialog()}
-                                        />
-                                    )}
-                                    <Button
-                                        className={classes.marginLeft}
-                                        variant="outlined"
-                                        color="primary"
-                                        size="small"
-                                    >
-                                        <Link
-                                            target="_blank"
-                                            to={`${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}/tab/infos`}
-                                            className={classes.linkButton}
-                                        >
-                                            <FormattedMessage
-                                                {...MESSAGES.see}
-                                            />
-                                        </Link>
-                                    </Button>
-                                </Grid>
+                                    {titleMessage}
+                                </Typography>
+                                <Divider />
                             </Box>
-                        </CardContent>
-                    </Card>
-                )}
-            </Popup>
-        );
-    }
-}
+                        )}
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.name)}
+                            value={activeOrgUnit.name}
+                        />
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.type)}
+                            value={activeOrgUnit.org_unit_type_name}
+                        />
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.groups)}
+                            value={groups}
+                        />
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.source)}
+                            value={activeOrgUnit.source}
+                        />
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.parent)}
+                            value={
+                                activeOrgUnit.parent
+                                    ? activeOrgUnit.parent.name
+                                    : textPlaceholder
+                            }
+                        />
+                        {!activeOrgUnit.has_geo_json && (
+                            <>
+                                <PopupItemComponent
+                                    label={formatMessage(MESSAGES.latitude)}
+                                    value={activeOrgUnit.latitude}
+                                />
+                                <PopupItemComponent
+                                    label={formatMessage(MESSAGES.longitude)}
+                                    value={activeOrgUnit.longitude}
+                                />
+                            </>
+                        )}
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.created_at)}
+                            value={moment
+                                .unix(activeOrgUnit.created_at)
+                                .format('LTS')}
+                        />
+                        <Box className={classes.actionBox}>
+                            <Grid
+                                container
+                                spacing={0}
+                                justifyContent={
+                                    displayUseLocation ? 'center' : 'flex-end'
+                                }
+                                alignItems="center"
+                            >
+                                {displayUseLocation && (
+                                    <ConfirmDialog
+                                        btnSize="small"
+                                        btnMessage={formatMessage(
+                                            MESSAGES.associate,
+                                        )}
+                                        question={formatMessage(
+                                            MESSAGES.question,
+                                        )}
+                                        message={formatMessage(
+                                            MESSAGES.message,
+                                        )}
+                                        confirm={() => confirmDialog()}
+                                    />
+                                )}
+                                <Button
+                                    className={classes.marginLeft}
+                                    variant="outlined"
+                                    color="primary"
+                                    size="small"
+                                >
+                                    <Link
+                                        target="_blank"
+                                        to={`${baseUrls.orgUnitDetails}/orgUnitId/${activeOrgUnit.id}/tab/infos`}
+                                        className={classes.linkButton}
+                                    >
+                                        <FormattedMessage {...MESSAGES.see} />
+                                    </Link>
+                                </Button>
+                            </Grid>
+                        </Box>
+                    </CardContent>
+                </Card>
+            )}
+        </Popup>
+    );
+};
+
 OrgUnitPopupComponent.defaultProps = {
     currentOrgUnit: null,
     displayUseLocation: false,
-    useLocation: () => {},
+    replaceLocation: () => {},
+    titleMessage: null,
 };
 
 OrgUnitPopupComponent.propTypes = {
-    intl: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
     currentOrgUnit: PropTypes.object,
     displayUseLocation: PropTypes.bool,
-    useLocation: PropTypes.func,
+    replaceLocation: PropTypes.func,
+    titleMessage: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
 };
 
-const MapStateToProps = state => ({
-    currentOrgUnit: state.orgUnits.currentSubOrgUnit,
-});
-
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-});
-
-export default withStyles(styles)(
-    connect(
-        MapStateToProps,
-        MapDispatchToProps,
-    )(injectIntl(OrgUnitPopupComponent)),
-);
+export default OrgUnitPopupComponent;

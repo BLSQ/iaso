@@ -108,7 +108,8 @@ class OrgunitsMap extends Component {
             !isEqual(
                 getColorsFromParams(nextProps.params),
                 getColorsFromParams(this.props.params),
-            )
+            ) ||
+            !isEqual(nextProps.orgUnitTypes, this.props.orgUnitTypes)
         );
     }
 

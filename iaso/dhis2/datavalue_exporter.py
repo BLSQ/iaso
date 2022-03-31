@@ -787,14 +787,22 @@ class DataValueExporter:
             .all(),
             page_size,
         )
+        if paginator.count == 0:
+            logger.warning(f"Not linked error status for {export_request}")
+
         skipped = []
         stats = {"exported_count": 0, "errored_count": 0}
+        export_statuses = []
         for page in range(1, paginator.num_pages + 1):
             print(page)
             page_start = timer()
             prefix = "page %d/%d" % (page, paginator.num_pages)
+
             try:
                 export_statuses = paginator.page(page).object_list
+                if len(export_statuses) == 0:
+                    logger.warning(f"Empty page {page} for {export_request}")
+                    continue
                 data = self.map_page_to_data_values(prefix, export_statuses, skipped)
                 api = self.get_api(export_statuses[0].mapping_version)
 

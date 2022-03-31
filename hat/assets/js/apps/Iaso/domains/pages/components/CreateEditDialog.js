@@ -24,7 +24,7 @@ import Rte from './Rte';
 import RadioInput from './RadioInput';
 import SelectInput from './SelectInput';
 import { useSavePage } from '../hooks/useSavePage';
-import { useGetProfiles } from '../hooks/useGetProfiles';
+import { useGetProfiles } from '../../users/hooks/useGetProfiles';
 import MESSAGES from '../messages';
 import { PAGES_TYPES, IFRAME, TEXT, RAW } from '../constants';
 import getDisplayName from '../../../utils/usersUtils';
@@ -42,7 +42,9 @@ const useStyles = makeStyles(theme => ({
 
 const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
     const { mutate: savePage } = useSavePage();
-    const { data: profiles = [] } = useGetProfiles();
+    const { data } = useGetProfiles();
+    const profiles = data ? data.profiles : [];
+
     const currentUser = useSelector(state => state.users.current);
     const profilesList = profiles
         .filter(p => p.id !== currentUser.id)

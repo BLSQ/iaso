@@ -2,15 +2,7 @@ import React from 'react';
 import { Grid, Paper, Box, Typography } from '@material-ui/core';
 import { array, oneOf, string } from 'prop-types';
 import { useStyles } from './styles';
-
-const convertWidth = width => {
-    if (width === 'xs') return '100px';
-    if (width === 'sm') return '120px';
-    if (width === 'md') return '150px';
-    if (width === 'lg') return '180px';
-    if (width === 'xl') return '200px';
-    return '100px';
-};
+import { convertWidth } from '../../utils';
 
 // TODO pass font size as props
 export const MapLegend = ({ title, legendItems, width }) => {

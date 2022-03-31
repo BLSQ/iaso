@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
 
 import PropTypes from 'prop-types';
 
@@ -13,9 +12,12 @@ import { useGetInstances } from '../hooks/useGetInstances';
 
 import MESSAGES from '../messages';
 
-export const FormsFilterComponent = ({ setFormsSelected, formsSelected }) => {
+export const FormsFilterComponent = ({
+    setFormsSelected,
+    formsSelected,
+    currentOrgUnit,
+}) => {
     const { formatMessage } = useSafeIntl();
-    const currentOrgUnit = useSelector(state => state.orgUnits.current);
     const { data, isLoading } = useGetInstances({
         orgUnitId: currentOrgUnit?.id,
     });
@@ -51,7 +53,7 @@ export const FormsFilterComponent = ({ setFormsSelected, formsSelected }) => {
             </Box>
             <Select
                 keyValue="forms"
-                label={formatMessage(MESSAGES.defaultMessage)}
+                label={formatMessage(MESSAGES.title)}
                 disabled={forms.length === 0}
                 loading={isLoading}
                 clearable
@@ -79,6 +81,7 @@ FormsFilterComponent.defaultProps = {
 FormsFilterComponent.propTypes = {
     formsSelected: PropTypes.array.isRequired,
     setFormsSelected: PropTypes.func,
+    currentOrgUnit: PropTypes.object.isRequired,
 };
 
 export default FormsFilterComponent;

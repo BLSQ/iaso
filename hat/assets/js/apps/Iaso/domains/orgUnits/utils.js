@@ -66,11 +66,16 @@ export const getSourcesWithoutCurrentSource = (
     return sources;
 };
 
-export const orgUnitLabelString = (orgUnit, withType, formatMessage) => {
+export const orgUnitLabelString = (
+    orgUnit,
+    withType,
+    formatMessage,
+    withSource = true,
+) => {
     let message = textPlaceholder;
     if (orgUnit && orgUnit.name) {
         message = orgUnit.name;
-        if (orgUnit.source) {
+        if (orgUnit.source && withSource) {
             message += ` - ${formatMessage(MESSAGES.sourceLower)}: ${
                 orgUnit.source
             }`;
@@ -82,9 +87,14 @@ export const orgUnitLabelString = (orgUnit, withType, formatMessage) => {
     return message;
 };
 
-export const OrgUnitLabel = ({ orgUnit, withType }) => {
+export const OrgUnitLabel = ({ orgUnit, withType, withSource }) => {
     const intl = useSafeIntl();
-    return orgUnitLabelString(orgUnit, withType, intl.formatMessage);
+    return orgUnitLabelString(
+        orgUnit,
+        withType,
+        intl.formatMessage,
+        withSource,
+    );
 };
 
 const mapOrgUnitBySearch = (orgUnits, searches) => {
@@ -117,7 +127,11 @@ export const getColorsFromParams = params => {
 };
 
 export const decodeSearch = search => {
-    return JSON.parse(search);
+    try {
+        return JSON.parse(search);
+    } catch (e) {
+        return [];
+    }
 };
 
 export const encodeUriSearches = searches => {
@@ -230,7 +244,7 @@ export const getMarkerList = ({
             PopupComponent={PopupComponent}
             popupProps={{
                 displayUseLocation: true,
-                useLocation: selectedOrgUnit =>
+                replaceLocation: selectedOrgUnit =>
                     useOrgUnitLocation(selectedOrgUnit),
             }}
             isCircle

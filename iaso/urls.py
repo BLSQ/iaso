@@ -1,9 +1,12 @@
+from django.conf.urls import url
 from django.urls import path, include
 from django.contrib import auth
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from hat.api.authentication import WfpLogin, wfp_callback
 from .api.comment import CommentViewSet
+from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.logs import LogsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.org_units import OrgUnitViewSet
@@ -56,6 +59,7 @@ from iaso import matching
 import pkgutil
 
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
+from .dhis2.authentication import dhis2_callback
 
 router = routers.DefaultRouter()
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
@@ -96,6 +100,8 @@ router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
+router.register(r"entity", EntityViewSet, basename="entity")
+router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
 
 router.registry.extend(plugins_router.registry)
 
@@ -137,6 +143,15 @@ urlpatterns = urlpatterns + [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("", include(router.urls)),
 ]
+# External Auth
+urlpatterns = urlpatterns + [
+    url("auth0/login/callback/", wfp_callback, name="callback"),
+    path("", include("allauth.urls")),
+    path("auth0/login/", WfpLogin.as_view(), name="openid"),
+    path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
+]
+
+
 for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)
 

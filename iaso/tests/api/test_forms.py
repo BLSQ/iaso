@@ -1,3 +1,4 @@
+import json
 import typing
 
 from django.test import tag
@@ -83,6 +84,42 @@ class FormsAPITestCase(APITestCase):
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
+
+    def test_form_return_only_deleted(self):
+        """GET /forms/ return only deleted forms"""
+        self.client.force_authenticate(self.yoda)
+        self.client.post(
+            f"/api/forms/",
+            data={
+                "name": "test form 1",
+                "period_type": "MONTH",
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
+            },
+            format="json",
+        )
+
+        self.client.post(
+            f"/api/forms/",
+            data={
+                "name": "test form 2",
+                "period_type": "MONTH",
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
+            },
+            format="json",
+        )
+
+        form_to_delete = Form.objects.last()
+        form_to_delete.delete()
+
+        response = self.client.get(
+            "/api/forms/?&order=instance_updated_at&page=1&showDeleted=true&searchActive=true&all=true&limit=50&undefined=true",
+            headers={"Content-Type": "application/json"},
+        )
+
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 1)
 
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""

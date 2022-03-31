@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Button, makeStyles, Grid, Box, Typography } from '@material-ui/core';
+import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -19,7 +19,7 @@ import { Period } from '../../periods/models';
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
-import { useInstancesFiltersData, useGetForms } from '../hooks';
+import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 
 import MESSAGES from '../messages';
@@ -27,6 +27,7 @@ import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnit
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 
 import { LocationLimit } from '../../../utils/map/LocationLimit';
+import { UserOrgUnitRestriction } from './UserOrgUnitRestriction';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -79,11 +80,23 @@ const InstancesFiltersComponent = ({
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
             dispatch(setInstancesFilterUpdated(false));
-            onSearch({
+            const searchParams = {
                 ...params,
                 ...getInstancesFilterValues(formState),
                 page: 1,
-            });
+            };
+            // removing columns params to refetch correct columns
+            const newFormIdsString = formState.formIds.value;
+            if (newFormIdsString) {
+                const newFormIds = formState.formIds.value.split(',');
+                if (
+                    formState.formIds.value !== params?.formIds &&
+                    newFormIds.length === 1
+                ) {
+                    delete searchParams.columns;
+                }
+            }
+            onSearch(searchParams);
         }
     }, [params, onSearch, dispatch, formState, isInstancesFilterUpdated]);
 
@@ -136,8 +149,10 @@ const InstancesFiltersComponent = ({
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);
+
     return (
         <div className={classes.marginBottomBig}>
+            <UserOrgUnitRestriction />
             <Grid container spacing={4}>
                 <Grid item xs={4}>
                     <InputComponent
@@ -162,7 +177,7 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.forms}
                         loading={fetchingForms}
                     />
-                    <Box mt={-1}>
+                    <Box mt={-1} id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
                             titleMessage={MESSAGES.org_unit}
@@ -286,6 +301,7 @@ const InstancesFiltersComponent = ({
                         activePeriodString={formState.startPeriod.value}
                         periodType={formState.periodType.value}
                         title={formatMessage(MESSAGES.startPeriod)}
+                        keyName="startPeriod"
                         onChange={startPeriod =>
                             handleFormChange('startPeriod', startPeriod)
                         }
@@ -296,6 +312,7 @@ const InstancesFiltersComponent = ({
                         activePeriodString={formState.endPeriod.value}
                         periodType={formState.periodType.value}
                         title={formatMessage(MESSAGES.endPeriod)}
+                        keyName="endPeriod"
                         onChange={endPeriod =>
                             handleFormChange('endPeriod', endPeriod)
                         }
@@ -337,6 +354,7 @@ const InstancesFiltersComponent = ({
                         variant="contained"
                         className={classes.button}
                         color="primary"
+                        id="search-button"
                         onClick={() => handleSearch()}
                     >
                         <Search className={classes.buttonIcon} />

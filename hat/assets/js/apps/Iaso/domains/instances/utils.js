@@ -1,10 +1,13 @@
 import React from 'react';
 import CallMade from '@material-ui/icons/CallMade';
+import { Link } from 'react-router';
 import moment from 'moment';
 import { Tooltip } from '@material-ui/core';
 import { truncateText, getTableUrl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
-import instancesTableColumns from './config';
+import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
+
+import instancesTableColumns, { actionTableColumn } from './config';
 import MESSAGES from './messages';
 import DeleteDialog from './components/DeleteInstanceDialog';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
@@ -14,8 +17,9 @@ import {
     apiDateFormat,
     getFromDateString,
     getToDateString,
-} from '../../utils/dates';
+} from '../../utils/dates.ts';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
+import { baseUrls } from '../../constants/urls';
 
 const NO_VALUE = '/';
 const hasNoValue = value => !value || value === '';
@@ -120,6 +124,7 @@ export const getInstancesColumns = (
             }
         });
     tableColumns = tableColumns.concat(childrenArray);
+    tableColumns.push(actionTableColumn(formatMessage, user));
     return tableColumns;
 };
 
@@ -153,7 +158,6 @@ export const formatLabel = field => {
 };
 export const getInstancesVisibleColumns = ({
     formatMessage,
-    instance,
     columns = undefined,
     order,
     defaultOrder,
@@ -177,7 +181,7 @@ export const getInstancesVisibleColumns = ({
             activeOrders.indexOf(`-${c.accessor}`) !== -1,
     }));
 
-    if (instance) {
+    if (possibleFields) {
         possibleFields?.forEach(field => {
             const label = formatLabel(field);
             newColumns.push({
@@ -219,6 +223,28 @@ export const getSelectionActions = (
         isUnDeleteAction ? MESSAGES.unDeleteInstance : MESSAGES.deleteInstance,
     );
     return [
+        {
+            icon: newSelection => {
+                const isDisabled =
+                    newSelection.selectCount <= 1 || newSelection.selectAll;
+                if (isDisabled) {
+                    return <CompareArrowsIcon color="disabled" />;
+                }
+                const instancesIds = newSelection.selectedItems
+                    .map(s => s.id)
+                    .join(',');
+                return (
+                    <Link
+                        style={{ color: 'inherit', display: 'flex' }}
+                        to={`${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
+                    >
+                        <CompareArrowsIcon />
+                    </Link>
+                );
+            },
+            label: formatMessage(MESSAGES.compare),
+            disabled: false,
+        },
         {
             icon: newSelection => (
                 <ExportInstancesDialogComponent

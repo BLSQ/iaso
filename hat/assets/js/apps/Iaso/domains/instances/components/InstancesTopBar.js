@@ -31,11 +31,10 @@ const InstancesTopBar = ({
     params,
     periodType,
     setTableColumns,
-    tableColumns,
     baseUrl,
     labelKeys,
     possibleFields,
-    instances,
+    formDetails,
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
@@ -45,7 +44,7 @@ const InstancesTopBar = ({
 
     const formIds = params.formIds?.split(',');
 
-    const handleChangeVisibleColmuns = cols => {
+    const handleChangeVisibleColmuns = (cols, withRedirect = true) => {
         const newParams = {
             ...params,
             columns: cols
@@ -62,36 +61,61 @@ const InstancesTopBar = ({
             ),
         );
         setVisibleColumns(cols);
-        dispatch(redirectToReplace(baseUrl, newParams));
+        if (withRedirect) {
+            dispatch(redirectToReplace(baseUrl, newParams));
+        }
     };
 
     useEffect(() => {
-        if (instances || tableColumns.length === 0) {
-            const enrichedParams = { ...params };
-            let columns = INSTANCE_METAS_FIELDS.filter(f =>
-                Boolean(f.tableOrder),
+        let newColsString;
+        if (params.columns) {
+            newColsString = params.columns;
+        } else {
+            newColsString = INSTANCE_METAS_FIELDS.filter(
+                f => Boolean(f.tableOrder) && f.active,
             ).map(f => f.accessor || f.key);
             if (formIds && formIds.length === 1) {
-                columns = columns.filter(c => c !== 'form__name');
+                newColsString = newColsString.filter(c => c !== 'form__name');
                 if (periodType === null) {
-                    columns = columns.filter(c => c !== 'period');
+                    newColsString = newColsString.filter(c => c !== 'period');
                 }
             }
-
-            columns = columns.join(',');
-            const columnsWithLabelKeys = `${columns},${labelKeys.join(',')}`;
-            enrichedParams.columns = columnsWithLabelKeys;
-            const cols = getInstancesVisibleColumns({
-                formatMessage,
-                instance: instances && instances[0],
-                columns: enrichedParams.columns,
-                order: enrichedParams.order,
-                defaultOrder,
-                possibleFields,
-            });
-            handleChangeVisibleColmuns(cols);
+            newColsString = newColsString.join(',');
+            if (labelKeys.length > 0) {
+                newColsString = `${newColsString},${labelKeys.join(',')}`;
+            }
         }
-    }, [instances]);
+        let newCols = [];
+        // single form
+        if (formIds?.length === 1) {
+            // if detail loaded
+            if (formDetails) {
+                // possibleFields set by default to null, array if fetched
+                if (possibleFields) {
+                    newCols = getInstancesVisibleColumns({
+                        formatMessage,
+                        columns: newColsString,
+                        order: params.order,
+                        defaultOrder,
+                        possibleFields,
+                    });
+                }
+            } else if (visibleColumns.length > 0) {
+                // remove columns while reloading
+                handleChangeVisibleColmuns([], false);
+            }
+            // multi forms
+        } else {
+            newCols = getInstancesVisibleColumns({
+                formatMessage,
+                columns: newColsString,
+                order: params.order,
+                defaultOrder,
+            });
+        }
+        handleChangeVisibleColmuns(newCols, !params.columns);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [possibleFields, formDetails]);
 
     let title = formatMessage(MESSAGES.titleMulti);
     if (formIds?.length === 1) {
@@ -143,7 +167,7 @@ InstancesTopBar.defaultProps = {
     possibleFields: null,
     tableColumns: [],
     labelKeys: [],
-    instances: undefined,
+    formDetails: null,
 };
 
 InstancesTopBar.propTypes = {
@@ -157,7 +181,7 @@ InstancesTopBar.propTypes = {
     baseUrl: PropTypes.string.isRequired,
     possibleFields: PropTypes.any,
     labelKeys: PropTypes.array,
-    instances: PropTypes.array,
+    formDetails: PropTypes.object,
 };
 
 export { InstancesTopBar };

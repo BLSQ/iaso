@@ -3,21 +3,24 @@ import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import FormsStats from '../domains/forms/stats';
 import OrgUnits from '../domains/orgUnits';
-import Links from '../domains/links';
+import { Links } from '../domains/links';
 import Runs from '../domains/links/Runs';
-import OrgUnitDetail from '../domains/orgUnits/details';
+import OrgUnitDetail from '../domains/orgUnits/detail';
 import Completeness from '../domains/completeness';
 import Instances from '../domains/instances';
+import CompareSubmissions from '../domains/instances/compare/index.tsx';
 import InstanceDetail from '../domains/instances/details';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import Users from '../domains/users';
-import Projects from '../domains/projects';
+import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
 import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import Groups from '../domains/orgUnits/groups';
-import Types from '../domains/orgUnits/types';
+import Types from '../domains/orgUnits/orgUnitTypes';
+import { Entities } from '../domains/entities/index.tsx';
+import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
@@ -25,26 +28,24 @@ import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
-
-const paginationPathParams = [
-    {
-        isRequired: false,
-        key: 'order',
-    },
-    {
-        isRequired: false,
-        key: 'pageSize',
-    },
-    {
-        isRequired: false,
-        key: 'page',
-    },
-];
+import { paginationPathParams } from '../routing/common';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
         ...p,
         key: `${prefix}${capitalize(p.key, true)}`,
+    }));
+
+const orgUnitsFiltersPathParamsWithPrefix = (prefix, withChildren) =>
+    orgUnitFiltersWithPrefix(prefix, withChildren).map(f => ({
+        isRequired: false,
+        key: f.urlKey,
+    }));
+
+const linksFiltersPathParamsWithPrefix = prefix =>
+    linksFiltersWithPrefix(prefix).map(f => ({
+        isRequired: false,
+        key: f.urlKey,
     }));
 
 export const getPath = path => {
@@ -72,6 +73,10 @@ export const formsPath = {
             isRequired: false,
             key: 'searchActive',
         },
+        {
+            isRequired: false,
+            key: 'showDeleted',
+        },
     ],
     component: props => <Forms {...props} />,
     isRootUrl: true,
@@ -81,26 +86,8 @@ export const pagesPath = {
     baseUrl: baseUrls.pages,
     permissions: ['iaso_pages'],
     featureFlag: SHOW_PAGES,
-    params: [],
+    params: [...paginationPathParams],
     component: props => <Pages {...props} />,
-};
-
-export const archivedPath = {
-    baseUrl: baseUrls.archived,
-    permissions: ['iaso_forms', 'iaso_submissions'],
-    params: [
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'searchActive',
-        },
-    ],
-    component: props => <Forms {...props} showOnlyDeleted />,
-    isRootUrl: true,
 };
 
 export const formDetailPath = {
@@ -116,36 +103,11 @@ export const formDetailPath = {
     ],
 };
 
-export const mappingsPath = {
-    baseUrl: baseUrls.mappings,
-    permissions: ['iaso_mappings'],
-    component: props => <Mappings {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'formId',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
-};
-
-export const mappingDetailPath = {
-    baseUrl: baseUrls.mappingDetail,
-    permissions: ['iaso_mappings'],
-    component: props => <MappingDetails {...props} />,
-    params: [
-        {
-            isRequired: true,
-            key: 'mappingVersionId',
-        },
-        {
-            isRequired: false,
-            key: 'questionName',
-        },
-    ],
+export const formsStatsPath = {
+    baseUrl: baseUrls.formsStats,
+    permissions: ['iaso_forms'],
+    component: () => <FormsStats />,
+    params: [],
 };
 
 export const instancesPath = {
@@ -235,7 +197,7 @@ export const instancesPath = {
 
 export const instanceDetailPath = {
     baseUrl: baseUrls.instanceDetail,
-    permissions: ['iaso_forms', 'iaso_submissions'],
+    permissions: ['iaso_submissions'],
     component: props => <InstanceDetail {...props} />,
     params: [
         {
@@ -245,11 +207,48 @@ export const instanceDetailPath = {
     ],
 };
 
-export const formsStatsPath = {
-    baseUrl: baseUrls.formsStats,
-    permissions: ['iaso_forms'],
-    component: () => <FormsStats />,
-    params: [],
+export const compareInstancesPath = {
+    baseUrl: baseUrls.compareInstances,
+    permissions: ['iaso_submissions'],
+    component: props => <CompareSubmissions {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'instanceIds',
+        },
+    ],
+};
+
+export const mappingsPath = {
+    baseUrl: baseUrls.mappings,
+    permissions: ['iaso_mappings'],
+    component: props => <Mappings {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'formId',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+
+export const mappingDetailPath = {
+    baseUrl: baseUrls.mappingDetail,
+    permissions: ['iaso_mappings'],
+    component: props => <MappingDetails {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'mappingVersionId',
+        },
+        {
+            isRequired: false,
+            key: 'questionName',
+        },
+    ],
 };
 
 export const orgUnitsPath = {
@@ -283,17 +282,6 @@ export const orgUnitsPath = {
         },
     ],
 };
-const orgUnitsFiltersPathParamsWithPrefix = (prefix, withChildren) =>
-    orgUnitFiltersWithPrefix(prefix, withChildren).map(f => ({
-        isRequired: false,
-        key: f.urlKey,
-    }));
-
-const linksFiltersPathParamsWithPrefix = prefix =>
-    linksFiltersWithPrefix(prefix).map(f => ({
-        isRequired: false,
-        key: f.urlKey,
-    }));
 
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
@@ -490,10 +478,46 @@ export const groupsPath = {
         })),
     ],
 };
+
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
     permissions: ['iaso_org_units'],
     component: props => <Types {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+
+export const entitiesPath = {
+    baseUrl: baseUrls.entities,
+    permissions: ['iaso_entities'],
+    component: props => <Entities {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'entityTypes',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+export const entityTypesPath = {
+    baseUrl: baseUrls.entityTypes,
+    permissions: ['iaso_entities'],
+    component: props => <EntityTypes {...props} />,
     params: [
         {
             isRequired: false,
@@ -526,13 +550,13 @@ export const page500 = {
 
 export const routeConfigs = [
     formsPath,
-    archivedPath,
     formDetailPath,
     formsStatsPath,
     mappingsPath,
     mappingDetailPath,
     instancesPath,
     instanceDetailPath,
+    compareInstancesPath,
     orgUnitsPath,
     orgUnitsDetailsPath,
     linksPath,
@@ -545,6 +569,8 @@ export const routeConfigs = [
     devicesPath,
     groupsPath,
     orgUnitTypesPath,
+    entitiesPath,
+    entityTypesPath,
     pagesPath,
     page401,
     page500,

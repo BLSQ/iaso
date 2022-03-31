@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
@@ -8,6 +9,10 @@ import InputComponent from '../../../components/forms/InputComponent';
 
 import { getYears } from '../../../utils';
 import { getPeriodPickerString } from '../utils';
+import {
+    hasFeatureFlag,
+    HIDE_PERIOD_QUARTER_NAME,
+} from '../../../utils/featureFlags';
 import { Period } from '../models';
 
 import {
@@ -38,6 +43,7 @@ const PeriodPicker = ({
     onChange,
     activePeriodString,
     hasError,
+    keyName,
 }) => {
     const classes = useStyles();
     const theme = useTheme();
@@ -48,6 +54,7 @@ const PeriodPicker = ({
             : null,
     );
     const [currentPeriodType, setCurrentPeriodType] = useState(periodType);
+    const currentUser = useSelector(state => state.users.current);
 
     useEffect(() => {
         if (currentPeriodType !== periodType) {
@@ -56,12 +63,12 @@ const PeriodPicker = ({
         setCurrentPeriodType(periodType);
     }, [periodType, currentPeriodType]);
 
-    const handleChange = (keyName, value) => {
+    const handleChange = (changedKeyName, value) => {
         let newPeriod = {
             ...currentPeriod,
-            [keyName]: value,
+            [changedKeyName]: value,
         };
-        if (keyName === 'year' && !value) {
+        if (changedKeyName === 'year' && !value) {
             newPeriod = null;
         }
         setCurrentPeriod(newPeriod);
@@ -70,8 +77,19 @@ const PeriodPicker = ({
     if (!periodType) {
         return null;
     }
+    const getQuarterOptionLabel = (value, label) => {
+        if (hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME)) {
+            return `${formatMessage(QUARTERS_RANGE[value][0])}-${formatMessage(
+                QUARTERS_RANGE[value][1],
+            )}`;
+        }
+        return `${label} (${formatMessage(
+            QUARTERS_RANGE[value][0],
+        )}-${formatMessage(QUARTERS_RANGE[value][1])})`;
+    };
     return (
         <Box
+            id={keyName}
             mt={2}
             p={currentPeriodType === PERIOD_TYPE_DAY ? 0 : 1}
             mb={2}
@@ -160,11 +178,10 @@ const PeriodPicker = ({
                                         type="select"
                                         options={Object.entries(QUARTERS).map(
                                             ([value, label]) => ({
-                                                label: `${label} (${formatMessage(
-                                                    QUARTERS_RANGE[value][0],
-                                                )}-${formatMessage(
-                                                    QUARTERS_RANGE[value][1],
-                                                )})`,
+                                                label: getQuarterOptionLabel(
+                                                    value,
+                                                    label,
+                                                ),
                                                 value,
                                             }),
                                         )}
@@ -225,6 +242,7 @@ PeriodPicker.propTypes = {
         PropTypes.object,
     ]),
     hasError: PropTypes.bool,
+    keyName: PropTypes.string.isRequired,
 };
 
 export default PeriodPicker;

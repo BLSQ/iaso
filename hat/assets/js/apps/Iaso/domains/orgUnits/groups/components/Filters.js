@@ -60,6 +60,7 @@ const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
                     alignItems="center"
                 >
                     <Button
+                        data-test="search-button"
                         disabled={!filtersUpdated}
                         variant="contained"
                         className={classes.button}

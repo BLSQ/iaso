@@ -5,7 +5,7 @@
 <div class="auth__container iasologin">
   <div class="auth__content">
     <header class="auth__header">
-      <h1 class="auth__heading"> <img alt="iaso logo" src="{% static 'images/logo.png' %}" /></h1>
+      <h1 class="auth__heading"> <img alt="logo" src="{% static logo_path %}" /></h1>
       <p>{% trans 'An offspring of the <a href="https://www.trypelim.org">Trypelim</a> project' %}</p>
     </header>
     <div>
@@ -30,7 +30,7 @@
         {% csrf_token %}
         {{ form }}
         <input type="hidden" name="next" value="{{ next }}" />
-        <button type="submit" class="button">{% trans 'Login' %}</button>
+        <button id="submit" type="submit" class="button">{% trans 'Login' %}</button>
         <button id="display-password">
           {% include "./icons/eye.html" %}
           {% include "./icons/eye-slash.html" %}

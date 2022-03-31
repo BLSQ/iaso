@@ -7,6 +7,15 @@ import { usePrettyPeriod } from '../domains/periods/utils';
 import { orgUnitLabelString } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';
 
+export const forbiddenCharacters = ['"', '?', '/', '%', '&'];
+
+export const containsForbiddenCharacter = value => {
+    for (let i = 0; i < value.length; i += 1) {
+        if (forbiddenCharacters.includes(value[i])) return true;
+    }
+    return false;
+};
+
 export const search = (urlKey = 'search', withMarginTop = true) => ({
     urlKey,
     label: MESSAGES.textSearch,
@@ -143,10 +152,11 @@ export const source = (
     isMultiSelect,
     displayColor,
     isClearable: true,
-    options: sourceList.map(s => ({
+    options: sourceList?.map(s => ({
         label: displayColor ? renderColoredOption(s) : s.name,
         value: s.id,
     })),
+
     label: labelString !== '' ? null : label,
     type: 'select',
     labelString,
@@ -354,12 +364,18 @@ export const group = (groupList, urlKey = 'group') => ({
     urlKey,
     isMultiSelect: true,
     isClearable: true,
-    options: groupList.map(a => ({
-        label: a.source_version
-            ? `${a.name} - ${a.source_version.data_source.name} ${a.source_version.number}`
-            : a.name,
-        value: a.id,
-    })),
+    options: groupList
+        .map(a => ({
+            label: a.source_version
+                ? `${a.name} - ${a.source_version.data_source.name} ${a.source_version.number}`
+                : a.name,
+            value: a.id,
+        }))
+        .sort((a, b) =>
+            a.label.localeCompare(b.label, undefined, {
+                sensitivity: 'accent',
+            }),
+        ),
     label: MESSAGES.group,
     type: 'select',
 });
@@ -390,7 +406,7 @@ export const instanceStatus = options => ({
     type: 'select',
 });
 
-export const instanceDeleted = () => ({
+export const showOnlyDeleted = () => ({
     urlKey: 'showDeleted',
     label: MESSAGES.showDeleted,
     type: 'checkbox',
@@ -712,6 +728,10 @@ export const formsFilters = () => {
     const filters = [
         {
             ...search(),
+            column: 1,
+        },
+        {
+            ...showOnlyDeleted(),
             column: 1,
         },
     ];

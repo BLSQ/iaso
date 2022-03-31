@@ -45,6 +45,7 @@ function DialogComponent({
     maxWidth,
     onClosed,
     onOpen,
+    id,
 }) {
     // we use the renderDialog flag in addition to the open flag to control whether to render the full dialog
     // content, or only the trigger (to avoid rendering multiple heavy contents in list)
@@ -82,6 +83,7 @@ function DialogComponent({
                         }
                     }}
                     scroll="body"
+                    id={id}
                 >
                     {titleMessage && (
                         <DialogTitle className={classes.title}>
@@ -102,6 +104,7 @@ DialogComponent.defaultProps = {
     onClosed: () => {},
     onOpen: () => {},
     titleMessage: null,
+    id: undefined,
 };
 DialogComponent.propTypes = {
     classes: PropTypes.object.isRequired,
@@ -120,5 +123,6 @@ DialogComponent.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     onClosed: PropTypes.func,
     onOpen: PropTypes.func,
+    id: PropTypes.string,
 };
 export default withStyles(styles)(DialogComponent);

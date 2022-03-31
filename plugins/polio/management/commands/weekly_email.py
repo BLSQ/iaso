@@ -7,12 +7,22 @@ from django.db.models import Q
 from django.utils.timezone import now
 
 from plugins.polio.models import Campaign, CountryUsersGroup
+from plugins.polio.serializers import preparedness_from_url
 
 logger = getLogger(__name__)
 
 # TODO Add to message SOPs : Standard operating procedure
 #  As per the outbreak response plan the\
 #  country has completed (activity done as per SOPs) and is now looking forward to (Next activity on SOPs).
+
+
+def get_last_preparedness(campaign):
+    # Provided for compat but would be nice if we could move the client to use the one on round directly
+    if campaign.round_two and campaign.round_two.preparedness_spreadsheet_url:
+        return preparedness_from_url(campaign.round_two.preparedness_spreadsheet_url)
+    elif campaign.round_one and campaign.round_one.preparedness_spreadsheet_url:
+        return preparedness_from_url(campaign.round_one.preparedness_spreadsheet_url)
+    return {}
 
 
 def send_notification_email(campaign):
@@ -44,7 +54,8 @@ def send_notification_email(campaign):
     # format thousand
     target_population = f"{c.round_one.target_population:,}" if c.round_one and c.round_one.target_population else ""
 
-    preparedness = c.last_preparedness()
+    preparedness = get_last_preparedness(campaign)
+
     email_text = f"""Dear GPEI coordinator – {country.name},
 
 Weekly status update: Today is day {day_number} since outbreak notification.
@@ -60,9 +71,9 @@ If there are missing data or dates; visit {url} to update
 * Date Budget submitted          : {c.budget_submitted_at}
 * OnSet to Notification (Days)   : {onset_days}
 * Round 1 to Notification (Days) : {round1_days}
-* Prep. national                 : {preparedness.national_score if preparedness else ''}
-* Prep. regional                 : {preparedness.regional_score if preparedness else ''}
-* Prep. district                 : {preparedness.district_score if preparedness else ''}
+* Prep. national                 : {preparedness.get('national_score') if preparedness else ''}
+* Prep. regional                 : {preparedness.get('regional_score') if preparedness else ''}
+* Prep. district                 : {preparedness.get('district_score') if preparedness else ''}
 
 For guidance on updating: contact RRT team
 Timeline tracker Automated message.

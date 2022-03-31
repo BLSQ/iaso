@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { withStyles, IconButton } from '@material-ui/core';
@@ -12,6 +12,7 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import PropTypes from 'prop-types';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
+import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
 
 const styles = theme => ({
     menuButton: {
@@ -29,14 +30,15 @@ function TopBar(props) {
         displayBackButton,
         goBack,
     } = props;
+    const { APP_TITLE } = useContext(ThemeConfigContext);
     // Set the page title from the top bar title.
     React.useEffect(() => {
-        document.title = `Iaso ${title}`;
-    }, [title]);
+        document.title = `${APP_TITLE} ${title ? `| ${title}` : ''}`;
+    }, [title, APP_TITLE]);
 
     return (
         <>
-            <AppBar position="relative" color="primary">
+            <AppBar position="relative" color="primary" id="top-bar">
                 <Toolbar>
                     {!displayBackButton && (
                         <IconButton
@@ -44,6 +46,7 @@ function TopBar(props) {
                             color="inherit"
                             aria-label="Menu"
                             onClick={toggleSidebar}
+                            id="menu-button"
                         >
                             <MenuIcon />
                         </IconButton>
@@ -54,11 +57,12 @@ function TopBar(props) {
                             color="inherit"
                             aria-label="Back"
                             onClick={goBack}
+                            id="top-bar-back-button"
                         >
                             <ArrowBackIcon />
                         </IconButton>
                     )}
-                    <Typography variant="h6" color="inherit">
+                    <Typography variant="h6" color="inherit" id="top-bar-title">
                         {title}
                     </Typography>
                 </Toolbar>

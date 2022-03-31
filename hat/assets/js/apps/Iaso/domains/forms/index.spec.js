@@ -48,6 +48,17 @@ const requestsForArchivedForms = [
     },
 ];
 
+const requestForDeletedForms = [
+    ...baseRequests,
+    {
+        url: '/api/forms/?&order=instance_updated_at&page=1&showDeleted=true&searchActive=true&all=true&limit=50&undefined=true',
+        body: {
+            forms : [],
+            pages: 0,
+        }
+    }
+]
+
 const userWithFormPermission = {
     users: {
         current: {
@@ -106,6 +117,18 @@ describe('Forms connected component', () => {
             nock.cleanAll();
             nock.abortPendingRequests();
             mockGetRequestsList(requestsForArchivedForms);
+            connectedWrapper = forms({
+                withPermissions: true,
+                showOnlyDeleted: true,
+            });
+            expect(connectedWrapper.exists()).to.equal(true);
+        });
+    });
+    describe('Deleted Forms', () => {
+        it('mounts properly', () => {
+            nock.cleanAll();
+            nock.abortPendingRequests();
+            mockGetRequestsList(requestForDeletedForms);
             connectedWrapper = forms({
                 withPermissions: true,
                 showOnlyDeleted: true,

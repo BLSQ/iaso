@@ -151,6 +151,7 @@ class InputComponent extends Component {
                         keyValue={keyValue}
                         label={labelText}
                         required={required}
+                        errors={errors}
                         disabled={disabled}
                         onEnterPressed={onEnterPressed}
                         isFocused={isFocused}
@@ -161,6 +162,7 @@ class InputComponent extends Component {
             case 'checkbox':
                 return (
                     <Checkbox
+                        keyValue={keyValue}
                         disabled={disabled}
                         onChange={newValue => onChange(keyValue, newValue)}
                         value={value}

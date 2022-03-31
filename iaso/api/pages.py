@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
 from iaso.api.common import ModelViewSet
 from iaso.models import Page
@@ -11,10 +12,7 @@ class PagesSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context.get("request")
         users = validated_data.pop("users")
-        page = Page.objects.create(
-            **validated_data,
-        )
-
+        page = Page.objects.create(**validated_data, account=request.user.iaso_profile.account)
         page.users.set(users)
 
         return page
@@ -26,13 +24,14 @@ class PagesViewSet(ModelViewSet):
     lookup_url_kwarg = "pk"
 
     def get_object(self):
-        if self.kwargs.get("pk", "").isnumeric() == False:
+        # Allow finding by either pk or slug
+        if not self.kwargs.get("pk", "").isnumeric():
             self.lookup_field = "slug"
 
         return super().get_object()
 
     def get_queryset(self):
         user = self.request.user
-
         order = self.request.query_params.get("order", "created_at").split(",")
-        return Page.objects.filter(users=user).order_by(*order).all()
+        users = User.objects.filter(iaso_profile__account=user.iaso_profile.account)
+        return Page.objects.filter(users__in=users).order_by(*order).distinct()

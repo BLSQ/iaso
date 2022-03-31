@@ -4,6 +4,12 @@ export const findDataForShape = ({ shape, data, round, campaign }) => {
     const result = dataForRound.filter(d => d.district === shape.id)[0];
     return result;
 };
+// export const findShapeForData = ({ shape, data, round, campaign }) => {
+//     if (!data || !data[campaign]) return null;
+//     const dataForRound = data[campaign][round];
+//     const result = dataForRound.filter(d => d.district === shape.id)[0];
+//     return result;
+// };
 
 // TODO have exhaustive sorting function
 const sortCampaignNames = (nameA, nameB) => {
@@ -54,7 +60,7 @@ export const getScopeStyle = (shape, scope) => {
     return defaultShapeStyle;
 };
 
-export const findScope = (obrName, campaigns, shapes) => {
+export const findScopeIds = (obrName, campaigns) => {
     let scopeIds = [];
     if (obrName) {
         scopeIds = campaigns
@@ -68,13 +74,7 @@ export const findScope = (obrName, campaigns, shapes) => {
             .map(campaign => campaign.group.org_units)
             .flat();
     }
-    return shapes.filter(shape => scopeIds.includes(shape.id));
-};
-
-export const findCountryIds = LqasData => {
-    const { stats } = LqasData;
-    const campaignKeys = Object.keys(stats);
-    return campaignKeys.map(campaignKey => stats[campaignKey].country_id);
+    return scopeIds;
 };
 
 export const makeLegendItem = ({ message, value, color }) => {
@@ -87,3 +87,23 @@ export const makeLegendItem = ({ message, value, color }) => {
 export const findRegion = (orgUnit, regions) => {
     return regions?.filter(region => region.id === orgUnit.parent_id)[0]?.name;
 };
+
+export const convertWidth = width => {
+    if (width === 'xs') return '100px';
+    if (width === 'sm') return '120px';
+    if (width === 'md') return '150px';
+    if (width === 'lg') return '180px';
+    if (width === 'xl') return '200px';
+    return '100px';
+};
+
+export const floatToPercentString = (num = 0) => {
+    if (Number.isSafeInteger(num)) return `${parseInt(num, 10)}%`;
+    return `${Math.round(num)}%`;
+};
+
+// this is a duplicate of Iaso to avoid import conflicts
+export const convertObjectToString = value =>
+    Object.entries(value)
+        .map(([key, entry]) => `${key}-${String(entry)}`)
+        .toString();

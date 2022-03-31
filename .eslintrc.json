@@ -120,7 +120,8 @@
           ],
           "valid-typeof": "warn",
           "no-unused-expressions": "off",
-          "class-methods-use-this": "warn"
+          "class-methods-use-this": "warn",
+          "@typescript-eslint/ban-ts-comment": "off"
         },
         "globals": {
           "describe": "readonly",
@@ -133,7 +134,11 @@
           "shallow": "readonly",
           "mount": "readonly",
           "sinon": "readonly",
-          "render":"readonly"
+          "cy": "readonly",
+          "localStorage": "readonly",
+          "Cypress": "readonly",
+          "context": "readonly",
+          "assert": "readonly"
         }
     }
   ],
@@ -215,6 +220,7 @@
       "class-methods-use-this": "warn"
     },
     "globals": {
+      "URLSearchParams": "readonly",
       "describe": "readonly",
       "it": "readonly",
       "before": "readonly",

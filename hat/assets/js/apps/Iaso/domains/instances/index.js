@@ -99,8 +99,8 @@ const Instances = ({ params }) => {
     const formIds = params.formIds?.split(',');
     const formId = formIds?.length === 1 ? formIds[0] : undefined;
 
-    const { data: formDetails } = useSnackQuery(
-        ['formDetailsForInstance', formId],
+    const { data: formDetails, fetching: fetchingDetail } = useSnackQuery(
+        ['formDetailsForInstance', `${formId}`],
         () => fetchFormDetailsForInstance(formId),
         undefined,
         { enabled: Boolean(formId) },
@@ -108,6 +108,7 @@ const Instances = ({ params }) => {
     const labelKeys = formDetails?.label_keys ?? [];
     const formName = formDetails?.name ?? '';
     const periodType = formDetails?.period_type;
+    const orgUnitTypes = formDetails?.org_unit_type_ids ?? [];
 
     const { data: possibleFields } = useSnackQuery(
         ['possibleFieldForForm', formId],
@@ -139,7 +140,7 @@ const Instances = ({ params }) => {
         [dispatch],
     );
 
-    const fetching = loadingMap || loadingList;
+    const fetching = loadingMap || loadingList || fetchingDetail;
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -149,10 +150,10 @@ const Instances = ({ params }) => {
                 params={params}
                 periodType={periodType}
                 setTableColumns={newCols => setTableColumns(newCols)}
-                tableColumns={tableColumns}
                 baseUrl={baseUrl}
                 labelKeys={labelKeys}
                 possibleFields={possibleFields}
+                formDetails={formDetails}
             />
 
             {fetching && <LoadingSpinner />}
@@ -182,6 +183,7 @@ const Instances = ({ params }) => {
                                             periodType,
                                             id: params.formIds,
                                         }}
+                                        orgUnitTypes={orgUnitTypes}
                                         onCreateOrReAssign={(
                                             currentForm,
                                             payload,
@@ -225,6 +227,7 @@ const Instances = ({ params }) => {
                         columns={tableColumns}
                         baseUrl={baseUrl}
                         multiSelect
+                        defaultSorted={[{ id: 'updated_at', desc: true }]}
                         selectionActions={getSelectionActions(
                             formatMessage,
                             getFilters(params),

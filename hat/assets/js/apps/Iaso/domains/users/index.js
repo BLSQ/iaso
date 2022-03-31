@@ -1,151 +1,117 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import { withStyles, Box, Grid } from '@material-ui/core';
+import { useDispatch, useSelector } from 'react-redux';
+import { makeStyles, Box, Grid } from '@material-ui/core';
 
 import {
-    injectIntl,
     commonStyles,
     Table,
     LoadingSpinner,
     AddButton as AddButtonComponent,
+    useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
-import {
-    fetchUsersProfiles as fetchUsersProfilesAction,
-    deleteUser as deleteUserAction,
-} from './actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
 import UsersDialog from './components/UsersDialog';
 
 import { baseUrls } from '../../constants/urls';
+import { useGetProfiles } from './hooks/useGetProfiles';
+import { useDeleteProfile } from './hooks/useDeleteProfile';
+import { useSaveProfile } from './hooks/useSaveProfile';
 
 import usersTableColumns from './config';
 import MESSAGES from './messages';
 
-import { redirectTo as redirectToAction } from '../../routing/actions';
+import { redirectTo } from '../../routing/actions';
+import { convertObjectToString } from '../../utils';
 
 const baseUrl = baseUrls.users;
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-});
+}));
 
-class Users extends Component {
-    componentDidMount() {
-        const { params, fetchUsersProfiles } = this.props;
-        fetchUsersProfiles(params);
-    }
+const Users = ({ params }) => {
+    const classes = useStyles();
+    const currentUser = useSelector(state => state.users.current);
+    const [resetPageToOne, setResetPageToOne] = useState(
+        convertObjectToString({
+            pageSize: params.pageSize,
+            search: params.search,
+        }),
+    );
+    const { formatMessage } = useSafeIntl();
+    const dispatch = useDispatch();
 
-    componentDidUpdate(prevProps) {
-        const { params, fetchUsersProfiles } = this.props;
-        if (
-            prevProps.params.pageSize !== params.pageSize ||
-            prevProps.params.order !== params.order ||
-            prevProps.params.page !== params.page
-        ) {
-            fetchUsersProfiles(params);
-        }
-    }
+    const { data, isFetching: fetchingProfiles } = useGetProfiles(params);
+    const { mutate: deleteProfile, isLoading: deletingProfile } =
+        useDeleteProfile();
+    const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
+    const isLoading = fetchingProfiles || deletingProfile || savingProfile;
 
-    deleteUser(user) {
-        const { params, deleteUser } = this.props;
-        return deleteUser(user, params);
-    }
-
-    render() {
-        const {
-            params,
-            intl: { formatMessage },
-            profiles,
-            count,
-            pages,
-            fetching,
-            classes,
-            fetchUsersProfiles,
-            redirectTo,
-        } = this.props;
-        return (
-            <>
-                {fetching && <LoadingSpinner />}
-                <TopBar
-                    title={formatMessage(MESSAGES.users)}
-                    displayBackButton={false}
-                />
-                <Box className={classes.containerFullHeightNoTabPadded}>
-                    <Filters
-                        baseUrl={baseUrl}
-                        params={params}
-                        onSearch={() => fetchUsersProfiles(params)}
-                    />
-                    <Grid
-                        container
-                        spacing={0}
-                        justifyContent="flex-end"
-                        alignItems="center"
-                        className={classes.marginTop}
-                    >
-                        <UsersDialog
-                            titleMessage={MESSAGES.create}
-                            renderTrigger={({ openDialog }) => (
-                                <AddButtonComponent onClick={openDialog} />
-                            )}
-                            params={params}
-                        />
-                    </Grid>
-                    <Table
-                        data={profiles}
-                        pages={pages}
-                        defaultSorted={[{ id: 'user__username', desc: false }]}
-                        columns={usersTableColumns(formatMessage, this)}
-                        count={count}
-                        baseUrl={baseUrl}
-                        params={params}
-                        redirectTo={redirectTo}
-                    />
-                </Box>
-            </>
+    useSkipEffectOnMount(() => {
+        setResetPageToOne(
+            convertObjectToString({
+                pageSize: params.pageSize,
+                search: params.search,
+            }),
         );
-    }
-}
+    }, [params.pageSize, params.search]);
 
-Users.defaultProps = {
-    count: 0,
+    return (
+        <>
+            {isLoading && <LoadingSpinner />}
+            <TopBar
+                title={formatMessage(MESSAGES.users)}
+                displayBackButton={false}
+            />
+            <Box className={classes.containerFullHeightNoTabPadded}>
+                <Filters baseUrl={baseUrl} params={params} />
+                <Grid
+                    container
+                    spacing={0}
+                    justifyContent="flex-end"
+                    alignItems="center"
+                    className={classes.marginTop}
+                >
+                    <UsersDialog
+                        titleMessage={MESSAGES.create}
+                        renderTrigger={({ openDialog }) => (
+                            <AddButtonComponent
+                                dataTestId="add-user-button"
+                                onClick={openDialog}
+                            />
+                        )}
+                        params={params}
+                        saveProfile={saveProfile}
+                    />
+                </Grid>
+                <Table
+                    data={data?.profiles ?? []}
+                    pages={data?.pages ?? 1}
+                    defaultSorted={[{ id: 'user__username', desc: false }]}
+                    columns={usersTableColumns({
+                        formatMessage,
+                        deleteProfile,
+                        params,
+                        currentUser,
+                        saveProfile,
+                    })}
+                    count={data?.count ?? 0}
+                    baseUrl={baseUrl}
+                    params={params}
+                    resetPageToOne={resetPageToOne}
+                    redirectTo={(b, p) => dispatch(redirectTo(b, p))}
+                />
+            </Box>
+        </>
+    );
 };
 
 Users.propTypes = {
-    classes: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
-    fetchUsersProfiles: PropTypes.func.isRequired,
-    deleteUser: PropTypes.func.isRequired,
-    profiles: PropTypes.array.isRequired,
-    count: PropTypes.number,
-    fetching: PropTypes.bool.isRequired,
-    pages: PropTypes.number.isRequired,
-    redirectTo: PropTypes.func.isRequired,
 };
 
-const MapStateToProps = state => ({
-    profiles: state.users.list,
-    count: state.users.count,
-    pages: state.users.pages,
-    fetching: state.users.fetching,
-});
-
-const mapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            fetchUsersProfiles: fetchUsersProfilesAction,
-            deleteUser: deleteUserAction,
-            redirectTo: redirectToAction,
-        },
-        dispatch,
-    ),
-});
-
-export default withStyles(styles)(
-    connect(MapStateToProps, mapDispatchToProps)(injectIntl(Users)),
-);
+export default Users;

@@ -15,7 +15,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { withQueryClientProvider } from '../../../../test/utils';
 
 const projectActions = require('../projects/actions');
-const orgUnitTypesActions = require('../orgUnits/types/actions');
+const orgUnitTypesActions = require('../orgUnits/orgUnitTypes/actions');
 const redirectActions = require('../../routing/actions');
 const requestsStub = require('../../utils/requests');
 

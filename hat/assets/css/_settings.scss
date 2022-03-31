@@ -1,15 +1,18 @@
+/* Colours from css theme */
+$primary : var(--primary-color);
+$secondary : var(--secondary-color);
+$primary-background: var(--primary-background-color);
+
 /* colours */
 $gray: #ccc;
 $red: #FF3824;
-$blue: #3f51b5;
 $green: #45D288;
 $orange: #FFA400;
-$dark-blue: #333645;
 
 /* brighter hues for highlighted items */
 $bright-navy: #122272;
 
-$text-color: $dark-blue;
+$text-color: #333645;
 
 /* type */
 $body-font-family: "Lato",

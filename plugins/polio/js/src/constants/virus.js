@@ -1,23 +1,36 @@
 import deepPurple from '@material-ui/core/colors/deepPurple';
 import orange from '@material-ui/core/colors/orange';
-import green from '@material-ui/core/colors/green';
+import red from '@material-ui/core/colors/red';
 
 const polioViruses = [
+    // Legacy values
+    // {
+    //     value: 'PV1',
+    //     label: 'PV1',
+    // },
+    // {
+    //     value: 'PV2',
+    //     label: 'PV2',
+    // },
+    // {
+    //     value: 'PV3',
+    //     label: 'PV3',
+    // },
     {
         value: 'PV1',
-        label: 'PV1',
-    },
-    {
-        value: 'PV2',
-        label: 'PV2',
+        label: 'cVDPV1',
     },
     {
         value: 'PV3',
-        label: 'PV3',
+        label: 'cVDPV3',
     },
     {
         value: 'cVDPV2',
         label: 'cVDPV2',
+    },
+    {
+        value: 'WPV1',
+        label: 'WPV1',
     },
 ];
 
@@ -25,17 +38,17 @@ const polioVacines = [
     {
         value: 'mOPV2',
         label: 'mOPV2',
-        color: deepPurple['300'],
+        color: deepPurple['900'],
     },
     {
         value: 'nOPV2',
         label: 'nOPV2',
-        color: green['300'],
+        color: red['900'],
     },
     {
         value: 'bOPV',
         label: 'bOPV',
-        color: orange['300'],
+        color: orange['600'],
     },
 ];
 

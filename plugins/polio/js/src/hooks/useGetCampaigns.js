@@ -1,7 +1,7 @@
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getRequest } from 'Iaso/libs/Api';
 
-export const useGetCampaigns = options => {
+export const useGetCampaigns = (options = {}) => {
     const params = {
         limit: options.pageSize,
         page: options.page,
@@ -10,7 +10,9 @@ export const useGetCampaigns = options => {
         search: options.search,
         round_one__started_at__gte: options.r1StartFrom,
         round_one__started_at__lte: options.r1StartTo,
-        // Ugly fix to prevent the full list of campigns showing when waiting for the value of countries
+        deletion_status: options.showOnlyDeleted ? 'deleted' : undefined,
+        campaign_type: options.campaignType ?? 'all',
+        // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
         enabled: options.enabled ?? true,
     };
 

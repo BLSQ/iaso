@@ -41,3 +41,31 @@ export const customLabel = ({ x, y, width, height, value }) => {
         </g>
     );
 };
+
+export const customLabelHorizontal = ({ x, y, value, width }) => {
+    const color = 'white';
+    const height = 50;
+    const theWidth = 80;
+    return (
+        <g>
+            <foreignObject
+                x={x - (theWidth - width) / 2}
+                y={y - height + 2}
+                width={theWidth}
+                height={height}
+            >
+                <Box
+                    alignContent="start"
+                    alignItems="center"
+                    justifyContent="center"
+                    height={height}
+                    width={theWidth}
+                    display="flex"
+                    style={{ color, textShadow: '1px 1px 2px black' }}
+                >
+                    <Typography>{`${Math.round(value)}%`}</Typography>
+                </Box>
+            </foreignObject>
+        </g>
+    );
+};

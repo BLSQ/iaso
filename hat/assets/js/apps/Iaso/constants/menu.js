@@ -8,7 +8,6 @@ import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
 import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
 import DnsRoundedIcon from '@material-ui/icons/DnsRounded';
 import DoneAll from '@material-ui/icons/DoneAll';
-import Delete from '@material-ui/icons/Delete';
 import Settings from '@material-ui/icons/Settings';
 import GroupWork from '@material-ui/icons/GroupWork';
 import CategoryIcon from '@material-ui/icons/Category';
@@ -16,18 +15,19 @@ import AssignmentRoundedIcon from '@material-ui/icons/AssignmentRounded';
 import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRounded';
 import BookIcon from '@material-ui/icons/Book';
 import AssessmentIcon from '@material-ui/icons/Assessment';
+import EnityIcon from '@material-ui/icons/Domain';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
 import { hasFeatureFlag, SHOW_PAGES } from '../utils/featureFlags';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
+import { getChipColors } from './chipColors';
 
 import MESSAGES from './messages';
 
 // !! remove permission property if the menu has a subMenu !!
-
-const menuItems = [
+const menuItems = defaultSourceId => [
     {
         label: MESSAGES.formsTitle,
         key: 'forms',
@@ -64,12 +64,6 @@ const menuItems = [
                 key: 'completeness',
                 icon: props => <DoneAll {...props} />,
             },
-            {
-                label: MESSAGES.archived,
-                permissions: paths.archivedPath.permissions,
-                key: 'archived',
-                icon: props => <Delete {...props} />,
-            },
         ],
     },
     {
@@ -80,6 +74,11 @@ const menuItems = [
             {
                 label: MESSAGES.list,
                 permissions: paths.orgUnitsPath.permissions,
+                extraPath: `/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all","color":"${getChipColors(
+                    0,
+                ).replace('#', '')}"${
+                    defaultSourceId ? `,"source":${defaultSourceId}` : ''
+                }}]`,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
             },
@@ -132,6 +131,25 @@ const menuItems = [
         ],
     },
     {
+        label: MESSAGES.entitiesTitle,
+        key: 'entities',
+        icon: props => <EnityIcon {...props} />,
+        subMenu: [
+            {
+                label: MESSAGES.list,
+                permissions: paths.entitiesPath.permissions,
+                key: 'list',
+                icon: props => <FormatListBulleted {...props} />,
+            },
+            {
+                label: MESSAGES.entityTypesTitle,
+                permissions: paths.entitiesPath.permissions,
+                key: 'types',
+                icon: props => <CategoryIcon {...props} />,
+            },
+        ],
+    },
+    {
         label: MESSAGES.config,
         key: 'settings',
         icon: props => <Settings {...props} />,
@@ -164,9 +182,9 @@ const menuItems = [
     },
 ];
 
-const getMenuItems = (currentUser, enabledPlugins) => {
+const getMenuItems = (currentUser, enabledPlugins, defaultSourceVersion) => {
     const pluginsMenu = enabledPlugins.map(plugin => plugin.menu).flat();
-    const basicItems = [...menuItems];
+    const basicItems = [...menuItems(defaultSourceVersion?.source?.id)];
     if (hasFeatureFlag(currentUser, SHOW_PAGES)) {
         basicItems.push({
             label: MESSAGES.pages,

@@ -168,8 +168,9 @@ const MESSAGES = defineMessages({
     },
     dhis2ExportSure: {
         id: 'iaso.datasources.title.dhis2ExportSure',
-        defaultMessage: 'Are you sure? \n' +
-          'This might make a lot of changes in DHIS2.',
+        defaultMessage:
+            // eslint-disable-next-line no-useless-concat
+            'Are you sure? \n' + 'This might make a lot of changes in DHIS2.',
     },
     default: {
         id: 'iaso.datasources.options.label.default',
@@ -226,6 +227,52 @@ const MESSAGES = defineMessages({
     noCredentialsForExport: {
         id: 'iaso.datasources.noCredentialsForExport',
         defaultMessage: 'Please configure DHIS2 on source to enable export',
+    },
+    copyVersion: {
+        id: 'iaso.datasources.copyVersion',
+        defaultMessage: 'Copy source version',
+    },
+    copy: {
+        id: 'iaso.datasources.button.label.copy',
+        defaultMessage: 'Copy',
+    },
+    copyVersionWithName: {
+        id: 'iaso.datasources.title.copyVersionWithName',
+        defaultMessage: 'Copy {sourceName} version {versionNumber} ?',
+    },
+    copiedVersion: {
+        id: 'iaso.datasources.message.copiedVersion',
+        defaultMessage: '{sourceName} - version {versionNumber} ',
+    },
+    willBeCopied: {
+        id: 'iaso.datasources.message.willBeCopied',
+        defaultMessage: 'will be copied to ',
+    },
+
+    copyToSourceWithVersion: {
+        id: 'iaso.datasources.message.copyToSourceWithVersion',
+        defaultMessage: '{sourceName} - version {versionNumber}',
+    },
+    overwriteWarning: {
+        id: 'iaso.datasources.message.overwriteWarning',
+        defaultMessage:
+            'Warning: if a version with the selected number already exists, it will be overwritten',
+    },
+    nextVersion: {
+        id: 'iaso.datasources.label.nextVersion',
+        defaultMessage: 'Next version',
+    },
+    destinationVersion: {
+        id: 'iaso.datasources.label.destinationVersion',
+        defaultMessage: 'Destination version',
+    },
+    destinationSource: {
+        id: 'iaso.datasources.label.destinationSource',
+        defaultMessage: 'Destination source',
+    },
+    chooseVersionNumber: {
+        id: 'iaso.datasources.label.chooseVersionNumber',
+        defaultMessage: 'Choose version number',
     },
 });
 

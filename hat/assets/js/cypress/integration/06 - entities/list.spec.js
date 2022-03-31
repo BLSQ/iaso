@@ -154,7 +154,7 @@ describe('Entities', () => {
             // this will be tested when creation will be enabled
             goToPage();
             cy.wait('@getEntities').then(() => {
-                cy.get('#add-button-container').find('button').click();
+                cy.get('[data-test="add-entity-button"]').click();
                 cy.get('#entity-dialog').should('be.visible');
 
                 cy.testInputValue('#input-text-name', '');

@@ -67,9 +67,7 @@ export const Entities: FunctionComponent<Props> = ({ params }) => {
                     {/* <EntityDialog
                         titleMessage={MESSAGES.create}
                         renderTrigger={({ openDialog }) => (
-                            <div id="add-button-container">
-                                <AddButtonComponent onClick={openDialog} />
-                            </div>
+                            <AddButtonComponent dataTestId="add-entity-button" onClick={openDialog} />
                         )}
                         saveEntity={saveEntity}
                     /> */}

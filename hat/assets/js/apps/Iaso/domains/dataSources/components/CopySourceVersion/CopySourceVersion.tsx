@@ -70,7 +70,7 @@ const makeVersionsDropDown = (sourceVersions, dataSourceId, formatMessage) => {
         {
             label: `${formatMessage(
                 MESSAGES.nextVersion,
-            )}: ${nextVersionNumber.toString()}`,
+            )}: ${nextVersionNumber}`,
             value: nextVersionNumber.toString(),
         },
     ];
@@ -88,6 +88,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     const dispatch = useDispatch();
     const { data: datasourcesDropdown } = useDataSourceAsDropDown();
     const { data: allSourceVersions } = useDataSourceVersions();
+    const allowConfirm = Boolean(destinationSourceId);
     const sourceVersionsDropDown = useMemo(
         () =>
             makeVersionsDropDown(
@@ -178,9 +179,9 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             additionalMessage={MESSAGES.goToCurrentTask}
             onAdditionalButtonClick={onRedirect}
             onCancel={onCancel}
-            allowConfirm
-            allowConfimAdditionalButton
             dataTestId="copy-source-version-modal"
+            allowConfirm={allowConfirm}
+            allowConfimAdditionalButton={allowConfirm}
         >
             <>
                 <Box mb={2}>

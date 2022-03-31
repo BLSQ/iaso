@@ -258,7 +258,7 @@ describe('Groups', () => {
         it('should display empty group dialog on create', () => {
             // this will be tested when creation will be enabled
             cy.wait('@getGroups').then(() => {
-                cy.get('#add-button').click();
+                cy.get('[data-test="add-group-button"]').click();
                 cy.get('#groups-dialog').should('be.visible');
 
                 cy.testInputValue('#input-text-name', '');
@@ -325,7 +325,7 @@ describe('Groups', () => {
         it('should create correctly', () => {
             cy.wait('@getGroups').then(() => {
                 const index = 0;
-                cy.get('#add-button').click();
+                cy.get('[data-test="add-group-button"]').click();
                 let newGroup = {
                     id: null,
                     name: 'create',

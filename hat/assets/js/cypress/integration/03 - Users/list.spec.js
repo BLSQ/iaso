@@ -159,7 +159,7 @@ describe('Users', () => {
         it('should display empty user infos', () => {
             goToPage();
             cy.wait('@getUsers').then(() => {
-                cy.get('#add-button-container').find('button').click();
+                cy.get('[data-test="add-user-button"]').click();
                 cy.get('#user-profile-dialog').should('be.visible');
                 userInfosFields.forEach(f => {
                     cy.testInputValue(`#input-text-${f}`, '');

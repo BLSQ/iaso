@@ -1,6 +1,7 @@
 name: Iaso Automated CI testing
 # This workflow run automatically for every commit on github it checks the syntax and launch the tests.
-on: [ push ]
+on:
+  workflow_dispatch: { }
 
 jobs:
   test_js:
@@ -112,7 +113,7 @@ jobs:
         if: failure()
   test_cypress:
     runs-on: ubuntu-latest
-    needs: [ test_js]
+    needs: [ test_js ]
     services:
       postgres:
         image: mdillon/postgis:10

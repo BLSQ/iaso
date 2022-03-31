@@ -23,11 +23,10 @@ export const testTablerender = ({
             tableRows.eq(0).find('td').should('have.length', columns);
         });
         it("Displays an empty table when there's no data", () => {
-            cy.intercept(
-                'GET',
-                `/api/${apiKey}/*`,
-                makePaginatedResponse({ dataKey: apiKey }),
-            ).as('fetch');
+            cy.intercept('GET', `/api/${apiKey}/*`, {
+                statusCode: 200,
+                body: makePaginatedResponse({ dataKey: apiKey }),
+            }).as('fetch');
             cy.visit(baseUrl);
             cy.wait('@fetch');
             cy.get('table').should('have.length', 1);

@@ -7,7 +7,6 @@ import {
     defaultProject,
     makePaginatedResponse,
 } from '../../support/dummyData';
-import { testPagination } from '../../support/testPagination';
 import { testPermission } from '../../support/testPermission';
 import { testTablerender } from '../../support/testTableRender';
 import { testTopBar } from '../../support/testTopBar';
@@ -146,10 +145,6 @@ describe('Data sources', () => {
         });
         describe('When user copies in same datasource and goes to Task', () => {
             it('opens CopyVersion modal', () => {
-                // cy.wait('@page1');
-                // cy.wait('@allDatasources');
-                // cy.wait('@sourceVersions');
-                // cy.wait('@orgUnitTypes');
                 cy.get('[data-test=open-versions-dialog-button-1]')
                     .as('openVersionsButton')
                     .click();
@@ -189,18 +184,14 @@ describe('Data sources', () => {
                     .as('warningMessage')
                     .should(
                         'have.text',
-                        'datasource-1 - version 0 will be copied to datasource-1 - version 4 ',
+                        'datasource-1 - version 0 will be copied to datasource-1 - version 5 ',
                     );
             });
             it('makes API call and redirects to Tasks page', () => {
-                const body = {
-                    destination_source_id: 1,
-                    destination_version_number: '4',
-                    force: false,
-                    source_source_id: 1,
-                    source_version_number: 0,
-                };
-                cy.intercept('POST', '/api/copyversion').as('copy');
+                cy.intercept('POST', '/api/copyversion/', {
+                    statusCode: 200,
+                    body: { tasks: 'success' },
+                }).as('copy');
                 cy.get('[data-test=open-versions-dialog-button-1]')
                     .as('openVersionsButton')
                     .click();
@@ -215,13 +206,79 @@ describe('Data sources', () => {
                 ).click();
                 cy.wait('@copy').its('request.body').as('request');
                 cy.get('@request').its('destination_source_id').should('eq', 1);
+                cy.get('@request').its('source_source_id').should('eq', 1);
+                cy.get('@request')
+                    .its('destination_version_number')
+                    .should('eq', '5');
+                cy.get('@request').its('source_version_number').should('eq', 0);
+                cy.get('@request').its('force').should('eq', false);
+                cy.url().should(
+                    'eq',
+                    `${siteBaseUrl}/dashboard/settings/tasks/order/-created_at`,
+                );
             });
         });
-    });
-    describe.skip("'Create' modal", () => {
-        it.skip('Sends correct data to API', () => {});
-        it.skip('Empties fields on cancel', () => {});
-        it.skip('Empties fields on Save', () => {});
-        it.skip('Closes on save and on cancel', () => {});
+
+        describe('When user copies to different data source and stays on page', () => {
+            it('changes the warning message when changing datasource', () => {
+                cy.get('[data-test=open-versions-dialog-button-1]')
+                    .as('openVersionsButton')
+                    .click();
+                cy.getAndAssert(
+                    '[data-test=copyversion-button]',
+                    'copyVersionButton',
+                );
+                cy.get('@copyVersionButton').first().click();
+                cy.get('[data-test=copyversion-warning-datasource-1]')
+                    .as('warningMessage')
+                    .should(
+                        'have.text',
+                        'datasource-1 - version 0 will be copied to datasource-1 - version 5 ',
+                    );
+                cy.fillSingleSelect('#destinationSource');
+                cy.get('[data-test=copyversion-warning-datasource-2]')
+                    .as('warningMessage')
+                    .should(
+                        'have.text',
+                        'datasource-1 - version 0 will be copied to datasource-2 - version 4 ',
+                    );
+            });
+            it('makes the API call and closes the modal', () => {
+                cy.intercept('POST', '/api/copyversion/', {
+                    statusCode: 200,
+                    body: { tasks: 'success' },
+                }).as('copy');
+                cy.get('[data-test=open-versions-dialog-button-1]')
+                    .as('openVersionsButton')
+                    .click();
+                cy.get('[data-test=copyversion-button]').as(
+                    'copyVersionButton',
+                );
+                cy.get('@copyVersionButton').first().click();
+                cy.get('[data-test=copy-source-version-modal]').should('exist');
+                cy.fillSingleSelect('#destinationSource');
+                cy.getAndAssert(
+                    '[data-test=confirm-button]',
+                    'copyButton',
+                ).click();
+                cy.wait('@copy').its('request.body').as('request');
+                cy.get('@request').its('destination_source_id').should('eq', 2);
+                cy.get('@request').its('source_source_id').should('eq', 1);
+                cy.get('@request')
+                    .its('destination_version_number')
+                    .should('eq', '4');
+                cy.get('@request').its('source_version_number').should('eq', 0);
+                cy.get('@request').its('force').should('eq', false);
+                cy.get('[data-test=copy-source-version-modal]').should(
+                    'not.exist',
+                );
+            });
+        });
+        describe.skip("'Create' modal", () => {
+            it.skip('Sends correct data to API', () => {});
+            it.skip('Empties fields on cancel', () => {});
+            it.skip('Empties fields on Save', () => {});
+            it.skip('Closes on save and on cancel', () => {});
+        });
     });
 });

@@ -94,11 +94,11 @@ export const makeSourceVersionsFromSeed = datasourceSeed => {
         (total = 0, current) => current?.versions ?? 0 + total,
     );
     let currentVersion = totalVersionsAmount;
-    datasourceSeed.forEach(seed => {
+    datasourceSeed.forEach((seed, index) => {
         const versionsForSeed = makeSourceVersionsList({
             dataSourceId: seed.id,
             dataSourceName: seed.name,
-            amount: seed.versions,
+            amount: index % 2 > 0 ? seed.versions : seed.versions + 1,
             defaultVersionIndex: seed.defaultVersion,
             versionReferenceId: currentVersion - totalVersionsAmount,
         });

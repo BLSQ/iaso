@@ -22,6 +22,7 @@ import Filters from './TableFilters';
 import DownloadButtonsComponent from '../DownloadButtonsComponent';
 import { redirectToReplace } from '../../routing/actions';
 import { convertObjectToString } from '../../utils';
+import { useAbortController } from '../../libs/apiHooks';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -67,6 +68,7 @@ const SingleTable = ({
     const { list, pages, count } = tableResults;
     const dispatch = useDispatch();
     const classes = useStyles();
+    const { signal, cancel: cancelFetch } = useAbortController();
 
     const tableParams = getTableParams(
         params,
@@ -100,7 +102,7 @@ const SingleTable = ({
                     : getTableUrl(endPointPath, tableParams);
                 setIsLoading && setLoading(true);
                 fetchItems &&
-                    fetchItems(dispatch, url, newParams).then(res => {
+                    fetchItems(dispatch, url, newParams, signal).then(res => {
                         setIsLoading && setLoading(false);
                         const r = {
                             list: res[dataKey !== '' ? dataKey : endPointPath],
@@ -133,6 +135,7 @@ const SingleTable = ({
             dispatch,
             dataKey,
             onDataLoaded,
+            signal,
         ],
     );
 
@@ -188,6 +191,13 @@ const SingleTable = ({
     useEffect(() => {
         setResetPagination(resetPageToOne);
     }, [resetPageToOne]);
+
+    useEffect(
+        () => () => {
+            cancelFetch();
+        },
+        [cancelFetch],
+    );
 
     const { limit } = tableParams;
     const extraProps = {

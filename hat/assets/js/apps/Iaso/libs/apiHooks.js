@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useMutation, useQuery, useQueries, useQueryClient } from 'react-query';
 import { defineMessages } from 'react-intl';
@@ -156,4 +157,17 @@ export const useSnackQueries = queries => {
         return { ...query, ...newOptions };
     });
     return useQueries(newQueries);
+};
+
+export const useAbortController = () => {
+    const abortController = useRef();
+    useEffect(() => {
+        if (!abortController.current) {
+            abortController.current = new AbortController();
+        }
+    });
+    return {
+        signal: abortController.current?.signal,
+        cancel: abortController.current?.cancel,
+    };
 };

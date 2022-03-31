@@ -187,8 +187,8 @@ export const fetchSources = dispatch =>
             console.error('Error while fetching source list:', error);
         });
 
-export const fetchForms = (dispatch, url = '/api/forms') =>
-    getRequest(url)
+export const fetchForms = (dispatch, url = '/api/forms', signal) =>
+    getRequest(url, signal)
         .then(forms => forms)
         .catch(error => {
             dispatch(

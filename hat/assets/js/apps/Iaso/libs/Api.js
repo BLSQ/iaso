@@ -1,3 +1,5 @@
+import { FETCHING_ABORTED } from './constants';
+
 export class ApiError extends Error {
     constructor(message, response, json) {
         super(message);
@@ -37,8 +39,16 @@ export const iasoFetch = async (resource, init = {}) => {
     try {
         response = await fetch(resource, init);
     } catch (error) {
-        console.error(error);
-        throw new ApiError(error.message);
+        // ignoring errors from cancelled fetch
+        if (error.name !== 'AbortError') {
+            console.error(error);
+            throw new ApiError(error.message);
+        }
+        // Don't error on cancel fetch
+        const emptyRes = new Response(
+            JSON.stringify({ message: FETCHING_ABORTED }),
+        );
+        return emptyRes;
     }
     if (!response.ok) {
         console.error(`Error on  ${method}  ${url}  status ${response.status}`);
@@ -48,8 +58,11 @@ export const iasoFetch = async (resource, init = {}) => {
     return response;
 };
 
-export const getRequest = (url, signal) =>
-    iasoFetch(url, { signal }).then(response => response.json());
+export const getRequest = async (url, signal) => {
+    return iasoFetch(url, { signal }).then(response => {
+        return response.json();
+    });
+};
 
 export const postRequest = (url, data, fileData = {}, signal) => {
     // Send as form if files included else in JSON

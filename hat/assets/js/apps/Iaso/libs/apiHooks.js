@@ -165,9 +165,6 @@ export const useAbortController = () => {
         if (!abortController.current) {
             abortController.current = new AbortController();
         }
-    });
-    return {
-        signal: abortController.current?.signal,
-        cancel: abortController.current?.cancel,
-    };
+    }, []);
+    return abortController?.current ?? {};
 };

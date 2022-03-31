@@ -68,7 +68,8 @@ const SingleTable = ({
     const { list, pages, count } = tableResults;
     const dispatch = useDispatch();
     const classes = useStyles();
-    const { signal, cancel: cancelFetch } = useAbortController();
+    // Can't use pattern matching or the reference to the AbortController object will be lost and the abort() function will error
+    const abortController = useAbortController();
 
     const tableParams = getTableParams(
         params,
@@ -102,7 +103,14 @@ const SingleTable = ({
                     : getTableUrl(endPointPath, tableParams);
                 setIsLoading && setLoading(true);
                 fetchItems &&
-                    fetchItems(dispatch, url, newParams, signal).then(res => {
+                    fetchItems(
+                        dispatch,
+                        url,
+                        newParams,
+                        abortController.signal,
+                    ).then(res => {
+                        // cancelled fetch may return null. We tehn return to avoid memory leak IA-1186
+                        if (!res) return;
                         setIsLoading && setLoading(false);
                         const r = {
                             list: res[dataKey !== '' ? dataKey : endPointPath],
@@ -135,7 +143,7 @@ const SingleTable = ({
             dispatch,
             dataKey,
             onDataLoaded,
-            signal,
+            abortController.signal,
         ],
     );
 
@@ -151,11 +159,17 @@ const SingleTable = ({
     // FIXME remove infinite loop when deps array is filled
     useEffect(() => {
         if (!firstLoad || (searchActive && firstLoad)) {
-            handleFetch();
+            if (abortController.signal) handleFetch();
         } else if (!searchActive && firstLoad) {
             setFirstLoad(false);
         }
-    }, [pageSizeParam, pageParam, orderParam, onlyDeletedParam]);
+    }, [
+        pageSizeParam,
+        pageParam,
+        orderParam,
+        onlyDeletedParam,
+        abortController.signal,
+    ]);
 
     const handleTableSelection = (
         selectionType,
@@ -174,17 +188,17 @@ const SingleTable = ({
     }, [results]);
 
     useEffect(() => {
-        if (forceRefresh) {
+        if (forceRefresh && abortController.signal) {
             handleFetch();
             onForceRefreshDone();
         }
-    }, [forceRefresh, handleFetch, onForceRefreshDone]);
+    }, [forceRefresh, handleFetch, onForceRefreshDone, abortController.signal]);
 
     useSkipEffectOnMount(() => {
-        if (propsToWatch) {
+        if (propsToWatch && abortController.signal) {
             handleFetch();
         }
-    }, [propsToWatch]);
+    }, [propsToWatch, abortController.signal]);
 
     // Override state if prop changes
     // Should only have an impact if built-in filters are used with filters in parent
@@ -192,19 +206,21 @@ const SingleTable = ({
         setResetPagination(resetPageToOne);
     }, [resetPageToOne]);
 
-    useEffect(
-        () => () => {
-            cancelFetch();
-        },
-        [cancelFetch],
-    );
+    // Cancel fetch on unmount
+    useEffect(() => {
+        return () => {
+            if (abortController.abort) {
+                abortController.abort();
+            }
+        };
+    }, [abortController, abortController.abort]);
 
     const { limit } = tableParams;
     const extraProps = {
         loading,
         defaultPageSize: defaultPageSize || limit,
     };
-    if (subComponent) {
+    if (subComponent && abortController.signal) {
         extraProps.SubComponent = original =>
             subComponent(original, handleFetch);
     }
@@ -215,7 +231,7 @@ const SingleTable = ({
                 isFullHeight ? classes.containerFullHeightNoTabPadded : ''
             }
         >
-            {filters.length > 0 && (
+            {filters.length > 0 && abortController.signal && (
                 <Filters
                     baseUrl={baseUrl}
                     params={params}
@@ -244,7 +260,7 @@ const SingleTable = ({
                     )}
                 </Box>
             )}
-            {(didFetchData || searchActive) && (
+            {(didFetchData || searchActive) && abortController.signal && (
                 <Table
                     count={count}
                     data={list || []}

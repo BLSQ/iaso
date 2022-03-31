@@ -10,6 +10,7 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 import { dispatch as storeDispatch } from '../redux/store';
+import { FETCHING_ABORTED } from '../libs/constants';
 
 export const fetchOrgUnits = (dispatch, params) =>
     getRequest(`/api/orgunits/?${params}`)
@@ -189,7 +190,11 @@ export const fetchSources = dispatch =>
 
 export const fetchForms = (dispatch, url = '/api/forms', signal) =>
     getRequest(url, signal)
-        .then(forms => forms)
+        .then(async forms => {
+            // return null if fetching aborted, so subsequent 'then()' can be returned early (see SingleTable)
+            if (forms?.message === FETCHING_ABORTED) return null;
+            return forms;
+        })
         .catch(error => {
             dispatch(
                 enqueueSnackbar(errorSnackBar('fetchFormsError', null, error)),

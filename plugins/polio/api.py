@@ -569,7 +569,9 @@ class IMStatsViewSet(viewsets.ViewSet):
         print(hh_type)
         print("{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], hh_type))
 
-        cached_response = cache.get("{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], hh_type))
+        cached_response = cache.get(
+            "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], hh_type)
+        )
 
         if not request.user.is_anonymous and cached_response:
             response = json.loads(cached_response)
@@ -790,7 +792,9 @@ class IMStatsViewSet(viewsets.ViewSet):
 
         if not request.user.is_anonymous:
             cache.set(
-                "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"],  cache_HH_type), json.dumps(response), 3600
+                "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], cache_HH_type),
+                json.dumps(response),
+                3600,
             )
 
         return JsonResponse(response, safe=False)

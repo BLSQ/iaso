@@ -4,22 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-    def create_update_submission(apps, schema_editor):
-        Permission = apps.get_model("auth", "Permission")
-        content_type = Permission.objects.get(codename="iaso_submissions").content_type
-        Permission.objects.create(codename="iaso_update_submission", content_type=content_type)
-
-    def add_user_permissions(apps, schema_editor):
-        Permission = apps.get_model("auth", "Permission")
-        permissions = Permission.objects.get(codename="iaso_update_submission")
-
-        User = apps.get_model("auth", "User")
-
-        users = User.objects.filter(user_permissions=Permission.objects.get(codename="iaso_submissions"))
-
-        for user in users:
-            print(f"Adding perms {permissions} to {user}")
-            user.user_permissions.add(permissions)
 
     dependencies = [
         ("menupermissions", "0025_auto_20211221_1413"),
@@ -51,6 +35,4 @@ class Migration(migrations.Migration):
                 ),
             },
         ),
-        migrations.RunPython(create_update_submission, migrations.RunPython.noop),
-        migrations.RunPython(add_user_permissions, migrations.RunPython.noop),
     ]

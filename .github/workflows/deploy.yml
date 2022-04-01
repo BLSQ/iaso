@@ -79,9 +79,9 @@ jobs:
           npm --version
           pip list
 
-      - name: npm install
+      - name: npm ci
         run: |
-          npm install
+          npm ci
 
       - name: npm build
         run: |

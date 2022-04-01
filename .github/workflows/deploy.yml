@@ -61,7 +61,7 @@ jobs:
           node-version: '14'
       - name: upgrade npm
         run: |
-          npm install@7 --global npm
+          npm install --global npm@7.11.2
       - name: Set up Python 3.6
         uses: actions/setup-python@v1
         with:

@@ -53,7 +53,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     def list(self, request):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
-        orders = request.GET.get("order", "user__user_name").split(",")
+        orders = request.GET.get("order", "user__username").split(",")
         search = request.GET.get("search", None)
 
         queryset = self.get_queryset()
@@ -114,6 +114,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.username = username
         user.email = request.data.get("email", "")
         profile.language = request.data.get("language", "")
+        profile.dhis2_id = request.data.get("dhis2_id", "")
         profile.save()
         if password != "":
             user.set_password(password)
@@ -176,6 +177,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         for org_unit in org_units:
             org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
             profile.org_units.add(org_unit_item)
+        profile.dhis2_id = request.data.get("dhis2_id", "")
         profile.save()
         return Response(user.profile.as_dict())
 

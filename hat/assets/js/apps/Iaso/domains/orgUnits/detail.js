@@ -50,7 +50,11 @@ import {
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
-import { useOrgUnitDetailData, useSaveOrgUnit } from './hooks';
+import {
+    useOrgUnitDetailData,
+    useRefreshOrgUnit,
+    useSaveOrgUnit,
+} from './hooks';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -114,6 +118,7 @@ const OrgUnitDetail = ({ params, router }) => {
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
+    const refreshOrgUnitQueryCache = useRefreshOrgUnit();
 
     const prevPathname =
         useSelector(state => state.routerCustom.prevPathname) || null;
@@ -122,6 +127,8 @@ const OrgUnitDetail = ({ params, router }) => {
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [tab, setTab] = useState(params.tab ? params.tab : 'infos');
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
+    const [loadingSelectedSources, setLoadingSelectedSources] =
+        useState(undefined);
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
         useState(false);
     const [forceSingleTableRefresh, setForceSingleTableRefresh] =
@@ -252,12 +259,13 @@ const OrgUnitDetail = ({ params, router }) => {
             // Retrieve only the group ids as it's what the API expect
             const group_ids = mappedRevision.groups.map(g => g.id);
             mappedRevision.groups = group_ids;
-            saveOu(mappedRevision).then(() => {
+            saveOu(mappedRevision).then(res => {
                 dispatch(resetOrgUnits());
+                refreshOrgUnitQueryCache(res);
                 onSuccess();
             });
         },
-        [currentOrgUnit, dispatch, saveOu],
+        [currentOrgUnit, dispatch, refreshOrgUnitQueryCache, saveOu],
     );
 
     const handleSaveOrgUnit = useCallback(
@@ -283,17 +291,26 @@ const OrgUnitDetail = ({ params, router }) => {
                             }),
                         );
                     }
+                    refreshOrgUnitQueryCache(ou);
                     onSuccess(ou);
                 })
                 .catch(onError);
         },
-        [currentOrgUnit, dispatch, isNewOrgunit, params, saveOu],
+        [
+            currentOrgUnit,
+            dispatch,
+            isNewOrgunit,
+            params,
+            refreshOrgUnitQueryCache,
+            saveOu,
+        ],
     );
 
     useEffect(() => {
         if (isNewOrgunit) {
             setCurrentOrgUnit(initialOrgUnit);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Set levels params in the url
@@ -315,15 +332,19 @@ const OrgUnitDetail = ({ params, router }) => {
 
     // Set selected sources for current org unit
     useEffect(() => {
-        if (originalOrgUnit && !isNewOrgunit) {
+        if (originalOrgUnit && !isNewOrgunit && !sourcesSelected) {
             const selectedSources = getLinksSources(
                 links,
                 sources,
                 originalOrgUnit,
             );
             const fullSelectedSources = [];
+            if (selectedSources.length === 0) {
+                setLoadingSelectedSources(false);
+            }
             for (let i = 0; i < selectedSources.length; i += 1) {
                 const ss = selectedSources[i];
+                setLoadingSelectedSources(true);
                 // eslint-disable-next-line no-await-in-loop
                 const fetch = async () => {
                     const ous = await fetchAssociatedOrgUnits(
@@ -334,13 +355,26 @@ const OrgUnitDetail = ({ params, router }) => {
                     fullSelectedSources.push(ous);
                     if (i + 1 === selectedSources.length) {
                         setSourcesSelected(fullSelectedSources);
+                        setLoadingSelectedSources(false);
                     }
                 };
                 fetch();
             }
         }
-    }, [originalOrgUnit, dispatch, links, sources, isNewOrgunit]);
+    }, [
+        originalOrgUnit,
+        dispatch,
+        links,
+        sources,
+        isNewOrgunit,
+        sourcesSelected,
+    ]);
 
+    useEffect(() => {
+        if (tab !== params.tab && params.tab) {
+            setTab(params.tab);
+        }
+    }, [tab, params.tab]);
     return (
         <section className={classes.root}>
             <TopBar
@@ -402,6 +436,7 @@ const OrgUnitDetail = ({ params, router }) => {
                     <div className={tab === 'map' ? '' : classes.hiddenOpacity}>
                         <Box className={classes.containerFullHeight}>
                             <OrgUnitMap
+                                loadingSelectedSources={loadingSelectedSources}
                                 currentOrgUnit={currentOrgUnit}
                                 sources={sources}
                                 orgUnitTypes={orgUnitTypes}
@@ -448,7 +483,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                 exportButtons={false}
                                 baseUrl={baseUrl}
                                 endPointPath="forms"
-                                propsToWatch={params.tab}
+                                propsToWatch={params.orgUnitId}
                                 fetchItems={fetchForms}
                                 columns={formsTableColumns({
                                     formatMessage,
@@ -478,7 +513,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                     params.orgUnitId,
                                 ),
                             }}
-                            propsToWatch={params.tab}
+                            propsToWatch={params.orgUnitId}
                             baseUrl={baseUrl}
                             endPointPath="orgunits"
                             fetchItems={fetchOrgUnitsList}
@@ -504,7 +539,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                 orgUnitId: currentOrgUnit.id,
                             }}
                             hideGpkg
-                            propsToWatch={params.tab}
+                            propsToWatch={params.orgUnitId}
                             filters={linksFiltersWithPrefix(
                                 'linksParams',
                                 algorithmRuns,

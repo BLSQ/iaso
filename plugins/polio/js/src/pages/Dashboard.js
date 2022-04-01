@@ -60,6 +60,7 @@ const Dashboard = ({ router }) => {
             r1StartFrom: getApiParamDateString(params.r1StartFrom),
             r1StartTo: getApiParamDateString(params.r1StartTo),
             showOnlyDeleted: params.showOnlyDeleted,
+            campaignType: params.campaignType,
         };
     }, [params]);
 
@@ -184,7 +185,7 @@ const Dashboard = ({ router }) => {
                 accessor: 'obr_name',
             },
             {
-                Header: formatMessage(MESSAGES.cvdpv2NotificationDate),
+                Header: formatMessage(MESSAGES.virusNotificationDate),
                 accessor: 'cvdpv2_notified_at',
             },
             {

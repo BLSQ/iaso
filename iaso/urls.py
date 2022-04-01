@@ -59,6 +59,7 @@ from iaso import matching
 import pkgutil
 
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
+from .dhis2.authentication import dhis2_callback
 
 router = routers.DefaultRouter()
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
@@ -142,12 +143,14 @@ urlpatterns = urlpatterns + [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("", include(router.urls)),
 ]
-# WFP OAUTH / Openid
+# External Auth
 urlpatterns = urlpatterns + [
     url("auth0/login/callback/", wfp_callback, name="callback"),
     path("", include("allauth.urls")),
     path("auth0/login/", WfpLogin.as_view(), name="openid"),
+    path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
 ]
+
 
 for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
 import PropTypes from 'prop-types';
@@ -8,9 +8,9 @@ import { Select, useSafeIntl, renderTags } from 'bluesquare-components';
 
 import { fetchAssociatedOrgUnits } from '../../../utils/requests';
 
-import { getSourcesWithoutCurrentSource } from '../../orgUnits/utils';
+import { getSourcesWithoutCurrentSource } from '../utils';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../../forms/messages';
 
 const SourcesFilterComponent = ({
     fitToBounds,
@@ -18,10 +18,14 @@ const SourcesFilterComponent = ({
     setSourcesSelected,
     currentSources,
     currentOrgUnit,
+    loadingSelectedSources,
 }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(loadingSelectedSources);
+    useEffect(() => {
+        setIsLoading(loadingSelectedSources);
+    }, [loadingSelectedSources]);
     if (!currentOrgUnit) return null;
     const sources = getSourcesWithoutCurrentSource(
         currentSources,
@@ -78,12 +82,17 @@ const SourcesFilterComponent = ({
     );
 };
 
+SourcesFilterComponent.defaultProps = {
+    loadingSelectedSources: false,
+};
+
 SourcesFilterComponent.propTypes = {
     fitToBounds: PropTypes.func.isRequired,
     sourcesSelected: PropTypes.array.isRequired,
     setSourcesSelected: PropTypes.func.isRequired,
     currentSources: PropTypes.array.isRequired,
     currentOrgUnit: PropTypes.object.isRequired,
+    loadingSelectedSources: PropTypes.bool,
 };
 
 export default SourcesFilterComponent;

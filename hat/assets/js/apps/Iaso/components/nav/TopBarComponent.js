@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { withStyles, IconButton } from '@material-ui/core';
@@ -12,6 +12,7 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import PropTypes from 'prop-types';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
+import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
 
 const styles = theme => ({
     menuButton: {
@@ -29,12 +30,11 @@ function TopBar(props) {
         displayBackButton,
         goBack,
     } = props;
+    const { APP_TITLE } = useContext(ThemeConfigContext);
     // Set the page title from the top bar title.
     React.useEffect(() => {
-        document.title = `${process.env.REACT_APP_TITLE} ${
-            title ? `| ${title}` : ''
-        }`;
-    }, [title]);
+        document.title = `${APP_TITLE} ${title ? `| ${title}` : ''}`;
+    }, [title, APP_TITLE]);
 
     return (
         <>

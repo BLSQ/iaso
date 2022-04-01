@@ -76,6 +76,10 @@ const UserDialogComponent = ({
                 value: get(newInitialData, 'language', ''),
                 errors: [],
             },
+            dhis2_id: {
+                value: get(newInitialData, 'dhis2_id', ''),
+                errors: [],
+            },
         };
     }, [initialData]);
     const [user, setUser] = useState(initialUser);

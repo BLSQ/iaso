@@ -92,16 +92,20 @@ Cypress.Commands.add(
  * @param {number} id - DOM id of the input
  * @param {number} newOuIndex - index of the new selected ou
  */
-Cypress.Commands.add('fillTreeView', (id, newOuIndex) => {
+Cypress.Commands.add('fillTreeView', (id, newOuIndex, clear = true) => {
     cy.get(id).as('tree');
-    cy.get('@tree').find('.clear-tree button').as('clearButton');
-    cy.get('@clearButton').click();
+    if (clear) {
+        cy.get('@tree').find('.clear-tree button').as('clearButton');
+        cy.get('@clearButton').click();
+    }
     cy.get('@tree').click();
-    cy.get('@tree')
-        .find('.input-label')
-        .parent()
-        .find('div[role=button]')
-        .click();
+    if (clear) {
+        cy.get('@tree')
+            .find('.input-label')
+            .parent()
+            .find('div[role=button]')
+            .click();
+    }
     cy.get('.MuiTreeView-root .MuiTreeItem-root').eq(newOuIndex).click();
     cy.get('.MuiDialog-container button').last().click();
 });
@@ -176,8 +180,25 @@ Cypress.Commands.add('fillArrayInputField', (id, newValues = []) => {
         .as('addButton');
     newValues.forEach((a, i) => {
         cy.get('@addButton').click();
-        cy.get(`#${id}-${i}`).type(a);
+        // enables testing for empty string
+        if (a !== '') cy.get(`#${id}-${i}`).type(a);
     });
+});
+
+Cypress.Commands.add('deleteLastFieldInArrayInputField', selector => {
+    let arrayInput = null;
+    if (selector.includes('@')) {
+        arrayInput = cy.get(selector);
+    } else {
+        arrayInput = cy.get(`#array-input-field-list-${id}`);
+    }
+    arrayInput.find('li').last().prev().find('button').click();
+    // reassigning addButton
+    cy.get('@arrayInputFieldList')
+        .find('li')
+        .last()
+        .find('button')
+        .as('addButton');
 });
 
 /**

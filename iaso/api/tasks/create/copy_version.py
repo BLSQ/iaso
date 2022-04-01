@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 class CopyVersionSerializer(serializers.Serializer):
     source_source_id = serializers.IntegerField(required=True)
     source_version_number = serializers.IntegerField(required=True)
-    destination_source_id = serializers.IntegerField(required=True)
-    destination_version_number = serializers.CharField(max_length=200, required=True)
+    destination_source_id = serializers.IntegerField(required=False, default=None)
+    destination_version_number = serializers.CharField(max_length=200, required=False, default=None)
     force = serializers.BooleanField(required=False, default=False)
 
     def validate(self, attrs):
@@ -35,21 +35,24 @@ class CopyVersionSerializer(serializers.Serializer):
         source_version = get_object_or_404(
             SourceVersion, data_source_id=source_source_id, number=attrs["source_version_number"]
         )
-        destination_version = get_object_or_404(
-            SourceVersion, data_source_id=destination_source_id, number=attrs["destination_version_number"]
-        )
+        try:
+            destination_version = SourceVersion.objects.get(
+                data_source_id=destination_source_id, number=attrs["destination_version_number"]
+            )
+        except:
+            destination_version = None
 
-        if source_version.id == destination_version.id:
+        if destination_version and source_version.id == destination_version.id:
             raise serializers.ValidationError("Cannot copy a version to the same version")
         version_count = OrgUnit.objects.filter(version=destination_version).count()
-        if version_count > 0 and not force:
+        if version_count > 0 and not force and destination_version is not None:
             raise serializers.ValidationError(
                 "This is going to delete %d org units records. Use the force parameter to proceed" % version_count
             )
 
         if validated_data["source_source_id"] not in possible_data_sources:
             raise serializers.ValidationError("Unauthorized source_source_id")
-        if validated_data["destination_source_id"] not in possible_data_sources:
+        if destination_version and validated_data["destination_source_id"] not in possible_data_sources:
             raise serializers.ValidationError("Unauthorized destination_source_id")
 
         return validated_data
@@ -61,12 +64,17 @@ class CopyVersionViewSet(viewsets.ViewSet):
 
     def create(self, request):
         data = request.data
-        serializer = CopyVersionSerializer(data=request.data, context={"request": request})
+        serializer = CopyVersionSerializer(
+            data=request.data,
+            context={"request": request},
+        )
         serializer.is_valid(raise_exception=True)
-        source_source_id = data["source_source_id"]
-        source_version_number = data["source_version_number"]
-        destination_source_id = data["destination_source_id"]
-        destination_version_number = data["destination_version_number"]
+
+        source_source_id = data.get("source_source_id", None)
+        source_version_number = data.get("source_version_number", None)
+        destination_source_id = data.get("destination_source_id", None)
+        destination_version_number = data.get("destination_version_number", None)
+
         force = data.get("force", False)
 
         task = copy_version(

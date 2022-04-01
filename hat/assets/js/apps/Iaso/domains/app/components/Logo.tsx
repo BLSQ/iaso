@@ -1,6 +1,7 @@
-import React, { FunctionComponent } from 'react';
-import { makeStyles, Theme } from '@material-ui/core';
-import LogoSvg from './LogoSvgComponent';
+import React, { FunctionComponent, useContext } from 'react';
+import { Box, makeStyles, Theme } from '@material-ui/core';
+import { LogoSvg } from './LogoSvg';
+import { ThemeConfigContext } from '../contexts/ThemeConfigContext';
 
 const useStyles = makeStyles((theme: Theme) => ({
     text: {
@@ -11,21 +12,30 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export const Logo: FunctionComponent = () => {
+    const { LOGO_PATH, APP_TITLE, SHOW_NAME_WITH_LOGO } =
+        useContext(ThemeConfigContext);
     const classes = useStyles();
+    const showAppName = SHOW_NAME_WITH_LOGO === 'yes';
     // @ts-ignore
     const staticUrl = window.STATIC_URL ?? '/static/';
-    if (process.env.REACT_LOGO_PATH) {
+    if (LOGO_PATH && APP_TITLE !== 'Iaso') {
         return (
             <>
                 <img
                     alt="logo"
-                    src={`${staticUrl}${process.env.REACT_LOGO_PATH}`}
+                    src={`${staticUrl}${LOGO_PATH}`}
+                    style={{ maxHeight: '50px', maxWidth: '200px' }}
                 />
-                <span className={classes.text}>
-                    {process.env.REACT_APP_TITLE}
-                </span>
+                {showAppName && (
+                    <span className={classes.text}>{APP_TITLE}</span>
+                )}
             </>
         );
     }
-    return <LogoSvg />;
+    return (
+        <>
+            <LogoSvg />
+            <span className={classes.text}>Iaso</span>
+        </>
+    );
 };

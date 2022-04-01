@@ -162,9 +162,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.dateOfOnset',
         defaultMessage: 'Date of onset',
     },
-    cvdpv2NotificationDate: {
-        id: 'iaso.polio.form.label.cvdpv2NotificationDate',
-        defaultMessage: 'cVDPV2 notification date',
+    virusNotificationDate: {
+        id: 'iaso.polio.form.label.virusNotificationDate',
+        defaultMessage: 'Virus notification date',
     },
     pv2NotificationDate: {
         id: 'iaso.polio.form.label.pv2NotificationDate',
@@ -1004,6 +1004,40 @@ const MESSAGES = defineMessages({
     restoreCampaign: {
         id: 'iaso.polio.restoreCampaign',
         defaultMessage: 'Restore campaign',
+    },
+    all: {
+        id: 'iaso.polio.label.all',
+        defaultMessage: 'All',
+    },
+    regular: {
+        id: 'iaso.polio.label.regular',
+        defaultMessage: 'Regular',
+    },
+    campaignType: {
+        id: 'iaso.polio.label.campaignType',
+        defaultMessage: 'Campaign type',
+    },
+    lqasImDateTooltip: {
+        id: 'iaso.polio.tooltip.label.lqasImDate',
+        defaultMessage:
+            'No date found in campaign data, using default value based on round date',
+    },
+    noDateFound: {
+        id: 'iaso.polio.placeholder.noDateFound',
+        defaultMessage: 'No date found',
+    },
+    preparednessIntro: {
+        id: 'iaso.polio.preparednessIntro',
+        defaultMessage:
+            'Configure the Google Sheets that will be used to import the preparedness data for the round.',
+    },
+    preparednessRoundStarted: {
+        id: 'iaso.polio.preparednessRoundStarted',
+        defaultMessage: "Preparedness can't be edited if round already started",
+    },
+    badRoundNumbers: {
+        id: 'iaso.polio.badRoundNumbers',
+        defaultMessage: 'Forms with the wrong round number',
     },
 });
 

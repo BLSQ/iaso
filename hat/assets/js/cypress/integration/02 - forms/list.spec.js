@@ -53,7 +53,7 @@ describe('Forms', () => {
     describe('page', () => {
         it('click on create button should redirect to form creation url', () => {
             goToPage();
-            cy.get('#add-button-container').find('button').click();
+            cy.get('[data-test="add-form-button"]').click();
             cy.url().should(
                 'eq',
                 `${siteBaseUrl}/dashboard/forms/detail/formId/0`,
@@ -73,10 +73,11 @@ describe('Forms', () => {
                 goToPage();
             });
             it('should enabled search button', () => {
-                cy.get('#search-search').type(search);
                 cy.get('#search-button')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
+                    .as('search-button')
+                    .should('be.disabled');
+                cy.get('#search-search').type(search);
+                cy.get('@search-button').should('not.be.disabled');
             });
             it('should deep link search', () => {
                 cy.get('#search-search').type(search);

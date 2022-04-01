@@ -556,13 +556,20 @@ class IMStatsViewSet(viewsets.ViewSet):
             return HttpResponseBadRequest
 
         requested_country = int(requested_country)
+
         campaigns = Campaign.objects.filter(country_id=requested_country)
+
         if campaigns:
             latest_campaign_update = campaigns.latest("updated_at").updated_at
         else:
             latest_campaign_update = None
 
-        cached_response = cache.get("{0}-{1}-IM".format(request.user.id, request.query_params["country_id"]))
+        hh_type = request.GET.get("type", "")
+
+        print(hh_type)
+        print("{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], hh_type))
+
+        cached_response = cache.get("{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], hh_type))
 
         if not request.user.is_anonymous and cached_response:
             response = json.loads(cached_response)
@@ -622,6 +629,8 @@ class IMStatsViewSet(viewsets.ViewSet):
             authorized_countries = OrgUnit.objects.filter(org_unit_type_id__category="COUNTRY")
         else:
             authorized_countries = request.user.iaso_profile.org_units.filter(org_unit_type_id__category="COUNTRY")
+
+        cache_HH_type = ""
 
         for country_config in config.content:
             country = OrgUnit.objects.get(id=country_config["country_id"])
@@ -702,6 +711,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                                     kid.get("HH/group2/" + reason_abs, "0")
                                 )
                             done_something = True
+                            cache_HH_type = "HH"
                 else:
                     if "OHH" in stats_types:
                         for kid in form.get("OHH", []):
@@ -712,6 +722,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                             total_Child_FMD += int(Child_FMD)
                             total_Child_Checked += int(Child_Checked)
                             done_something = True
+                            cache_HH_type = "OHH"
                 if not done_something:
                     continue
                 today_string = form["today"]
@@ -779,7 +790,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
         if not request.user.is_anonymous:
             cache.set(
-                "{0}-{1}-IM".format(request.user.id, request.query_params["country_id"]), json.dumps(response), 3600
+                "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"],  cache_HH_type), json.dumps(response), 3600
             )
 
         return JsonResponse(response, safe=False)

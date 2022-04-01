@@ -81,4 +81,4 @@ django-contrib-comments~=2.1.0
 django-sql-dashboard~=1.0.1
 
 # Allauth for wfp
-django-allauth==0.47.0
+django-allauth==0.50.0

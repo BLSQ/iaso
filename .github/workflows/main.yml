@@ -14,7 +14,7 @@ jobs:
           cache: npm
       - name: upgrade npm
         run: |
-          npm install --global npm
+          npm install@7 --global npm
       - name: Environment info
         run: |
           node --version

@@ -23,9 +23,10 @@ import InstanceFileContent from '../../instances/components/InstanceFileContent'
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstanceActions';
 import EnketoIcon from '../../instances/components/EnketoIcon';
+import LinkIcon from '@material-ui/icons/Link';
+import queryString from "query-string"
 // reformatting orgUnit name so the OU can be passed to the treeview modal
 // and selecting the parent for display
-
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
         top: theme.spacing(12.5)
@@ -57,13 +58,21 @@ const onActionSelected = (fetchEditUrl, action, instance) => {
     }
 };
 
-const actions = (currentInstance) => [
-    {
-        id: 'instanceEditAction',
-        icon: <EnketoIcon />,
-        disabled: currentInstance && currentInstance.deleted,
-    }
-];
+const actions = (currentInstance) => {
+  return [
+
+      {
+          id: 'instanceEditAction',
+          icon: <EnketoIcon />,
+          disabled: currentInstance && currentInstance.deleted,
+      },
+      {
+          id: 'linkOrgUnitInstanceDefining',
+          icon: <LinkIcon />,
+          disabled: currentInstance && currentInstance.deleted,
+      }
+  ];
+}
 
 const OrgUnitCreationDetails = ({
   org_unit
@@ -95,8 +104,10 @@ const OrgUnitInfosComponent = ({
     intl: { formatMessage },
     groups,
     resetTrigger,
-    fetchEditUrl
+    fetchEditUrl,
+    ...props
 }) => {
+  console.log("params ===", props)
   const classes = useStyles();
   return (
         <Grid container spacing={4}>

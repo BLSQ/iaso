@@ -386,6 +386,7 @@
     "iaso.label.videos": "Vidéos",
     "iaso.label.view": "Visualiser",
     "iaso.label.viewOrgUnit": "Voir l'unité d'org.",
+    "iaso.label.linkOrgUnitInstanceDefining": "Lier l'org unit à sa soumission de definition",
     "iaso.label.with": "Avec",
     "iaso.label.withLocation": "Uniquement les points",
     "iaso.label.withShape": "Uniquement les territoires",

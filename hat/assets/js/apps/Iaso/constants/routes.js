@@ -305,6 +305,14 @@ export const orgUnitsDetailsPath = {
             isRequired: false,
             key: 'tab',
         },
+        {
+          isRequired: false,
+          key: "formDefiningId"
+        },
+        {
+          isRequired: false,
+          key: "formId"
+        },
         ...orgUnitsFiltersPathParamsWithPrefix('childrenParams', true),
         ...paginationPathParamsWithPrefix('childrenParams'),
         ...linksFiltersPathParamsWithPrefix('linksParams'),

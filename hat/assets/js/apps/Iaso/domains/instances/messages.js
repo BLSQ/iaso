@@ -61,6 +61,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.viewOrgUnit',
         defaultMessage: 'View Org Unit',
     },
+    linkOrgUnitInstanceDefining: {
+        id: 'iaso.label.linkOrgUnitInstanceDefining',
+        defaultMessage: 'Link instance defining to org unit',
+    },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS mappings',

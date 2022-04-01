@@ -41,12 +41,13 @@ const FormVersionsComponent = ({
                 exportButtons={false}
                 dataKey="form_versions"
                 defaultPageSize={20}
-                fetchItems={(d, url) =>
+                fetchItems={(d, url, signal) =>
                     fetchList(
                         d,
                         `${url}&form_id=${formId}`,
                         'fetchFormVersionsError',
                         'form versions',
+                        signal,
                     )
                 }
                 defaultSorted={[{ id: defaultOrder, desc: true }]}

@@ -86,8 +86,10 @@ const SingleTable = ({
         // It does result in a double API call however.
         newParams => {
             if (results?.list && firstLoad && !forceRefresh) {
+                console.log('data was there');
                 setTableResults(results);
             } else {
+                console.log('fetch');
                 const url = newParams
                     ? getTableUrl(
                           endPointPath,
@@ -159,7 +161,10 @@ const SingleTable = ({
     // FIXME remove infinite loop when deps array is filled
     useEffect(() => {
         if (!firstLoad || (searchActive && firstLoad)) {
-            if (abortController.signal) handleFetch();
+            if (abortController.signal) {
+                console.log('signal');
+                handleFetch();
+            }
         } else if (!searchActive && firstLoad) {
             setFirstLoad(false);
         }
@@ -224,7 +229,7 @@ const SingleTable = ({
         extraProps.SubComponent = original =>
             subComponent(original, handleFetch);
     }
-
+    console.log('render');
     return (
         <Box
             className={

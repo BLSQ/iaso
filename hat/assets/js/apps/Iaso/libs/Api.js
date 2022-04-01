@@ -37,6 +37,7 @@ export const iasoFetch = async (resource, init = {}) => {
     const url = resource.url ?? resource;
     const method = init?.method ?? 'GET';
     try {
+        // await waitFor(5000);
         response = await fetch(resource, init);
     } catch (error) {
         // ignoring errors from cancelled fetch

@@ -524,8 +524,14 @@ export const updateDefaultSource = (dispatch, accountId, default_version) =>
     });
 
 // TO-DO: replace all requests similar to this
-export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
-    getRequest(url)
+export const fetchList = (
+    dispatch,
+    url,
+    errorKeyMessage,
+    consoleError,
+    signal,
+) =>
+    getRequest(url, signal)
         .then(data => data)
         .catch(error => {
             dispatch(

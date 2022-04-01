@@ -13,6 +13,7 @@ import { addRoutes } from './routing/redirections';
 import { getPlugins, PluginsContext } from './utils';
 import { getOverriddenTheme } from './styles';
 import { ThemeConfigContext } from './domains/app/contexts/ThemeConfigContext.tsx';
+import { FormDefiningContextProvider } from './domains/instances/context/FormDefiningContext.tsx';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -36,14 +37,14 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
                 routeConfig.allowAnonymous
                     ? routeConfig.component
                     : props => (
-                          <ProtectedRoute
-                            {...props}
-                            featureFlag={routeConfig.featureFlag}
-                            permissions={routeConfig.permissions}
-                            component={routeConfig.component(props)}
-                            isRootUrl={routeConfig.isRootUrl}
-                            allRoutes={allRoutesConfigs}
-                        />
+                        <ProtectedRoute
+                              {...props}
+                              featureFlag={routeConfig.featureFlag}
+                              permissions={routeConfig.permissions}
+                              component={routeConfig.component(props)}
+                              isRootUrl={routeConfig.isRootUrl}
+                              allRoutes={allRoutesConfigs}
+                          />
                       )
             }
         />
@@ -57,8 +58,14 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
                     <MuiThemeProvider
                         theme={getOverriddenTheme(theme, themeConfig)}
                     >
-                        <CssBaseline />
-                        <App store={store} routes={routes} history={history} />
+                        <FormDefiningContextProvider>
+                            <CssBaseline />
+                            <App
+                                store={store}
+                                routes={routes}
+                                history={history}
+                            />
+                        </FormDefiningContextProvider>
                     </MuiThemeProvider>
                 </ThemeConfigContext.Provider>
             </PluginsContext.Provider>

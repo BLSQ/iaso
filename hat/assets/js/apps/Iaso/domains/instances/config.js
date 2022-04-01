@@ -9,15 +9,12 @@ import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
 import { userHasPermission } from '../users/utils';
 import { useFormState } from '../../hooks/form';
-import {
-    useSaveOrgUnit,
-} from '../orgUnits/hooks';
+import { useSaveOrgUnit } from '../orgUnits/hooks';
+
 const updateOrgUnit = (orgUnit, instance_defining_id) => {
-  const newOrgUnit =initialFormState(orgUnit, instance_defining_id)
-   useSaveOrgUnit();
-}
-
-
+    const newOrgUnit = initialFormState(orgUnit, instance_defining_id);
+    useSaveOrgUnit();
+};
 
 const initialFormState = (orgUnit, instance_defining_id) => {
     return {
@@ -32,48 +29,54 @@ const initialFormState = (orgUnit, instance_defining_id) => {
         aliases: orgUnit.aliases,
         parent_id: orgUnit.parent_id,
         source_ref: orgUnit.source_ref,
-        instance_defining_id: instance_defining_id
+        instance_defining_id,
     };
 };
-export const actionTableColumn = (formatMessage = () => ({}), user) =>
-{
-
-  return ({
-      Header: formatMessage(MESSAGES.actions),
-      accessor: 'actions',
-      resizable: false,
-      sortable: false,
-      width: 150,
-      Cell: settings => {
-        console.log("settings", settings)
-        return (
-            <section>
-                <IconButtonComponent
-                    url={`${baseUrls.instanceDetail}/instanceId/${settings.row.original.id}`}
-                    icon="remove-red-eye"
-                    tooltipMessage={MESSAGES.view}
-                />
-                {settings.row.original.org_unit &&
-                    userHasPermission('iaso_org_units', user) && (
-                        <IconButtonComponent
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.org_unit.id}?formId=${settings.row.original.form_id}&formDefiningId=${settings.row.original.form_defining_id}`}
-                            icon="orgUnit"
-                            tooltipMessage={MESSAGES.viewOrgUnit}
-                        />
-                    )}
-                { settings.row.original.form_defining_id == settings.row.original.form_id &&
-                      userHasPermission('iaso_org_units', user) && (
-                          <IconButtonComponent
-                              onClick={() => updateOrgUnit(settings.row.original.org_unit, settings.row.original.id)}
-                              overrideIcon={LinkIcon}
-                              tooltipMessage={MESSAGES.linkOrgUnitInstanceDefining}
-                          />
-                      )}
-            </section>
-        )
-      },
-  });
-}
+export const actionTableColumn = (formatMessage = () => ({}), user) => {
+    return {
+        Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
+        resizable: false,
+        sortable: false,
+        width: 150,
+        Cell: settings => {
+            console.log('settings', settings);
+            return (
+                <section>
+                    <IconButtonComponent
+                        url={`${baseUrls.instanceDetail}/instanceId/${settings.row.original.id}`}
+                        icon="remove-red-eye"
+                        tooltipMessage={MESSAGES.view}
+                    />
+                    {settings.row.original.org_unit &&
+                        userHasPermission('iaso_org_units', user) && (
+                            <IconButtonComponent
+                                url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.org_unit.id}?formId=${settings.row.original.form_id}&formDefiningId=${settings.row.original.form_defining_id}`}
+                                icon="orgUnit"
+                                tooltipMessage={MESSAGES.viewOrgUnit}
+                            />
+                        )}
+                    {settings.row.original.form_defining_id ==
+                        settings.row.original.form_id &&
+                        userHasPermission('iaso_org_units', user) && (
+                            <IconButtonComponent
+                                onClick={() =>
+                                    updateOrgUnit(
+                                        settings.row.original.org_unit,
+                                        settings.row.original.id,
+                                    )
+                                }
+                                overrideIcon={LinkIcon}
+                                tooltipMessage={
+                                    MESSAGES.linkOrgUnitInstanceDefining
+                                }
+                            />
+                        )}
+                </section>
+            );
+        },
+    };
+};
 
 const instancesTableColumns = (formatMessage = () => ({})) => {
     const columns = [];

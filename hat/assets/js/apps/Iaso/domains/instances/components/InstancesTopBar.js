@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -12,6 +12,7 @@ import { getInstancesColumns, getInstancesVisibleColumns } from '../utils';
 import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
 import MESSAGES from '../messages';
 import { INSTANCE_METAS_FIELDS } from '../constants';
+import { FormDefiningContext } from '../context/FormDefiningContext.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -38,6 +39,8 @@ const InstancesTopBar = ({
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
+    const { formId, formDefiningId, setFormId } =
+        useContext(FormDefiningContext);
     const currentUser = useSelector(state => state.users.current);
     const [visibleColumns, setVisibleColumns] = useState([]);
     const { formatMessage } = useSafeIntl();
@@ -65,6 +68,15 @@ const InstancesTopBar = ({
             dispatch(redirectToReplace(baseUrl, newParams));
         }
     };
+    useEffect(() => {
+        if (!formId) {
+            setFormId(5);
+        }
+        console.log(formId);
+        return () => {
+            setFormId(null);
+        };
+    }, [formId, setFormId]);
 
     useEffect(() => {
         let newColsString;

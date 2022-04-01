@@ -17,7 +17,7 @@ let interceptFlag = false;
 const emptyFixture = 'projects/empty.json';
 let table;
 let row;
-const defautlQuery = {
+const defaultQuery = {
     limit: '10',
     order: 'id',
     page: '1',
@@ -39,7 +39,7 @@ const goToPage = (
         pathname: '/api/projects',
     };
     const query = {
-        ...defautlQuery,
+        ...defaultQuery,
         ...formQuery,
     };
     cy.intercept({ ...options, query }, req => {
@@ -86,7 +86,7 @@ const mockListCall = (keyName, body) => {
         {
             method: 'GET',
             pathname: '/api/projects',
-            query: defautlQuery,
+            query: defaultQuery,
         },
         req => {
             interceptFlagProjects = true;
@@ -166,7 +166,7 @@ describe('Projects', () => {
             // this will be tested when creation will be enabled
             goToPage();
             cy.wait('@getProjects').then(() => {
-                cy.get('#add-button-container').find('button').click();
+                cy.get('[data-test="add-project-button"]').click();
                 cy.get('#project-dialog').should('be.visible');
 
                 cy.testInputValue('#input-text-name', '');
@@ -238,7 +238,7 @@ describe('Projects', () => {
             goToPage();
             cy.wait('@getProjects').then(() => {
                 const theIndex = 0;
-                cy.get('#add-button-container').find('button').click();
+                cy.get('[data-test="add-project-button"]').click();
                 const newProject = {
                     name: 'create',
                     app_id: 'project',

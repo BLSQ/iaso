@@ -11,7 +11,6 @@ import { testTablerender } from '../../support/testTableRender';
 import { testPagination } from '../../support/testPagination';
 import { testTableSort } from '../../support/testTableSort';
 import { testPageFilters } from '../../support/testPageFilters';
-import { testPermission } from '../../support/testPermission';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 

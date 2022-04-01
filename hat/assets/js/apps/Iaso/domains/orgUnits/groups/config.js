@@ -74,6 +74,7 @@ const TableColumns = (formatMessage, component) => [
                     params={component.props.params}
                 />
                 <DeleteDialog
+                    keyName="group"
                     titleMessage={MESSAGES.delete}
                     message={MESSAGES.deleteWarning}
                     onConfirm={closeDialog =>

@@ -86,10 +86,8 @@ const SingleTable = ({
         // It does result in a double API call however.
         newParams => {
             if (results?.list && firstLoad && !forceRefresh) {
-                console.log('data was there');
                 setTableResults(results);
             } else {
-                console.log('fetch');
                 const url = newParams
                     ? getTableUrl(
                           endPointPath,
@@ -162,7 +160,6 @@ const SingleTable = ({
     useEffect(() => {
         if (!firstLoad || (searchActive && firstLoad)) {
             if (abortController.signal) {
-                console.log('signal');
                 handleFetch();
             }
         } else if (!searchActive && firstLoad) {
@@ -229,7 +226,6 @@ const SingleTable = ({
         extraProps.SubComponent = original =>
             subComponent(original, handleFetch);
     }
-    console.log('render');
     return (
         <Box
             className={

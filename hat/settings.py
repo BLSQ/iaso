@@ -188,7 +188,6 @@ TEMPLATES = [
                 "django.template.context_processors.media",
                 "django.contrib.messages.context_processors.messages",
                 "hat.common.context_processors.appversions",
-                "hat.common.context_processors.environment",
                 "hat.common.context_processors.app_title",
                 "hat.common.context_processors.favicon_path",
                 "hat.common.context_processors.logo_path",

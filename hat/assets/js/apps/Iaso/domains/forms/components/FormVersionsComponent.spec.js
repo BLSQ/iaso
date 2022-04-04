@@ -30,7 +30,7 @@ const cleanAndMock = () => {
 };
 let setForceRefreshSpy = sinon.spy();
 
-describe('FormVersionsComponent connected component', () => {
+describe.only('FormVersionsComponent connected component', () => {
     before(() => {
         cleanAndMock();
     });
@@ -44,16 +44,7 @@ describe('FormVersionsComponent connected component', () => {
                 />,
             ),
         );
-        connectedWrapper.update();
-        connectedWrapper.update();
-        connectedWrapper.update();
         expect(connectedWrapper.exists()).to.equal(true);
-    });
-    describe('should connect to api', () => {
-        it('and call forms api', () => {
-            // updating because the api call is not made on first render
-            expect(nock.activeMocks()).to.have.lengthOf(0);
-        });
     });
 
     describe('FormVersionsDialog', () => {

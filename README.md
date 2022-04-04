@@ -361,6 +361,10 @@ cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --
 This will put the data in a database called iaso5. You can choose in your .env file which database is used by editing
 the `RDS_DB_NAME` settings.
 
+Health
+------
+On the /health/ url you can find listed the Iaso version number, environment, deployment time, etc... that might help you understand how this server instance is deployed for debugging. e.g.  https://iaso.bluesquare.org/health/
+
 Local DHIS2
 -----------
 Experimental. For development if you need a local dhis2 server, you can spin up one in your docker-compose by using the `docker/docker-compose-dhis2.yml ` configuration file.

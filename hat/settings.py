@@ -40,7 +40,7 @@ DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_S3 = os.getenv("USE_S3") == "true"
 
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
-ENVIRONMENT = os.environ.get("IASO_ENVIRONMENT", "development").lower()
+ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
 
 ALLOWED_HOSTS = ["*"]

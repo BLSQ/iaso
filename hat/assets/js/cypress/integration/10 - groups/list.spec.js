@@ -60,7 +60,7 @@ const openDialogForIndex = index => {
     const actionCol = row.find('td').last();
     const editButton = actionCol.find('button').first();
     editButton.click();
-    cy.get('#groups-dialog').should('be.visible');
+    cy.get('[data-test="groups-dialog"]').should('be.visible');
 };
 
 const testDialogContent = group => {
@@ -259,7 +259,7 @@ describe('Groups', () => {
             // this will be tested when creation will be enabled
             cy.wait('@getGroups').then(() => {
                 cy.get('[data-test="add-group-button"]').click();
-                cy.get('#groups-dialog').should('be.visible');
+                cy.get('[data-test="groups-dialog"]').should('be.visible');
 
                 cy.testInputValue('#input-text-name', '');
                 cy.testInputValue('#input-text-source_ref', '');

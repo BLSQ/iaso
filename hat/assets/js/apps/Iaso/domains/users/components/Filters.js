@@ -69,7 +69,7 @@ const Filters = ({ baseUrl, params }) => {
                     alignItems="center"
                 >
                     <Button
-                        id="search-button"
+                        data-test="search-button"
                         disabled={!filtersUpdated}
                         variant="contained"
                         className={classes.button}

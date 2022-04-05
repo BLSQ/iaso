@@ -91,7 +91,7 @@ const Filters = ({
             <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
                 {extraComponent}
                 <Button
-                    id="search-button"
+                    data-test="search-button"
                     disabled={!filtersUpdated}
                     variant="contained"
                     className={classes.button}

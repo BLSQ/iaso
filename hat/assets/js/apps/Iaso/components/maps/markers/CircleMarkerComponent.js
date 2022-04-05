@@ -53,7 +53,7 @@ CircleMarkerComponent.defaultProps = {
 CircleMarkerComponent.propTypes = {
     item: PropTypes.object.isRequired,
     onClick: PropTypes.func,
-    PopupComponent: PropTypes.object,
+    PopupComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     onDragend: PropTypes.func,
     draggable: PropTypes.bool,
     popupProps: PropTypes.object,

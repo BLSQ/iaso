@@ -51,7 +51,7 @@ function RawConfirmCancelActions({
                     color="primary"
                     disabled={
                         allowConfimAdditionalButton !== null &&
-                        allowConfimAdditionalButton !== undefined
+                            allowConfimAdditionalButton !== undefined
                             ? !allowConfimAdditionalButton
                             : !allowConfirm
                     }
@@ -101,6 +101,7 @@ export default function ConfirmCancelDialogComponent({
 }) {
     return (
         <DialogComponent
+            dataTestId={dataTestId}
             id={id}
             dataTestId={dataTestId}
             renderActions={({ closeDialog }) => (

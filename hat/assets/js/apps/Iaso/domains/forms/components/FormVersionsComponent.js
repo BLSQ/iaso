@@ -31,7 +31,11 @@ const FormVersionsComponent = ({
 
     return (
         <Box mt={4}>
-            <Typography color="primary" variant="h5">
+            <Typography
+                color="primary"
+                variant="h5"
+                data-test="form-versions-title"
+            >
                 <FormattedMessage {...MESSAGES.versions} />
             </Typography>
             <SingleTable

@@ -30,7 +30,7 @@ const cleanAndMock = () => {
 };
 let setForceRefreshSpy = sinon.spy();
 
-describe.only('FormVersionsComponent connected component', () => {
+describe('FormVersionsComponent connected component', () => {
     before(() => {
         cleanAndMock();
     });

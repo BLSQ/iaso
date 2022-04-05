@@ -28,7 +28,7 @@ export const testPageFilters = filters => {
         }
     });
 
-    cy.get('#search-button').click();
+    cy.get('[data-test="search-button"]').click();
 
     Object.keys(filters).forEach(keyName => {
         const { urlValue } = filters[keyName];

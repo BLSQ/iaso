@@ -364,7 +364,7 @@ describe('Submissions', () => {
             const mapping = ['#month', '#quarter'];
             const secondId = mapping[periodTypeIndex];
             cy.fillMultiSelect('#periodType', [periodTypeIndex], false);
-            cy.get('#search-button').as('searchButton');
+            cy.get('[data-test="search-button"]').as('searchButton');
             fillPeriodPicker('#startPeriod #year', '#year');
             if (secondId) {
                 cy.get('@searchButton').should('be.disabled');

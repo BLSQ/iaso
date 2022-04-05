@@ -84,7 +84,7 @@ describe('Entities', () => {
         it('should enabled search button', () => {
             cy.wait('@getEntities').then(() => {
                 cy.get('#search-search').type(search);
-                cy.get('#search-button')
+                cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', undefined);
             });
@@ -97,7 +97,7 @@ describe('Entities', () => {
         });
         it('should be disabled', () => {
             cy.wait('@getEntities').then(() => {
-                cy.get('#search-button')
+                cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', 'disabled');
             });
@@ -105,7 +105,7 @@ describe('Entities', () => {
         it('should be enabled while searching', () => {
             cy.get('#search-search').type(search);
             cy.wait('@getEntities').then(() => {
-                cy.get('#search-button')
+                cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', undefined);
             });
@@ -116,7 +116,7 @@ describe('Entities', () => {
                     cy.get('#search-search').type(search);
                     cy.fillSingleSelect('#entityTypes', 0);
 
-                    cy.get('#search-button').click();
+                    cy.get('[data-test="search-button"]').click();
                     cy.url().should(
                         'contain',
                         `${baseUrl}/search/${search}/entityTypes/1`,
@@ -333,7 +333,7 @@ describe('Entities', () => {
                 ).as('getEntitySearch');
                 cy.get('#search-search').type(search);
                 cy.fillSingleSelect('#entityTypes', 1);
-                cy.get('#search-button').click();
+                cy.get('[data-test="search-button"]').click();
                 cy.wait('@getEntitySearch').then(() => {
                     cy.wrap(interceptFlag).should('eq', true);
                 });

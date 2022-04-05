@@ -674,15 +674,27 @@ If you need to test s3 storage in development, you have to:
 These are actually exactly the same steps we use on AWS.
 
 ### Testing prod js assets in development
-Run `TEST_PROD=true docker-compose up`
 
-to have a local environment serving you the production assets (minified
-and with the same compilation option as in production). This can be
-useful to reproduce production only bugs.
+During local development, by default, the Javascript and CSS will be loaded from
+a webpack server with live reloading of the code. To locally test the compiled
+version as it is in production ( minified and with the same compilation option).
+You can launch docker-compose with the `TEST_PROD=true` environment variable
+set.
+
+e.g `TEST_PROD=true docker-compose up`
+
+This can be useful to reproduce production only bugs. Please also test with this
+configuration whenever you modify webpack.prod.js to validate your changes.
+
+Alternatively this can be done outside of docker by running:
+
+1. `npm run webpack-prod` to do the build
+2. Launching the django server with `TEST_PROD`
+   e.g. `TEST_PROD=true python manage.py runserver`.
 
 # Background tasks & worker
 
-Iaso  queue certains functions (task) for later execution, so they can run
+Iaso queue certains functions (task) for later execution, so they can run
 outside an HTTP request. This is used for functions that take a long time to execute
 so they don't canceled in the middle by a timeout of a connection closed.
 e.g: bulk import, modifications or export of OrgUnits.  Theses are the functions

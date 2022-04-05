@@ -28,7 +28,7 @@ const defaultQuery = {
 };
 
 const goToPage = ({
-    formQuery,
+    formQuery = {},
     fakeUser = superUser,
     fixture = listFixture,
 }) => {
@@ -204,7 +204,12 @@ describe('Groups', () => {
             );
         });
 
-        testTablerender(baseUrl, listFixture.groups.length, 6);
+        testTablerender({
+            baseUrl,
+            rows: listFixture.groups.length,
+            columns: 6,
+            apiKey: 'groups',
+        });
         testPagination({
             baseUrl,
             apiPath: '/api/groups/**',

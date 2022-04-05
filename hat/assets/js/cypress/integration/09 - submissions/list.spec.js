@@ -193,7 +193,13 @@ describe('Submissions', () => {
                 page2,
             );
         });
-        testTablerender(baseUrl, listFixture.instances.length, 7, false);
+        testTablerender({
+            baseUrl,
+            rows: listFixture.instances.length,
+            columns: 7,
+            withVisit: false,
+            apiKey: 'instances',
+        });
         testPagination({
             baseUrl,
             apiPath: '/api/instances/**',

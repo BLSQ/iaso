@@ -18,7 +18,7 @@ const interceptList = ['profiles', 'projects'];
 describe('Org unit types', () => {
     beforeEach(() => {
         cy.login();
-        // cy.intercept('GET', '/sockjs-node/**');
+        cy.intercept('GET', '/sockjs-node/**');
         cy.intercept('GET', '/api/orgunittypes/', outypesList);
         interceptList.forEach(i => {
             cy.intercept('GET', `/api/${i}/**`, {
@@ -75,7 +75,12 @@ describe('Org unit types', () => {
                     });
             });
         });
-        testTablerender(baseUrl, 20, 8);
+        testTablerender({
+            baseUrl,
+            rows: 20,
+            columns: 8,
+            apiKey: 'orgunittypes',
+        });
         it('displays tooltip when hovering over info icon', () => {
             cy.visit(baseUrl);
             cy.wait('@getOrgUnitTypes');

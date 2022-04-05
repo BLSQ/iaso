@@ -99,7 +99,7 @@ class GroupDialogComponent extends Component {
 
         return (
             <ConfirmCancelDialogComponent
-                id="groups-dialog"
+                dataTestId="groups-dialog"
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => this.onConfirm(closeDialog)}
                 cancelMessage={MESSAGES.cancel}

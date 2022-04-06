@@ -26,7 +26,7 @@ const formVersionsPageOne = makePaginatedResponse({
     data: formVersions.formVersions,
 });
 
-describe.only('Forms details', () => {
+describe('Forms details', () => {
     beforeEach(() => {
         cy.login();
         cy.intercept('GET', '/sockjs-node/**');

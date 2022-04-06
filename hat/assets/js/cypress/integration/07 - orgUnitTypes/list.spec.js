@@ -40,9 +40,32 @@ describe('Org unit types', () => {
         ).as('getOrgUnitTypes');
         cy.intercept('GET', '/api/profiles/me/**', superUser);
     });
+
     describe('When mounting', () => {
         testPermission(baseUrl);
         testTopBar(baseUrl, 'Organisation unit types', false);
+        describe('Table', () => {
+            beforeEach(() => {
+                cy.visit(baseUrl);
+                cy.wait('@getOrgUnitTypes');
+            });
+
+            testTablerender({
+                baseUrl,
+                rows: 20,
+                columns: 8,
+                apiKey: 'orgunittypes',
+                responseKey: 'orgUnitTypes',
+                withVisit: false,
+            });
+            testPagination({
+                baseUrl,
+                apiPath: '/api/orgunittypes/**',
+                apiKey: 'orgUnitTypes',
+                withSearch: false,
+                fixture: orgUnitTypes,
+            });
+        });
         describe('"Create" button', () => {
             beforeEach(() => {
                 cy.visit(baseUrl);
@@ -75,24 +98,11 @@ describe('Org unit types', () => {
                     });
             });
         });
-        testTablerender({
-            baseUrl,
-            rows: 20,
-            columns: 8,
-            apiKey: 'orgunittypes',
-        });
         it('displays tooltip when hovering over info icon', () => {
             cy.visit(baseUrl);
             cy.wait('@getOrgUnitTypes');
             cy.findTableHead(3).find('svg').eq(0).as('icon');
             cy.assertTooltipDiplay('icon');
-        });
-        testPagination({
-            baseUrl,
-            apiPath: '/api/orgunittypes/**',
-            apiKey: 'orgUnitTypes',
-            withSearch: false,
-            fixture: orgUnitTypes,
         });
         describe('edit button', () => {
             beforeEach(() => {

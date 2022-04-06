@@ -16,7 +16,6 @@ import { devicesInitialState } from '../../apps/Iaso/redux/devicesReducer';
 import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
 import { linksInitialState } from '../../apps/Iaso/domains/links/reducer';
 import { usersInitialState } from '../../apps/Iaso/domains/users/reducer';
-import { groupsInitialState } from '../../apps/Iaso/domains/orgUnits/groups/reducer';
 import { orgUnitsTypesInitialState } from '../../apps/Iaso/domains/orgUnits/orgUnitTypes/reducer';
 
 import { renderWithIntl } from './intl';
@@ -40,7 +39,6 @@ const initialState = {
     users: usersInitialState,
     projects: projectsInitialState,
     mappings: mappingsInitialState,
-    groups: groupsInitialState,
     orgUnitsTypes: orgUnitsTypesInitialState,
 };
 

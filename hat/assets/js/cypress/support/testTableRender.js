@@ -8,6 +8,7 @@ export const testTablerender = ({
     rows,
     columns,
     apiKey,
+    responseKey,
     withVisit = true,
 }) =>
     describe('When table renders', () => {
@@ -25,7 +26,7 @@ export const testTablerender = ({
         it("Displays an empty table when there's no data", () => {
             cy.intercept('GET', `/api/${apiKey}/*`, {
                 statusCode: 200,
-                body: makePaginatedResponse({ dataKey: apiKey }),
+                body: makePaginatedResponse({ dataKey: responseKey ?? apiKey }),
             }).as('fetch');
             cy.visit(baseUrl);
             cy.wait('@fetch');

@@ -327,7 +327,6 @@ describe('Groups', () => {
                 const index = 0;
                 cy.get('[data-test="add-group-button"]').click();
                 let newGroup = {
-                    id: null,
                     name: 'create',
                     source_ref: 'zu18',
                 };
@@ -359,6 +358,51 @@ describe('Groups', () => {
                         testRowContent(0, newGroup);
                     });
                 });
+            });
+        });
+    });
+
+    describe('Save button in Dialog', () => {
+        beforeEach(() => {
+            goToPage({});
+        });
+
+        it('should be disabled if name value is an empty string', () => {
+            cy.wait('@getGroups').then(() => {
+                // on create
+                cy.get('[data-test="add-group-button"]').click();
+                cy.get('[data-test="groups-dialog"]').should('be.visible');
+                cy.get('.MuiDialogActions-root')
+                    .find('button')
+                    .last()
+                    .as('saveButton');
+                cy.get('@saveButton').should('be.disabled');
+
+                const name = 'Lucius';
+                cy.get('#input-text-name').type(name).clear();
+                cy.testInputValue('#input-text-name', '');
+                cy.get('.MuiDialogActions-root')
+                    .find('button')
+                    .last()
+                    .as('saveButton');
+                cy.get('@saveButton').should('be.disabled');
+                cy.get('.MuiDialogActions-root')
+                    .find('button')
+                    .first()
+                    .as('cancelButton');
+                cy.get('@cancelButton').click();
+
+                // on edit
+                table = cy.get('table');
+                row = table.find('tbody').find('tr').eq(0);
+                const actionCol = row.find('td').last();
+                actionCol.find('button').first().as('editButton');
+                cy.get('@editButton').click();
+                cy.get('[data-test="groups-dialog"]').should('be.visible');
+                cy.get('@saveButton').should('not.be.disabled');
+
+                cy.get('#input-text-name').clear();
+                cy.get('@saveButton').should('be.disabled');
             });
         });
     });

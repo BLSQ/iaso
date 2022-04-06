@@ -564,11 +564,11 @@ class IMStatsViewSet(viewsets.ViewSet):
         else:
             latest_campaign_update = None
 
-        stats_types = request.GET.get("type", "OH, OHH")
+        stats_types = request.GET.get("type", "OH,OHH")
 
         im_request_type = stats_types
 
-        if stats_types == "OH, OHH":
+        if stats_types == "OH,OHH":
             im_request_type = ""
 
         cached_response = cache.get(

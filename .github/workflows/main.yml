@@ -65,17 +65,17 @@ jobs:
       - name: Install GDAL
         run: sudo apt install gdal-bin
       - uses: actions/cache@v2
-          id: cache-venv
-          with:
-            path: ./.venv/
-            # The cache key depends on requirements.txt
-            key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
-            restore-keys: |
-              ${{ runner.os }}-venv-
-            # Build a virtualenv, but only if it doesn't already exist
-            - run: python -m venv ./.venv && . ./.venv/bin/activate &&
-                pip install -r requirements.txt
-              if: steps.cache-venv.outputs.cache-hit != 'true'
+        id: cache-venv
+        with:
+          path: ./.venv/
+          # The cache key depends on requirements.txt
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-
+          # Build a virtualenv, but only if it doesn't already exist
+          - run: python -m venv ./.venv && . ./.venv/bin/activate &&
+              pip install -r requirements.txt
+            if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Environment info
         run: |
           pip list
@@ -144,17 +144,17 @@ jobs:
       - name: Install GDAL
         run: sudo apt install gdal-bin
       - uses: actions/cache@v2
-          id: cache-venv
-          with:
-            path: ./.venv/
-            # The cache key depends on requirements.txt
-            key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
-            restore-keys: |
-              ${{ runner.os }}-venv-
-              # Build a virtualenv, but only if it doesn't already exist
-              - run: python -m venv ./.venv && . ./.venv/bin/activate &&
-                  pip install -r requirements.txt
-                if: steps.cache-venv.outputs.cache-hit != 'true'
+        id: cache-venv
+        with:
+          path: ./.venv/
+          # The cache key depends on requirements.txt
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-
+            # Build a virtualenv, but only if it doesn't already exist
+            - run: python -m venv ./.venv && . ./.venv/bin/activate &&
+                pip install -r requirements.txt
+              if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Download the builded JS
         uses: actions/download-artifact@v2
         with:

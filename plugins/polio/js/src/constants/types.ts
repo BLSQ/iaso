@@ -80,3 +80,23 @@ export type LqasImParams = {
     campaign?: string;
     round: RoundString;
 }
+
+export type GroupedCampaign =  {
+    id: number,
+    created_at: string,
+    updated_at: string,
+    name: string,
+    campaigns: string[]
+}
+export type PaginatedResponse = {
+    count:number,
+    has_previous:boolean,
+    has_next:boolean,
+    page:number,
+    pages:number,
+    limit:number,
+}
+
+export type GroupedCampaigns = PaginatedResponse & {
+    results:GroupedCampaign[]
+}

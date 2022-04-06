@@ -5,6 +5,7 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import CalendarToday from '@material-ui/icons/CalendarToday';
 import AssessmentIcon from '@material-ui/icons/Assessment';
 import DonutSmallIcon from '@material-ui/icons/DonutSmall';
+import GroupWork from '@material-ui/icons/GroupWork';
 import HomeWorkIcon from '@material-ui/icons/HomeWork';
 import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
@@ -14,6 +15,7 @@ import { CountryNotificationsConfig } from './src/components/CountryNotification
 import MESSAGES from './src/constants/messages';
 import {
     DASHBOARD_BASE_URL,
+    GROUPED_CAMPAIGNS,
     CALENDAR_BASE_URL,
     CONFIG_BASE_URL,
     LQAS_BASE_URL,
@@ -26,6 +28,7 @@ import en from './src/constants/translations/en.json';
 import { Lqas } from './src/pages/LQAS';
 import { ImStats } from './src/pages/IM';
 import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
+import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
 
 const campaignsFilters = [
     {
@@ -58,6 +61,19 @@ const routes = [
     {
         baseUrl: DASHBOARD_BASE_URL,
         component: props => <Dashboard {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            ...paginationPathParams,
+            {
+                isRequired: false,
+                key: 'campaignId',
+            },
+            ...campaignsFilters,
+        ],
+    },
+    {
+        baseUrl: GROUPED_CAMPAIGNS,
+        component: props => <GroupedCampaigns {...props} />,
         permissions: ['iaso_polio'],
         params: [
             ...paginationPathParams,
@@ -197,6 +213,12 @@ const menu = [
                 key: 'list',
                 permissions: ['iaso_polio'],
                 icon: props => <FormatListBulleted {...props} />,
+            },
+            {
+                label: MESSAGES.groupedCampaigns,
+                key: 'groupedcampaigns',
+                permissions: ['iaso_polio'],
+                icon: props => <GroupWork {...props} />,
             },
             {
                 label: MESSAGES.calendar,

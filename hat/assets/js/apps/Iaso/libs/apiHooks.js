@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useMutation, useQuery, useQueries, useQueryClient } from 'react-query';
 import { defineMessages } from 'react-intl';

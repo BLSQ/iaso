@@ -564,10 +564,15 @@ class IMStatsViewSet(viewsets.ViewSet):
         else:
             latest_campaign_update = None
 
-        stats_types = request.GET.get("type", "")
+        stats_types = request.GET.get("type", "OH, OHH")
+
+        im_request_type = stats_types
+
+        if stats_types == "OH, OHH":
+            im_request_type = ""
 
         cached_response = cache.get(
-            "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], stats_types)
+            "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], im_request_type)
         )
 
         if not request.user.is_anonymous and cached_response:
@@ -783,7 +788,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
         if not request.user.is_anonymous:
             cache.set(
-                "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], stats_types[0]),
+                "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], im_request_type),
                 json.dumps(response),
                 3600,
             )
@@ -1101,7 +1106,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
         if not request.user.is_anonymous and cached_response:
             response = json.loads(cached_response)
             cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
-            if latest_campaign_update and cached_date < latest_campaign_update:
+            if latest_campaign_update and cached_date > latest_campaign_update:
                 return JsonResponse(response)
 
         config = get_object_or_404(Config, slug="lqas-config")

@@ -5,7 +5,6 @@ import {
     SET_FETCHING,
     SET_ORG_UNIT_TYPES,
     SET_SOURCES,
-    SET_GROUPS,
     SET_ORG_UNITS_LIST_FETCHING,
     SET_FETCHING_ORG_UNITS_TYPES,
     SET_FILTERS_UPDATED,
@@ -65,11 +64,6 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_SOURCES: {
             const sources = action.payload;
             return { ...state, sources, orgUnitLevel: [] };
-        }
-
-        case SET_GROUPS: {
-            const groups = action.payload;
-            return { ...state, groups };
         }
 
         case RESET_ORG_UNITS: {

@@ -35,7 +35,7 @@ services:
       PREPAREDNESS_TEMPLATE_FR_ID:
       PLUGINS:
       GOOGLE_API_KEY_BASE64:
-      IASO_ENVIRONMENT: "development"
+      SENTRY_ENVIRONMENT: "development"
       RDS_HOSTNAME: db
       RDS_DB_NAME:
       THEME_PRIMARY_COLOR:

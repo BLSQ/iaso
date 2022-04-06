@@ -10,6 +10,7 @@ import { errorSnackBar } from '../../constants/snackBars';
 import snackBarMessages from '../../components/snackBars/messages';
 import { fetchCurrentUser } from '../users/actions';
 import { getValues } from '../../hooks/form';
+import MESSAGES from './messages';
 
 /**
  *
@@ -312,8 +313,8 @@ export const useCopyDataSourceVersion = () => {
                 force: false,
             });
         },
-        undefined,
-        undefined,
+        MESSAGES.copyVersionSuccessMessage,
+        MESSAGES.copyVersionSuccessMessage,
         'dataSources',
     );
 };

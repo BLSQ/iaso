@@ -51,7 +51,7 @@ function RawConfirmCancelActions({
                     color="primary"
                     disabled={
                         allowConfimAdditionalButton !== null &&
-                            allowConfimAdditionalButton !== undefined
+                        allowConfimAdditionalButton !== undefined
                             ? !allowConfimAdditionalButton
                             : !allowConfirm
                     }

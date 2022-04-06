@@ -73,9 +73,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-venv-
           # Build a virtualenv, but only if it doesn't already exist
-          - run: python -m venv ./.venv && . ./.venv/bin/activate &&
-              pip install -r requirements.txt
-            if: steps.cache-venv.outputs.cache-hit != 'true'
+      - run: python -m venv ./.venv && . ./.venv/bin/activate &&
+          pip install -r requirements.txt
+        if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Environment info
         run: |
           pip list
@@ -151,10 +151,10 @@ jobs:
           key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-venv-
-            # Build a virtualenv, but only if it doesn't already exist
-            - run: python -m venv ./.venv && . ./.venv/bin/activate &&
-                pip install -r requirements.txt
-              if: steps.cache-venv.outputs.cache-hit != 'true'
+        # Build a virtualenv, but only if it doesn't already exist
+      - run: python -m venv ./.venv && . ./.venv/bin/activate &&
+          pip install -r requirements.txt
+        if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Download the builded JS
         uses: actions/download-artifact@v2
         with:

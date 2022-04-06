@@ -107,9 +107,11 @@ export const fetchLogs = (dispatch, url) =>
             throw error;
         });
 
-export const fetchAllDataSources = (dispatch, url) =>
-    getRequest(url)
-        .then(data => data)
+export const fetchAllDataSources = (dispatch, url) => {
+    return getRequest(url)
+        .then(data => {
+            return data;
+        })
         .catch(error => {
             dispatch(
                 enqueueSnackbar(
@@ -119,6 +121,7 @@ export const fetchAllDataSources = (dispatch, url) =>
             console.error('Error while fetching data sources list:', error);
             throw error;
         });
+};
 
 export const fetchInstancesAsLocationsByForm = (
     dispatch,

@@ -182,7 +182,6 @@ const SingleTable = ({
             setTableSelection(selection, selectionType, items, totalCount),
         );
     };
-
     useEffect(() => {
         if (results && results.list) {
             setTableResults(results);

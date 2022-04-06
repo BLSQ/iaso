@@ -160,11 +160,6 @@ export const useSnackQueries = queries => {
 };
 
 export const useAbortController = () => {
-    const abortController = useRef();
-    useEffect(() => {
-        if (!abortController.current) {
-            abortController.current = new AbortController();
-        }
-    }, []);
+    const abortController = useRef(new AbortController());
     return abortController?.current ?? {};
 };

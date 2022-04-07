@@ -13,11 +13,20 @@ const getGroupedCampaigns = async () => {
                 id: 1,
                 created_at: '2022-04-06T08:53:21.808038Z',
                 updated_at: '2022-04-06T08:53:44.616365Z',
-                name: 'MaCampagne de test',
+                name: 'Grouped Campaign 1',
                 campaigns: [
-                    '2f6c7102-ed46-465f-be87-046dd74fcc7d',
-                    'b5a83d40-e83d-49ef-a93e-d536baf82d11',
-                    '7b93892b-23a5-4fd8-bff5-0a14f35841fd',
+                    {
+                        id: '8ca37652-be39-40e7-be1c-11cf06aaa52e',
+                        name: 'SEN-79DS-01-2021',
+                    },
+                    {
+                        id: 'a76515b0-8d49-42cc-99f2-0c0d924f2df2',
+                        name: 'MAU_57DS_08-2021',
+                    },
+                    {
+                        id: '6613524b-1147-49bf-a669-36e97f697b0a',
+                        name: 'GAM-65DS-06-2021',
+                    },
                 ],
             },
         ],

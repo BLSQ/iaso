@@ -119,7 +119,7 @@ jobs:
         if: failure()
   test_cypress:
     runs-on: ubuntu-latest
-    needs: [ test_js]
+    needs: [ test_js, test_python]
     strategy:
       fail-fast: false
       matrix:
@@ -152,7 +152,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-venv-
         # Build a virtualenv, but only if it doesn't already exist
-      - run: python -m venv ./.venv && . ./.venv/bin/activate &&
+      - run: python -v && python -m venv ./.venv && . ./.venv/bin/activate && pip install -U pip &&
           pip install -r requirements.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Download the builded JS

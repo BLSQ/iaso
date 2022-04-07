@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import { DateTimeCell } from '../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { DateTimeCellRfc } from '../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { Column } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
 import MESSAGES from '../../constants/messages';
 import DeleteDialog from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
@@ -17,12 +17,12 @@ export const makeColumns = (
     {
         Header: formatMessage(MESSAGES.created_at),
         accessor: 'created_at',
-        Cell: DateTimeCell,
+        Cell: DateTimeCellRfc,
     },
     {
         Header: formatMessage(MESSAGES.updated_at),
         accessor: 'updated_at',
-        Cell: DateTimeCell,
+        Cell: DateTimeCellRfc,
     },
     {
         Header: formatMessage(MESSAGES.actions),

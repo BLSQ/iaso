@@ -14,7 +14,7 @@ const getGroupedCampaigns = async () => {
                 created_at: '2022-04-06T08:53:21.808038Z',
                 updated_at: '2022-04-06T08:53:44.616365Z',
                 name: 'MaCampagne de test',
-                'campa igns': [
+                campaigns: [
                     '2f6c7102-ed46-465f-be87-046dd74fcc7d',
                     'b5a83d40-e83d-49ef-a93e-d536baf82d11',
                     '7b93892b-23a5-4fd8-bff5-0a14f35841fd',

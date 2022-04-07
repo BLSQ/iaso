@@ -123,7 +123,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        containers: [1 - auth, 2 - forms, 3 - Users, 4 - tasks, 5 - orgUnits, 6 - entities, 7 - orgUnitTypes, 8 - projects, 9 - submissions]
+        containers: [1 - auth, 2 - forms]
     services:
       postgres:
         image: mdillon/postgis:10
@@ -165,7 +165,7 @@ jobs:
         uses: cypress-io/github-action@v2
         with:
           spec: hat/assets/js/cypress/integration/${{ matrix.containers }}/*.spec.js
-          start: .venv/bin/python manage.py testserver --noinput iaso/fixtures/user.yaml
+          start: ./.venv/bin/python manage.py testserver --noinput iaso/fixtures/user.yaml
           wait-on: 'http://localhost:8000'
         env:
           CYPRESS_USERNAME: "test"

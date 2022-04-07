@@ -46,6 +46,7 @@ export const GroupedCampaigns: FunctionComponent<Props> = ({ params }) => {
                     onTableParamsChange={p =>
                         dispatch(redirectTo(GROUPED_CAMPAIGNS, p))
                     }
+                    extraProps={{ loading: isFetching }}
                 />
             </Box>
         </>

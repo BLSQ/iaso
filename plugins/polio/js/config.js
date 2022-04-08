@@ -235,7 +235,6 @@ const menu = [
             {
                 label: MESSAGES.im,
                 key: 'im',
-                // permissions: ['iaso_polio'],
                 icon: props => <DonutSmallIcon {...props} />,
                 subMenu: [
                     {

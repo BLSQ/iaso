@@ -1067,6 +1067,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.close',
         defaultMessage: 'Close',
     },
+    editGroupedCampaign: {
+        id: 'polio.label.editGroupedCampaign',
+        defaultMessage: 'Edit grouped campaign',
+    },
+    campaignsToLink: {
+        id: 'polio.label.campaignsToLink',
+        defaultMessage: 'Campaigns to link',
+    },
 });
 
 export default MESSAGES;

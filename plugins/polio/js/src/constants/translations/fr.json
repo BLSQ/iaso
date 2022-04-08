@@ -249,5 +249,7 @@
     "iaso.polio.title.scope": "Périmètre",
     "iaso.polio.tooltip.label.lqasImDate": "Aucune date trouvée dans les données de la campagne, une date par défaut basée sur la date du round est utilisée",
     "iaso.polio.vaccine": "Vaccin",
-    "iaso.polio.vaccines": "Vaccins"
+    "iaso.polio.vaccines": "Vaccins",
+    "polio.label.campaignsToLink": "Campagnes à lier",
+    "polio.label.editGroupedCampaign": "Editer campagne groupée"
 }

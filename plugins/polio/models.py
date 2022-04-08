@@ -479,7 +479,7 @@ class IMStatsCache(models.Model):
         return str(self.params)
 
 
-class CampaignGroup(models.Model):
+class CampaignGroup(SoftDeletableModel):
     def __str__(self):
         return f"{self.name} {','.join(str(c) for c in self.campaigns.all())}"
 

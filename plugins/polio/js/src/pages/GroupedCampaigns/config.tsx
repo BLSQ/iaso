@@ -1,5 +1,6 @@
 import React, { ReactElement } from 'react';
 import { Link } from 'react-router';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { DateTimeCellRfc } from '../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { Column } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
 import MESSAGES from '../../constants/messages';
@@ -9,6 +10,8 @@ import { GroupedCampaignDialog } from './GroupedCampaignDialog';
 
 export const makeColumns = (
     formatMessage: IntlFormatMessage,
+    // eslint-disable-next-line no-unused-vars
+    deleteGroupedCampaign: (id: string) => void,
 ): Array<Column> => [
     {
         Header: formatMessage(MESSAGES.name),
@@ -28,6 +31,7 @@ export const makeColumns = (
     {
         Header: formatMessage(MESSAGES.campaigns),
         accessor: 'campaigns',
+        sortable: false,
         Cell: settings => {
             return (
                 <section>
@@ -36,7 +40,7 @@ export const makeColumns = (
                             key={campaign.id}
                             href={`/dashboard/polio/list/campaignId/${campaign.id}`}
                         >
-                            {`${campaign.name}, `}
+                            {`${campaign.obr_name}, `}
                         </Link>
                     ))}
                 </section>
@@ -58,14 +62,28 @@ export const makeColumns = (
                     campaigns={settings.row.original.campaigns.map(
                         (campaign: { id: string; name: string }) => campaign.id,
                     )}
+                    id={settings.row.original.id}
+                    renderTrigger={({ openDialog }): Element => {
+                        return (
+                            <IconButtonComponent
+                                onClick={() => {
+                                    openDialog();
+                                }}
+                                icon="edit"
+                                tooltipMessage={MESSAGES.edit}
+                            />
+                        );
+                    }}
                 />
                 <DeleteDialog
                     keyName="grouped"
                     disabled={settings.row.original.instances_count > 0}
                     titleMessage={MESSAGES.deleteTitle}
                     message={MESSAGES.deleteText}
-                    onConfirm={() => {
+                    onConfirm={async closeDialog => {
                         console.log('deleting', settings.row.original);
+                        await deleteGroupedCampaign(settings.row.original.id);
+                        closeDialog();
                     }}
                 />
             </section>

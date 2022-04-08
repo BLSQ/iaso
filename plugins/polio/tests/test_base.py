@@ -96,16 +96,25 @@ class PolioAPITestCase(APITestCase):
     def test_return_test_campaign_only(self):
         self.assertEqual(Campaign.objects.count(), 0)
 
-        payload = {
+        payload1 = {
             "obr_name": "obr_name",
             "detection_status": "PENDING",
             "round_one": {},
             "round_two": {},
             "is_test": True,
         }
-        self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.client.post("/api/polio/campaigns/", payload1, format="json")
 
-        response = self.client.get("/api/polio/campaigns/?isTest=true/")
+        payload2 = {
+            "obr_name": "obr_name_1",
+            "detection_status": "PENDING",
+            "round_one": {},
+            "round_two": {},
+            "is_test": False,
+        }
+        self.client.post("/api/polio/campaigns/", payload2, format="json")
+
+        response = self.client.get("/api/polio/campaigns/?is_test=true")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)

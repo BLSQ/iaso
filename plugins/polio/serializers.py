@@ -530,6 +530,4 @@ class CampaignGroupSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     campaigns = CampaignNameSerializer(many=True, read_only=True)
-    campaigns_ids = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=CampaignGroup.objects.all(), source="campaigns"
-    )
+    campaigns_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Campaign.objects.all(), source="campaigns")

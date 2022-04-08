@@ -81,7 +81,6 @@ export const makeColumns = (
                     titleMessage={MESSAGES.deleteTitle}
                     message={MESSAGES.deleteText}
                     onConfirm={async closeDialog => {
-                        console.log('deleting', settings.row.original);
                         await deleteGroupedCampaign(settings.row.original.id);
                         closeDialog();
                     }}

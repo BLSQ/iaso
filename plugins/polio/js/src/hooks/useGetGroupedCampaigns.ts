@@ -4,10 +4,13 @@ import { UseQueryResult } from 'react-query';
 import { GroupedCampaigns } from '../constants/types';
 import { makeUrlWithParams } from '../../../../../hat/assets/js/apps/Iaso/libs/utils';
 
-const getGroupedCampaigns = async (params: Record<string, unknown>) => {
+const getGroupedCampaigns = async (
+    params: Record<string, unknown>,
+    signal: any,
+) => {
     const endpoint = '/api/polio/campaignsgroup/';
     const url = makeUrlWithParams(endpoint, params);
-    return getRequest(url);
+    return getRequest(url, signal);
 };
 
 export const useGetGroupedCampaigns = (
@@ -21,7 +24,7 @@ export const useGetGroupedCampaigns = (
 
     return useSnackQuery(
         ['groupedCampaigns', paramsForBackend],
-        () => getGroupedCampaigns(paramsForBackend),
+        ({ signal }) => getGroupedCampaigns(paramsForBackend, signal),
         undefined,
         undefined,
         {},

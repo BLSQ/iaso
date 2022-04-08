@@ -99,7 +99,7 @@ class PolioAPITestCase(APITestCase):
         """
         campaign = Campaign.objects.create()
 
-        response = self.client.put(
+        response = self.client.patch(
             f"/api/polio/campaigns/" + str(campaign.id) + "/",
             data={
                 "round_one": {},

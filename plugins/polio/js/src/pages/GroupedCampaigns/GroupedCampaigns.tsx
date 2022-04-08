@@ -5,7 +5,7 @@ import {
     // Table,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box, Grid } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { redirectTo } from 'Iaso/routing/actions';
 import MESSAGES from '../../constants/messages';
@@ -55,15 +55,23 @@ export const GroupedCampaigns: FunctionComponent<Props> = ({ params }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <GroupedCampaignsFilter />
-                <GroupedCampaignDialog
-                    renderTrigger={({ openDialog }) => (
-                        <AddButtonComponent
-                            dataTestId="add-grouped_campaign-button"
-                            onClick={openDialog}
-                        />
-                    )}
-                    type="create"
-                />
+                <Grid
+                    container
+                    spacing={0}
+                    justifyContent="flex-end"
+                    alignItems="center"
+                    className={classes.marginTop}
+                >
+                    <GroupedCampaignDialog
+                        renderTrigger={({ openDialog }) => (
+                            <AddButtonComponent
+                                dataTestId="add-grouped_campaign-button"
+                                onClick={openDialog}
+                            />
+                        )}
+                        type="create"
+                    />
+                </Grid>
                 <TableWithDeepLink
                     data={groupedCampaigns?.results ?? []}
                     pages={groupedCampaigns?.pages ?? 1}

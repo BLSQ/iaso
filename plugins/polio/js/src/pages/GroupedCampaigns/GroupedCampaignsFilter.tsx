@@ -23,7 +23,8 @@ type Props = {
 
 const GroupedCampaignsFilter: FunctionComponent<Props> = ({
     router,
-    disableOnlyDeleted = false,
+    // TODO set to false shwoOnlyDeleted is implemented
+    disableOnlyDeleted = true,
 }) => {
     const { params } = router;
     const [filtersUpdated, setFiltersUpdated] = useState<boolean>(false);
@@ -80,7 +81,8 @@ const GroupedCampaignsFilter: FunctionComponent<Props> = ({
                             />
                         )}
                     </Grid>
-                    <Grid item xs={3}>
+                    {/* TODO uncomment when filter ready in backend */}
+                    {/* <Grid item xs={3}>
                         <InputComponent
                             loading={isFetchingCountries}
                             keyValue="countries"
@@ -97,7 +99,7 @@ const GroupedCampaignsFilter: FunctionComponent<Props> = ({
                             }))}
                             label={MESSAGES.country}
                         />
-                    </Grid>
+                    </Grid> */}
                 </Grid>
             </Box>
             <Box display="inline-flex" width="15%" justifyContent="flex-end">

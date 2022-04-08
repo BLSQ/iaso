@@ -21,6 +21,7 @@ export const useGetGroupedCampaigns = (
               limit: params.pageSize ?? '20',
               order: params.order ?? 'name',
               page: params.page ?? '1',
+              search: params.search,
           }
         : {};
 

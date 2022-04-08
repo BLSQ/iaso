@@ -40,6 +40,7 @@ export const GroupedCampaigns: FunctionComponent<Props> = ({ params }) => {
             order: params.order ?? DEFAULT_ORDER,
             pageSize: params.pageSize ?? DEFAULT_PAGE_SIZE,
             page: params.page ?? DEFAULT_PAGE,
+            search: params.search,
         };
     }, [params]);
     const { data: groupedCampaigns, isFetching } =

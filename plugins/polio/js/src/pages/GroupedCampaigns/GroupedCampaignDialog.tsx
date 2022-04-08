@@ -3,6 +3,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useState,
+    useEffect,
     useMemo,
 } from 'react';
 import { Box, Divider, Grid } from '@material-ui/core';
@@ -39,11 +40,12 @@ const makeCampaignsDropDown = campaigns =>
             };
         })
         .sort(sortCampaignNames);
+const emptyCampaigns = [];
 
 export const GroupedCampaignDialog: FunctionComponent<Props> = ({
     // titleMessage,
     name = '',
-    campaigns = [],
+    campaigns = emptyCampaigns,
     type,
     id,
     renderTrigger,
@@ -59,6 +61,11 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
         [allCampaigns],
     );
     const { mutateAsync: saveGroupedCampaign } = useSaveGroupedCampaign(type);
+    const reset = useCallback(() => {
+        setGroupedCampaignName(name);
+        setCampaignsToLink(campaigns);
+    }, [campaigns, name]);
+
     const onConfirm = useCallback(
         async closeDialog => {
             const query: GroupedCampaignQuery = id
@@ -73,16 +80,19 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
                       campaigns_ids:
                           commaSeparatedIdsToStringArray(campaignsToLink),
                   };
-            console.log('confirm', query);
             await saveGroupedCampaign(query);
             closeDialog();
         },
         [campaignsToLink, groupedCampaignName, id, saveGroupedCampaign],
     );
-    const onCancel = useCallback(closeDialog => {
-        console.log('cancel');
-        closeDialog();
-    }, []);
+    const onCancel = useCallback(
+        closeDialog => {
+            reset();
+            closeDialog();
+        },
+        [reset],
+    );
+    useEffect(reset, [reset, name, id, campaigns]);
     const allowConfirm = Boolean(groupedCampaignName);
     return (
         <ConfirmCancelDialogComponent

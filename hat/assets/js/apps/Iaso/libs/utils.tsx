@@ -6,7 +6,9 @@ export const makeUrlWithParams = (
         ([_key, value]) => value !== undefined,
     );
     // @ts-ignore
-    const queryString = new URLSearchParams(Object.fromEntries(activeParams));
+    const queryString = new URLSearchParams(
+        Object.fromEntries(activeParams),
+    ).toString();
 
-    return `${url}?${queryString.toString()}`;
+    return queryString ? `${url}?${queryString}` : url;
 };

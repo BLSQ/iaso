@@ -12,7 +12,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
-import { sortCampaignNames } from '../../utils';
+import { makeCampaignsDropDownWithUUID, sortCampaignNames } from '../../utils';
 import {
     GroupedCampaignQuery,
     useSaveGroupedCampaign,
@@ -31,15 +31,7 @@ type Props = {
 
 const GROUPED_CAMPAIGN_NAME = 'groupedCampaignName';
 const CHILDREN_CAMPAIGNS = 'childrenCampaigns';
-const makeCampaignsDropDown = campaigns =>
-    campaigns
-        ?.map(campaign => {
-            return {
-                label: campaign.obr_name,
-                value: campaign.id,
-            };
-        })
-        .sort(sortCampaignNames);
+
 const emptyCampaigns = [];
 
 export const GroupedCampaignDialog: FunctionComponent<Props> = ({
@@ -57,7 +49,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
     // TODO refactor this hook to make more flexible
     const { data: allCampaigns } = useGetCampaigns().query;
     const allCampaignsDropdown = useMemo(
-        () => makeCampaignsDropDown(allCampaigns),
+        () => makeCampaignsDropDownWithUUID(allCampaigns),
         [allCampaigns],
     );
     const { mutateAsync: saveGroupedCampaign } = useSaveGroupedCampaign(type);

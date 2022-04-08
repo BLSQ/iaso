@@ -37,6 +37,19 @@ export const makeCampaignsDropDown = campaigns =>
         })
         .sort(sortCampaignNames);
 
+export const makeCampaignsDropDownWithUUID = campaigns => {
+    return (
+        campaigns
+            ?.map(campaign => {
+                return {
+                    label: campaign.obr_name,
+                    value: campaign.id,
+                };
+            })
+            .sort(sortCampaignNames) ?? []
+    );
+};
+
 export const defaultShapeStyle = {
     color: 'grey',
     opacity: '1',

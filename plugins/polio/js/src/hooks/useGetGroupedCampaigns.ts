@@ -14,13 +14,15 @@ const getGroupedCampaigns = async (
 };
 
 export const useGetGroupedCampaigns = (
-    params: Record<string, unknown> = {},
+    params: Record<string, unknown>,
 ): UseQueryResult<GroupedCampaigns, Error> => {
-    const paramsForBackend = {
-        limit: params.pageSize ?? '20',
-        order: params.order ?? 'name',
-        page: params.page ?? '1',
-    };
+    const paramsForBackend = params
+        ? {
+              limit: params.pageSize ?? '20',
+              order: params.order ?? 'name',
+              page: params.page ?? '1',
+          }
+        : {};
 
     return useSnackQuery(
         ['groupedCampaigns', paramsForBackend],

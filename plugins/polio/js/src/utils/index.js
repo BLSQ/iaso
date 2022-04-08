@@ -12,7 +12,7 @@ export const findDataForShape = ({ shape, data, round, campaign }) => {
 // };
 
 // TODO have exhaustive sorting function
-const sortCampaignNames = (nameA, nameB) => {
+export const sortCampaignNames = (nameA, nameB) => {
     const [countryCodeA, referenceA] = nameA?.label.split('-');
     const [countryCodeB, referenceB] = nameB?.label.split('-');
     const comparison = countryCodeA.localeCompare(countryCodeB, undefined, {
@@ -29,7 +29,7 @@ const sortCampaignNames = (nameA, nameB) => {
 };
 export const makeCampaignsDropDown = campaigns =>
     campaigns
-        .map(campaign => {
+        ?.map(campaign => {
             return {
                 label: campaign.obr_name,
                 value: campaign.obr_name,

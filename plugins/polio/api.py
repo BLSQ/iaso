@@ -35,6 +35,7 @@ from plugins.polio.serializers import (
     PreparednessSerializer,
     SmallCampaignSerializer,
     get_current_preparedness,
+    CampaignGroupSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -48,7 +49,7 @@ from .forma import (
     find_orgunit_in_cache,
 )
 from .helpers import get_url_content
-from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round
+from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup
 from .models import CountryUsersGroup
 from .models import URLCache, Preparedness
 from .preparedness.calculator import preparedness_summary
@@ -112,6 +113,7 @@ class CampaignViewSet(ModelViewSet):
     filterset_fields = {
         "country__name": ["exact"],
         "country__id": ["in"],
+        "groups__id": ["in", "exact"],
         "obr_name": ["exact", "contains"],
         "vacine": ["exact"],
         "cvdpv2_notified_at": ["gte", "lte", "range"],
@@ -1348,8 +1350,26 @@ class LQASStatsViewSet(viewsets.ViewSet):
         return JsonResponse(response, safe=False)
 
 
+class CampaignGroupViewSet(ModelViewSet):
+    results_key = "results"
+    queryset = CampaignGroup.objects.all()
+    serializer_class = CampaignGroupSerializer
+
+    # We allow anonymous read access for the embeddable calendar map view
+    # in this case we use a restricted serializer with less field
+    # notably not the url that we want to remain private.
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    ordering_fields = ["id"]
+    filterset_fields = {
+        "name": ["icontains"],
+    }
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
+router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
 router.register(r"polio/preparedness", PreparednessViewSet)
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/im", IMViewSet, basename="IM")

@@ -22,6 +22,7 @@ from .models import (
     ROUND2START,
     ROUND2DONE,
     SpreadSheetImport,
+    CampaignGroup,
 )
 from .preparedness.calculator import get_preparedness_score, preparedness_summary
 from .preparedness.parser import (
@@ -308,6 +309,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
     top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
     general_status = serializers.SerializerMethodField()
+    groups = serializers.PrimaryKeyRelatedField(many=True, queryset=CampaignGroup.objects.all(), required=False)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:
@@ -514,3 +516,20 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "is_preventive",
         ]
         read_only_fields = fields
+
+
+class CampaignNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Campaign
+        fields = ["id", "obr_name"]
+
+
+class CampaignGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignGroup
+        fields = "__all__"
+
+    campaigns = CampaignNameSerializer(many=True, read_only=True)
+    campaigns_ids = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=CampaignGroup.objects.all(), source="campaigns"
+    )

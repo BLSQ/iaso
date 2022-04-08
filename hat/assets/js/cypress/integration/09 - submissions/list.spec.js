@@ -193,7 +193,13 @@ describe('Submissions', () => {
                 page2,
             );
         });
-        testTablerender(baseUrl, listFixture.instances.length, 7, false);
+        testTablerender({
+            baseUrl,
+            rows: listFixture.instances.length,
+            columns: 7,
+            withVisit: false,
+            apiKey: 'instances',
+        });
         testPagination({
             baseUrl,
             apiPath: '/api/instances/**',
@@ -364,7 +370,7 @@ describe('Submissions', () => {
             const mapping = ['#month', '#quarter'];
             const secondId = mapping[periodTypeIndex];
             cy.fillMultiSelect('#periodType', [periodTypeIndex], false);
-            cy.get('#search-button').as('searchButton');
+            cy.get('[data-test="search-button"]').as('searchButton');
             fillPeriodPicker('#startPeriod #year', '#year');
             if (secondId) {
                 cy.get('@searchButton').should('be.disabled');

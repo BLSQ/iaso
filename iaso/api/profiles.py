@@ -135,6 +135,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         for org_unit in org_units:
             org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
             profile.org_units.add(org_unit_item)
+        if profile.dhis2_id == "":
+            profile.dhis2_id = None
         profile.save()
         return Response(profile.as_dict())
 

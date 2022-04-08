@@ -33,7 +33,13 @@ export const WarningMessage: FunctionComponent<Props> = ({
           )[0]?.label
         : null;
     return (
-        <Grid container item spacing={1} justifyContent="center">
+        <Grid
+            container
+            item
+            spacing={1}
+            justifyContent="center"
+            data-test={`copyversion-warning-${destinationSourceName}`}
+        >
             <Grid item>
                 <Typography className={classes.source} variant="h6">
                     <FormattedMessage

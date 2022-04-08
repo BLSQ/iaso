@@ -274,6 +274,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.chooseVersionNumber',
         defaultMessage: 'Choose version number',
     },
+    copyVersionSuccessMessage: {
+        defaultMessage: 'The task has been created',
+        id: 'iaso.snackBar.copyVersionSuccessMessage',
+    },
+    copyVersionErrorMessage: {
+        defaultMessage: 'An error occurred while creating the task',
+        id: 'iaso.snackBar.copyVersionErrorMessage',
+    },
 });
 
 export default MESSAGES;

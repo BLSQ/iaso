@@ -14,7 +14,7 @@ import { replace } from 'react-router-redux';
 import { genUrl } from '../../utils/routing';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { useGetCountries } from '../../hooks/useGetCountries';
+// import { useGetCountries } from '../../hooks/useGetCountries';
 
 type Props = {
     router: any;
@@ -28,31 +28,31 @@ const GroupedCampaignsFilter: FunctionComponent<Props> = ({
 }) => {
     const { params } = router;
     const [filtersUpdated, setFiltersUpdated] = useState<boolean>(false);
-    const [countries, setCountries] = useState<string>(params.countries);
+    // const [countries, setCountries] = useState<string>(params.countries);
     const [search, setSearch] = useState<string>(params.search);
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
     );
     const dispatch = useDispatch();
-    const { data, isFetching: isFetchingCountries } = useGetCountries();
-    const countriesList = data?.orgUnits ?? [];
+    // const { data, isFetching: isFetchingCountries } = useGetCountries();
+    // const countriesList = data?.orgUnits ?? [];
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const urlParams = {
-                countries,
+                // countries,
                 search: search && search !== '' ? search : undefined,
                 showOnlyDeleted: showOnlyDeleted || undefined,
             };
             const url = genUrl(router, urlParams);
             dispatch(replace(url));
         }
-    }, [countries, dispatch, filtersUpdated, router, search, showOnlyDeleted]);
+    }, [dispatch, filtersUpdated, router, search, showOnlyDeleted]);
 
     useEffect(() => {
         setFiltersUpdated(true);
-    }, [countries, search, showOnlyDeleted]);
+    }, [search, showOnlyDeleted]);
 
     return (
         <>

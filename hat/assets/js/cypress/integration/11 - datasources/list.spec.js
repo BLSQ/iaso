@@ -251,11 +251,11 @@ describe('Data sources', () => {
                 cy.get('[data-test=open-versions-dialog-button-1]')
                     .as('openVersionsButton')
                     .click();
-                cy.get('[data-test=copyversion-button]').as(
+                cy.getAndAssert('[data-test=copyversion-button]').as(
                     'copyVersionButton',
                 );
                 cy.get('@copyVersionButton').first().click();
-                cy.get('[data-test=copy-source-version-modal]').should('exist');
+
                 cy.fillSingleSelect('#destinationSource');
                 cy.getAndAssert(
                     '[data-test=confirm-button]',

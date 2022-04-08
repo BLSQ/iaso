@@ -49,7 +49,15 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
         />
     ));
 
-    const routes = addRoutes(baseRoutes);
+    const overrideLandingRoutes = plugins
+        .filter(plugin => plugin.overrideLanding)
+        .map(plugin => plugin.overrideLanding);
+    // using the last plugin override (arbitrary choice
+    const overrideLanding =
+        overrideLandingRoutes.length > 0
+            ? overrideLandingRoutes[overrideLandingRoutes.length - 1]
+            : undefined;
+    const routes = addRoutes(baseRoutes, overrideLanding);
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>

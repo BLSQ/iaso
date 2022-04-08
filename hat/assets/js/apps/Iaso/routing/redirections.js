@@ -6,9 +6,9 @@ import { getChipColors } from '../constants/chipColors';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import Page404 from '../components/errors/Page404';
 
-const addRoutes = baseRoutes =>
-    baseRoutes.concat([
-        <Redirect path="/" to={baseUrls.forms} />,
+const addRoutes = (baseRoutes, overrideLanding) => {
+    return baseRoutes.concat([
+        <Redirect path="/" to={overrideLanding ?? baseUrls.forms} />,
         <Redirect
             path={baseUrls.orgUnits}
             to={`${
@@ -59,5 +59,6 @@ const addRoutes = baseRoutes =>
             component={({ location }) => <Page404 location={location} />}
         />,
     ]);
+};
 
 export { addRoutes };

@@ -1,11 +1,11 @@
 import React, { ReactElement } from 'react';
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { Link } from 'react-router';
 import { DateTimeCellRfc } from '../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { Column } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
 import MESSAGES from '../../constants/messages';
 import DeleteDialog from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import { IntlFormatMessage } from '../../constants/types';
+import { GroupedCampaignDialog } from './GroupedCampaignDialog';
 
 export const makeColumns = (
     formatMessage: IntlFormatMessage,
@@ -52,14 +52,13 @@ export const makeColumns = (
         Cell: (settings): ReactElement => (
             // TODO: limit to user permissions
             <section>
-                <IconButtonComponent
-                    onClick={() => {
-                        console.log('editing', settings.row.original);
-                    }}
-                    icon="edit"
-                    tooltipMessage={MESSAGES.edit}
+                <GroupedCampaignDialog
+                    type="edit"
+                    name={settings.row.original.name}
+                    campaigns={settings.row.original.campaigns.map(
+                        (campaign: { id: string; name: string }) => campaign.id,
+                    )}
                 />
-
                 <DeleteDialog
                     keyName="grouped"
                     disabled={settings.row.original.instances_count > 0}

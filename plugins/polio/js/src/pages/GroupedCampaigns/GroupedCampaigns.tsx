@@ -1,6 +1,10 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { useSafeIntl, Table } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    // Table,
+    AddButton as AddButtonComponent,
+} from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { redirectTo } from 'Iaso/routing/actions';
@@ -10,6 +14,9 @@ import { useStyles } from '../../styles/theme';
 import { GROUPED_CAMPAIGNS } from '../../constants/routes';
 import { useGetGroupedCampaigns } from '../../hooks/useGetGroupedCampaigns';
 import { makeColumns } from './config';
+import { GroupedCampaignDialog } from './GroupedCampaignDialog';
+import { useDeleteGroupedCampaign } from '../../hooks/useDeleteGroupedCampaign';
+import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
 type Params = {
     pageSize: string;
@@ -21,11 +28,24 @@ type Props = {
     params: Params;
 };
 
+const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE = 1;
+const DEFAULT_ORDER = 'name';
+
 export const GroupedCampaigns: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data: groupedCampaigns, isFetching } = useGetGroupedCampaigns();
+    const tableParams = useMemo(() => {
+        return {
+            order: params.order ?? DEFAULT_ORDER,
+            pageSize: params.pageSize ?? DEFAULT_PAGE_SIZE,
+            page: params.page ?? DEFAULT_PAGE,
+        };
+    }, [params]);
+    const { data: groupedCampaigns, isFetching } =
+        useGetGroupedCampaigns(tableParams);
     const dispatch = useDispatch();
+    const { mutateAsync: deleteGroupedCampaign } = useDeleteGroupedCampaign();
 
     return (
         <>
@@ -35,14 +55,23 @@ export const GroupedCampaigns: FunctionComponent<Props> = ({ params }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <GroupedCampaignsFilter />
-                <Table
+                <GroupedCampaignDialog
+                    renderTrigger={({ openDialog }) => (
+                        <AddButtonComponent
+                            dataTestId="add-grouped_campaign-button"
+                            onClick={openDialog}
+                        />
+                    )}
+                    type="create"
+                />
+                <TableWithDeepLink
                     data={groupedCampaigns?.results ?? []}
                     pages={groupedCampaigns?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={makeColumns(formatMessage)}
+                    columns={makeColumns(formatMessage, deleteGroupedCampaign)}
                     count={groupedCampaigns?.count ?? 0}
                     baseUrl={GROUPED_CAMPAIGNS}
-                    params={params}
+                    params={tableParams}
                     onTableParamsChange={p =>
                         dispatch(redirectTo(GROUPED_CAMPAIGNS, p))
                     }

@@ -26,7 +26,6 @@ uwsgi==2.0.18
 
 # postgresql and sql
 psycopg2-binary==2.8.5
-snaql==0.4.2
 django-ltree==0.5.2
 
 # webpack loader

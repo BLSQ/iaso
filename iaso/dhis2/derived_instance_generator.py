@@ -9,9 +9,8 @@ from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Avg, Count, FloatField, Sum, Exists, OuterRef
+from django.db.models import Avg, Count, FloatField, Sum, Exists, OuterRef, Q
 from django.db.models.functions import Cast
-from django.db.models.expressions import RawSQL
 from iaso.models import Instance
 import logging
 
@@ -49,6 +48,7 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
 
     # build query set for aggregation
 
+    # The .values() set what we aggregate on
     queryset = cvs_form.instances.filter(form=cvs_form, period=period).values("period", "org_unit_id", "form_id")
     # don't aggregate deleted instances
     queryset = queryset.filter(deleted=False)
@@ -63,15 +63,21 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
         # because other dependencies where not 'relevant' or 'filled'
         # for the moment excluding them looks better than considering them as 0
         # this can be changed later and we consider make it configurable on the aggregation settings
-        # I couldn't manage to get query via KeyTextTransform so ended with RawSQL
-        # sql injection shouldn't be problematic since I'm using the params
-        filter_out_blanks = RawSQL("json ->> %s != ''", [aggregation["questionName"]])
+        question_name = aggregation["questionName"]
+        fieldname = "json__" + question_name
+        filter_out_blanks = ~Q(**{fieldname: ""})
+        agg_filter = filter_out_blanks
+        # Additional filter that can be passed to the aggregate
+        for condition in aggregation.get("where", []):
+            q = condition_to_q(condition)
+            agg_filter &= q
+
         if aggregation["aggregationType"] == "sum":
-            queryset = queryset.annotate(**{aggregation["id"]: Sum(answer, filter=filter_out_blanks)})
+            queryset = queryset.annotate(**{aggregation["id"]: Sum(answer, filter=agg_filter)})
         elif aggregation["aggregationType"] == "avg":
-            queryset = queryset.annotate(**{aggregation["id"]: Avg(answer, filter=filter_out_blanks)})
+            queryset = queryset.annotate(**{aggregation["id"]: Avg(answer, filter=agg_filter)})
         elif aggregation["aggregationType"] == "count":
-            queryset = queryset.annotate(**{aggregation["id"]: Count(answer, filter=filter_out_blanks)})
+            queryset = queryset.annotate(**{aggregation["id"]: Count(answer, filter=agg_filter)})
         else:
             raise Exception("unsupported aggregationType : " + aggregation["aggregationType"])
 
@@ -104,6 +110,27 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
         + str(progress)
     )
     return progress
+
+
+def condition_to_q(condition):
+    """This is our custom format to filter on a question value in the json field.
+
+    It takes 3 parameter, the questionName, the operator (e.g exact) and the value (attention type matter don't quote
+    if you want to filter an int
+    Check JSONField.get_lookups() for valid operators. You can prepend ~ to negate them.
+
+
+    """
+    lookup = condition["operator"]
+    cond_fieldname = "json__" + condition["questionName"]
+    cond_value = condition["value"]
+    negated = False
+    if lookup.startswith("~"):
+        negated = True
+        lookup = lookup[1:]
+    fieldname_lookup = cond_fieldname + "__" + lookup
+    q = Q(**{fieldname_lookup: cond_value}, _negated=negated)
+    return q
 
 
 @transaction.atomic

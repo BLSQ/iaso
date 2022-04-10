@@ -36,7 +36,8 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
 }) => {
     // TODO: add consition on scope
     const { formatMessage } = useSafeIntl();
-    const { data: regions = [] } = useGetRegions(countryId);
+    const { data: regions = [], isLoading: isLoadingRegions } =
+        useGetRegions(countryId);
     const chartData = useMemo(() => {
         if (type === 'lqas') {
             return formatLqasDataForChart({
@@ -70,7 +71,7 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
                         data={chartData}
                         tooltipFormatter={tooltipFormatter(formatMessage)}
                         chartKey={`LQASIMChart-${round}-${campaign}-${type}`}
-                        isLoading={isLoading}
+                        isLoading={isLoading || isLoadingRegions}
                         showChart={Boolean(campaign)}
                         colorTresholds={colorTresholds}
                     />

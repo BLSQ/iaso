@@ -1,0 +1,90 @@
+{
+    "count": 25,
+    "groups": [
+        {
+            "id": 1,
+            "name": "Ryu",
+            "source_ref": "yu12",
+            "source_version": {
+                "id": 5,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "wb_schools_2019"
+                }
+            },
+            "org_unit_count": 0,
+            "created_at": 1647942511.612114,
+            "updated_at": 1647942511.612146
+        },
+        {
+            "id": 2,
+            "name": "Ken",
+            "source_ref": null,
+            "source_version": {
+                "id": 5,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "wb_schools_2019"
+                }
+            },
+            "org_unit_count": 0,
+            "created_at": 1647942511.612114,
+            "updated_at": 1647942511.612146
+        },
+        {
+            "id": 3,
+            "name": "Sagat",
+            "source_ref": null,
+            "source_version": {
+                "id": 5,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "wb_schools_2019"
+                }
+            },
+            "org_unit_count": 0,
+            "created_at": 1647942511.612114,
+            "updated_at": 1647942511.612146
+        },
+        {
+            "id": 4,
+            "name": "Bison",
+            "source_ref": null,
+            "source_version": {
+                "id": 5,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "wb_schools_2019"
+                }
+            },
+            "org_unit_count": 0,
+            "created_at": 1647942511.612114,
+            "updated_at": 1647942511.612146
+        },
+        {
+            "id": 5,
+            "name": "JoJo",
+            "source_ref": null,
+            "source_version": {
+                "id": 5,
+                "number": 1,
+                "data_source": {
+                    "id": 1,
+                    "name": "wb_schools_2019"
+                }
+            },
+            "org_unit_count": 0,
+            "created_at": 1647942511.612114,
+            "updated_at": 1647942511.612146
+        }
+    ],
+    "has_next": true,
+    "has_previous": false,
+    "page": 1,
+    "pages": 2,
+    "limit": 20
+}

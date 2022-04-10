@@ -79,9 +79,10 @@ const Users = ({ params }) => {
                     <UsersDialog
                         titleMessage={MESSAGES.create}
                         renderTrigger={({ openDialog }) => (
-                            <div id="add-button-container">
-                                <AddButtonComponent onClick={openDialog} />
-                            </div>
+                            <AddButtonComponent
+                                dataTestId="add-user-button"
+                                onClick={openDialog}
+                            />
                         )}
                         params={params}
                         saveProfile={saveProfile}

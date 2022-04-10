@@ -140,6 +140,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.submissions',
         defaultMessage: 'Form Submissions',
     },
+    iaso_update_submission: {
+        id: 'iaso.permissions.update_submission',
+        defaultMessage: 'Update Submissions',
+    },
     iaso_users: {
         id: 'iaso.permissions.users',
         defaultMessage: 'Users',
@@ -151,6 +155,10 @@ const MESSAGES = defineMessages({
     deleteSuccess: {
         id: 'iaso.snackBar.delete_successful',
         defaultMessage: 'Deleted successfully',
+    },
+    dhis2_id: {
+        id: 'iaso.label.dhis2Id',
+        defaultMessage: 'DHIS2 id',
     },
 });
 

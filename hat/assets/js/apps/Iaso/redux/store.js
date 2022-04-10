@@ -33,10 +33,6 @@ import { routerInitialState, routerReducer } from './routerReducer';
 import { linksInitialState, linksReducer } from '../domains/links/reducer';
 import { usersReducer, usersInitialState } from '../domains/users/reducer';
 import {
-    groupsInitialState,
-    reducer as groupsReducer,
-} from '../domains/orgUnits/groups/reducer';
-import {
     orgUnitsTypesInitialState,
     reducer as orgUnitsTypesReducer,
 } from '../domains/orgUnits/orgUnitTypes/reducer';
@@ -61,7 +57,6 @@ const store = createStore(
         users: usersInitialState,
         projects: projectsInitialState,
         mappings: mappingsInitialState,
-        groups: groupsInitialState,
         orgUnitsTypes: orgUnitsTypesInitialState,
     },
     {
@@ -77,7 +72,6 @@ const store = createStore(
         users: usersReducer,
         projects: projectsReducer,
         mappings: mappingReducer,
-        groups: groupsReducer,
         orgUnitsTypes: orgUnitsTypesReducer,
     },
     [routerMiddleware(storeHistory), thunk, localeMiddleware],

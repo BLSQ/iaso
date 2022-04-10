@@ -1,8 +1,11 @@
 import typing
 import logging
+from datetime import timedelta
+
+from django.utils.timezone import now
 
 logger = logging.getLogger(__name__)
-from iaso.models import ExportRequest
+from iaso.models import ExportRequest, KILLED, QUEUED
 from rest_framework import serializers, permissions
 
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
@@ -32,6 +35,18 @@ class ExportRequestSerializer(serializers.ModelSerializer):
         return parse_instance_filters(self.context["request"].data)
 
     def create(self, validated_data: typing.MutableMapping):
+        # FIXME: Temporary fix till we reimplement this in the new task system, timeout old queued requests.
+        REQUEST_TIMEOUT_S = 15 * 60  # 15 minutes
+        export_requests = ExportRequest.objects.filter(status=QUEUED).filter(
+            queued_at__lt=now() - timedelta(seconds=REQUEST_TIMEOUT_S)
+        )
+        for export_request in export_requests:
+            logger.warning(f"Timeouting {export_request}")
+            export_request.status = KILLED
+            export_request.last_error_message = "Timeout"
+            export_request.exportstatus_set.filter(status=QUEUED).update(status="SKIPPED", last_error_message="Timeout")
+            export_request.save()
+
         try:
             user = self.context["request"].user
             force_export = self.context["request"].data.get("forceExport", False)
@@ -42,7 +57,10 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             selection["selected_ids"] = self.context["request"].data.get("selected_ids", None)
             selection["unselected_ids"] = self.context["request"].data.get("unselected_ids", None)
             return ExportRequestBuilder().build_export_request(
-                filters=validated_data, launcher=user, force_export=force_export, selection=selection
+                filters=validated_data,
+                launcher=user,
+                force_export=force_export,
+                selection=selection,
             )
         except Exception as e:
             # warn the client will use this as part of the translation key

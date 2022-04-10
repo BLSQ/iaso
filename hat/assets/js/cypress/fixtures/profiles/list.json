@@ -47,6 +47,7 @@
             "is_superuser": true,
             "org_units": [],
             "language": "en",
+            "dhis2_id": "1",
             "user_id": 5
         },
         {
@@ -107,6 +108,7 @@
                 }
             ],
             "language": "en",
+            "dhis2_id": "2",
             "user_id": 69
         },
         {
@@ -167,6 +169,7 @@
                 }
             ],
             "language": "en",
+            "dhis2_id": "3",
             "user_id": 69
         }
     ],

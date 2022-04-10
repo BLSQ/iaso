@@ -48,6 +48,10 @@ const campaignsFilters = [
         isRequired: false,
         key: 'showOnlyDeleted',
     },
+    {
+        isRequired: false,
+        key: 'campaignType',
+    },
 ];
 
 const routes = [
@@ -247,8 +251,11 @@ const translations = {
     en,
 };
 
+const overrideLanding = DASHBOARD_BASE_URL;
+
 export default {
     routes,
     menu,
     translations,
+    overrideLanding,
 };

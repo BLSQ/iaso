@@ -1,12 +1,15 @@
 from bs4 import BeautifulSoup as Soup
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from rest_framework.request import Request
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.translation import gettext as _
+
+from iaso.api.common import HasPermission
 from iaso.enketo import (
     enketo_settings,
     enketo_url_for_edition,
@@ -200,7 +203,7 @@ def _build_url_for_edition(request, instance, user_id=None):
 
 
 @api_view(["GET"])
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([HasPermission("menupermissions.iaso_update_submission")])
 def enketo_edit_url(request, instance_uuid):
     instance = Instance.objects.filter(uuid=instance_uuid, project__account=request.user.iaso_profile.account).first()
 
@@ -250,6 +253,7 @@ def enketo_form_download(request):
 
 
 class EnketoSubmissionAPIView(APIView):
+
     permission_classes = [permissions.AllowAny]
 
     def head(self, request, format=None):

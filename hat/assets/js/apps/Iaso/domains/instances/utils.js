@@ -7,7 +7,7 @@ import { truncateText, getTableUrl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
 
-import instancesTableColumns from './config';
+import instancesTableColumns, { actionTableColumn } from './config';
 import MESSAGES from './messages';
 import DeleteDialog from './components/DeleteInstanceDialog';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
@@ -124,6 +124,7 @@ export const getInstancesColumns = (
             }
         });
     tableColumns = tableColumns.concat(childrenArray);
+    tableColumns.push(actionTableColumn(formatMessage, user));
     return tableColumns;
 };
 
@@ -157,7 +158,6 @@ export const formatLabel = field => {
 };
 export const getInstancesVisibleColumns = ({
     formatMessage,
-    instance,
     columns = undefined,
     order,
     defaultOrder,
@@ -181,7 +181,7 @@ export const getInstancesVisibleColumns = ({
             activeOrders.indexOf(`-${c.accessor}`) !== -1,
     }));
 
-    if (instance) {
+    if (possibleFields) {
         possibleFields?.forEach(field => {
             const label = formatLabel(field);
             newColumns.push({

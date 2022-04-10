@@ -18,6 +18,7 @@ TASKS = _("Tâches")
 POLIO = _("Polio")
 POLIO_CONFIG = _("Polio config")
 SUBMISSIONS = _("Soumissions")
+UPDATE_SUBMISSIONS = _("Editer soumissions")
 
 
 # When adding a new permissions, it also need to be added in
@@ -62,4 +63,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_polio", POLIO),
             ("iaso_polio_config", POLIO_CONFIG),
             ("iaso_submissions", SUBMISSIONS),
+            ("iaso_update_submission", UPDATE_SUBMISSIONS),
         )

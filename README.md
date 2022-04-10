@@ -1,6 +1,7 @@
 Introduction
 ============
 
+
 Iaso is a georegistry and data collection web platform structured around
 trees of organization units (also known a master lists)
 
@@ -157,7 +158,15 @@ docker-compose up db
 ``` {.sourceCode .bash}
 docker-compose run --rm iaso manage migrate
 ```
-
+(If you get a message saying that the database iaso does not exist, you can connect to your postgres instance using 
+```
+psql -h localhost -p 5433 -U postgres
+```
+then type 
+```
+create database iaso; 
+```
+to create the missing database.)
 ### 5. Start the server
 
 To start all the containers (backend, frontend, db)
@@ -352,6 +361,10 @@ cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --
 This will put the data in a database called iaso5. You can choose in your .env file which database is used by editing
 the `RDS_DB_NAME` settings.
 
+Health
+------
+On the /health/ url you can find listed the Iaso version number, environment, deployment time, etc... that might help you understand how this server instance is deployed for debugging. e.g.  https://iaso.bluesquare.org/health/
+
 Local DHIS2
 -----------
 Experimental. For development if you need a local dhis2 server, you can spin up one in your docker-compose by using the `docker/docker-compose-dhis2.yml ` configuration file.
@@ -384,6 +397,43 @@ cd Projects/blsq/iaso
 docker-compose up dhis2 db_dhis2
 ```
 
+### Setting up Single Sign On (SSO) with you local DHIS2
+If you want to test the feature with your local dhis2 you can use the following step. This assume you are running everything in Dockers
+
+0. Launch DHIS2 with iaso within docker compose
+`docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up`
+ With the default docker compose setup, iaso is on port 8081 and dhis2 on port 8081 on your machine
+1. These step assume you have loaded your DHIS2 with the play test data but it's not mandatory. To see how to do it, look at previous section
+2. Configure an Oauth client in DHIS2: open http://localhost:8080/dhis-web-settings/index.html#/oauth2
+3. Add new client:
+   - Name : what you want
+   - ClientId: What you want (must be the same as your external credential in Iaso)
+   - Client Secret : there is one generated, copy it and save it for a latter step
+   - Grant Type: check Authorization code
+   - Redirect URI : http://localhost:8081/api/dhis2/{same as client id}/login/
+
+4. Setup external credential in iaso
+   1. open admin http://localhost:8081/admin/
+   2. go to External Credentials | http://localhost:8081/admin/iaso/externalcredentials/
+   3. Add external credentials on the top right | http://localhost:8081/admin/iaso/externalcredentials/add/
+   4. Account: The account for which you want to enable dhis2 auth
+   - Name : Same as DHIS2 Client ID
+   - Login : http://dhis2:8080/
+   - Password: the client secret you saved in step 2
+   - Url: http://localhost:8081/
+
+5 Create a new user in Iaso, grant it some right
+
+6. In DHIS2 retrieve the id for the user
+     - Current way I have found it is to go to http://localhost:8080/api/me and copy the id field
+     - But you can also find a user here and it's in the url http://localhost:8080/dhis-web-user/index.html#/users
+
+7. Add the dhis2 id to the Iaso user : Open the target user in the iaso Admin http://localhost:8081/admin/iaso/profile/ and add it to the dhis2 id field, save.
+
+8. Unlog from iaso or in a separate session/container
+9. Try the feature by opening : http://localhost:8080/uaa/oauth/authorize?client_id={your_dhis2_client_id}&response_type=code
+
+
 Test and serving forms from Iaso mobile application
 -----------
 
@@ -409,6 +459,31 @@ Once Ngrok installed and running you have to run the app in developer mode (tap 
 by selecting the 3 dots in the top right corner and select "change server url". When connected to your server, refresh
 all data and your app will be ready and connected to your development server.
 
+
+SSO with DHIS2
+--------------------------
+You can use DHIS2 as identity provider to login on Iaso. It requires a little configuration on DHIS2 and Iaso in order
+to achieve that. 
+
+### 1 - Setup OAuth2 clients in DHIS2
+In DHIS2 settings you must setup your Iaso instance as Oauth2 Clients. Client ID and Grant types must be :
+* Client ID : What you want (Must be the same as your external credential name in Iaso)
+* Grant Types : Authorization code
+
+Redirect URIs is your iaso server followed by : ```/api/dhis2/{your_dhis2_client_id}/login/```
+
+For example : https://myiaso.com/api/dhis2/dhis2_client_id/login/
+
+### 2 - Setup OAuth2 clients in DHIS2
+In iaso you must setup your dhis2 server credentials. 
+To do so, go to ```/admin``` and setup as follow :  
+
+* Name: {your_dhis2_client_id} ( It must be exactly as it is in your DHIS2 client_id and DHIS2 Redirect URIs)
+* Login: Your DHIS2 url (Ex : https://sandbox.dhis2.org/ )
+* Password: The secret provided by DHIS2 when you created your OAuth2 client.
+* Url: Your Iaso Url (Ex: https://myiaso.com/)
+
+Don't forget the ```/``` at the end of the urls.
 
 Live Bluesquare components
 --------------------------
@@ -449,6 +524,7 @@ THEME_SECONDARY_COLOR="<hexa_color>"
 APP_TITLE="<app_title>"
 FAVICON_PATH="<path_in_static_folder>"
 LOGO_PATH="<path_in_static_folder>"
+SHOW_NAME_WITH_LOGO="<'yes' or 'no'>"
 ```
 
 > **note**
@@ -602,15 +678,27 @@ If you need to test s3 storage in development, you have to:
 These are actually exactly the same steps we use on AWS.
 
 ### Testing prod js assets in development
-Run `TEST_PROD=true docker-compose up`
 
-to have a local environment serving you the production assets (minified
-and with the same compilation option as in production). This can be
-useful to reproduce production only bugs.
+During local development, by default, the Javascript and CSS will be loaded from
+a webpack server with live reloading of the code. To locally test the compiled
+version as it is in production ( minified and with the same compilation option).
+You can launch docker-compose with the `TEST_PROD=true` environment variable
+set.
+
+e.g `TEST_PROD=true docker-compose up`
+
+This can be useful to reproduce production only bugs. Please also test with this
+configuration whenever you modify webpack.prod.js to validate your changes.
+
+Alternatively this can be done outside of docker by running:
+
+1. `npm run webpack-prod` to do the build
+2. Launching the django server with `TEST_PROD`
+   e.g. `TEST_PROD=true python manage.py runserver`.
 
 # Background tasks & worker
 
-Iaso  queue certains functions (task) for later execution, so they can run
+Iaso queue certains functions (task) for later execution, so they can run
 outside an HTTP request. This is used for functions that take a long time to execute
 so they don't canceled in the middle by a timeout of a connection closed.
 e.g: bulk import, modifications or export of OrgUnits.  Theses are the functions

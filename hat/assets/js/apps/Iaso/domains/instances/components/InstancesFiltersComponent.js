@@ -80,11 +80,23 @@ const InstancesFiltersComponent = ({
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
             dispatch(setInstancesFilterUpdated(false));
-            onSearch({
+            const searchParams = {
                 ...params,
                 ...getInstancesFilterValues(formState),
                 page: 1,
-            });
+            };
+            // removing columns params to refetch correct columns
+            const newFormIdsString = formState.formIds.value;
+            if (newFormIdsString) {
+                const newFormIds = formState.formIds.value.split(',');
+                if (
+                    formState.formIds.value !== params?.formIds &&
+                    newFormIds.length === 1
+                ) {
+                    delete searchParams.columns;
+                }
+            }
+            onSearch(searchParams);
         }
     }, [params, onSearch, dispatch, formState, isInstancesFilterUpdated]);
 
@@ -165,7 +177,7 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.forms}
                         loading={fetchingForms}
                     />
-                    <Box mt={-1}>
+                    <Box mt={-1} id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
                             titleMessage={MESSAGES.org_unit}
@@ -247,9 +259,8 @@ const InstancesFiltersComponent = ({
                         type="select"
                         loading={fetchingDevicesOwnerships}
                         options={devicesOwnerships.map(o => ({
-                            label: `${getDisplayName(o.user)} - IMEI:${
-                                o.device.imei
-                            }`,
+                            label: `${getDisplayName(o.user)} - IMEI:${o.device.imei
+                                }`,
                             value: o.id,
                         }))}
                         label={MESSAGES.deviceOwnership}
@@ -289,6 +300,7 @@ const InstancesFiltersComponent = ({
                         activePeriodString={formState.startPeriod.value}
                         periodType={formState.periodType.value}
                         title={formatMessage(MESSAGES.startPeriod)}
+                        keyName="startPeriod"
                         onChange={startPeriod =>
                             handleFormChange('startPeriod', startPeriod)
                         }
@@ -299,6 +311,7 @@ const InstancesFiltersComponent = ({
                         activePeriodString={formState.endPeriod.value}
                         periodType={formState.periodType.value}
                         title={formatMessage(MESSAGES.endPeriod)}
+                        keyName="endPeriod"
                         onChange={endPeriod =>
                             handleFormChange('endPeriod', endPeriod)
                         }
@@ -340,6 +353,7 @@ const InstancesFiltersComponent = ({
                         variant="contained"
                         className={classes.button}
                         color="primary"
+                        data-test="search-button"
                         onClick={() => handleSearch()}
                     >
                         <Search className={classes.buttonIcon} />

@@ -48,8 +48,8 @@ const Tasks = ({ params }) => {
 
     const { mutateAsync: killTaskAction } = useSnackMutation(
         task => patchRequest(`/api/tasks/${task.id}/`, task),
-        'patchTaskSuccess',
-        'patchTaskError',
+        MESSAGES.patchTaskSuccess,
+        MESSAGES.patchTaskError,
         ['tasks'],
     );
 
@@ -65,7 +65,7 @@ const Tasks = ({ params }) => {
     } = useSnackQuery(
         ['tasks', params],
         () => getRequestParams('/api/tasks', urlParams),
-        'fetchTasksError',
+        MESSAGES.fetchTasksError,
     );
 
     return (

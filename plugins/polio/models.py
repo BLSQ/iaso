@@ -16,6 +16,7 @@ VIRUSES = [
     ("PV2", _("PV2")),
     ("PV3", _("PV3")),
     ("cVDPV2", _("cVDPV2")),
+    ("WPV1", _("WPV1")),
 ]
 
 VACINES = [
@@ -106,6 +107,9 @@ class Round(models.Model):
     # Preparedness
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
     preparedness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
+
+    def get_item_by_key(self, key):
+        return getattr(self, key)
 
 
 class Campaign(SoftDeletableModel):
@@ -302,6 +306,9 @@ class Campaign(SoftDeletableModel):
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
 
+    def get_item_by_key(self, key):
+        return getattr(self, key)
+
     def get_districts(self):
         if self.group is None:
             return OrgUnit.objects.none()
@@ -470,3 +477,13 @@ class IMStatsCache(models.Model):
 
     def __str__(self):
         return str(self.params)
+
+
+class CampaignGroup(models.Model):
+    def __str__(self):
+        return f"{self.name} {','.join(str(c) for c in self.campaigns.all())}"
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=200)
+    campaigns = models.ManyToManyField(Campaign, related_name="groups")

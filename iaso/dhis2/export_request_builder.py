@@ -26,9 +26,9 @@ class ExportRequestBuilder:
     @transaction.atomic
     def build_export_request(self, filters, launcher, force_export=False, selection=None):
         instances = Instance.objects
+        if launcher:
+            instances.filter_for_user(launcher)
         instances = instances.for_filters(**filters)
-        selected_ids = None
-        unselected_ids = None
         if selection:
             selected_ids = selection.get("selected_ids", None)
             unselected_ids = selection.get("unselected_ids", None)

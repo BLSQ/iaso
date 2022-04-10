@@ -1,35 +1,16 @@
+import { useState, useEffect } from 'react';
 import {
     useSnackQuery,
     useSnackMutation,
     useSnackQueries,
 } from 'Iaso/libs/apiHooks';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
-
-import { fetchOrgUnitsTypes, fetchGroups } from '../../utils/requests';
-import { setOrgUnitTypes, setGroups } from './actions';
-import { useFetchOnMount } from '../../hooks/fetchOnMount';
+import { useQuery, useQueryClient } from 'react-query';
 import MESSAGES from './messages';
 import { getOtChipColors, getChipColors } from '../../constants/chipColors';
-
-export const useOrgUnitsFiltersData = (
-    dispatch,
-    setFetchingOrgUnitTypes,
-    setFetchingGroups,
-) => {
-    useFetchOnMount([
-        {
-            fetch: fetchOrgUnitsTypes,
-            setFetching: fetching =>
-                dispatch(setFetchingOrgUnitTypes(fetching)),
-            setData: setOrgUnitTypes,
-        },
-        {
-            fetch: fetchGroups,
-            setFetching: setFetchingGroups,
-            setData: setGroups,
-        },
-    ]);
-};
+import { fetchOrgUnitsTypes } from '../../utils/requests';
+import { setOrgUnitTypes } from './actions';
+import { useFetchOnMount } from '../../hooks/fetchOnMount';
 
 export const useOrgUnitDetailData = (
     isNewOrgunit,
@@ -115,6 +96,7 @@ export const useOrgUnitDetailData = (
                 enabled: !isNewOrgunit,
             },
         },
+        // FIXME this can probably be refactored into a single query
         {
             queryKey: ['associatedDataSources'],
             queryFn: () => getRequest('/api/datasources/'),
@@ -125,6 +107,7 @@ export const useOrgUnitDetailData = (
                         ...s,
                         color: getChipColors(i),
                     })),
+                // here seems to be an error here as the condition for enabling is the same as the query above
                 enabled: !isNewOrgunit,
             },
         },
@@ -136,7 +119,7 @@ export const useOrgUnitDetailData = (
 
     const { data: originalOrgUnit, isFetching: isFetchingDetail } =
         useSnackQuery(
-            ['currentOrgUnit'],
+            ['currentOrgUnit', orgUnitId],
             () => getRequest(`/api/orgunits/${orgUnitId}/`),
             MESSAGES.fetchOrgUnitError,
             {
@@ -167,7 +150,7 @@ export const useOrgUnitDetailData = (
     };
 };
 
-export const useSaveOrgUnit = () =>
+export const useSaveOrgUnit = onSuccess =>
     useSnackMutation(
         body =>
             body.id
@@ -175,5 +158,63 @@ export const useSaveOrgUnit = () =>
                 : postRequest('/api/orgunits/create_org_unit/', body),
         MESSAGES.saveOrgUnitSuccesfull,
         MESSAGES.saveOrgUnitError,
-        ['currentOrgUnit'],
+        undefined,
+        { onSuccess },
     );
+
+const makeGroupsQueryParams = ({ dataSourceId, sourceVersionId }) => {
+    if (sourceVersionId) return `?version=${sourceVersionId}`;
+    if (dataSourceId) return `?dataSource=${dataSourceId}`;
+    return '?defaultVersion=true';
+};
+const getOrgUnitTypes = () => getRequest(`/api/orgunittypes/`);
+
+export const useGetGroups = ({ dataSourceId, sourceVersionId }) => {
+    const [enabled, setEnabled] = useState(false);
+    const groupsQueryParams = makeGroupsQueryParams({
+        dataSourceId,
+        sourceVersionId,
+    });
+
+    useEffect(() => {
+        if (dataSourceId) setEnabled(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dataSourceId]);
+
+    const { data: groups, isFetching: isFetchingGroups } = useSnackQuery(
+        ['groups', dataSourceId, groupsQueryParams],
+        () => getRequest(`/api/groups/${groupsQueryParams}`),
+        MESSAGES.fetchGroupsError,
+        {
+            enabled,
+            select: data => data?.groups,
+        },
+    );
+
+    return {
+        groups,
+        isFetchingGroups,
+    };
+};
+
+export const useRefreshOrgUnit = () => {
+    const queryClient = useQueryClient();
+    return data => queryClient.setQueryData(['forms', data.id], data);
+};
+
+export const useGetOrgUnitTypes = () => {
+    return useQuery(['orgUnitTypes'], getOrgUnitTypes, {
+        select: data => data.orgUnitTypes,
+    });
+};
+
+export const useOrgUnitsFiltersData = (dispatch, setFetchingOrgUnitTypes) => {
+    useFetchOnMount([
+        {
+            fetch: fetchOrgUnitsTypes,
+            setFetching: fetching =>
+                dispatch(setFetchingOrgUnitTypes(fetching)),
+            setData: setOrgUnitTypes,
+        },
+    ]);
+};

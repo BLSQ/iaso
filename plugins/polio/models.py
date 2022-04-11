@@ -486,4 +486,4 @@ class CampaignGroup(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=200)
-    campaigns = models.ManyToManyField(Campaign, related_name="groups")
+    campaigns = models.ManyToManyField(Campaign, related_name="grouped_campaigns")

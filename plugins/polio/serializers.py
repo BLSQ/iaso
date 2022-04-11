@@ -309,7 +309,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
     top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
     general_status = serializers.SerializerMethodField()
-    groups = serializers.PrimaryKeyRelatedField(many=True, queryset=CampaignGroup.objects.all(), required=False)
+    grouped_campaigns = serializers.PrimaryKeyRelatedField(many=True, queryset=CampaignGroup.objects.all(), required=False)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:

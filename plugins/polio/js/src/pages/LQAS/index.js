@@ -18,6 +18,7 @@ import { MapContainer } from '../../components/LQAS-IM/MapContainer.tsx';
 import { useLqasData } from '../../hooks/useLqasData.ts';
 
 import MESSAGES from '../../constants/messages';
+import { BadRoundNumbers } from '../../components/LQAS-IM/BadRoundNumber.tsx';
 
 const rounds = ['round_1', 'round_2'];
 const paperElevation = 2;
@@ -69,7 +70,7 @@ export const Lqas = ({ router }) => {
                                 country={country}
                                 data={convertedData}
                                 isFetching={isFetching}
-                                disclaimerData={debugData}
+                                debugData={debugData}
                                 paperElevation={paperElevation}
                                 type="lqas"
                             />
@@ -203,6 +204,14 @@ export const Lqas = ({ router }) => {
                                         <DatesIgnored
                                             campaign={campaign}
                                             data={LQASData}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={4}>
+                                        <BadRoundNumbers
+                                            formsWithBadRoundNumber={
+                                                LQASData?.stats[campaign]
+                                                    ?.bad_round_number ?? 0
+                                            }
                                         />
                                     </Grid>
                                 </Grid>

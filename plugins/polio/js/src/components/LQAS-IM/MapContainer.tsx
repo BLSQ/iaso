@@ -5,7 +5,7 @@ import { Paper, Divider } from '@material-ui/core';
 import { LqasImMap } from './LqasImMap';
 
 import { LqasSummary } from './LqasSummary';
-import { LqasImMapHeader } from './LqasImMapHeader';
+import { LqasImMapHeader, LqasImRefDate } from './LqasImMapHeader';
 import { RoundString, ConvertedLqasImData } from '../../constants/types';
 import { ImSummary } from './ImSummary';
 
@@ -20,6 +20,38 @@ type Props = {
     paperElevation: number;
     type: 'lqas' | 'imIHH' | 'imOHH' | 'imGlobal';
 };
+
+const determineLqasImDates = (
+    campaign,
+    round: RoundString,
+    type,
+):
+    | { start: LqasImRefDate; end: LqasImRefDate }
+    | Record<string, LqasImRefDate> => {
+    if (!campaign) return {};
+    const roundData =
+        round === 'round_1' ? campaign.round_one : campaign.round_two;
+    const lqasImStart =
+        type === 'lqas' ? roundData.lqas_started_at : roundData.im_started_at;
+    const lqasImEnd =
+        type === 'lqas' ? roundData.lqas_ended_at : roundData.im_ended_at;
+    const roundStart = roundData.started_at;
+    const roundEnd = roundData.ended_at;
+    const startDate = lqasImStart ?? roundStart;
+    const endDate = lqasImEnd ?? roundEnd;
+    // TODO handle endDate is before startDate
+    return {
+        start: {
+            date: startDate,
+            isDefault: !lqasImStart,
+        },
+        end: {
+            date: endDate,
+            isDefault: !lqasImEnd,
+        },
+    };
+};
+
 export const MapContainer: FunctionComponent<Props> = ({
     round,
     campaign,
@@ -31,9 +63,21 @@ export const MapContainer: FunctionComponent<Props> = ({
     paperElevation,
     type,
 }) => {
+    const campaignObject = campaigns.filter(
+        (c: Record<string, unknown>) => c.obr_name === campaign,
+    )[0];
+    const { start: startDate, end: endDate } = determineLqasImDates(
+        campaignObject,
+        round,
+        type,
+    );
     return (
         <Paper elevation={paperElevation}>
-            <LqasImMapHeader round={round} />
+            <LqasImMapHeader
+                round={round}
+                startDate={startDate}
+                endDate={endDate}
+            />
             <Divider />
             {type === 'lqas' && (
                 <LqasSummary round={round} campaign={campaign} data={data} />

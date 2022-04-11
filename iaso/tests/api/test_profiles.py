@@ -3,6 +3,7 @@ import typing
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.test import tag
 
+from iaso.models import Profile
 from iaso.test import APITestCase
 from iaso import models as m
 
@@ -52,6 +53,29 @@ class ProfileAPITestCase(APITestCase):
             source_ref="PvtAI4RUMkr",
         )
         cls.jedi_council_corruscant.groups.set([cls.elite_group])
+
+    def test_can_delete_dhis2_id(self):
+        self.client.force_authenticate(self.john)
+        jim = Profile.objects.get(user=self.jim)
+        jim.dhis2_id = "fsdgdfsgsdg"
+        jim.save()
+
+        data = {
+            "id": str(self.jim.id),
+            "user_name": "jim",
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "password": "",
+            "permissions": [],
+            "org_units": [],
+            "language": "fr",
+            "dhis2_id": "",
+        }
+
+        response = self.client.patch("/api/profiles/{0}/".format(self.jim.id), data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
 
     def test_profile_me_without_auth(self):
         """GET /profiles/me/ without auth should result in a 403"""

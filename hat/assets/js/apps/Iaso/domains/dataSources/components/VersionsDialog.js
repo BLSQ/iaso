@@ -11,7 +11,6 @@ import {
 } from '@material-ui/core';
 import Public from '@material-ui/icons/Public';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { FormattedMessage } from 'react-intl';
 import {
     commonStyles,
@@ -20,7 +19,7 @@ import {
     Table,
 } from 'bluesquare-components';
 import 'react-table';
-import { CopySourceVersion } from './CopySourceVersion.tsx';
+import { CopySourceVersion } from './CopySourceVersion/CopySourceVersion.tsx';
 
 import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
@@ -90,9 +89,9 @@ const tableColumns = source => [
         Header: <FormattedMessage id="iaso.label.actions" />,
         accessor: 'actions',
         sortable: false,
-        width:200,
-        Cell: settings =>{
-            return (source.read_only ? (
+        width: 200,
+        Cell: settings => {
+            return source.read_only ? (
                 <FormattedMessage id="Read Only" />
             ) : (
                 <>
@@ -121,21 +120,14 @@ const tableColumns = source => [
                         versionNumber={settings.row.original.number}
                         projects={source.projects.flat()}
                     />
-                       <CopySourceVersion
-                            renderTrigger={({ openDialog }) => (
-                                <IconButtonComponent
-                                    onClick={openDialog}
-                                    overrideIcon={FileCopyIcon}
-                                    tooltipMessage={MESSAGES.copyVersion}
-                                />
-
-                            )}
-                            dataSourceId={source.id}
-                            dataSourceVersionNumber={settings.row.original.number}
-                            dataSourceName={source.name}
+                    <CopySourceVersion
+                        dataSourceId={source.id}
+                        dataSourceVersionNumber={settings.row.original.number}
+                        dataSourceName={source.name}
                     />
-                </>))}
-            
+                </>
+            );
+        },
     },
 ];
 

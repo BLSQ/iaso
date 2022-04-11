@@ -53,7 +53,7 @@ describe('Forms', () => {
     describe('page', () => {
         it('click on create button should redirect to form creation url', () => {
             goToPage();
-            cy.get('#add-button-container').find('button').click();
+            cy.get('[data-test="add-form-button"]').click();
             cy.url().should(
                 'eq',
                 `${siteBaseUrl}/dashboard/forms/detail/formId/0`,

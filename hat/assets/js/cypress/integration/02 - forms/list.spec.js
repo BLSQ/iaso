@@ -51,14 +51,6 @@ const goToPage = (
 
 describe('Forms', () => {
     describe('page', () => {
-        it('click on create button should redirect to form creation url', () => {
-            goToPage();
-            cy.get('[data-test="add-form-button"]').click();
-            cy.url().should(
-                'eq',
-                `${siteBaseUrl}/dashboard/forms/detail/formId/0`,
-            );
-        });
         it('page should not be accessible if user does not have permission', () => {
             goToPage({
                 ...superUser,
@@ -68,6 +60,18 @@ describe('Forms', () => {
             const errorCode = cy.get('#error-code');
             errorCode.should('contain', '401');
         });
+
+        it('click on create button should redirect to form creation url', () => {
+            goToPage();
+            // wait for the request since cypress will fail on 'abort' error
+            cy.wait('@getForms');
+            cy.get('[data-test=add-form-button]').click();
+            cy.url().should(
+                'eq',
+                `${siteBaseUrl}/dashboard/forms/detail/formId/0`,
+            );
+        });
+
         describe('Search field', () => {
             beforeEach(() => {
                 goToPage();

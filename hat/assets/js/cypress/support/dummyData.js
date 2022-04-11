@@ -186,3 +186,48 @@ export const makeCredentials = ({ id, name = '', login = '', url = '' }) => {
         is_valid: login && url && name,
     };
 };
+export const makeFormVersion = ({
+    id,
+    versionNumber,
+    formId,
+    formName,
+    mapped = false,
+    xlsFile = null,
+    file = 'https://iaso-staging.bluesquare.org',
+    createdAt = 1576051064.185821,
+    updatedAt = 1576051064.185861,
+    startPeriod = null,
+    endPeriod = null,
+    mappingVersions = [],
+}) => {
+    return {
+        id,
+        version_id: versionNumber,
+        form_id: formId,
+        form_name: formName,
+        full_name: `${formName} - V${versionNumber}`,
+        mapped,
+        xls_file: xlsFile,
+        file,
+        created_at: createdAt,
+        updated_at: updatedAt,
+        start_period: startPeriod,
+        end_period: endPeriod,
+        mapping_versions: mappingVersions,
+    };
+};
+
+export const makeFormVersions = ({ formName, formId, amount }) => {
+    // eslint-disable-next-line camelcase
+    const formVersions = [];
+    for (let i = 0; i < amount; i += 1) {
+        const version = makeFormVersion({
+            id: i + 1,
+            versionNumber: `${i + 1}`,
+            formName,
+            formId,
+        });
+        formVersions.push(version);
+    }
+    return { formVersions };
+};

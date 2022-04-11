@@ -10,6 +10,7 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 import { dispatch as storeDispatch } from '../redux/store';
+import { FETCHING_ABORTED } from '../libs/constants';
 
 export const fetchOrgUnits = (dispatch, params) =>
     getRequest(`/api/orgunits/?${params}`)
@@ -106,9 +107,11 @@ export const fetchLogs = (dispatch, url) =>
             throw error;
         });
 
-export const fetchAllDataSources = (dispatch, url) =>
-    getRequest(url)
-        .then(data => data)
+export const fetchAllDataSources = (dispatch, url) => {
+    return getRequest(url)
+        .then(data => {
+            return data;
+        })
         .catch(error => {
             dispatch(
                 enqueueSnackbar(
@@ -118,6 +121,7 @@ export const fetchAllDataSources = (dispatch, url) =>
             console.error('Error while fetching data sources list:', error);
             throw error;
         });
+};
 
 export const fetchInstancesAsLocationsByForm = (
     dispatch,
@@ -187,9 +191,13 @@ export const fetchSources = dispatch =>
             console.error('Error while fetching source list:', error);
         });
 
-export const fetchForms = (dispatch, url = '/api/forms') =>
-    getRequest(url)
-        .then(forms => forms)
+export const fetchForms = (dispatch, url = '/api/forms', signal) =>
+    getRequest(url, signal)
+        .then(async forms => {
+            // return null if fetching aborted, so subsequent 'then()' can be returned early (see SingleTable)
+            if (forms?.message === FETCHING_ABORTED) return null;
+            return forms;
+        })
         .catch(error => {
             dispatch(
                 enqueueSnackbar(errorSnackBar('fetchFormsError', null, error)),
@@ -519,8 +527,14 @@ export const updateDefaultSource = (dispatch, accountId, default_version) =>
     });
 
 // TO-DO: replace all requests similar to this
-export const fetchList = (dispatch, url, errorKeyMessage, consoleError) =>
-    getRequest(url)
+export const fetchList = (
+    dispatch,
+    url,
+    errorKeyMessage,
+    consoleError,
+    signal,
+) =>
+    getRequest(url, signal)
         .then(data => data)
         .catch(error => {
             dispatch(

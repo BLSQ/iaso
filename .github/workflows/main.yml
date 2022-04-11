@@ -78,6 +78,7 @@ jobs:
       - name: Django tests
         run: |
           python manage.py migrate
+          python manage.py createcachetable
           python manage.py test
           # check we don't have missing migration
           python manage.py makemigrations --check

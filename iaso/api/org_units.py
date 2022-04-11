@@ -4,6 +4,7 @@ from time import gmtime, strftime
 
 from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Q, IntegerField, Value
 from django.http import StreamingHttpResponse, HttpResponse

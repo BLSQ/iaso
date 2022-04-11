@@ -5,6 +5,7 @@ from typing import Optional
 
 import requests
 from django.conf import settings
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db.models import Q
@@ -13,7 +14,7 @@ from django.http import HttpResponse
 from django.http.response import HttpResponseBadRequest
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.utils.timezone import now
+from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend
 from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
@@ -48,7 +49,7 @@ from .forma import (
     find_orgunit_in_cache,
 )
 from .helpers import get_url_content
-from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, LQASIMCache, IMStatsCache, CampaignGroup
+from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup
 from .models import CountryUsersGroup
 from .models import URLCache, Preparedness
 from .preparedness.calculator import preparedness_summary
@@ -557,25 +558,32 @@ class IMStatsViewSet(viewsets.ViewSet):
             return HttpResponseBadRequest
 
         requested_country = int(requested_country)
+
         campaigns = Campaign.objects.filter(country_id=requested_country)
+
         if campaigns:
             latest_campaign_update = campaigns.latest("updated_at").updated_at
         else:
             latest_campaign_update = None
 
-        cache_response_exists = True
+        stats_types = request.GET.get("type", "OH,OHH")
 
-        try:
-            cache_response = IMStatsCache.objects.get(user_id=request.user.id, params=request.query_params)
-            time_delta = datetime.now(timezone.utc) - cache_response.updated_at
-            if time_delta.seconds < 3600 and (
-                not latest_campaign_update or cache_response.updated_at > latest_campaign_update
-            ):
-                return JsonResponse(cache_response.response, safe=False)
-        except ObjectDoesNotExist:
-            cache_response_exists = False
+        im_request_type = stats_types
 
-        stats_types = request.GET.get("type", "HH,OHH")
+        if stats_types == "OH,OHH":
+            im_request_type = ""
+
+        cached_response = cache.get(
+            "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], im_request_type)
+        )
+
+        if not request.user.is_anonymous and cached_response:
+            response = json.loads(cached_response)
+            cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
+
+            if latest_campaign_update and cached_date > latest_campaign_update:
+                return JsonResponse(response)
+
         stats_types = stats_types.split(",")
         config = get_object_or_404(Config, slug="im-config")
         skipped_forms_list = []
@@ -777,15 +785,15 @@ class IMStatsViewSet(viewsets.ViewSet):
             "form_count": form_count,
             "fully_mapped_form_count": fully_mapped_form_count,
             "skipped_forms": skipped_forms,
+            "cache_creation_date": datetime.utcnow().timestamp(),
         }
 
-        if not cache_response_exists:
-            IMStatsCache.objects.create(user_id=request.user.pk, response=response, params=request.query_params)
-        else:
-            cache_response = IMStatsCache.objects.get(user_id=request.user.id, params=request.query_params)
-            cache_response.response = response
-            cache_response.updated_at = datetime.now()
-            cache_response.save()
+        if not request.user.is_anonymous:
+            cache.set(
+                "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], im_request_type),
+                json.dumps(response),
+                3600,
+            )
 
         return JsonResponse(response, safe=False)
 
@@ -1095,17 +1103,13 @@ class LQASStatsViewSet(viewsets.ViewSet):
         else:
             latest_campaign_update = None
 
-        cache_response_exists = True
-        # Return cache response if cache is valid.
-        try:
-            cache_response = LQASIMCache.objects.get(user_id=request.user.id, params=request.query_params)
-            time_delta = datetime.now(timezone.utc) - cache_response.updated_at
-            if time_delta.seconds < 3600 and (
-                not latest_campaign_update or cache_response.updated_at > latest_campaign_update
-            ):
-                return JsonResponse(cache_response.response, safe=False)
-        except ObjectDoesNotExist:
-            cache_response_exists = False
+        cached_response = cache.get("{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]))
+
+        if not request.user.is_anonymous and cached_response:
+            response = json.loads(cached_response)
+            cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
+            if latest_campaign_update and cached_date > latest_campaign_update:
+                return JsonResponse(response)
 
         config = get_object_or_404(Config, slug="lqas-config")
         skipped_forms_list = []
@@ -1336,15 +1340,13 @@ class LQASStatsViewSet(viewsets.ViewSet):
             "form_campaign_not_found_count": form_campaign_not_found_count,
             "day_country_not_found": day_country_not_found,
             "skipped_forms": skipped_forms,
+            "cache_creation_date": datetime.utcnow().timestamp(),
         }
 
-        if not cache_response_exists:
-            LQASIMCache.objects.create(user_id=request.user.pk, response=response, params=request.query_params)
-        else:
-            cache_response = LQASIMCache.objects.get(user_id=request.user.id, params=request.query_params)
-            cache_response.response = response
-            cache_response.updated_at = datetime.now()
-            cache_response.save()
+        if not request.user.is_anonymous:
+            cache.set(
+                "{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]), json.dumps(response), 3600
+            )
         return JsonResponse(response, safe=False)
 
 

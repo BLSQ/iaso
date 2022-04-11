@@ -459,26 +459,6 @@ class SpreadSheetImport(models.Model):
         return ssis.latest("created_at")
 
 
-class LQASIMCache(models.Model):
-    user_id = models.IntegerField()
-    response = models.JSONField()
-    updated_at = models.DateTimeField(auto_now=True, editable=True, blank=True, null=True)
-    params = models.TextField()
-
-    def __str__(self):
-        return str(self.params)
-
-
-class IMStatsCache(models.Model):
-    user_id = models.IntegerField()
-    response = models.JSONField()
-    updated_at = models.DateTimeField(auto_now=True, editable=True, blank=True, null=True)
-    params = models.TextField()
-
-    def __str__(self):
-        return str(self.params)
-
-
 class CampaignGroup(models.Model):
     def __str__(self):
         return f"{self.name} {','.join(str(c) for c in self.campaigns.all())}"

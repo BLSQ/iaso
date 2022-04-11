@@ -51,4 +51,10 @@ COPY . /opt/app
 RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic
 RUN SECRET_KEY=NOT_SO_SECRET python manage.py compilemessages
 
+# Tell iaso backend to Use the assets build by webpack
+ENV TEST_PROD=1
+# Disable ssl redirect by default
+ENV DISABLE_SSL_REDIRECT=1
+EXPOSE 8081
+
 ENTRYPOINT ["./entrypoint.sh"]

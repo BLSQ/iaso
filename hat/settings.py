@@ -169,10 +169,11 @@ MIDDLEWARE = [
 ROOT_URLCONF = "hat.urls"
 
 
-# Allow cors for all origins but only for the sync endpoint
+# Allow CORS for all origins but don't transmit the session cookies or other credentials (which is the default)
+# see https://github.com/adamchainz/django-cors-headers#cors_allow_credentials-bool
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_ALL_ORIGINS = True
-# CORS_URLS_REGEX = r"^/sync/.*$"
+CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
+CORS_ALLOW_CREDENTIALS = False
 
 
 TEMPLATES = [

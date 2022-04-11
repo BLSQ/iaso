@@ -74,7 +74,7 @@ export const useFormValidator = () => {
     return object().shape({
         epid: string().nullable(),
         obr_name: string().trim().required(),
-        grouped_campaigns: array(string()).nullable(),
+        grouped_campaigns: array(number()).nullable(),
         description: string().nullable(),
         onset_at: date().nullable(),
         three_level_call_at: date().nullable(),

@@ -68,7 +68,22 @@ const Dashboard = ({ router }) => {
 
     const { query, exportToCSV } = useGetCampaigns(apiParams);
 
-    const { data: campaigns, isFetching } = query;
+    // TODO remove when select is fixed. beurk lol.
+    const { data: rawCampaigns, isFetching } = query;
+
+    const campaigns = useMemo(() => {
+        if (!rawCampaigns) return rawCampaigns;
+        return {
+            ...rawCampaigns,
+            campaigns: rawCampaigns.campaigns.map(campaign => ({
+                ...campaign,
+                grouped_campaigns:
+                    campaign.grouped_campaigns.length > 0
+                        ? campaign.grouped_campaigns
+                        : null,
+            })),
+        };
+    }, [rawCampaigns]);
 
     const { mutate: removeCampaign } = useRemoveCampaign();
     const { mutate: restoreCampaign } = useRestoreCampaign();

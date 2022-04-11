@@ -22,11 +22,13 @@ export const BaseInfoForm = () => {
     const { formatMessage } = useSafeIntl();
     const { data: groupedCampaigns } = useGetGroupedCampaigns();
     const groupedCampaignsOptions = useMemo(
-        () =>
-            groupedCampaigns?.results.map(result => ({
+        () => [
+            { label: 'None', value: null },
+            ...(groupedCampaigns?.results.map(result => ({
                 label: result.name,
                 value: result.id,
-            })) ?? [],
+            })) ?? []),
+        ],
         [groupedCampaigns],
     );
 

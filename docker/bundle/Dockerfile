@@ -34,7 +34,7 @@ RUN ls ./hat/assets
 ########### Django Builder ########################################################################
 FROM python:3.6
 
-RUN apt-get update && apt-get --yes install \
+RUN apt-get update && apt-get --yes  --no-install-recommends install \
 		curl \
 		gettext \
 		gettext-base \

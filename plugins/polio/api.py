@@ -136,9 +136,12 @@ class CampaignViewSet(ModelViewSet):
         user = self.request.user
         campaign_type = self.request.query_params.get("campaign_type")
         campaigns = Campaign.objects.all()
+        test_campaigns = self.request.query_params.get("is_test")
         campaigns.prefetch_related("round_one", "round_two", "group")
         if campaign_type == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
+        if test_campaigns == "true":
+            campaigns = campaigns.filter(is_test=True)
         if campaign_type == "regular":
             campaigns = campaigns.filter(is_preventive=False)
         if user.is_authenticated and user.iaso_profile.org_units.count():

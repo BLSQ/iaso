@@ -238,6 +238,7 @@ class Campaign(SoftDeletableModel):
     # Budget
     budget_status = models.CharField(max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True)
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
+    is_test = models.BooleanField(default=False)
 
     who_disbursed_to_co_at = models.DateField(
         null=True,

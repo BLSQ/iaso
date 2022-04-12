@@ -274,6 +274,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.chooseVersionNumber',
         defaultMessage: 'Choose version number',
     },
+    editSourceVersion: {
+        id: 'iaso.datasources.label.editSourceVersion',
+        defaultMessage: 'Edit source version',
+    },
     copyVersionSuccessMessage: {
         defaultMessage: 'The task has been created',
         id: 'iaso.snackBar.copyVersionSuccessMessage',

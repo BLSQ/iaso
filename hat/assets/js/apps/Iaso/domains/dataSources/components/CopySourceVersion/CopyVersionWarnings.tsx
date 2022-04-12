@@ -28,7 +28,7 @@ export const WarningMessage: FunctionComponent<Props> = ({
     const { data: dataSources } = useDataSourceAsDropDown();
     const classes = useWarningStyles();
     const destinationSourceName = destinationSourceId
-        ? dataSources.filter(
+        ? dataSources?.filter(
               dataSource => dataSource.value === destinationSourceId,
           )[0]?.label
         : null;

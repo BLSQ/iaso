@@ -318,3 +318,32 @@ export const useCopyDataSourceVersion = () => {
         'dataSources',
     );
 };
+
+const updateSourceVersion = async ({
+    sourceVersionId,
+    description,
+    dataSourceId,
+    sourceVersionNumber,
+}) => {
+    return putRequest(`/api/sourceversions/${sourceVersionId}/`, {
+        id: sourceVersionId,
+        description,
+        data_source: dataSourceId,
+        number: sourceVersionNumber,
+    });
+};
+
+export const usePutSourceVersion = () => {
+    return useSnackMutation(
+        ({ sourceVersionId, description, dataSourceId, sourceVersionNumber }) =>
+            updateSourceVersion({
+                sourceVersionId,
+                description,
+                dataSourceId,
+                sourceVersionNumber,
+            }),
+        undefined,
+        undefined,
+        [['dataSourceVersions'], ['dataSources']],
+    );
+};

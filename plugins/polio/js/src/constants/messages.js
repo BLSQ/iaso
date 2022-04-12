@@ -1068,12 +1068,20 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Close',
     },
     editGroupedCampaign: {
-        id: 'polio.label.editGroupedCampaign',
+        id: 'iaso.polio.label.editGroupedCampaign',
         defaultMessage: 'Edit grouped campaign',
     },
     campaignsToLink: {
-        id: 'polio.label.campaignsToLink',
+        id: 'iaso.polio.label.campaignsToLink',
         defaultMessage: 'Campaigns to link',
+    },
+    testCampaign: {
+        id: 'iaso.polio.label.testCampaign',
+        defaultMessage: 'Test campaign',
+    },
+    testCampaigns: {
+        id: 'iaso.polio.label.testCampaigns',
+        defaultMessage: 'iaso.polio.label.testCampaigns',
     },
 });
 

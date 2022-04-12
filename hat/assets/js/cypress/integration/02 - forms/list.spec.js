@@ -42,10 +42,10 @@ const goToPage = (
 
     cy.intercept('GET', '/api/orgunittypes/**', {
         fixture: 'orgunittypes/list.json',
-    });
+    }).as('getTypes');
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',
-    });
+    }).as('getProject');
     cy.visit(baseUrl);
 };
 
@@ -65,6 +65,7 @@ describe('Forms', () => {
             goToPage();
             // wait for the request since cypress will fail on 'abort' error
             cy.wait('@getForms');
+            cy.wait('@getTypes');
             cy.get('[data-test=add-form-button]').click();
             cy.url().should(
                 'eq',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
@@ -114,7 +114,7 @@ const OrgUnitsFiltersComponent = ({
         return (
             sources
                 .filter(src => src.id === dataSourceId)[0]
-                ?.versions.sort((a,b)=>a.number-b.number)
+                ?.versions.sort((a, b) => a.number - b.number)
                 .map(version => ({
                     label: version.number.toString(),
                     value: version.id.toString(),
@@ -124,6 +124,19 @@ const OrgUnitsFiltersComponent = ({
     const dispatch = useDispatch();
 
     useOrgUnitsFiltersData(dispatch, setFetchingOrgUnitTypes);
+
+    const formatSearchParams = useCallback(
+        updatedSearchParams => {
+            const searches = [...decodedSearches];
+            searches[searchIndex] = updatedSearchParams;
+            return {
+                ...params,
+                page: 1,
+                searches: JSON.stringify(searches),
+            };
+        },
+        [decodedSearches, params, searchIndex],
+    );
 
     const onChange = (value, urlKey) => {
         if (urlKey === 'version') {
@@ -158,22 +171,22 @@ const OrgUnitsFiltersComponent = ({
             ...searchParams,
             [urlKey]: value,
         };
+
         if (urlKey === 'hasInstances' && value === 'false') {
             delete updatedSearch.dateFrom;
             delete updatedSearch.dateTo;
         }
+
         setSearchParams(updatedSearch);
+        if (urlKey === 'color') {
+            const searches = formatSearchParams(updatedSearch);
+            dispatch(redirectTo(baseUrl, searches));
+        }
     };
 
     const handleSearch = () => {
-        const searches = [...decodedSearches];
-        searches[searchIndex] = searchParams;
-        const tempParams = {
-            ...params,
-            page: 1,
-            searches: JSON.stringify(searches),
-        };
-        onSearch(tempParams);
+        const searches = formatSearchParams(searchParams);
+        onSearch(searches);
     };
 
     const handleLocationLimitChange = locationLimit => {

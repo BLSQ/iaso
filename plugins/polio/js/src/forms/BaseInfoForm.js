@@ -109,6 +109,12 @@ export const BaseInfoForm = () => {
                         name="is_preventive"
                         component={BooleanInput}
                     />
+                    <Field
+                        className={classes.input}
+                        label={formatMessage(MESSAGES.preventive)}
+                        name="is_test"
+                        component={BooleanInput}
+                    />
                     <SendEmailButton />
                     <Field
                         className={classes.input}

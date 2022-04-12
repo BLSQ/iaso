@@ -17,13 +17,22 @@ import { useGetGroupedCampaigns } from '../../hooks/useGetGroupedCampaigns.ts';
 
 import { genUrl } from '../../utils/routing';
 
-const campaignTypeOptions = formatMessage => [
-    { label: formatMessage(MESSAGES.all), value: 'all' },
-    { label: formatMessage(MESSAGES.preventiveShort), value: 'preventive' },
-    { label: formatMessage(MESSAGES.regular), value: 'regular' },
-];
+const campaignTypeOptions = (formatMessage, showTest = false) => {
+    const options = [
+        { label: formatMessage(MESSAGES.all), value: 'all' },
+        { label: formatMessage(MESSAGES.preventiveShort), value: 'preventive' },
+        { label: formatMessage(MESSAGES.regular), value: 'regular' },
+    ];
+    if (showTest) {
+        return [
+            ...options,
+            { label: formatMessage(MESSAGES.testCampaigns), value: 'test' },
+        ];
+    }
+    return options;
+};
 
-const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
+const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
     const { formatMessage } = useSafeIntl();
     const { params } = router;
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -132,7 +141,10 @@ const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
                             }}
                             value={campaignType}
                             type="select"
-                            options={campaignTypeOptions(formatMessage)}
+                            options={campaignTypeOptions(
+                                formatMessage,
+                                showTest,
+                            )}
                             label={MESSAGES.campaignType}
                         />
                         {!disableDates && (
@@ -208,6 +220,7 @@ Filters.defaultProps = {
     baseUrl: '',
     disableDates: false,
     disableOnlyDeleted: false,
+    showTest: false,
 };
 
 Filters.propTypes = {
@@ -215,6 +228,7 @@ Filters.propTypes = {
     router: PropTypes.object.isRequired,
     disableDates: PropTypes.bool,
     disableOnlyDeleted: PropTypes.bool,
+    showTest: PropTypes.bool,
 };
 
 const wrappedFilters = withRouter(Filters);

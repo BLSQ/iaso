@@ -23,13 +23,12 @@ export const BaseInfoForm = () => {
     const { formatMessage } = useSafeIntl();
     const { data: groupedCampaigns } = useGetGroupedCampaigns();
     const groupedCampaignsOptions = useMemo(
-        () => [
-            { label: 'None', value: null },
-            ...(groupedCampaigns?.results.map(result => ({
+        () =>
+            groupedCampaigns?.results.map(result => ({
                 label: result.name,
                 value: result.id,
-            })) ?? []),
-        ],
+            })) ?? [],
+
         [groupedCampaigns],
     );
 
@@ -111,7 +110,7 @@ export const BaseInfoForm = () => {
                     />
                     <Field
                         className={classes.input}
-                        label={formatMessage(MESSAGES.preventive)}
+                        label={formatMessage(MESSAGES.testCampaign)}
                         name="is_test"
                         component={BooleanInput}
                     />

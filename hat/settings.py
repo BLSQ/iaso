@@ -241,6 +241,11 @@ DATABASE_ROUTERS = [
 # This database settings which duplicate the main db settings, will be used by the background task worker so that they
 # can have a connexion outside of the transaction to report the progress on a Task. see Comments in services.py
 
+# New django 3.2 settings to control which type of field is used by default for primary key
+# Added to remove unecessary warning
+# https://docs.djangoproject.com/en/4.0/releases/3.2/#customizing-type-of-auto-created-primary-keys
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
 
 def is_superuser(u):
     return u.is_superuser

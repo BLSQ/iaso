@@ -26,7 +26,6 @@ const styles = theme => ({
 });
 
 const useStyles = makeStyles(styles);
-
 export const LqasImMapHeader: FunctionComponent<Props> = ({
     round,
     startDate,

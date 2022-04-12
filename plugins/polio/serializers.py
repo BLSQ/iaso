@@ -22,6 +22,7 @@ from .models import (
     ROUND2START,
     ROUND2DONE,
     SpreadSheetImport,
+    CampaignGroup,
 )
 from .preparedness.calculator import get_preparedness_score, preparedness_summary
 from .preparedness.parser import (
@@ -308,6 +309,9 @@ class CampaignSerializer(serializers.ModelSerializer):
     top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
     top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
     general_status = serializers.SerializerMethodField()
+    grouped_campaigns = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=CampaignGroup.objects.all(), required=False
+    )
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:
@@ -350,6 +354,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         round_two_data = validated_data.pop("round_two")
 
         group = validated_data.pop("group") if "group" in validated_data else None
+        grouped_campaigns = validated_data.pop("grouped_campaigns", [])
 
         if group:
             org_units = group.pop("org_units") if "org_units" in group else []
@@ -364,6 +369,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_two=Round.objects.create(**round_two_data),
             group=campaign_group,
         )
+        campaign.grouped_campaigns.set(grouped_campaigns)
 
         return campaign
 
@@ -514,3 +520,18 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "is_preventive",
         ]
         read_only_fields = fields
+
+
+class CampaignNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Campaign
+        fields = ["id", "obr_name"]
+
+
+class CampaignGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignGroup
+        fields = "__all__"
+
+    campaigns = CampaignNameSerializer(many=True, read_only=True)
+    campaigns_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Campaign.objects.all(), source="campaigns")

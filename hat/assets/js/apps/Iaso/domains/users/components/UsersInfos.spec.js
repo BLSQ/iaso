@@ -34,7 +34,7 @@ const renderComponent = initialData => {
     );
 };
 
-describe.only('UsersInfos', () => {
+describe('UsersInfos', () => {
     beforeEach(() => {
         renderComponent();
         component.update();

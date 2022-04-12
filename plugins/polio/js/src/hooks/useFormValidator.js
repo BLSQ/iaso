@@ -1,4 +1,4 @@
-import { object, date, string, number, ref } from 'yup';
+import { object, date, string, number, ref, array } from 'yup';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../constants/messages';
 
@@ -74,6 +74,7 @@ export const useFormValidator = () => {
     return object().shape({
         epid: string().nullable(),
         obr_name: string().trim().required(),
+        grouped_campaigns: array(number()).nullable(),
         description: string().nullable(),
         onset_at: date().nullable(),
         three_level_call_at: date().nullable(),

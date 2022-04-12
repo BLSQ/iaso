@@ -40,7 +40,7 @@ DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_S3 = os.getenv("USE_S3") == "true"
 
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
-ENVIRONMENT = os.environ.get("IASO_ENVIRONMENT", "development").lower()
+ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
 
 ALLOWED_HOSTS = ["*"]
@@ -169,10 +169,11 @@ MIDDLEWARE = [
 ROOT_URLCONF = "hat.urls"
 
 
-# Allow cors for all origins but only for the sync endpoint
+# Allow CORS for all origins but don't transmit the session cookies or other credentials (which is the default)
+# see https://github.com/adamchainz/django-cors-headers#cors_allow_credentials-bool
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_ALL_ORIGINS = True
-# CORS_URLS_REGEX = r"^/sync/.*$"
+CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
+CORS_ALLOW_CREDENTIALS = False
 
 
 TEMPLATES = [
@@ -188,7 +189,6 @@ TEMPLATES = [
                 "django.template.context_processors.media",
                 "django.contrib.messages.context_processors.messages",
                 "hat.common.context_processors.appversions",
-                "hat.common.context_processors.environment",
                 "hat.common.context_processors.app_title",
                 "hat.common.context_processors.favicon_path",
                 "hat.common.context_processors.logo_path",
@@ -240,6 +240,11 @@ DATABASE_ROUTERS = [
 ]
 # This database settings which duplicate the main db settings, will be used by the background task worker so that they
 # can have a connexion outside of the transaction to report the progress on a Task. see Comments in services.py
+
+# New django 3.2 settings to control which type of field is used by default for primary key
+# Added to remove unecessary warning
+# https://docs.djangoproject.com/en/4.0/releases/3.2/#customizing-type-of-auto-created-primary-keys
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 
 def is_superuser(u):
@@ -432,3 +437,5 @@ SOCIALACCOUNT_PROVIDERS = {
         "AUTH_PARAMS": {"code_challenge": CODE_CHALLENGE},
     }
 }
+
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache_table"}}

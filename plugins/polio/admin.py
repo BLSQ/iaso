@@ -11,8 +11,7 @@ from .models import (
     CountryUsersGroup,
     URLCache,
     SpreadSheetImport,
-    LQASIMCache,
-    IMStatsCache,
+    CampaignGroup,
 )
 
 
@@ -71,7 +70,12 @@ class SpreadSheetImportAdmin(admin.ModelAdmin):
         return mark_safe(html)
 
 
+class CampaignGroupAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(Campaign, CampaignAdmin)
+admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Preparedness, PreparednessAdmin)
 admin.site.register(Config)
 admin.site.register(Surge)
@@ -79,5 +83,3 @@ admin.site.register(Round)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
-admin.site.register(LQASIMCache)
-admin.site.register(IMStatsCache)

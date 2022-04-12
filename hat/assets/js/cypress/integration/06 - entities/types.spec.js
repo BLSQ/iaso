@@ -81,7 +81,7 @@ describe('Entities types', () => {
         it('should enabled search button', () => {
             cy.wait('@getEntitiesTypes').then(() => {
                 cy.get('#search-search').type(search);
-                cy.get('#search-button')
+                cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', undefined);
             });
@@ -94,7 +94,7 @@ describe('Entities types', () => {
         });
         it('should be disabled', () => {
             cy.wait('@getEntitiesTypes').then(() => {
-                cy.get('#search-button')
+                cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', 'disabled');
             });
@@ -102,7 +102,7 @@ describe('Entities types', () => {
         it('should be enabled while searching', () => {
             cy.get('#search-search').type(search);
             cy.wait('@getEntitiesTypes').then(() => {
-                cy.get('#search-button')
+                cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', undefined);
             });
@@ -111,7 +111,7 @@ describe('Entities types', () => {
             cy.wait('@getEntitiesTypes').then(() => {
                 cy.get('#search-search').type(search);
 
-                cy.get('#search-button').click();
+                cy.get('[data-test="search-button"]').click();
                 cy.url().should('contain', `${baseUrl}/search/${search}`);
             });
         });
@@ -376,7 +376,7 @@ describe('Entities types', () => {
                     },
                 ).as('getEntitySearch');
                 cy.get('#search-search').type(search);
-                cy.get('#search-button').click();
+                cy.get('[data-test="search-button"]').click();
                 cy.wait('@getEntitySearch').then(() => {
                     cy.wrap(interceptFlag).should('eq', true);
                 });

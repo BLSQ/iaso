@@ -7,10 +7,10 @@ import SingleTable from '../../../components/tables/SingleTable';
 import { renderWithStore } from '../../../../../test/utils/redux';
 import { mockGetRequestsList } from '../../../../../test/utils/requests';
 
-const formId = 'ZELDA';
+const formId = 1;
 const requests = [
     {
-        url: `/api/formversions/?&limit=10&page=1&order=-created_at&form_id=${formId}`,
+        url: `/api/formversions/**/*`,
         body: {
             form_versions: [],
             count: 0,
@@ -55,12 +55,6 @@ describe('FormVersionsComponent connected component', () => {
         it('should trigger setForceRefresh if trigger onConfirmed', () => {
             formVersionsDialog.props().onConfirmed();
             expect(setForceRefreshSpy.calledOnce).to.equal(true);
-        });
-    });
-
-    describe('should connect to api', () => {
-        it('and call forms api', () => {
-            expect(nock.activeMocks()).to.have.lengthOf(0);
         });
     });
 

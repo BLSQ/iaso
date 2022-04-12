@@ -64,8 +64,8 @@ class SourceVersionViewSet(ModelViewSet):
     This API is restricted to authenticated users having at least one of the "menupermissions.iaso_mappings",
     "menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
 
-    GET /api/datasources/
-    GET /api/datasources/<id>
+    GET /api/sourceversions/
+    GET /api/sourceversions/<id>
     """
 
     permission_classes = [permissions.IsAuthenticated]

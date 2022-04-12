@@ -240,10 +240,51 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.title.copyVersionWithName',
         defaultMessage: 'Copy {sourceName} version {versionNumber} ?',
     },
-    copyVersionWarning: {
-        id: 'iaso.datasources.title.copyVersionWarning',
+    copiedVersion: {
+        id: 'iaso.datasources.message.copiedVersion',
+        defaultMessage: '{sourceName} - version {versionNumber} ',
+    },
+    willBeCopied: {
+        id: 'iaso.datasources.message.willBeCopied',
+        defaultMessage: 'will be copied to ',
+    },
+
+    copyToSourceWithVersion: {
+        id: 'iaso.datasources.message.copyToSourceWithVersion',
+        defaultMessage: '{sourceName} - version {versionNumber}',
+    },
+    overwriteWarning: {
+        id: 'iaso.datasources.message.overwriteWarning',
         defaultMessage:
-            'This will create a new version for {sourceName} and copy version {versionNumber} into it. Do you wish to proceed?',
+            'Warning: if a version with the selected number already exists, it will be overwritten',
+    },
+    nextVersion: {
+        id: 'iaso.datasources.label.nextVersion',
+        defaultMessage: 'Next version',
+    },
+    destinationVersion: {
+        id: 'iaso.datasources.label.destinationVersion',
+        defaultMessage: 'Destination version',
+    },
+    destinationSource: {
+        id: 'iaso.datasources.label.destinationSource',
+        defaultMessage: 'Destination source',
+    },
+    chooseVersionNumber: {
+        id: 'iaso.datasources.label.chooseVersionNumber',
+        defaultMessage: 'Choose version number',
+    },
+    editSourceVersion: {
+        id: 'iaso.datasources.label.editSourceVersion',
+        defaultMessage: 'Edit source version',
+    },
+    copyVersionSuccessMessage: {
+        defaultMessage: 'The task has been created',
+        id: 'iaso.snackBar.copyVersionSuccessMessage',
+    },
+    copyVersionErrorMessage: {
+        defaultMessage: 'An error occurred while creating the task',
+        id: 'iaso.snackBar.copyVersionErrorMessage',
     },
 });
 

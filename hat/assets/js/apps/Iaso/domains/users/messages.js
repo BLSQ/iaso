@@ -140,6 +140,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.submissions',
         defaultMessage: 'Form Submissions',
     },
+    iaso_update_submission: {
+        id: 'iaso.permissions.update_submission',
+        defaultMessage: 'Update Submissions',
+    },
     iaso_users: {
         id: 'iaso.permissions.users',
         defaultMessage: 'Users',

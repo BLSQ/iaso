@@ -259,9 +259,8 @@ const InstancesFiltersComponent = ({
                         type="select"
                         loading={fetchingDevicesOwnerships}
                         options={devicesOwnerships.map(o => ({
-                            label: `${getDisplayName(o.user)} - IMEI:${
-                                o.device.imei
-                            }`,
+                            label: `${getDisplayName(o.user)} - IMEI:${o.device.imei
+                                }`,
                             value: o.id,
                         }))}
                         label={MESSAGES.deviceOwnership}
@@ -354,7 +353,7 @@ const InstancesFiltersComponent = ({
                         variant="contained"
                         className={classes.button}
                         color="primary"
-                        id="search-button"
+                        data-test="search-button"
                         onClick={() => handleSearch()}
                     >
                         <Search className={classes.buttonIcon} />

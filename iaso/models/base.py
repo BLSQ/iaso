@@ -581,7 +581,14 @@ class InstanceQuerySet(models.QuerySet):
         duplicates_subquery = (
             self.values("period", "form", "org_unit")
             .annotate(ids=ArrayAgg("id"))
-            .annotate(c=models.Func("ids", models.Value(1), function="array_length"))
+            .annotate(
+                c=models.Func(
+                    "ids",
+                    models.Value(1, output_field=models.IntegerField()),
+                    function="array_length",
+                    output_field=models.IntegerField(),
+                )
+            )
             .filter(form__in=Form.objects.filter(single_per_period=True))
             .filter(c__gt=1)
             .annotate(id=models.Func("ids", function="unnest"))

@@ -1,9 +1,8 @@
 from django.contrib.gis.geos import Point
-
+from hat.audit.models import Modification
 from iaso import models as m
 from iaso.gpkg.import_gpkg import import_gpkg_file
 from iaso.test import TestCase
-from hat.audit.models import Modification
 
 
 class GPKGImport(TestCase):
@@ -21,6 +20,7 @@ class GPKGImport(TestCase):
             source_name="test",
             version_number=1,
             validation_status="new",
+            description="",
         )
         self.assertEqual(m.OrgUnit.objects.all().count(), 3)
         self.assertEqual(m.Group.objects.all().count(), 2)
@@ -90,6 +90,7 @@ class GPKGImport(TestCase):
             source_name=source_name,
             version_number=version_number,
             validation_status="new",
+            description="",
         )
 
         self.assertEqual(m.OrgUnit.objects.all().count(), 3)
@@ -155,6 +156,7 @@ class GPKGImport(TestCase):
             source_name="source_name",
             version_number=version_number,
             validation_status="new",
+            description="",
         )
 
         self.assertEqual(m.OrgUnit.objects.all().count(), 5)
@@ -183,6 +185,7 @@ class GPKGImport(TestCase):
             source_name="test",
             version_number=1,
             validation_status="new",
+            description="",
         )
 
         self.assertEqual(m.OrgUnitType.objects.count(), 3)
@@ -207,6 +210,7 @@ class GPKGImport(TestCase):
             source_name="test",
             version_number=1,
             validation_status="new",
+            description="",
         )
         self.assertEqual(m.OrgUnitType.objects.count(), 3)
         self.assertEqual(m.OrgUnit.objects.all().count(), 4)
@@ -231,6 +235,7 @@ class GPKGImport(TestCase):
             source_name="test",
             version_number=1,
             validation_status="new",
+            description="",
         )
         self.assertEqual(m.OrgUnitType.objects.count(), 4)
         self.assertEqual(m.OrgUnit.objects.all().count(), 4)
@@ -260,6 +265,7 @@ class GPKGImport(TestCase):
             source_name=source_name,
             version_number=None,
             validation_status="VALID",
+            description="",
         )
 
         source = m.DataSource.objects.get(name=source_name)
@@ -301,6 +307,7 @@ class GPKGImportSimplifiedGroup(TestCase):
             source_name=self.source_name,
             version_number=1,
             validation_status="new",
+            description="",
         )
 
         self.assertEqual(m.OrgUnitType.objects.count(), 3)
@@ -324,4 +331,5 @@ class GPKGImportSimplifiedGroup(TestCase):
                 source_name=self.source_name,
                 version_number=1,
                 validation_status="new",
+                description="",
             )

@@ -76,7 +76,8 @@ describe('Log in page', () => {
             cy.visit(siteBaseUrl);
         });
         it('should redirect to dashboard', () => {
-            cy.url().should('eq', `${siteBaseUrl}/dashboard/forms/list`);
+            cy.url().should('not.contain', `next`);
+            cy.url().should('contain', `/dashboard`);
         });
         it('should set sessionid', () => {
             cy.getCookie(sessionCookie).should('exist');

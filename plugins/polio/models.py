@@ -460,11 +460,11 @@ class SpreadSheetImport(models.Model):
         return ssis.latest("created_at")
 
 
-class CampaignGroup(models.Model):
+class CampaignGroup(SoftDeletableModel):
     def __str__(self):
         return f"{self.name} {','.join(str(c) for c in self.campaigns.all())}"
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=200)
-    campaigns = models.ManyToManyField(Campaign, related_name="groups")
+    campaigns = models.ManyToManyField(Campaign, related_name="grouped_campaigns")

@@ -80,7 +80,7 @@ class CustomFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
-class CampaignFilterBackend(filters.BaseFilterBackend):
+class DeletionFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         query_param = request.query_params.get("deletion_status", "active")
 
@@ -100,7 +100,7 @@ class CampaignFilterBackend(filters.BaseFilterBackend):
 class CampaignViewSet(ModelViewSet):
     results_key = "campaigns"
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend, CampaignFilterBackend]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend, DeletionFilterBackend]
     ordering_fields = [
         "obr_name",
         "cvdpv2_notified_at",
@@ -113,7 +113,7 @@ class CampaignViewSet(ModelViewSet):
     filterset_fields = {
         "country__name": ["exact"],
         "country__id": ["in"],
-        "groups__id": ["in", "exact"],
+        "grouped_campaigns__id": ["in", "exact"],
         "obr_name": ["exact", "contains"],
         "vacine": ["exact"],
         "cvdpv2_notified_at": ["gte", "lte", "range"],
@@ -135,15 +135,18 @@ class CampaignViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         campaign_type = self.request.query_params.get("campaign_type")
+        campaign_groups = self.request.query_params.get("campaign_groups")
         campaigns = Campaign.objects.all()
+        campaigns.prefetch_related("round_one", "round_two", "group", "grouped_campaigns")
         test_campaigns = self.request.query_params.get("is_test")
-        campaigns.prefetch_related("round_one", "round_two", "group")
         if campaign_type == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
         if test_campaigns == "true":
             campaigns = campaigns.filter(is_test=True)
         if campaign_type == "regular":
             campaigns = campaigns.filter(is_preventive=False)
+        if campaign_groups:
+            campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
         if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
             return campaigns.filter(initial_org_unit__in=org_units)
@@ -1353,6 +1356,15 @@ class LQASStatsViewSet(viewsets.ViewSet):
         return JsonResponse(response, safe=False)
 
 
+class CampaignGroupSearchFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        search = request.query_params.get("search")
+
+        if search:
+            queryset = queryset.filter(Q(campaigns__obr_name__icontains=search) | Q(name__icontains=search)).distinct()
+        return queryset
+
+
 class CampaignGroupViewSet(ModelViewSet):
     results_key = "results"
     queryset = CampaignGroup.objects.all()
@@ -1363,8 +1375,13 @@ class CampaignGroupViewSet(ModelViewSet):
     # notably not the url that we want to remain private.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    ordering_fields = ["id"]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+        CampaignGroupSearchFilterBackend,
+        DeletionFilterBackend,
+    ]
+    ordering_fields = ["id", "name", "created_at", "updated_at"]
     filterset_fields = {
         "name": ["icontains"],
     }

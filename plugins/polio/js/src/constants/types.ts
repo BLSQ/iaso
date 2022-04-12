@@ -1,4 +1,5 @@
 import { IntlMessage } from '../../../../../hat/assets/js/apps/Iaso/types/intl';
+import { Pagination } from '../../../../../hat/assets/js/apps/Iaso/types/table';
 
 /* eslint-disable camelcase */
 export type FormatForNFMArgs<T> = {
@@ -79,4 +80,16 @@ export type LqasImParams = {
     data?: Record<string, ConvertedLqasImData>;
     campaign?: string;
     round: RoundString;
+}
+
+export type GroupedCampaign =  {
+    id: number,
+    created_at: string,
+    updated_at: string,
+    name: string,
+    campaigns: {id:string, name:string}[]
+}
+
+export type GroupedCampaigns = Pagination & {
+    results:GroupedCampaign[]
 }

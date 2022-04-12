@@ -994,8 +994,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Other',
     },
     showOnlyDeleted: {
-        id: 'iaso.forms.showDeleted',
-        defaultMessage: 'Show deleted',
+        id: 'iaso.polio.showDeletedCampaigns',
+        defaultMessage: 'Show deleted campaigns',
     },
     deleted_at: {
         id: 'iaso.forms.deleted_at',
@@ -1038,6 +1038,42 @@ const MESSAGES = defineMessages({
     badRoundNumbers: {
         id: 'iaso.polio.badRoundNumbers',
         defaultMessage: 'Forms with the wrong round number',
+    },
+    groupedCampaigns: {
+        defaultMessage: 'Grouped campaigns',
+        id: 'iaso.polio.label.groupedCampaigns',
+    },
+    updated_at: {
+        id: 'iaso.forms.updated_at',
+        defaultMessage: 'Updated',
+    },
+    created_at: {
+        id: 'iaso.forms.created_at',
+        defaultMessage: 'Created',
+    },
+    deleteTitle: {
+        id: 'iaso.entities.dialog.deleteTitle',
+        defaultMessage: 'Are you sure you want to delete this entity?',
+    },
+    deleteText: {
+        id: 'iaso.label.deleteText',
+        defaultMessage: 'This operation cannot be undone.',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
+    editGroupedCampaign: {
+        id: 'polio.label.editGroupedCampaign',
+        defaultMessage: 'Edit grouped campaign',
+    },
+    campaignsToLink: {
+        id: 'polio.label.campaignsToLink',
+        defaultMessage: 'Campaigns to link',
     },
 });
 

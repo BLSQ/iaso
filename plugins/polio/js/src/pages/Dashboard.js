@@ -197,7 +197,7 @@ const Dashboard = ({ router }) => {
                 sortable: true,
             },
             {
-                Header: formatMessage(MESSAGES.name),
+                Header: formatMessage(MESSAGES.obrName),
                 accessor: 'obr_name',
             },
             {

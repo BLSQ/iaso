@@ -86,7 +86,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'End date',
     },
     name: {
-        id: 'iaso.polio.label.obrName',
+        id: 'iaso.polio.label.name',
         defaultMessage: 'Name',
     },
     r1StartDate: {

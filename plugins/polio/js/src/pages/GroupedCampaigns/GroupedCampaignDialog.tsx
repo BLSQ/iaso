@@ -65,7 +65,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
                       id,
                       name: groupedCampaignName,
                       campaigns_ids:
-                          // FIXME dirty workaround because campaignToLink is sometimes sring sometime array
+                          // FIXME dirty workaround because campaignToLink is sometimes string sometime array
                           typeof campaignsToLink === 'string'
                               ? commaSeparatedIdsToStringArray(campaignsToLink)
                               : campaignsToLink,

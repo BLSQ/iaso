@@ -179,7 +179,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         for org_unit in org_units:
             org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
             profile.org_units.add(org_unit_item)
-        profile.dhis2_id = request.data.get("dhis2_id", "")
+        dhis2_id = request.data.get("dhis2_id", None)
+        if dhis2_id == "":
+            dhis2_id = None
+        profile.dhis2_id = dhis2_id
         profile.save()
         return Response(user.profile.as_dict())
 

@@ -198,7 +198,7 @@ const OrgUnits = props => {
             .then(data => {
                 if (params.searchActive !== 'true') {
                     const newParams = encodeUriParams(params);
-                    newParams.searchActive = true;
+                    newParams.searchActive = 'true';
                     dispatch(redirectTo(baseUrl, newParams));
                 }
                 dispatch(

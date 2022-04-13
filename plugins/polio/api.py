@@ -132,8 +132,10 @@ class CampaignViewSet(ModelViewSet):
         else:
             return AnonymousCampaignSerializer
 
-    def filter_queryset(self,queryset):
+    def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
+        if self.action in ("update", "partial_update", "retrieve", "destroy"):
+            return queryset
         campaign_type = self.request.query_params.get("campaign_type")
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")

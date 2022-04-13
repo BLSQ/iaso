@@ -59,7 +59,11 @@ const onActionSelected = (fetchEditUrl, action, instance) => {
     }
 };
 
-const actions = (instanceDefining, form_id, form_defining_id) => {
+const linkOrgUnitToInstanceDefining = (instance_defining_id) => {
+  
+}
+
+const actions = (instanceDefining, form_id, form_defining_id, instance_defining_id) => {
   const link_org_unit = ((form_id === form_defining_id) && !instanceDefining);
   return [
 
@@ -70,7 +74,9 @@ const actions = (instanceDefining, form_id, form_defining_id) => {
       },
       {
           id: 'linkOrgUnitInstanceDefining',
-          icon: <LinkIcon />,
+          icon: <LinkIcon
+                  onClick={() => linkOrgUnitToInstanceDefining(instance_defining_id)}
+                />,
           disabled: !link_org_unit,
       }
   ];
@@ -109,17 +115,18 @@ const OrgUnitInfosComponent = ({
     fetchEditUrl,
     ...props
 }) => {
-  const { formId, formDefiningId, setFormId, setFormDefiningId } =
+  const { formId, formDefiningId, instanceDefiningId } =
       useContext(FormDefiningContext);
   const classes = useStyles();
   const form_id = formId;
   const form_defining_id = formDefiningId;
+  const instance_defining_id = instanceDefiningId;
   return (
         <Grid container spacing={4}>
           {(orgUnit.instance_defining || form_id === form_defining_id) && (
             <SpeedDialInstanceActions
                 speedDialClasses={classes.speedDialTop}
-                actions={actions(orgUnit.instance_defining, form_id, form_defining_id)}
+                actions={actions(orgUnit.instance_defining, form_id, form_defining_id, instance_defining_id)}
                 onActionSelected={action =>
                     onActionSelected(fetchEditUrl, action, orgUnit.instance_defining)
                 }

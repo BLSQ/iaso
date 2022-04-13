@@ -39,7 +39,7 @@ const InstancesTopBar = ({
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const { setFormId, setFormDefiningId } =
+    const { setFormId, setFormDefiningId, setInstanceDefiningId } =
         useContext(FormDefiningContext);
     const currentUser = useSelector(state => state.users.current);
     const [visibleColumns, setVisibleColumns] = useState([]);
@@ -63,7 +63,8 @@ const InstancesTopBar = ({
                 currentUser,
                 dispatch,
                 setFormId,
-                setFormDefiningId
+                setFormDefiningId,
+                setInstanceDefiningId
             ),
         );
         setVisibleColumns(cols);

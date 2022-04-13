@@ -18,11 +18,13 @@ const updateOrgUnit = (orgUnit, instance_defining_id) => {
     useSaveOrgUnit();
 };
 
-const updateFormID = (settings, dispatch, setFormId, setFormDefiningId) => {
+const updateFormID = (settings, dispatch, setFormId, setFormDefiningId, setInstanceDefiningId) => {
   const form_id = settings.row.original.form_id;
   const form_defining_id = settings.row.original.form_defining_id;
+  const instance_defining_id = settings.row.original.id;
   setFormId(form_id);
-  setFormDefiningId(form_defining_id)
+  setFormDefiningId(form_defining_id);
+  setInstanceDefiningId(instance_defining_id);
   const url = `${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.org_unit.id}`;
   dispatch(redirectToAction(url, {}));
 };
@@ -43,7 +45,7 @@ const initialFormState = (orgUnit, instance_defining_id) => {
         instance_defining_id,
     };
 };
-export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, setFormId, setFormDefiningId) => {
+export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, setFormId, setFormDefiningId, setInstanceDefiningId) => {
     return {
         Header: formatMessage(MESSAGES.actions),
         accessor: 'actions',
@@ -69,7 +71,8 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
                                         settings,
                                         dispatch,
                                         setFormId,
-                                        setFormDefiningId
+                                        setFormDefiningId,
+                                        setInstanceDefiningId
                                     )
                                 }
                             />

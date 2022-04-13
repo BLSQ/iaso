@@ -39,7 +39,7 @@ const InstancesTopBar = ({
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const { formId, formDefiningId, setFormId } =
+    const { setFormId, setFormDefiningId } =
         useContext(FormDefiningContext);
     const currentUser = useSelector(state => state.users.current);
     const [visibleColumns, setVisibleColumns] = useState([]);
@@ -61,6 +61,9 @@ const InstancesTopBar = ({
                 cols,
                 params.showDeleted === 'true',
                 currentUser,
+                dispatch,
+                setFormId,
+                setFormDefiningId
             ),
         );
         setVisibleColumns(cols);
@@ -68,15 +71,6 @@ const InstancesTopBar = ({
             dispatch(redirectToReplace(baseUrl, newParams));
         }
     };
-    useEffect(() => {
-        if (!formId) {
-            setFormId(5);
-        }
-        console.log(formId);
-        return () => {
-            setFormId(null);
-        };
-    }, [formId, setFormId]);
 
     useEffect(() => {
         let newColsString;

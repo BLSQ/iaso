@@ -574,7 +574,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
         requested_country = int(requested_country)
 
-        campaigns = Campaign.objects.filter(country_id=requested_country)
+        campaigns = Campaign.objects.filter(country_id=requested_country).filter(is_test=False)
 
         if campaigns:
             latest_campaign_update = campaigns.latest("updated_at").updated_at
@@ -1112,7 +1112,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             return HttpResponseBadRequest
         requested_country = int(requested_country)
 
-        campaigns = Campaign.objects.filter(country_id=requested_country)
+        campaigns = Campaign.objects.filter(country_id=requested_country).filter(is_test=False)
         if campaigns:
             latest_campaign_update = campaigns.latest("updated_at").updated_at
         else:

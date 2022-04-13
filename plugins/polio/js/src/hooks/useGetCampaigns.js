@@ -15,6 +15,7 @@ export const useGetCampaigns = (options = {}) => {
         campaign_groups: options.campaignGroups,
         // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
         enabled: options.enabled ?? true,
+        show_test: options.show_test ?? false,
     };
 
     const getURL = urlParams => {

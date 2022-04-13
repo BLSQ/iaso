@@ -58,6 +58,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
             org_units: [],
         },
         is_preventive: false,
+        is_test: false,
         enable_send_weekly_email: true,
     };
 

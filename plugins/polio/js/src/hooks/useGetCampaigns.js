@@ -12,6 +12,7 @@ export const useGetCampaigns = (options = {}) => {
         round_one__started_at__lte: options.r1StartTo,
         deletion_status: options.showOnlyDeleted ? 'deleted' : undefined,
         campaign_type: options.campaignType ?? 'all',
+        campaign_groups: options.campaignGroups,
         // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
         enabled: options.enabled ?? true,
     };

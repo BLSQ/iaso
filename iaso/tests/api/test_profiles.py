@@ -261,6 +261,35 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 403)
 
+    def test_profile_error_dhis2_constraint(self):
+        # Test for regression of IA-1249
+        self.client.force_authenticate(self.jim)
+        data = {"user_name": "unittest_user1", "password": "unittest_password", "dhis2_id": ""}
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+
+        data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": ""}
+        response = self.client.post("/api/profiles/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        profile1 = m.Profile.objects.get(user__username="unittest_user1")
+        profile2 = m.Profile.objects.get(user__username="unittest_user2")
+        self.assertNotEqual(profile1.account_id, None)
+        self.assertEqual(profile2.account_id, profile1.account_id)
+        self.assertEqual(profile2.dhis2_id, None)
+
+        data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": "", "first_name": "test"}
+        response = self.client.patch(f"/api/profiles/{profile2.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        profile2.refresh_from_db()
+        self.assertEqual(profile2.dhis2_id, None)
+
+        data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": "test_dhis2_id"}
+        response = self.client.patch(f"/api/profiles/{profile2.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        profile2.refresh_from_db()
+        self.assertEqual(profile2.dhis2_id, "test_dhis2_id")
+
     def test_account_feature_flags_is_included(self):
         aff = m.AccountFeatureFlag.objects.create(code="shape", name="Can edit shape")
         aff2 = m.AccountFeatureFlag.objects.create(code="not-used", name="this is not used")

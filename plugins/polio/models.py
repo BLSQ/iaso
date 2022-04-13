@@ -238,6 +238,7 @@ class Campaign(SoftDeletableModel):
     # Budget
     budget_status = models.CharField(max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True)
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
+    is_test = models.BooleanField(default=False)
 
     who_disbursed_to_co_at = models.DateField(
         null=True,
@@ -459,31 +460,11 @@ class SpreadSheetImport(models.Model):
         return ssis.latest("created_at")
 
 
-class LQASIMCache(models.Model):
-    user_id = models.IntegerField()
-    response = models.JSONField()
-    updated_at = models.DateTimeField(auto_now=True, editable=True, blank=True, null=True)
-    params = models.TextField()
-
-    def __str__(self):
-        return str(self.params)
-
-
-class IMStatsCache(models.Model):
-    user_id = models.IntegerField()
-    response = models.JSONField()
-    updated_at = models.DateTimeField(auto_now=True, editable=True, blank=True, null=True)
-    params = models.TextField()
-
-    def __str__(self):
-        return str(self.params)
-
-
-class CampaignGroup(models.Model):
+class CampaignGroup(SoftDeletableModel):
     def __str__(self):
         return f"{self.name} {','.join(str(c) for c in self.campaigns.all())}"
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=200)
-    campaigns = models.ManyToManyField(Campaign, related_name="groups")
+    campaigns = models.ManyToManyField(Campaign, related_name="grouped_campaigns")

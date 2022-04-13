@@ -11,8 +11,6 @@ from .models import (
     CountryUsersGroup,
     URLCache,
     SpreadSheetImport,
-    LQASIMCache,
-    IMStatsCache,
     CampaignGroup,
 )
 
@@ -85,5 +83,3 @@ admin.site.register(Round)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
-admin.site.register(LQASIMCache)
-admin.site.register(IMStatsCache)

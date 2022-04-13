@@ -18,8 +18,9 @@ export const testPagination = ({
                     },
                 },
                 fixture,
-            );
+            ).as('query');
             cy.visit(baseUrl);
+            cy.wait('@query');
             if (withSearch) cy.get('#searchButton').click();
         });
         it('click on next should display next page', () => {

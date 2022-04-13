@@ -140,6 +140,7 @@
     "iaso.polio.label.failed": "Failed",
     "iaso.polio.label.farm": "At the farm",
     "iaso.polio.label.finished": "Finished",
+    "iaso.polio.label.groupedCampaigns": "Grouped campaigns",
     "iaso.polio.label.im": "IM",
     "iaso.polio.label.imFail": "<90%",
     "iaso.polio.label.imGlobal": "Global IM",
@@ -216,6 +217,7 @@
     "iaso.polio.select.label.selectUsers": "Select users",
     "iaso.polio.sendEmail.error": "Error sending notification email",
     "iaso.polio.sendEmail.success": "Notification email sent",
+    "iaso.polio.showDeletedCampaigns": "Show deleted campaigns",
     "iaso.polio.table.label.actions": "Actions",
     "iaso.polio.table.label.country": "Country",
     "iaso.polio.table.label.language": "Language",
@@ -238,5 +240,7 @@
     "iaso.polio.title.scope": "Scope",
     "iaso.polio.tooltip.label.lqasImDate": "No date found in campaign data, using default value based on round date",
     "iaso.polio.vaccine": "Vaccine",
-    "iaso.polio.vaccines": "Vaccines"
+    "iaso.polio.vaccines": "Vaccines",
+    "polio.label.campaignsToLink": "Campaigns to link",
+    "polio.label.editGroupedCampaign": "Edit grouped campaign"
 }

@@ -26,12 +26,13 @@ import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { EditSourceVersion } from './EditSourceVersion.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const tableColumns = source => [
+const tableColumns = (source, forceRefreshParent) => [
     {
         Header: <FormattedMessage {...MESSAGES.defaultVersion} />,
         accessor: 'id',
@@ -69,6 +70,17 @@ const tableColumns = source => [
     {
         Header: (
             <FormattedMessage
+                id="iaso.versionsDialog.label.updatedAt"
+                defaultMessage="Updated"
+            />
+        ),
+        accessor: 'updated_at',
+        sortable: false,
+        Cell: DateTimeCell,
+    },
+    {
+        Header: (
+            <FormattedMessage
                 id="iaso.label.orgUnit"
                 defaultMessage="Org units"
             />
@@ -95,6 +107,13 @@ const tableColumns = source => [
                 <FormattedMessage id="Read Only" />
             ) : (
                 <>
+                    <EditSourceVersion
+                        sourceVersionId={settings.row.original.id}
+                        description={settings.row.original.description}
+                        sourceVersionNumber={settings.row.original.number}
+                        dataSourceId={source.id}
+                        forceRefreshParent={forceRefreshParent}
+                    />
                     <AddTask
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent

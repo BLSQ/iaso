@@ -254,6 +254,7 @@ def dhis2_ou_importer(
     password: Optional[str],
     update_mode: bool = False,
     task: Task = None,
+    description="",
 ) -> Task:
     the_task = task
     start = time.time()
@@ -268,7 +269,9 @@ def dhis2_ou_importer(
     if source_version_number is None:
         last_version = source.versions.all().order_by("number").last()
         source_version_number = last_version.number + 1 if last_version else 0
-        version = SourceVersion.objects.create(number=source_version_number, data_source=source)
+        version = SourceVersion.objects.create(
+            number=source_version_number, data_source=source, description=description
+        )
     else:
         version, _created = SourceVersion.objects.get_or_create(number=source_version_number, data_source=source)
     if OrgUnit.objects.filter(version=version).count() > 0 and not update_mode:

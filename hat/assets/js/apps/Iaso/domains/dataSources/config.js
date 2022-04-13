@@ -87,6 +87,7 @@ const dataSourcesTableColumns = (
                         )}
                         defaultSourceVersion={defaultSourceVersion}
                         source={settings.row.original}
+                        forceRefreshParent={() => setForceRefresh(true)}
                     />
                     <ExportToDHIS2Dialog
                         renderTrigger={({ openDialog }) => (

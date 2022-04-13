@@ -38,6 +38,7 @@ const Calendar = ({ params }) => {
         countries: params.countries,
         search: params.search,
         campaignType: params.campaignType,
+        campaignGroups: params.campaignGroups,
     });
 
     const { data: campaigns = [], isLoading } = query;

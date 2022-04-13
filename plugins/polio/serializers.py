@@ -354,6 +354,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         round_two_data = validated_data.pop("round_two")
 
         group = validated_data.pop("group") if "group" in validated_data else None
+        grouped_campaigns = validated_data.pop("grouped_campaigns", [])
 
         if group:
             org_units = group.pop("org_units") if "org_units" in group else []
@@ -368,6 +369,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_two=Round.objects.create(**round_two_data),
             group=campaign_group,
         )
+        campaign.grouped_campaigns.set(grouped_campaigns)
 
         return campaign
 

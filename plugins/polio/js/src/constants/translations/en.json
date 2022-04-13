@@ -111,6 +111,7 @@
     "iaso.polio.label.campaign": "Campaign",
     "iaso.polio.label.campaignType": "Campaign type",
     "iaso.polio.label.campaigns": "Campaigns",
+    "iaso.polio.label.campaignsToLink": "Campaigns to link",
     "iaso.polio.label.caregivers_informed": "Caregivers informed",
     "iaso.polio.label.childrenChecked": "Children checked",
     "iaso.polio.label.childrenMarked": "Children marked",
@@ -129,6 +130,7 @@
     "iaso.polio.label.districtScore": "District",
     "iaso.polio.label.districtsNeedMatching": "Some districts need to be matched by an admin and are not shown. Please contact an admin for more information",
     "iaso.polio.label.districtsNotFound": "Districts not found",
+    "iaso.polio.label.editGroupedCampaign": "Edit grouped campaign",
     "iaso.polio.label.emailListEmpty": "No email configured for this country",
     "iaso.polio.label.emailListLabel": "Configured emails :",
     "iaso.polio.label.emailListTooltip": "Change email list via country configuration",
@@ -192,6 +194,8 @@
     "iaso.polio.label.sortAsc": "Sort ascending",
     "iaso.polio.label.sortDesc": "Sort descending",
     "iaso.polio.label.submitted": "Submitted",
+    "iaso.polio.label.testCampaign": "Test campaign",
+    "iaso.polio.label.testCampaigns": "Test campaigns",
     "iaso.polio.label.toSubmit": "To submit",
     "iaso.polio.label.totalCaregiversSurveyed": "Caregivers surveyed",
     "iaso.polio.label.total_child_checked": "Children seen",
@@ -239,7 +243,5 @@
     "iaso.polio.title.scope": "Scope",
     "iaso.polio.tooltip.label.lqasImDate": "No date found in campaign data, using default value based on round date",
     "iaso.polio.vaccine": "Vaccine",
-    "iaso.polio.vaccines": "Vaccines",
-    "polio.label.campaignsToLink": "Campaigns to link",
-    "polio.label.editGroupedCampaign": "Edit grouped campaign"
+    "iaso.polio.vaccines": "Vaccines"
 }

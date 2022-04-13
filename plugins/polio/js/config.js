@@ -59,6 +59,10 @@ const campaignsFilters = [
         isRequired: false,
         key: 'campaignGroups',
     },
+    {
+        isRequired: false,
+        key: 'show_test',
+    },
 ];
 
 const routes = [

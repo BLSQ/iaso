@@ -62,6 +62,7 @@ const Dashboard = ({ router }) => {
             showOnlyDeleted: params.showOnlyDeleted,
             campaignType: params.campaignType,
             campaignGroups: params.campaignGroups,
+            show_test: params.show_test ?? true,
         };
     }, [params]);
 

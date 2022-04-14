@@ -1,5 +1,9 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
-import { SearchInput, useSafeIntl } from 'bluesquare-components';
+import {
+    SearchInput,
+    useSafeIntl,
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
 
 import { containsForbiddenCharacter } from '../../constants/filters';
 import { IntlFormatMessage } from '../../types/intl';
@@ -46,7 +50,7 @@ const SearchFilter: FunctionComponent<Props> = ({
         setTextSearchErrors(newErrors);
     }, [currentValue, formatMessage]);
 
-    useEffect(() => {
+    useSkipEffectOnMount(() => {
         onChange(currentValue, keyValue);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentValue, keyValue]);

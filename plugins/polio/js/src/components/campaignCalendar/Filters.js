@@ -130,59 +130,6 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
                             options={groupedCampaignsOptions}
                             label={MESSAGES.groupedCampaigns}
                         />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <InputComponent
-                            loading={isFetchingCountries}
-                            keyValue="campaignType"
-                            clearable
-                            onChange={(_key, value) => {
-                                setCampaignType(value);
-                            }}
-                            value={campaignType}
-                            type="select"
-                            options={campaignTypeOptions(
-                                formatMessage,
-                                showTest,
-                            )}
-                            label={MESSAGES.campaignType}
-                        />
-                        {!disableDates && (
-                            <Box mt={-2}>
-                                <DatesRange
-                                    onChangeDate={(key, value) => {
-                                        if (key === 'dateFrom') {
-                                            setR1StartFrom(value);
-                                        }
-                                        if (key === 'dateTo') {
-                                            set1StartTo(value);
-                                        }
-                                    }}
-                                    labelFrom={MESSAGES.R1StartFrom}
-                                    labelTo={MESSAGES.R1StartTo}
-                                    dateFrom={r1StartFrom}
-                                    dateTo={r1StartTo}
-                                />
-                            </Box>
-                        )}
-                    </Grid>
-                    <Grid item xs={4}>
-                        <InputComponent
-                            loading={isFetchingCountries}
-                            keyValue="countries"
-                            multi
-                            clearable
-                            onChange={(key, value) => {
-                                setCountries(value);
-                            }}
-                            value={countries}
-                            type="select"
-                            options={countriesList.map(c => ({
-                                label: c.name,
-                                value: c.id,
-                            }))}
-                            label={MESSAGES.country}
-                        />
                         {!disableOnlyDeleted && (
                             <InputComponent
                                 keyValue="showOnlyDeleted"
@@ -193,6 +140,63 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
                                 type="checkbox"
                                 label={MESSAGES.showOnlyDeleted}
                             />
+                        )}
+                    </Grid>
+                    <Grid item xs={8} container spacing={2}>
+                        <Grid item xs={6}>
+                            <InputComponent
+                                loading={isFetchingCountries}
+                                keyValue="campaignType"
+                                clearable
+                                onChange={(_key, value) => {
+                                    setCampaignType(value);
+                                }}
+                                value={campaignType}
+                                type="select"
+                                options={campaignTypeOptions(
+                                    formatMessage,
+                                    showTest,
+                                )}
+                                label={MESSAGES.campaignType}
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <InputComponent
+                                loading={isFetchingCountries}
+                                keyValue="countries"
+                                multi
+                                clearable
+                                onChange={(key, value) => {
+                                    setCountries(value);
+                                }}
+                                value={countries}
+                                type="select"
+                                options={countriesList.map(c => ({
+                                    label: c.name,
+                                    value: c.id,
+                                }))}
+                                label={MESSAGES.country}
+                            />
+                        </Grid>
+                        {!disableDates && (
+                            <Grid item xs={12}>
+                                <Box mt={-10}>
+                                    <DatesRange
+                                        onChangeDate={(key, value) => {
+                                            if (key === 'dateFrom') {
+                                                setR1StartFrom(value);
+                                            }
+                                            if (key === 'dateTo') {
+                                                set1StartTo(value);
+                                            }
+                                        }}
+                                        labelFrom={MESSAGES.R1StartFrom}
+                                        labelTo={MESSAGES.R1StartTo}
+                                        dateFrom={r1StartFrom}
+                                        dateTo={r1StartTo}
+                                    />
+                                </Box>
+                            </Grid>
                         )}
                     </Grid>
                 </Grid>

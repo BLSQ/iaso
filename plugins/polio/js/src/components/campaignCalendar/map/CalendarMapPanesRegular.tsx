@@ -3,27 +3,13 @@ import { FormattedMessage } from 'react-intl';
 import { GeoJSON, Pane, Tooltip } from 'react-leaflet';
 import { findRegion } from '../../../utils';
 import MESSAGES from '../../../constants/messages';
-import { vaccineOpacity } from '../Styles';
-import { boundariesZoomLimit } from './constants';
-
-type ViewPort = {
-    zoom: number;
-    center: number[];
-};
+import { ViewPort } from '../../../constants/types';
+import { getGeoJsonStyle } from './utils';
 
 type Props = {
     campaignsShapes: any[];
     viewport: ViewPort;
     regions: { id: number; name: string }[];
-};
-
-const getGeoJsonStyle = (cs, viewport) => {
-    return {
-        color: cs.campaign.color,
-        fillOpacity: vaccineOpacity,
-        fillColor: cs.vacine?.color,
-        weight: viewport.zoom > boundariesZoomLimit ? 2 : 0,
-    };
 };
 
 export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
@@ -43,7 +29,13 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
                             <GeoJSON
                                 key={shape.id}
                                 data={shape.geo_json}
-                                style={() => getGeoJsonStyle(cs, viewport)}
+                                style={() =>
+                                    getGeoJsonStyle(
+                                        cs.campaign.color,
+                                        cs.campaign.original.vacine,
+                                        viewport,
+                                    )
+                                }
                             >
                                 <Tooltip>
                                     <div>
@@ -74,7 +66,7 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
                                         <FormattedMessage
                                             {...MESSAGES.vaccine}
                                         />
-                                        {`: ${cs.vacine?.label}`}
+                                        {`: ${cs.campaign.original.vacine}`}
                                     </div>
                                 </Tooltip>
                             </GeoJSON>

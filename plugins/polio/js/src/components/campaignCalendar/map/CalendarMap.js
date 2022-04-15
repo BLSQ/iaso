@@ -5,7 +5,6 @@ import { Box } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
 import { useQueries } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
-import { polioVacines } from '../../../constants/virus';
 import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes.ts';
 
 import { VaccinesLegend } from './VaccinesLegend';
@@ -40,9 +39,6 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                         getRequest(`/api/orgunits/?${queryString.toString()}`),
                     select: data => ({
                         campaign,
-                        vacine: polioVacines.find(
-                            v => v.value === campaign.original.vacine,
-                        ),
                         shapes: data,
                     }),
                     enabled: !loadingCampaigns,
@@ -76,7 +72,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                 };
             }),
     );
-    const { data: mergedShapes } = useGetMergedCampaignShapes({}).query;
+    const { data: mergedShapes } = useGetMergedCampaignShapes().query;
 
     const campaignColors = {};
 

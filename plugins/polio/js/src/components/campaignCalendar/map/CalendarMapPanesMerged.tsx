@@ -3,28 +3,12 @@ import { FormattedMessage } from 'react-intl';
 import { GeoJSON, Pane, Tooltip } from 'react-leaflet';
 
 import MESSAGES from '../../../constants/messages';
-import { vaccineOpacity } from '../Styles';
-import { polioVacines } from '../../../constants/virus';
-import { boundariesZoomLimit } from './constants';
-
-type ViewPort = {
-    zoom: number;
-    center: number[];
-};
+import { ViewPort } from '../../../constants/types';
+import { getGeoJsonStyle } from './utils';
 
 type Props = {
     mergedShapes: any[];
     viewport: ViewPort;
-};
-
-const getGeoJsonStyle = (shape, viewport) => {
-    return {
-        color: shape.color,
-        fillOpacity: vaccineOpacity,
-        fillColor: polioVacines.find(v => v.value === shape.properties.vacine)
-            ?.color,
-        weight: viewport.zoom > boundariesZoomLimit ? 2 : 0,
-    };
 };
 
 export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
@@ -42,25 +26,23 @@ export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
                         <GeoJSON
                             key={mergedShape.properties.id}
                             data={mergedShape}
-                            style={() => getGeoJsonStyle(mergedShape, viewport)}
+                            style={() =>
+                                getGeoJsonStyle(
+                                    mergedShape.color,
+                                    mergedShape.properties.vacine,
+                                    viewport,
+                                )
+                            }
                         >
                             <Tooltip>
                                 <div>
                                     <FormattedMessage {...MESSAGES.campaign} />
-                                    {`: ${mergedShape.properties.name}`}
+                                    {`: ${mergedShape.properties.obr_name}`}
                                 </div>
                                 <div>
                                     <FormattedMessage {...MESSAGES.country} />
-                                    {`: ${mergedShape.properties.country}`}
+                                    {`: ${mergedShape.properties.top_level_org_unit_name}`}
                                 </div>
-                                {/* <div>
-                                    <FormattedMessage {...MESSAGES.region} />
-                                    {`: ${findRegion(shape, regions)}`}
-                                </div> */}
-                                {/* <div>
-                                    <FormattedMessage {...MESSAGES.district} />
-                                    {`: ${shape.name}`}
-                                </div> */}
                                 <div>
                                     <FormattedMessage {...MESSAGES.vaccine} />
                                     {`: ${mergedShape.properties.vacine}`}

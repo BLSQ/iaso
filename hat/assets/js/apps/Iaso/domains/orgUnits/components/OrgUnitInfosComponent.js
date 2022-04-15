@@ -14,6 +14,7 @@ import {
     FormControl as FormControlComponent,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
+import { useSaveOrgUnit } from '../hooks';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { fetchEditUrl as fetchEditUrlAction} from '../../instances/actions';
@@ -25,6 +26,7 @@ import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstan
 import EnketoIcon from '../../instances/components/EnketoIcon';
 import LinkIcon from '@material-ui/icons/Link';
 import queryString from "query-string"
+import omit from 'lodash/omit';
 import { FormDefiningContext } from '../../instances/context/FormDefiningContext.tsx';
 // reformatting orgUnit name so the OU can be passed to the treeview modal
 // and selecting the parent for display
@@ -59,22 +61,68 @@ const onActionSelected = (fetchEditUrl, action, instance) => {
     }
 };
 
-const linkOrgUnitToInstanceDefining = (instance_defining_id) => {
+const initialFormState = (orgUnit, instance_defining_id) => {
+    return {
+        id: orgUnit.id,
+        name: orgUnit.name,
+        org_unit_type_id: orgUnit.org_unit_type_id
+            ? `${orgUnit.org_unit_type_id}`
+            : null,
+        groups: orgUnit.groups["value"]?.map(g => g) ?? [],
+        sub_source: orgUnit.sub_source,
+        validation_status: orgUnit.validation_status,
+        aliases: orgUnit.aliases,
+        parent_id: orgUnit.parent_id,
+        source_ref: orgUnit.source_ref,
+        instance_defining_id: instance_defining_id,
+    };
+};
+
+const onError = () =>  {
+  if (onError.status === 400) {
+    onError.details.forEach(entry => {
+      setFieldErrors(entry.errorKey, [entry.errorMessage]);
+    });
+  }
 }
 
-const actions = (instanceDefining, form_id, form_defining_id, instance_defining_id) => {
-  const link_org_unit = ((form_id === form_defining_id) && !instanceDefining);
+const linkOrgUnitToInstanceDefining = (org_unit, instance_defining_id, saveOu) => {
+  const currentOrgUnit = org_unit;
+  const newOrgUnit = initialFormState(org_unit, instance_defining_id);
+  let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
+  
+  orgUnitPayload = {
+      ...orgUnitPayload,
+      groups:
+          orgUnitPayload.groups.length > 0 &&
+          !orgUnitPayload.groups[0].id
+              ? orgUnitPayload.groups
+              : orgUnitPayload.groups.map(g => g.id),
+  };
+
+  saveOu(orgUnitPayload)
+      .then(ou => {
+          const url = `${baseUrls.orgUnitDetails}/orgUnitId/${ou.id}`;
+          dispatch(redirectToAction(url, {}));
+          refreshOrgUnitQueryCache(ou);
+          onSuccess(ou);
+      })
+      .catch(onError);
+}
+
+const actions = (org_unit, form_id, form_defining_id, instance_defining_id, saveOu) => {
+  const link_org_unit = ((form_id === form_defining_id) && !org_unit.instance_defining);
   return [
 
       {
           id: 'instanceEditAction',
           icon: <EnketoIcon />,
-          disabled: !instanceDefining,
+          disabled: !org_unit.instance_defining,
       },
       {
           id: 'linkOrgUnitInstanceDefining',
           icon: <LinkIcon
-                  onClick={() => linkOrgUnitToInstanceDefining(instanceDefining)}
+                  onClick={() => linkOrgUnitToInstanceDefining(org_unit, instance_defining_id, saveOu)}
                 />,
           disabled: !link_org_unit,
       }
@@ -114,19 +162,16 @@ const OrgUnitInfosComponent = ({
     fetchEditUrl,
     ...props
 }) => {
+  const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
   const { formId, formDefiningId, instanceDefiningId } =
       useContext(FormDefiningContext);
   const classes = useStyles();
-  const form_id = formId;
-  const form_defining_id = formDefiningId;
-  const instance_defining_id = instanceDefiningId;
-  
   return (
         <Grid container spacing={4}>
-          {(orgUnit.instance_defining || form_id === form_defining_id) && (
+          {(orgUnit.instance_defining || formId === formDefiningId) && (
             <SpeedDialInstanceActions
                 speedDialClasses={classes.speedDialTop}
-                actions={actions(orgUnit.instance_defining, form_id, form_defining_id, instance_defining_id)}
+                actions={actions(orgUnit, formId, formDefiningId, instanceDefiningId, saveOu)}
                 onActionSelected={action =>
                     onActionSelected(fetchEditUrl, action, orgUnit.instance_defining)
                 }

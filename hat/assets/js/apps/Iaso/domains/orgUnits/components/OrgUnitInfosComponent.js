@@ -1,4 +1,4 @@
-import React, { Fragment, useContext } from 'react';
+import React, { Fragment, useContext, useState, useEffect } from 'react';
 
 import { withStyles, Grid } from '@material-ui/core';
 
@@ -60,7 +60,6 @@ const onActionSelected = (fetchEditUrl, action, instance) => {
 };
 
 const linkOrgUnitToInstanceDefining = (instance_defining_id) => {
-  
 }
 
 const actions = (instanceDefining, form_id, form_defining_id, instance_defining_id) => {
@@ -75,7 +74,7 @@ const actions = (instanceDefining, form_id, form_defining_id, instance_defining_
       {
           id: 'linkOrgUnitInstanceDefining',
           icon: <LinkIcon
-                  onClick={() => linkOrgUnitToInstanceDefining(instance_defining_id)}
+                  onClick={() => linkOrgUnitToInstanceDefining(instanceDefining)}
                 />,
           disabled: !link_org_unit,
       }
@@ -121,6 +120,7 @@ const OrgUnitInfosComponent = ({
   const form_id = formId;
   const form_defining_id = formDefiningId;
   const instance_defining_id = instanceDefiningId;
+  
   return (
         <Grid container spacing={4}>
           {(orgUnit.instance_defining || form_id === form_defining_id) && (

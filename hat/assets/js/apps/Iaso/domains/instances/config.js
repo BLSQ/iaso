@@ -1,6 +1,7 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import orderBy from 'lodash/orderBy';
 import mapValues from 'lodash/mapValues';
+import omit from 'lodash/omit';
 import { useDispatch } from 'react-redux';
 
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
@@ -13,18 +14,11 @@ import { useFormState } from '../../hooks/form';
 import { useSaveOrgUnit } from '../orgUnits/hooks';
 import { redirectTo as redirectToAction } from '../../routing/actions';
 
-const updateOrgUnit = (orgUnit, instance_defining_id) => {
-    const newOrgUnit = initialFormState(orgUnit, instance_defining_id);
-    useSaveOrgUnit();
-};
-
 const updateFormID = (settings, dispatch, setFormId, setFormDefiningId, setInstanceDefiningId) => {
-  const form_id = settings.row.original.form_id;
-  const form_defining_id = settings.row.original.form_defining_id;
-  const instance_defining_id = settings.row.original.id;
-  setFormId(form_id);
-  setFormDefiningId(form_defining_id);
-  setInstanceDefiningId(instance_defining_id);
+  setFormId(settings.row.original.form_id);
+  setFormDefiningId(settings.row.original.form_defining_id);
+  setInstanceDefiningId(settings.row.original.id);
+
   const url = `${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.org_unit.id}`;
   dispatch(redirectToAction(url, {}));
 };
@@ -42,10 +36,11 @@ const initialFormState = (orgUnit, instance_defining_id) => {
         aliases: orgUnit.aliases,
         parent_id: orgUnit.parent_id,
         source_ref: orgUnit.source_ref,
-        instance_defining_id,
+        instance_defining_id: instance_defining_id,
     };
 };
 export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, setFormId, setFormDefiningId, setInstanceDefiningId) => {
+
     return {
         Header: formatMessage(MESSAGES.actions),
         accessor: 'actions',
@@ -53,7 +48,36 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
         sortable: false,
         width: 150,
         Cell: settings => {
-            console.log('settings', settings);
+            const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
+            const onError = () =>  {
+              if (onError.status === 400) {
+                onError.details.forEach(entry => {
+                  setFieldErrors(entry.errorKey, [entry.errorMessage]);
+                });
+              }
+            }
+            const linkOrgUnitToInstanceDefining = () => {
+              const currentOrgUnit = settings.row.original.org_unit;
+              const newOrgUnit = initialFormState(settings.row.original.org_unit, settings.row.original.id);
+              let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
+
+              orgUnitPayload = {
+                  ...orgUnitPayload,
+                  groups:
+                      orgUnitPayload.groups.length > 0 &&
+                      !orgUnitPayload.groups[0].id
+                          ? orgUnitPayload.groups
+                          : orgUnitPayload.groups.map(g => g.id),
+              };
+              saveOu(orgUnitPayload)
+                  .then(ou => {
+                      const url = `${baseUrls.orgUnitDetails}/orgUnitId/${ou.id}`;
+                      dispatch(redirectToAction(url, {}));
+                      refreshOrgUnitQueryCache(ou);
+                      onSuccess(ou);
+                  })
+                  .catch(onError);
+            }
             return (
                 <section>
                     <IconButtonComponent
@@ -82,10 +106,7 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
                         userHasPermission('iaso_org_units', user) && (
                             <IconButtonComponent
                                 onClick={() =>
-                                    updateOrgUnit(
-                                        settings.row.original.org_unit,
-                                        settings.row.original.id,
-                                    )
+                                    linkOrgUnitToInstanceDefining()
                                 }
                                 overrideIcon={LinkIcon}
                                 tooltipMessage={

@@ -1,36 +1,22 @@
 import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { LoadingSpinner } from 'bluesquare-components';
-import { FormattedMessage } from 'react-intl';
 import { Box } from '@material-ui/core';
-import { GeoJSON, Map, Pane, TileLayer, Tooltip } from 'react-leaflet';
+import { Map, TileLayer } from 'react-leaflet';
 import { useQueries } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { polioVacines } from '../../../constants/virus';
+import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes.ts';
 
 import { VaccinesLegend } from './VaccinesLegend';
 import { CampaignsLegend } from './CampaignsLegend';
-import MESSAGES from '../../../constants/messages';
 import { appId } from '../../../constants/app';
-import { useStyles, vaccineOpacity } from '../Styles';
-import { findRegion } from '../../../utils';
+import { useStyles } from '../Styles';
 
 import 'leaflet/dist/leaflet.css';
-
-const defaultViewport = {
-    center: [1, 20],
-    zoom: 3.25,
-};
-const boundariesZoomLimit = 6;
-
-const getGeoJsonStyle = (cs, viewport) => {
-    return {
-        color: cs.campaign.color,
-        fillOpacity: vaccineOpacity,
-        fillColor: cs.vacine?.color,
-        weight: viewport.zoom > boundariesZoomLimit ? 2 : 0,
-    };
-};
+import { CalendarMapPanesRegular } from './CalendarMapPanesRegular.tsx';
+import { CalendarMapPanesMerged } from './CalendarMapPanesMerged.tsx';
+import { defaultViewport, boundariesZoomLimit } from './constants.ts';
 
 const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const classes = useStyles();
@@ -90,6 +76,20 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                 };
             }),
     );
+    const { data: mergedShapes } = useGetMergedCampaignShapes({}).query;
+
+    const campaignColors = {};
+
+    campaigns.forEach(campaign => {
+        campaignColors[campaign.id] = campaign.color;
+    });
+    const campaignIds = campaigns.map(campaign => campaign.id);
+
+    const mergedShapesToDisplay = mergedShapes?.features
+        .filter(shape => campaignIds.includes(shape.properties.id))
+        .map(shape => {
+            return { ...shape, color: campaignColors[shape.properties.id] };
+        });
 
     const loadingShapes =
         shapesQueries.some(q => q.isLoading) ||
@@ -103,7 +103,6 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
         .filter(sq => sq.data)
         .map(sq => sq.data)
         .flat();
-
     return (
         <Box position="relative">
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
@@ -128,55 +127,19 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                {campaignsShapes.map(cs => {
-                    return (
-                        <Pane
-                            name={`campaign-${cs.campaign.id}`}
-                            key={cs.campaign.id}
-                        >
-                            {cs.shapes.map(shape => (
-                                <GeoJSON
-                                    key={shape.id}
-                                    data={shape.geo_json}
-                                    style={() => getGeoJsonStyle(cs, viewport)}
-                                >
-                                    <Tooltip>
-                                        <div>
-                                            <FormattedMessage
-                                                {...MESSAGES.campaign}
-                                            />
-                                            {`: ${cs.campaign.name}`}
-                                        </div>
-                                        <div>
-                                            <FormattedMessage
-                                                {...MESSAGES.country}
-                                            />
-                                            {`: ${cs.campaign.country}`}
-                                        </div>
-                                        <div>
-                                            <FormattedMessage
-                                                {...MESSAGES.region}
-                                            />
-                                            {`: ${findRegion(shape, regions)}`}
-                                        </div>
-                                        <div>
-                                            <FormattedMessage
-                                                {...MESSAGES.district}
-                                            />
-                                            {`: ${shape.name}`}
-                                        </div>
-                                        <div>
-                                            <FormattedMessage
-                                                {...MESSAGES.vaccine}
-                                            />
-                                            {`: ${cs.vacine?.label}`}
-                                        </div>
-                                    </Tooltip>
-                                </GeoJSON>
-                            ))}
-                        </Pane>
-                    );
-                })}
+                {viewport.zoom > 6 && (
+                    <CalendarMapPanesRegular
+                        campaignsShapes={campaignsShapes}
+                        regions={regions}
+                        viewport={viewport}
+                    />
+                )}
+                {viewport.zoom <= 6 && (
+                    <CalendarMapPanesMerged
+                        mergedShapes={mergedShapesToDisplay}
+                        viewport={viewport}
+                    />
+                )}
             </Map>
         </Box>
     );

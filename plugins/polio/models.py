@@ -81,6 +81,8 @@ ROUNDSTATUS = [
 
 class Round(models.Model):
     started_at = models.DateField(null=True, blank=True)
+    number = models.IntegerField(null=True, blank=True)
+    campaign = models.ForeignKey("Campaign", related_name="rounds", on_delete=models.PROTECT, null=True)
     ended_at = models.DateField(null=True, blank=True)
     mop_up_started_at = models.DateField(null=True, blank=True)
     mop_up_ended_at = models.DateField(null=True, blank=True)

@@ -14,7 +14,7 @@ import { useFormState } from '../../hooks/form';
 import { useSaveOrgUnit } from '../orgUnits/hooks';
 import { redirectTo as redirectToAction } from '../../routing/actions';
 
-const linkOrgUnitToInstanceDefining = (settings, dispatch, setFormId, setFormDefiningId, setInstanceDefiningId) => {
+const  OrgUnitDetails = (settings, dispatch, setFormId, setFormDefiningId, setInstanceDefiningId) => {
   setFormId(settings.row.original.form_id);
   setFormDefiningId(settings.row.original.form_defining_id);
   setInstanceDefiningId(settings.row.original.id);
@@ -56,6 +56,7 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
                 });
               }
             }
+
             const linkOrgUnitToInstanceDefining = () => {
               const currentOrgUnit = settings.row.original.org_unit;
               const newOrgUnit = initialFormState(settings.row.original.org_unit, settings.row.original.id);
@@ -76,6 +77,7 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
                   })
                   .catch(onError);
             }
+
             return (
                 <section>
                     <IconButtonComponent
@@ -89,7 +91,7 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
                                 icon="orgUnit"
                                 tooltipMessage={MESSAGES.viewOrgUnit}
                                 onClick={() =>
-                                    linkOrgUnitToInstanceDefining(
+                                    OrgUnitDetails(
                                         settings,
                                         dispatch,
                                         setFormId,
@@ -99,8 +101,8 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
                                 }
                             />
                         )}
-                    {settings.row.original.form_defining_id ==
-                        settings.row.original.form_id &&
+                    {(settings.row.original.form_defining_id ==
+                        settings.row.original.form_id &&  !settings.row.original.org_unit.instance_defining_id) &&
                         userHasPermission('iaso_org_units', user) && (
                             <IconButtonComponent
                                 onClick={() =>

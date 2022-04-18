@@ -291,6 +291,7 @@ class OrgUnit(TreeModel):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "instance_defining_id": self.instance_defining_id if self.instance_defining else None,
         }
 
     def as_dict(self, with_groups=True):
@@ -314,6 +315,7 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
+            "instance_defining_id": self.instance_defining_id if self.instance_defining else None,
         }
 
         if hasattr(self, "search_index"):

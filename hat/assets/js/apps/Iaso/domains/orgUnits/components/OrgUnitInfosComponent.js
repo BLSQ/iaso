@@ -101,8 +101,7 @@ const linkOrgUnitToInstanceDefining = (org_unit, instance_defining_id, saveOu) =
   };
   saveOu(orgUnitPayload)
       .then(ou => {
-          refreshOrgUnitQueryCache(ou);
-          onSuccess(ou);
+          window.location.reload(false)
       })
       .catch(onError);
 }

@@ -63,17 +63,17 @@ const onActionSelected = (fetchEditUrl, action, instance) => {
 
 const initialFormState = (orgUnit, instance_defining_id) => {
     return {
-        id: orgUnit.id,
-        name: orgUnit.name,
-        org_unit_type_id: orgUnit.org_unit_type_id
-            ? `${orgUnit.org_unit_type_id}`
+        id: orgUnit.id["value"],
+        name: orgUnit.name["value"],
+        org_unit_type_id: orgUnit.org_unit_type_id["value"]
+            ? `${orgUnit.org_unit_type_id["value"]}`
             : null,
         groups: orgUnit.groups["value"]?.map(g => g) ?? [],
-        sub_source: orgUnit.sub_source,
-        validation_status: orgUnit.validation_status,
-        aliases: orgUnit.aliases,
-        parent_id: orgUnit.parent_id,
-        source_ref: orgUnit.source_ref,
+        sub_source: orgUnit.sub_source["value"],
+        validation_status: orgUnit.validation_status["value"],
+        aliases: orgUnit.aliases["value"],
+        parent_id: orgUnit.parent_id["value"],
+        source_ref: orgUnit.source_ref["value"],
         instance_defining_id: instance_defining_id,
     };
 };
@@ -90,7 +90,7 @@ const linkOrgUnitToInstanceDefining = (org_unit, instance_defining_id, saveOu) =
   const currentOrgUnit = org_unit;
   const newOrgUnit = initialFormState(org_unit, instance_defining_id);
   let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
-  
+
   orgUnitPayload = {
       ...orgUnitPayload,
       groups:
@@ -99,11 +99,8 @@ const linkOrgUnitToInstanceDefining = (org_unit, instance_defining_id, saveOu) =
               ? orgUnitPayload.groups
               : orgUnitPayload.groups.map(g => g.id),
   };
-
   saveOu(orgUnitPayload)
       .then(ou => {
-          const url = `${baseUrls.orgUnitDetails}/orgUnitId/${ou.id}`;
-          dispatch(redirectToAction(url, {}));
           refreshOrgUnitQueryCache(ou);
           onSuccess(ou);
       })

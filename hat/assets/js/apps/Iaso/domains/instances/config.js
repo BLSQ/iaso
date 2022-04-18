@@ -14,7 +14,7 @@ import { useFormState } from '../../hooks/form';
 import { useSaveOrgUnit } from '../orgUnits/hooks';
 import { redirectTo as redirectToAction } from '../../routing/actions';
 
-const updateFormID = (settings, dispatch, setFormId, setFormDefiningId, setInstanceDefiningId) => {
+const linkOrgUnitToInstanceDefining = (settings, dispatch, setFormId, setFormDefiningId, setInstanceDefiningId) => {
   setFormId(settings.row.original.form_id);
   setFormDefiningId(settings.row.original.form_defining_id);
   setInstanceDefiningId(settings.row.original.id);
@@ -60,7 +60,6 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
               const currentOrgUnit = settings.row.original.org_unit;
               const newOrgUnit = initialFormState(settings.row.original.org_unit, settings.row.original.id);
               let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
-
               orgUnitPayload = {
                   ...orgUnitPayload,
                   groups:
@@ -69,12 +68,11 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
                           ? orgUnitPayload.groups
                           : orgUnitPayload.groups.map(g => g.id),
               };
+
               saveOu(orgUnitPayload)
                   .then(ou => {
                       const url = `${baseUrls.orgUnitDetails}/orgUnitId/${ou.id}`;
                       dispatch(redirectToAction(url, {}));
-                      refreshOrgUnitQueryCache(ou);
-                      onSuccess(ou);
                   })
                   .catch(onError);
             }
@@ -91,7 +89,7 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
                                 icon="orgUnit"
                                 tooltipMessage={MESSAGES.viewOrgUnit}
                                 onClick={() =>
-                                    updateFormID(
+                                    linkOrgUnitToInstanceDefining(
                                         settings,
                                         dispatch,
                                         setFormId,

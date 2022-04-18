@@ -9,7 +9,6 @@ export const SET_SUB_ORG_UNIT = 'SET_SUB_ORG_UNIT';
 export const SET_FETCHING = 'SET_FETCHING';
 export const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
 export const SET_SOURCES = 'SET_SOURCES';
-export const SET_GROUPS = 'ORG_UNITS_SET_GROUPS';
 export const SET_ORG_UNITS_LIST_FETCHING = 'SET_ORG_UNITS_LIST_FETCHING';
 export const SET_FETCHING_ORG_UNITS_TYPES = 'SET_FETCHING_ORG_UNITS_TYPES';
 export const SET_FILTERS_UPDATED = 'SET_FILTERS_UPDATED';
@@ -55,11 +54,6 @@ export const setOrgUnitTypes = orgUnitTypes => ({
 export const setSources = sources => ({
     type: SET_SOURCES,
     payload: sources,
-});
-
-export const setGroups = groups => ({
-    type: SET_GROUPS,
-    payload: groups,
 });
 
 export const setOrgUnitsListFetching = currentSubOrgUnit => ({

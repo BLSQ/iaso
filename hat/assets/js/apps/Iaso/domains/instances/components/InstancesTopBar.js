@@ -48,13 +48,13 @@ const InstancesTopBar = ({
     const formIds = params.formIds?.split(',');
 
     const handleChangeVisibleColmuns = (cols, withRedirect = true) => {
+        const columns = cols.filter(c => c.active);
         const newParams = {
             ...params,
-            columns: cols
-                .filter(c => c.active)
-                .map(c => c.key)
-                .join(','),
         };
+        if (columns.length > 0) {
+            newParams.columns = columns.map(c => c.key).join(',');
+        }
         setTableColumns(
             getInstancesColumns(
                 formatMessage,

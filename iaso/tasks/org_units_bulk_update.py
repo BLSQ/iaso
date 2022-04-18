@@ -75,7 +75,7 @@ def org_units_bulk_update(
     # Assure that none of the OrgUnit we are modifying is in a read only data source
     # ? Should not this be done in the save() or in a constraint?
     read_only_data_sources = DataSource.objects.filter(
-        id__in=queryset.values_list("version__data_source", flat=True).distinct(), read_only=True
+        id__in=queryset.values_list("version__data_source", flat=True), read_only=True
     )
     if read_only_data_sources.count() > 0:
         raise Exception("Modification on read only source are not allowed")

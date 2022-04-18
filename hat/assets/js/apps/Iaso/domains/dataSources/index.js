@@ -60,7 +60,10 @@ const DataSources = () => {
                         <DataSourceDialogComponent
                             defaultSourceVersion={defaultSourceVersion}
                             renderTrigger={({ openDialog }) => (
-                                <AddButtonComponent onClick={openDialog} />
+                                <AddButtonComponent
+                                    onClick={openDialog}
+                                    dataTestId="create-datasource-button"
+                                />
                             )}
                             onSuccess={() => setForceRefresh(true)}
                         />

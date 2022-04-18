@@ -14,3 +14,4 @@ class ImportGPKG(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE)
     version_number = models.IntegerField(blank=True, null=True)
+    description = models.CharField(max_length=200, blank=True, null=True)

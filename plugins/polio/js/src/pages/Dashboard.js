@@ -61,6 +61,8 @@ const Dashboard = ({ router }) => {
             r1StartTo: getApiParamDateString(params.r1StartTo),
             showOnlyDeleted: params.showOnlyDeleted,
             campaignType: params.campaignType,
+            campaignGroups: params.campaignGroups,
+            show_test: params.show_test ?? true,
         };
     }, [params]);
 
@@ -68,7 +70,22 @@ const Dashboard = ({ router }) => {
 
     const { query, exportToCSV } = useGetCampaigns(apiParams);
 
-    const { data: campaigns, isFetching } = query;
+    // TODO remove when select is fixed. beurk lol.
+    const { data: rawCampaigns, isFetching } = query;
+
+    const campaigns = useMemo(() => {
+        if (!rawCampaigns) return rawCampaigns;
+        return {
+            ...rawCampaigns,
+            campaigns: rawCampaigns.campaigns.map(campaign => ({
+                ...campaign,
+                grouped_campaigns:
+                    campaign.grouped_campaigns.length > 0
+                        ? campaign.grouped_campaigns
+                        : null,
+            })),
+        };
+    }, [rawCampaigns]);
 
     const { mutate: removeCampaign } = useRemoveCampaign();
     const { mutate: restoreCampaign } = useRestoreCampaign();
@@ -181,7 +198,7 @@ const Dashboard = ({ router }) => {
                 sortable: true,
             },
             {
-                Header: formatMessage(MESSAGES.name),
+                Header: formatMessage(MESSAGES.obrName),
                 accessor: 'obr_name',
             },
             {
@@ -305,7 +322,7 @@ const Dashboard = ({ router }) => {
                     data={campaigns?.campaigns ?? []}
                     count={campaigns?.count}
                     pages={campaigns?.pages}
-                    params={params}
+                    params={apiParams}
                     columns={columns}
                     baseUrl={DASHBOARD_BASE_URL}
                     marginTop={false}

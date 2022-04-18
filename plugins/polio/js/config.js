@@ -5,6 +5,7 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import CalendarToday from '@material-ui/icons/CalendarToday';
 import AssessmentIcon from '@material-ui/icons/Assessment';
 import DonutSmallIcon from '@material-ui/icons/DonutSmall';
+import GroupWork from '@material-ui/icons/GroupWork';
 import HomeWorkIcon from '@material-ui/icons/HomeWork';
 import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
@@ -14,6 +15,7 @@ import { CountryNotificationsConfig } from './src/components/CountryNotification
 import MESSAGES from './src/constants/messages';
 import {
     DASHBOARD_BASE_URL,
+    GROUPED_CAMPAIGNS,
     CALENDAR_BASE_URL,
     CONFIG_BASE_URL,
     LQAS_BASE_URL,
@@ -26,6 +28,7 @@ import en from './src/constants/translations/en.json';
 import { Lqas } from './src/pages/LQAS';
 import { ImStats } from './src/pages/IM';
 import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
+import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
 
 const campaignsFilters = [
     {
@@ -52,12 +55,33 @@ const campaignsFilters = [
         isRequired: false,
         key: 'campaignType',
     },
+    {
+        isRequired: false,
+        key: 'campaignGroups',
+    },
+    {
+        isRequired: false,
+        key: 'show_test',
+    },
 ];
 
 const routes = [
     {
         baseUrl: DASHBOARD_BASE_URL,
         component: props => <Dashboard {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            ...paginationPathParams,
+            {
+                isRequired: false,
+                key: 'campaignId',
+            },
+            ...campaignsFilters,
+        ],
+    },
+    {
+        baseUrl: GROUPED_CAMPAIGNS,
+        component: props => <GroupedCampaigns {...props} />,
         permissions: ['iaso_polio'],
         params: [
             ...paginationPathParams,
@@ -199,6 +223,12 @@ const menu = [
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
+                label: MESSAGES.groupedCampaigns,
+                key: 'groupedcampaigns',
+                permissions: ['iaso_polio'],
+                icon: props => <GroupWork {...props} />,
+            },
+            {
                 label: MESSAGES.calendar,
                 key: 'calendar',
                 permissions: ['iaso_polio'],
@@ -213,7 +243,6 @@ const menu = [
             {
                 label: MESSAGES.im,
                 key: 'im',
-                // permissions: ['iaso_polio'],
                 icon: props => <DonutSmallIcon {...props} />,
                 subMenu: [
                     {
@@ -251,8 +280,11 @@ const translations = {
     en,
 };
 
+const overrideLanding = DASHBOARD_BASE_URL;
+
 export default {
     routes,
     menu,
     translations,
+    overrideLanding,
 };

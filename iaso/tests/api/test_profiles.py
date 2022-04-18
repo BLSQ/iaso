@@ -3,6 +3,7 @@ import typing
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.test import tag
 
+from iaso.models import Profile
 from iaso.test import APITestCase
 from iaso import models as m
 
@@ -52,6 +53,29 @@ class ProfileAPITestCase(APITestCase):
             source_ref="PvtAI4RUMkr",
         )
         cls.jedi_council_corruscant.groups.set([cls.elite_group])
+
+    def test_can_delete_dhis2_id(self):
+        self.client.force_authenticate(self.john)
+        jim = Profile.objects.get(user=self.jim)
+        jim.dhis2_id = "fsdgdfsgsdg"
+        jim.save()
+
+        data = {
+            "id": str(self.jim.id),
+            "user_name": "jim",
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "password": "",
+            "permissions": [],
+            "org_units": [],
+            "language": "fr",
+            "dhis2_id": "",
+        }
+
+        response = self.client.patch("/api/profiles/{0}/".format(self.jim.id), data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
 
     def test_profile_me_without_auth(self):
         """GET /profiles/me/ without auth should result in a 403"""
@@ -236,6 +260,35 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.delete("/api/profiles/1/")
 
         self.assertEqual(response.status_code, 403)
+
+    def test_profile_error_dhis2_constraint(self):
+        # Test for regression of IA-1249
+        self.client.force_authenticate(self.jim)
+        data = {"user_name": "unittest_user1", "password": "unittest_password", "dhis2_id": ""}
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+
+        data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": ""}
+        response = self.client.post("/api/profiles/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        profile1 = m.Profile.objects.get(user__username="unittest_user1")
+        profile2 = m.Profile.objects.get(user__username="unittest_user2")
+        self.assertNotEqual(profile1.account_id, None)
+        self.assertEqual(profile2.account_id, profile1.account_id)
+        self.assertEqual(profile2.dhis2_id, None)
+
+        data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": "", "first_name": "test"}
+        response = self.client.patch(f"/api/profiles/{profile2.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        profile2.refresh_from_db()
+        self.assertEqual(profile2.dhis2_id, None)
+
+        data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": "test_dhis2_id"}
+        response = self.client.patch(f"/api/profiles/{profile2.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        profile2.refresh_from_db()
+        self.assertEqual(profile2.dhis2_id, "test_dhis2_id")
 
     def test_account_feature_flags_is_included(self):
         aff = m.AccountFeatureFlag.objects.create(code="shape", name="Can edit shape")

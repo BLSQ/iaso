@@ -105,9 +105,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull image
-        run:
-        - docker image pull ${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA
-        - echo ${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA
+        run: |
+        docker image pull ${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA
+        echo ${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA
       - name: smoke test
         run: docker run --rm -it ${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA
       - name: Cypress run

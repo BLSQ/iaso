@@ -14,15 +14,6 @@ import { useFormState } from '../../hooks/form';
 import { useSaveOrgUnit } from '../orgUnits/hooks';
 import { redirectTo as redirectToAction } from '../../routing/actions';
 
-const  OrgUnitDetails = (settings, dispatch, setFormId, setFormDefiningId, setInstanceDefiningId) => {
-  setFormId(settings.row.original.form_id);
-  setFormDefiningId(settings.row.original.form_defining_id);
-  setInstanceDefiningId(settings.row.original.id);
-
-  const url = `${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.org_unit.id}`;
-  dispatch(redirectToAction(url, {}));
-};
-
 const initialFormState = (orgUnit, instance_defining_id) => {
     return {
         id: orgUnit.id,
@@ -39,7 +30,7 @@ const initialFormState = (orgUnit, instance_defining_id) => {
         instance_defining_id: instance_defining_id,
     };
 };
-export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, setFormId, setFormDefiningId, setInstanceDefiningId) => {
+export const actionTableColumn = (formatMessage = () => ({}), user, dispatchd) => {
 
     return {
         Header: formatMessage(MESSAGES.actions),
@@ -55,6 +46,18 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
                   setFieldErrors(entry.errorKey, [entry.errorMessage]);
                 });
               }
+            }
+
+            const getUrl = (settings) => {
+              const rowOriginal = settings.row.original;
+              // each instance should have a formId
+              let initialUrl = `${baseUrls.orgUnitDetails}/orgUnitId/${rowOriginal.org_unit.id}/formId/${rowOriginal.form_id}`;
+              // there are some instances which don't have a form defining Id
+              if(rowOriginal.form_defining_id) {
+                initialUrl = `${initialUrl}/formDefiningId/${rowOriginal.form_defining_id}`;
+              }
+              // each instance has an id
+              return `${initialUrl}/instanceId/${rowOriginal.id}`;
             }
 
             const linkOrgUnitToInstanceDefining = () => {
@@ -88,17 +91,9 @@ export const actionTableColumn = (formatMessage = () => ({}), user, dispatch, se
                     {settings.row.original.org_unit &&
                         userHasPermission('iaso_org_units', user) && (
                             <IconButtonComponent
+                                url={getUrl(settings)}
                                 icon="orgUnit"
                                 tooltipMessage={MESSAGES.viewOrgUnit}
-                                onClick={() =>
-                                    OrgUnitDetails(
-                                        settings,
-                                        dispatch,
-                                        setFormId,
-                                        setFormDefiningId,
-                                        setInstanceDefiningId
-                                    )
-                                }
                             />
                         )}
                     {(settings.row.original.form_defining_id ==

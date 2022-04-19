@@ -307,11 +307,15 @@ export const orgUnitsDetailsPath = {
         },
         {
           isRequired: false,
+          key: "formId"
+        },
+        {
+          isRequired: false,
           key: "formDefiningId"
         },
         {
           isRequired: false,
-          key: "formId"
+          key: "instanceId"
         },
         ...orgUnitsFiltersPathParamsWithPrefix('childrenParams', true),
         ...paginationPathParamsWithPrefix('childrenParams'),

@@ -78,10 +78,7 @@ export const getInstancesColumns = (
     visibleColumns,
     showDeleted = false,
     user,
-    dispatch,
-    setFormId,
-    setFormDefiningId,
-    setInstanceDefiningId
+    dispatch
 ) => {
     const metasColumns = [...instancesTableColumns(formatMessage, user)];
     if (showDeleted) {
@@ -128,7 +125,7 @@ export const getInstancesColumns = (
             }
         });
     tableColumns = tableColumns.concat(childrenArray);
-    tableColumns.push(actionTableColumn(formatMessage, user, dispatch, setFormId, setFormDefiningId, setInstanceDefiningId));
+    tableColumns.push(actionTableColumn(formatMessage, user, dispatch));
     return tableColumns;
 };
 

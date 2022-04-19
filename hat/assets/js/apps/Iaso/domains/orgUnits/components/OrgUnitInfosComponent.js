@@ -27,7 +27,6 @@ import EnketoIcon from '../../instances/components/EnketoIcon';
 import LinkIcon from '@material-ui/icons/Link';
 import queryString from "query-string"
 import omit from 'lodash/omit';
-import { FormDefiningContext } from '../../instances/context/FormDefiningContext.tsx';
 // reformatting orgUnit name so the OU can be passed to the treeview modal
 // and selecting the parent for display
 const useStyles = makeStyles(theme => ({
@@ -106,21 +105,22 @@ const linkOrgUnitToInstanceDefining = (org_unit, instance_defining_id, saveOu) =
       .catch(onError);
 }
 
-const actions = (org_unit, form_id, form_defining_id, instance_defining_id, saveOu) => {
-  const link_org_unit = ((form_id === form_defining_id) && !org_unit.instance_defining);
+const actions = (orgUnit, formId, formDefiningId, instanceId, saveOu) => {
+  const instanceDefining = orgUnit.instance_defining;
+  const linkOrgUnit = ((formId === formDefiningId) && !instanceDefining);
   return [
 
       {
           id: 'instanceEditAction',
           icon: <EnketoIcon />,
-          disabled: !org_unit.instance_defining,
+          disabled: !instanceDefining,
       },
       {
           id: 'linkOrgUnitInstanceDefining',
           icon: <LinkIcon
-                  onClick={() => linkOrgUnitToInstanceDefining(org_unit, instance_defining_id, saveOu)}
+                  onClick={() => linkOrgUnitToInstanceDefining(orgUnit, instanceId, saveOu)}
                 />,
-          disabled: !link_org_unit,
+          disabled: !linkOrgUnit,
       }
   ];
 }
@@ -156,18 +156,22 @@ const OrgUnitInfosComponent = ({
     groups,
     resetTrigger,
     fetchEditUrl,
+    params,
     ...props
 }) => {
   const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
-  const { formId, formDefiningId, instanceDefiningId } =
-      useContext(FormDefiningContext);
   const classes = useStyles();
+
+  const formId = params.formId;
+  const formDefiningId = params.formDefiningId;
+  const instanceId = params.instanceId;
+
   return (
         <Grid container spacing={4}>
           {(orgUnit.instance_defining || formId === formDefiningId) && (
             <SpeedDialInstanceActions
                 speedDialClasses={classes.speedDialTop}
-                actions={actions(orgUnit, formId, formDefiningId, instanceDefiningId, saveOu)}
+                actions={actions(orgUnit, formId, formDefiningId, instanceId, saveOu)}
                 onActionSelected={action =>
                     onActionSelected(fetchEditUrl, action, orgUnit.instance_defining)
                 }

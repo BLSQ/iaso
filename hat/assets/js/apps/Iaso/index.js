@@ -13,7 +13,6 @@ import { addRoutes } from './routing/redirections';
 import { getPlugins, PluginsContext } from './utils';
 import { getOverriddenTheme } from './styles';
 import { ThemeConfigContext } from './domains/app/contexts/ThemeConfigContext.tsx';
-import { FormDefiningContextProvider } from './domains/instances/context/FormDefiningContext.tsx';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -66,14 +65,12 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
                     <MuiThemeProvider
                         theme={getOverriddenTheme(theme, themeConfig)}
                     >
-                        <FormDefiningContextProvider>
-                            <CssBaseline />
-                            <App
-                                store={store}
-                                routes={routes}
-                                history={history}
-                            />
-                        </FormDefiningContextProvider>
+                        <CssBaseline />
+                        <App
+                          store={store}
+                          routes={routes}
+                          history={history}
+                        />
                     </MuiThemeProvider>
                 </ThemeConfigContext.Provider>
             </PluginsContext.Provider>

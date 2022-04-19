@@ -1,5 +1,7 @@
 import gspread.utils
 from django.contrib import admin
+from django.contrib.admin import widgets
+from django.db import models
 from django.utils.safestring import mark_safe
 
 from .models import (
@@ -17,6 +19,9 @@ from .models import (
 
 class CampaignAdmin(admin.ModelAdmin):
     raw_id_fields = ("initial_org_unit",)
+    formfield_overrides = {
+        models.ForeignKey: {"widget": widgets.AdminTextInputWidget},
+    }
     list_filter = ["virus", "vacine", "detection_status", "risk_assessment_status", "budget_status"]
 
 

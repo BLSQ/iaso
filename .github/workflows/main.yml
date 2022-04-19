@@ -38,7 +38,7 @@ jobs:
         with:
           push: true
           tags: ${{ steps.version.outputs.image_tag }}
-          file: {context}/docker/bundle/Dockerfile
+          file: {{ context }}/docker/bundle/Dockerfile
   test_js:
     if: false
     runs-on: ubuntu-latest

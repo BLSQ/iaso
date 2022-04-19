@@ -263,6 +263,12 @@ Timeline tracker Automated message
         permission_classes=[permissions.IsAuthenticated],
     )
     def shapes(self, request):
+
+        cached_response = cache.get("{0}-geo_shapes".format(request.user.id))
+
+        if not request.user.is_anonymous and cached_response:
+            return JsonResponse(json.loads(cached_response))
+
         features = []
         queryset = self.filter_queryset(self.get_queryset())
         # Remove deleted and campaign with missing group
@@ -282,6 +288,12 @@ where group_id = polio_campaign.group_id""",
                 feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
                 features.append(feature)
         res = {"type": "FeatureCollection", "features": features}
+        if not request.user.is_anonymous:
+            cache.set(
+                "{0}-geo_shapes".format(request.user.id),
+                json.dumps(res),
+                3600,
+            )
         return JsonResponse(res)
 
 

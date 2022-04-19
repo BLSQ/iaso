@@ -109,7 +109,7 @@ jobs:
           docker image pull ${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA
           echo ${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA
       - name: smoke test
-        run: docker run --rm -it ${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA
+        run: docker run --rm ${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:

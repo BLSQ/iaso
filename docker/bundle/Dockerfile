@@ -36,11 +36,10 @@ RUN ls ./hat/assets
 FROM python:3.6
 
 RUN apt-get update && apt-get --yes  --no-install-recommends install \
-		curl \
 		gettext \
 		gettext-base \
 		postgresql-client \
-		libgdal-dev \
+		binutils libproj-dev gdal-bin \
     &&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /opt/app

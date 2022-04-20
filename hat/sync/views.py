@@ -18,21 +18,15 @@ logger = logging.getLogger(__name__)
 
 
 def detect_user_request(request):
-    """Check if the user send the submission by mobile or not as the mobile app do not send
-    the user atm. So instead, the token is passed into the headers and if there is a
-    user agent, the token is decoded to retrieve the user from Iaso. Probably a temporary fix."""
+    """Check if we can infer a user from the Authorization header of the upload request."""
 
-    mobile_re = re.compile(r".*(iphone|mobile|androidtouch|android)", re.IGNORECASE)
     try:
-        if mobile_re.match(request.META["HTTP_USER_AGENT"]):
-            user = User.objects.get(
-                pk=jwt.decode(request.headers["Authorization"][7:], SECRET_KEY, algorithms=["HS256"])["user_id"]
-            )
-        else:
-            user = None
+        user = User.objects.get(
+            pk=jwt.decode(request.headers["Authorization"][7:], SECRET_KEY, algorithms=["HS256"])["user_id"]
+        )
         return user
     except:
-        pass
+        return None
 
 
 @csrf_exempt

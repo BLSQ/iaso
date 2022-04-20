@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 
+import linkedLogsPaginated from '../../fixtures/logs/list-linked-paginated.json';
 import orgUnit from '../../fixtures/orgunits/details.json';
 import { testPermission } from '../../support/testPermission';
 
@@ -15,7 +16,12 @@ const interceptList = [
     'orgunittypes',
 ];
 
-describe('OrgUnits detail', () => {
+/**
+ * TODO;
+ * - test actions buttons
+ */
+
+describe('history tab', () => {
     beforeEach(() => {
         cy.login();
         cy.intercept('GET', '/api/profiles/**', {
@@ -95,9 +101,27 @@ describe('OrgUnits detail', () => {
                 ],
             },
         );
+        cy.visit(`${baseUrl}/tab/history`);
     });
 
     it('page should not be accessible if user does not have permission', () => {
         testPermission(baseUrl);
+    });
+
+    it('should render correct infos', () => {
+        cy.wait('@getOuDetail').then(() => {
+            cy.get('[data-test="logs-tab"]').find('table').as('table');
+            cy.get('@table').should('have.length', 1);
+            cy.get('@table').find('tbody').find('tr').as('rows');
+            cy.get('@rows').should('have.length', linkedLogsPaginated.count);
+            cy.get('@rows').eq(0).as('row');
+            cy.get('@row').find('td').should('have.length', 4);
+            cy.get('@row').find('td').eq(2).as('userNameCol');
+
+            cy.get('@userNameCol').should(
+                'contain.text',
+                linkedLogsPaginated.list[0].user.user_name,
+            );
+        });
     });
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -13,21 +13,32 @@ import DatesRange from 'Iaso/components/filters/DatesRange';
 
 import MESSAGES from '../../constants/messages';
 import { useGetCountries } from '../../hooks/useGetCountries';
+import { useGetGroupedCampaigns } from '../../hooks/useGetGroupedCampaigns.ts';
 
 import { genUrl } from '../../utils/routing';
 
-const campaignTypeOptions = formatMessage => [
-    { label: formatMessage(MESSAGES.all), value: 'all' },
-    { label: formatMessage(MESSAGES.preventiveShort), value: 'preventive' },
-    { label: formatMessage(MESSAGES.regular), value: 'regular' },
-];
+const campaignTypeOptions = (formatMessage, showTest = false) => {
+    const options = [
+        { label: formatMessage(MESSAGES.all), value: 'all' },
+        { label: formatMessage(MESSAGES.preventiveShort), value: 'preventive' },
+        { label: formatMessage(MESSAGES.regular), value: 'regular' },
+    ];
+    if (showTest) {
+        return [
+            ...options,
+            { label: formatMessage(MESSAGES.testCampaigns), value: 'test' },
+        ];
+    }
+    return options;
+};
 
-const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
+const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
     const { formatMessage } = useSafeIntl();
     const { params } = router;
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [campaignType, setCampaignType] = useState(params.campaignType);
+    const [campaignGroups, setCampaignGroups] = useState(params.campaignGroups);
     const [search, setSearch] = useState(params.search);
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
@@ -46,6 +57,7 @@ const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
                 page: null,
                 campaignType,
                 showOnlyDeleted: showOnlyDeleted || undefined,
+                campaignGroups,
             };
             const url = genUrl(router, urlParams);
             dispatch(replace(url));
@@ -57,13 +69,23 @@ const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
         r1StartFrom,
         r1StartTo,
         campaignType,
+        campaignGroups,
         showOnlyDeleted,
         router,
         dispatch,
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
+    const { data: groupedCampaigns, isFetching: isFetchingGroupedGroups } =
+        useGetGroupedCampaigns();
+    const groupedCampaignsOptions = useMemo(
+        () =>
+            groupedCampaigns?.results.map(result => ({
+                label: result.name,
+                value: result.id,
+            })) ?? [],
+        [groupedCampaigns],
+    );
     const countriesList = (data && data.orgUnits) || [];
-
     useEffect(() => {
         setFiltersUpdated(true);
     }, [
@@ -73,6 +95,7 @@ const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
         r1StartTo,
         showOnlyDeleted,
         campaignType,
+        campaignGroups,
     ]);
 
     useEffect(() => {
@@ -82,8 +105,8 @@ const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
     return (
         <>
             <Box display="inline-flex" width="85%">
-                <Grid container spacing={4}>
-                    <Grid item xs={3}>
+                <Grid container spacing={2}>
+                    <Grid item xs={4}>
                         <InputComponent
                             keyValue="search"
                             onChange={(key, value) => {
@@ -93,6 +116,19 @@ const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
                             type="search"
                             label={MESSAGES.search}
                             onEnterPressed={handleSearch}
+                        />
+                        <InputComponent
+                            loading={isFetchingGroupedGroups}
+                            keyValue="campaignGroups"
+                            clearable
+                            multi
+                            onChange={(_key, value) => {
+                                setCampaignGroups(value);
+                            }}
+                            value={campaignGroups}
+                            type="select"
+                            options={groupedCampaignsOptions}
+                            label={MESSAGES.groupedCampaigns}
                         />
                         {!disableOnlyDeleted && (
                             <InputComponent
@@ -106,56 +142,63 @@ const Filters = ({ router, disableDates, disableOnlyDeleted }) => {
                             />
                         )}
                     </Grid>
-                    <Grid item xs={3}>
-                        <InputComponent
-                            loading={isFetchingCountries}
-                            keyValue="countries"
-                            multi
-                            clearable
-                            onChange={(key, value) => {
-                                setCountries(value);
-                            }}
-                            value={countries}
-                            type="select"
-                            options={countriesList.map(c => ({
-                                label: c.name,
-                                value: c.id,
-                            }))}
-                            label={MESSAGES.country}
-                        />
-                    </Grid>
-                    <Grid item xs={!disableDates ? 2 : 3}>
-                        <InputComponent
-                            loading={isFetchingCountries}
-                            keyValue="campaignType"
-                            clearable
-                            onChange={(_key, value) => {
-                                setCampaignType(value);
-                            }}
-                            value={campaignType}
-                            type="select"
-                            options={campaignTypeOptions(formatMessage)}
-                            label={MESSAGES.campaignType}
-                        />
-                    </Grid>
-                    {!disableDates && (
-                        <Grid item xs={4}>
-                            <DatesRange
-                                onChangeDate={(key, value) => {
-                                    if (key === 'dateFrom') {
-                                        setR1StartFrom(value);
-                                    }
-                                    if (key === 'dateTo') {
-                                        set1StartTo(value);
-                                    }
+                    <Grid item xs={8} container spacing={2}>
+                        <Grid item xs={6}>
+                            <InputComponent
+                                loading={isFetchingCountries}
+                                keyValue="campaignType"
+                                clearable
+                                onChange={(_key, value) => {
+                                    setCampaignType(value);
                                 }}
-                                labelFrom={MESSAGES.R1StartFrom}
-                                labelTo={MESSAGES.R1StartTo}
-                                dateFrom={r1StartFrom}
-                                dateTo={r1StartTo}
+                                value={campaignType}
+                                type="select"
+                                options={campaignTypeOptions(
+                                    formatMessage,
+                                    showTest,
+                                )}
+                                label={MESSAGES.campaignType}
                             />
                         </Grid>
-                    )}
+                        <Grid item xs={6}>
+                            <InputComponent
+                                loading={isFetchingCountries}
+                                keyValue="countries"
+                                multi
+                                clearable
+                                onChange={(key, value) => {
+                                    setCountries(value);
+                                }}
+                                value={countries}
+                                type="select"
+                                options={countriesList.map(c => ({
+                                    label: c.name,
+                                    value: c.id,
+                                }))}
+                                label={MESSAGES.country}
+                            />
+                        </Grid>
+                        {!disableDates && (
+                            <Grid item xs={12}>
+                                <Box mt={-10}>
+                                    <DatesRange
+                                        onChangeDate={(key, value) => {
+                                            if (key === 'dateFrom') {
+                                                setR1StartFrom(value);
+                                            }
+                                            if (key === 'dateTo') {
+                                                set1StartTo(value);
+                                            }
+                                        }}
+                                        labelFrom={MESSAGES.R1StartFrom}
+                                        labelTo={MESSAGES.R1StartTo}
+                                        dateFrom={r1StartFrom}
+                                        dateTo={r1StartTo}
+                                    />
+                                </Box>
+                            </Grid>
+                        )}
+                    </Grid>
                 </Grid>
             </Box>
             <Box display="inline-flex" width="15%" justifyContent="flex-end">
@@ -181,6 +224,7 @@ Filters.defaultProps = {
     baseUrl: '',
     disableDates: false,
     disableOnlyDeleted: false,
+    showTest: false,
 };
 
 Filters.propTypes = {
@@ -188,6 +232,7 @@ Filters.propTypes = {
     router: PropTypes.object.isRequired,
     disableDates: PropTypes.bool,
     disableOnlyDeleted: PropTypes.bool,
+    showTest: PropTypes.bool,
 };
 
 const wrappedFilters = withRouter(Filters);

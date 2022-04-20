@@ -57,8 +57,8 @@ const Forms = ({ params }) => {
                     all: true,
                     only_deleted: params.showDeleted ? 1 : 0,
                 }}
-                fetchItems={(d, u, newParams) =>
-                    fetchForms(d, u).then(res => {
+                fetchItems={(d, u, newParams, signal) =>
+                    fetchForms(d, u, signal).then(res => {
                         if (newParams) {
                             setShowDeleted(Boolean(newParams.showDeleted));
                         }

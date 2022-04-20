@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class VectorConfig(AppConfig):
-    name = "vector"
+    name = "hat.vector_control"

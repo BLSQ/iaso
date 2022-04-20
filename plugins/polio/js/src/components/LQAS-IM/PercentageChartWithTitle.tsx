@@ -26,7 +26,7 @@ export const PercentageChartWithTitle: FunctionComponent<Props> = ({
 }) => {
     return (
         <>
-            {isLoading && <LoadingSpinner />}
+            {isLoading && <LoadingSpinner fixed={false} />}
             {!isLoading && showChart && (
                 <>
                     {title && (

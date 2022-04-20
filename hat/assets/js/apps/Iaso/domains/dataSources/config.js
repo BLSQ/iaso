@@ -57,6 +57,7 @@ const dataSourcesTableColumns = (
                     <DataSourceDialogComponent
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
+                                dataTestId={`datasource-dialog-button-${settings.row.original.id}`}
                                 onClick={openDialog}
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
@@ -78,6 +79,7 @@ const dataSourcesTableColumns = (
                     <VersionsDialog
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
+                                dataTestId={`open-versions-dialog-button-${settings.row.original.id}`}
                                 onClick={openDialog}
                                 overrideIcon={FormatListNumberedIcon}
                                 tooltipMessage={MESSAGES.versions}
@@ -85,10 +87,12 @@ const dataSourcesTableColumns = (
                         )}
                         defaultSourceVersion={defaultSourceVersion}
                         source={settings.row.original}
+                        forceRefreshParent={() => setForceRefresh(true)}
                     />
                     <ExportToDHIS2Dialog
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
+                                dataTestId={`export-dhis2-dialog-button-${settings.row.original.id}`}
                                 onClick={openDialog}
                                 overrideIcon={PublishIcon}
                                 tooltipMessage={MESSAGES.compareAndExport}
@@ -101,7 +105,6 @@ const dataSourcesTableColumns = (
                             settings.row.original?.default_version?.id
                         }
                     />
-                 
                 </section>
             );
         },

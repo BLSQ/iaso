@@ -39,6 +39,7 @@ import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import EnketoIcon from './components/EnketoIcon';
 import { getInstancesFilesList } from './utils';
+import { userHasPermission } from '../users/utils';
 
 import MESSAGES from './messages';
 
@@ -52,82 +53,97 @@ const styles = theme => ({
     },
 });
 
-const actions = (currentInstance, reAssignInstance, orgUnitTypes) => [
-    {
+const actions = ({
+    currentInstance,
+    reAssignInstance,
+    orgUnitTypes,
+    canEditEnketo,
+}) => {
+    const enketoAction = {
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
         disabled: currentInstance && currentInstance.deleted,
-    },
-    {
-        id: 'instanceExportAction',
-        icon: (
-            <ExportInstancesDialogComponent
-                renderTrigger={(openDialog, isInstancesFilterUpdated) => (
-                    <ExportButtonComponent
-                        onClick={openDialog}
-                        isDisabled={isInstancesFilterUpdated}
-                        batchExport={false}
-                    />
-                )}
-                getFilters={() => ({
-                    form_id: currentInstance.form_id,
-                    search: `ids:${currentInstance.id}`,
-                })}
-            />
-        ),
-        disabled: currentInstance && currentInstance.deleted,
-    },
-    {
-        id: 'instanceReAssignAction',
-        icon: (
-            <CreateReAssignDialogComponent
-                titleMessage={MESSAGES.reAssignInstance}
-                confirmMessage={MESSAGES.reAssignInstanceAction}
-                currentInstance={currentInstance}
-                orgUnitTypes={orgUnitTypes}
-                onCreateOrReAssign={reAssignInstance}
-                renderTrigger={({ openDialog }) => (
-                    <UpdateIcon onClick={openDialog} />
-                )}
-            />
-        ),
-        disabled: currentInstance && currentInstance.deleted,
-    },
-    {
-        id:
-            currentInstance && currentInstance.deleted
-                ? 'instanceRestoreAction'
-                : 'instanceDeleteAction',
-        icon:
-            currentInstance && currentInstance.deleted ? (
-                <RestoreFromTrashIcon />
-            ) : (
-                <DeleteIcon />
+    };
+    const defaultActions = [
+        {
+            id: 'instanceExportAction',
+            icon: (
+                <ExportInstancesDialogComponent
+                    renderTrigger={(openDialog, isInstancesFilterUpdated) => (
+                        <ExportButtonComponent
+                            onClick={openDialog}
+                            isDisabled={isInstancesFilterUpdated}
+                            batchExport={false}
+                        />
+                    )}
+                    getFilters={() => ({
+                        form_id: currentInstance.form_id,
+                        search: `ids:${currentInstance.id}`,
+                    })}
+                />
             ),
-        disabled: false,
-    },
-];
-
+            disabled: currentInstance && currentInstance.deleted,
+        },
+        {
+            id: 'instanceReAssignAction',
+            icon: (
+                <CreateReAssignDialogComponent
+                    titleMessage={MESSAGES.reAssignInstance}
+                    confirmMessage={MESSAGES.reAssignInstanceAction}
+                    currentInstance={currentInstance}
+                    orgUnitTypes={orgUnitTypes}
+                    onCreateOrReAssign={reAssignInstance}
+                    renderTrigger={({ openDialog }) => (
+                        <UpdateIcon onClick={openDialog} />
+                    )}
+                />
+            ),
+            disabled: currentInstance && currentInstance.deleted,
+        },
+        {
+            id:
+                currentInstance && currentInstance.deleted
+                    ? 'instanceRestoreAction'
+                    : 'instanceDeleteAction',
+            icon:
+                currentInstance && currentInstance.deleted ? (
+                    <RestoreFromTrashIcon />
+                ) : (
+                    <DeleteIcon />
+                ),
+            disabled: false,
+        },
+    ];
+    if (canEditEnketo) {
+        return [enketoAction, ...defaultActions];
+    }
+    return defaultActions;
+};
 
 class InstanceDetails extends Component {
     constructor(props) {
         super(props);
         props.setCurrentInstance(null);
         this.state = {
-            orgUnitTypeIds:[]
-        }
+            orgUnitTypeIds: [],
+        };
     }
 
     componentDidMount() {
         const {
             params: { instanceId },
             fetchInstanceDetail,
-            dispatch
+            dispatch,
         } = this.props;
-        fetchInstanceDetail(instanceId).then(instanceDetails=>{
-            fetchFormOrgUnitTypes(dispatch,instanceDetails.form_id).then(orgUnitTypeIds => {
-                this.setState({...this.state, orgUnitTypeIds:orgUnitTypeIds.org_unit_type_ids})
-            })
+        fetchInstanceDetail(instanceId).then(instanceDetails => {
+            fetchFormOrgUnitTypes(dispatch, instanceDetails.form_id).then(
+                orgUnitTypeIds => {
+                    this.setState({
+                        ...this.state,
+                        orgUnitTypeIds: orgUnitTypeIds.org_unit_type_ids,
+                    });
+                },
+            );
         });
     }
 
@@ -163,7 +179,13 @@ class InstanceDetails extends Component {
             router,
             prevPathname,
             redirectToReplace,
+            currentUser,
         } = this.props;
+
+        const canEditEnketo = userHasPermission(
+            'iaso_update_submission',
+            currentUser,
+        );
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
@@ -192,7 +214,12 @@ class InstanceDetails extends Component {
                 {currentInstance && (
                     <Box className={classes.containerFullHeightNoTabPadded}>
                         <SpeedDialInstanceActions
-                            actions={actions(currentInstance, reAssignInstance, this.state.orgUnitTypeIds)}
+                            actions={actions({
+                                currentInstance,
+                                reAssignInstance,
+                                orgUnitTypeIds: this.state.orgUnitTypeIds,
+                                canEditEnketo,
+                            })}
                             onActionSelected={action =>
                                 this.onActionSelected(action)
                             }
@@ -288,6 +315,7 @@ class InstanceDetails extends Component {
 InstanceDetails.defaultProps = {
     prevPathname: null,
     currentInstance: null,
+    currentUser: null,
 };
 
 InstanceDetails.propTypes = {
@@ -305,12 +333,14 @@ InstanceDetails.propTypes = {
     softDelete: PropTypes.func.isRequired,
     restoreInstance: PropTypes.func.isRequired,
     reAssignInstance: PropTypes.func.isRequired,
+    currentUser: PropTypes.object,
 };
 
 const MapStateToProps = state => ({
     fetching: state.instances.fetching,
     currentInstance: state.instances.current,
     prevPathname: state.routerCustom.prevPathname,
+    currentUser: state.users.current,
 });
 
 const MapDispatchToProps = dispatch => ({

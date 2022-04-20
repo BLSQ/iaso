@@ -14,14 +14,14 @@ jobs:
           cache: npm
       - name: upgrade npm
         run: |
-          npm install --global npm
+          npm install --global npm@8.5
       - name: Environment info
         run: |
           node --version
           npm --version
       - name: npm install and test
         run: |
-          npm install
+          npm ci
           npm test
       - name: npm build (but don't commit)
         run: |
@@ -78,6 +78,7 @@ jobs:
       - name: Django tests
         run: |
           python manage.py migrate
+          python manage.py createcachetable
           python manage.py test
           # check we don't have missing migration
           python manage.py makemigrations --check

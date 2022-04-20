@@ -42,23 +42,15 @@ const goToPage = (
 
     cy.intercept('GET', '/api/orgunittypes/**', {
         fixture: 'orgunittypes/list.json',
-    });
+    }).as('getTypes');
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',
-    });
+    }).as('getProject');
     cy.visit(baseUrl);
 };
 
 describe('Forms', () => {
     describe('page', () => {
-        it('click on create button should redirect to form creation url', () => {
-            goToPage();
-            cy.get('[data-test="add-form-button"]').click();
-            cy.url().should(
-                'eq',
-                `${siteBaseUrl}/dashboard/forms/detail/formId/0`,
-            );
-        });
         it('page should not be accessible if user does not have permission', () => {
             goToPage({
                 ...superUser,
@@ -68,12 +60,22 @@ describe('Forms', () => {
             const errorCode = cy.get('#error-code');
             errorCode.should('contain', '401');
         });
+
+        it('click on create button should redirect to form creation url', () => {
+            goToPage();
+            cy.get('[data-test=add-form-button]').click();
+            cy.url().should(
+                'eq',
+                `${siteBaseUrl}/dashboard/forms/detail/formId/0`,
+            );
+        });
+
         describe('Search field', () => {
             beforeEach(() => {
                 goToPage();
             });
             it('should enabled search button', () => {
-                cy.get('#search-button')
+                cy.get('[data-test="search-button"]')
                     .as('search-button')
                     .should('be.disabled');
                 cy.get('#search-search').type(search);
@@ -101,13 +103,13 @@ describe('Forms', () => {
                 goToPage();
             });
             it('should be disabled', () => {
-                cy.get('#search-button')
+                cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', 'disabled');
             });
             it('action should deep link active search', () => {
                 cy.get('#search-search').type(search);
-                cy.get('#search-button').click();
+                cy.get('[data-test="search-button"]').click();
                 cy.url().should(
                     'eq',
                     `${baseUrl}/page/1/search/${search}/searchActive/true`,
@@ -184,15 +186,23 @@ describe('Forms', () => {
             it('should be visible if we have results', () => {
                 goToPage(superUser, null, 'forms/list.json');
                 cy.wait('@getForms').then(() => {
-                    cy.get('#csv-export-button').should('be.visible');
-                    cy.get('#xlsx-export-button').should('be.visible');
+                    cy.get('[data-test="csv-export-button"]').should(
+                        'be.visible',
+                    );
+                    cy.get('[data-test="xlsx-export-button"]').should(
+                        'be.visible',
+                    );
                 });
             });
             it("should not be visible if we don't have results", () => {
                 goToPage(superUser, null, 'forms/empty.json');
                 cy.wait('@getForms').then(() => {
-                    cy.get('#csv-export-button').should('not.exist');
-                    cy.get('#xlsx-export-button').should('not.exist');
+                    cy.get('[data-test="csv-export-button"]').should(
+                        'not.exist',
+                    );
+                    cy.get('[data-test="xlsx-export-button"]').should(
+                        'not.exist',
+                    );
                 });
             });
         });
@@ -229,7 +239,7 @@ describe('Forms', () => {
             );
             cy.get('#search-search').type(search);
             cy.get('#check-box-showDeleted').check();
-            cy.get('#search-button').click();
+            cy.get('[data-test="search-button"]').click();
             cy.wait('@getForms').then(() => {
                 // TODO remove this cf hat/assets/js/apps/Iaso/components/tables/SingleTable.js l 80
                 cy.intercept('GET', '/api/forms/**', {

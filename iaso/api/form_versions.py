@@ -5,7 +5,7 @@ from rest_framework import serializers, parsers, permissions, exceptions
 
 from iaso.models import Form, FormVersion
 from django.db.models.functions import Concat
-from django.db.models import Value, Count
+from django.db.models import Value, Count, TextField
 from django.db.models import BooleanField
 from django.db.models.expressions import Case, When
 
@@ -168,7 +168,9 @@ class FormVersionsViewSet(ModelViewSet):
         if form_id:
             queryset = queryset.filter(form__id=form_id)
 
-        queryset = queryset.annotate(full_name=Concat("form__name", Value(" - V"), "version_id"))
+        queryset = queryset.annotate(
+            full_name=Concat("form__name", Value(" - V"), "version_id", output_field=TextField())
+        )
 
         queryset = queryset.annotate(mapping_versions_count=Count("mapping_versions"))
 

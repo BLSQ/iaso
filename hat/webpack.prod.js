@@ -24,6 +24,7 @@ module.exports = {
         filename: '[name]-[chunkhash].js',
         publicPath: '',
     },
+    devtool: 'source-map',
 
     plugins: [
         new webpack.NormalModuleReplacementPlugin(

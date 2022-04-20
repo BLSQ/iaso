@@ -35,7 +35,7 @@ def enketo_url_for_creation(uuid, server_url, return_url=None):
     data = {"server_url": server_url, "form_id": uuid}
 
     if return_url:
-        data["return_url"] = u"%s" % return_url
+        data["return_url"] = "%s" % return_url
 
     return get_url_from_enketo(url, data)
 
@@ -54,7 +54,7 @@ def enketo_url_for_edition(form_url, form_id_string, instance_xml=None, instance
                 "instance": instance_xml,
                 "instance_id": instance_id,
                 # convert to unicode string in python3 compatible way
-                "return_url": u"%s" % return_url,
+                "return_url": "%s" % return_url,
             }
         )
     return get_url_from_enketo(url, data)
@@ -95,7 +95,7 @@ def handle_enketo_error(response):
     except (ValueError, JSONDecodeError):
         print("HTTP Error {}".format(response.status_code), response.text, sys.exc_info())
         if response.status_code == 502:
-            raise EnketoError(u"Sorry, we cannot load your form right now.  Please try " "again later.")
+            raise EnketoError("Sorry, we cannot load your form right now.  Please try " "again later.")
         raise EnketoError()
     else:
         if "message" in data:

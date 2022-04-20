@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 
 from django.core.management.base import BaseCommand
-
 from iaso.gpkg.import_gpkg import import_gpkg_file
 
 

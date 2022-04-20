@@ -249,4 +249,4 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(0, rounds.count())
         response = self.client.get(f"/api/polio/campaigns/{campaign.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r["rounds"]), [])
+        self.assertEqual(len(r["rounds"]), 0)

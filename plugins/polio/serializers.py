@@ -484,8 +484,23 @@ class SmallCampaignSerializer(CampaignSerializer):
 
 
 class AnonymousCampaignSerializer(CampaignSerializer):
-    round_one = RoundAnonymousSerializer()
-    round_two = RoundAnonymousSerializer()
+    rounds = RoundAnonymousSerializer(many=True)
+    round_one = serializers.SerializerMethodField(read_only=True)
+    round_two = serializers.SerializerMethodField(read_only=True)
+
+    def get_round_one(self, campaign):
+        try:
+            round = campaign.rounds.get(number=1)
+            return RoundAnonymousSerializer(round).data
+        except Round.DoesNotExist:
+            return None
+
+    def get_round_two(self, campaign):
+        try:
+            round = campaign.rounds.get(number=2)
+            return RoundAnonymousSerializer(round).data
+        except Round.DoesNotExist:
+            return None
 
     class Meta:
         model = Campaign
@@ -532,6 +547,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "payment_mode",
             "round_one",
             "round_two",
+            "rounds",
             "created_at",
             "updated_at",
             "district_count",

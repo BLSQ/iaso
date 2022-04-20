@@ -366,7 +366,7 @@ def _make_prep(c: Campaign, round: Round, round_number: RoundNumber):
         "campaign_id": c.id,
         "campaign_obr_name": c.obr_name,
         "indicators": {},
-        "round": round_number,
+        "round": f"Round{round.number}",
         "round_id": round.id,
         "round_start": round.started_at,
         "round_end": round.ended_at,
@@ -404,12 +404,8 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
             qs = qs.filter(obr_name=request.query_params.get("campaign"))
 
         for c in qs:
-            if c.round_one:
-                p = _make_prep(c, c.round_one, RoundNumber.round1)
-                if p:
-                    r.append(p)
-            if c.round_two:
-                p = _make_prep(c, c.round_two, RoundNumber.round2)
+            for round in c.rounds:
+                p = _make_prep(c, round)
                 if p:
                     r.append(p)
         return Response(r)

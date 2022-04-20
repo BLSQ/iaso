@@ -213,13 +213,12 @@ def preparedness_from_url(spreadsheet_url, force_refresh=False):
 
 
 def get_current_preparedness(campaign, roundNumber):
-    if roundNumber == "round_one":
-        round = campaign.round_one
-    elif roundNumber == "round_two":
-        round = campaign.round_two
-    else:
-        raise serializers.ValidationError("Invalid round")
-    if not (round and round.preparedness_spreadsheet_url):
+    try:
+        round = campaign.rounds.get(number=roundNumber)
+    except Round.DoesNotExist:
+        return {"details": f"No round {roundNumber} on this campaign"}
+
+    if not round.preparedness_spreadsheet_url:
         return {}
     spreadsheet_url = round.preparedness_spreadsheet_url
     return preparedness_from_url(spreadsheet_url)

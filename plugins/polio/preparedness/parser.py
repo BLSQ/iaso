@@ -124,7 +124,7 @@ def get_national_level_preparedness(spread: CachedSpread):
         elif round_name == "Tour 2 / Rnd 2":
             round = RoundNumber.round2
         else:
-            round = RoundNumber.unkown
+            round = RoundNumber.unknown
 
         kv["round"] = round
         return {**kv, **score}

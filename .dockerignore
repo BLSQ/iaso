@@ -1,5 +1,6 @@
 # git
 .git
+.github
 .docker
 ### Python ###
 # Byte-compiled / optimized / DLL files

@@ -1,57 +1,48 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { makeStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
-import PropTypes from 'prop-types';
-
+import { Box, Grid, makeStyles, Tab, Tabs } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
-
 import {
+    commonStyles,
     DynamicTabs,
     getTableUrl,
+    LoadingSpinner,
     selectionInitialState,
     setTableSelection,
-    commonStyles,
     Table,
-    LoadingSpinner,
     useSafeIntl,
-    useSkipEffectOnMount,
+    useSkipEffectOnMount
 } from 'bluesquare-components';
-
-import { fetchSources, fetchOrgUnitsList } from '../../utils/requests';
-
-import {
-    setOrgUnits,
-    setOrgUnitsLocations,
-    setOrgUnitsListFetching,
-    setSources,
-    setFiltersUpdated,
-    resetOrgUnits,
-} from './actions';
-import { redirectTo } from '../../routing/actions';
-
-import { orgUnitsTableColumns } from './config';
-
-import { decodeSearch, mapOrgUnitByLocation, encodeUriParams } from './utils';
-import { getFromDateString, getToDateString } from '../../utils/dates.ts';
-
+import PropTypes from 'prop-types';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
+import { getChipColors } from '../../constants/chipColors';
+import { warningSnackBar } from '../../constants/snackBars';
+import { baseUrls } from '../../constants/urls';
+import {
+    closeFixedSnackbar,
+    enqueueSnackbar
+} from '../../redux/snackBarsReducer';
+import { redirectTo } from '../../routing/actions';
+import { convertObjectToString } from '../../utils';
+import { getFromDateString, getToDateString } from '../../utils/dates.ts';
+import { fetchOrgUnitsList, fetchSources } from '../../utils/requests';
+import {
+    resetOrgUnits,
+    setFiltersUpdated,
+    setOrgUnits,
+    setOrgUnitsListFetching,
+    setOrgUnitsLocations,
+    setSources
+} from './actions';
 import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
 import OrgUnitsMultiActionsDialog from './components/OrgUnitsMultiActionsDialog';
-
-import { getChipColors } from '../../constants/chipColors';
-
-import { warningSnackBar } from '../../constants/snackBars';
-import {
-    enqueueSnackbar,
-    closeFixedSnackbar,
-} from '../../redux/snackBarsReducer';
-import { baseUrls } from '../../constants/urls';
-import MESSAGES from './messages';
+import { orgUnitsTableColumns } from './config';
 import { locationLimitMax } from './constants/orgUnitConstants';
-import { convertObjectToString } from '../../utils';
 import { useGetOrgUnitTypes } from './hooks';
+import MESSAGES from './messages';
+import { decodeSearch, encodeUriParams, mapOrgUnitByLocation } from './utils';
 
 const baseUrl = baseUrls.orgUnits;
 
@@ -423,7 +414,7 @@ const OrgUnits = props => {
                                             key={searchIndex}
                                             className={
                                                 searchIndex !==
-                                                currentSearchIndex
+                                                    currentSearchIndex
                                                     ? classes.hiddenOpacity
                                                     : null
                                             }

@@ -1,60 +1,53 @@
 /* eslint-disable camelcase */
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import omit from 'lodash/omit';
-import { useSelector, useDispatch } from 'react-redux';
-import { useQueryClient } from 'react-query';
-
-import { makeStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
-
-import PropTypes from 'prop-types';
+import { Box, Grid, makeStyles, Tab, Tabs } from '@material-ui/core';
+import { alpha } from '@material-ui/core/styles/colorManipulator';
 import {
     commonStyles,
     LoadingSpinner,
-    useSafeIntl,
+    useSafeIntl
 } from 'bluesquare-components';
-import { alpha } from '@material-ui/core/styles/colorManipulator';
-import { redirectToReplace, redirectTo } from '../../routing/actions';
-import TopBar from '../../components/nav/TopBarComponent';
-import { resetOrgUnits } from './actions';
-
-import formsTableColumns from '../forms/config';
-
-import {
-    fetchForms,
-    fetchOrgUnitsList,
-    fetchLinks,
-    saveLink,
-    fetchAssociatedOrgUnits,
-    deleteForm,
-} from '../../utils/requests';
-import {
-    getAliasesArrayFromString,
-    getOrgUnitsTree,
-    getLinksSources,
-} from './utils';
-
-import OrgUnitForm from './components/OrgUnitForm';
-import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
+import omit from 'lodash/omit';
+import PropTypes from 'prop-types';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from 'react-query';
+import { useDispatch, useSelector } from 'react-redux';
 import Logs from '../../components/logs/LogsComponent';
+import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
-import LinksDetails from '../links/components/LinksDetailsComponent';
-
-import { baseUrls } from '../../constants/urls';
-import MESSAGES from './messages';
-
 import {
-    orgUnitFiltersWithPrefix,
     linksFiltersWithPrefix,
     onlyChildrenParams,
+    orgUnitFiltersWithPrefix
 } from '../../constants/filters';
-import { orgUnitsTableColumns } from './config';
+import { baseUrls } from '../../constants/urls';
+import { redirectTo, redirectToReplace } from '../../routing/actions';
+import {
+    deleteForm,
+    fetchAssociatedOrgUnits,
+    fetchForms,
+    fetchLinks,
+    fetchOrgUnitsList,
+    saveLink
+} from '../../utils/requests';
+import formsTableColumns from '../forms/config';
+import LinksDetails from '../links/components/LinksDetailsComponent';
 import { linksTableColumns } from '../links/config';
+import { resetOrgUnits } from './actions';
+import OrgUnitForm from './components/OrgUnitForm';
+import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
+import { orgUnitsTableColumns } from './config';
 import {
     useOrgUnitDetailData,
     useRefreshOrgUnit,
-    useSaveOrgUnit,
+    useSaveOrgUnit
 } from './hooks';
+import MESSAGES from './messages';
+import {
+    getAliasesArrayFromString,
+    getLinksSources,
+    getOrgUnitsTree
+} from './utils';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -145,10 +138,9 @@ const OrgUnitDetail = ({ params, router }) => {
         }
         if (currentOrgUnit?.org_unit_type_name) {
             return (
-                `${currentOrgUnit?.name}${
-                    currentOrgUnit.org_unit_type_name
-                        ? ` - ${currentOrgUnit.org_unit_type_name}`
-                        : ''
+                `${currentOrgUnit?.name}${currentOrgUnit.org_unit_type_name
+                    ? ` - ${currentOrgUnit.org_unit_type_name}`
+                    : ''
                 }` ?? ''
             );
         }
@@ -275,7 +267,7 @@ const OrgUnitDetail = ({ params, router }) => {
                 ...orgUnitPayload,
                 groups:
                     orgUnitPayload.groups.length > 0 &&
-                    !orgUnitPayload.groups[0].id
+                        !orgUnitPayload.groups[0].id
                         ? orgUnitPayload.groups
                         : orgUnitPayload.groups.map(g => g.id),
             };
@@ -464,7 +456,7 @@ const OrgUnitDetail = ({ params, router }) => {
                     </div>
 
                     {tab === 'history' && (
-                        <div id="logs-tab">
+                        <div data-test="logs-tab">
                             <Logs
                                 params={params}
                                 logObjectId={currentOrgUnit.id}
@@ -473,7 +465,7 @@ const OrgUnitDetail = ({ params, router }) => {
                         </div>
                     )}
                     {tab === 'forms' && (
-                        <div id="forms-tab">
+                        <div data-test="forms-tab">
                             <SingleTable
                                 paramsPrefix="formsParams"
                                 apiParams={{
@@ -499,7 +491,7 @@ const OrgUnitDetail = ({ params, router }) => {
                         </div>
                     )}
                     <div
-                        id="children-tab"
+                        data-test="children-tab"
                         className={
                             tab === 'children' ? '' : classes.hiddenOpacity
                         }
@@ -531,7 +523,7 @@ const OrgUnitDetail = ({ params, router }) => {
                         />
                     </div>
                     <div
-                        id="links-tab"
+                        data-test="links-tab"
                         className={tab === 'links' ? '' : classes.hiddenOpacity}
                     >
                         <SingleTable
@@ -574,7 +566,7 @@ const OrgUnitDetail = ({ params, router }) => {
                         />
                     </div>
                     {tab === 'comments' && (
-                        <div id="comments-tab">
+                        <div data-test="comments-tab">
                             <Grid
                                 container
                                 justifyContent="center"

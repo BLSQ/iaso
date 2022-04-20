@@ -186,15 +186,23 @@ describe('Forms', () => {
             it('should be visible if we have results', () => {
                 goToPage(superUser, null, 'forms/list.json');
                 cy.wait('@getForms').then(() => {
-                    cy.get('#csv-export-button').should('be.visible');
-                    cy.get('#xlsx-export-button').should('be.visible');
+                    cy.get('[data-test="csv-export-button"]').should(
+                        'be.visible',
+                    );
+                    cy.get('[data-test="xlsx-export-button"]').should(
+                        'be.visible',
+                    );
                 });
             });
             it("should not be visible if we don't have results", () => {
                 goToPage(superUser, null, 'forms/empty.json');
                 cy.wait('@getForms').then(() => {
-                    cy.get('#csv-export-button').should('not.exist');
-                    cy.get('#xlsx-export-button').should('not.exist');
+                    cy.get('[data-test="csv-export-button"]').should(
+                        'not.exist',
+                    );
+                    cy.get('[data-test="xlsx-export-button"]').should(
+                        'not.exist',
+                    );
                 });
             });
         });

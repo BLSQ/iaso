@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 
+import commentsList from '../../fixtures/comments/list.json';
 import orgUnit from '../../fixtures/orgunits/details.json';
 import { testPermission } from '../../support/testPermission';
 
@@ -15,7 +16,14 @@ const interceptList = [
     'orgunittypes',
 ];
 
-describe('OrgUnits detail', () => {
+/**
+ * TODO;
+ * - test posting new comment
+ * - test add reply
+ * - test show thread button
+ */
+
+describe('comments tab', () => {
     beforeEach(() => {
         cy.login();
         cy.intercept('GET', '/api/profiles/**', {
@@ -95,9 +103,23 @@ describe('OrgUnits detail', () => {
                 ],
             },
         );
+        cy.visit(`${baseUrl}/tab/comments`);
     });
 
     it('page should not be accessible if user does not have permission', () => {
         testPermission(baseUrl);
+    });
+
+    it('should render correct infos', () => {
+        cy.wait('@getOuDetail').then(() => {
+            cy.get('[data-test="comments-tab"]')
+                .as('commentsTab')
+                .should('be.visible');
+            cy.get('@commentsTab')
+                .find('.comments-list')
+                .as('commentsList')
+                .find('> div')
+                .should('have.length', commentsList.count);
+        });
     });
 });

@@ -58,3 +58,4 @@ ENV DISABLE_SSL_REDIRECT=1
 EXPOSE 8081
 
 ENTRYPOINT ["./entrypoint.sh"]
+CMD ["./entrypoint.sh", "start"]

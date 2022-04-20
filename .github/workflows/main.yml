@@ -113,7 +113,6 @@ jobs:
           CACHE: false
           DEV_SERVER: true
           PLUGINS: polio
-        options: start
         ports:
           - 8081:8081
     steps:

@@ -113,6 +113,7 @@
     "iaso.polio.label.campaign": "Campagne",
     "iaso.polio.label.campaignType": "Type de campagne",
     "iaso.polio.label.campaigns": "Campagnes",
+    "iaso.polio.label.campaignsToLink": "Campagnes à lier",
     "iaso.polio.label.caregivers_informed": "Parents informés",
     "iaso.polio.label.child_is_a_visitor": "Enfant est un visiteur",
     "iaso.polio.label.child_was_asleep": "Enfant endormi",
@@ -134,6 +135,7 @@
     "iaso.polio.label.districtScore": "District",
     "iaso.polio.label.districtsNeedMatching": "Certains districts doivent être identifiés par un administrateur et ne sont pas montrés. Veuillez contacter un administrateur pour plus d'informations",
     "iaso.polio.label.districtsNotFound": "Districts non-trouvés",
+    "iaso.polio.label.editGroupedCampaign": "Editer campagne groupée",
     "iaso.polio.label.emailListEmpty": "Pas de destinataire configuré sur ce pays",
     "iaso.polio.label.emailListLabel": "Destinataires configurés:",
     "iaso.polio.label.emailListTooltip": "La liste d'email est configurable sur les pays",
@@ -202,6 +204,8 @@
     "iaso.polio.label.sortAsc": "Trier par ordre croissant",
     "iaso.polio.label.sortDesc": "Trier par ordre décroissant",
     "iaso.polio.label.submitted": "Soumis",
+    "iaso.polio.label.testCampaign": "Campagne de test",
+    "iaso.polio.label.testCampaigns": "Campagnes de test",
     "iaso.polio.label.toSubmit": "À soumettre",
     "iaso.polio.label.totalCaregiversSurveyed": "Parents sondés",
     "iaso.polio.label.total_child_checked": "Enfants visités",
@@ -250,7 +254,5 @@
     "iaso.polio.title.scope": "Périmètre",
     "iaso.polio.tooltip.label.lqasImDate": "Aucune date trouvée dans les données de la campagne, une date par défaut basée sur la date du round est utilisée",
     "iaso.polio.vaccine": "Vaccin",
-    "iaso.polio.vaccines": "Vaccins",
-    "polio.label.campaignsToLink": "Campagnes à lier",
-    "polio.label.editGroupedCampaign": "Editer campagne groupée"
+    "iaso.polio.vaccines": "Vaccins"
 }

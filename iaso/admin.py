@@ -44,7 +44,7 @@ from .models import (
 
 
 class OrgUnitAdmin(admin.GeoModelAdmin):
-    raw_id_fields = ("parent",)
+    raw_id_fields = ("parent", "instance_defining")
     list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)

@@ -31,7 +31,7 @@ def detect_user_request(request):
         else:
             user = None
         return user
-    except (KeyError, DecodeError):
+    except:
         pass
 
 

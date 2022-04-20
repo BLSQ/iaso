@@ -40,8 +40,8 @@ jobs:
           push: true
           tags: ${{ steps.version.outputs.IMAGE_TAG }}
           file: docker/bundle/Dockerfile
-          cache-from: type=registry,ref=user/app:latest
-          cache-to: type=inline
+          cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
+          cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
   test_js:
     if: false
     runs-on: ubuntu-latest

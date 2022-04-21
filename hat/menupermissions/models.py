@@ -19,7 +19,7 @@ POLIO = _("Polio")
 POLIO_CONFIG = _("Polio config")
 SUBMISSIONS = _("Soumissions")
 UPDATE_SUBMISSIONS = _("Editer soumissions")
-
+DHIS2_LINK = _("Show dhis2 link")
 
 # When adding a new permissions, it also need to be added in
 # hat/assets/js/apps/Iaso/domains/users/messages.js
@@ -64,4 +64,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_polio_config", POLIO_CONFIG),
             ("iaso_submissions", SUBMISSIONS),
             ("iaso_update_submission", UPDATE_SUBMISSIONS),
+            ("iaso_dhis2_link", DHIS2_LINK),
         )

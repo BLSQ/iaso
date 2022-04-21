@@ -41,8 +41,12 @@ function MenuItem(props) {
         subMenuLevel,
         currentPath,
         currentUser,
+        url,
     } = props;
-    const path = `${currentPath}/${menuItem.key}`;
+
+
+    const url_link = url;
+    const path = url_link ? `${currentPath}` : `${currentPath}/${menuItem.key}`;
     const activePath = location.pathname.split('/', subMenuLevel + 1).join('/');
     const isMenuActive = path === activePath;
     const fullPath = menuItem.extraPath ? `${path}${menuItem.extraPath}` : path;
@@ -69,7 +73,7 @@ function MenuItem(props) {
                 <ListItem
                     style={itemStyle}
                     button
-                    onClick={() => (!hasSubMenu ? onClick(path) : toggleOpen())}
+                    onClick={() => (!hasSubMenu ? onClick(path, url) : toggleOpen())}
                 >
                     <ListItemIcon className={classes.listItemIcon}>
                         {menuItem.icon({ color })}

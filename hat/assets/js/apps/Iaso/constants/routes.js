@@ -27,7 +27,7 @@ import { capitalize } from '../utils/index';
 import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 
-import { SHOW_PAGES } from '../utils/featureFlags';
+import { SHOW_PAGES, SHOW_DHIS2_LINK } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 
 const paginationPathParamsWithPrefix = prefix =>
@@ -88,6 +88,12 @@ export const pagesPath = {
     featureFlag: SHOW_PAGES,
     params: [...paginationPathParams],
     component: props => <Pages {...props} />,
+};
+
+export const dhis2LinkPath = {
+    permissions: ['iaso_dhis2_link'],
+    featureFlag: SHOW_DHIS2_LINK,
+    params: [...paginationPathParams]
 };
 
 export const formDetailPath = {
@@ -572,6 +578,7 @@ export const routeConfigs = [
     entitiesPath,
     entityTypesPath,
     pagesPath,
+    dhis2LinkPath,
     page401,
     page500,
 ];

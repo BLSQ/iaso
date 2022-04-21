@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
-
+import { redirectTo } from '../../../routing/actions';
 import ExitIcon from '@material-ui/icons/ExitToApp';
 import {
     withStyles,
@@ -82,6 +82,8 @@ const localizedManualUrl = (locale, account) => {
     return 'https://docs.google.com/document/d/1qHCRIiYgbZYAKMqxXYOjBGL_nzlSDPhOLykiKXaw8fw/edit';
 };
 
+
+
 const SidebarMenu = ({
     classes,
     isOpen,
@@ -91,12 +93,30 @@ const SidebarMenu = ({
     intl,
     activeLocale,
 }) => {
-    const onClick = () => {
+    const onClick = (url) => {
         toggleSidebar();
+        if(url) {
+          window.open(url, '_blank');
+        }
     };
+
+    const getMenuItem = (menuItem) => {
+      return (
+          <MenuItem
+              location={location}
+              key={menuItem.key}
+              menuItem={menuItem}
+              onClick={(path,url) => onClick(url)}
+              currentUser={currentUser}
+              url={menuItem.url}
+          />
+      );
+    }
+
     const { plugins } = useContext(PluginsContext);
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     const menuItems = getMenuItems(currentUser, plugins, defaultSourceVersion);
+
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>
@@ -115,15 +135,7 @@ const SidebarMenu = ({
                 {menuItems.map(menuItem => {
                     const permissionsList = listMenuPermission(menuItem);
                     if (userHasOneOfPermissions(permissionsList, currentUser)) {
-                        return (
-                            <MenuItem
-                                location={location}
-                                key={menuItem.key}
-                                menuItem={menuItem}
-                                onClick={path => onClick(path)}
-                                currentUser={currentUser}
-                            />
-                        );
+                      return getMenuItem(menuItem);
                     }
                     return null;
                 })}

@@ -132,21 +132,30 @@ class CampaignViewSet(ModelViewSet):
         else:
             return AnonymousCampaignSerializer
 
-    def get_queryset(self):
-        user = self.request.user
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        if self.action in ("update", "partial_update", "retrieve", "destroy"):
+            return queryset
         campaign_type = self.request.query_params.get("campaign_type")
         campaign_groups = self.request.query_params.get("campaign_groups")
-        campaigns = Campaign.objects.all()
+        show_test = self.request.query_params.get("show_test", "false")
+        campaigns = queryset
+        if show_test == "false":
+            campaigns = campaigns.filter(is_test=False)
         campaigns.prefetch_related("round_one", "round_two", "group", "grouped_campaigns")
-        test_campaigns = self.request.query_params.get("is_test")
         if campaign_type == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
-        if test_campaigns == "true":
+        if campaign_type == "test":
             campaigns = campaigns.filter(is_test=True)
         if campaign_type == "regular":
-            campaigns = campaigns.filter(is_preventive=False)
+            campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
+        return campaigns
+
+    def get_queryset(self):
+        user = self.request.user
+        campaigns = Campaign.objects.all()
         if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
             return campaigns.filter(initial_org_unit__in=org_units)
@@ -565,7 +574,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
         requested_country = int(requested_country)
 
-        campaigns = Campaign.objects.filter(country_id=requested_country)
+        campaigns = Campaign.objects.filter(country_id=requested_country).filter(is_test=False)
 
         if campaigns:
             latest_campaign_update = campaigns.latest("updated_at").updated_at
@@ -1103,7 +1112,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             return HttpResponseBadRequest
         requested_country = int(requested_country)
 
-        campaigns = Campaign.objects.filter(country_id=requested_country)
+        campaigns = Campaign.objects.filter(country_id=requested_country).filter(is_test=False)
         if campaigns:
             latest_campaign_update = campaigns.latest("updated_at").updated_at
         else:

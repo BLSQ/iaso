@@ -1,5 +1,5 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { FormattedMessage } from 'react-intl';
@@ -21,12 +21,14 @@ import {
     commonStyles,
     formatThousand,
 } from 'bluesquare-components';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { saveMultiEdit as saveMultiEditAction } from '../actions';
 
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import { compareGroupVersions, decodeSearch } from '../utils';
+import { useGetGroups } from '../hooks';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -47,12 +49,14 @@ const styles = theme => ({
 });
 
 const stringOfIdsToArrayofIds = stringValue =>
-    stringValue === '' ? [] : stringValue.split(',').map(s => parseInt(s, 10));
+    !stringValue || stringValue === ''
+        ? []
+        : stringValue.split(',').map(s => parseInt(s, 10));
+
 const OrgUnitsMultiActionsDialog = ({
     open,
     closeDialog,
     classes,
-    groups,
     orgUnitTypes,
     selection: { selectCount, selectedItems, unSelectedItems, selectAll },
     params,
@@ -67,6 +71,11 @@ const OrgUnitsMultiActionsDialog = ({
     const [editValidation, setEditValidation] = React.useState(false);
     const [validationStatus, setValidationStatus] = React.useState(null);
 
+    const currentUser = useCurrentUser();
+    const { groups = [], isFetchingGroups } = useGetGroups({
+        dataSourceId: currentUser?.account?.default_version?.data_source?.id,
+        sourceVersionId: currentUser?.account?.default_version?.id,
+    });
     const isSaveDisabled = () =>
         (editGroups &&
             groupsAdded.length === 0 &&
@@ -197,6 +206,7 @@ const OrgUnitsMultiActionsDialog = ({
                                             : null
                                     }
                                     type="select"
+                                    loading={isFetchingGroups}
                                     options={groups
                                         .sort(compareGroupVersions)
                                         .map(g => ({
@@ -352,7 +362,6 @@ OrgUnitsMultiActionsDialog.defaultProps = {
 
 OrgUnitsMultiActionsDialog.propTypes = {
     open: PropTypes.bool.isRequired,
-    groups: PropTypes.array.isRequired,
     closeDialog: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
@@ -363,7 +372,6 @@ OrgUnitsMultiActionsDialog.propTypes = {
 };
 
 const MapStateToProps = state => ({
-    groups: state.orgUnits.groups,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
 });
 

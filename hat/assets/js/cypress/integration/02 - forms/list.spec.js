@@ -63,9 +63,6 @@ describe('Forms', () => {
 
         it('click on create button should redirect to form creation url', () => {
             goToPage();
-            // wait for the request since cypress will fail on 'abort' error
-            cy.wait('@getForms');
-            cy.wait('@getTypes');
             cy.get('[data-test=add-form-button]').click();
             cy.url().should(
                 'eq',

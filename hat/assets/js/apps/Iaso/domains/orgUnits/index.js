@@ -196,9 +196,9 @@ const OrgUnits = props => {
 
         Promise.all(promises)
             .then(data => {
-                if (!params.searchActive) {
+                if (params.searchActive !== 'true') {
                     const newParams = encodeUriParams(params);
-                    newParams.searchActive = true;
+                    newParams.searchActive = 'true';
                     dispatch(redirectTo(baseUrl, newParams));
                 }
                 dispatch(
@@ -256,15 +256,20 @@ const OrgUnits = props => {
         handleTableSelection('reset');
         setResetTablePage(convertObjectToString(newParams));
         dispatch(redirectTo(baseUrl, newParams));
-        if (!filtersUpdated && !params.searchActive) {
+        if (!filtersUpdated && params.searchActive !== 'true') {
             fetchOrgUnits();
         }
     };
 
     const onTabsDeleted = newParams => {
         dispatch(resetOrgUnits());
-        dispatch(setFiltersUpdated(true));
-        onSearch({ ...newParams, page: 1 });
+        if (params.searchActive === 'true') {
+            dispatch(setFiltersUpdated(true));
+            setResetTablePage(convertObjectToString(newParams));
+            fetchOrgUnits();
+        }
+        handleTableSelection('reset');
+        dispatch(redirectTo(baseUrl, newParams));
     };
 
     useEffect(() => {
@@ -292,7 +297,7 @@ const OrgUnits = props => {
         dispatch(redirectTo(baseUrl, newParams));
         if (
             newtab === 'map' &&
-            params.searchActive &&
+            params.searchActive === 'true' &&
             (filtersUpdated || listUpdated)
         ) {
             if (listUpdated) {
@@ -319,7 +324,7 @@ const OrgUnits = props => {
                 });
             });
             dispatch(setSources(sources));
-            if (params.searchActive && orgunits.length === 0) {
+            if (params.searchActive === 'true' && orgunits.length === 0) {
                 fetchOrgUnits();
             }
             setShouldRenderFilters(true);
@@ -434,7 +439,7 @@ const OrgUnits = props => {
                                     );
                                 },
                             )}
-                        {params.searchActive && (
+                        {params.searchActive === 'true' && (
                             <>
                                 <Tabs
                                     value={tab}

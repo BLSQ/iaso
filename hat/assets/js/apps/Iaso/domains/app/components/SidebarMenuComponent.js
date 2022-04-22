@@ -96,7 +96,7 @@ const SidebarMenu = ({
     const onClick = (url) => {
         toggleSidebar();
         if(url) {
-          window.open(url, '_blank');
+          window.open(url);
         }
     };
 
@@ -109,6 +109,7 @@ const SidebarMenu = ({
               onClick={(path,url) => onClick(url)}
               currentUser={currentUser}
               url={menuItem.url}
+              target="_blank"
           />
       );
     }

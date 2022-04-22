@@ -1,22 +1,18 @@
 // To stay consistent with the naming convention, this component is named FormForm such as OrgUnitForm ...
 
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
-
-import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
-
+import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
+import PropTypes from 'prop-types';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import InputComponent from '../../../components/forms/InputComponent';
-
-import { periodTypeOptions } from '../../periods/constants';
 import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
-
-import MESSAGES from '../messages';
 import { formatLabel } from '../../instances/utils';
+import { periodTypeOptions } from '../../periods/constants';
+import MESSAGES from '../messages';
 
 const styles = theme => ({
     radio: {
@@ -27,6 +23,7 @@ const styles = theme => ({
         alignSelf: 'center',
         textAlign: 'right',
         flex: '1',
+        cursor: 'pointer',
     },
 });
 

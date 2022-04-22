@@ -30,7 +30,7 @@ const initialFormState = (orgUnit, instance_defining_id) => {
         instance_defining_id: instance_defining_id,
     };
 };
-export const actionTableColumn = (formatMessage = () => ({}), user, dispatchd) => {
+export const actionTableColumn = (formatMessage = () => ({}), user, dispatch) => {
 
     return {
         Header: formatMessage(MESSAGES.actions),

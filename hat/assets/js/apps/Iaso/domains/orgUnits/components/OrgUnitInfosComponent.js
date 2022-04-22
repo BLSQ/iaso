@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useState, useEffect } from 'react';
+import React, { Fragment } from 'react';
 
 import { withStyles, Grid } from '@material-ui/core';
 

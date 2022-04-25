@@ -105,20 +105,13 @@ class CorrelationAPITestCase(APITestCase):
 
     def test_jwt_decode_instance_upload(self):
 
-        user = User.objects.create_user(username='testuser', password='12345')
+        user = User.objects.create_user(username="testuser", password="12345")
         user.save()
-        Profile.objects.create(
-            account=self.the_empire,
-            user=user
-        )
+        Profile.objects.create(account=self.the_empire, user=user)
 
-        login_data = {
-            "username": "testuser",
-            "password": "12345"
-        }
+        login_data = {"username": "testuser", "password": "12345"}
 
-        jwt_token = self.client.post(
-            "/api/token/", data=login_data, format="json")
+        jwt_token = self.client.post("/api/token/", data=login_data, format="json")
 
         file_name = "land_speeder_with_service.xml"
         uuid = "4b7c3954-f69a-4b99-43b1-df73957b3349"

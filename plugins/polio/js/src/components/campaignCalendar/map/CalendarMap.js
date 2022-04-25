@@ -72,7 +72,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                 };
             }),
     );
-    const { data: mergedShapes, isFetching: fetchingMergedShapes } =
+    const { data: mergedShapes, isLoading: isLoadingMergedShapes } =
         useGetMergedCampaignShapes().query;
 
     const campaignColors = {};
@@ -89,8 +89,8 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
         });
 
     const loadingShapes =
-        viewport <= 6
-            ? fetchingMergedShapes
+        viewport.zoom <= 6
+            ? isLoadingMergedShapes
             : shapesQueries.some(q => q.isLoading) ||
               regionsQueries.some(q => q.isLoading);
 

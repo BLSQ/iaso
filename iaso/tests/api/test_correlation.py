@@ -1,9 +1,11 @@
 import typing
 
+from django.contrib.auth.models import User
 from django.test import tag
 from django.utils.timezone import now
 
 from iaso import models as m
+from iaso.models import Profile, Instance
 from iaso.test import APITestCase
 
 
@@ -12,6 +14,7 @@ class CorrelationAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.now = now()
         star_wars = m.Account.objects.create(name="Star Wars")
+        cls.the_empire = m.Account.objects.create(name="The Empire")
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
         )
@@ -99,3 +102,55 @@ class CorrelationAPITestCase(APITestCase):
         self.assertEqual(correlation_code, 123)
         self.assertEqual(base % 97, modulo)
         self.assertEqual(len(str(instance.id)) + 6, len(str(instance.correlation_id)))
+
+    def test_jwt_decode_instance_upload(self):
+
+        user = User.objects.create_user(username='testuser', password='12345')
+        user.save()
+        Profile.objects.create(
+            account=self.the_empire,
+            user=user
+        )
+
+        login_data = {
+            "username": "testuser",
+            "password": "12345"
+        }
+
+        jwt_token = self.client.post(
+            "/api/token/", data=login_data, format="json")
+
+        file_name = "land_speeder_with_service.xml"
+        uuid = "4b7c3954-f69a-4b99-43b1-df73957b3349"
+        instance_body = [
+            {
+                "id": uuid,
+                "latitude": 4.4,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.coruscant.id,
+                "formId": self.form_2.id,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/%s" % file_name,
+                "name": file_name,
+            }
+        ]
+
+        response = self.client.post(
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.client.credentials(HTTP_AUTHORIZATION="Token: {0}".format(jwt_token.json()["access"]))
+
+        with open("iaso/tests/fixtures/%s" % file_name) as fp:
+            response_form = self.client.post("/sync/form_upload/", {"xml_submission_file": fp})
+
+        last_instance = Instance.objects.last()
+
+        self.assertEqual(response_form.status_code, 201)
+        self.assertEqual(last_instance.created_by, user)
+        self.assertEqual(last_instance.last_modified_by, user)

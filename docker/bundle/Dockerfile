@@ -58,4 +58,6 @@ ENV DISABLE_SSL_REDIRECT=1
 EXPOSE 8081
 
 ENTRYPOINT ["./entrypoint.sh"]
-CMD ["start"]
+#CMD ["start"]
+# Needed for github action since we can't pass a command directly
+CMD ["manage", "testserver", "--no-input", "iaso/fixtures/user.yaml", "--addrport", "0.0.0.0:8081"]

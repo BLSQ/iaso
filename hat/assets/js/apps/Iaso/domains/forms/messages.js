@@ -517,6 +517,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.formsHelperText',
         defaultMessage: 'Form submissions',
     },
+    downloadXml: {
+        id: 'iaso.label.downloadXml',
+        defaultMessage: 'Download XML',
+    },
 });
 
 export default MESSAGES;

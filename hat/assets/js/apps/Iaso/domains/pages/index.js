@@ -112,6 +112,9 @@ const Pages = ({ params }) => {
                     const pageType = PAGES_TYPES.find(
                         pt => pt.value === settings.row.original.type,
                     );
+                    if (!pageType) {
+                        return settings.row.original.type;
+                    }
                     return <span>{intl.formatMessage(pageType.label)}</span>;
                 },
             },

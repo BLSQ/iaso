@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Grid, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
@@ -13,12 +13,24 @@ import {
     Select,
     TextInput,
 } from '../components/Inputs';
+import { MultiSelect } from '../components/Inputs/MultiSelect.tsx';
 import MESSAGES from '../constants/messages';
 import { EmailListForCountry } from '../components/EmailListForCountry/EmailListForCountry';
+import { useGetGroupedCampaigns } from '../hooks/useGetGroupedCampaigns.ts';
 
 export const BaseInfoForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+    const { data: groupedCampaigns } = useGetGroupedCampaigns();
+    const groupedCampaignsOptions = useMemo(
+        () =>
+            groupedCampaigns?.results.map(result => ({
+                label: result.name,
+                value: result.id,
+            })) ?? [],
+
+        [groupedCampaigns],
+    );
 
     const { values } = useFormikContext();
     const { top_level_org_unit_id } = values;
@@ -45,6 +57,12 @@ export const BaseInfoForm = () => {
                             name="obr_name"
                             component={TextInput}
                             className={classes.input}
+                        />
+                        <Field
+                            label={formatMessage(MESSAGES.groupedCampaigns)}
+                            name="grouped_campaigns"
+                            options={groupedCampaignsOptions}
+                            component={MultiSelect}
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -88,6 +106,12 @@ export const BaseInfoForm = () => {
                         className={classes.input}
                         label={formatMessage(MESSAGES.preventive)}
                         name="is_preventive"
+                        component={BooleanInput}
+                    />
+                    <Field
+                        className={classes.input}
+                        label={formatMessage(MESSAGES.testCampaign)}
+                        name="is_test"
                         component={BooleanInput}
                     />
                     <SendEmailButton />

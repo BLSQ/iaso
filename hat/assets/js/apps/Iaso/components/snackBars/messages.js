@@ -268,11 +268,11 @@ const MESSAGES = defineMessages({
     },
 
     patchTaskError: {
-        defaultMessage: 'Error Patching task',
+        defaultMessage: 'An error occurred while updating the task.',
         id: 'iaso.snackBar.patchTaskError',
     },
     patchTaskSuccess: {
-        defaultMessage: 'Task patched successfully',
+        defaultMessage: 'The task has been updated.',
         id: 'iaso.snackBar.patchTaskSuccess',
     },
     createDataSourceError: {

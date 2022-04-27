@@ -116,6 +116,7 @@ jobs:
       - name: Django tests
         run: |
           . ./venv/bin/activate &&  python manage.py migrate
+          . ./venv/bin/activate &&  python manage.py createcachetable
           . ./venv/bin/activate &&  python manage.py test
           # check we don't have missing migration
           . ./venv/bin/activate &&  python manage.py makemigrations --check

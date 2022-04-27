@@ -24,3 +24,14 @@ import './commands';
 Cypress.Cookies.defaults({
     preserve: ['sessionid', 'django_language', 'sessionCookie'],
 });
+// eslint-disable-next-line no-unused-vars
+Cypress.on('uncaught:exception', (err, _runnable, _promise) => {
+    if (
+        err.message.includes('AbortError') ||
+        err.message.includes('The user aborted a request') ||
+        err?.name.includes('ABORT_ERROR')
+    ) {
+        return false;
+    }
+    return true;
+});

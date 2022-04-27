@@ -6,12 +6,26 @@ const langageCookie = Cypress.env('langageCookie');
 
 const signInUrl = `${siteBaseUrl}/login/?next=/dashboard/`;
 
+const selectLanguage = lang => {
+    cy.window().then(w => {
+        // eslint-disable-next-line no-param-reassign
+        w.beforeReload = true;
+    });
+    cy.get('.language-picker').select(lang).should('have.value', lang);
+    // this assertion evaluation to true means the page has reloaded, which is needed for the next assertions to pass
+    cy.window().should('not.have.prop', 'beforeReload');
+    cy.get('html').invoke('attr', 'lang').should('equal', lang);
+
+    cy.getCookie(langageCookie).should('have.property', 'value', lang);
+};
+
 describe('Log in page', () => {
     before(() => {
         cy.clearCookie(sessionCookie);
     });
     beforeEach(() => {
         cy.visit(siteBaseUrl);
+        cy.intercept('GET', '/sockjs-node/**').as('Yabadabadoo');
     });
     it('going to root url should redirect to log in page', () => {
         cy.url().should('eq', signInUrl);
@@ -57,17 +71,12 @@ describe('Log in page', () => {
         beforeEach(() => {
             cy.visit(signInUrl);
         });
-        it('should set page in english', () => {
-            cy.get('.language-picker').select('en');
-            cy.wait(500);
+        it('should default to english', () => {
             cy.get('html').invoke('attr', 'lang').should('equal', 'en');
-            cy.getCookie(langageCookie).should('have.property', 'value', 'en');
         });
-        it('should set page in french', () => {
-            cy.get('.language-picker').select('fr');
-            cy.wait(500);
-            cy.get('html').invoke('attr', 'lang').should('equal', 'fr');
-            cy.getCookie(langageCookie).should('have.property', 'value', 'fr');
+        it('should set page to selected language', () => {
+            selectLanguage('fr');
+            selectLanguage('en');
         });
     });
     describe('Happy flow', () => {
@@ -76,7 +85,8 @@ describe('Log in page', () => {
             cy.visit(siteBaseUrl);
         });
         it('should redirect to dashboard', () => {
-            cy.url().should('eq', `${siteBaseUrl}/dashboard/forms/list`);
+            cy.url().should('not.contain', `next`);
+            cy.url().should('contain', `/dashboard`);
         });
         it('should set sessionid', () => {
             cy.getCookie(sessionCookie).should('exist');

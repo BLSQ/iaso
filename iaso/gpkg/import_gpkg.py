@@ -1,16 +1,13 @@
 import sqlite3
 from copy import deepcopy
-from typing import Optional, Dict, List, Tuple, Union
-
-from django.contrib.auth.models import User
-
-from hat.audit import models as audit_models
+from typing import Dict, List, Optional, Tuple, Union
 
 import fiona
-from django.contrib.gis.geos import Point, MultiPolygon, Polygon
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
-
-from iaso.models import Project, OrgUnitType, OrgUnit, DataSource, SourceVersion, Group
+from hat.audit import models as audit_models
+from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Project, SourceVersion
 
 try:  # only in 3.8
     from typing import TypedDict
@@ -140,7 +137,7 @@ def get_ref(inst: Union[OrgUnit, Group]) -> str:
 
 
 @transaction.atomic
-def import_gpkg_file(filename, project_id, source_name, version_number, validation_status):
+def import_gpkg_file(filename, project_id, source_name, version_number, validation_status, description):
 
     source, created = DataSource.objects.get_or_create(name=source_name)
     if source.read_only:
@@ -149,7 +146,7 @@ def import_gpkg_file(filename, project_id, source_name, version_number, validati
     # to our project via the tenant.
     source.projects.add(project_id)
     project = Project.objects.get(id=project_id)
-    import_gpkg_file2(filename, project, source, version_number, validation_status, user=None)
+    import_gpkg_file2(filename, project, source, version_number, validation_status, user=None, description=description)
 
 
 @transaction.atomic
@@ -160,11 +157,14 @@ def import_gpkg_file2(
     version_number: Optional[int],
     validation_status,
     user: Optional[User],
+    description,
 ):
     if version_number is None:
         last_version = source.versions.all().order_by("number").last()
         version_number = last_version.number + 1 if last_version else 0
-    version, created = SourceVersion.objects.get_or_create(number=version_number, data_source=source)
+    version, created = SourceVersion.objects.get_or_create(
+        number=version_number, data_source=source, defaults={"description": description}
+    )
     if not source.default_version:
         source.default_version = version
         source.save()

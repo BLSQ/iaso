@@ -2,7 +2,7 @@ from rest_framework.response import Response
 
 from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
 from iaso.api.tasks import TaskSerializer
-from iaso.models import DataSource
+from iaso.models import DataSource, SourceVersion
 from rest_framework import viewsets, permissions, serializers
 from iaso.api.common import HasPermission
 import logging
@@ -19,6 +19,7 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
     force = serializers.BooleanField(required=False, default=False)
     validate_status = serializers.BooleanField(required=False, default=False)
     continue_on_error = serializers.BooleanField(required=False, default=False)
+    description = serializers.CharField(max_length=200, required=False, allow_null=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -68,5 +69,6 @@ class Dhis2OuImporterViewSet(viewsets.ViewSet):
             password=data.get("dhis2_password", None),
             update_mode=update_mode,
             user=request.user,
+            description=data.get("description", ""),
         )
         return Response({"task": TaskSerializer(instance=task).data})

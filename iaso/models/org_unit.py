@@ -345,6 +345,7 @@ class OrgUnit(TreeModel):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
+            "instance_defining_id": self.instance_defining_id,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -418,13 +419,3 @@ class OrgUnit(TreeModel):
         if len(path_components) > 0:
             return "/" + ("/".join(path_components))
         return None
-
-
-class OrgunitAsLocationCache(models.Model):
-    user_id = models.IntegerField()
-    response = models.JSONField()
-    updated_at = models.DateTimeField(auto_now=True, editable=True, blank=True, null=True)
-    params = models.TextField()
-
-    def __str__(self):
-        return str(self.params)

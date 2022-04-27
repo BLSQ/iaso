@@ -1,57 +1,48 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { makeStyles, Box, Tabs, Tab, Grid } from '@material-ui/core';
-import PropTypes from 'prop-types';
-
+import { Box, Grid, makeStyles, Tab, Tabs } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
-
 import {
+    commonStyles,
     DynamicTabs,
     getTableUrl,
+    LoadingSpinner,
     selectionInitialState,
     setTableSelection,
-    commonStyles,
     Table,
-    LoadingSpinner,
     useSafeIntl,
-    useSkipEffectOnMount,
+    useSkipEffectOnMount
 } from 'bluesquare-components';
-
-import { fetchSources, fetchOrgUnitsList } from '../../utils/requests';
-
-import {
-    setOrgUnits,
-    setOrgUnitsLocations,
-    setOrgUnitsListFetching,
-    setSources,
-    setFiltersUpdated,
-    resetOrgUnits,
-} from './actions';
-import { redirectTo } from '../../routing/actions';
-
-import { orgUnitsTableColumns } from './config';
-
-import { decodeSearch, mapOrgUnitByLocation, encodeUriParams } from './utils';
-import { getFromDateString, getToDateString } from '../../utils/dates.ts';
-
+import PropTypes from 'prop-types';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
+import { getChipColors } from '../../constants/chipColors';
+import { warningSnackBar } from '../../constants/snackBars';
+import { baseUrls } from '../../constants/urls';
+import {
+    closeFixedSnackbar,
+    enqueueSnackbar
+} from '../../redux/snackBarsReducer';
+import { redirectTo } from '../../routing/actions';
+import { convertObjectToString } from '../../utils';
+import { getFromDateString, getToDateString } from '../../utils/dates.ts';
+import { fetchOrgUnitsList, fetchSources } from '../../utils/requests';
+import {
+    resetOrgUnits,
+    setFiltersUpdated,
+    setOrgUnits,
+    setOrgUnitsListFetching,
+    setOrgUnitsLocations,
+    setSources
+} from './actions';
 import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
 import OrgUnitsMultiActionsDialog from './components/OrgUnitsMultiActionsDialog';
-
-import { getChipColors } from '../../constants/chipColors';
-
-import { warningSnackBar } from '../../constants/snackBars';
-import {
-    enqueueSnackbar,
-    closeFixedSnackbar,
-} from '../../redux/snackBarsReducer';
-import { baseUrls } from '../../constants/urls';
-import MESSAGES from './messages';
+import { orgUnitsTableColumns } from './config';
 import { locationLimitMax } from './constants/orgUnitConstants';
-import { convertObjectToString } from '../../utils';
 import { useGetOrgUnitTypes } from './hooks';
+import MESSAGES from './messages';
+import { decodeSearch, encodeUriParams, mapOrgUnitByLocation } from './utils';
 
 const baseUrl = baseUrls.orgUnits;
 
@@ -196,9 +187,9 @@ const OrgUnits = props => {
 
         Promise.all(promises)
             .then(data => {
-                if (!params.searchActive) {
+                if (params.searchActive !== 'true') {
                     const newParams = encodeUriParams(params);
-                    newParams.searchActive = true;
+                    newParams.searchActive = 'true';
                     dispatch(redirectTo(baseUrl, newParams));
                 }
                 dispatch(
@@ -256,15 +247,20 @@ const OrgUnits = props => {
         handleTableSelection('reset');
         setResetTablePage(convertObjectToString(newParams));
         dispatch(redirectTo(baseUrl, newParams));
-        if (!filtersUpdated && !params.searchActive) {
+        if (!filtersUpdated && params.searchActive !== 'true') {
             fetchOrgUnits();
         }
     };
 
     const onTabsDeleted = newParams => {
         dispatch(resetOrgUnits());
-        dispatch(setFiltersUpdated(true));
-        onSearch({ ...newParams, page: 1 });
+        if (params.searchActive === 'true') {
+            dispatch(setFiltersUpdated(true));
+            setResetTablePage(convertObjectToString(newParams));
+            fetchOrgUnits();
+        }
+        handleTableSelection('reset');
+        dispatch(redirectTo(baseUrl, newParams));
     };
 
     useEffect(() => {
@@ -292,7 +288,7 @@ const OrgUnits = props => {
         dispatch(redirectTo(baseUrl, newParams));
         if (
             newtab === 'map' &&
-            params.searchActive &&
+            params.searchActive === 'true' &&
             (filtersUpdated || listUpdated)
         ) {
             if (listUpdated) {
@@ -319,7 +315,7 @@ const OrgUnits = props => {
                 });
             });
             dispatch(setSources(sources));
-            if (params.searchActive && orgunits.length === 0) {
+            if (params.searchActive === 'true' && orgunits.length === 0) {
                 fetchOrgUnits();
             }
             setShouldRenderFilters(true);
@@ -418,7 +414,7 @@ const OrgUnits = props => {
                                             key={searchIndex}
                                             className={
                                                 searchIndex !==
-                                                currentSearchIndex
+                                                    currentSearchIndex
                                                     ? classes.hiddenOpacity
                                                     : null
                                             }
@@ -434,7 +430,7 @@ const OrgUnits = props => {
                                     );
                                 },
                             )}
-                        {params.searchActive && (
+                        {params.searchActive === 'true' && (
                             <>
                                 <Tabs
                                     value={tab}

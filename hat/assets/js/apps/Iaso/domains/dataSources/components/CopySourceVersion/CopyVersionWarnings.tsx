@@ -28,12 +28,18 @@ export const WarningMessage: FunctionComponent<Props> = ({
     const { data: dataSources } = useDataSourceAsDropDown();
     const classes = useWarningStyles();
     const destinationSourceName = destinationSourceId
-        ? dataSources.filter(
+        ? dataSources?.filter(
               dataSource => dataSource.value === destinationSourceId,
           )[0]?.label
         : null;
     return (
-        <Grid container item spacing={1} justifyContent="center">
+        <Grid
+            container
+            item
+            spacing={1}
+            justifyContent="center"
+            data-test={`copyversion-warning-${destinationSourceName}`}
+        >
             <Grid item>
                 <Typography className={classes.source} variant="h6">
                     <FormattedMessage

@@ -4,6 +4,7 @@ from time import gmtime, strftime
 
 from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Q, IntegerField, Value
 from django.http import StreamingHttpResponse, HttpResponse
@@ -568,6 +569,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
+        # add the instance defining in the dictiannary to return
+        res["instance_defining"] = org_unit.instance_defining.as_full_model() if org_unit.instance_defining else None
+
         return Response(res)
 
 

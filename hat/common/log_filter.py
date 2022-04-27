@@ -8,5 +8,7 @@ class StaticUrlFilter(logging.Filter):
     # Filter out request that start with the static url
     def filter(self, record):  # type: ignore
         if record.module == "basehttp":
-            return record.args[0].find(" {}".format(settings.STATIC_URL)) < 0
+            if len(record.args) > 0 and isinstance(record.args[0], str):
+                return record.args[0].find(" {}".format(settings.STATIC_URL)) < 0
+
         return True

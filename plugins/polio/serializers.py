@@ -404,6 +404,8 @@ class CampaignSerializer(serializers.ModelSerializer):
                     round = instance.rounds.get(number=round_data.get("number"))
                 except Round.DoesNotExist:
                     pass
+            # we pop the campaign since we use the set afterward which will also remove the deleted one
+            round_data.pop("campaign", None)
             round_serializer = RoundSerializer(instance=round, data=round_data)
             round_serializer.is_valid(raise_exception=True)
             round_instances.append(round_serializer.save())

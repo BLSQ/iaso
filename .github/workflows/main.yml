@@ -2,7 +2,7 @@ name: Iaso Automated CI testing
 # This workflow run automatically for every PR on github it checks the syntax and launch the tests.
 on:
   pull_request:
-    types: [review_requested, opened, synchronize, ready_for_review]
+    types: [ review_requested, opened, synchronize, ready_for_review ]
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -76,6 +76,12 @@ jobs:
           file: docker/bundle/Dockerfile
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
           cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
+          outputs: type=docker,dest=/tmp/iaso-image.tar
+      - name: Upload docker image
+        uses: actions/upload-artifact@v2
+        with:
+          name: iaso-image
+          path: /tmp/iaso-image.tar
   test_python:
     runs-on: ubuntu-latest
     services:
@@ -179,8 +185,19 @@ jobs:
           - 5432:5432
         # needed because the postgres container does not provide a health check
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-      iaso:
-        image: ghcr.io/blsq/iaso:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: iaso-image
+          path: /tmp
+      - name: Load docker image
+        run: |
+          docker load --input /tmp/iaso-image.tar
+          docker image ls -a
+      - name: docker run ghcr.io/blsq/iaso:${{ github.sha }}
+        run: docker run -d -network host --network-alias iaso -p 8081:8081  -e "TEST_PROD" -e "IASO_ENVIRONMENT" -e "RDS_DB_NAME" -e "SECRET_KEY" -e "DEBUG" -e "DJANGO_SETTINGS_MODULE" -e "RDS_PASSWORD" -e "RDS_HOSTNAME" -e "RDS_PORT" -e "RDS_USERNAME=postgres" -e "CACHE=false" -e "DEV_SERVER" -e "PLUGINS" -e GITHUB_ACTIONS=true -e CI=true  ghcr.io/blsq/iaso:${{ github.sha }}
         env:
           TEST_PROD: true
           IASO_ENVIRONMENT: development
@@ -195,49 +212,45 @@ jobs:
           CACHE: false
           DEV_SERVER: true
           PLUGINS: polio
-        ports:
-          - 8081:8081
-    steps:
-      - uses: actions/checkout@v2
-      - name: docker ps
-        run: docker ps
-      - name: docker logs
-        run: /usr/bin/docker ps --all --format={{.ID}}|xargs  -I {} /usr/bin/docker logs {}
-      - name: Cypress run
-        uses: cypress-io/github-action@v2
-        with:
-          wait-on: 'http://localhost:8081'
-          spec: hat/assets/js/cypress/integration/${{ matrix.containers }}/*.spec.js
-        env:
-          CYPRESS_USERNAME: "test"
-          CYPRESS_PASSWORD: "test"
-          CYPRESS_BASE_URL: "http://localhost:8081"
-      - name: Slack notification
-        uses: rtCamp/action-slack-notify@v2.1.3
-        env:
-          SLACK_USERNAME: ${{ github.workflow }}
-          SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: iaso-dev
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: ${{ format('Job {0} failed on {1}', github.job, github.ref) }}
-          SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
-          MSG_MINIMAL: true
-        if: failure()
-      # after the test run completes
-      # store videos and any screenshots
-      # NOTE: screenshots will be generated only if E2E test failed
-      # thus we store screenshots only on failures
-      # Alternative: create and commit an empty cypress/screenshots folder
-      # to always have something to upload
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/screenshots/
-      # Test run video was always captured, so this action uses "always()" condition
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: cypress-videos
-          path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/videos/
+        - name: docker ps
+          run: docker ps
+        - name: docker logs
+          run: /usr/bin/docker ps --all --format={{.ID}}|xargs  -I {} /usr/bin/docker logs {}
+        - name: Cypress run
+          uses: cypress-io/github-action@v2
+          with:
+            wait-on: 'http://localhost:8081'
+            spec: hat/assets/js/cypress/integration/${{ matrix.containers }}/*.spec.js
+          env:
+            CYPRESS_USERNAME: "test"
+            CYPRESS_PASSWORD: "test"
+            CYPRESS_BASE_URL: "http://localhost:8081"
+        - name: Slack notification
+          uses: rtCamp/action-slack-notify@v2.1.3
+          env:
+            SLACK_USERNAME: ${{ github.workflow }}
+            SLACK_ICON_EMOJI: ":robot_face:"
+            SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+            SLACK_CHANNEL: iaso-dev
+            SLACK_COLOR: ${{ job.status }}
+            SLACK_TITLE: ${{ format('Job {0} failed on {1}', github.job, github.ref) }}
+            SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+            MSG_MINIMAL: true
+          if: failure()
+        # after the test run completes
+        # store videos and any screenshots
+        # NOTE: screenshots will be generated only if E2E test failed
+        # thus we store screenshots only on failures
+        # Alternative: create and commit an empty cypress/screenshots folder
+        # to always have something to upload
+        - uses: actions/upload-artifact@v2
+          if: failure()
+          with:
+            name: cypress-screenshots
+            path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/screenshots/
+        # Test run video was always captured, so this action uses "always()" condition
+        - uses: actions/upload-artifact@v2
+          if: always()
+          with:
+            name: cypress-videos
+            path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/videos/

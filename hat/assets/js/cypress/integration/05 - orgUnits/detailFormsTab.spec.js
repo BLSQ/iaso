@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 
+import formsList from '../../fixtures/forms/list.json';
 import orgUnit from '../../fixtures/orgunits/details.json';
 import { testPermission } from '../../support/testPermission';
 
@@ -15,7 +16,12 @@ const interceptList = [
     'orgunittypes',
 ];
 
-describe('OrgUnits detail', () => {
+/**
+ * TODO;
+ * - test actions buttons
+ */
+
+describe('forms tab', () => {
     beforeEach(() => {
         cy.login();
         cy.intercept('GET', '/api/profiles/**', {
@@ -95,9 +101,24 @@ describe('OrgUnits detail', () => {
                 ],
             },
         );
+        cy.visit(`${baseUrl}/tab/forms`);
     });
 
     it('page should not be accessible if user does not have permission', () => {
         testPermission(baseUrl);
+    });
+
+    it('should render correct infos', () => {
+        cy.wait('@getOuDetail').then(() => {
+            cy.get('[data-test="forms-tab"]').find('table').as('table');
+            cy.get('@table').should('have.length', 1);
+            cy.get('@table').find('tbody').find('tr').as('rows');
+            cy.get('@rows').should('have.length', formsList.count);
+            cy.get('@rows').eq(0).as('row');
+            cy.get('@row').find('td').should('have.length', 10);
+            cy.get('@row').find('td').eq(0).as('nameCol');
+
+            cy.get('@nameCol').should('contain.text', formsList.forms[0].name);
+        });
     });
 });

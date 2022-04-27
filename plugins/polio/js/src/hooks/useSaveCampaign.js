@@ -8,7 +8,6 @@ const formatGroupedCampaigns = groupedCampaigns => {
         return commaSeparatedIdsToStringArray(groupedCampaigns);
     return groupedCampaigns ?? [];
 };
-
 export const useSaveCampaign = () => {
     return useSnackMutation(
         body => {

@@ -17,9 +17,9 @@ export const useGetCampaigns = (
         deletion_status: options.showOnlyDeleted ? 'deleted' : undefined,
         campaign_type: options.campaignType ?? 'all',
         campaign_groups: options.campaignGroups,
+        show_test: options.show_test ?? false,
         // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
         enabled: options.enabled ?? true,
-        show_test: options.show_test ?? false,
     };
 
     const getURL = urlParams => {

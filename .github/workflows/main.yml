@@ -89,7 +89,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        containers: [ 1 - auth, 2 - forms ]
+        containers: [ 01 - auth, 02 - forms ]
     services:
       postgres:
         image: mdillon/postgis:10

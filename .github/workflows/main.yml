@@ -2,7 +2,7 @@ name: Iaso Automated CI testing
 # This workflow run automatically for every PR on github it checks the syntax and launch the tests.
 on:
   pull_request:
-    types: [ review_requested, opened, synchronize, ready_for_review ]
+    types: [review_requested, opened, synchronize, ready_for_review]
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -71,16 +71,11 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
+          push: true
           tags: ${{ steps.version.outputs.IMAGE_TAG }}
           file: docker/bundle/Dockerfile
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
           cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
-          outputs: type=docker,dest=/tmp/iaso-image.tar
-      - name: Upload docker image
-        uses: actions/upload-artifact@v2
-        with:
-          name: iaso-image
-          path: /tmp/iaso-image.tar
   test_python:
     runs-on: ubuntu-latest
     services:
@@ -184,19 +179,8 @@ jobs:
           - 5432:5432
         # needed because the postgres container does not provide a health check
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-    steps:
-      - uses: actions/checkout@v2
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: iaso-image
-          path: /tmp
-      - name: Load docker image
-        run: |
-          docker load --input /tmp/iaso-image.tar
-          docker image ls -a
-      - name: docker run ghcr.io/blsq/iaso
-        run: docker run -d -network host --network-alias iaso -p 8081:8081  -e "TEST_PROD" -e "IASO_ENVIRONMENT" -e "RDS_DB_NAME" -e "SECRET_KEY" -e "DEBUG" -e "DJANGO_SETTINGS_MODULE" -e "RDS_PASSWORD" -e "RDS_HOSTNAME" -e "RDS_PORT" -e "RDS_USERNAME=postgres" -e "CACHE=false" -e "DEV_SERVER" -e "PLUGINS" -e GITHUB_ACTIONS=true -e CI=true ghcr.io/blsq/iaso:${{ github.sha }}
+      iaso:
+        image: ghcr.io/blsq/iaso:${{ github.sha }}
         env:
           TEST_PROD: true
           IASO_ENVIRONMENT: development
@@ -211,6 +195,10 @@ jobs:
           CACHE: false
           DEV_SERVER: true
           PLUGINS: polio
+        ports:
+          - 8081:8081
+    steps:
+      - uses: actions/checkout@v2
       - name: docker ps
         run: docker ps
       - name: docker logs

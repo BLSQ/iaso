@@ -117,6 +117,10 @@ jobs:
           - 8081:8081
     steps:
       - uses: actions/checkout@v2
+      - name: docker ps
+        run:  docker ps
+      - name: docker logs
+        run: /usr/bin/docker ps --all --format={{.ID}}|xargs  -I {} /usr/bin/docker logs {}
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:

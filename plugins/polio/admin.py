@@ -6,7 +6,6 @@ from django.utils.safestring import mark_safe
 
 from .models import (
     Campaign,
-    Preparedness,
     Surge,
     Round,
     Config,
@@ -23,11 +22,6 @@ class CampaignAdmin(admin.ModelAdmin):
         models.ForeignKey: {"widget": widgets.AdminTextInputWidget},
     }
     list_filter = ["virus", "vacine", "detection_status", "risk_assessment_status", "budget_status"]
-
-
-class PreparednessAdmin(admin.ModelAdmin):
-    list_filter = ["campaign"]
-    list_display = ["campaign", "created_at"]
 
 
 class SpreadSheetImportAdmin(admin.ModelAdmin):
@@ -81,7 +75,6 @@ class CampaignGroupAdmin(admin.ModelAdmin):
 
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
-admin.site.register(Preparedness, PreparednessAdmin)
 admin.site.register(Config)
 admin.site.register(Surge)
 admin.site.register(Round)

@@ -32,7 +32,6 @@ from plugins.polio.serializers import (
     PreparednessPreviewSerializer,
     LineListImportSerializer,
     AnonymousCampaignSerializer,
-    PreparednessSerializer,
     SmallCampaignSerializer,
     get_current_preparedness,
     CampaignGroupSerializer,
@@ -142,7 +141,7 @@ class CampaignViewSet(ModelViewSet):
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
-        campaigns.prefetch_related("round_one", "round_two", "group", "grouped_campaigns")
+        campaigns.prefetch_related("rounds", "group", "grouped_campaigns")
         if campaign_type == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
         if campaign_type == "test":
@@ -408,16 +407,6 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
                 if p:
                     r.append(p)
         return Response(r)
-
-
-class PreparednessViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Preparedness.objects.all()
-    serializer_class = PreparednessSerializer
-    filter_backends = (DjangoFilterBackend,)
-
-    filterset_fields = {
-        "campaign_id": ["exact"],
-    }
 
 
 class IMViewSet(viewsets.ViewSet):
@@ -1394,7 +1383,6 @@ class CampaignGroupViewSet(ModelViewSet):
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
-router.register(r"polio/preparedness", PreparednessViewSet)
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/im", IMViewSet, basename="IM")
 router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")

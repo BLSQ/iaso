@@ -172,12 +172,6 @@ class RoundAnonymousSerializer(RoundSerializer):
         exclude = ["preparedness_spreadsheet_url"]
 
 
-class PreparednessSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Preparedness
-        exclude = ["spreadsheet_url"]
-
-
 class SurgeSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField()
     # surge_country_name = serializers.CharField()

@@ -43,8 +43,8 @@ def form_upload(request: HttpRequest) -> HttpResponse:
 
     i.file = request.FILES["xml_submission_file"]
     user = (
-        User.objects.get(user_name=request.user)
-        if request.user and not request.user.is_anonymous
+        User.objects.get(username=request.user)
+        if not request.user.is_anonymous
         else detect_user_request(request)
     )
     i.created_by = user

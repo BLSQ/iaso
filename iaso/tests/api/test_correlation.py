@@ -21,6 +21,8 @@ class CorrelationAPITestCase(APITestCase):
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         cls.coruscant = m.OrgUnit.objects.create(name="coruscant", org_unit_type=cls.jedi_council)
 
+        cls.doku = cls.create_user_with_profile(username="doku", account=cls.the_empire, permissions=["iaso_forms"])
+
         cls.form_1 = m.Form.objects.create(name="Land Speeder", form_id="sample1")
         cls.form_2 = m.Form.objects.create(
             name="Hydroponic public survey", form_id="sample2", correlatable=True, correlation_field="service"
@@ -147,3 +149,41 @@ class CorrelationAPITestCase(APITestCase):
         self.assertEqual(response_form.status_code, 201)
         self.assertEqual(last_instance.created_by, user)
         self.assertEqual(last_instance.last_modified_by, user)
+
+
+    def test_upload_form(self):
+
+        self.client.force_authenticate(self.doku)
+
+        file_name = "land_speeder_with_service.xml"
+        uuid = "4b7c3954-f69a-4b92-43b1-df73957b3343"
+        instance_body = [
+            {
+                "id": uuid,
+                "latitude": 4.4,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.coruscant.id,
+                "formId": self.form_2.id,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/%s" % file_name,
+                "name": file_name,
+            }
+        ]
+
+        response = self.client.post(
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        with open("iaso/tests/fixtures/%s" % file_name) as fp:
+            response_form = self.client.post("/sync/form_upload/", {"xml_submission_file": fp})
+
+        last_instance = Instance.objects.last()
+
+        self.assertEqual(response_form.status_code, 201)
+        self.assertEqual(last_instance.created_by, self.doku)
+        self.assertEqual(last_instance.last_modified_by, self.doku)

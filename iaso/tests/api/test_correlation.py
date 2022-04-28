@@ -150,7 +150,6 @@ class CorrelationAPITestCase(APITestCase):
         self.assertEqual(last_instance.created_by, user)
         self.assertEqual(last_instance.last_modified_by, user)
 
-
     def test_upload_form(self):
 
         self.client.force_authenticate(self.doku)

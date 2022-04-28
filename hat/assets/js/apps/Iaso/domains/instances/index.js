@@ -201,18 +201,25 @@ const Instances = ({ params }) => {
                                             />
                                         )}
                                     />
-                                    <DownloadButtonsComponent
-                                        csvUrl={getEndpointUrl(
-                                            params,
-                                            true,
-                                            'csv',
-                                        )}
-                                        xlsxUrl={getEndpointUrl(
-                                            params,
-                                            true,
-                                            'xlsx',
-                                        )}
-                                    />
+                                    <Box
+                                        mb={2}
+                                        mt={2}
+                                        display="flex"
+                                        justifyContent="flex-end"
+                                    >
+                                        <DownloadButtonsComponent
+                                            csvUrl={getEndpointUrl(
+                                                params,
+                                                true,
+                                                'csv',
+                                            )}
+                                            xlsxUrl={getEndpointUrl(
+                                                params,
+                                                true,
+                                                'xlsx',
+                                            )}
+                                        />
+                                    </Box>
                                 </div>
                             )}
                         </Grid>

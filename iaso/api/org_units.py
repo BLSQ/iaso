@@ -569,6 +569,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
+        # add the instance defining in the dictiannary to return
+        res["instance_defining"] = org_unit.instance_defining.as_full_model() if org_unit.instance_defining else None
+
         return Response(res)
 
 

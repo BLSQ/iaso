@@ -436,7 +436,7 @@ const OrgUnitsFiltersComponent = ({
                             hasLocationLimitError ||
                             textSearchError
                         }
-                        id="searchButton"
+                        data-test="search-button"
                         variant="contained"
                         className={classes.button}
                         color="primary"

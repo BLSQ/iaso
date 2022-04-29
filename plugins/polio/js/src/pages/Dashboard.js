@@ -322,7 +322,7 @@ const Dashboard = ({ router }) => {
                     data={campaigns?.campaigns ?? []}
                     count={campaigns?.count}
                     pages={campaigns?.pages}
-                    params={params}
+                    params={apiParams}
                     columns={columns}
                     baseUrl={DASHBOARD_BASE_URL}
                     marginTop={false}

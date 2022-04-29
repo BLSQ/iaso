@@ -63,9 +63,6 @@ describe('Forms', () => {
 
         it('click on create button should redirect to form creation url', () => {
             goToPage();
-            // wait for the request since cypress will fail on 'abort' error
-            cy.wait('@getForms');
-            cy.wait('@getTypes');
             cy.get('[data-test=add-form-button]').click();
             cy.url().should(
                 'eq',
@@ -189,15 +186,23 @@ describe('Forms', () => {
             it('should be visible if we have results', () => {
                 goToPage(superUser, null, 'forms/list.json');
                 cy.wait('@getForms').then(() => {
-                    cy.get('#csv-export-button').should('be.visible');
-                    cy.get('#xlsx-export-button').should('be.visible');
+                    cy.get('[data-test="csv-export-button"]').should(
+                        'be.visible',
+                    );
+                    cy.get('[data-test="xlsx-export-button"]').should(
+                        'be.visible',
+                    );
                 });
             });
             it("should not be visible if we don't have results", () => {
                 goToPage(superUser, null, 'forms/empty.json');
                 cy.wait('@getForms').then(() => {
-                    cy.get('#csv-export-button').should('not.exist');
-                    cy.get('#xlsx-export-button').should('not.exist');
+                    cy.get('[data-test="csv-export-button"]').should(
+                        'not.exist',
+                    );
+                    cy.get('[data-test="xlsx-export-button"]').should(
+                        'not.exist',
+                    );
                 });
             });
         });

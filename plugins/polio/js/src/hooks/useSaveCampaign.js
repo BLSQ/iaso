@@ -2,15 +2,21 @@ import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { postRequest, putRequest } from 'Iaso/libs/Api';
 import { commaSeparatedIdsToStringArray } from '../../../../../hat/assets/js/apps/Iaso/utils/forms';
 
+// we need this check because the select box returns the list in string format, but the api retirns an actual array
+const formatGroupedCampaigns = groupedCampaigns => {
+    if (typeof groupedCampaigns === 'string')
+        return commaSeparatedIdsToStringArray(groupedCampaigns);
+    return groupedCampaigns ?? [];
+};
 export const useSaveCampaign = () => {
     return useSnackMutation(
         body => {
-            // TODO remove thsi hack when we get the rela multiselect in polio
+            // TODO remove this hack when we get the real multiselect in polio
             const hackedBody = {
                 ...body,
-                grouped_campaigns: body.grouped_campaigns
-                    ? commaSeparatedIdsToStringArray(body.grouped_campaigns)
-                    : [],
+                grouped_campaigns: formatGroupedCampaigns(
+                    body.grouped_campaigns,
+                ),
             };
             return hackedBody.id
                 ? putRequest(

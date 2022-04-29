@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 
+import linkedList from '../../fixtures/links/list-linked.json';
 import orgUnit from '../../fixtures/orgunits/details.json';
 import { testPermission } from '../../support/testPermission';
 
@@ -15,7 +16,15 @@ const interceptList = [
     'orgunittypes',
 ];
 
-describe('OrgUnits detail', () => {
+/**
+ * TODO;
+ * - test sources, types and forms update => should update map
+ * - test map sub tabs changes and sub components
+ * - test ou with only a location
+ * - test edition of location / catchment
+ */
+
+describe('map tab', () => {
     beforeEach(() => {
         cy.login();
         cy.intercept('GET', '/api/profiles/**', {
@@ -95,9 +104,33 @@ describe('OrgUnits detail', () => {
                 ],
             },
         );
+
+        cy.visit(`${baseUrl}/tab/map`);
     });
 
     it('page should not be accessible if user does not have permission', () => {
         testPermission(baseUrl);
+    });
+
+    it('should render correct infos', () => {
+        cy.wait('@getOuDetail').then(() => {
+            cy.log('displays map and shape');
+            cy.get('.leaflet-container').should('be.visible');
+            cy.get('.leaflet-custom-shape-location-pane svg').should(
+                'be.visible',
+            );
+            cy.log('displays linked sources');
+            linkedList.links.forEach(l => {
+                cy.get('#sources').parent().should('contain', l.source.source);
+            });
+
+            cy.log('displays direct ou children');
+            cy.get('#ou-types')
+                .parent()
+                .should(
+                    'contain',
+                    orgUnit.org_unit_type.sub_unit_types[0].short_name,
+                );
+        });
     });
 });

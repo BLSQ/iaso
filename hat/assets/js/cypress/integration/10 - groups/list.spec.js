@@ -166,8 +166,8 @@ describe('Groups', () => {
             });
         });
         it('should be enabled while searching', () => {
-            cy.get('#search-search').type(search);
             cy.wait('@getGroups').then(() => {
+                cy.get('#search-search').type(search);
                 cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', undefined);

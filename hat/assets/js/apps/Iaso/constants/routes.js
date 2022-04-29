@@ -26,6 +26,9 @@ import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
 import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
+import { Planning } from '../domains/planning/index.tsx';
+import { Teams } from '../domains/teams/index.tsx';
+import { Assignments } from '../domains/assignments/index.tsx';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
@@ -529,6 +532,57 @@ export const entityTypesPath = {
         })),
     ],
 };
+export const planningPath = {
+    baseUrl: baseUrls.planning,
+    // FIXME use planning permissions when they exist
+    permissions: ['iaso_entities'],
+    component: props => <Planning {...props} />,
+    params: [],
+    // params: [
+    //     {
+    //         isRequired: false,
+    //         key: 'search',
+    //     },
+    //     ...paginationPathParams.map(p => ({
+    //         ...p,
+    //         isRequired: true,
+    //     })),
+    // ],
+};
+export const assignmentsPath = {
+    baseUrl: baseUrls.assignments,
+    // FIXME use planning permissions when they exist
+    permissions: ['iaso_entities'],
+    component: props => <Assignments {...props} />,
+    params: [],
+    // params: [
+    //     {
+    //         isRequired: false,
+    //         key: 'search',
+    //     },
+    //     ...paginationPathParams.map(p => ({
+    //         ...p,
+    //         isRequired: true,
+    //     })),
+    // ],
+};
+export const teamsPath = {
+    baseUrl: baseUrls.teams,
+    // FIXME use planning permissions when they exist
+    permissions: ['iaso_entities'],
+    component: props => <Teams {...props} />,
+    params: [],
+    // params: [
+    //     {
+    //         isRequired: false,
+    //         key: 'search',
+    //     },
+    //     ...paginationPathParams.map(p => ({
+    //         ...p,
+    //         isRequired: true,
+    //     })),
+    // ],
+};
 
 export const page401 = {
     baseUrl: baseUrls.error401,
@@ -574,4 +628,7 @@ export const routeConfigs = [
     pagesPath,
     page401,
     page500,
+    teamsPath,
+    planningPath,
+    assignmentsPath,
 ];

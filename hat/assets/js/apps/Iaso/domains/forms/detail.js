@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useQueryClient } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
@@ -30,6 +30,9 @@ import FormForm from './components/FormFormComponent';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../constants/snackBars';
 import { useGetForm } from './requests';
+import { requiredFields } from './config';
+
+import { isFieldValid, isFormValid } from '../../utils/forms';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -90,10 +93,19 @@ const FormDetail = ({ router, params }) => {
     const [isSaved, setIsSaved] = useState(false);
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
     const dispatch = useDispatch();
-    const intl = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [currentForm, setFieldValue, setFieldErrors, setFormState] =
         useFormState(formatFormData(form));
+
+    const isFormModified = useMemo(() => {
+        return (
+            !isEqual(
+                mapValues(currentForm, v => v.value),
+                formatFormData(form),
+            ) && !isSaved
+        );
+    }, [currentForm, form, isSaved]);
 
     const onConfirm = async () => {
         let isUpdate;
@@ -153,8 +165,13 @@ const FormDetail = ({ router, params }) => {
         (keyValue, value) => {
             if (isSaved) setIsSaved(false);
             setFieldValue(keyValue, value);
+            if (!isFieldValid(keyValue, value, requiredFields)) {
+                setFieldErrors(keyValue, [
+                    formatMessage(MESSAGES.requiredField),
+                ]);
+            }
         },
-        [isSaved, setFieldValue],
+        [isSaved, setFieldValue, setFieldErrors, formatMessage],
     );
 
     useEffect(() => {
@@ -171,16 +188,10 @@ const FormDetail = ({ router, params }) => {
         setFormState(formatFormData(form));
     }, [form, setFormState]);
 
-    const isFormModified =
-        !isEqual(
-            mapValues(currentForm, v => v.value),
-            formatFormData(form),
-        ) && !isSaved;
-
     return (
         <>
             <TopBar
-                title={`${intl.formatMessage(MESSAGES.detailTitle)}: ${
+                title={`${formatMessage(MESSAGES.detailTitle)}: ${
                     currentForm.name.value
                 }`}
                 displayBackButton
@@ -209,7 +220,10 @@ const FormDetail = ({ router, params }) => {
                     )}
                     <Button
                         data-id="form-detail-confirm"
-                        disabled={!isFormModified}
+                        disabled={
+                            !isFormModified ||
+                            !isFormValid(requiredFields, currentForm)
+                        }
                         variant="contained"
                         className={classes.marginLeft}
                         color="primary"

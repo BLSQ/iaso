@@ -30,3 +30,44 @@ export const convertFormStateToDict = formState => {
     });
     return result;
 };
+
+export const isFieldValid = (keyValue, value, requiredFields) => {
+    const field = requiredFields.find(f => f.key === keyValue);
+    if (field) {
+        switch (field.type) {
+            case 'string': {
+                if (value === '') {
+                    return false;
+                }
+                return true;
+            }
+            case 'array': {
+                if (value.length === 0) {
+                    return false;
+                }
+                return true;
+            }
+            case 'boolean': {
+                if (value === null) {
+                    return false;
+                }
+                return true;
+            }
+
+            default:
+                return true;
+        }
+    }
+    return true;
+};
+
+export const isFormValid = (requiredFields, currentForm) => {
+    return !requiredFields.find(
+        field =>
+            !isFieldValid(
+                field.key,
+                currentForm[field.key].value,
+                requiredFields,
+            ),
+    );
+};

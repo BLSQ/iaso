@@ -168,6 +168,7 @@ jobs:
           - 08 - projects
           - 09 - submissions
           - 10 - groups
+          - 11 - datasources
     services:
       postgres:
         image: mdillon/postgis:10

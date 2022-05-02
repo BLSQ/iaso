@@ -270,8 +270,7 @@ Timeline tracker Automated message
         queryset = queryset.annotate(
             geom=RawSQL(
                 """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
-from iaso_orgunit
-         right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
 where group_id = polio_campaign.group_id""",
                 [],
             )

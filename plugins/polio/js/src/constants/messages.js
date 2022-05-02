@@ -202,13 +202,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.dgAuthorization',
         defaultMessage: 'DG Authorization',
     },
-    targetpopulationRoundOne: {
-        id: 'iaso.polio.form.label.targetpopulationRoundOne',
-        defaultMessage: 'Target population Round 1',
-    },
-    targetpopulationRoundTwo: {
-        id: 'iaso.polio.form.label.targetpopulationRoundTwo',
-        defaultMessage: 'Target population Round 2',
+    targetpopulationRound: {
+        id: 'iaso.polio.form.label.targetpopulationRound',
+        defaultMessage: 'Target population Round',
     },
     dosesRequested: {
         id: 'iaso.polio.form.label.dosesRequested',
@@ -270,25 +266,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.noRegretFund',
         defaultMessage: 'No Regret Fund',
     },
-    costRoundOne: {
-        id: 'iaso.polio.form.label.costRoundOne',
-        defaultMessage: 'Cost Round 1',
+    costRound: {
+        id: 'iaso.polio.form.label.costRound',
+        defaultMessage: 'Cost Round',
     },
-    costRoundTwo: {
-        id: 'iaso.polio.form.label.costRoundTwo',
-        defaultMessage: 'Cost Round 2',
-    },
-    costPerChildRoundOne: {
-        id: 'iaso.polio.form.label.costPerChildRoundOne',
-        defaultMessage: 'Cost/Child Round 1: $',
-    },
-    costPerChildRoundTwo: {
-        id: 'iaso.polio.form.label.costPerChildRoundTwo',
-        defaultMessage: 'Cost/Child Round 2: $',
+    costPerChildRound: {
+        id: 'iaso.polio.form.label.costPerChildRound',
+        defaultMessage: 'Cost/Child Round',
     },
     costPerChildTotal: {
         id: 'iaso.polio.form.label.costPerChildTotal',
-        defaultMessage: 'Cost/Child Total: $',
+        defaultMessage: 'Cost/Child Total',
     },
     roundOneStart: {
         id: 'iaso.polio.form.label.roundOneStart',
@@ -638,14 +626,6 @@ const MESSAGES = defineMessages({
     dictrictName: {
         id: 'iaso.polio.label.dictrictName',
         defaultMessage: 'Name',
-    },
-    round_1: {
-        id: 'iaso.polio.label.round1',
-        defaultMessage: 'Round 1',
-    },
-    round_2: {
-        id: 'iaso.polio.label.round2',
-        defaultMessage: 'Round 2',
     },
     passing: {
         id: 'iaso.polio.label.passed',
@@ -1082,6 +1062,22 @@ const MESSAGES = defineMessages({
     testCampaigns: {
         id: 'iaso.polio.label.testCampaigns',
         defaultMessage: 'iaso.polio.label.testCampaigns',
+    },
+    rounds: {
+        id: 'iaso.polio.label.rounds',
+        defaultMessage: 'Rounds',
+    },
+    round: {
+        id: 'iaso.polio.label.round',
+        defaultMessage: 'Round',
+    },
+    deleteRound: {
+        id: 'iaso.polio.forms.deleteRound',
+        defaultMessage: 'Delete round',
+    },
+    lastRound: {
+        id: 'iaso.polio.label.lastRound',
+        defaultMessage: 'Last round',
     },
 });
 

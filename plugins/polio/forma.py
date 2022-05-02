@@ -224,13 +224,14 @@ def get_content_for_config(config):
 def fetch_and_match_forma_data():
 
     conf = Config.objects.get(slug="forma")
-    campaign_qs = Campaign.objects.all().prefetch_related("round_one").prefetch_related("round_two")
+    campaign_qs = Campaign.objects.all().prefetch_related("rounds").prefetch_related("country")
 
     dfs = []
     for config in conf.content:
         submissions = get_content_for_config(config)
         country = OrgUnit.objects.get(id=config["country_id"])
-        df = handle_country(submissions, country, campaign_qs)
+        compaigns_of_country = campaign_qs.filter(country_id=config["country_id"])
+        df = handle_country(submissions, country, compaigns_of_country)
         dfs.append(df)
 
     concatened_df = pd.concat(dfs)

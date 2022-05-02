@@ -44,15 +44,19 @@ def send_notification_email(campaign):
         if campaign.onset_at and campaign.cvdpv_notified_at
         else ""
     )
+    try:
+        first_round = campaign.rounds.earliest("number")
+    except Round.DoesNotExist:
+        first_round = None
     round1_days = (
-        (campaign.round_one.started_at - campaign.onset_at).days
-        if campaign.round_one and campaign.round_one.started_at and campaign.cvdpv_notified_at
+        (first_round.started_at - campaign.onset_at).days
+        if first_round and first_round.started_at and campaign.cvdpv_notified_at
         else ""
     )
     c = campaign
     url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
     # format thousand
-    target_population = f"{c.round_one.target_population:,}" if c.round_one and c.round_one.target_population else ""
+    target_population = f"{first_round.target_population:,}" if first_round and first_round.target_population else ""
 
     preparedness = get_last_preparedness(campaign)
 
@@ -63,7 +67,7 @@ Below is the summary of the campaign {c.obr_name}. for more details, visit https
 If there are missing data or dates; visit {url} to update
 
 * Notification date              : {c.cvdpv2_notified_at}
-* Round one                      : {c.round_one.started_at if c.round_one and c.round_one.started_at else ''}
+* First round                    : {first_round.started_at if first_round and first_round.started_at else ''}
 * Vaccine Type                   : {c.vacine or ''}
 * Target population              : {target_population} 
 * RA Status                      : {c.get_risk_assessment_status_display() or 'Pending'}

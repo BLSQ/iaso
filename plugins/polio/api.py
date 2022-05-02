@@ -356,7 +356,7 @@ def history_for_campaign(ssi_qs, round: Round):
     return r
 
 
-def _make_prep(c: Campaign, round: Round, round_number: RoundNumber):
+def _make_prep(c: Campaign, round: Round):
     url = round.preparedness_spreadsheet_url
     if not url:
         return None
@@ -377,12 +377,12 @@ def _make_prep(c: Campaign, round: Round, round_number: RoundNumber):
             # No import yet
             campaign_prep["status"] = "not_sync"
             campaign_prep["details"] = "This spreadsheet has not been synchronised yet"
-            return None
+            return campaign_prep
         campaign_prep["date"] = ssi_qs.last().created_at
         cs = ssi_qs.last().cached_spreadsheet
         last_p = get_preparedness(cs)
         campaign_prep.update(preparedness_summary(last_p))
-        if round_number != last_p["national"]["round"]:
+        if round.number != last_p["national"]["round"]:
             logger.info(f"Round mismatch on {c} {round}")
 
         campaign_prep["history"] = history_for_campaign(ssi_qs, round)
@@ -402,7 +402,7 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
             qs = qs.filter(obr_name=request.query_params.get("campaign"))
 
         for c in qs:
-            for round in c.rounds:
+            for round in c.rounds.all():
                 p = _make_prep(c, round)
                 if p:
                     r.append(p)

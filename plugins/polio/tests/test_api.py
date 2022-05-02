@@ -250,3 +250,45 @@ class PolioAPITestCase(APITestCase):
         response = self.client.get(f"/api/polio/campaigns/{campaign.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 0)
+
+
+class PreparednessAPITestCase(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.data_source = m.DataSource.objects.create(name="Default source")
+        cls.now = now()
+        cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        account = Account.objects.create(name="polio", default_version=cls.source_version_1)
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
+
+    def setUp(self):
+        """Make sure we have a fresh client at the beginning of each test"""
+        self.client = APIClient()
+        self.client.force_authenticate(self.yoda)
+
+    def test_two_campaign_round(self):
+        campaign_a = Campaign.objects.create(obr_name="campaign A")
+        round_one = campaign_a.rounds.create(number=1)
+        round_three = campaign_a.rounds.create(number=3)
+        campaign_b = Campaign.objects.create(obr_name="campaign B")
+        campaign_c = Campaign.objects.create(obr_name="campaign c")
+
+        response = self.client.get(f"/api/polio/campaigns/{campaign_a.id}/", format="json")
+
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r["rounds"]), 2)
+
+        response = self.client.get(f"/api/polio/preparedness_dashboard/", format="json")
+        r = self.assertJSONResponse(response, 200)
+
+        round_one.preparedness_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1"
+        round_one.save()
+        round_three.preparedness_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1"
+        round_three.save()
+
+        response = self.client.get(f"/api/polio/preparedness_dashboard/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+        for round in r:
+            self.assertEqual(round["status"], "not_sync")
+        print(r)

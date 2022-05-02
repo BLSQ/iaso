@@ -80,6 +80,9 @@ ROUNDSTATUS = [
 
 
 class Round(models.Model):
+    class Meta:
+        ordering = ["number", "started_at"]
+
     started_at = models.DateField(null=True, blank=True)
     number = models.IntegerField(null=True, blank=True)
     campaign = models.ForeignKey("Campaign", related_name="rounds", on_delete=models.PROTECT, null=True)

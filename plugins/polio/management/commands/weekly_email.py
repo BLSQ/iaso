@@ -6,10 +6,11 @@ from django.core.management.base import BaseCommand
 from django.db.models import Q
 from django.utils.timezone import now
 
-from plugins.polio.models import Campaign, CountryUsersGroup
+from plugins.polio.models import Campaign, CountryUsersGroup, Round
 from plugins.polio.serializers import preparedness_from_url
 
 logger = getLogger(__name__)
+
 
 # TODO Add to message SOPs : Standard operating procedure
 #  As per the outbreak response plan the\
@@ -17,12 +18,11 @@ logger = getLogger(__name__)
 
 
 def get_last_preparedness(campaign):
-    # Provided for compat but would be nice if we could move the client to use the one on round directly
-    if campaign.round_two and campaign.round_two.preparedness_spreadsheet_url:
-        return preparedness_from_url(campaign.round_two.preparedness_spreadsheet_url)
-    elif campaign.round_one and campaign.round_one.preparedness_spreadsheet_url:
-        return preparedness_from_url(campaign.round_one.preparedness_spreadsheet_url)
-    return {}
+    try:
+        round = campaign.rounds.filter(campaign__preparedness__spreadsheet_url__isnull=False).latest("number")
+        preparedness_from_url(round.preparedness_spreadsheet_url)
+    except Round.DoesNotExist:
+        return {}
 
 
 def send_notification_email(campaign):
@@ -63,11 +63,11 @@ Below is the summary of the campaign {c.obr_name}. for more details, visit https
 If there are missing data or dates; visit {url} to update
 
 * Notification date              : {c.cvdpv2_notified_at}
-* Round one                      : {c.round_one.started_at if c.round_one  and c.round_one.started_at else ''}
+* Round one                      : {c.round_one.started_at if c.round_one and c.round_one.started_at else ''}
 * Vaccine Type                   : {c.vacine or ''}
 * Target population              : {target_population} 
-* RA Status                      : {c.get_risk_assessment_status_display()  or 'Pending'}
-* SIA Budget Status              : {c.get_budget_status_display()  or 'Pending'}
+* RA Status                      : {c.get_risk_assessment_status_display() or 'Pending'}
+* SIA Budget Status              : {c.get_budget_status_display() or 'Pending'}
 * Date Budget submitted          : {c.budget_submitted_at}
 * OnSet to Notification (Days)   : {onset_days}
 * Round 1 to Notification (Days) : {round1_days}

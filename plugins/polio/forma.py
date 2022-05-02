@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import timedelta
+from functools import lru_cache
 
 import pandas as pd
 from django.http import HttpResponse
@@ -173,7 +174,8 @@ def handle_country(forms, country, campaign_qs) -> DataFrame:
     df["country_config_name"] = country.name
     df["country_config"] = country
     print("Matching campaign")
-    df["campaign"] = df.apply(lambda r: forma_find_campaign_on_day(campaign_qs, r["today"], country), axis=1)
+    forma_find_campaign_on_day_cached = lru_cache(maxsize=None)(forma_find_campaign_on_day)
+    df["campaign"] = df.apply(lambda r: forma_find_campaign_on_day_cached(campaign_qs, r["today"], country), axis=1)
     df["campaign_id"] = df["campaign"].apply(lambda c: str(c.id) if c else None)
     df["campaign_obr_name"] = df["campaign"].apply(lambda c: c.obr_name if c else None)
 

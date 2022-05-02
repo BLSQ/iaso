@@ -101,11 +101,13 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        campaigns = Campaign.objects.exclude(enable_send_weekly_email=False).filter(
-            Q(round_two__ended_at__lt=now()) | Q(round_two__ended_at__isnull=True)
-        )
+        campaigns = Campaign.objects.exclude(enable_send_weekly_email=False)
 
         for campaign in campaigns:
+            latest_round_end = campaign.rounds.order_by("ended_at").last()
+            if latest_round_end and latest_round_end.ended_at > now():
+                print(f"Campaign {campaign} is finished, skipping")
+                continue
             logger.info(f"Email for {campaign.obr_name}")
             status = send_notification_email(campaign)
             if not status:
